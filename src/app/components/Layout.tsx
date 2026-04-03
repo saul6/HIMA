@@ -13,7 +13,7 @@ export function Layout() {
   const location = useLocation();
 
   return (
-    <div className="h-screen flex flex-col bg-[#F8F9FA] max-w-[390px] mx-auto relative">
+    <div className="h-screen flex flex-col bg-background max-w-[390px] mx-auto relative">
       {/* Main content area */}
       <div className="flex-1 overflow-y-auto">
         <Outlet />
@@ -23,7 +23,11 @@ export function Layout() {
       <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-white border-t border-black/10 pb-[34px] z-30">
         <div className="flex items-center justify-around h-[72px]">
           {navItems.map(({ path, icon: Icon, label }) => {
-            const isActive = location.pathname === path;
+            // "Inicio" (path="/") también queda activo en rutas /inocuidad/*
+            const isActive =
+              path === "/"
+                ? location.pathname === "/" || location.pathname.startsWith("/inocuidad")
+                : location.pathname.startsWith(path);
             return (
               <Link
                 key={path}
@@ -32,20 +36,20 @@ export function Layout() {
               >
                 <Icon
                   className={`w-6 h-6 ${
-                    isActive ? "fill-[#2B7AB5] text-[#2B7AB5]" : "text-gray-600"
+                    isActive ? "fill-primary text-primary" : "text-muted-foreground"
                   }`}
                   strokeWidth={isActive ? 0 : 2}
                 />
                 <span
                   className={`text-[10px] ${
-                    isActive ? "text-[#2B7AB5]" : "text-gray-600"
+                    isActive ? "text-primary" : "text-muted-foreground"
                   }`}
                   style={{ fontWeight: isActive ? 600 : 400 }}
                 >
                   {label}
                 </span>
                 {isActive && (
-                  <div className="absolute -bottom-2 w-1 h-1 rounded-full bg-[#2B7AB5]" />
+                  <div className="absolute -bottom-2 w-1 h-1 rounded-full bg-primary" />
                 )}
               </Link>
             );

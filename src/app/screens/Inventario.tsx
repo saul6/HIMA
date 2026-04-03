@@ -1,73 +1,15 @@
 import { useState } from "react";
 import { Search, ScanBarcode, Plus, ChevronDown, ChevronUp } from "lucide-react";
+import { inventario } from "@/data/mock";
 
 const filterChips = ["Todos", "Insecticidas", "Fungicidas", "Adherentes", "Herbicidas"];
-
-const inventoryData = [
-  {
-    id: "1",
-    commercialName: "Mancozeb 80%",
-    activeIngredient: "Mancozeb",
-    category: "Fungicidas",
-    stock: 45.5,
-    unit: "kg",
-    status: "available",
-    lastMovement: "2024-03-15",
-    movements: [
-      { date: "2024-03-15", type: "Salida", quantity: -5.5, balance: 45.5 },
-      { date: "2024-03-01", type: "Entrada", quantity: 50, balance: 51 },
-    ],
-  },
-  {
-    id: "2",
-    commercialName: "Lambda-cyhalotrin 5%",
-    activeIngredient: "Lambda-cyhalotrin",
-    category: "Insecticidas",
-    stock: 12.2,
-    unit: "L",
-    status: "low",
-    lastMovement: "2024-03-14",
-    movements: [
-      { date: "2024-03-14", type: "Salida", quantity: -3.5, balance: 12.2 },
-      { date: "2024-02-20", type: "Entrada", quantity: 15, balance: 15.7 },
-    ],
-  },
-  {
-    id: "3",
-    commercialName: "Azoxystrobin 25%",
-    activeIngredient: "Azoxystrobin",
-    category: "Fungicidas",
-    stock: 0,
-    unit: "L",
-    status: "empty",
-    lastMovement: "2024-03-12",
-    movements: [
-      { date: "2024-03-12", type: "Salida", quantity: -4, balance: 0 },
-      { date: "2024-02-15", type: "Entrada", quantity: 20, balance: 4 },
-    ],
-  },
-  {
-    id: "4",
-    commercialName: "Imidacloprid 35%",
-    activeIngredient: "Imidacloprid",
-    category: "Insecticidas",
-    stock: 28,
-    unit: "L",
-    status: "available",
-    lastMovement: "2024-03-10",
-    movements: [
-      { date: "2024-03-10", type: "Salida", quantity: -2, balance: 28 },
-      { date: "2024-02-28", type: "Entrada", quantity: 30, balance: 30 },
-    ],
-  },
-];
 
 export function Inventario() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("Todos");
   const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
 
-  const filteredInventory = inventoryData.filter((product) => {
+  const filteredInventory = inventario.filter((product) => {
     const matchesSearch =
       product.commercialName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.activeIngredient.toLowerCase().includes(searchQuery.toLowerCase());
@@ -79,19 +21,19 @@ export function Inventario() {
   const getStatusBadge = (status: string, stock: number) => {
     if (status === "available") {
       return (
-        <span className="text-xs px-2 py-1 bg-[#E3F2FD] text-[#0D5A8F] rounded">
+        <span className="text-xs px-2 py-1 bg-agro-success-fill text-agro-success-text rounded">
           Disponible · {stock}
         </span>
       );
     } else if (status === "low") {
       return (
-        <span className="text-xs px-2 py-1 bg-[#FAEEDA] text-[#854F0B] rounded">
+        <span className="text-xs px-2 py-1 bg-agro-warning-fill text-agro-warning-text rounded">
           Bajo stock · {stock}
         </span>
       );
     } else {
       return (
-        <span className="text-xs px-2 py-1 bg-[#FAECE7] text-[#993C1D] rounded">
+        <span className="text-xs px-2 py-1 bg-agro-danger-fill text-agro-danger-text rounded">
           Agotado
         </span>
       );
@@ -117,7 +59,7 @@ export function Inventario() {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar productos..."
             className="w-full h-12 pl-12 pr-12 rounded-lg border border-black/10 bg-white
-              focus:outline-none focus:border-[#2B7AB5] focus:ring-1 focus:ring-[#2B7AB5]"
+              focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
           <button className="absolute right-4 top-1/2 -translate-y-1/2">
             <ScanBarcode className="w-5 h-5 text-gray-600" />
@@ -132,7 +74,7 @@ export function Inventario() {
               onClick={() => setActiveFilter(filter)}
               className={`flex-shrink-0 px-4 h-9 rounded-full transition-all whitespace-nowrap ${
                 activeFilter === filter
-                  ? "bg-[#2B7AB5] text-white"
+                  ? "bg-primary text-white"
                   : "bg-white border border-gray-300 text-gray-700"
               }`}
               style={{ fontWeight: 600 }}
@@ -168,7 +110,7 @@ export function Inventario() {
                     onClick={() =>
                       setExpandedProduct(isExpanded ? null : product.id)
                     }
-                    className="flex items-center gap-1 text-sm text-[#2B7AB5] hover:text-[#1E88C7]"
+                    className="flex items-center gap-1 text-sm text-primary hover:text-agro-blue"
                     style={{ fontWeight: 600 }}
                   >
                     {isExpanded ? (
@@ -203,8 +145,8 @@ export function Inventario() {
                             <span
                               className={`text-xs px-2 py-1 rounded ${
                                 movement.type === "Entrada"
-                                  ? "bg-[#E3F2FD] text-[#0D5A8F]"
-                                  : "bg-[#FAECE7] text-[#993C1D]"
+                                  ? "bg-agro-success-fill text-agro-success-text"
+                                  : "bg-agro-danger-fill text-agro-danger-text"
                               }`}
                             >
                               {movement.type}
@@ -214,8 +156,8 @@ export function Inventario() {
                             <span
                               className={
                                 movement.quantity > 0
-                                  ? "text-[#0D5A8F]"
-                                  : "text-[#993C1D]"
+                                  ? "text-agro-success-text"
+                                  : "text-agro-danger-text"
                               }
                               style={{ fontWeight: 600 }}
                             >
@@ -238,7 +180,7 @@ export function Inventario() {
       </div>
 
       {/* FAB Button */}
-      <button className="fixed bottom-[calc(72px+34px+16px)] right-4 w-14 h-14 bg-[#2B7AB5] rounded-full flex items-center justify-center shadow-lg z-10 hover:bg-[#1E88C7] transition-colors">
+      <button className="fixed bottom-[calc(72px+34px+16px)] right-4 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg z-10 hover:bg-agro-blue transition-colors">
         <Plus className="w-6 h-6 text-white" />
       </button>
     </div>

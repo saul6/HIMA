@@ -1,6 +1,85 @@
-# CLAUDE.md — AgroCampo / Proyecto Hima
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+---
+
+# AgroCampo / Proyecto Hima
 
 Este archivo provee contexto completo a Claude Code sobre el proyecto, el cliente, el stack técnico, los acuerdos comerciales y las decisiones de diseño tomadas. Léelo completo antes de tocar cualquier archivo.
+
+---
+
+## 0. Estado actual del código y arquitectura
+
+### Comandos de desarrollo
+
+```bash
+# Siempre usar pnpm — nunca npm ni yarn
+pnpm install
+pnpm run dev      # Dev server en localhost:5173
+pnpm run build    # Build de producción (dist/)
+```
+
+No hay tests configurados aún. No hay tsconfig.json explícito — Vite usa TypeScript via configuración implícita.
+
+### Estructura del código
+
+```
+src/
+├── main.tsx                          # Entry point — monta React en #root
+├── app/
+│   ├── App.tsx                       # Wraps RouterProvider
+│   ├── routes.tsx                    # createBrowserRouter con 13 rutas
+│   ├── components/
+│   │   ├── Layout.tsx                # Bottom nav (5 tabs), max-width 390px
+│   │   ├── FormField.tsx             # Wrapper reutilizable para campos
+│   │   ├── FormSelect.tsx            # Wrapper reutilizable para selects
+│   │   ├── nueva-aplicacion/         # 4 componentes de pasos (Step1–Step4)
+│   │   └── ui/                       # Componentes shadcn/ui (40+)
+│   └── screens/                      # 13 pantallas page-level
+│       ├── Home.tsx                  # Dashboard principal
+│       ├── NuevaAplicacion.tsx       # Formulario M1 (4 pasos)
+│       ├── Historial.tsx / DetalleAplicacion.tsx
+│       ├── Inventario.tsx
+│       ├── Perfil.tsx
+│       └── inocuidad/                # M6–M12 (BotiquinPrimerosAuxilios,
+│                                     #  InspeccionPerimetral, RegistroFertilizacion,
+│                                     #  RegistroCosechaLiberacion, etc.)
+└── styles/
+    ├── theme.css                     # Tokens CSS (única fuente de verdad de colores)
+    ├── fonts.css                     # Inter 400/600 desde Google Fonts
+    ├── tailwind.css                  # Directivas Tailwind
+    └── index.css                     # Importa los tres anteriores
+```
+
+### Rutas definidas
+
+| Ruta | Pantalla |
+|------|----------|
+| `/` | Home (dashboard) |
+| `/nueva-aplicacion` | Formulario 4 pasos M1 |
+| `/inventario` | M2 |
+| `/historial` | M3 listado |
+| `/historial/:id` | DetalleAplicacion |
+| `/perfil` | M5 |
+| `/inocuidad/botiquin` | M6 |
+| `/inocuidad/vidrio-plastico` | M7 |
+| `/inocuidad/fertilizacion` | M8 |
+| `/inocuidad/perimetral` | M9 |
+| `/inocuidad/cosecha` | M10 |
+| `/inocuidad/preoperacional` | M11 |
+| `/inocuidad/limpieza-banos` | M12 |
+
+### Notas técnicas clave
+
+- **Tailwind v4** con `@tailwindcss/vite` — no hay `tailwind.config.ts`. Los tokens del design system se definen en `src/styles/theme.css` con directiva `@theme`.
+- **Path alias:** `@` apunta a `./src` (configurado en `vite.config.ts`).
+- **React Router v7** (`react-router`, no `react-router-dom`).
+- **Supabase no está integrado aún en el frontend** — toda la lógica de BD está pendiente (Sprint 0/1).
+- El proyecto fue generado desde Figma Make; las pantallas ya están implementadas como UI estática con datos mock.
+
+---
 
 ---
 

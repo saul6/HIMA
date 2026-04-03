@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { ChevronLeft } from "lucide-react";
+import { useState, useMemo } from "react";
+import { ChevronLeft, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router";
+import { operarioActual } from "@/data/mock";
 import { Step1ParcelaYCultivo } from "../components/nueva-aplicacion/Step1ParcelaYCultivo";
 import { Step2Productos } from "../components/nueva-aplicacion/Step2Productos";
 import { Step3AplicacionYAgua } from "../components/nueva-aplicacion/Step3AplicacionYAgua";
@@ -11,10 +12,10 @@ export function NuevaAplicacion() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     // Step 1
-    producer: "Juan Pérez",
+    producer: operarioActual.nombre,
     huerto: "",
     huertoCode: "",
-    crop: "Frambuesa",
+    crop: operarioActual.cultivo,
     variety: "",
     sector: "",
     surface: "",
@@ -46,8 +47,8 @@ export function NuevaAplicacion() {
     washWater: "",
     eliminatedDesignatedArea: false,
     applicators: "",
-    technicalAdvisor: "María González",
-    inocuidadResponsible: "Carlos Ramírez",
+    technicalAdvisor: operarioActual.asesorTecnico,
+    inocuidadResponsible: operarioActual.responsableInocuidad,
     observations: "",
   });
 
@@ -66,6 +67,16 @@ export function NuevaAplicacion() {
       setCurrentStep(currentStep - 1);
     }
   };
+
+  // Alerta si la fecha de aplicación supera 7 días desde la recomendación del asesor
+  const alertaFechaVencida = useMemo(() => {
+    if (!formData.recommendationDate || !formData.applicationDate) return false;
+    const recomendacion = new Date(formData.recommendationDate);
+    const aplicacion = new Date(formData.applicationDate);
+    const diferenciaDias =
+      (aplicacion.getTime() - recomendacion.getTime()) / (1000 * 60 * 60 * 24);
+    return diferenciaDias > 7;
+  }, [formData.recommendationDate, formData.applicationDate]);
 
   const handleSave = () => {
     // Mock save functionality
@@ -101,6 +112,19 @@ export function NuevaAplicacion() {
           ))}
         </div>
       </header>
+
+      {/* Banner: alerta cuando la aplicación supera 7 días desde la recomendación */}
+      {alertaFechaVencida && (
+        <div className="mx-4 mt-3 mb-1 p-3 rounded-xl flex items-start gap-2 bg-agro-warning-fill">
+          <AlertTriangle
+            className="w-4 h-4 flex-shrink-0 mt-0.5 text-agro-warning-text"
+          />
+          <p className="text-sm text-agro-warning-text">
+            La fecha de aplicación supera por más de 7 días la recomendación del asesor.
+            Verifica con <span style={{ fontWeight: 600 }}>{formData.technicalAdvisor}</span> antes de continuar.
+          </p>
+        </div>
+      )}
 
       {/* Form Steps */}
       <div className="p-4">

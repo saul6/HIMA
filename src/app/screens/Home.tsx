@@ -1,43 +1,6 @@
 import { Link } from "react-router";
 import { Calendar, Plus, CheckCircle, Clock, Shield, ClipboardCheck, Droplets, Sprout, Eye, Package, FileCheck, Waves } from "lucide-react";
-
-const metrics = [
-  { label: "Total aplicaciones este mes", value: "12" },
-  { label: "Productos distintos usados", value: "8" },
-  { label: "Días desde última aplicación", value: "2" },
-  { label: "Superficie activa (ha)", value: "45.5" },
-];
-
-const recentActivity = [
-  {
-    id: "1",
-    date: "16 Mar",
-    product: "Mancozeb 80%",
-    pest: "Botrytis cinerea",
-    status: "Completado",
-  },
-  {
-    id: "2",
-    date: "14 Mar",
-    product: "Lambda-cyhalotrin",
-    pest: "Trips",
-    status: "Completado",
-  },
-  {
-    id: "3",
-    date: "12 Mar",
-    product: "Azoxystrobin",
-    pest: "Oidio",
-    status: "Completado",
-  },
-  {
-    id: "4",
-    date: "10 Mar",
-    product: "Imidacloprid",
-    pest: "Pulgón",
-    status: "Pendiente",
-  },
-];
+import { metricas, aplicaciones, operarioActual } from "@/data/mock";
 
 const inocuidadModules = [
   {
@@ -112,20 +75,20 @@ export function Home() {
       <header className="bg-white border-b border-black/10 px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {/* Hortifrut Logo */}
-            <div className="w-10 h-10 bg-[#2B7AB5] rounded-lg flex items-center justify-center">
+            {/* Logo AgroCampo */}
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <span className="text-white text-xs" style={{ fontWeight: 600 }}>HF</span>
             </div>
             <span className="text-sm text-gray-900" style={{ fontWeight: 600 }}>AgroCampo</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="text-right">
-              <div className="text-sm" style={{ fontWeight: 600 }}>Juan Pérez</div>
-              <div className="text-xs text-gray-600">Huerto El Valle</div>
+              <div className="text-sm" style={{ fontWeight: 600 }}>{operarioActual.nombre}</div>
+              <div className="text-xs text-muted-foreground">{operarioActual.rancho}</div>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-[#2B7AB5]"></div>
-              <span className="text-xs text-[#2B7AB5]" style={{ fontWeight: 600 }}>En campo</span>
+              <div className="w-2 h-2 rounded-full bg-primary"></div>
+              <span className="text-xs text-primary" style={{ fontWeight: 600 }}>En campo</span>
             </div>
           </div>
         </div>
@@ -134,7 +97,7 @@ export function Home() {
       <div className="p-4 space-y-6">
         {/* Metrics Grid */}
         <div className="grid grid-cols-2 gap-3">
-          {metrics.map((metric, index) => (
+          {metricas.map((metric, index) => (
             <div key={index} className="bg-white rounded-xl p-4 border border-black/10">
               <div className="text-2xl mb-1" style={{ fontWeight: 600 }}>{metric.value}</div>
               <div className="text-xs text-gray-600">{metric.label}</div>
@@ -143,13 +106,13 @@ export function Home() {
         </div>
 
         {/* Próxima Recomendación Banner */}
-        <div className="bg-[#FAEEDA] rounded-xl p-4 flex items-start gap-3">
-          <Calendar className="w-5 h-5 text-[#854F0B] flex-shrink-0 mt-0.5" />
+        <div className="bg-agro-warning-fill rounded-xl p-4 flex items-start gap-3">
+          <Calendar className="w-5 h-5 text-agro-warning-text flex-shrink-0 mt-0.5" />
           <div>
-            <div className="text-sm text-[#854F0B] mb-1" style={{ fontWeight: 600 }}>
+            <div className="text-sm text-agro-warning-text mb-1" style={{ fontWeight: 600 }}>
               Próxima recomendación
             </div>
-            <div className="text-sm text-[#854F0B]">
+            <div className="text-sm text-agro-warning-text">
               20 Mar · Chlorothalonil + Mancozeb
             </div>
           </div>
@@ -159,32 +122,32 @@ export function Home() {
         <div>
           <h2 className="mb-3 text-gray-900" style={{ fontWeight: 600 }}>Actividad reciente</h2>
           <div className="space-y-3">
-            {recentActivity.map((activity) => (
+            {aplicaciones.map((activity) => (
               <Link
                 key={activity.id}
                 to={`/historial/${activity.id}`}
-                className="block bg-white rounded-xl p-4 border border-black/10"
+                className="block bg-white rounded-xl p-4 border border-border"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
                         {activity.date}
                       </span>
                       {activity.status === "Completado" ? (
-                        <span className="text-xs text-[#0D5A8F] bg-[#E3F2FD] px-2 py-1 rounded flex items-center gap-1">
+                        <span className="text-xs text-agro-success-text bg-agro-success-fill px-2 py-1 rounded flex items-center gap-1">
                           <CheckCircle className="w-3 h-3" />
                           Completado
                         </span>
                       ) : (
-                        <span className="text-xs text-[#854F0B] bg-[#FAEEDA] px-2 py-1 rounded flex items-center gap-1">
+                        <span className="text-xs text-agro-warning-text bg-agro-warning-fill px-2 py-1 rounded flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           Pendiente
                         </span>
                       )}
                     </div>
                     <div className="text-sm mb-1" style={{ fontWeight: 600 }}>{activity.product}</div>
-                    <div className="text-xs text-gray-600">{activity.pest}</div>
+                    <div className="text-xs text-muted-foreground">{activity.pest}</div>
                   </div>
                 </div>
               </Link>
@@ -211,8 +174,8 @@ export function Home() {
                   className="block bg-white rounded-xl p-4 border border-black/10"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-[#E3F2FD] rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Icon className="w-5 h-5 text-[#2B7AB5]" />
+                    <div className="w-10 h-10 bg-agro-success-fill rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Icon className="w-5 h-5 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -245,7 +208,7 @@ export function Home() {
       {/* FAB Button */}
       <Link
         to="/nueva-aplicacion"
-        className="fixed bottom-[calc(72px+34px+16px)] right-4 w-14 h-14 bg-[#2B7AB5] rounded-full flex items-center justify-center shadow-lg z-10 max-w-[390px] hover:bg-[#1E88C7] transition-colors"
+        className="fixed bottom-[calc(72px+34px+16px)] right-4 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg z-10 max-w-[390px] hover:bg-agro-blue transition-colors"
       >
         <Plus className="w-6 h-6 text-white" />
       </Link>

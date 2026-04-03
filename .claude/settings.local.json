@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(pnpm run:*)",
+      "Bash(export PATH=\"$PATH:/c/Users/vongo/AppData/Roaming/npm:/c/Program Files/nodejs\")",
+      "Bash(where pnpm:*)",
+      "Read(//c/Users/vongo/**)",
+      "Bash(npx --version)",
+      "Bash(npx vite:*)"
     ]
   }
 }

@@ -27,7 +27,7 @@
   --ring: oklch(0.708 0 0);
   
   /* AgroCampo Brand Colors - Paleta de Inocuidad Vegetal */
-  --agro-green: #2B7AB5;
+  --agro-primary: #2B7AB5;
   --agro-red: #C02A2A;
   --agro-blue: #1E88C7;
   --agro-amber: #F5A623;
@@ -117,7 +117,7 @@
   --color-ring: var(--ring);
   
   /* AgroCampo Brand Colors */
-  --color-agro-green: var(--agro-green);
+  --color-agro-primary: var(--agro-primary);
   --color-agro-red: var(--agro-red);
   --color-agro-blue: var(--agro-blue);
   --color-agro-amber: var(--agro-amber);

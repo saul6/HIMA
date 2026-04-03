@@ -1,17 +1,12 @@
 import { FormField } from "../FormField";
 import { FormSelect } from "../FormSelect";
+import { huertos } from "@/data/mock";
 
 interface Props {
   formData: any;
   updateFormData: (data: any) => void;
   onNext: () => void;
 }
-
-const huertoOptions = [
-  { value: "el-valle", label: "Huerto El Valle", code: "HV-001" },
-  { value: "las-flores", label: "Huerto Las Flores", code: "HF-002" },
-  { value: "san-jose", label: "Huerto San José", code: "SJ-003" },
-];
 
 const phenologyOptions = [
   { value: "establecimiento", label: "Establecimiento" },
@@ -24,10 +19,12 @@ const phenologyOptions = [
 
 export function Step1ParcelaYCultivo({ formData, updateFormData, onNext }: Props) {
   const handleHuertoChange = (value: string) => {
-    const selected = huertoOptions.find((h) => h.value === value);
+    const selected = huertos.find((h) => h.value === value);
+    // Auto-rellena código de huerto y cultivo al seleccionar el rancho
     updateFormData({
       huerto: value,
       huertoCode: selected?.code || "",
+      crop: selected?.cultivo || formData.crop,
     });
   };
 
@@ -48,10 +45,10 @@ export function Step1ParcelaYCultivo({ formData, updateFormData, onNext }: Props
       />
 
       <FormSelect
-        label="Huerto / Ranch"
+        label="Huerto / Rancho"
         value={formData.huerto}
         onChange={handleHuertoChange}
-        options={huertoOptions}
+        options={huertos}
       />
 
       <FormField
