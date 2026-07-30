@@ -31,7 +31,7 @@ const ESTADO_CHIP: Record<Estado, { bg: string; text: string }> = {
   'Reemplazo':   { bg: 'var(--agro-danger-fill)',  text: 'var(--agro-danger-text)'  },
 }
 
-// TODO: poblar SET_MATERIALES_DEFAULT con la lista oficial de Hima (área + material).
+// TODO: poblar SET_MATERIALES_DEFAULT con la lista oficial (área + material).
 const SET_MATERIALES_DEFAULT: { area: string; material: string }[] = []
 
 // ── Tipos ────────────────────────────────────────────────────────────────────

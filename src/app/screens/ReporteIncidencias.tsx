@@ -18,7 +18,7 @@ import { generarReporteIncidenciasConsolidadoPDF } from '@/lib/pdf/m13/generarRe
 // ── Constantes ────────────────────────────────────────────────────────────────
 
 const TITULO_MODULO = 'Reporte de Incidencias'
-const CLAVE_MODULO = 'HIMA: Inocuidad Alimentaria · Por evento'
+const CLAVE_MODULO = 'M.A.D.Y · Por evento'
 const MAX_FOTOS_AVISO = 6
 const MAX_FOTO_BYTES = 5.5 * 1024 * 1024
 

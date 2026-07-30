@@ -147,7 +147,7 @@ export function Perfil() {
             <div className="text-sm mb-1" style={{ fontWeight: 600 }}><MadyLogo theme="light" /></div>
             <div className="text-xs text-muted-foreground mb-1">Versión 2.1.0</div>
             <div className="text-xs text-muted-foreground">
-              © 2026 DuoMind Solutions &amp; Hima Inocuidad Alimentaria
+              © 2026 DuoMind Solutions
             </div>
           </div>
         </div>
