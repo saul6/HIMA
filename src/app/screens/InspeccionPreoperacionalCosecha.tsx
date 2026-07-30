@@ -19,6 +19,7 @@ import { supabase } from '@/lib/supabase'
 import type { M11ItemCatalogo } from '@/types/database.types'
 import { generarPreoperacionalPDF } from '@/lib/pdf/m11/generarPreoperacionalPDF'
 import { generarPreoperacionalConsolidadoPDF } from '@/lib/pdf/m11/generarPreoperacionalConsolidadoPDF'
+import { useModulosContext } from '@/context/ModulosContext'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -164,6 +165,7 @@ export function InspeccionPreoperacionalCosecha() {
   const { profile, user } = useAuthContext()
   const { ranchos } = useRanchos()
   const { registros, loading, error, refetch } = useM11Preoperacional()
+  const { terminosSitio } = useModulosContext()
 
   // ── Navegación interna ──
   const [vista, setVista] = useState<Vista>('lista')
@@ -304,7 +306,7 @@ export function InspeccionPreoperacionalCosecha() {
   async function handleCrearRegistro() {
     if (!nRanchoId) { setNErrRancho(true); return }
     if (!profile?.org_id) { toast.error('Sin organización activa'); return }
-    if (nYaExiste) { toast.warning('Ya existe un registro para este mes y rancho'); return }
+    if (nYaExiste) { toast.warning(`Ya existe un registro para este mes y ${terminosSitio.singular.toLowerCase()}`); return }
     setNGuardando(true)
     try {
       const { data, error: e } = await supabase
@@ -338,7 +340,7 @@ export function InspeccionPreoperacionalCosecha() {
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Error al crear registro'
       if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
-        toast.warning('Ya existe un registro para este mes y rancho')
+        toast.warning(`Ya existe un registro para este mes y ${terminosSitio.singular.toLowerCase()}`)
       } else {
         toast.error(msg)
       }
@@ -728,7 +730,7 @@ export function InspeccionPreoperacionalCosecha() {
                 {/* Rancho */}
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
-                    Rancho / Huerto *
+                    {terminosSitio.singular} *
                   </label>
                   <select
                     value={nRanchoId}
@@ -736,7 +738,7 @@ export function InspeccionPreoperacionalCosecha() {
                     className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     style={{ borderColor: nErrRancho ? 'var(--agro-red)' : undefined }}
                   >
-                    <option value="">Selecciona un rancho</option>
+                    <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
                     {ranchoOptions.map((o) => (
                       <option key={o.value} value={o.value}>{o.label}</option>
                     ))}
@@ -781,7 +783,7 @@ export function InspeccionPreoperacionalCosecha() {
                   >
                     <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
                     <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
-                      Ya existe un registro para este rancho y mes.
+                      Ya existe un registro para {terminosSitio.genero === 'f' ? 'esta' : 'este'} {terminosSitio.singular.toLowerCase()} y mes.
                     </p>
                   </div>
                 )}
@@ -935,7 +937,7 @@ export function InspeccionPreoperacionalCosecha() {
                 {/* Rancho */}
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
-                    Rancho *
+                    {terminosSitio.singular} *
                   </label>
                   <select
                     value={cRanchoId}
@@ -943,7 +945,7 @@ export function InspeccionPreoperacionalCosecha() {
                     className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     style={{ borderColor: cErrRancho ? 'var(--agro-red)' : undefined }}
                   >
-                    <option value="">Selecciona un rancho</option>
+                    <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
                     {ranchoOptions.map((o) => (
                       <option key={o.value} value={o.value}>{o.label}</option>
                     ))}

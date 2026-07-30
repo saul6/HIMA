@@ -13,6 +13,7 @@ import { ChevronLeft, Plus, FileDown, X, Loader2, Shield, Files, AlertTriangle }
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useBotiquin, type M6BotiquinConRancho } from '@/hooks/useBotiquin'
 import { supabase } from '@/lib/supabase'
@@ -80,12 +81,12 @@ function formatFecha(iso: string): string {
 
 // Extrae la fecha del mensaje del trigger BOTIQUIN_LIMITE_SEMANAL y arma texto amigable.
 // El trigger incluye dos fechas DD/MM/YYYY: la del último registro y la del próximo permitido.
-function parsearErrorLimite(mensaje: string): string {
+function parsearErrorLimite(mensaje: string, singular = 'rancho'): string {
   const fechas = mensaje.match(/\d{2}\/\d{2}\/\d{4}/g)
   const proxima = fechas ? fechas[fechas.length - 1] : null
   return proxima
-    ? `Ya registraste el botiquín de este rancho esta semana. Podrás registrar el siguiente a partir del ${proxima}.`
-    : 'Solo se permite un registro de botiquín por semana por rancho.'
+    ? `Ya registraste el botiquín de este ${singular} esta semana. Podrás registrar el siguiente a partir del ${proxima}.`
+    : `Solo se permite un registro de botiquín por semana por ${singular}.`
 }
 
 // ── Sub-componentes ───────────────────────────────────────────────────────────
@@ -125,6 +126,7 @@ function ArticuloToggle({
 export function BotiquinPrimerosAuxilios() {
   const navigate = useNavigate()
   const { profile } = useAuthContext()
+  const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { registros, loading, refetch } = useBotiquin()
 
@@ -245,7 +247,7 @@ export function BotiquinPrimerosAuxilios() {
     } catch (err: unknown) {
       const mensaje = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
       if (mensaje.includes('BOTIQUIN_LIMITE_SEMANAL')) {
-        toast.warning(parsearErrorLimite(mensaje), { duration: 7000 })
+        toast.warning(parsearErrorLimite(mensaje, terminosSitio.singular.toLowerCase()), { duration: 7000 })
       } else {
         toast.error(mensaje || 'No se pudo guardar el registro')
       }
@@ -298,7 +300,7 @@ export function BotiquinPrimerosAuxilios() {
 
       if (error) throw error
       if (!data || data.length === 0) {
-        toast.warning('No hay registros en ese rango de fechas para el rancho seleccionado')
+        toast.warning(`No hay registros en ese rango de fechas para ${terminosSitio.genero === 'f' ? 'la' : 'el'} ${terminosSitio.singular.toLowerCase()} seleccionado`)
         return
       }
 
@@ -514,10 +516,10 @@ export function BotiquinPrimerosAuxilios() {
             </div>
 
             <div className="overflow-y-auto p-4 space-y-4">
-              {/* Rancho */}
+              {/* Sitio */}
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
-                  RANCHO *
+                  {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
                   value={consRanchoId}
@@ -526,12 +528,12 @@ export function BotiquinPrimerosAuxilios() {
                     errConsRancho ? 'border-agro-red' : 'border-border'
                   } ${!consRanchoId ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
-                  <option value="" disabled>Seleccionar rancho</option>
+                  <option value="" disabled>Seleccionar {terminosSitio.singular.toLowerCase()}</option>
                   {ranchoOptions.map((o) => (
                     <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
                 </select>
-                {errConsRancho && <p className="text-xs text-agro-red mt-1">Selecciona un rancho</p>}
+                {errConsRancho && <p className="text-xs text-agro-red mt-1">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</p>}
               </div>
 
               {/* Desde */}
@@ -618,13 +620,13 @@ export function BotiquinPrimerosAuxilios() {
             {/* Campos */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
-              {/* Rancho */}
+              {/* Sitio */}
               <div>
                 <label
                   className="block text-xs text-muted-foreground mb-1.5"
                   style={{ fontWeight: 600 }}
                 >
-                  RANCHO *
+                  {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
                   value={form.rancho_id}
@@ -637,7 +639,7 @@ export function BotiquinPrimerosAuxilios() {
                   } ${!form.rancho_id ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
                   <option value="" disabled>
-                    Seleccionar rancho
+                    Seleccionar {terminosSitio.singular.toLowerCase()}
                   </option>
                   {ranchoOptions.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -646,7 +648,7 @@ export function BotiquinPrimerosAuxilios() {
                   ))}
                 </select>
                 {errRancho && (
-                  <p className="text-xs text-agro-red mt-1">Selecciona un rancho</p>
+                  <p className="text-xs text-agro-red mt-1">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</p>
                 )}
               </div>
 
@@ -673,7 +675,7 @@ export function BotiquinPrimerosAuxilios() {
                 <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid #F5A623' }}>
                   <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
                   <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
-                    Ya existe un registro para este rancho en los últimos 7 días.{' '}
+                    Ya existe un registro para este {terminosSitio.singular.toLowerCase()} en los últimos 7 días.{' '}
                     Próximo registro disponible:{' '}
                     <span style={{ fontWeight: 600 }}>{limiteInfo.proxima}</span>
                   </p>

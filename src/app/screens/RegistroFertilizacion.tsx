@@ -18,6 +18,7 @@ import { supabase } from '@/lib/supabase'
 import { generarFertilizacionPDF } from '@/lib/pdf/m8/generarFertilizacionPDF'
 import { generarFertilizacionConsolidadoPDF } from '@/lib/pdf/m8/generarFertilizacionConsolidadoPDF'
 import type { FertilizacionPDFProps } from '@/lib/pdf/m8/FertilizacionPDF'
+import { useModulosContext } from '@/context/ModulosContext'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -336,6 +337,7 @@ export function RegistroFertilizacion() {
   const { registros, loading, refetch: refetchRegistros } = useM8Fertilizacion()
   const { fertilizantes: catalogo, refetch: refetchCatalogo } = useFertilizantesOrg()
   const { saldos, refetch: refetchSaldos } = useInventarioFertilizantes()
+  const { terminosSitio } = useModulosContext()
 
   // ── Tab ─────────────────────────────────────────────────────────────────
   const [tab, setTab] = useState<'registros' | 'inventario'>('registros')
@@ -628,7 +630,7 @@ export function RegistroFertilizacion() {
 
       if (error) throw error
       if (!data || data.length === 0) {
-        toast.warning('No hay registros en ese rango para el rancho seleccionado')
+        toast.warning(`No hay registros en ese rango para ${terminosSitio.genero === 'f' ? 'la' : 'el'} ${terminosSitio.singular.toLowerCase()} seleccionado${terminosSitio.genero === 'f' ? 'a' : ''}`)
         return
       }
 
@@ -1032,7 +1034,7 @@ export function RegistroFertilizacion() {
                   className="text-xs text-muted-foreground mb-1 block"
                   style={{ fontWeight: 600 }}
                 >
-                  Rancho *
+                  {terminosSitio.singular} *
                 </label>
                 <select
                   value={ranchoId}
@@ -1040,13 +1042,13 @@ export function RegistroFertilizacion() {
                   className="w-full h-10 px-3 rounded-lg bg-card border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   style={errRancho ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border)' }}
                 >
-                  <option value="">Selecciona un rancho</option>
+                  <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
                   {ranchos.map((r) => (
                     <option key={r.id} value={r.id}>{r.nombre}</option>
                   ))}
                 </select>
                 {errRancho && (
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--agro-red)' }}>Rancho requerido</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--agro-red)' }}>{terminosSitio.singular} requerido{terminosSitio.genero === 'f' ? 'a' : ''}</p>
                 )}
               </div>
 
@@ -1149,7 +1151,7 @@ export function RegistroFertilizacion() {
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
-                  Rancho *
+                  {terminosSitio.singular} *
                 </label>
                 <select
                   value={consRanchoId}
@@ -1157,13 +1159,13 @@ export function RegistroFertilizacion() {
                   className="w-full h-10 px-3 rounded-lg bg-card border text-sm text-foreground focus:outline-none focus:border-primary"
                   style={errConsRancho ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border)' }}
                 >
-                  <option value="">Selecciona un rancho</option>
+                  <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
                   {ranchos.map((r) => (
                     <option key={r.id} value={r.id}>{r.nombre}</option>
                   ))}
                 </select>
                 {errConsRancho && (
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--agro-red)' }}>Rancho requerido</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--agro-red)' }}>{terminosSitio.singular} requerido{terminosSitio.genero === 'f' ? 'a' : ''}</p>
                 )}
               </div>
 
@@ -1243,7 +1245,7 @@ export function RegistroFertilizacion() {
               {/* Rancho */}
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
-                  Rancho *
+                  {terminosSitio.singular} *
                 </label>
                 <select
                   value={movRanchoId}
@@ -1256,13 +1258,13 @@ export function RegistroFertilizacion() {
                   className="w-full h-10 px-3 rounded-lg bg-card border text-sm text-foreground focus:outline-none focus:border-primary"
                   style={errMovRancho ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border)' }}
                 >
-                  <option value="">Selecciona un rancho</option>
+                  <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
                   {ranchos.map((r) => (
                     <option key={r.id} value={r.id}>{r.nombre}</option>
                   ))}
                 </select>
                 {errMovRancho && (
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--agro-red)' }}>Rancho requerido</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--agro-red)' }}>{terminosSitio.singular} requerido{terminosSitio.genero === 'f' ? 'a' : ''}</p>
                 )}
               </div>
 

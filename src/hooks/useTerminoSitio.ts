@@ -2,17 +2,35 @@ import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 
 export interface TerminosSitio {
-  singular: string
-  plural: string
+  singular: string      // "Rancho" | "Instalación" | "Sitio"
+  plural: string        // "Todos los ranchos" | "Todas las instalaciones" | "Todos los sitios"
+  pluralSimple: string  // "Ranchos" | "Instalaciones" | "Sitios"
+  agregar: string       // "Agregar rancho" | "Agregar instalación" | "Agregar sitio"
+  genero: 'm' | 'f'    // para concordancia gramatical
 }
 
 export function resolverTerminos(termino: string): TerminosSitio {
   const map: Record<string, TerminosSitio> = {
-    'Rancho':      { singular: 'Rancho',      plural: 'Todos los ranchos' },
-    'Instalación': { singular: 'Instalación', plural: 'Todas las instalaciones' },
-    'Sitio':       { singular: 'Sitio',        plural: 'Todos los sitios' },
+    'Rancho': {
+      singular: 'Rancho', plural: 'Todos los ranchos',
+      pluralSimple: 'Ranchos', agregar: 'Agregar rancho', genero: 'm',
+    },
+    'Instalación': {
+      singular: 'Instalación', plural: 'Todas las instalaciones',
+      pluralSimple: 'Instalaciones', agregar: 'Agregar instalación', genero: 'f',
+    },
+    'Sitio': {
+      singular: 'Sitio', plural: 'Todos los sitios',
+      pluralSimple: 'Sitios', agregar: 'Agregar sitio', genero: 'm',
+    },
   }
-  return map[termino] ?? { singular: termino, plural: `Todos los ${termino.toLowerCase()}s` }
+  return map[termino] ?? {
+    singular: termino,
+    plural: `Todos los ${termino.toLowerCase()}s`,
+    pluralSimple: `${termino}s`,
+    agregar: `Agregar ${termino.toLowerCase()}`,
+    genero: 'm',
+  }
 }
 
 export function useTerminoSitio() {

@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase'
 import { generarLimpiezaBanosPDF } from '@/lib/pdf/m12/generarLimpiezaBanosPDF'
 import { generarLimpiezaBanosConsolidadoPDF } from '@/lib/pdf/m12/generarLimpiezaBanosConsolidadoPDF'
 import type { LimpiezaBanosPaginaProps } from '@/lib/pdf/m12/LimpiezaBanosPDF'
+import { useModulosContext } from '@/context/ModulosContext'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -54,12 +55,12 @@ function formatFecha(iso: string): string {
   } catch { return iso }
 }
 
-function parsearErrorLimite(mensaje: string): string {
+function parsearErrorLimite(mensaje: string, singular = 'rancho'): string {
   const fechas = mensaje.match(/\d{2}\/\d{2}\/\d{4}/g)
   const proxima = fechas ? fechas[fechas.length - 1] : null
   return proxima
     ? `Ya se registró una limpieza de baños esta semana. Próxima disponible: ${proxima}.`
-    : 'Solo se permite un registro de limpieza por semana por rancho.'
+    : `Solo se permite un registro de limpieza por semana por ${singular}.`
 }
 
 // ── Sub-componentes ───────────────────────────────────────────────────────────
@@ -94,6 +95,7 @@ export function RegistroLimpiezaBanos() {
   const { profile } = useAuthContext()
   const { ranchos } = useRanchos()
   const { jornadas, loading, refetch } = useM12LimpiezaBanos()
+  const { terminosSitio } = useModulosContext()
 
   // Form principal
   const [sheetAbierto, setSheetAbierto] = useState(false)
@@ -253,7 +255,7 @@ export function RegistroLimpiezaBanos() {
     } catch (err: unknown) {
       const mensaje = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
       if (mensaje.includes('M12_LIMITE_SEMANAL')) {
-        toast.warning(parsearErrorLimite(mensaje), { duration: 7000 })
+        toast.warning(parsearErrorLimite(mensaje, terminosSitio.singular.toLowerCase()), { duration: 7000 })
       } else {
         toast.error(mensaje || 'No se pudo guardar el registro')
       }
@@ -493,7 +495,7 @@ export function RegistroLimpiezaBanos() {
             <div className="overflow-y-auto p-4 space-y-4">
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
-                  RANCHO *
+                  {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
                   value={consRanchoId}
@@ -502,12 +504,12 @@ export function RegistroLimpiezaBanos() {
                     errConsRancho ? 'border-agro-red' : 'border-border'
                   } ${!consRanchoId ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
-                  <option value="" disabled>Seleccionar rancho</option>
+                  <option value="" disabled>Seleccionar {terminosSitio.singular.toLowerCase()}</option>
                   {ranchos.map((r) => (
                     <option key={r.id} value={r.id}>{r.nombre}</option>
                   ))}
                 </select>
-                {errConsRancho && <p className="text-xs text-agro-red mt-1">Selecciona un rancho</p>}
+                {errConsRancho && <p className="text-xs text-agro-red mt-1">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</p>}
               </div>
 
               <div>
@@ -585,7 +587,7 @@ export function RegistroLimpiezaBanos() {
               {/* Rancho */}
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
-                  RANCHO *
+                  {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
                   value={ranchoId}
@@ -594,12 +596,12 @@ export function RegistroLimpiezaBanos() {
                     errRancho ? 'border-agro-red' : 'border-border'
                   } ${!ranchoId ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
-                  <option value="" disabled>Seleccionar rancho</option>
+                  <option value="" disabled>Seleccionar {terminosSitio.singular.toLowerCase()}</option>
                   {ranchos.map((r) => (
                     <option key={r.id} value={r.id}>{r.nombre}</option>
                   ))}
                 </select>
-                {errRancho && <p className="text-xs text-agro-red mt-1">Selecciona un rancho</p>}
+                {errRancho && <p className="text-xs text-agro-red mt-1">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</p>}
               </div>
 
               {/* Fecha */}
@@ -626,7 +628,7 @@ export function RegistroLimpiezaBanos() {
                 >
                   <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                   <div className="text-xs" style={{ fontWeight: 600 }}>
-                    Ya existe una limpieza registrada esta semana para este rancho.
+                    Ya existe una limpieza registrada esta semana para {terminosSitio.genero === 'f' ? 'esta' : 'este'} {terminosSitio.singular.toLowerCase()}.
                     Próxima disponible: {limiteInfo.proxima}
                   </div>
                 </div>

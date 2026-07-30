@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { ChevronLeft, Plus, Pencil, Trash2, X, Loader2, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { useModulosContext } from '@/context/ModulosContext'
 import { supabase } from '@/lib/supabase'
 import {
   getOrganizacion,
@@ -30,7 +31,8 @@ const PLAN_LABELS: Record<string, string> = {
   free: 'Free',
 }
 
-function parsearErrorLimiteRanchos(mensaje: string, plan?: string | null): string {
+function parsearErrorLimiteSitios(mensaje: string, plan?: string | null, pluralSimple = 'Ranchos'): string {
+  const pluralL = pluralSimple.toLowerCase()
   if (plan === 'pendiente' || mensaje.includes('pendiente de activación')) {
     return 'Tu cuenta está pendiente de activación. Si ya realizaste tu pago, en breve activaremos tu plan.'
   }
@@ -38,12 +40,12 @@ function parsearErrorLimiteRanchos(mensaje: string, plan?: string | null): strin
   const limite = match ? match[1] : null
   const planLabel = plan ? (PLAN_LABELS[plan] ?? plan) : null
   if (planLabel && limite) {
-    return `Tu plan ${planLabel} permite hasta ${limite} ranchos. Para agregar más, solicita un plan personalizado.`
+    return `Tu plan ${planLabel} permite hasta ${limite} ${pluralL}. Para agregar más, solicita un plan personalizado.`
   }
   if (limite) {
-    return `Has alcanzado el límite de ${limite} ranchos de tu plan. Para agregar más, solicita un plan personalizado.`
+    return `Has alcanzado el límite de ${limite} ${pluralL} de tu plan. Para agregar más, solicita un plan personalizado.`
   }
-  return 'Has alcanzado el límite de ranchos de tu plan. Para agregar más, solicita un plan personalizado.'
+  return `Has alcanzado el límite de ${pluralL} de tu plan. Para agregar más, solicita un plan personalizado.`
 }
 
 interface FormRancho {
@@ -58,6 +60,12 @@ const FORM_VACÍO: FormRancho = { nombre: '', codigo: '', cultivo: '', superfici
 export function MiOrganizacion() {
   const navigate = useNavigate()
   const { profile, productor } = useAuthContext()
+  const { terminosSitio } = useModulosContext()
+  const sTermino = terminosSitio.singular
+  const sTerminoL = sTermino.toLowerCase()
+  const sPlural = terminosSitio.pluralSimple
+  const sPluralL = sPlural.toLowerCase()
+  const sGenero = terminosSitio.genero
 
   const [organizacion, setOrganizacion] = useState<Organizacion | null>(null)
   const [ranchos, setRanchos] = useState<Rancho[]>([])
@@ -162,7 +170,7 @@ export function MiOrganizacion() {
           cultivo: form.cultivo,
           superficie_ha: parseFloat(form.superficie_ha),
         })
-        toast.success('Rancho actualizado')
+        toast.success(`${sTermino} ${sGenero === 'f' ? 'actualizada' : 'actualizado'}`)
       } else {
         const productorId = await obtenerProductorId()
         await crearRancho({
@@ -173,18 +181,18 @@ export function MiOrganizacion() {
           productor_id: productorId,
           org_id: profile!.org_id!,
         })
-        toast.success('Rancho creado')
+        toast.success(`${sTermino} ${sGenero === 'f' ? 'creada' : 'creado'}`)
       }
       cerrarSheet()
       await cargar()
     } catch (err: unknown) {
       const msg = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
       if (msg.includes('LIMITE_RANCHOS_PLAN')) {
-        toast.warning(parsearErrorLimiteRanchos(msg, organizacion?.plan), { duration: 7000 })
+        toast.warning(parsearErrorLimiteSitios(msg, organizacion?.plan, sPlural), { duration: 7000 })
       } else if (msg.includes('23505') || msg.includes('duplicate')) {
-        setErrores({ codigo: 'Ya existe un rancho con este código' })
+        setErrores({ codigo: `Ya existe ${sGenero === 'f' ? 'una' : 'un'} ${sTerminoL} con este código` })
       } else {
-        toast.error('No se pudo guardar el rancho')
+        toast.error('No se pudo guardar los cambios')
       }
     } finally {
       setGuardando(false)
@@ -206,13 +214,13 @@ export function MiOrganizacion() {
   }
 
   async function handleEliminar(rancho: Rancho) {
-    if (!window.confirm(`¿Eliminar el rancho "${rancho.nombre}"?`)) return
+    if (!window.confirm(`¿Eliminar ${sGenero === 'f' ? 'la' : 'el'} ${sTerminoL} "${rancho.nombre}"?`)) return
     try {
       await desactivarRancho(rancho.id)
-      toast.success('Rancho eliminado')
+      toast.success(`${sTermino} ${sGenero === 'f' ? 'eliminada' : 'eliminado'}`)
       await cargar()
     } catch {
-      toast.error('No se pudo eliminar el rancho')
+      toast.error(`No se pudo eliminar`)
     }
   }
 
@@ -289,7 +297,7 @@ export function MiOrganizacion() {
             <div>
               <div className="flex items-center justify-between mb-2 px-1">
                 <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
-                  RANCHOS ({ranchos.length}{limiteActual !== null ? ` de ${limiteActual}` : ''})
+                  {sPlural.toUpperCase()} ({ranchos.length}{limiteActual !== null ? ` de ${limiteActual}` : ''})
                 </p>
                 {limiteActual !== null && (
                   <p className="text-xs text-muted-foreground">
@@ -337,7 +345,7 @@ export function MiOrganizacion() {
                       className="text-sm"
                       style={{ color: 'var(--agro-warning-text)', fontWeight: 600 }}
                     >
-                      Has alcanzado el límite de tu plan ({limiteActual} ranchos).
+                      Has alcanzado el límite de tu plan ({limiteActual} {sPluralL}).
                     </p>
                     <p className="text-xs mt-0.5" style={{ color: 'var(--agro-warning-text)' }}>
                       Para agregar más, solicita un plan personalizado.
@@ -348,9 +356,9 @@ export function MiOrganizacion() {
 
               {ranchos.length === 0 ? (
                 <div className="bg-card border border-border rounded-xl p-6 text-center">
-                  <p className="text-sm text-muted-foreground">No hay ranchos registrados</p>
+                  <p className="text-sm text-muted-foreground">No hay {sPluralL} registrados</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Toca + para agregar el primero
+                    Toca + para agregar {sGenero === 'f' ? 'la primera' : 'el primero'}
                   </p>
                 </div>
               ) : (
@@ -381,14 +389,14 @@ export function MiOrganizacion() {
                         <button
                           onClick={() => abrirEditar(r)}
                           className="p-2 text-muted-foreground hover:text-primary transition-colors"
-                          aria-label="Editar rancho"
+                          aria-label={`Editar ${sTerminoL}`}
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleEliminar(r)}
                           className="p-2 text-muted-foreground hover:text-agro-red transition-colors"
-                          aria-label="Eliminar rancho"
+                          aria-label={`Eliminar ${sTerminoL}`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -417,8 +425,8 @@ export function MiOrganizacion() {
             esPendiente
               ? 'Cuenta pendiente de activación'
               : enLimite
-                ? 'Límite de ranchos alcanzado'
-                : 'Agregar rancho'
+                ? `Límite de ${sPluralL} alcanzado`
+                : terminosSitio.agregar
           }
         >
           <Plus className="w-6 h-6" />
@@ -449,7 +457,7 @@ export function MiOrganizacion() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
-                {ranchoEditando ? 'Editar rancho' : 'Nuevo rancho'}
+                {ranchoEditando ? `Editar ${sTerminoL}` : `Nuevo ${sTerminoL}`}
               </h2>
               <button onClick={cerrarSheet} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
@@ -464,12 +472,12 @@ export function MiOrganizacion() {
                   className="block text-xs text-muted-foreground mb-1.5"
                   style={{ fontWeight: 600 }}
                 >
-                  NOMBRE DEL RANCHO *
+                  NOMBRE {sGenero === 'f' ? 'DE LA' : 'DEL'} {sTermino.toUpperCase()} *
                 </label>
                 <input
                   value={form.nombre}
                   onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
-                  placeholder="Ej: Rancho El Solar"
+                  placeholder={`Ej: ${sTermino} El Solar`}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
                     errores.nombre ? 'border-agro-red' : 'border-border'
                   }`}
@@ -567,7 +575,7 @@ export function MiOrganizacion() {
                 style={{ fontWeight: 600 }}
               >
                 {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-                {ranchoEditando ? 'Guardar cambios' : 'Crear rancho'}
+                {ranchoEditando ? 'Guardar cambios' : `Crear ${sTerminoL}`}
               </button>
             </div>
           </div>
