@@ -1,96 +1,100 @@
+@import "tailwindcss";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
   --font-size: 16px;
-  --background: #F8F9FA;
-  --foreground: oklch(0.145 0 0);
+  --background: #FFFFFF;
+  --foreground: #090D15;
   --card: #FFFFFF;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #2B7AB5;
+  --card-foreground: #090D15;
+  --popover: #FFFFFF;
+  --popover-foreground: #090D15;
+  
+  /* Colores Principales del Sistem */
+  --primary: #173251;             /* Azul Oscuro Principal */
   --primary-foreground: #FFFFFF;
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
+  --secondary: #2AAD95;           /* Verde Esmeralda/Menta */
+  --secondary-foreground: #FFFFFF;
+  --muted: #F0F7FC;               /* Azul/Gris Muted claro */
+  --muted-foreground: #607286;
+  --accent: #E5F2FA;              /* Fondo de Acento (Azul Cielo Claro) */
+  --accent-foreground: #173251;
   --destructive: #C02A2A;
-  --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
+  --destructive-foreground: #FFFFFF;
+  --border: rgba(9, 13, 21, 0.1);
   --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
+  --input-background: #F3F6F9;
+  --switch-background: #CBD2D9;
   --font-weight-medium: 600;
   --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
+  --ring: #81BEE5;
   
-  /* AgroCampo Brand Colors - Paleta de Inocuidad Vegetal */
-  --agro-primary: #2B7AB5;
-  --agro-red: #C02A2A;
-  --agro-blue: #1E88C7;
-  --agro-amber: #F5A623;
-  --agro-background: #F8F9FA;
+  /* AgroCampo Brand Colors - Paleta de Inocuidad Vegetal Actualizada */
+  --agro-primary: #173251;        /* Azul Oscuro */
+  --agro-red: #C02A2A;            /* Rojo Alerta */
+  --agro-blue: #81BEE5;           /* Azul Cielo */
+  --agro-amber: #2AAD95;          /* Verde Menta / Éxito */
+  --agro-background: #F8FAFC;
   --agro-surface: #FFFFFF;
-  --agro-success-fill: #E3F2FD;
-  --agro-success-text: #0D5A8F;
-  --agro-warning-fill: #FAEEDA;
-  --agro-warning-text: #854F0B;
+  --agro-success-fill: #E6F7F4;
+  --agro-success-text: #1B7262;
+  --agro-warning-fill: #EBF5FB;
+  --agro-warning-text: #173251;
   --agro-danger-fill: #FAECE7;
   --agro-danger-text: #993C1D;
   
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --chart-1: #173251;
+  --chart-2: #2AAD95;
+  --chart-3: #81BEE5;
+  --chart-4: #090D15;
+  --chart-5: #607286;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #090D15;
+  --sidebar-primary: #173251;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #E5F2FA;
+  --sidebar-accent-foreground: #173251;
+  --sidebar-border: rgba(9, 13, 21, 0.1);
+  --sidebar-ring: #81BEE5;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
+  --background: #090D15;           /* Fondo general en modo oscuro */
+  --foreground: #FFFFFF;
+  --card: #121824;                /* Tarjetas ligeramente más claras que el fondo */
+  --card-foreground: #FFFFFF;
+  --popover: #121824;
+  --popover-foreground: #FFFFFF;
+  --primary: #81BEE5;             /* En modo oscuro destaca más el Azul Cielo */
+  --primary-foreground: #090D15;
+  --secondary: #2AAD95;
+  --secondary-foreground: #FFFFFF;
+  --muted: #1A2332;
+  --muted-foreground: #8B9BB4;
+  --accent: #173251;
+  --accent-foreground: #FFFFFF;
+  --destructive: #E54D4D;
+  --destructive-foreground: #FFFFFF;
+  --border: rgba(255, 255, 255, 0.15);
+  --input: #1A2332;
+  --ring: #2AAD95;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --chart-1: #81BEE5;
+  --chart-2: #2AAD95;
+  --chart-3: #173251;
+  --chart-4: #E5F2FA;
+  --chart-5: #8B9BB4;
+  --sidebar: #090D15;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #81BEE5;
+  --sidebar-primary-foreground: #090D15;
+  --sidebar-accent: #173251;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(255, 255, 255, 0.15);
+  --sidebar-ring: #2AAD95;
 }
 
 @theme inline {
@@ -157,11 +161,6 @@
   body {
     @apply bg-background text-foreground;
   }
-
-  /**
-  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
-  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
-  */
 
   html {
     font-size: var(--font-size);
