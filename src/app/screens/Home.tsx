@@ -2,10 +2,11 @@ import { useMemo } from 'react'
 import { Link } from 'react-router'
 import {
   Plus, CheckCircle, Clock, Loader2, TriangleAlert, Clock3,
-  Users, AlertTriangle, ChevronRight,
+  Users, AlertTriangle, ChevronRight, ClipboardList, BarChart2, FileCheck, ShieldAlert,
 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useHomeDashboard } from '@/hooks/useHomeDashboard'
+import { useDashboardResumen } from '@/hooks/useDashboardResumen'
 import { useCorreccionesPendientes } from '@/hooks/useCorreccionesPendientes'
 import { useModulosContext } from '@/context/ModulosContext'
 import { resolverIcono } from '@/app/components/iconos-modulos'
@@ -40,6 +41,7 @@ function formatDias(dias: number | null): string {
 export function Home() {
   const { profile } = useAuthContext()
   const { orgNombre, orgPlan, metricas, recientes, loading, error } = useHomeDashboard()
+  const { resumen, loading: resumenLoading } = useDashboardResumen()
   const { items: correcciones, count: countCorrecciones } = useCorreccionesPendientes()
   const { modulos, loading: loadingModulos, error: errorModulos, refetch: refetchModulos } = useModulosContext()
 
@@ -142,56 +144,141 @@ export function Home() {
           </div>
         )}
 
-        {/* Métricas */}
+        {/* Métricas — panel según sector */}
         <div className="grid grid-cols-2 gap-3">
 
-          {/* Aplicaciones este mes */}
-          <div className="bg-card rounded-xl p-4 border border-border">
-            {loading ? (
-              <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-1" />
-            ) : (
-              <div className="text-2xl mb-1" style={{ fontWeight: 600 }}>
-                {metricas.appsMes}
+          {loadingModulos ? (
+            // Skeleton genérico mientras no sabemos el sector
+            <>
+              {[0, 1, 2, 3].map(i => (
+                <div key={i} className="bg-card rounded-xl p-4 border border-border">
+                  <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-2" />
+                  <div className="h-2.5 rounded w-2/3" style={{ backgroundColor: 'var(--muted)' }} />
+                </div>
+              ))}
+            </>
+          ) : tieneAplicaciones ? (
+            // Panel campo: métricas de aplicaciones
+            <>
+              <div className="bg-card rounded-xl p-4 border border-border">
+                {loading ? (
+                  <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-1" />
+                ) : (
+                  <div className="text-2xl mb-1" style={{ fontWeight: 600 }}>
+                    {metricas.appsMes}
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground">Aplicaciones este mes</div>
               </div>
-            )}
-            <div className="text-xs text-muted-foreground">Aplicaciones este mes</div>
-          </div>
 
-          {/* Productos distintos usados */}
-          <div className="bg-card rounded-xl p-4 border border-border">
-            {loading ? (
-              <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-1" />
-            ) : (
-              <div className="text-2xl mb-1" style={{ fontWeight: 600 }}>
-                {metricas.productosDistintos}
+              <div className="bg-card rounded-xl p-4 border border-border">
+                {loading ? (
+                  <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-1" />
+                ) : (
+                  <div className="text-2xl mb-1" style={{ fontWeight: 600 }}>
+                    {metricas.productosDistintos}
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground">Productos distintos usados</div>
               </div>
-            )}
-            <div className="text-xs text-muted-foreground">Productos distintos usados</div>
-          </div>
 
-          {/* Días desde última aplicación */}
-          <div className="bg-card rounded-xl p-4 border border-border">
-            {loading ? (
-              <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-1" />
-            ) : (
-              <div className="text-2xl mb-1" style={{ fontWeight: 600 }}>
-                {formatDias(metricas.diasDesdeUltimaApp)}
+              <div className="bg-card rounded-xl p-4 border border-border">
+                {loading ? (
+                  <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-1" />
+                ) : (
+                  <div className="text-2xl mb-1" style={{ fontWeight: 600 }}>
+                    {formatDias(metricas.diasDesdeUltimaApp)}
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground">Desde última aplicación</div>
               </div>
-            )}
-            <div className="text-xs text-muted-foreground">Desde última aplicación</div>
-          </div>
 
-          {/* Superficie activa */}
-          <div className="bg-card rounded-xl p-4 border border-border">
-            {loading ? (
-              <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-1" />
-            ) : (
-              <div className="text-2xl mb-1" style={{ fontWeight: 600 }}>
-                {formatHa(metricas.superficieHa)} ha
+              <div className="bg-card rounded-xl p-4 border border-border">
+                {loading ? (
+                  <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-1" />
+                ) : (
+                  <div className="text-2xl mb-1" style={{ fontWeight: 600 }}>
+                    {formatHa(metricas.superficieHa)} ha
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground">Superficie activa</div>
               </div>
-            )}
-            <div className="text-xs text-muted-foreground">Superficie activa</div>
-          </div>
+            </>
+          ) : (
+            // Panel instalaciones: métricas de formatos y auditorías
+            <>
+              <div className="bg-card rounded-xl p-4 border border-border">
+                {resumenLoading ? (
+                  <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-1" />
+                ) : (
+                  <div className="text-2xl mb-1 flex items-end gap-1.5" style={{ fontWeight: 600 }}>
+                    <ClipboardList className="w-4 h-4 text-primary mb-1 flex-shrink-0" />
+                    {resumen?.formatos_hoy ?? 0}
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground">Formatos llenados hoy</div>
+              </div>
+
+              <div className="bg-card rounded-xl p-4 border border-border">
+                {resumenLoading ? (
+                  <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-1" />
+                ) : (
+                  <div className="text-2xl mb-1 flex items-end gap-1.5" style={{ fontWeight: 600 }}>
+                    <BarChart2 className="w-4 h-4 text-primary mb-1 flex-shrink-0" />
+                    {resumen?.cumplimiento_promedio != null
+                      ? `${Math.round(resumen.cumplimiento_promedio)}%`
+                      : '—'}
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground">Cumplimiento promedio</div>
+              </div>
+
+              <div className="bg-card rounded-xl p-4 border border-border">
+                {resumenLoading ? (
+                  <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-1" />
+                ) : (
+                  <div className="text-2xl mb-1 flex items-end gap-1.5" style={{ fontWeight: 600 }}>
+                    <FileCheck className="w-4 h-4 text-primary mb-1 flex-shrink-0" />
+                    {resumen?.formatos_mes ?? 0}
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground">Formatos este mes</div>
+              </div>
+
+              {(resumen?.hallazgos_por_corregir ?? 0) > 0 ? (
+                <Link
+                  to="/equipo/actividad"
+                  className="rounded-xl p-4 border"
+                  style={{
+                    backgroundColor: 'var(--agro-warning-fill)',
+                    borderColor: 'var(--agro-amber)',
+                  }}
+                >
+                  {resumenLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin mb-1" style={{ color: 'var(--agro-warning-text)' }} />
+                  ) : (
+                    <div className="text-2xl mb-1 flex items-end gap-1.5" style={{ fontWeight: 600, color: 'var(--agro-warning-text)' }}>
+                      <ShieldAlert className="w-4 h-4 mb-1 flex-shrink-0" style={{ color: 'var(--agro-warning-text)' }} />
+                      {resumen?.hallazgos_por_corregir ?? 0}
+                    </div>
+                  )}
+                  <div className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>Hallazgos por corregir</div>
+                </Link>
+              ) : (
+                <div className="bg-card rounded-xl p-4 border border-border">
+                  {resumenLoading ? (
+                    <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-1" />
+                  ) : (
+                    <div className="text-2xl mb-1 flex items-end gap-1.5" style={{ fontWeight: 600 }}>
+                      <ShieldAlert className="w-4 h-4 text-muted-foreground mb-1 flex-shrink-0" />
+                      0
+                    </div>
+                  )}
+                  <div className="text-xs text-muted-foreground">Hallazgos por corregir</div>
+                </div>
+              )}
+            </>
+          )}
 
         </div>
 
