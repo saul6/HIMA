@@ -29,6 +29,7 @@ const MODULO_META: Record<ModuloKey, { label: string; color: string }> = {
   M17: { label: 'BPM\'s',           color: '#4A148C' },
   M18: { label: 'HACCP',            color: '#006064' },
   M19: { label: 'Insp. Pre-operacional', color: '#004D61' },
+  M20: { label: 'Accidentes Laborales',  color: '#7B1B1B' },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -64,7 +65,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tbl = (name: string) => (supabase as any).from(name)
 
-  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19] = await Promise.all([
+  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20] = await Promise.all([
     supabase.from('aplicaciones')
       .select('id, fecha_aplicacion, rancho_id, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha_aplicacion', desde).lte('fecha_aplicacion', hasta)
@@ -125,6 +126,10 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       .select('id, rancho_id, mes, ranchos(nombre)')
       .eq('org_id', orgId).gte('mes', desdeM).lte('mes', hastaM)
       .order('mes', { ascending: false }).limit(200),
+    tbl('m20_accidentes')
+      .select('id, rancho_id, fecha, ranchos(nombre)')
+      .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
+      .order('fecha', { ascending: false }).limit(500),
   ])
 
   const todos: RegistroHistorial[] = []
@@ -355,6 +360,19 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       fecha: r.mes,
       resumen: 'Inspección pre-operacional mensual',
       pdfRef: { tipo: 'M19', id: r.id },
+    })
+  }
+
+  // M20 — una fila = un accidente laboral (Cuarto Frío)
+  for (const r of (r20 as any)?.data ?? []) {
+    todos.push({
+      key: `M20-${r.id}`,
+      modulo: 'M20',
+      rancho_id: r.rancho_id,
+      rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
+      fecha: r.fecha,
+      resumen: 'Registro de accidente laboral',
+      pdfRef: { tipo: 'M20', id: r.id },
     })
   }
 
