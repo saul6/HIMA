@@ -1,7 +1,7 @@
 import {
   SprayCan, Boxes, Library, BriefcaseMedical, Wine, Sprout, Radar, Wheat,
   ClipboardCheck, Droplets, Camera, ClipboardList, Users, Shield, ShieldCheck, Eye,
-  Package, FileCheck, Factory, Bandage, LayoutGrid, type LucideIcon,
+  Package, FileCheck, Factory, Bandage, Bug, LayoutGrid, type LucideIcon,
 } from 'lucide-react'
 
 const ICONOS: Record<string, LucideIcon> = {
@@ -25,6 +25,7 @@ const ICONOS: Record<string, LucideIcon> = {
   'file-check': FileCheck,
   'factory': Factory,
   'bandage': Bandage,
+  'bug': Bug,
   'layout-grid': LayoutGrid,
 }
 

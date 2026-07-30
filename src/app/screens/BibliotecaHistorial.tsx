@@ -30,6 +30,7 @@ const MODULO_META: Record<ModuloKey, { label: string; color: string }> = {
   M18: { label: 'HACCP',            color: '#006064' },
   M19: { label: 'Insp. Pre-operacional', color: '#004D61' },
   M20: { label: 'Accidentes Laborales',  color: '#7B1B1B' },
+  M21: { label: 'Monitoreo de Plagas',   color: '#2E5900' },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -65,7 +66,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tbl = (name: string) => (supabase as any).from(name)
 
-  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20] = await Promise.all([
+  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21] = await Promise.all([
     supabase.from('aplicaciones')
       .select('id, fecha_aplicacion, rancho_id, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha_aplicacion', desde).lte('fecha_aplicacion', hasta)
@@ -127,6 +128,10 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       .eq('org_id', orgId).gte('mes', desdeM).lte('mes', hastaM)
       .order('mes', { ascending: false }).limit(200),
     tbl('m20_accidentes')
+      .select('id, rancho_id, fecha, ranchos(nombre)')
+      .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
+      .order('fecha', { ascending: false }).limit(500),
+    tbl('m21_revision')
       .select('id, rancho_id, fecha, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
       .order('fecha', { ascending: false }).limit(500),
@@ -373,6 +378,19 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       fecha: r.fecha,
       resumen: 'Registro de accidente laboral',
       pdfRef: { tipo: 'M20', id: r.id },
+    })
+  }
+
+  // M21 — una fila = una revisión de estaciones de monitoreo (Cuarto Frío)
+  for (const r of (r21 as any)?.data ?? []) {
+    todos.push({
+      key: `M21-${r.id}`,
+      modulo: 'M21',
+      rancho_id: r.rancho_id,
+      rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
+      fecha: r.fecha,
+      resumen: 'Revisión de estaciones de monitoreo de plagas',
+      pdfRef: { tipo: 'M21', id: r.id },
     })
   }
 

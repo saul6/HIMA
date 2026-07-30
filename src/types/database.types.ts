@@ -1278,6 +1278,120 @@ export type Database = {
           orden?: number
         }
       }
+
+      m21_estaciones: {
+        Row: {
+          id: string
+          org_id: string
+          rancho_id: string
+          tipo_trampa: 'cebo' | 'interior' | 'mecanica' | 'luz'
+          numero: string
+          activo: boolean
+          orden: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          rancho_id: string
+          tipo_trampa: 'cebo' | 'interior' | 'mecanica' | 'luz'
+          numero: string
+          activo?: boolean
+          orden?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          activo?: boolean
+          orden?: number
+        }
+      }
+
+      m21_estado_trampa: {
+        Row: { codigo: string; label: string }
+        Insert: { codigo: string; label: string }
+        Update: { codigo?: string; label?: string }
+      }
+
+      m21_condiciones: {
+        Row: { codigo: string; label: string }
+        Insert: { codigo: string; label: string }
+        Update: { codigo?: string; label?: string }
+      }
+
+      m21_plagas: {
+        Row: { codigo: string; label: string }
+        Insert: { codigo: string; label: string }
+        Update: { codigo?: string; label?: string }
+      }
+
+      m21_revision: {
+        Row: {
+          id: string
+          org_id: string
+          rancho_id: string
+          fecha: string
+          inspector_nombre: string | null
+          observaciones: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          rancho_id: string
+          fecha: string
+          inspector_nombre?: string | null
+          observaciones?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          observaciones?: string | null
+        }
+      }
+
+      m21_resultado: {
+        Row: {
+          id: string
+          revision_id: string
+          estacion_id: string
+          org_id: string
+          tipo_consumo: string | null
+          estado_trampa: string | null
+          condiciones: string | null
+          senalizacion: string | null
+          estado_equipo: string | null
+          estado_lampara: string | null
+          plaga_detectada: string[]
+          incidencia_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          revision_id: string
+          estacion_id: string
+          org_id: string
+          tipo_consumo?: string | null
+          estado_trampa?: string | null
+          condiciones?: string | null
+          senalizacion?: string | null
+          estado_equipo?: string | null
+          estado_lampara?: string | null
+          plaga_detectada?: string[]
+          incidencia_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          tipo_consumo?: string | null
+          estado_trampa?: string | null
+          condiciones?: string | null
+          senalizacion?: string | null
+          estado_equipo?: string | null
+          estado_lampara?: string | null
+          plaga_detectada?: string[]
+          incidencia_id?: string | null
+        }
+      }
     }
     Views: {
       v_inventario_saldo_rancho: {
