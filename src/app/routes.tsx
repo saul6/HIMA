@@ -26,6 +26,7 @@ import { AuditoriaGranja } from "./screens/AuditoriaGranja";
 import { AuditoriaCosecha } from "./screens/AuditoriaCosecha";
 import { AuditoriaBPM } from "./screens/AuditoriaBPM";
 import { AuditoriaHACCP } from "./screens/AuditoriaHACCP";
+import { InspeccionPreoperacionalCooler } from "./screens/InspeccionPreoperacionalCooler";
 import { RequireModulo } from "./components/RequireModulo";
 import TestSupabase from "./screens/TestSupabase";
 
@@ -83,6 +84,7 @@ export const router = createBrowserRouter([
                   { path: "auditoria-cosecha", Component: AuditoriaCosecha },
                   { path: "bpm", Component: AuditoriaBPM },
                   { path: "haccp", Component: AuditoriaHACCP },
+                  { path: "inspeccion-preoperacional", Component: InspeccionPreoperacionalCooler },
                 ],
               },
             ],

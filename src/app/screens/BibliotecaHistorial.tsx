@@ -28,6 +28,7 @@ const MODULO_META: Record<ModuloKey, { label: string; color: string }> = {
   M16: { label: 'Auditoría Cuadrilla', color: '#37474F' },
   M17: { label: 'BPM\'s',           color: '#4A148C' },
   M18: { label: 'HACCP',            color: '#006064' },
+  M19: { label: 'Insp. Pre-operacional', color: '#004D61' },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -63,7 +64,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tbl = (name: string) => (supabase as any).from(name)
 
-  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18] = await Promise.all([
+  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19] = await Promise.all([
     supabase.from('aplicaciones')
       .select('id, fecha_aplicacion, rancho_id, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha_aplicacion', desde).lte('fecha_aplicacion', hasta)
@@ -120,6 +121,10 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       .select('id, rancho_id, fecha, porcentaje, estado, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
       .order('fecha', { ascending: false }).limit(200),
+    tbl('m19_registro_mensual')
+      .select('id, rancho_id, mes, ranchos(nombre)')
+      .eq('org_id', orgId).gte('mes', desdeM).lte('mes', hastaM)
+      .order('mes', { ascending: false }).limit(200),
   ])
 
   const todos: RegistroHistorial[] = []
@@ -337,6 +342,19 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       fecha: r.fecha,
       resumen: `Auditoría HACCP${pct}`,
       pdfRef: { tipo: 'M18', id: r.id },
+    })
+  }
+
+  // M19 — una fila = un registro mensual (Cuarto Frío)
+  for (const r of (r19 as any)?.data ?? []) {
+    todos.push({
+      key: `M19-${r.id}`,
+      modulo: 'M19',
+      rancho_id: r.rancho_id,
+      rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
+      fecha: r.mes,
+      resumen: 'Inspección pre-operacional mensual',
+      pdfRef: { tipo: 'M19', id: r.id },
     })
   }
 
