@@ -88,9 +88,6 @@ export function Home() {
       <header className="bg-card border-b border-border px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-xs" style={{ fontWeight: 600 }}>AC</span>
-            </div>
             <MadyLogo theme="light" className="text-sm" style={{ fontWeight: 600 }} />
           </div>
           <div className="text-right min-w-0 flex-1 ml-3">
