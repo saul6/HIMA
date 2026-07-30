@@ -87,16 +87,21 @@ export function Home() {
       {/* Header */}
       <header className="bg-card border-b border-border px-4 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <MadyLogo theme="light" className="text-sm" style={{ fontWeight: 600 }} />
+          <div className="flex items-center justify-between gap-3 w-full">
+          {/* Contenedor del logo para asegurar que quede bien alineado a la izquierda */}
+          <div className="flex items-center flex-shrink-0">
+            <MadyLogo theme="light" className="h-15 w-auto flex-shrink-0" />
           </div>
+
+          {/* Información del usuario y organización */}
           <div className="text-right min-w-0 flex-1 ml-3">
-            <div className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+            <div className="text-sm text-foreground truncate font-semibold">
               {loading ? '...' : nombreUsuario}
             </div>
             <div className="text-xs text-muted-foreground truncate">
               {loading ? '...' : nombreOrg}
             </div>
+          </div>
           </div>
         </div>
       </header>
