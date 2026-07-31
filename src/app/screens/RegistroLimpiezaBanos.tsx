@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM12LimpiezaBanos, type M12Jornada } from '@/hooks/useM12LimpiezaBanos'
+import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { generarLimpiezaBanosPDF } from '@/lib/pdf/m12/generarLimpiezaBanosPDF'
 import { generarLimpiezaBanosConsolidadoPDF } from '@/lib/pdf/m12/generarLimpiezaBanosConsolidadoPDF'
@@ -97,6 +98,7 @@ export function RegistroLimpiezaBanos() {
   const { ranchos } = useRanchos()
   const { jornadas, loading, refetch } = useM12LimpiezaBanos()
   const { terminosSitio } = useModulosContext()
+  const orgNombre = useOrganizacion(profile?.org_id)
 
   // Form principal
   const [sheetAbierto, setSheetAbierto] = useState(false)
@@ -388,6 +390,9 @@ export function RegistroLimpiezaBanos() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
+                      {orgNombre && (
+                        <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+                      )}
                       <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
                         {jornada.rancho_nombre}
                       </span>

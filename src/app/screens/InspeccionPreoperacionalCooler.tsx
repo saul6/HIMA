@@ -28,6 +28,7 @@ import {
 import {
   generarInspeccionPreoperacionalCoolerConsolidadoPDF,
 } from '@/lib/pdf/m19/generarInspeccionPreoperacionalCoolerConsolidadoPDF'
+import { useOrganizacion } from '@/hooks/useOrganizacion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -248,6 +249,7 @@ export function InspeccionPreoperacionalCooler() {
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { registros, loading, error, refetch } = useM19InspeccionPreoperacional()
+  const orgNombre = useOrganizacion(profile?.org_id)
 
   // ── Navegación interna ──
   const [vista, setVista] = useState<Vista>('lista')
@@ -719,8 +721,13 @@ export function InspeccionPreoperacionalCooler() {
                           {formatMesLabel(reg.mes)}
                         </span>
                       </div>
-                      <div className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
-                        {reg.rancho_nombre}
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {orgNombre && (
+                          <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+                        )}
+                        <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                          {reg.rancho_nombre}
+                        </span>
                       </div>
                       {reg.realizado_por_nombre && (
                         <div className="text-xs text-muted-foreground mt-0.5">

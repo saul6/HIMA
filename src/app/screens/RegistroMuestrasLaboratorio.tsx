@@ -6,6 +6,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM22Muestras, useM22Microorganismos, type M22Muestra } from '@/hooks/useM22Muestras'
+import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { generarMuestrasLaboratorioPDF } from '@/lib/pdf/m22/generarMuestrasLaboratorioPDF'
 import { generarMuestrasLaboratorioConsolidadoPDF } from '@/lib/pdf/m22/generarMuestrasLaboratorioConsolidadoPDF'
@@ -47,6 +48,7 @@ export function RegistroMuestrasLaboratorio() {
   const { ranchos } = useRanchos(orgId)
   const { muestras, loading, refetch } = useM22Muestras(orgId)
   const { microorganismos } = useM22Microorganismos()
+  const orgNombre = useOrganizacion(orgId)
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
@@ -198,7 +200,12 @@ export function RegistroMuestrasLaboratorio() {
           <div key={m.id} className="bg-card border border-border rounded-[0.625rem] p-4">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold">{m.rancho_nombre}</p>
+                <div className="flex items-center gap-1 flex-wrap mb-0.5">
+                  {orgNombre && (
+                    <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+                  )}
+                  <span className="text-sm font-semibold">{m.rancho_nombre}</span>
+                </div>
                 <p className="text-xs text-muted-foreground">{formatFecha(m.fecha_muestreo)}{m.hora_muestreo ? ` · ${m.hora_muestreo}` : ''}</p>
                 <p className="text-xs mt-1 line-clamp-2">{m.descripcion_muestra}</p>
                 <p className="text-xs text-muted-foreground mt-1">{m.laboratorio}</p>

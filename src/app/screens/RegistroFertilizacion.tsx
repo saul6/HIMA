@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM8Fertilizacion, type M8Registro } from '@/hooks/useM8Fertilizacion'
+import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { useFertilizantesOrg, type FertilizanteOrgItem } from '@/hooks/useFertilizantesOrg'
 import { useInventarioFertilizantes } from '@/hooks/useInventarioFertilizantes'
 import { supabase } from '@/lib/supabase'
@@ -339,6 +340,7 @@ export function RegistroFertilizacion() {
   const { fertilizantes: catalogo, refetch: refetchCatalogo } = useFertilizantesOrg()
   const { saldos, refetch: refetchSaldos } = useInventarioFertilizantes()
   const { terminosSitio } = useModulosContext()
+  const orgNombre = useOrganizacion(profile?.org_id)
 
   // ── Tab ─────────────────────────────────────────────────────────────────
   const [tab, setTab] = useState<'registros' | 'inventario'>('registros')
@@ -884,6 +886,9 @@ export function RegistroFertilizacion() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          {orgNombre && (
+                            <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+                          )}
                           <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
                             {reg.rancho_nombre}
                           </span>

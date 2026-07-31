@@ -13,6 +13,7 @@ import { useM13Incidencias, type M13ReporteConRancho } from '@/hooks/useM13Incid
 import { supabase } from '@/lib/supabase'
 import { getSignedUrls, borrarFotos, subirFoto } from '@/lib/storage/incidenciasStorage'
 import { generarReporteIncidenciasPDF } from '@/lib/pdf/m13/generarReporteIncidenciasPDF'
+import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { generarReporteIncidenciasConsolidadoPDF } from '@/lib/pdf/m13/generarReporteIncidenciasConsolidadoPDF'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -257,6 +258,7 @@ export function ReporteIncidencias() {
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { reportes, loading, refetch } = useM13Incidencias()
+  const orgNombre = useOrganizacion(profile?.org_id)
 
   // Sheet formulario
   const [sheetAbierto, setSheetAbierto] = useState(false)
@@ -571,7 +573,10 @@ export function ReporteIncidencias() {
                       className="flex-1 min-w-0 cursor-pointer"
                       onClick={() => setExpandido(abierto ? null : r.id)}
                     >
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        {orgNombre && (
+                          <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+                        )}
                         <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
                           {r.rancho_nombre}
                         </span>

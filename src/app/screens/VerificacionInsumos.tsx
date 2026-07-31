@@ -23,6 +23,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { generarVerificacionInsumosPDF } from '@/lib/pdf/m23/generarVerificacionInsumosPDF'
 import { generarVerificacionInsumosConsolidadoPDF } from '@/lib/pdf/m23/generarVerificacionInsumosConsolidadoPDF'
+import { useOrganizacion } from '@/hooks/useOrganizacion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -191,6 +192,7 @@ export function VerificacionInsumos() {
   const { ranchos } = useRanchos()
   const { registros, loading, error, refetch } = useM23VerificacionInsumos()
   const orgId = profile?.org_id ?? null
+  const orgNombre = useOrganizacion(orgId)
   const termino = terminosSitio.singular
 
   // ── Navegación interna ──
@@ -730,7 +732,12 @@ export function VerificacionInsumos() {
                           {formatMesLabel(reg.mes)}
                         </span>
                       </div>
-                      <div className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</div>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {orgNombre && (
+                          <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+                        )}
+                        <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</span>
+                      </div>
                       {reg.verifico_nombre && (
                         <div className="text-xs text-muted-foreground mt-0.5">Verificó: {reg.verifico_nombre}</div>
                       )}

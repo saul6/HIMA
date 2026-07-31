@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM10CosechaLiberacion, type M10Registro } from '@/hooks/useM10CosechaLiberacion'
+import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { generarCosechaLiberacionPDF } from '@/lib/pdf/m10/generarCosechaLiberacionPDF'
 import { generarCosechaLiberacionConsolidadoPDF } from '@/lib/pdf/m10/generarCosechaLiberacionConsolidadoPDF'
@@ -104,6 +105,7 @@ export function RegistroCosechaLiberacion() {
   const { ranchos } = useRanchos()
   const { registros, loading, refetch } = useM10CosechaLiberacion()
   const { terminosSitio } = useModulosContext()
+  const orgNombre = useOrganizacion(profile?.org_id)
 
   // Perfiles de la org para el select de encargado
   const [perfiles, setPerfiles] = useState<PerfilItem[]>([])
@@ -421,6 +423,9 @@ export function RegistroCosechaLiberacion() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
+                      {orgNombre && (
+                        <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+                      )}
                       <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
                         {reg.rancho_nombre}
                       </span>

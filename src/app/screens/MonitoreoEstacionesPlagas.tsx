@@ -18,6 +18,7 @@ import {
   type TipoTrampa,
 } from '@/hooks/useM21EstacionesRancho'
 import { useM21MonitoreoEstaciones, type M21RevisionConResultados } from '@/hooks/useM21MonitoreoEstaciones'
+import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { generarMonitoreoEstacionesPDF } from '@/lib/pdf/m21/generarMonitoreoEstacionesPDF'
 import { generarMonitoreoEstacionesConsolidadoPDF } from '@/lib/pdf/m21/generarMonitoreoEstacionesConsolidadoPDF'
@@ -100,10 +101,12 @@ function RevisionCard({
   rev,
   onPDF,
   cargandoPDF,
+  orgNombre,
 }: {
   rev: M21RevisionConResultados
   onPDF: (id: string) => void
   cargandoPDF: string | null
+  orgNombre: string | null
 }) {
   const conHallazgo = rev.resultados.filter(r => r.incidencia_id).length
   const totalEst = rev.resultados.length
@@ -113,7 +116,10 @@ function RevisionCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-col gap-1 flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold bg-[var(--agro-success-fill)] text-[var(--agro-success-text)] px-2 py-0.5 rounded-full truncate max-w-[140px]">
+            {orgNombre && (
+              <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+            )}
+            <span className="text-xs font-semibold bg-[var(--agro-success-fill)] text-[var(--agro-success-text)] px-2 py-0.5 rounded-full truncate">
               {rev.rancho_nombre}
             </span>
             <span className="text-xs text-muted-foreground">{formatFecha(rev.fecha)}</span>
@@ -405,6 +411,7 @@ export function MonitoreoEstacionesPlagas() {
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { revisiones, loading, error, refetch } = useM21MonitoreoEstaciones()
+  const orgNombre = useOrganizacion(profile?.org_id)
 
   // ── Catálogos ───────────────────────────────────────────────────────────────
   const [catalogoEstado, setCatalogoEstado] = useState<CatCodigo[]>([])
@@ -773,6 +780,7 @@ export function MonitoreoEstacionesPlagas() {
               rev={rev}
               onPDF={handlePDF}
               cargandoPDF={cargandoPDF}
+              orgNombre={orgNombre}
             />
           ))}
         </div>

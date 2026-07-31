@@ -16,6 +16,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useBotiquin, type M6BotiquinConRancho } from '@/hooks/useBotiquin'
+import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { generarBotiquinPDF } from '@/lib/pdf/m6/generarBotiquinPDF'
 import { generarBotiquinConsolidadoPDF } from '@/lib/pdf/m6/generarBotiquinConsolidadoPDF'
@@ -129,6 +130,7 @@ export function BotiquinPrimerosAuxilios() {
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { registros, loading, refetch } = useBotiquin()
+  const orgNombre = useOrganizacion(profile?.org_id)
 
   const [sheetAbierto, setSheetAbierto] = useState(false)
   const [form, setForm] = useState<FormState>({ ...FORM_INICIAL, fecha_verificacion: hoy() })
@@ -412,7 +414,10 @@ export function BotiquinPrimerosAuxilios() {
                 )}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      {orgNombre && (
+                        <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+                      )}
                       <span
                         className="text-sm text-foreground truncate"
                         style={{ fontWeight: 600 }}

@@ -10,6 +10,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM20Accidentes, type M20AccidenteConFotos } from '@/hooks/useM20Accidentes'
+import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { subirFoto, borrarFotos, getSignedUrls } from '@/lib/storage/incidenciasStorage'
 import { generarAccidenteLaboralPDF } from '@/lib/pdf/m20/generarAccidenteLaboralPDF'
@@ -137,10 +138,12 @@ function AccidenteCard({
   acc,
   onPDF,
   cargandoPDF,
+  orgNombre,
 }: {
   acc: M20AccidenteConFotos
   onPDF: (id: string) => void
   cargandoPDF: string | null
+  orgNombre: string | null
 }) {
   const fotoPaths = acc.fotos.map((f) => f.storage_path)
 
@@ -149,7 +152,10 @@ function AccidenteCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-col gap-1 flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold bg-[var(--agro-success-fill)] text-[var(--agro-success-text)] px-2 py-0.5 rounded-full truncate max-w-[140px]">
+            {orgNombre && (
+              <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+            )}
+            <span className="text-xs font-semibold bg-[var(--agro-success-fill)] text-[var(--agro-success-text)] px-2 py-0.5 rounded-full truncate">
               {acc.rancho_nombre}
             </span>
             <span className="text-xs text-muted-foreground">{formatFecha(acc.fecha)}</span>
@@ -259,6 +265,7 @@ export function RegistroAccidentesLaborales() {
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { accidentes, loading, error, refetch } = useM20Accidentes()
+  const orgNombre = useOrganizacion(profile?.org_id)
 
   // Sheets
   const [sheetNuevo, setSheetNuevo] = useState(false)
@@ -514,6 +521,7 @@ export function RegistroAccidentesLaborales() {
               acc={acc}
               onPDF={handlePDF}
               cargandoPDF={cargandoPDF}
+              orgNombre={orgNombre}
             />
           ))}
         </div>

@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useVidrioPlastico, type M7Inspeccion } from '@/hooks/useVidrioPlastico'
+import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { generarVidrioPlasticoPDF } from '@/lib/pdf/m7/generarVidrioPlasticoPDF'
 import { generarVidrioPlasticoConsolidadoPDF } from '@/lib/pdf/m7/generarVidrioPlasticoConsolidadoPDF'
@@ -234,6 +235,7 @@ export function InspeccionVidrioPlastico() {
   const { ranchos } = useRanchos()
   const { inspecciones, loading, refetch } = useVidrioPlastico()
   const { terminosSitio } = useModulosContext()
+  const orgNombre = useOrganizacion(profile?.org_id)
 
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }))
 
@@ -728,6 +730,9 @@ export function InspeccionVidrioPlastico() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      {orgNombre && (
+                        <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+                      )}
                       <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
                         {insp.rancho_nombre}
                       </span>
