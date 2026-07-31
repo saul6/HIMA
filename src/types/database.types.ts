@@ -1448,6 +1448,106 @@ export type Database = {
           solicitante_nombre?: string
         }
       }
+      m23_insumos: {
+        Row: {
+          id: string
+          org_id: string
+          rancho_id: string
+          area: string
+          insumo: string
+          activo: boolean
+          orden: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          rancho_id: string
+          area: string
+          insumo: string
+          activo?: boolean
+          orden?: number
+          created_at?: string
+        }
+        Update: {
+          area?: string
+          insumo?: string
+          activo?: boolean
+          orden?: number
+        }
+      }
+      m23_registro_mensual: {
+        Row: {
+          id: string
+          org_id: string
+          rancho_id: string
+          mes: string
+          verifico_nombre: string | null
+          autorizo_nombre: string | null
+          observaciones: string | null
+          created_at: string
+          creado_por: string | null
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          rancho_id: string
+          mes: string
+          verifico_nombre?: string | null
+          autorizo_nombre?: string | null
+          observaciones?: string | null
+          created_at?: string
+        }
+        Update: {
+          verifico_nombre?: string | null
+          autorizo_nombre?: string | null
+          observaciones?: string | null
+        }
+      }
+      m23_dias_inspeccion: {
+        Row: {
+          id: string
+          registro_id: string
+          org_id: string
+          fecha: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          registro_id: string
+          org_id: string
+          fecha: string
+          created_at?: string
+        }
+        Update: Record<string, never>
+      }
+      m23_resultados: {
+        Row: {
+          id: string
+          dia_id: string
+          insumo_id: string
+          org_id: string
+          valor: string
+          codigo_correctivo: string | null
+          incidencia_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          dia_id: string
+          insumo_id: string
+          org_id: string
+          valor: string
+          codigo_correctivo?: string | null
+          incidencia_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          valor?: string
+          codigo_correctivo?: string | null
+          incidencia_id?: string | null
+        }
+      }
     }
     Views: {
       v_inventario_saldo_rancho: {

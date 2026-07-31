@@ -30,6 +30,7 @@ import { InspeccionPreoperacionalCooler } from "./screens/InspeccionPreoperacion
 import { RegistroAccidentesLaborales } from "./screens/RegistroAccidentesLaborales";
 import { MonitoreoEstacionesPlagas } from "./screens/MonitoreoEstacionesPlagas";
 import { RegistroMuestrasLaboratorio } from "./screens/RegistroMuestrasLaboratorio";
+import { VerificacionInsumos } from "./screens/VerificacionInsumos";
 import { RequireModulo } from "./components/RequireModulo";
 import TestSupabase from "./screens/TestSupabase";
 
@@ -91,6 +92,7 @@ export const router = createBrowserRouter([
                   { path: "accidentes", Component: RegistroAccidentesLaborales },
                   { path: "monitoreo-plagas", Component: MonitoreoEstacionesPlagas },
                   { path: "muestras-laboratorio", Component: RegistroMuestrasLaboratorio },
+                  { path: "verificacion-insumos", Component: VerificacionInsumos },
                 ],
               },
             ],

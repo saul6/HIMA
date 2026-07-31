@@ -24,10 +24,11 @@ import { generarBlobAuditoria } from './auditoria/generarAuditoriaPDF'
 import { generarBlobAccidenteLaboral } from './m20/generarAccidenteLaboralPDF'
 import { generarBlobMonitoreoEstaciones } from './m21/generarMonitoreoEstacionesPDF'
 import { generarBlobMuestrasLaboratorio } from './m22/generarMuestrasLaboratorioPDF'
+import { generarBlobVerificacionInsumos } from './m23/generarVerificacionInsumosPDF'
 
 // ── Tipos públicos ────────────────────────────────────────────────────────────
 
-export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18' | 'M19' | 'M20' | 'M21' | 'M22'
+export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18' | 'M19' | 'M20' | 'M21' | 'M22' | 'M23'
 
 export type PDFRef =
   | { tipo: 'M1'; id: string }
@@ -39,6 +40,7 @@ export type PDFRef =
   | { tipo: 'M20'; id: string }
   | { tipo: 'M21'; id: string }
   | { tipo: 'M22'; id: string }
+  | { tipo: 'M23'; id: string }
 
 export interface RegistroHistorial {
   key: string
@@ -301,6 +303,7 @@ export async function generarBlobParaRef(ref: PDFRef, orgId: string): Promise<Bl
     case 'M20': return generarBlobAccidenteLaboral(ref.id, orgId)
     case 'M21': return generarBlobMonitoreoEstaciones(ref.id, orgId)
     case 'M22': return generarBlobMuestrasLaboratorio(ref.id, orgId)
+    case 'M23': return generarBlobVerificacionInsumos(ref.id, orgId)
   }
 }
 
