@@ -25,7 +25,8 @@ export function useDashboardResumen() {
     try {
       const { data, error } = await supabase.rpc('get_dashboard_resumen')
       if (error) throw error
-      setResumen(data as DashboardResumen)
+      // La RPC devuelve un arreglo de filas; tomamos el primer elemento
+      setResumen((data as DashboardResumen[] | null)?.[0] ?? null)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error al cargar el resumen')
     } finally {
@@ -35,6 +36,15 @@ export function useDashboardResumen() {
 
   useEffect(() => {
     cargar()
+  }, [cargar])
+
+  // Refetch al recuperar visibilidad (regreso de pestaña del navegador)
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === 'visible') cargar()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
   }, [cargar])
 
   return { resumen, loading, error, refetch: cargar }
