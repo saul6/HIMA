@@ -60,12 +60,6 @@ export function Login() {
       >
         {/* Logo */}
         <div className="flex flex-col items-center gap-2 pb-1">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center"
-            style={{ background: 'var(--primary)' }}
-          >
-            <span className="text-white text-xl" style={{ fontWeight: 700, letterSpacing: '-0.5px' }}>AC</span>
-          </div>
           <h1 className="text-[19px]" style={{ fontWeight: 700 }}><MadyLogo theme="light" /></h1>
           <p className="text-[12px]" style={{ color: 'var(--muted-foreground)' }}>Inocuidad Alimentaria</p>
         </div>
