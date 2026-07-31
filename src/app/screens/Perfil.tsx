@@ -141,9 +141,6 @@ export function Perfil() {
         {/* Info de la app */}
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="text-center">
-            <div className="w-12 h-12 bg-primary rounded-lg mx-auto mb-2 flex items-center justify-center">
-              <span className="text-white text-sm" style={{ fontWeight: 600 }}>HF</span>
-            </div>
             <div className="text-sm mb-1" style={{ fontWeight: 600 }}><MadyLogo theme="light" /></div>
             <div className="text-xs text-muted-foreground mb-1">Versión 2.1.0</div>
             <div className="text-xs text-muted-foreground">
