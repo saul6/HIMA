@@ -93,6 +93,7 @@ function Toggle({
 export function RegistroLimpiezaBanos() {
   const navigate = useNavigate()
   const { profile } = useAuthContext()
+  const esSuperAdmin = profile?.rol === 'super_admin'
   const { ranchos } = useRanchos()
   const { jornadas, loading, refetch } = useM12LimpiezaBanos()
   const { terminosSitio } = useModulosContext()
@@ -254,7 +255,9 @@ export function RegistroLimpiezaBanos() {
       }
     } catch (err: unknown) {
       const mensaje = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
-      if (mensaje.includes('M12_LIMITE_SEMANAL')) {
+      if (mensaje.includes('FECHA_SOLO_HOY')) {
+        toast.warning('Solo puedes registrar con la fecha de hoy')
+      } else if (mensaje.includes('M12_LIMITE_SEMANAL')) {
         toast.warning(parsearErrorLimite(mensaje, terminosSitio.singular.toLowerCase()), { duration: 7000 })
       } else {
         toast.error(mensaje || 'No se pudo guardar el registro')
@@ -612,7 +615,9 @@ export function RegistroLimpiezaBanos() {
                 <input
                   type="date"
                   value={fecha}
-                  onChange={(e) => setFecha(e.target.value)}
+                  min={esSuperAdmin ? undefined : hoy()}
+                  max={esSuperAdmin ? undefined : hoy()}
+                  onChange={(e) => { if (esSuperAdmin) setFecha(e.target.value) }}
                   className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>

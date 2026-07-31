@@ -43,7 +43,7 @@ export function Home() {
   const { orgNombre, orgPlan, metricas, recientes, loading, error } = useHomeDashboard()
   const { resumen, loading: resumenLoading } = useDashboardResumen()
   const { items: correcciones, count: countCorrecciones } = useCorreccionesPendientes()
-  const { modulos, loading: loadingModulos, error: errorModulos, refetch: refetchModulos } = useModulosContext()
+  const { modulos, loading: loadingModulos, error: errorModulos, refetch: refetchModulos, terminosSitio } = useModulosContext()
 
   const esAdmin = profile?.rol === 'admin_org'
 
@@ -352,16 +352,33 @@ export function Home() {
               <p className="text-sm text-muted-foreground" style={{ fontWeight: 600 }}>
                 Sin actividad aún
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Registra tu primer rancho y crea una aplicación para ver el historial aquí.
-              </p>
-              <Link
-                to="/nueva-aplicacion"
-                className="inline-block mt-3 h-9 px-4 rounded-xl text-sm text-white bg-primary hover:bg-agro-blue transition-colors"
-                style={{ lineHeight: '36px', fontWeight: 600 }}
-              >
-                Nueva aplicación
-              </Link>
+              {tieneAplicaciones ? (
+                <>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Registra tu primer {terminosSitio.singular.toLowerCase()} y crea una aplicación para ver el historial aquí.
+                  </p>
+                  <Link
+                    to="/nueva-aplicacion"
+                    className="inline-block mt-3 h-9 px-4 rounded-xl text-sm text-white bg-primary hover:bg-agro-blue transition-colors"
+                    style={{ lineHeight: '36px', fontWeight: 600 }}
+                  >
+                    Nueva aplicación
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Aún no hay actividad. Registra tu primer formato para ver el historial aquí.
+                  </p>
+                  <Link
+                    to="/historial"
+                    className="inline-block mt-3 h-9 px-4 rounded-xl text-sm text-white bg-primary hover:bg-agro-blue transition-colors"
+                    style={{ lineHeight: '36px', fontWeight: 600 }}
+                  >
+                    Ver historial
+                  </Link>
+                </>
+              )}
             </div>
           ) : (
             <div className="space-y-3">

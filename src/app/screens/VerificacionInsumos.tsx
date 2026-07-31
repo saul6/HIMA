@@ -186,6 +186,7 @@ function DiaCardM23({ dia }: { dia: M23DiaConResultados }) {
 
 export function VerificacionInsumos() {
   const { profile, user } = useAuthContext()
+  const esSuperAdmin = profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { registros, loading, error, refetch } = useM23VerificacionInsumos()
@@ -377,7 +378,7 @@ export function VerificacionInsumos() {
     setDValores(init)
     setDCodigos({})
     setDIncidencias({})
-    setDFecha(registroActivo ? registroActivo.mes.slice(0, 7) + '-01' : '')
+    setDFecha(registroActivo ? (esSuperAdmin ? registroActivo.mes.slice(0, 7) + '-01' : hoy()) : '')
     setDErrFecha(false)
     setDYaExiste(false)
   }, [sheetDia, insumosActivosFiltrados.length, registroActivo])
@@ -462,7 +463,9 @@ export function VerificacionInsumos() {
       cargarDias(registroActivo.id)
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Error al guardar día'
-      if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
+      if (msg.includes('FECHA_SOLO_HOY')) {
+        toast.warning('Solo puedes registrar con la fecha de hoy')
+      } else if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
         toast.warning('Ya existe una verificación para esa fecha')
       } else {
         toast.error(msg)
@@ -916,9 +919,9 @@ export function VerificacionInsumos() {
                 <input
                   type="date"
                   value={dFecha}
-                  min={registroActivo.mes}
-                  max={ultimoDiaMes(registroActivo.mes)}
-                  onChange={(e) => { setDFecha(e.target.value); setDErrFecha(false) }}
+                  min={esSuperAdmin ? registroActivo.mes : hoy()}
+                  max={esSuperAdmin ? ultimoDiaMes(registroActivo.mes) : hoy()}
+                  onChange={(e) => { if (esSuperAdmin) { setDFecha(e.target.value); setDErrFecha(false) } }}
                   className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
                   style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
                 />

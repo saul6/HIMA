@@ -112,6 +112,7 @@ export function AuditoriaScreen({
 }: AuditoriaScreenProps) {
   const navigate = useNavigate()
   const { profile } = useAuthContext()
+  const esSuperAdmin = profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { secciones, preguntas, loadingCatalogo, auditorias, loading, refetch, cargarRespuestas, guardar } =
@@ -238,7 +239,12 @@ export function AuditoriaScreen({
       setSheetAbierto(false)
       await refetch()
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'No se pudo guardar')
+      const msg = err instanceof Error ? err.message : 'No se pudo guardar'
+      if (msg.includes('FECHA_SOLO_HOY')) {
+        toast.warning('Solo puedes registrar con la fecha de hoy')
+      } else {
+        toast.error(msg)
+      }
     } finally {
       setGuardando(false)
     }
@@ -527,7 +533,9 @@ export function AuditoriaScreen({
                 <input
                   type="date"
                   value={fecha}
-                  onChange={(e) => setFecha(e.target.value)}
+                  min={esSuperAdmin ? undefined : hoy()}
+                  max={esSuperAdmin ? undefined : hoy()}
+                  onChange={(e) => { if (esSuperAdmin) setFecha(e.target.value) }}
                   className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>

@@ -333,6 +333,7 @@ function FilaFertilizanteForm({
 export function RegistroFertilizacion() {
   const navigate = useNavigate()
   const { profile } = useAuthContext()
+  const esSuperAdmin = profile?.rol === 'super_admin'
   const { ranchos } = useRanchos()
   const { registros, loading, refetch: refetchRegistros } = useM8Fertilizacion()
   const { fertilizantes: catalogo, refetch: refetchCatalogo } = useFertilizantesOrg()
@@ -569,7 +570,11 @@ export function RegistroFertilizacion() {
       }
     } catch (err: unknown) {
       const mensaje = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
-      toast.error(mensaje || 'No se pudo guardar el registro')
+      if (mensaje.includes('FECHA_SOLO_HOY')) {
+        toast.warning('Solo puedes registrar con la fecha de hoy')
+      } else {
+        toast.error(mensaje || 'No se pudo guardar el registro')
+      }
     } finally {
       setGuardando(false)
     }
@@ -1061,7 +1066,9 @@ export function RegistroFertilizacion() {
                   <input
                     type="date"
                     value={fecha}
-                    onChange={(e) => setFecha(e.target.value)}
+                    min={esSuperAdmin ? undefined : hoy()}
+                    max={esSuperAdmin ? undefined : hoy()}
+                    onChange={(e) => { if (esSuperAdmin) setFecha(e.target.value) }}
                     className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>

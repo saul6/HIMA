@@ -253,6 +253,7 @@ function IncidenciaForm({
 export function ReporteIncidencias() {
   const navigate = useNavigate()
   const { profile } = useAuthContext()
+  const esSuperAdmin = profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { reportes, loading, refetch } = useM13Incidencias()
@@ -410,7 +411,11 @@ export function ReporteIncidencias() {
       await refetch()
     } catch (err: unknown) {
       const mensaje = err instanceof Error ? err.message : 'No se pudo guardar el reporte'
-      toast.error(mensaje, { duration: 7000 })
+      if (mensaje.includes('FECHA_SOLO_HOY')) {
+        toast.warning('Solo puedes registrar con la fecha de hoy')
+      } else {
+        toast.error(mensaje, { duration: 7000 })
+      }
 
       // Rollback: borrar Storage + reporte (cascade limpia hijas)
       try {
@@ -813,7 +818,9 @@ export function ReporteIncidencias() {
                 <input
                   type="date"
                   value={fecha}
-                  onChange={(e) => setFecha(e.target.value)}
+                  min={esSuperAdmin ? undefined : hoy()}
+                  max={esSuperAdmin ? undefined : hoy()}
+                  onChange={(e) => { if (esSuperAdmin) setFecha(e.target.value) }}
                   className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>

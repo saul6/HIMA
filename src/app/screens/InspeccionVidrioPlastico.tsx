@@ -230,6 +230,7 @@ function MaterialRowInspeccion({
 export function InspeccionVidrioPlastico() {
   const navigate = useNavigate()
   const { profile } = useAuthContext()
+  const esSuperAdmin = profile?.rol === 'super_admin'
   const { ranchos } = useRanchos()
   const { inspecciones, loading, refetch } = useVidrioPlastico()
   const { terminosSitio } = useModulosContext()
@@ -459,7 +460,9 @@ export function InspeccionVidrioPlastico() {
       }
     } catch (err: unknown) {
       const mensaje = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
-      if (mensaje.includes('M7_LIMITE_QUINCENAL')) {
+      if (mensaje.includes('FECHA_SOLO_HOY')) {
+        toast.warning('Solo puedes registrar con la fecha de hoy')
+      } else if (mensaje.includes('M7_LIMITE_QUINCENAL')) {
         toast.warning(parsearErrorLimite(mensaje, terminosSitio.singular.toLowerCase()), { duration: 7000 })
       } else {
         toast.error(mensaje || 'No se pudo guardar la inspección')
@@ -1070,7 +1073,9 @@ export function InspeccionVidrioPlastico() {
                 <input
                   type="date"
                   value={fecha}
-                  onChange={(e) => setFecha(e.target.value)}
+                  min={esSuperAdmin ? undefined : hoy()}
+                  max={esSuperAdmin ? undefined : hoy()}
+                  onChange={(e) => { if (esSuperAdmin) setFecha(e.target.value) }}
                   className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>

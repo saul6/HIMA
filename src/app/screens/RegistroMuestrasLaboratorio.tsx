@@ -41,6 +41,7 @@ const FORM_INICIAL: FormState = {
 export function RegistroMuestrasLaboratorio() {
   const navigate = useNavigate()
   const { profile } = useAuthContext()
+  const esSuperAdmin = profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos(orgId)
@@ -110,7 +111,12 @@ export function RegistroMuestrasLaboratorio() {
         console.error(e)
       }
     } catch (e: any) {
-      toast.error(e.message ?? 'Error al guardar')
+      const msg: string = e?.message ?? 'Error al guardar'
+      if (msg.includes('FECHA_SOLO_HOY')) {
+        toast.warning('Solo puedes registrar con la fecha de hoy')
+      } else {
+        toast.error(msg)
+      }
     } finally {
       setGuardando(false)
     }
@@ -261,7 +267,9 @@ export function RegistroMuestrasLaboratorio() {
                   type="date"
                   className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                   value={form.fecha_muestreo}
-                  onChange={e => setForm(f => ({ ...f, fecha_muestreo: e.target.value }))}
+                  min={esSuperAdmin ? undefined : hoy()}
+                  max={esSuperAdmin ? undefined : hoy()}
+                  onChange={e => { if (esSuperAdmin) setForm(f => ({ ...f, fecha_muestreo: e.target.value })) }}
                 />
               </div>
 

@@ -100,6 +100,7 @@ function Toggle({ activo, onToggle }: { activo: boolean; onToggle: () => void })
 export function RegistroCosechaLiberacion() {
   const navigate = useNavigate()
   const { profile } = useAuthContext()
+  const esSuperAdmin = profile?.rol === 'super_admin'
   const { ranchos } = useRanchos()
   const { registros, loading, refetch } = useM10CosechaLiberacion()
   const { terminosSitio } = useModulosContext()
@@ -283,7 +284,11 @@ export function RegistroCosechaLiberacion() {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : (err as any)?.message ?? ''
-      toast.error(msg || 'No se pudo guardar el registro')
+      if (msg.includes('FECHA_SOLO_HOY')) {
+        toast.warning('Solo puedes registrar con la fecha de hoy')
+      } else {
+        toast.error(msg || 'No se pudo guardar el registro')
+      }
     } finally {
       setGuardando(false)
     }
@@ -639,7 +644,9 @@ export function RegistroCosechaLiberacion() {
                 <input
                   type="date"
                   value={fecha}
-                  onChange={(e) => setFecha(e.target.value)}
+                  min={esSuperAdmin ? undefined : hoy()}
+                  max={esSuperAdmin ? undefined : hoy()}
+                  onChange={(e) => { if (esSuperAdmin) setFecha(e.target.value) }}
                   className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>

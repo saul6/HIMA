@@ -255,6 +255,7 @@ function SiNoToggle({
 export function RegistroAccidentesLaborales() {
   const navigate = useNavigate()
   const { profile } = useAuthContext()
+  const esSuperAdmin = profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { accidentes, loading, error, refetch } = useM20Accidentes()
@@ -406,7 +407,12 @@ export function RegistroAccidentesLaborales() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(supabase as any).from('m20_accidentes').delete().eq('id', accidenteId).then(() => {})
       }
-      toast.error(e instanceof Error ? e.message : 'Error al guardar el registro')
+      const msg = e instanceof Error ? e.message : 'Error al guardar el registro'
+      if (msg.includes('FECHA_SOLO_HOY')) {
+        toast.warning('Solo puedes registrar con la fecha de hoy')
+      } else {
+        toast.error(msg)
+      }
     } finally {
       setGuardando(false)
     }
@@ -571,8 +577,9 @@ export function RegistroAccidentesLaborales() {
                 type="date"
                 className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
                 value={form.fecha}
+                min={esSuperAdmin ? undefined : hoy()}
                 max={hoy()}
-                onChange={(e) => set('fecha', e.target.value)}
+                onChange={(e) => { if (esSuperAdmin) set('fecha', e.target.value) }}
               />
             </div>
 

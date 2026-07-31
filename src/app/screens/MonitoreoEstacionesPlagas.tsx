@@ -401,6 +401,7 @@ function EstacionRevisionRow({
 export function MonitoreoEstacionesPlagas() {
   const navigate = useNavigate()
   const { profile } = useAuthContext()
+  const esSuperAdmin = profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { revisiones, loading, error, refetch } = useM21MonitoreoEstaciones()
@@ -646,7 +647,12 @@ export function MonitoreoEstacionesPlagas() {
       if (revisionId) {
         ;(supabase as any).from('m21_revision').delete().eq('id', revisionId).then(() => {})
       }
-      toast.error(e instanceof Error ? e.message : 'Error al guardar la revisión')
+      const msg = e instanceof Error ? e.message : 'Error al guardar la revisión'
+      if (msg.includes('FECHA_SOLO_HOY')) {
+        toast.warning('Solo puedes registrar con la fecha de hoy')
+      } else {
+        toast.error(msg)
+      }
     } finally {
       setGuardando(false)
     }
@@ -936,8 +942,9 @@ export function MonitoreoEstacionesPlagas() {
                 type="date"
                 className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
                 value={form.fecha}
+                min={esSuperAdmin ? undefined : hoy()}
                 max={hoy()}
-                onChange={e => setFormField('fecha', e.target.value)}
+                onChange={e => { if (esSuperAdmin) setFormField('fecha', e.target.value) }}
               />
             </div>
 
