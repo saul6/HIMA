@@ -1392,6 +1392,62 @@ export type Database = {
           incidencia_id?: string | null
         }
       }
+      m22_microorganismos: {
+        Row: {
+          codigo: string
+          label: string
+          tipo: 'indicador' | 'patogeno'
+          orden: number
+        }
+        Insert: {
+          codigo: string
+          label: string
+          tipo: 'indicador' | 'patogeno'
+          orden?: number
+        }
+        Update: {
+          codigo?: string
+          label?: string
+          tipo?: 'indicador' | 'patogeno'
+          orden?: number
+        }
+      }
+      m22_muestras: {
+        Row: {
+          id: string
+          org_id: string
+          rancho_id: string
+          fecha_muestreo: string
+          hora_muestreo: string | null
+          descripcion_muestra: string
+          microorganismos: string[]
+          laboratorio: string
+          solicitante_nombre: string
+          created_at: string
+          creado_por: string | null
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          rancho_id: string
+          fecha_muestreo: string
+          hora_muestreo?: string | null
+          descripcion_muestra: string
+          microorganismos?: string[]
+          laboratorio: string
+          solicitante_nombre: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          fecha_muestreo?: string
+          hora_muestreo?: string | null
+          descripcion_muestra?: string
+          microorganismos?: string[]
+          laboratorio?: string
+          solicitante_nombre?: string
+        }
+      }
     }
     Views: {
       v_inventario_saldo_rancho: {
