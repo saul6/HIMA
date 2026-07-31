@@ -12,25 +12,33 @@ import { FertilizacionPDF } from './m8/FertilizacionPDF'
 import { PerimetralPDF } from './m9/PerimetralPDF'
 import { CosechaLiberacionPDF } from './m10/CosechaLiberacionPDF'
 import { PreoperacionalPDF } from './m11/PreoperacionalPDF'
+import { InspeccionPreoperacionalCoolerPDF } from './m19/InspeccionPreoperacionalCoolerPDF'
 import { LimpiezaBanosPDF } from './m12/LimpiezaBanosPDF'
 import { ReporteIncidenciasPDF } from './m13/ReporteIncidenciasPDF'
 import { fotosADataUris } from './m13/incidenciasPdfImagenes'
 import { getAplicacionRicaById } from '@/lib/queries'
 import { construirDatosPagina as construirDatosPerimetral } from './m9/generarPerimetralPDF'
 import { construirDatosPagina as construirDatosPreoperacional } from './m11/generarPreoperacionalPDF'
+import { construirDatosPaginaM19 } from './m19/generarInspeccionPreoperacionalCoolerPDF'
 import { generarBlobAuditoria } from './auditoria/generarAuditoriaPDF'
+import { generarBlobAccidenteLaboral } from './m20/generarAccidenteLaboralPDF'
+import { generarBlobMonitoreoEstaciones } from './m21/generarMonitoreoEstacionesPDF'
+import { generarBlobMuestrasLaboratorio } from './m22/generarMuestrasLaboratorioPDF'
 
 // ── Tipos públicos ────────────────────────────────────────────────────────────
 
-export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18'
+export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18' | 'M19' | 'M20' | 'M21' | 'M22'
 
 export type PDFRef =
   | { tipo: 'M1'; id: string }
   | { tipo: 'M6'; id: string }
   | { tipo: 'M7' | 'M8' | 'M10' | 'M12'; ranchoId: string; fecha: string }
-  | { tipo: 'M9' | 'M11'; id: string }
+  | { tipo: 'M9' | 'M11' | 'M19'; id: string }
   | { tipo: 'M13'; id: string }
   | { tipo: 'M14' | 'M15' | 'M16' | 'M17' | 'M18'; id: string }
+  | { tipo: 'M20'; id: string }
+  | { tipo: 'M21'; id: string }
+  | { tipo: 'M22'; id: string }
 
 export interface RegistroHistorial {
   key: string
@@ -190,6 +198,11 @@ async function generarBlobM11(id: string, orgId: string): Promise<Blob> {
   return pdf(<PreoperacionalPDF {...datos} />).toBlob()
 }
 
+async function generarBlobM19(id: string, orgId: string): Promise<Blob> {
+  const datos = await construirDatosPaginaM19(id, orgId)
+  return pdf(<InspeccionPreoperacionalCoolerPDF {...datos} />).toBlob()
+}
+
 async function generarBlobM12(ranchoId: string, fecha: string, orgId: string): Promise<Blob> {
   const { data, error } = await supabase
     .from('m12_limpieza_banos')
@@ -277,6 +290,7 @@ export async function generarBlobParaRef(ref: PDFRef, orgId: string): Promise<Bl
     case 'M9':  return generarBlobM9(ref.id, orgId)
     case 'M10': return generarBlobM10(ref.ranchoId, ref.fecha, orgId)
     case 'M11': return generarBlobM11(ref.id, orgId)
+    case 'M19': return generarBlobM19(ref.id, orgId)
     case 'M12': return generarBlobM12(ref.ranchoId, ref.fecha, orgId)
     case 'M13': return generarBlobM13(ref.id, orgId)
     case 'M14': return generarBlobAuditoria(ref.id, orgId, 'm14')
@@ -284,6 +298,9 @@ export async function generarBlobParaRef(ref: PDFRef, orgId: string): Promise<Bl
     case 'M16': return generarBlobAuditoria(ref.id, orgId, 'm16')
     case 'M17': return generarBlobAuditoria(ref.id, orgId, 'm17')
     case 'M18': return generarBlobAuditoria(ref.id, orgId, 'm18')
+    case 'M20': return generarBlobAccidenteLaboral(ref.id, orgId)
+    case 'M21': return generarBlobMonitoreoEstaciones(ref.id, orgId)
+    case 'M22': return generarBlobMuestrasLaboratorio(ref.id, orgId)
   }
 }
 

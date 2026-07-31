@@ -21,6 +21,7 @@ import { ProductoCombobox } from "@/app/components/nueva-aplicacion/ProductoComb
 import { FormField } from "@/app/components/FormField"
 import { FormSelect } from "@/app/components/FormSelect"
 import type { TipoMovimiento, InventarioSaldoRancho, InventarioSaldoProductor } from "@/types/database.types"
+import { useModulosContext } from '@/context/ModulosContext'
 
 const LOW_STOCK = 5
 
@@ -161,6 +162,7 @@ interface SheetProps {
 }
 
 function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranchoOptions, productos }: SheetProps) {
+  const { terminosSitio } = useModulosContext()
   const [form, setForm] = useState({ ...emptyForm })
   const [saving, setSaving] = useState(false)
 
@@ -169,7 +171,7 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
 
   const handleSave = async () => {
     if (!form.productoId) { toast.error("Selecciona un producto"); return }
-    if (!form.ranchoId) { toast.error("Selecciona un rancho"); return }
+    if (!form.ranchoId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular.toLowerCase()}`); return }
     const cantidad = parseFloat(form.cantidad)
     if (!cantidad || cantidad <= 0) { toast.error("La cantidad debe ser mayor a 0"); return }
     if (!form.fecha) { toast.error("La fecha es requerida"); return }
@@ -271,7 +273,7 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
 
           {/* Rancho */}
           <FormSelect
-            label="Rancho"
+            label={terminosSitio.singular}
             value={form.ranchoId}
             onChange={set("ranchoId")}
             options={ranchoOptions}
@@ -324,6 +326,7 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
 
 export function Inventario() {
   const { productor, user, profile } = useAuthContext()
+  const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { productos } = useCatalogoProductos()
   const { saldosRancho, saldosProductor, loading, error, refetch } = useInventario(
@@ -416,7 +419,7 @@ export function Inventario() {
               }`}
               style={{ fontWeight: 600 }}
             >
-              {v === "rancho" ? "Por rancho" : "Por productor"}
+              {v === "rancho" ? `Por ${terminosSitio.singular.toLowerCase()}` : "Por productor"}
             </button>
           ))}
         </div>

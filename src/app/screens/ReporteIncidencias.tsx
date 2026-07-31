@@ -18,7 +18,7 @@ import { generarReporteIncidenciasConsolidadoPDF } from '@/lib/pdf/m13/generarRe
 // ── Constantes ────────────────────────────────────────────────────────────────
 
 const TITULO_MODULO = 'Reporte de Incidencias'
-const CLAVE_MODULO = 'HIMA: Inocuidad Alimentaria · Por evento'
+const CLAVE_MODULO = 'M.A.D.Y · Por evento'
 const MAX_FOTOS_AVISO = 6
 const MAX_FOTO_BYTES = 5.5 * 1024 * 1024
 
@@ -785,10 +785,10 @@ export function ReporteIncidencias() {
             {/* Campos scrollables */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
-              {/* Rancho */}
+              {/* Sitio */}
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
-                  RANCHO *
+                  {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
                   value={ranchoId}
@@ -797,12 +797,12 @@ export function ReporteIncidencias() {
                     errRancho ? 'border-agro-red' : 'border-border'
                   } ${!ranchoId ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
-                  <option value="" disabled>Seleccionar rancho</option>
+                  <option value="" disabled>Seleccionar {terminosSitio.singular.toLowerCase()}</option>
                   {ranchoOptions.map((o) => (
                     <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
                 </select>
-                {errRancho && <p className="text-xs text-agro-red mt-1">Selecciona un rancho</p>}
+                {errRancho && <p className="text-xs text-agro-red mt-1">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</p>}
               </div>
 
               {/* Fecha */}

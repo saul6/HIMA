@@ -19,6 +19,7 @@ import { supabase } from '@/lib/supabase'
 import type { M9ItemCatalogo } from '@/types/database.types'
 import { generarPerimetralPDF } from '@/lib/pdf/m9/generarPerimetralPDF'
 import { generarPerimetralConsolidadoPDF } from '@/lib/pdf/m9/generarPerimetralConsolidadoPDF'
+import { useModulosContext } from '@/context/ModulosContext'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -156,6 +157,7 @@ export function InspeccionPerimetral() {
   const { profile, user } = useAuthContext()
   const { ranchos } = useRanchos()
   const { registros, loading, error, refetch } = useM9Perimetral()
+  const { terminosSitio } = useModulosContext()
 
   // ── Navegación interna ──
   const [vista, setVista] = useState<Vista>('lista')
@@ -296,7 +298,7 @@ export function InspeccionPerimetral() {
   async function handleCrearRegistro() {
     if (!nRanchoId) { setNErrRancho(true); return }
     if (!profile?.org_id) { toast.error('Sin organización activa'); return }
-    if (nYaExiste) { toast.warning('Ya existe un registro para este mes y rancho'); return }
+    if (nYaExiste) { toast.warning(`Ya existe un registro para este mes y ${terminosSitio.singular.toLowerCase()}`); return }
     setNGuardando(true)
     try {
       const { data, error: e } = await supabase
@@ -333,7 +335,7 @@ export function InspeccionPerimetral() {
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Error al crear registro'
       if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
-        toast.warning('Ya existe un registro para este mes y rancho')
+        toast.warning(`Ya existe un registro para este mes y ${terminosSitio.singular.toLowerCase()}`)
       } else {
         toast.error(msg)
       }
@@ -762,7 +764,7 @@ export function InspeccionPerimetral() {
                 {/* Rancho */}
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
-                    Rancho / Huerto *
+                    {terminosSitio.singular} *
                   </label>
                   <select
                     value={nRanchoId}
@@ -770,7 +772,7 @@ export function InspeccionPerimetral() {
                     className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     style={{ borderColor: nErrRancho ? 'var(--agro-red)' : undefined }}
                   >
-                    <option value="">Selecciona un rancho</option>
+                    <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
                     {ranchoOptions.map((o) => (
                       <option key={o.value} value={o.value}>{o.label}</option>
                     ))}
@@ -797,7 +799,7 @@ export function InspeccionPerimetral() {
                 <div className="flex items-center justify-between rounded-xl border border-border bg-card p-4">
                   <div>
                     <div className="text-sm text-foreground" style={{ fontWeight: 600 }}>
-                      ¿El rancho tiene almacén?
+                      ¿{terminosSitio.genero === 'f' ? 'La' : 'El'} {terminosSitio.singular.toLowerCase()} tiene almacén?
                     </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
                       Activa si hay almacén de empaque y/o agroquímicos
@@ -825,7 +827,7 @@ export function InspeccionPerimetral() {
                   >
                     <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
                     <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
-                      Ya existe un registro para este rancho y mes.
+                      Ya existe un registro para {terminosSitio.genero === 'f' ? 'esta' : 'este'} {terminosSitio.singular.toLowerCase()} y mes.
                     </p>
                   </div>
                 )}
@@ -978,7 +980,7 @@ export function InspeccionPerimetral() {
                 {/* Rancho */}
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
-                    Rancho *
+                    {terminosSitio.singular} *
                   </label>
                   <select
                     value={cRanchoId}
@@ -986,7 +988,7 @@ export function InspeccionPerimetral() {
                     className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     style={{ borderColor: cErrRancho ? 'var(--agro-red)' : undefined }}
                   >
-                    <option value="">Selecciona un rancho</option>
+                    <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
                     {ranchoOptions.map((o) => (
                       <option key={o.value} value={o.value}>{o.label}</option>
                     ))}

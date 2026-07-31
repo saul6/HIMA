@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase'
 import { generarCosechaLiberacionPDF } from '@/lib/pdf/m10/generarCosechaLiberacionPDF'
 import { generarCosechaLiberacionConsolidadoPDF } from '@/lib/pdf/m10/generarCosechaLiberacionConsolidadoPDF'
 import type { CosechaLiberacionPaginaProps } from '@/lib/pdf/m10/CosechaLiberacionPDF'
+import { useModulosContext } from '@/context/ModulosContext'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -101,6 +102,7 @@ export function RegistroCosechaLiberacion() {
   const { profile } = useAuthContext()
   const { ranchos } = useRanchos()
   const { registros, loading, refetch } = useM10CosechaLiberacion()
+  const { terminosSitio } = useModulosContext()
 
   // Perfiles de la org para el select de encargado
   const [perfiles, setPerfiles] = useState<PerfilItem[]>([])
@@ -520,7 +522,7 @@ export function RegistroCosechaLiberacion() {
             <div className="overflow-y-auto p-4 space-y-4">
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
-                  RANCHO *
+                  {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
                   value={consRanchoId}
@@ -529,12 +531,12 @@ export function RegistroCosechaLiberacion() {
                     errConsRancho ? 'border-agro-red' : 'border-border'
                   } ${!consRanchoId ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
-                  <option value="" disabled>Seleccionar rancho</option>
+                  <option value="" disabled>Seleccionar {terminosSitio.singular.toLowerCase()}</option>
                   {ranchos.map((r) => (
                     <option key={r.id} value={r.id}>{r.nombre}</option>
                   ))}
                 </select>
-                {errConsRancho && <p className="text-xs text-agro-red mt-1">Selecciona un rancho</p>}
+                {errConsRancho && <p className="text-xs text-agro-red mt-1">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</p>}
               </div>
 
               <div>
@@ -612,7 +614,7 @@ export function RegistroCosechaLiberacion() {
               {/* Rancho */}
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
-                  RANCHO *
+                  {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
                   value={ranchoId}
@@ -621,12 +623,12 @@ export function RegistroCosechaLiberacion() {
                     errRancho ? 'border-agro-red' : 'border-border'
                   } ${!ranchoId ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
-                  <option value="" disabled>Seleccionar rancho</option>
+                  <option value="" disabled>Seleccionar {terminosSitio.singular.toLowerCase()}</option>
                   {ranchos.map((r) => (
                     <option key={r.id} value={r.id}>{r.nombre}</option>
                   ))}
                 </select>
-                {errRancho && <p className="text-xs text-agro-red mt-1">Selecciona un rancho</p>}
+                {errRancho && <p className="text-xs text-agro-red mt-1">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</p>}
               </div>
 
               {/* Fecha */}
