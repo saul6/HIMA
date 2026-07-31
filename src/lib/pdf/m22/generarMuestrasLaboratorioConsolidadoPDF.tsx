@@ -60,11 +60,10 @@ export async function generarMuestrasLaboratorioConsolidadoPDF(
     />
   ).toBlob()
 
-  const instSlug = instalacion.toLowerCase().replace(/\s+/g, '-').slice(0, 20)
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `muestras-laboratorio-${instSlug}-${desde}-${hasta}.pdf`
+  a.download = `muestras-laboratorio-${desde}-${hasta}.pdf`
   a.click()
   URL.revokeObjectURL(url)
 }

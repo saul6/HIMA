@@ -58,8 +58,7 @@ export async function generarAccidenteLaboralPDF(
   const datos = await construirDatosM20(accidenteId, orgId)
   const blob = await pdf(<AccidenteLaboralPDF {...datos} />).toBlob()
 
-  const instSlug = datos.instalacion.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-  const filename = `accidente-laboral-${datos.fecha}-${instSlug}.pdf`
+  const filename = `accidente-laboral-${datos.fecha}.pdf`
 
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

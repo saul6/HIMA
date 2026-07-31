@@ -10,11 +10,7 @@ export async function generarVidrioPlasticoPDF(
   fecha: string
 ): Promise<void> {
   const fechaSlug = fecha.replaceAll('-', '')
-  const ranchoSlug = ranchoNombre
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-  const filename = `vidrio-plastico-${fechaSlug}-${ranchoSlug}.pdf`
+  const filename = `vidrio-plastico-${fechaSlug}.pdf`
 
   const blob = await pdf(<VidrioPlasticoPDF {...props} />).toBlob()
   const url = URL.createObjectURL(blob)

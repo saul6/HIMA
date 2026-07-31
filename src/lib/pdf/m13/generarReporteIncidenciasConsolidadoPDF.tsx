@@ -9,10 +9,6 @@ import {
 } from './ReporteIncidenciasPDF'
 import { fotosADataUris } from './incidenciasPdfImagenes'
 
-function slugify(s: string): string {
-  return s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-}
-
 export async function generarReporteIncidenciasConsolidadoPDF(
   orgId: string,
   desde: string,
@@ -86,8 +82,7 @@ export async function generarReporteIncidenciasConsolidadoPDF(
 
   const desdeSlug = desde.replaceAll('-', '')
   const hastaSlug = hasta.replaceAll('-', '')
-  const baseSlug = ranchoId ? slugify(propsList[0]?.rancho ?? 'consolidado') : 'todos'
-  const filename = `reporte-incidencias-consolidado-${baseSlug}-${desdeSlug}-${hastaSlug}.pdf`
+  const filename = `reporte-incidencias-consolidado-${desdeSlug}-${hastaSlug}.pdf`
 
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

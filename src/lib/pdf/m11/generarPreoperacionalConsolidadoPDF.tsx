@@ -36,7 +36,6 @@ export async function generarPreoperacionalConsolidadoPDF(
 
   const desdeSlug = slugify(desdeYYYYMM)
   const hastaSlug = slugify(hastaYYYYMM)
-  const ranchoSlug = slugify(ranchoNombre)
 
   const blob = await pdf(
     <PreoperacionalConsolidadoPDF
@@ -50,7 +49,7 @@ export async function generarPreoperacionalConsolidadoPDF(
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `preoperacional-consolidado-${ranchoSlug}-${desdeSlug}-${hastaSlug}.pdf`
+  a.download = `preoperacional-consolidado-${desdeSlug}-${hastaSlug}.pdf`
   a.click()
   URL.revokeObjectURL(url)
 }

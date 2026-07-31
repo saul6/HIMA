@@ -105,12 +105,11 @@ export async function generarPerimetralPDF(
 ): Promise<void> {
   const datos = await construirDatosPagina(registroId, orgId)
   const mesSlug = slugify(datos.mesLabel)
-  const ranchoSlug = slugify(datos.rancho)
   const blob = await pdf(<PerimetralPDF {...datos} />).toBlob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `perimetral-${mesSlug}-${ranchoSlug}.pdf`
+  a.download = `perimetral-${mesSlug}.pdf`
   a.click()
   URL.revokeObjectURL(url)
 }

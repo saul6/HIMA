@@ -34,7 +34,6 @@ export async function generarVerificacionInsumosConsolidadoPDF(
 
   const paginas = await Promise.all(ids.map((id) => construirDatosPaginaM23(id, orgId)))
 
-  const instSlug = slugify(instalacionNombre)
   const desdeSlug = slugify(desdeYYYYMM)
   const hastaSlug = slugify(hastaYYYYMM)
 
@@ -50,7 +49,7 @@ export async function generarVerificacionInsumosConsolidadoPDF(
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `verificacion-insumos-consolidado-${instSlug}-${desdeSlug}-${hastaSlug}.pdf`
+  a.download = `verificacion-insumos-consolidado-${desdeSlug}-${hastaSlug}.pdf`
   a.click()
   URL.revokeObjectURL(url)
 }

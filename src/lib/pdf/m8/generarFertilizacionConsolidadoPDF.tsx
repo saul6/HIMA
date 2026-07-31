@@ -12,11 +12,7 @@ export async function generarFertilizacionConsolidadoPDF(
 ): Promise<void> {
   const desdeSlug = desde.replaceAll('-', '')
   const hastaSlug = hasta.replaceAll('-', '')
-  const ranchoSlug = ranchoNombre
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-  const filename = `fertilizacion-consolidado-${ranchoSlug}-${desdeSlug}-${hastaSlug}.pdf`
+  const filename = `fertilizacion-consolidado-${desdeSlug}-${hastaSlug}.pdf`
 
   const blob = await pdf(
     <FertilizacionConsolidadoPDF

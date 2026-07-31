@@ -38,8 +38,7 @@ export async function generarMonitoreoEstacionesConsolidadoPDF(
     />
   ).toBlob()
 
-  const instSlug = instalacionNombre.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-  const filename = `revisiones-plagas-${instSlug}-${desde}-${hasta}.pdf`
+  const filename = `revisiones-plagas-${desde}-${hasta}.pdf`
 
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

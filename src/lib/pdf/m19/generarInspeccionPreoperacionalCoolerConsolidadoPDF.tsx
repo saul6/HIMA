@@ -38,7 +38,6 @@ export async function generarInspeccionPreoperacionalCoolerConsolidadoPDF(
 
   const desdeSlug = slugify(desdeYYYYMM)
   const hastaSlug = slugify(hastaYYYYMM)
-  const instSlug = slugify(instalacionNombre)
 
   const blob = await pdf(
     <InspeccionPreoperacionalCoolerConsolidadoPDF
@@ -52,7 +51,7 @@ export async function generarInspeccionPreoperacionalCoolerConsolidadoPDF(
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `inspeccion-preoperacional-consolidado-${instSlug}-${desdeSlug}-${hastaSlug}.pdf`
+  a.download = `inspeccion-preoperacional-consolidado-${desdeSlug}-${hastaSlug}.pdf`
   a.click()
   URL.revokeObjectURL(url)
 }

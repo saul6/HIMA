@@ -11,11 +11,7 @@ export async function generarBotiquinPDF(
   fecha: string
 ): Promise<void> {
   const fechaSlug = fecha.replaceAll('-', '')
-  const ranchoSlug = ranchoNombre
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-  const filename = `botiquin-${fechaSlug}-${ranchoSlug}.pdf`
+  const filename = `botiquin-${fechaSlug}.pdf`
 
   const blob = await pdf(<BotiquinPDF {...props} />).toBlob()
   const url = URL.createObjectURL(blob)

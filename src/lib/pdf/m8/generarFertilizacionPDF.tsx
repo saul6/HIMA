@@ -10,11 +10,7 @@ export async function generarFertilizacionPDF(
   fecha: string
 ): Promise<void> {
   const fechaSlug = fecha.replaceAll('-', '')
-  const ranchoSlug = ranchoNombre
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-  const filename = `fertilizacion-${fechaSlug}-${ranchoSlug}.pdf`
+  const filename = `fertilizacion-${fechaSlug}.pdf`
 
   const blob = await pdf(<FertilizacionPDF {...props} />).toBlob()
   const url = URL.createObjectURL(blob)

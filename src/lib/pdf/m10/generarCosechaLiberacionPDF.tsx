@@ -3,16 +3,11 @@
 import { pdf } from '@react-pdf/renderer'
 import { CosechaLiberacionPDF, type CosechaLiberacionPaginaProps } from './CosechaLiberacionPDF'
 
-function slugify(s: string): string {
-  return s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-}
-
 export async function generarCosechaLiberacionPDF(
   props: CosechaLiberacionPaginaProps,
 ): Promise<void> {
   const fechaSlug = props.fecha.replaceAll('-', '')
-  const ranchoSlug = slugify(props.rancho)
-  const filename = `cosecha-liberacion-${fechaSlug}-${ranchoSlug}.pdf`
+  const filename = `cosecha-liberacion-${fechaSlug}.pdf`
 
   const blob = await pdf(<CosechaLiberacionPDF {...props} />).toBlob()
   const url = URL.createObjectURL(blob)

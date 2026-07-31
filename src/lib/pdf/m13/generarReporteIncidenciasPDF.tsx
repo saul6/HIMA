@@ -7,10 +7,6 @@ import { ReporteIncidenciasPDF, type ReporteIncidenciasPDFProps } from './Report
 import { fotosADataUris } from './incidenciasPdfImagenes'
 import type { M13ReporteConRancho } from '@/hooks/useM13Incidencias'
 
-function slugify(s: string): string {
-  return s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-}
-
 export async function generarReporteIncidenciasPDF(
   reporte: M13ReporteConRancho,
 ): Promise<void> {
@@ -39,8 +35,7 @@ export async function generarReporteIncidenciasPDF(
   const blob = await pdf(<ReporteIncidenciasPDF {...props} />).toBlob()
 
   const fechaSlug = reporte.fecha.replaceAll('-', '')
-  const ranchoSlug = slugify(reporte.rancho_nombre)
-  const filename = `reporte-incidencias-${fechaSlug}-${ranchoSlug}.pdf`
+  const filename = `reporte-incidencias-${fechaSlug}.pdf`
 
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

@@ -38,8 +38,7 @@ export async function generarAccidenteLaboralConsolidadoPDF(
     />
   ).toBlob()
 
-  const instSlug = instalacionNombre.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-  const filename = `accidentes-laborales-${instSlug}-${desde}-${hasta}.pdf`
+  const filename = `accidentes-laborales-${desde}-${hasta}.pdf`
 
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

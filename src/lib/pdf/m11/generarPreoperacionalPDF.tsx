@@ -113,12 +113,11 @@ export async function generarPreoperacionalPDF(
 ): Promise<void> {
   const datos = await construirDatosPagina(registroId, orgId)
   const mesSlug = slugify(datos.mesLabel)
-  const ranchoSlug = slugify(datos.rancho)
   const blob = await pdf(<PreoperacionalPDF {...datos} />).toBlob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `preoperacional-${mesSlug}-${ranchoSlug}.pdf`
+  a.download = `preoperacional-${mesSlug}.pdf`
   a.click()
   URL.revokeObjectURL(url)
 }

@@ -116,12 +116,11 @@ export async function construirDatosPaginaM23(
 export async function generarVerificacionInsumosPDF(registroId: string, orgId: string): Promise<void> {
   const datos = await construirDatosPaginaM23(registroId, orgId)
   const mesSlug = slugify(datos.mesLabel)
-  const instSlug = slugify(datos.instalacion)
   const blob = await pdf(<VerificacionInsumosPDF {...datos} />).toBlob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `verificacion-insumos-${mesSlug}-${instSlug}.pdf`
+  a.download = `verificacion-insumos-${mesSlug}.pdf`
   a.click()
   URL.revokeObjectURL(url)
 }

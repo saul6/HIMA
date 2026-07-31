@@ -129,8 +129,7 @@ export async function generarMonitoreoEstacionesPDF(
   const datos = await construirDatosM21(revisionId, orgId)
   const blob = await pdf(<MonitoreoEstacionesPDF {...datos} />).toBlob()
 
-  const instSlug = datos.instalacion.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-  const filename = `revision-plagas-${datos.fecha}-${instSlug}.pdf`
+  const filename = `revision-plagas-${datos.fecha}.pdf`
 
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

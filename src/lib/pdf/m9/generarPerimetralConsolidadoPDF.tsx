@@ -38,7 +38,6 @@ export async function generarPerimetralConsolidadoPDF(
 
   const desdeSlug = slugify(desdeYYYYMM)
   const hastaSlug = slugify(hastaYYYYMM)
-  const ranchoSlug = slugify(ranchoNombre)
 
   const blob = await pdf(
     <PerimetralConsolidadoPDF
@@ -52,7 +51,7 @@ export async function generarPerimetralConsolidadoPDF(
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `perimetral-consolidado-${ranchoSlug}-${desdeSlug}-${hastaSlug}.pdf`
+  a.download = `perimetral-consolidado-${desdeSlug}-${hastaSlug}.pdf`
   a.click()
   URL.revokeObjectURL(url)
 }

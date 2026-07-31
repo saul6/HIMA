@@ -6,10 +6,6 @@ import type { ModuloAuditoria } from '@/hooks/useAuditoria'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
 
-function slugify(s: string): string {
-  return s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-}
-
 function moduloLabel(modulo: ModuloAuditoria): string {
   if (modulo === 'm14') return 'saia'
   if (modulo === 'm15') return 'granja'
@@ -85,7 +81,7 @@ export async function generarAuditoriaPDF(
 ): Promise<void> {
   const datos = await construirDatosAuditoria(auditoriaId, orgId, modulo)
   const blob = await pdf(<AuditoriaPDF {...datos} />).toBlob()
-  const filename = `auditoria-${moduloLabel(modulo)}-${fecha.replaceAll('-', '')}-${slugify(ranchoNombre)}.pdf`
+  const filename = `auditoria-${moduloLabel(modulo)}-${fecha.replaceAll('-', '')}.pdf`
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url

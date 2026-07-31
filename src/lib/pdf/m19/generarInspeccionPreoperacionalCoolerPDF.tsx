@@ -120,12 +120,11 @@ export async function generarInspeccionPreoperacionalCoolerPDF(
 ): Promise<void> {
   const datos = await construirDatosPaginaM19(registroId, orgId)
   const mesSlug = slugify(datos.mesLabel)
-  const instSlug = slugify(datos.instalacion)
   const blob = await pdf(<InspeccionPreoperacionalCoolerPDF {...datos} />).toBlob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `inspeccion-preoperacional-${mesSlug}-${instSlug}.pdf`
+  a.download = `inspeccion-preoperacional-${mesSlug}.pdf`
   a.click()
   URL.revokeObjectURL(url)
 }

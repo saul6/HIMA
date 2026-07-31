@@ -6,11 +6,7 @@ export async function generarAplicacionPDF(props: AplicacionPDFProps): Promise<v
   const { aplicacion, rancho } = props
 
   const fecha = aplicacion.fecha_aplicacion.replaceAll('-', '')
-  const ranchoSlug = rancho.nombre
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-  const filename = `aplicacion-${fecha}-${ranchoSlug}.pdf`
+  const filename = `aplicacion-${fecha}.pdf`
 
   const blob = await pdf(<AplicacionPDF {...props} />).toBlob()
 

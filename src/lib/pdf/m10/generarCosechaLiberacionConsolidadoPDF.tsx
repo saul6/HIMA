@@ -65,8 +65,7 @@ export async function generarCosechaLiberacionConsolidadoPDF(
   const registros = Array.from(jornadasMap.values())
   const desdeSlug = desde.replaceAll('-', '')
   const hastaSlug = hasta.replaceAll('-', '')
-  const ranchoSlug = slugify(ranchoNombre)
-  const filename = `cosecha-liberacion-consolidado-${ranchoSlug}-${desdeSlug}-${hastaSlug}.pdf`
+  const filename = `cosecha-liberacion-consolidado-${desdeSlug}-${hastaSlug}.pdf`
 
   const blob = await pdf(
     <CosechaLiberacionConsolidadoPDF
