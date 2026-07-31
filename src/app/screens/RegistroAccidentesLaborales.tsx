@@ -15,7 +15,6 @@ import { subirFoto, borrarFotos, getSignedUrls } from '@/lib/storage/incidencias
 import { generarAccidenteLaboralPDF } from '@/lib/pdf/m20/generarAccidenteLaboralPDF'
 import { generarAccidenteLaboralConsolidadoPDF } from '@/lib/pdf/m20/generarAccidenteLaboralConsolidadoPDF'
 import { Button } from '@/app/components/ui/button'
-import { Sheet, SheetContent } from '@/app/components/ui/sheet'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -515,21 +514,25 @@ export function RegistroAccidentesLaborales() {
       </div>
 
       {/* FAB */}
-      <button
-        type="button"
-        onClick={() => { setForm(FORM_INICIAL); setFotosLocal([]); setSheetNuevo(true) }}
-        className="fixed bottom-24 right-4 w-14 h-14 rounded-full bg-[var(--primary)] text-white shadow-lg flex items-center justify-center z-20 active:scale-95 transition-transform"
-        aria-label="Nuevo registro"
-      >
-        <Plus className="w-7 h-7" />
-      </button>
+      <div className="fixed bottom-[calc(72px+34px+16px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
+        <button
+          type="button"
+          onClick={() => { setForm(FORM_INICIAL); setFotosLocal([]); setSheetNuevo(true) }}
+          className="pointer-events-auto w-14 h-14 rounded-full bg-[var(--primary)] text-white shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+          aria-label="Nuevo registro"
+        >
+          <Plus className="w-7 h-7" />
+        </button>
+      </div>
 
       {/* Sheet: Nuevo registro ─────────────────────────────────────────────── */}
-      <Sheet open={sheetNuevo} onOpenChange={setSheetNuevo}>
-        <SheetContent
-          side="bottom"
-          className="h-[90%] rounded-t-[0.625rem] flex flex-col p-0 overflow-hidden"
-        >
+      {sheetNuevo && (
+        <>
+          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetNuevo(false)} />
+          <div
+            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
+            style={{ height: '85%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
+          >
           {/* Handle bar */}
           <div className="flex justify-center pt-3 pb-1 shrink-0">
             <div className="w-10 h-1 rounded-full bg-muted" />
@@ -758,15 +761,18 @@ export function RegistroAccidentesLaborales() {
               )}
             </Button>
           </div>
-        </SheetContent>
-      </Sheet>
+          </div>
+        </>
+      )}
 
       {/* Sheet: Exportar consolidado ─────────────────────────────────────────── */}
-      <Sheet open={sheetConsolidado} onOpenChange={setSheetConsolidado}>
-        <SheetContent
-          side="bottom"
-          className="h-auto rounded-t-[0.625rem] flex flex-col p-0 overflow-hidden"
-        >
+      {sheetConsolidado && (
+        <>
+          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetConsolidado(false)} />
+          <div
+            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
+            style={{ borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
+          >
           <div className="flex justify-center pt-3 pb-1">
             <div className="w-10 h-1 rounded-full bg-muted" />
           </div>
@@ -825,8 +831,9 @@ export function RegistroAccidentesLaborales() {
                 : <><Files className="w-4 h-4 mr-2" /> Descargar PDF</>}
             </Button>
           </div>
-        </SheetContent>
-      </Sheet>
+          </div>
+        </>
+      )}
 
     </div>
   )

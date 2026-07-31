@@ -152,7 +152,7 @@ export function RegistroMuestrasLaboratorio() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-12 pb-4">
         <button onClick={() => navigate('/')} className="p-1 -ml-1">
@@ -218,19 +218,21 @@ export function RegistroMuestrasLaboratorio() {
       </div>
 
       {/* FAB */}
-      <button
-        onClick={abrirNueva}
-        className="fixed bottom-24 right-4 w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-lg z-30"
-        aria-label="Nueva muestra"
-      >
-        <Plus className="w-6 h-6" />
-      </button>
+      <div className="fixed bottom-[calc(72px+34px+16px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
+        <button
+          onClick={abrirNueva}
+          className="pointer-events-auto w-14 h-14 rounded-full bg-[var(--primary)] text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+          aria-label="Nueva muestra"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
+      </div>
 
       {/* Bottom sheet — Formulario */}
       {sheetOpen && (
-        <div className="fixed inset-0 z-40 flex flex-col justify-end">
+        <div className="fixed inset-0 z-40 flex flex-col justify-end items-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setSheetOpen(false)} />
-          <div className="relative bg-card rounded-t-[0.625rem] z-50 flex flex-col" style={{ maxHeight: '92%' }}>
+          <div className="relative bg-card rounded-t-[0.625rem] z-50 flex flex-col w-full" style={{ maxHeight: '92%', maxWidth: 390 }}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
               <h2 className="text-base font-semibold">Nueva muestra</h2>
               <button onClick={() => setSheetOpen(false)}>
@@ -374,9 +376,9 @@ export function RegistroMuestrasLaboratorio() {
 
       {/* Bottom sheet — Consolidado */}
       {consolidadoOpen && (
-        <div className="fixed inset-0 z-40 flex flex-col justify-end">
+        <div className="fixed inset-0 z-40 flex flex-col justify-end items-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setConsolidadoOpen(false)} />
-          <div className="relative bg-card rounded-t-[0.625rem] z-50 flex flex-col" style={{ maxHeight: '70%' }}>
+          <div className="relative bg-card rounded-t-[0.625rem] z-50 flex flex-col w-full" style={{ maxHeight: '70%', maxWidth: 390 }}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
               <h2 className="text-base font-semibold">Exportar consolidado</h2>
               <button onClick={() => setConsolidadoOpen(false)}>
