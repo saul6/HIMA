@@ -33,6 +33,7 @@ const MODULO_META: Record<ModuloKey, { label: string; color: string }> = {
   M21: { label: 'Monitoreo de Plagas',   color: '#2E5900' },
   M22: { label: 'Muestras Laboratorio',  color: '#0D47A1' },
   M23: { label: 'Verificación Insumos', color: '#1B5E20' },
+  M24: { label: 'Inv. Químicos',        color: '#37474F' },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -68,7 +69,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tbl = (name: string) => (supabase as any).from(name)
 
-  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23] = await Promise.all([
+  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24] = await Promise.all([
     supabase.from('aplicaciones')
       .select('id, fecha_aplicacion, rancho_id, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha_aplicacion', desde).lte('fecha_aplicacion', hasta)
@@ -145,6 +146,10 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       .select('id, rancho_id, mes, ranchos(nombre)')
       .eq('org_id', orgId).gte('mes', desdeM).lte('mes', hastaM)
       .order('mes', { ascending: false }).limit(200),
+    tbl('m24_movimientos')
+      .select('quimico_id, fecha, m24_quimicos(nombre, unidad, rancho_id, ranchos(nombre))')
+      .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
+      .order('fecha', { ascending: false }).limit(2000),
   ])
 
   const todos: RegistroHistorial[] = []
@@ -427,6 +432,35 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       fecha: r.mes,
       resumen: 'Verificación de insumos mensual',
       pdfRef: { tipo: 'M23', id: r.id },
+    })
+  }
+
+  // M24 — agrupar por quimico_id (kardex de químicos, Cuarto Frío)
+  const m24map = new Map<string, { quimico_id: string; nombre: string; rancho_id: string; rancho_nombre: string; count: number; fecha: string }>()
+  for (const r of (r24 as any)?.data ?? []) {
+    const q = (r.m24_quimicos as any)
+    if (!m24map.has(r.quimico_id)) {
+      m24map.set(r.quimico_id, {
+        quimico_id: r.quimico_id,
+        nombre: q?.nombre ?? '—',
+        rancho_id: q?.rancho_id ?? '',
+        rancho_nombre: (q?.ranchos as any)?.nombre ?? '—',
+        count: 1,
+        fecha: r.fecha,
+      })
+    } else {
+      m24map.get(r.quimico_id)!.count++
+    }
+  }
+  for (const [, v] of m24map) {
+    todos.push({
+      key: `M24-${v.quimico_id}`,
+      modulo: 'M24',
+      rancho_id: v.rancho_id,
+      rancho_nombre: v.rancho_nombre,
+      fecha: v.fecha,
+      resumen: `${v.nombre} · ${v.count} movimiento${v.count !== 1 ? 's' : ''}`,
+      pdfRef: { tipo: 'M24', id: v.quimico_id },
     })
   }
 
