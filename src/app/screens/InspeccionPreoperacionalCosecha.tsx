@@ -11,6 +11,7 @@ import {
   TriangleAlert, CalendarDays, X,
 } from 'lucide-react'
 import { Link } from 'react-router'
+import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useRanchos } from '@/hooks/useRanchos'
@@ -705,13 +706,7 @@ export function InspeccionPreoperacionalCosecha() {
       </div>
 
       {/* ═══ SHEET: NUEVO REGISTRO MENSUAL ═══════════════════════════════ */}
-      {sheetNuevo && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetNuevo(false)} />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card overflow-y-auto"
-            style={{ height: '85%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
             <div className="flex justify-center pt-3 pb-1">
               <div className="w-9 h-1 rounded-full bg-border" />
             </div>
@@ -796,20 +791,12 @@ export function InspeccionPreoperacionalCosecha() {
                 >
                   {nGuardando ? 'Creando…' : 'Crear registro'}
                 </button>
-              </div>
             </div>
           </div>
-        </>
-      )}
+      </BottomSheet>
 
       {/* ═══ SHEET: AGREGAR DÍA DE INSPECCIÓN ═══════════════════════════ */}
-      {sheetDia && registroActivo && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetDia(false)} />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{ height: '85%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetDia && !!registroActivo} onClose={() => setSheetDia(false)} height="85%">
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-9 h-1 rounded-full bg-border" />
             </div>
@@ -908,18 +895,10 @@ export function InspeccionPreoperacionalCosecha() {
                 )}
               </button>
             </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
       {/* ═══ SHEET: EXPORTAR CONSOLIDADO ═════════════════════════════════ */}
-      {sheetConsolidado && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetConsolidado(false)} />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card overflow-y-auto"
-            style={{ height: '55%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="55%">
             <div className="flex justify-center pt-3 pb-1">
               <div className="w-9 h-1 rounded-full bg-border" />
             </div>
@@ -995,9 +974,7 @@ export function InspeccionPreoperacionalCosecha() {
                 </button>
               </div>
             </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
     </div>
   )
 }

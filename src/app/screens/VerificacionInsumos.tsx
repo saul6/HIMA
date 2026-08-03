@@ -9,6 +9,7 @@ import {
   TriangleAlert, CalendarDays, X, AlertCircle, Settings,
 } from 'lucide-react'
 import { Link } from 'react-router'
+import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -844,10 +845,7 @@ export function VerificacionInsumos() {
       </div>
 
       {/* ═══ SHEET: NUEVO REGISTRO MENSUAL ═══════════════════════════════════════ */}
-      {sheetNuevo && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetNuevo(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-40 bg-card overflow-y-auto" style={{ height: '85%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}>
+      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
             <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
             <div className="px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
@@ -855,6 +853,7 @@ export function VerificacionInsumos() {
                 <button onClick={() => setSheetNuevo(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
               </div>
               <div className="space-y-4">
+
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{termino} *</label>
                   <select
@@ -901,15 +900,10 @@ export function VerificacionInsumos() {
                 </button>
               </div>
             </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
       {/* ═══ SHEET: AGREGAR DÍA DE VERIFICACIÓN ═════════════════════════════════ */}
-      {sheetDia && registroActivo && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetDia(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col" style={{ height: '85%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}>
+      <BottomSheet open={sheetDia && !!registroActivo} onClose={() => setSheetDia(false)} height="85%">
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0"><div className="w-9 h-1 rounded-full bg-border" /></div>
             <div className="px-4 pb-2 flex-shrink-0">
               <div className="flex items-center justify-between mb-3">
@@ -988,15 +982,10 @@ export function VerificacionInsumos() {
                 }
               </button>
             </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
       {/* ═══ SHEET: CATÁLOGO DE INSUMOS ══════════════════════════════════════════ */}
-      {sheetCatalogo && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetCatalogo(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col" style={{ height: '92%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}>
+      <BottomSheet open={sheetCatalogo} onClose={() => setSheetCatalogo(false)} height="92%">
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0"><div className="w-9 h-1 rounded-full bg-border" /></div>
             <div className="px-4 pb-3 flex-shrink-0 border-b border-border">
               <div className="flex items-center justify-between mb-3">
@@ -1094,15 +1083,10 @@ export function VerificacionInsumos() {
                 ))
               )}
             </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
       {/* ═══ SHEET: EXPORTAR CONSOLIDADO ═════════════════════════════════════════ */}
-      {sheetConsolidado && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetConsolidado(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-40 bg-card overflow-y-auto" style={{ height: '55%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}>
+      <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="55%">
             <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
             <div className="px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
@@ -1146,11 +1130,9 @@ export function VerificacionInsumos() {
                     : <><FileDown className="w-4 h-4" /> Descargar PDF</>
                   }
                 </button>
-              </div>
             </div>
           </div>
-        </>
-      )}
+      </BottomSheet>
     </div>
   )
 }

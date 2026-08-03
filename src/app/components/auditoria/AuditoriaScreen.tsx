@@ -3,6 +3,7 @@ import {
   ChevronLeft, Plus, FileDown, X, Loader2, Files, ChevronDown, AlertTriangle,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -415,13 +416,7 @@ export function AuditoriaScreen({
       </div>
 
       {/* Bottom Sheet — consolidado */}
-      {sheetConsAbierto && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetConsAbierto(false)} />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{ borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetConsAbierto} onClose={() => setSheetConsAbierto(false)}>
             <div className="flex justify-center pt-3 pb-1 shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
@@ -475,23 +470,10 @@ export function AuditoriaScreen({
                 Generar PDF consolidado
               </button>
             </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
       {/* Bottom Sheet — formulario auditoría */}
-      {sheetAbierto && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetAbierto(false)} />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{
-              height: '95%',
-              borderRadius: '0.625rem 0.625rem 0 0',
-              maxWidth: 390,
-              margin: '0 auto',
-            }}
-          >
+      <BottomSheet open={sheetAbierto} onClose={() => setSheetAbierto(false)} height="95%">
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-1 shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
@@ -625,9 +607,7 @@ export function AuditoriaScreen({
                 Completar
               </button>
             </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
     </div>
   )
 }

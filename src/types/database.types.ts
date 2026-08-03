@@ -1812,3 +1812,27 @@ export type AplicacionRica = Aplicacion & {
     catalogo_productos: CatalogoProducto
   })[]
 }
+
+// ── M25 — Resumen de No-Conformidades ─────────────────────────────────────────
+
+export interface AuditoriaVisita {
+  id: string
+  org_id: string
+  rancho_id: string
+  fecha: string
+  auditor_nombre: string
+  cliente_nombre: string
+  pa_pgfs: string | null
+  observaciones: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface NoConformidad {
+  ncr: number
+  modulo: string
+  codigo_pregunta: string
+  seccion: string
+  texto_pregunta: string
+  comentario: string
+}

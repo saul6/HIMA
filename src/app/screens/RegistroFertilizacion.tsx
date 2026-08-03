@@ -8,6 +8,7 @@ import {
   Files, AlertTriangle, Trash2, TrendingDown, Package,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useRanchos } from '@/hooks/useRanchos'
@@ -1017,16 +1018,7 @@ export function RegistroFertilizacion() {
       </div>
 
       {/* ── Sheet: Nuevo registro ─────────────────────────────────────────────── */}
-      {sheetNuevoAbierto && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/40 z-30"
-            onClick={() => !guardando && setSheetNuevoAbierto(false)}
-          />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{ height: '85%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetNuevoAbierto} onClose={() => !guardando && setSheetNuevoAbierto(false)} height="85%">
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
@@ -1132,21 +1124,10 @@ export function RegistroFertilizacion() {
                 {guardando ? 'Guardando...' : 'Guardar y generar PDF'}
               </button>
             </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
       {/* ── Sheet: Exportar consolidado ───────────────────────────────────────── */}
-      {sheetConsolidadoAbierto && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/40 z-30"
-            onClick={() => !generandoConsolidado && setSheetConsolidadoAbierto(false)}
-          />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{ height: '85%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetConsolidadoAbierto} onClose={() => !generandoConsolidado && setSheetConsolidadoAbierto(false)} height="85%">
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
@@ -1226,21 +1207,10 @@ export function RegistroFertilizacion() {
                 {generandoConsolidado ? 'Generando...' : 'Generar PDF consolidado'}
               </button>
             </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
       {/* ── Sheet: Movimiento manual de inventario ───────────────────────────── */}
-      {sheetMovAbierto && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/40 z-30"
-            onClick={() => !guardandoMov && setSheetMovAbierto(false)}
-          />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{ height: '85%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetMovAbierto} onClose={() => !guardandoMov && setSheetMovAbierto(false)} height="85%">
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
@@ -1438,9 +1408,7 @@ export function RegistroFertilizacion() {
                 {guardandoMov ? 'Guardando...' : 'Registrar movimiento'}
               </button>
             </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
     </div>
   )

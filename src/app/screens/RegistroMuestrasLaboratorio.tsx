@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, Plus, FileDown, X, Loader2, FlaskConical, Files } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -242,10 +243,7 @@ export function RegistroMuestrasLaboratorio() {
       </div>
 
       {/* Bottom sheet — Formulario */}
-      {sheetOpen && (
-        <div className="fixed inset-0 z-40 flex flex-col justify-end items-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setSheetOpen(false)} />
-          <div className="relative bg-card rounded-t-[0.625rem] z-50 flex flex-col w-full" style={{ maxHeight: '92%', maxWidth: 390 }}>
+      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
               <h2 className="text-base font-semibold">Nueva muestra</h2>
               <button onClick={() => setSheetOpen(false)}>
@@ -385,15 +383,10 @@ export function RegistroMuestrasLaboratorio() {
                 Guardar y generar PDF
               </button>
             </div>
-          </div>
-        </div>
-      )}
+      </BottomSheet>
 
       {/* Bottom sheet — Consolidado */}
-      {consolidadoOpen && (
-        <div className="fixed inset-0 z-40 flex flex-col justify-end items-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setConsolidadoOpen(false)} />
-          <div className="relative bg-card rounded-t-[0.625rem] z-50 flex flex-col w-full" style={{ maxHeight: '70%', maxWidth: 390 }}>
+      <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
               <h2 className="text-base font-semibold">Exportar consolidado</h2>
               <button onClick={() => setConsolidadoOpen(false)}>
@@ -441,9 +434,7 @@ export function RegistroMuestrasLaboratorio() {
                 Exportar PDF
               </button>
             </div>
-          </div>
-        </div>
-      )}
+      </BottomSheet>
     </div>
   )
 }

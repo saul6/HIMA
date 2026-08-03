@@ -4,6 +4,7 @@ import {
   Camera, Trash2, ImageOff, ClipboardList, FileDown,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import imageCompression from 'browser-image-compression'
 import { useAuthContext } from '@/context/AuthContext'
@@ -660,16 +661,7 @@ export function ReporteIncidencias() {
       </div>
 
       {/* Bottom Sheet — consolidado */}
-      {sheetConsolidadoAbierto && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/40 z-30"
-            onClick={() => !generandoConsolidado && setSheetConsolidadoAbierto(false)}
-          />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{ borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetConsolidadoAbierto} onClose={() => !generandoConsolidado && setSheetConsolidadoAbierto(false)}>
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
@@ -754,26 +746,10 @@ export function ReporteIncidencias() {
                 {generandoConsolidado ? 'Generando...' : 'Generar PDF consolidado'}
               </button>
             </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
       {/* Bottom Sheet — formulario */}
-      {sheetAbierto && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/40 z-30"
-            onClick={() => !guardando && setSheetAbierto(false)}
-          />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{
-              height: '85%',
-              borderRadius: '0.625rem 0.625rem 0 0',
-              maxWidth: 390,
-              margin: '0 auto',
-            }}
-          >
+      <BottomSheet open={sheetAbierto} onClose={() => !guardando && setSheetAbierto(false)} height="85%">
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
@@ -886,9 +862,7 @@ export function ReporteIncidencias() {
                 {guardando ? 'Guardando...' : 'Guardar reporte'}
               </button>
             </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
     </div>
   )
 }

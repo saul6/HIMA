@@ -4,6 +4,7 @@ import {
   AlertTriangle, FileDown, ShieldAlert,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import imageCompression from 'browser-image-compression'
 import { useAuthContext } from '@/context/AuthContext'
@@ -540,13 +541,7 @@ export function RegistroAccidentesLaborales() {
       </div>
 
       {/* Sheet: Nuevo registro ─────────────────────────────────────────────── */}
-      {sheetNuevo && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetNuevo(false)} />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{ height: '85%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
           {/* Handle bar */}
           <div className="flex justify-center pt-3 pb-1 shrink-0">
             <div className="w-10 h-1 rounded-full bg-muted" />
@@ -776,18 +771,10 @@ export function RegistroAccidentesLaborales() {
               )}
             </Button>
           </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
       {/* Sheet: Exportar consolidado ─────────────────────────────────────────── */}
-      {sheetConsolidado && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetConsolidado(false)} />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{ borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)}>
           <div className="flex justify-center pt-3 pb-1">
             <div className="w-10 h-1 rounded-full bg-muted" />
           </div>
@@ -846,9 +833,7 @@ export function RegistroAccidentesLaborales() {
                 : <><Files className="w-4 h-4 mr-2" /> Descargar PDF</>}
             </Button>
           </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
     </div>
   )

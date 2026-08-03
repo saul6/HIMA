@@ -8,6 +8,7 @@ import {
   AlertTriangle, X,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -803,13 +804,7 @@ export function MonitoreoEstacionesPlagas() {
       </div>
 
       {/* ── Sheet: Gestionar Estaciones ──────────────────────────────────────── */}
-      {sheetEstaciones && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetEstaciones(false)} />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{ height: '85%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetEstaciones} onClose={() => setSheetEstaciones(false)} height="85%">
           <div className="flex justify-center pt-3 pb-1 shrink-0">
             <div className="w-10 h-1 rounded-full bg-muted" />
           </div>
@@ -902,18 +897,10 @@ export function MonitoreoEstacionesPlagas() {
               </>
             )}
           </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
       {/* ── Sheet: Nueva Revisión ─────────────────────────────────────────────── */}
-      {sheetNuevo && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetNuevo(false)} />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{ height: '90%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="90%">
           <div className="flex justify-center pt-3 pb-1 shrink-0">
             <div className="w-10 h-1 rounded-full bg-muted" />
           </div>
@@ -1041,18 +1028,10 @@ export function MonitoreoEstacionesPlagas() {
               )}
             </Button>
           </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
       {/* ── Sheet: Exportar consolidado ───────────────────────────────────────── */}
-      {sheetConsolidado && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetConsolidado(false)} />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{ borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)}>
           <div className="flex justify-center pt-3 pb-1">
             <div className="w-10 h-1 rounded-full bg-muted" />
           </div>
@@ -1106,9 +1085,7 @@ export function MonitoreoEstacionesPlagas() {
                 : <><Files className="w-4 h-4 mr-2" /> Descargar PDF</>}
             </Button>
           </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
     </div>
   )

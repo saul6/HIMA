@@ -3,6 +3,7 @@ import {
   ChevronLeft, Plus, Settings, FileDown, X, Loader2, AlertTriangle,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -266,16 +267,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
       </button>
 
       {/* Form sheet */}
-      {sheetOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => { if (!guardando) setSheetOpen(false) }}
-          />
-          <div
-            className="relative bg-card rounded-t-[0.625rem] flex flex-col"
-            style={{ maxHeight: '85vh', overflowY: 'auto' }}
-          >
+      <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) setSheetOpen(false) }}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base font-semibold">Nuevo movimiento</h2>
               <button onClick={() => { if (!guardando) setSheetOpen(false) }} className="p-1 rounded hover:bg-muted">
@@ -364,9 +356,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                 {guardando ? 'Guardando...' : 'Guardar movimiento'}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+      </BottomSheet>
     </div>
   )
 }
@@ -613,13 +603,7 @@ export function ControlInventarioQuimicos() {
       </div>
 
       {/* Configurar sheet */}
-      {configurarOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setConfigurarOpen(false)} />
-          <div
-            className="relative bg-card rounded-t-[0.625rem] flex flex-col"
-            style={{ maxHeight: '85vh' }}
-          >
+      <BottomSheet open={configurarOpen} onClose={() => setConfigurarOpen(false)}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base font-semibold">Configurar químicos</h2>
               <button onClick={() => setConfigurarOpen(false)} className="p-1 rounded hover:bg-muted">
@@ -690,21 +674,10 @@ export function ControlInventarioQuimicos() {
                 </p>
               )}
             </div>
-          </div>
-        </div>
-      )}
+      </BottomSheet>
 
       {/* Nuevo químico sheet */}
-      {nuevoQuimicoOpen && (
-        <div className="fixed inset-0 z-[60] flex flex-col justify-end">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => { if (!guardandoQuimico) setNuevoQuimicoOpen(false) }}
-          />
-          <div
-            className="relative bg-card rounded-t-[0.625rem] flex flex-col"
-            style={{ maxHeight: '85vh', overflowY: 'auto' }}
-          >
+      <BottomSheet open={nuevoQuimicoOpen} onClose={() => { if (!guardandoQuimico) setNuevoQuimicoOpen(false) }}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base font-semibold">Nuevo químico / insumo</h2>
               <button
@@ -758,21 +731,10 @@ export function ControlInventarioQuimicos() {
                 {guardandoQuimico ? 'Guardando...' : 'Agregar químico'}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+      </BottomSheet>
 
       {/* Consolidado sheet */}
-      {consolidadoOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => { if (!exportando) setConsolidadoOpen(false) }}
-          />
-          <div
-            className="relative bg-card rounded-t-[0.625rem] flex flex-col"
-            style={{ maxHeight: '85vh', overflowY: 'auto' }}
-          >
+      <BottomSheet open={consolidadoOpen} onClose={() => { if (!exportando) setConsolidadoOpen(false) }}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base font-semibold">Exportar consolidado</h2>
               <button
@@ -827,9 +789,7 @@ export function ControlInventarioQuimicos() {
                   : 'Exportar PDF'}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+      </BottomSheet>
     </div>
   )
 }

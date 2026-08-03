@@ -8,6 +8,7 @@ import {
   AlertTriangle, Trash2, Settings,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useRanchos } from '@/hooks/useRanchos'
@@ -791,13 +792,7 @@ export function InspeccionVidrioPlastico() {
       </div>
 
       {/* ── Sheet: configurar materiales ───────────────────────────────────── */}
-      {sheetConfigAbierto && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetConfigAbierto(false)} />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{ height: '85%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetConfigAbierto} onClose={() => setSheetConfigAbierto(false)} height="85%">
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
@@ -943,18 +938,10 @@ export function InspeccionVidrioPlastico() {
                 </>
               )}
             </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
       {/* ── Sheet: exportar consolidado ────────────────────────────────────── */}
-      {sheetConsolidadoAbierto && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetConsolidadoAbierto(false)} />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{ borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetConsolidadoAbierto} onClose={() => setSheetConsolidadoAbierto(false)}>
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
@@ -1026,18 +1013,10 @@ export function InspeccionVidrioPlastico() {
                 Generar PDF consolidado
               </button>
             </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
 
       {/* ── Sheet: nueva inspección ────────────────────────────────────────── */}
-      {sheetInspeccionAbierto && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setSheetInspeccionAbierto(false)} />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{ height: '85%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-          >
+      <BottomSheet open={sheetInspeccionAbierto} onClose={() => setSheetInspeccionAbierto(false)} height="85%">
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
@@ -1184,9 +1163,7 @@ export function InspeccionVidrioPlastico() {
                 Guardar y generar PDF
               </button>
             </div>
-          </div>
-        </>
-      )}
+      </BottomSheet>
     </div>
   )
 }
