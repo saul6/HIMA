@@ -1,6 +1,7 @@
 import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { MuestrasLaboratorioPDF, MuestrasLaboratorioPagina, type MicroorganismoPDF, type MuestraPDF } from './MuestrasLaboratorioPDF'
+import { nombrePdf } from '@/lib/pdf/nombrePdf'
 
 async function cargarMicroorganismos(): Promise<MicroorganismoPDF[]> {
   const { data } = await (supabase as any)
@@ -51,7 +52,7 @@ export async function generarMuestrasLaboratorioPDF(id: string, orgId: string) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `muestra-laboratorio-${datos.fecha}.pdf`
+  a.download = nombrePdf('Muestras_Laboratorio', datos.fecha, datos.instalacion)
   a.click()
   URL.revokeObjectURL(url)
 }

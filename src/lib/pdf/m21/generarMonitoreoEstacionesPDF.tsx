@@ -12,6 +12,7 @@ import {
   CatalogoCodigo,
   EstacionResultadoPDF,
 } from './MonitoreoEstacionesPDF'
+import { nombrePdf } from '@/lib/pdf/nombrePdf'
 
 // ── Orden y etiquetas por tipo de trampa ──────────────────────────────────────
 
@@ -129,7 +130,7 @@ export async function generarMonitoreoEstacionesPDF(
   const datos = await construirDatosM21(revisionId, orgId)
   const blob = await pdf(<MonitoreoEstacionesPDF {...datos} />).toBlob()
 
-  const filename = `revision-plagas-${datos.fecha}.pdf`
+  const filename = nombrePdf('Monitoreo_Plagas', datos.fecha, datos.instalacion)
 
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

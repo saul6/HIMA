@@ -2,12 +2,12 @@
 
 import { pdf } from '@react-pdf/renderer'
 import { LimpiezaBanosPDF, type LimpiezaBanosPaginaProps } from './LimpiezaBanosPDF'
+import { nombrePdf } from '@/lib/pdf/nombrePdf'
 
 export async function generarLimpiezaBanosPDF(
   props: LimpiezaBanosPaginaProps,
 ): Promise<void> {
-  const fechaSlug = props.fecha.replaceAll('-', '')
-  const filename = `limpieza-banos-${fechaSlug}.pdf`
+  const filename = nombrePdf('Limpieza_Banos', props.fecha, props.rancho)
 
   const blob = await pdf(<LimpiezaBanosPDF {...props} />).toBlob()
   const url = URL.createObjectURL(blob)

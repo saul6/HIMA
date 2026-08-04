@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { AccionesCorrectivasPDF, type AccionPDFFila } from './AccionesCorrectivasPDF'
 import { fotosAccionADataUris } from '@/lib/storage/accionesCorrectivasStorage'
+import { nombrePdf } from '@/lib/pdf/nombrePdf'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -113,7 +114,7 @@ export async function generarAccionCorrectivaIndividualPDF(
 ): Promise<void> {
   const datos = await cargarDatosAccion(accionId, orgId)
   const blob = await pdf(<AccionesCorrectivasPDF {...datos} />).toBlob()
-  descargarBlob(blob, `Acciones_Correctivas_${fecha}.pdf`)
+  descargarBlob(blob, nombrePdf('Acciones_Correctivas', fecha, datos.ranchoNombre))
 }
 
 export async function generarAccionesCorrectivasPDF(
@@ -125,7 +126,7 @@ export async function generarAccionesCorrectivasPDF(
 ): Promise<void> {
   const datos = await cargarDatosMultiples(accionIds, orgId, orgNombre, ranchoNombre, fechaTitulo)
   const blob = await pdf(<AccionesCorrectivasPDF {...datos} />).toBlob()
-  descargarBlob(blob, `Acciones_Correctivas_${fechaTitulo}.pdf`)
+  descargarBlob(blob, nombrePdf('Acciones_Correctivas', fechaTitulo, ranchoNombre))
 }
 
 export async function generarBlobAccionCorrectiva(accionId: string, orgId: string): Promise<Blob> {

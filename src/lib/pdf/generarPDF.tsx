@@ -1,12 +1,12 @@
 import { pdf } from '@react-pdf/renderer'
 import { AplicacionPDF } from './AplicacionPDF'
 import type { AplicacionPDFProps } from './AplicacionPDF'
+import { nombrePdf } from './nombrePdf'
 
 export async function generarAplicacionPDF(props: AplicacionPDFProps): Promise<void> {
   const { aplicacion, rancho } = props
 
-  const fecha = aplicacion.fecha_aplicacion.replaceAll('-', '')
-  const filename = `aplicacion-${fecha}.pdf`
+  const filename = nombrePdf('Aplicacion', aplicacion.fecha_aplicacion, rancho?.nombre)
 
   const blob = await pdf(<AplicacionPDF {...props} />).toBlob()
 

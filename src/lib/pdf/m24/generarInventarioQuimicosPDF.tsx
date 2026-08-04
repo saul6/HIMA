@@ -1,6 +1,8 @@
 import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { InventarioQuimicosPDF, type MovimientoPDF } from './InventarioQuimicosPDF'
+import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { hoyMX } from '@/lib/fecha'
 
 async function cargarDatosQuimico(quimicoId: string, orgId: string) {
   const [qRes, mRes] = await Promise.all([
@@ -38,7 +40,7 @@ export async function generarInventarioQuimicosPDF(quimicoId: string, orgId: str
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `inventario-quimicos-${new Date().toISOString().slice(0, 10)}.pdf`
+  a.download = nombrePdf('Inventario_Quimicos', hoyMX(), quimico.ranchos?.nombre)
   a.click()
   URL.revokeObjectURL(url)
 }

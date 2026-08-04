@@ -1,6 +1,7 @@
 import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { ResumenNoConformidadesPDF, type NcrFila } from './ResumenNoConformidadesPDF'
+import { nombrePdf } from '@/lib/pdf/nombrePdf'
 
 interface DatosVisita {
   orgNombre: string
@@ -62,9 +63,8 @@ export async function generarResumenNoConformidadesPDF(
   fecha: string
 ): Promise<void> {
   const datos = await cargarDatosVisita(visitaId, orgId)
-  const fechaSlug = fecha.replaceAll('-', '')
   const blob = await pdf(<ResumenNoConformidadesPDF {...datos} />).toBlob()
-  descargarBlob(blob, `Resumen_No_Conformidades_${fechaSlug}.pdf`)
+  descargarBlob(blob, nombrePdf('Resumen_No_Conformidades', fecha, datos.ranchoNombre))
 }
 
 export async function generarBlobResumenNoConformidades(

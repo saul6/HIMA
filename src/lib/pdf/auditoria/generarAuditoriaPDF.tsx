@@ -2,16 +2,17 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { AuditoriaPDF, AuditoriaConsolidadoPDF, type AuditoriaPaginaProps } from './AuditoriaPDF'
 import type { ModuloAuditoria } from '@/hooks/useAuditoria'
+import { nombrePdf } from '@/lib/pdf/nombrePdf'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
 
-function moduloLabel(modulo: ModuloAuditoria): string {
-  if (modulo === 'm14') return 'saia'
-  if (modulo === 'm15') return 'granja'
-  if (modulo === 'm16') return 'cosecha'
-  if (modulo === 'm17') return 'bpm'
-  return 'haccp'
+function moduloPdfNombre(modulo: ModuloAuditoria): string {
+  if (modulo === 'm14') return 'Auditoria_SAIA'
+  if (modulo === 'm15') return 'Auditoria_Granja'
+  if (modulo === 'm16') return 'Auditoria_Cuadrilla'
+  if (modulo === 'm17') return 'BPM'
+  return 'HACCP'
 }
 
 async function construirDatosAuditoria(
@@ -81,7 +82,7 @@ export async function generarAuditoriaPDF(
 ): Promise<void> {
   const datos = await construirDatosAuditoria(auditoriaId, orgId, modulo)
   const blob = await pdf(<AuditoriaPDF {...datos} />).toBlob()
-  const filename = `auditoria-${moduloLabel(modulo)}-${fecha.replaceAll('-', '')}.pdf`
+  const filename = nombrePdf(moduloPdfNombre(modulo), fecha, ranchoNombre)
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
@@ -120,7 +121,7 @@ export async function generarAuditoriaConsolidadoPDF(
     <AuditoriaConsolidadoPDF auditorias={todas} modulo={modulo} />
   ).toBlob()
 
-  const filename = `auditoria-${moduloLabel(modulo)}-consolidado-${desde.replaceAll('-', '')}-${hasta.replaceAll('-', '')}.pdf`
+  const filename = `${moduloPdfNombre(modulo)}_${desde}_${hasta}_consolidado.pdf`
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url

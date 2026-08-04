@@ -4,14 +4,14 @@
 
 import { pdf } from '@react-pdf/renderer'
 import { BotiquinPDF, type BotiquinPDFProps } from './BotiquinPDF'
+import { nombrePdf } from '@/lib/pdf/nombrePdf'
 
 export async function generarBotiquinPDF(
   props: BotiquinPDFProps,
   ranchoNombre: string,
   fecha: string
 ): Promise<void> {
-  const fechaSlug = fecha.replaceAll('-', '')
-  const filename = `botiquin-${fechaSlug}.pdf`
+  const filename = nombrePdf('Botiquin', fecha, ranchoNombre)
 
   const blob = await pdf(<BotiquinPDF {...props} />).toBlob()
   const url = URL.createObjectURL(blob)

@@ -6,6 +6,7 @@ import { pdf } from '@react-pdf/renderer'
 import { ReporteIncidenciasPDF, type ReporteIncidenciasPDFProps } from './ReporteIncidenciasPDF'
 import { fotosADataUris } from './incidenciasPdfImagenes'
 import type { M13ReporteConRancho } from '@/hooks/useM13Incidencias'
+import { nombrePdf } from '@/lib/pdf/nombrePdf'
 
 export async function generarReporteIncidenciasPDF(
   reporte: M13ReporteConRancho,
@@ -34,8 +35,7 @@ export async function generarReporteIncidenciasPDF(
 
   const blob = await pdf(<ReporteIncidenciasPDF {...props} />).toBlob()
 
-  const fechaSlug = reporte.fecha.replaceAll('-', '')
-  const filename = `reporte-incidencias-${fechaSlug}.pdf`
+  const filename = nombrePdf('Reporte_Incidencias', reporte.fecha, reporte.rancho_nombre)
 
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

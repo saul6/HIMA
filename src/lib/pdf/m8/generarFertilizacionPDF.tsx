@@ -3,14 +3,14 @@
 
 import { pdf } from '@react-pdf/renderer'
 import { FertilizacionPDF, type FertilizacionPDFProps } from './FertilizacionPDF'
+import { nombrePdf } from '@/lib/pdf/nombrePdf'
 
 export async function generarFertilizacionPDF(
   props: FertilizacionPDFProps,
   ranchoNombre: string,
   fecha: string
 ): Promise<void> {
-  const fechaSlug = fecha.replaceAll('-', '')
-  const filename = `fertilizacion-${fechaSlug}.pdf`
+  const filename = nombrePdf('Fertilizacion', fecha, ranchoNombre)
 
   const blob = await pdf(<FertilizacionPDF {...props} />).toBlob()
   const url = URL.createObjectURL(blob)

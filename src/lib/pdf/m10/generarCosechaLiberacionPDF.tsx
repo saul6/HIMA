@@ -2,12 +2,12 @@
 
 import { pdf } from '@react-pdf/renderer'
 import { CosechaLiberacionPDF, type CosechaLiberacionPaginaProps } from './CosechaLiberacionPDF'
+import { nombrePdf } from '@/lib/pdf/nombrePdf'
 
 export async function generarCosechaLiberacionPDF(
   props: CosechaLiberacionPaginaProps,
 ): Promise<void> {
-  const fechaSlug = props.fecha.replaceAll('-', '')
-  const filename = `cosecha-liberacion-${fechaSlug}.pdf`
+  const filename = nombrePdf('Cosecha_Liberacion', props.fecha, props.rancho)
 
   const blob = await pdf(<CosechaLiberacionPDF {...props} />).toBlob()
   const url = URL.createObjectURL(blob)

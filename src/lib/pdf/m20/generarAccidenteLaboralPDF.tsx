@@ -7,6 +7,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { fotosADataUris } from '@/lib/pdf/m13/incidenciasPdfImagenes'
 import { AccidenteLaboralPDF, AccidenteLaboralPaginaProps } from './AccidenteLaboralPDF'
+import { nombrePdf } from '@/lib/pdf/nombrePdf'
 
 // ── Consulta + construccion de datos ─────────────────────────────────────────
 
@@ -58,7 +59,7 @@ export async function generarAccidenteLaboralPDF(
   const datos = await construirDatosM20(accidenteId, orgId)
   const blob = await pdf(<AccidenteLaboralPDF {...datos} />).toBlob()
 
-  const filename = `accidente-laboral-${datos.fecha}.pdf`
+  const filename = nombrePdf('Accidente_Laboral', datos.fecha, datos.instalacion)
 
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
