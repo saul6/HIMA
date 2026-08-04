@@ -136,6 +136,7 @@ export function useAccionesCorrectivas() {
     realizo: string | null
     verifico: string | null
     visita_id?: string | null
+    ishikawa?: Record<string, string> | null
   }): Promise<string> {
     if (!profile?.org_id) throw new Error('Sin organizacion activa')
     const { data, error: err } = await tbl('acciones_correctivas')

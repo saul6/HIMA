@@ -53,6 +53,7 @@ async function cargarDatosAccion(accionId: string, orgId: string): Promise<Datos
     fecha_cumplimiento: a.fecha_cumplimiento,
     realizo: a.realizo,
     verifico: a.verifico,
+    ishikawa: (a.ishikawa as Record<string, string> | null) ?? null,
     fotos: fotos.map((f: any) => ({
       tipo: f.tipo as 'no_conformidad' | 'evidencia_correccion',
       leyenda: f.leyenda ?? null,
@@ -94,6 +95,7 @@ async function cargarDatosMultiples(
     fecha_cumplimiento: a.fecha_cumplimiento,
     realizo: a.realizo,
     verifico: a.verifico,
+    ishikawa: (a.ishikawa as Record<string, string> | null) ?? null,
     fotos: ((a.accion_correctiva_fotos ?? []) as any[]).map((f: any) => ({
       tipo: f.tipo as 'no_conformidad' | 'evidencia_correccion',
       leyenda: f.leyenda ?? null,

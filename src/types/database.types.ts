@@ -1852,6 +1852,7 @@ export interface AccionCorrectiva {
   fecha_cumplimiento: string | null
   realizo: string | null
   verifico: string | null
+  ishikawa: Record<string, string> | null
   estado: 'abierta' | 'cerrada'
   created_at: string
   updated_at: string

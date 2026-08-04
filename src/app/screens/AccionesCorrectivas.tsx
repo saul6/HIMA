@@ -182,6 +182,18 @@ export function AccionesCorrectivas() {
   const [fRealizo, setFRealizo] = useState('')
   const [fverifico, setFverifico] = useState('')
 
+  // Ishikawa (opcional)
+  const ISH_KEYS: Array<[string, string]> = [
+    ['medio_ambiente', 'Medio ambiente'],
+    ['metodo', 'Método'],
+    ['mano_de_obra', 'Mano de obra'],
+    ['materiales', 'Materiales'],
+    ['herramientas', 'Herramientas'],
+    ['medicion', 'Medición'],
+  ]
+  const ISH_EMPTY = Object.fromEntries(ISH_KEYS.map(([k]) => [k, '']))
+  const [ishikawa, setIshikawa] = useState<Record<string, string>>(ISH_EMPTY)
+
   // Fotos
   const [fotosGuardadas, setFotosGuardadas] = useState<AccionCorrectivaFoto[]>([])
   const [fotosPendientes, setFotosPendientes] = useState<FotoLocal[]>([])
@@ -222,6 +234,8 @@ export function AccionesCorrectivas() {
     setFotosPendientes([])
     setTipoFotoNueva('evidencia_correccion')
     setLeyendaFotoNueva('')
+    const rawIsh = (a?.ishikawa ?? {}) as Record<string, string>
+    setIshikawa(Object.fromEntries(ISH_KEYS.map(([k]) => [k, rawIsh[k] ?? ''])))
     setSheetAbierto(true)
   }
 
@@ -229,12 +243,18 @@ export function AccionesCorrectivas() {
     setSheetAbierto(false)
     setSelectedItem(null)
     setFotosPendientes([])
+    setIshikawa(ISH_EMPTY)
   }
 
   async function handleGuardar() {
     if (!selectedItem || !profile?.org_id) return
     setGuardando(true)
     try {
+      const ishikawaPayload: Record<string, string> = {}
+      for (const [k, v] of Object.entries(ishikawa)) {
+        if (v.trim()) ishikawaPayload[k] = v.trim()
+      }
+
       const accionId = await upsertAccion({
         respuesta_id: selectedItem.respuesta_id,
         modulo: selectedItem.modulo,
@@ -248,6 +268,7 @@ export function AccionesCorrectivas() {
         realizo: fRealizo.trim() || null,
         verifico: fverifico.trim() || null,
         visita_id: selectedItem.visita_id ?? null,
+        ishikawa: Object.keys(ishikawaPayload).length > 0 ? ishikawaPayload : null,
       })
 
       for (const fp of fotosPendientes) {
@@ -572,6 +593,27 @@ export function AccionesCorrectivas() {
               placeholder="Medidas para prevenir recurrencia…"
               className="w-full px-3 py-2.5 rounded-xl border border-border bg-input-background text-sm resize-none"
             />
+          </div>
+
+          {/* Ishikawa — opcional */}
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+              ANÁLISIS DE CAUSA — ISHIKAWA (opcional)
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {ISH_KEYS.map(([key, label]) => (
+                <div key={key} className="space-y-1">
+                  <label className="text-xs text-muted-foreground">{label}</label>
+                  <input
+                    type="text"
+                    value={ishikawa[key]}
+                    onChange={(e) => setIshikawa((prev) => ({ ...prev, [key]: e.target.value }))}
+                    placeholder={`Causa: ${label}...`}
+                    className="w-full h-9 px-3 rounded-lg border border-border bg-input-background text-sm"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Fecha cumplimiento */}
