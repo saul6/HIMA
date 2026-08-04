@@ -49,6 +49,7 @@ import { RegistroAccidentesLaborales } from "./screens/RegistroAccidentesLaboral
 import { MonitoreoEstacionesPlagas } from "./screens/MonitoreoEstacionesPlagas";
 import { RegistroMuestrasLaboratorio } from "./screens/RegistroMuestrasLaboratorio";
 import { VerificacionInsumos } from "./screens/VerificacionInsumos"
+import { PreparacionCloro } from "./screens/PreparacionCloro"
 import { ControlInventarioQuimicos } from "./screens/ControlInventarioQuimicos";
 import { ResumenNoConformidades } from "./screens/ResumenNoConformidades";
 import { AccionesCorrectivas } from "./screens/AccionesCorrectivas";
@@ -115,6 +116,7 @@ export const router = createBrowserRouter([
                   { path: "monitoreo-plagas", Component: MonitoreoEstacionesPlagas },
                   { path: "muestras-laboratorio", Component: RegistroMuestrasLaboratorio },
                   { path: "verificacion-insumos", Component: VerificacionInsumos },
+                  { path: "preparacion-cloro", Component: PreparacionCloro },
                   { path: "inventario-quimicos", Component: ControlInventarioQuimicos },
                   { path: "no-conformidades", Component: ResumenNoConformidades },
                   { path: "acciones-correctivas", Component: AccionesCorrectivas },

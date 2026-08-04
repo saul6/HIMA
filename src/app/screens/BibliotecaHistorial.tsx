@@ -36,6 +36,7 @@ const MODULO_META: Record<ModuloKey, { label: string; color: string }> = {
   M24: { label: 'Inv. Químicos',        color: '#37474F' },
   M25: { label: 'No-Conformidades',     color: '#7B1FA2' },
   M26: { label: 'Acciones Correctivas', color: '#BF360C' },
+  M27: { label: 'Preparacion Cloro',   color: '#00796B' },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -71,7 +72,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tbl = (name: string) => (supabase as any).from(name)
 
-  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26] = await Promise.all([
+  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27] = await Promise.all([
     supabase.from('aplicaciones')
       .select('id, fecha_aplicacion, rancho_id, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha_aplicacion', desde).lte('fecha_aplicacion', hasta)
@@ -160,6 +161,10 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       .select('id, codigo_pregunta, no_conformidad, fecha_deteccion, estado, auditoria_visitas!visita_id(rancho_id, ranchos!rancho_id(nombre))')
       .eq('org_id', orgId).gte('created_at', desde + 'T00:00:00').lte('created_at', hasta + 'T23:59:59')
       .order('created_at', { ascending: false }).limit(500),
+    tbl('m27_preparaciones')
+      .select('id, rancho_id, fecha, area, litros_agua, ml_cloro, ranchos(nombre)')
+      .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
+      .order('fecha', { ascending: false }).limit(500),
   ])
 
   const todos: RegistroHistorial[] = []
@@ -487,7 +492,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
     })
   }
 
-  // M26 — una fila = una acción correctiva
+  // M26 — una fila = una accion correctiva
   for (const r of (r26 as any)?.data ?? []) {
     const visita = (r.auditoria_visitas as any)
     todos.push({
@@ -498,6 +503,19 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       fecha: r.fecha_deteccion ?? r.created_at?.split('T')[0] ?? '',
       resumen: `${r.codigo_pregunta}: ${(r.no_conformidad as string | null)?.slice(0, 80) ?? '—'}`,
       pdfRef: { tipo: 'M26', id: r.id },
+    })
+  }
+
+  // M27 — una fila = una preparacion de cloro
+  for (const r of (r27 as any)?.data ?? []) {
+    todos.push({
+      key: `M27-${r.id}`,
+      modulo: 'M27',
+      rancho_id: r.rancho_id,
+      rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
+      fecha: r.fecha,
+      resumen: `Preparacion cloro · ${r.area} · ${r.litros_agua} L => ${r.ml_cloro} mL`,
+      pdfRef: { tipo: 'M27', id: r.id },
     })
   }
 
