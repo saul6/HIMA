@@ -51,7 +51,7 @@ type FormState = {
   desinfectante: boolean
 }
 
-const hoy = () => new Date().toISOString().split('T')[0]
+const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
 const FORM_INICIAL: FormState = {
   rancho_id: '',

@@ -24,7 +24,7 @@ const CLAVE_MODULO = 'M.A.D.Y · Por evento'
 const MAX_FOTOS_AVISO = 6
 const MAX_FOTO_BYTES = 5.5 * 1024 * 1024
 
-const hoy = () => new Date().toISOString().split('T')[0]
+const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
 // ── Tipos internos ────────────────────────────────────────────────────────────
 

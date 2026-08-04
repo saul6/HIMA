@@ -45,7 +45,7 @@ const BANO_INICIAL: FilaBano = {
   succion: false,
 }
 
-const hoy = () => new Date().toISOString().split('T')[0]
+const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

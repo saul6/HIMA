@@ -18,7 +18,7 @@ import {
 import { generarInventarioQuimicosPDF } from '@/lib/pdf/m24/generarInventarioQuimicosPDF'
 import { generarInventarioQuimicosConsolidadoPDF } from '@/lib/pdf/m24/generarInventarioQuimicosConsolidadoPDF'
 
-const hoy = () => new Date().toISOString().split('T')[0]
+const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
 function formatFecha(iso: string): string {
   try {

@@ -25,7 +25,7 @@ import { useModulosContext } from '@/context/ModulosContext'
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function hoy(): string {
-  return new Date().toISOString().split('T')[0]
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 }
 
 function mesActual(): string {

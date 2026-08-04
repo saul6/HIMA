@@ -14,7 +14,7 @@ import { ResumenPuntaje } from './ResumenPuntaje'
 import { generarAuditoriaPDF, generarAuditoriaConsolidadoPDF } from '@/lib/pdf/auditoria/generarAuditoriaPDF'
 import type { RespuestaAuditoria, EstadoAuditoria } from '@/types/database.types'
 
-const hoy = () => new Date().toISOString().split('T')[0]
+const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
 function formatFecha(iso: string): string {
   try {

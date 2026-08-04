@@ -38,7 +38,7 @@ const TIPO_TRAMPA_LABELS: Record<TipoTrampa, string> = {
 
 const TIPOS_ORDEN: TipoTrampa[] = ['cebo', 'interior', 'mecanica', 'luz']
 
-const hoy = () => new Date().toISOString().split('T')[0]
+const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
 // ── Tipos internos ────────────────────────────────────────────────────────────
 

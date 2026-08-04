@@ -50,7 +50,7 @@ type PerfilItem = { id: string; nombre_completo: string }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const hoy = () => new Date().toISOString().split('T')[0]
+const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
 function formatFecha(iso: string): string {
   try {

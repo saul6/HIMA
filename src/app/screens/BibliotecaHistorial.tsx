@@ -47,7 +47,7 @@ function inicioRango(): string {
 }
 
 function hoy(): string {
-  return new Date().toISOString().slice(0, 10)
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 }
 
 function formatFecha(iso: string): string {

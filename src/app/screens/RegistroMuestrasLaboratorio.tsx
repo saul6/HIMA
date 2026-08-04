@@ -12,7 +12,7 @@ import { supabase } from '@/lib/supabase'
 import { generarMuestrasLaboratorioPDF } from '@/lib/pdf/m22/generarMuestrasLaboratorioPDF'
 import { generarMuestrasLaboratorioConsolidadoPDF } from '@/lib/pdf/m22/generarMuestrasLaboratorioConsolidadoPDF'
 
-const hoy = () => new Date().toISOString().split('T')[0]
+const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
 function formatFecha(iso: string): string {
   try {

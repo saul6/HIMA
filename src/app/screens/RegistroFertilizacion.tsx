@@ -31,7 +31,7 @@ const METODOS = ['Fertirriego', 'Drench', 'Band'] as const
 type Metodo = (typeof METODOS)[number]
 type TipoMovimiento = 'entrada' | 'salida' | 'ajuste'
 
-const hoy = () => new Date().toISOString().split('T')[0]
+const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
