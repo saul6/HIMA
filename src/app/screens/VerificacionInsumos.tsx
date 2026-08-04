@@ -28,6 +28,7 @@ import { useOrganizacion } from '@/hooks/useOrganizacion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
+const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
 // ── Plantilla estándar (30 ítems) ────────────────────────────────────────────
 
