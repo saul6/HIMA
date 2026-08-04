@@ -37,6 +37,7 @@ const MODULO_META: Record<ModuloKey, { label: string; color: string }> = {
   M25: { label: 'No-Conformidades',     color: '#7B1FA2' },
   M26: { label: 'Acciones Correctivas', color: '#BF360C' },
   M27: { label: 'Preparacion Cloro',   color: '#00796B' },
+  M28: { label: 'Limpieza Banos/Quimicos', color: '#1B5E20' },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -72,7 +73,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tbl = (name: string) => (supabase as any).from(name)
 
-  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27] = await Promise.all([
+  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28] = await Promise.all([
     supabase.from('aplicaciones')
       .select('id, fecha_aplicacion, rancho_id, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha_aplicacion', desde).lte('fecha_aplicacion', hasta)
@@ -165,6 +166,14 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       .select('id, rancho_id, fecha, area, litros_agua, ml_cloro, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
       .order('fecha', { ascending: false }).limit(500),
+    tbl('m28_registro_mensual')
+      .select('id, rancho_id, anio, mes, ranchos(nombre)')
+      .eq('org_id', orgId)
+      .gte('anio', parseInt(desdeM.slice(0, 4)))
+      .lte('anio', parseInt(hastaM.slice(0, 4)))
+      .order('anio', { ascending: false })
+      .order('mes', { ascending: false })
+      .limit(200),
   ])
 
   const todos: RegistroHistorial[] = []
@@ -516,6 +525,20 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       fecha: r.fecha,
       resumen: `Preparacion cloro · ${r.area} · ${r.litros_agua} L => ${r.ml_cloro} mL`,
       pdfRef: { tipo: 'M27', id: r.id },
+    })
+  }
+
+  // M28 — una fila = un registro mensual de limpieza de baños y almacen de químicos
+  for (const r of (r28 as any)?.data ?? []) {
+    const mesLabel = new Date(r.anio, r.mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    todos.push({
+      key: `M28-${r.id}`,
+      modulo: 'M28',
+      rancho_id: r.rancho_id,
+      rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
+      fecha: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
+      resumen: `Limpieza de baños y almacen - ${mesLabel}`,
+      pdfRef: { tipo: 'M28', id: r.id },
     })
   }
 

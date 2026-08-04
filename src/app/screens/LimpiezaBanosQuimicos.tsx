@@ -1,0 +1,1136 @@
+import { useState, useCallback, useMemo } from 'react'
+import {
+  ChevronLeft, Plus, FileDown, Loader2, Sparkles,
+  TriangleAlert, X, Settings,
+} from 'lucide-react'
+import { Link } from 'react-router'
+import { BottomSheet } from '@/app/components/BottomSheet'
+import { toast } from 'sonner'
+import { useAuthContext } from '@/context/AuthContext'
+import { useModulosContext } from '@/context/ModulosContext'
+import { useRanchos } from '@/hooks/useRanchos'
+import {
+  useM28LimpiezaBanosQuimicos,
+  useM28Items,
+  type M28RegistroResumen,
+  type M28Item,
+  type ValorM28,
+} from '@/hooks/useM28LimpiezaBanosQuimicos'
+import { supabase } from '@/lib/supabase'
+import { generarLimpiezaBanosQuimicosPDF } from '@/lib/pdf/m28/generarLimpiezaBanosQuimicosPDF'
+import { generarLimpiezaBanosQuimicosConsolidadoPDF } from '@/lib/pdf/m28/generarLimpiezaBanosQuimicosConsolidadoPDF'
+import type { M28ItemPDF, M28DiaDataPDF, ValorM28PDF } from '@/lib/pdf/m28/LimpiezaBanosQuimicosPDF'
+
+const tbl = (name: string) => (supabase as any).from(name)
+
+const DAY_W = 40
+
+const PLANTILLA_ESTANDAR: { nombre: string; frecuencia: string; orden: number }[] = [
+  { nombre: 'Limpieza de pisos - Banos',                frecuencia: 'Diario',  orden: 1 },
+  { nombre: 'Desinfeccion de pisos - Banos',            frecuencia: 'Diario',  orden: 2 },
+  { nombre: 'Limpieza de retretes',                     frecuencia: 'Diario',  orden: 3 },
+  { nombre: 'Desinfeccion de retretes',                 frecuencia: 'Diario',  orden: 4 },
+  { nombre: 'Limpieza de lavabos',                      frecuencia: 'Diario',  orden: 5 },
+  { nombre: 'Limpieza de espejos y paredes',            frecuencia: 'Diario',  orden: 6 },
+  { nombre: 'Reposicion de papel sanitario',            frecuencia: 'Diario',  orden: 7 },
+  { nombre: 'Reposicion de jabon y gel antibacterial',  frecuencia: 'Diario',  orden: 8 },
+  { nombre: 'Limpieza de pisos - Almacen Quimicos',     frecuencia: 'Diario',  orden: 9 },
+  { nombre: 'Orden y organizacion - Almacen Quimicos',  frecuencia: 'Diario',  orden: 10 },
+  { nombre: 'Verificacion de etiquetado',               frecuencia: 'Semanal', orden: 11 },
+  { nombre: 'Condiciones de almacenamiento',            frecuencia: 'Semanal', orden: 12 },
+]
+
+const FRECUENCIA_OPTS = ['Diario', 'Semanal', 'Quincenal', 'Mensual']
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+
+type Vista = 'lista' | 'detalle'
+
+interface DiaDataLocal {
+  id?: string
+  concentracion_cloro: number | null
+  ajuste_cloro: string | null
+  concentracion_acido: number | null
+  ajuste_acido: string | null
+  realizo: string | null
+  aprobo: string | null
+}
+
+function mesActual(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+function formatMesLabel(anio: number, mes: number): string {
+  try {
+    const label = new Date(anio, mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    return label.charAt(0).toUpperCase() + label.slice(1)
+  } catch { return `${mes}/${anio}` }
+}
+
+function siguienteValor(v: ValorM28 | undefined): ValorM28 | null {
+  if (v === undefined) return 'hecho'
+  if (v === 'hecho')    return 'no_hecho'
+  if (v === 'no_hecho') return 'na'
+  return null
+}
+
+function cellBg(v: ValorM28 | undefined): string {
+  if (v === 'hecho')    return 'var(--agro-success-fill)'
+  if (v === 'no_hecho') return 'var(--agro-danger-fill)'
+  if (v === 'na')       return 'var(--muted)'
+  return 'var(--card)'
+}
+
+function cellFg(v: ValorM28 | undefined): string {
+  if (v === 'hecho')    return 'var(--agro-success-text)'
+  if (v === 'no_hecho') return 'var(--agro-danger-text)'
+  if (v === 'na')       return 'var(--muted-foreground)'
+  return 'var(--muted-foreground)'
+}
+
+function cellLabel(v: ValorM28 | undefined): string {
+  if (v === 'hecho')    return '✓'
+  if (v === 'no_hecho') return '✗'
+  if (v === 'na')       return '—'
+  return ''
+}
+
+export function LimpiezaBanosQuimicos() {
+  const { profile } = useAuthContext()
+  const { terminosSitio } = useModulosContext()
+  const { ranchos } = useRanchos()
+  const { registros, loading, error, refetch } = useM28LimpiezaBanosQuimicos()
+  const orgId = profile?.org_id ?? null
+  const termino = terminosSitio.singular
+
+  const [vista, setVista] = useState<Vista>('lista')
+  const [registroActivo, setRegistroActivo] = useState<M28RegistroResumen | null>(null)
+
+  const [resultados, setResultados] = useState<Record<number, Record<string, ValorM28>>>({})
+  const [diasData, setDiasData] = useState<Record<number, DiaDataLocal>>({})
+  const [loadingDetalle, setLoadingDetalle] = useState(false)
+  const [obsLocal, setObsLocal] = useState('')
+  const [savingObs, setSavingObs] = useState(false)
+  const [togglingCells, setTogglingCells] = useState<Set<string>>(new Set())
+
+  const detalleRanchoId = registroActivo?.rancho_id ?? null
+  const { items, refetch: refetchItems } = useM28Items(detalleRanchoId, orgId)
+  const activeItems = useMemo(() => items.filter((i) => i.activo), [items])
+
+  const numDias = registroActivo ? new Date(registroActivo.anio, registroActivo.mes, 0).getDate() : 0
+  const days = useMemo(() => Array.from({ length: numDias }, (_, i) => i + 1), [numDias])
+
+  const cargarDetalle = useCallback(async (regId: string) => {
+    if (!orgId) return
+    setLoadingDetalle(true)
+    try {
+      const [resultadosRes, diasRes] = await Promise.all([
+        tbl('m28_resultados').select('item_id, dia, valor').eq('registro_id', regId).eq('org_id', orgId),
+        tbl('m28_dias').select('*').eq('registro_id', regId),
+      ])
+      if (resultadosRes.error) throw resultadosRes.error
+      if (diasRes.error) throw diasRes.error
+
+      const res: Record<number, Record<string, ValorM28>> = {}
+      for (const r of (resultadosRes.data ?? []) as any[]) {
+        if (!res[r.dia]) res[r.dia] = {}
+        res[r.dia][r.item_id] = r.valor as ValorM28
+      }
+      setResultados(res)
+
+      const dd: Record<number, DiaDataLocal> = {}
+      for (const d of (diasRes.data ?? []) as any[]) {
+        dd[d.dia] = {
+          id: d.id,
+          concentracion_cloro: d.concentracion_cloro ?? null,
+          ajuste_cloro: d.ajuste_cloro ?? null,
+          concentracion_acido: d.concentracion_acido ?? null,
+          ajuste_acido: d.ajuste_acido ?? null,
+          realizo: d.realizo ?? null,
+          aprobo: d.aprobo ?? null,
+        }
+      }
+      setDiasData(dd)
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al cargar detalle')
+    } finally {
+      setLoadingDetalle(false)
+    }
+  }, [orgId])
+
+  const abrirDetalle = (reg: M28RegistroResumen) => {
+    setRegistroActivo(reg)
+    setObsLocal(reg.observaciones ?? '')
+    setResultados({})
+    setDiasData({})
+    setVista('detalle')
+    cargarDetalle(reg.id)
+  }
+
+  const volverALista = () => {
+    setVista('lista')
+    setRegistroActivo(null)
+    setResultados({})
+    setDiasData({})
+  }
+
+  async function handleGuardarObs() {
+    if (!registroActivo || !orgId) return
+    setSavingObs(true)
+    try {
+      const { error: e } = await tbl('m28_registro_mensual')
+        .update({ observaciones: obsLocal || null })
+        .eq('id', registroActivo.id)
+        .eq('org_id', orgId)
+      if (e) throw e
+      setRegistroActivo((prev) => prev ? { ...prev, observaciones: obsLocal || null } : prev)
+      refetch()
+      toast.success('Observaciones guardadas')
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al guardar')
+    } finally {
+      setSavingObs(false)
+    }
+  }
+
+  async function handleToggle(itemId: string, dia: number) {
+    if (!registroActivo || !orgId) return
+    const cellKey = `${dia}|${itemId}`
+    if (togglingCells.has(cellKey)) return
+
+    const current = resultados[dia]?.[itemId]
+    const next = siguienteValor(current)
+
+    setTogglingCells((prev) => new Set(prev).add(cellKey))
+    try {
+      if (next === null) {
+        const { error: e } = await tbl('m28_resultados')
+          .delete()
+          .eq('registro_id', registroActivo.id)
+          .eq('item_id', itemId)
+          .eq('dia', dia)
+          .eq('org_id', orgId)
+        if (e) throw e
+        setResultados((prev) => {
+          const copy = { ...prev }
+          if (copy[dia]) {
+            const dayMap = { ...copy[dia] }
+            delete dayMap[itemId]
+            copy[dia] = dayMap
+          }
+          return copy
+        })
+      } else {
+        const { error: e } = await tbl('m28_resultados')
+          .upsert(
+            { registro_id: registroActivo.id, item_id: itemId, dia, org_id: orgId, valor: next },
+            { onConflict: 'registro_id,item_id,dia' }
+          )
+        if (e) throw e
+        setResultados((prev) => ({
+          ...prev,
+          [dia]: { ...(prev[dia] ?? {}), [itemId]: next },
+        }))
+      }
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al guardar resultado')
+    } finally {
+      setTogglingCells((prev) => {
+        const s = new Set(prev)
+        s.delete(cellKey)
+        return s
+      })
+    }
+  }
+
+  // ── Sheet: nuevo registro ──
+  const [sheetNuevo, setSheetNuevo] = useState(false)
+  const [nRanchoId, setNRanchoId] = useState('')
+  const [nAnio, setNAnio] = useState(new Date().getFullYear())
+  const [nMes, setNMes] = useState(new Date().getMonth() + 1)
+  const [nGuardando, setNGuardando] = useState(false)
+  const [nErrRancho, setNErrRancho] = useState(false)
+
+  async function handleCrearRegistro() {
+    if (!nRanchoId) { setNErrRancho(true); return }
+    if (!orgId) { toast.error('Sin organización activa'); return }
+    setNGuardando(true)
+    try {
+      const { data, error: e } = await tbl('m28_registro_mensual')
+        .insert({ rancho_id: nRanchoId, org_id: orgId, anio: nAnio, mes: nMes })
+        .select('*, ranchos(nombre)')
+        .single()
+      if (e) throw e
+      toast.success('Registro mensual creado')
+      setSheetNuevo(false)
+      await refetch()
+      const r = data as any
+      const nuevo: M28RegistroResumen = {
+        id: r.id,
+        rancho_id: r.rancho_id,
+        rancho_nombre: r.ranchos?.nombre ?? '—',
+        anio: r.anio,
+        mes: r.mes,
+        observaciones: null,
+      }
+      abrirDetalle(nuevo)
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Error al crear registro'
+      if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
+        toast.warning('Ya existe un registro para ese mes e instalación')
+      } else {
+        toast.error(msg)
+      }
+    } finally {
+      setNGuardando(false)
+    }
+  }
+
+  // ── Sheet: editar día ──
+  const [sheetDia, setSheetDia] = useState<number | null>(null)
+  const [diaConcCloro, setDiaConcCloro] = useState('')
+  const [diaAjCloro, setDiaAjCloro] = useState('')
+  const [diaConcAcido, setDiaConcAcido] = useState('')
+  const [diaAjAcido, setDiaAjAcido] = useState('')
+  const [diaRealizo, setDiaRealizo] = useState('')
+  const [diaAprobo, setDiaAprobo] = useState('')
+  const [diaSaving, setDiaSaving] = useState(false)
+
+  function abrirSheetDia(dia: number) {
+    const d = diasData[dia]
+    setDiaConcCloro(d?.concentracion_cloro != null ? String(d.concentracion_cloro) : '')
+    setDiaAjCloro(d?.ajuste_cloro ?? '')
+    setDiaConcAcido(d?.concentracion_acido != null ? String(d.concentracion_acido) : '')
+    setDiaAjAcido(d?.ajuste_acido ?? '')
+    setDiaRealizo(d?.realizo ?? '')
+    setDiaAprobo(d?.aprobo ?? '')
+    setSheetDia(dia)
+  }
+
+  async function handleGuardarDia() {
+    if (sheetDia === null || !registroActivo || !orgId) return
+    setDiaSaving(true)
+    try {
+      const payload: any = {
+        registro_id: registroActivo.id,
+        dia: sheetDia,
+        concentracion_cloro: diaConcCloro !== '' ? parseFloat(diaConcCloro) : null,
+        ajuste_cloro: diaAjCloro.trim() || null,
+        concentracion_acido: diaConcAcido !== '' ? parseFloat(diaConcAcido) : null,
+        ajuste_acido: diaAjAcido.trim() || null,
+        realizo: diaRealizo.trim() || null,
+        aprobo: diaAprobo.trim() || null,
+      }
+      const { error: e } = await tbl('m28_dias')
+        .upsert(payload, { onConflict: 'registro_id,dia' })
+      if (e) throw e
+      setDiasData((prev) => ({
+        ...prev,
+        [sheetDia]: {
+          ...prev[sheetDia],
+          concentracion_cloro: payload.concentracion_cloro,
+          ajuste_cloro: payload.ajuste_cloro,
+          concentracion_acido: payload.concentracion_acido,
+          ajuste_acido: payload.ajuste_acido,
+          realizo: payload.realizo,
+          aprobo: payload.aprobo,
+        },
+      }))
+      toast.success(`Día ${sheetDia} guardado`)
+      setSheetDia(null)
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al guardar día')
+    } finally {
+      setDiaSaving(false)
+    }
+  }
+
+  // ── Sheet: configurar catálogo ──
+  const [sheetConfigurar, setSheetConfigurar] = useState(false)
+  const [catRanchoId, setCatRanchoId] = useState('')
+  const [catNombre, setCatNombre] = useState('')
+  const [catFrecuencia, setCatFrecuencia] = useState('Diario')
+  const [catAgregando, setCatAgregando] = useState(false)
+  const [catCargandoPlantilla, setCatCargandoPlantilla] = useState(false)
+  const [catToggling, setCatToggling] = useState<string | null>(null)
+
+  const { items: itemsGestion, loading: loadingGestion, refetch: refetchGestion } = useM28Items(
+    catRanchoId || null,
+    orgId
+  )
+
+  function abrirConfigurar() {
+    setCatRanchoId(registroActivo?.rancho_id ?? '')
+    setCatNombre('')
+    setCatFrecuencia('Diario')
+    setSheetConfigurar(true)
+  }
+
+  async function handleAgregarItem() {
+    if (!catRanchoId || !orgId) { toast.error(`Selecciona una ${termino}`); return }
+    if (!catNombre.trim()) { toast.error('Ingresa el nombre de la actividad'); return }
+    setCatAgregando(true)
+    try {
+      const maxOrden = itemsGestion.reduce((m, i) => Math.max(m, i.orden), 0)
+      const { error: e } = await tbl('m28_items').insert({
+        org_id: orgId,
+        rancho_id: catRanchoId,
+        nombre: catNombre.trim(),
+        frecuencia: catFrecuencia,
+        activo: true,
+        orden: maxOrden + 1,
+      })
+      if (e) {
+        if (e.message.includes('23505') || e.message.includes('unique') || e.message.includes('duplicate')) {
+          toast.warning('Ya existe ese ítem para esta instalación')
+        } else throw e
+      } else {
+        setCatNombre('')
+        toast.success('Ítem agregado')
+        refetchGestion()
+        if (registroActivo?.rancho_id === catRanchoId) refetchItems()
+      }
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al agregar ítem')
+    } finally {
+      setCatAgregando(false)
+    }
+  }
+
+  async function handleToggleActivo(item: M28Item) {
+    if (!orgId) return
+    setCatToggling(item.id)
+    try {
+      const { error: e } = await tbl('m28_items')
+        .update({ activo: !item.activo })
+        .eq('id', item.id)
+        .eq('org_id', orgId)
+      if (e) throw e
+      refetchGestion()
+      if (registroActivo?.rancho_id === catRanchoId) refetchItems()
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al actualizar')
+    } finally {
+      setCatToggling(null)
+    }
+  }
+
+  async function handleCargarPlantilla() {
+    if (!catRanchoId || !orgId) { toast.error(`Selecciona una ${termino}`); return }
+    setCatCargandoPlantilla(true)
+    try {
+      const rows = PLANTILLA_ESTANDAR.map((item) => ({
+        org_id: orgId,
+        rancho_id: catRanchoId,
+        nombre: item.nombre,
+        frecuencia: item.frecuencia,
+        activo: true,
+        orden: item.orden,
+      }))
+      const { error: e } = await tbl('m28_items')
+        .upsert(rows, { onConflict: 'rancho_id,nombre', ignoreDuplicates: true })
+      if (e) throw e
+      toast.success('Plantilla cargada (12 ítems estándar)')
+      refetchGestion()
+      if (registroActivo?.rancho_id === catRanchoId) refetchItems()
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al cargar plantilla')
+    } finally {
+      setCatCargandoPlantilla(false)
+    }
+  }
+
+  // ── Sheet: consolidado ──
+  const [sheetConsolidado, setSheetConsolidado] = useState(false)
+  const [cRanchoId, setCRanchoId] = useState('')
+  const [cDesde, setCDesde] = useState(mesActual())
+  const [cHasta, setCHasta] = useState(mesActual())
+  const [cGenerando, setCGenerando] = useState(false)
+  const [cErrRancho, setCErrRancho] = useState(false)
+
+  async function handleConsolidado() {
+    if (!cRanchoId) { setCErrRancho(true); return }
+    if (!orgId) { toast.error('Sin organización activa'); return }
+    setCGenerando(true)
+    try {
+      const instalacionNombre = ranchos.find((r) => r.id === cRanchoId)?.nombre ?? cRanchoId
+      await generarLimpiezaBanosQuimicosConsolidadoPDF(cRanchoId, instalacionNombre, orgId, cDesde, cHasta)
+      toast.success('PDF consolidado generado')
+      setSheetConsolidado(false)
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al generar PDF')
+    } finally {
+      setCGenerando(false)
+    }
+  }
+
+  // ── PDF individual ──
+  const [generandoPDF, setGenerandoPDF] = useState(false)
+
+  async function handlePDFIndividual() {
+    if (!registroActivo || !orgId) return
+    setGenerandoPDF(true)
+    try {
+      const ranchoCodigo = (ranchos.find((r) => r.id === registroActivo.rancho_id) as any)?.codigo ?? '—'
+      const pdfItems: M28ItemPDF[] = activeItems.map((i) => ({ id: i.id, nombre: i.nombre, frecuencia: i.frecuencia }))
+      const res: Record<number, Record<string, ValorM28PDF>> = resultados as any
+      const dd: Record<number, M28DiaDataPDF> = {}
+      for (const [k, v] of Object.entries(diasData)) {
+        dd[Number(k)] = {
+          concentracion_cloro: v.concentracion_cloro,
+          ajuste_cloro: v.ajuste_cloro,
+          concentracion_acido: v.concentracion_acido,
+          ajuste_acido: v.ajuste_acido,
+          realizo: v.realizo,
+          aprobo: v.aprobo,
+        }
+      }
+      await generarLimpiezaBanosQuimicosPDF(registroActivo, ranchoCodigo, pdfItems, res, dd)
+      toast.success('PDF descargado')
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al generar PDF')
+    } finally {
+      setGenerandoPDF(false)
+    }
+  }
+
+  const anioOpts = useMemo(() => {
+    const current = new Date().getFullYear()
+    return [current - 1, current, current + 1]
+  }, [])
+
+  const ranchoOptions = ranchos.map((r) => ({
+    value: r.id,
+    label: `${r.nombre}${(r as any).codigo ? ` (${(r as any).codigo})` : ''}`,
+  }))
+
+  const diaFields = [
+    { key: 'concentracion_cloro', fmt: (v: any) => v != null ? String(v) : '' },
+    { key: 'ajuste_cloro',        fmt: (v: any) => v ?? '' },
+    { key: 'concentracion_acido', fmt: (v: any) => v != null ? String(v) : '' },
+    { key: 'ajuste_acido',        fmt: (v: any) => v ?? '' },
+    { key: 'realizo',             fmt: (v: any) => v ?? '' },
+    { key: 'aprobo',              fmt: (v: any) => v ?? '' },
+  ]
+
+  const diaRowLabels = ['Conc. Cloro (ppm)', 'Ajuste Cloro', 'Conc. Ac. Per. (ppm)', 'Ajuste Ac. Per.', 'Realizó', 'Aprobó']
+
+  return (
+    <div className="min-h-full pb-[calc(72px+34px)]">
+
+      <header className="bg-card border-b border-border px-4 py-3 sticky top-0 z-30">
+        <div className="flex items-center gap-3">
+          {vista === 'detalle' ? (
+            <button onClick={volverALista} className="p-1 -ml-1">
+              <ChevronLeft className="w-5 h-5 text-foreground" />
+            </button>
+          ) : (
+            <Link to="/" className="p-1 -ml-1">
+              <ChevronLeft className="w-5 h-5 text-foreground" />
+            </Link>
+          )}
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
+            <Sparkles className="w-4 h-4" style={{ color: 'var(--agro-warning-text)' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            {vista === 'lista' ? (
+              <>
+                <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>Limpieza de Baños y Almacén de Químicos</h1>
+                <div className="text-xs text-muted-foreground">F-FRUS-SAN-06</div>
+              </>
+            ) : (
+              <>
+                <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                  {registroActivo ? formatMesLabel(registroActivo.anio, registroActivo.mes) : '—'}
+                </h1>
+                <div className="text-xs text-muted-foreground truncate">{registroActivo?.rancho_nombre ?? '—'}</div>
+              </>
+            )}
+          </div>
+          {vista === 'lista' && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => { setCatRanchoId(''); setCatNombre(''); setCatFrecuencia('Diario'); setSheetConfigurar(true) }}
+                className="flex items-center gap-1 h-8 px-2.5 rounded-lg border border-border text-xs text-foreground"
+              >
+                <Settings className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => { setCRanchoId(''); setCErrRancho(false); setSheetConsolidado(true) }}
+                className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border text-xs text-foreground"
+                style={{ fontWeight: 600 }}
+              >
+                <FileDown className="w-3.5 h-3.5" />
+                Consolidado
+              </button>
+            </div>
+          )}
+          {vista === 'detalle' && registroActivo && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={abrirConfigurar}
+                className="flex items-center gap-1 h-8 px-2.5 rounded-lg border border-border text-xs text-foreground"
+              >
+                <Settings className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={handlePDFIndividual}
+                disabled={generandoPDF}
+                className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border text-xs text-foreground disabled:opacity-50"
+                style={{ fontWeight: 600 }}
+              >
+                {generandoPDF ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
+                PDF
+              </button>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* ── LISTA ── */}
+      {vista === 'lista' && (
+        <div className="p-4 space-y-4">
+          {error && (
+            <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
+              <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
+              <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>Error al cargar registros.</p>
+            </div>
+          )}
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-6 h-6 text-primary animate-spin" />
+            </div>
+          ) : registros.length === 0 ? (
+            <div className="bg-card border border-border rounded-xl p-6 text-center">
+              <Sparkles className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
+              <p className="text-xs text-muted-foreground mt-1">Crea el primer registro mensual con el botón +</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {registros.map((reg) => (
+                <button
+                  key={reg.id}
+                  onClick={() => abrirDetalle(reg)}
+                  className="w-full text-left bg-card rounded-xl p-4 border border-border"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="mb-1">
+                        <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                          {formatMesLabel(reg.anio, reg.mes)}
+                        </span>
+                      </div>
+                      <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</span>
+                    </div>
+                    <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── DETALLE ── */}
+      {vista === 'detalle' && registroActivo && (
+        <div className="p-4 space-y-4">
+          <div className="flex gap-2 flex-wrap">
+            <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
+              {formatMesLabel(registroActivo.anio, registroActivo.mes)}
+            </span>
+            <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+              {registroActivo.rancho_nombre}
+            </span>
+          </div>
+
+          {activeItems.length === 0 && !loadingDetalle && (
+            <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}>
+              <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+              <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                No hay ítems activos. Configura el catálogo con el ícono de ajustes.
+              </p>
+            </div>
+          )}
+
+          {loadingDetalle ? (
+            <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 text-primary animate-spin" /></div>
+          ) : (
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              <p className="text-xs text-muted-foreground px-3 py-2" style={{ borderBottom: '1px solid var(--border)' }}>
+                Toca un número de día para editar concentraciones y personal. Toca una celda de actividad para cambiar su estado.
+              </p>
+              <div style={{ display: 'flex', width: '100%' }}>
+                {/* Columna izquierda fija */}
+                <div style={{ width: 160, flexShrink: 0 }}>
+                  <div style={{ height: 36, display: 'flex', alignItems: 'center', padding: '0 8px', backgroundColor: 'var(--muted)', borderBottom: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted-foreground)' }}>Actividad / Frec.</span>
+                  </div>
+                  {activeItems.map((item) => (
+                    <div key={item.id} style={{ minHeight: 44, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4px 8px', borderBottom: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>
+                      <span style={{ fontSize: 10, color: 'var(--foreground)', lineHeight: 1.3 }}>{item.nombre}</span>
+                      <span style={{ fontSize: 9, color: 'var(--muted-foreground)' }}>{item.frecuencia}</span>
+                    </div>
+                  ))}
+                  <div style={{ borderTop: '2px solid var(--border)' }} />
+                  {diaRowLabels.map((label) => (
+                    <div key={label} style={{ height: 32, display: 'flex', alignItems: 'center', padding: '0 8px', backgroundColor: 'var(--muted)', borderBottom: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>
+                      <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--muted-foreground)' }}>{label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Área scrollable */}
+                <div style={{ flex: 1, overflowX: 'auto' }}>
+                  {/* Encabezado de días */}
+                  <div style={{ display: 'flex', minWidth: numDias * DAY_W }}>
+                    {days.map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => abrirSheetDia(d)}
+                        style={{
+                          width: DAY_W,
+                          height: 36,
+                          flexShrink: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: diasData[d] ? 'var(--agro-success-fill)' : 'var(--muted)',
+                          borderBottom: '1px solid var(--border)',
+                          borderRight: '1px solid var(--border)',
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: diasData[d] ? 'var(--agro-success-text)' : 'var(--muted-foreground)',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Filas de ítems */}
+                  {activeItems.map((item, itemIdx) => (
+                    <div key={item.id} style={{ display: 'flex', minWidth: numDias * DAY_W }}>
+                      {days.map((d) => {
+                        const v = resultados[d]?.[item.id]
+                        const cellKey = `${d}|${item.id}`
+                        const isLoading = togglingCells.has(cellKey)
+                        return (
+                          <button
+                            key={d}
+                            type="button"
+                            onClick={() => handleToggle(item.id, d)}
+                            disabled={isLoading}
+                            style={{
+                              width: DAY_W,
+                              minHeight: 44,
+                              flexShrink: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              backgroundColor: itemIdx % 2 === 0 ? cellBg(v) : (v ? cellBg(v) : 'var(--background)'),
+                              borderBottom: '1px solid var(--border)',
+                              borderRight: '1px solid var(--border)',
+                              fontSize: 13,
+                              color: cellFg(v),
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {isLoading
+                              ? <Loader2 style={{ width: 10, height: 10, color: 'var(--muted-foreground)' }} className="animate-spin" />
+                              : cellLabel(v)
+                            }
+                          </button>
+                        )
+                      })}
+                    </div>
+                  ))}
+
+                  {/* Separador visual */}
+                  <div style={{ borderTop: '2px solid var(--border)', minWidth: numDias * DAY_W }} />
+
+                  {/* Filas de datos de día */}
+                  {diaFields.map((field) => (
+                    <div key={field.key} style={{ display: 'flex', minWidth: numDias * DAY_W }}>
+                      {days.map((d) => {
+                        const val = field.fmt((diasData[d] as any)?.[field.key])
+                        return (
+                          <button
+                            key={d}
+                            type="button"
+                            onClick={() => abrirSheetDia(d)}
+                            style={{
+                              width: DAY_W,
+                              height: 32,
+                              flexShrink: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              backgroundColor: val ? 'var(--agro-success-fill)' : 'var(--card)',
+                              borderBottom: '1px solid var(--border)',
+                              borderRight: '1px solid var(--border)',
+                              fontSize: 8,
+                              color: val ? 'var(--agro-success-text)' : 'var(--muted-foreground)',
+                              overflow: 'hidden',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: DAY_W - 4 }}>
+                              {val}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+            <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Observaciones del mes</h2>
+            <textarea
+              value={obsLocal}
+              onChange={(e) => setObsLocal(e.target.value)}
+              rows={2}
+              placeholder="Observaciones generales…"
+              className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm resize-none"
+            />
+            <button
+              onClick={handleGuardarObs}
+              disabled={savingObs}
+              className="h-9 px-4 rounded-xl text-sm text-white disabled:opacity-60"
+              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+            >
+              {savingObs ? 'Guardando…' : 'Guardar observaciones'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── FAB (solo en lista) ── */}
+      {vista === 'lista' && (
+        <div className="fixed bottom-[calc(72px+34px+16px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
+          <button
+            type="button"
+            onClick={() => {
+              setNRanchoId(''); setNAnio(new Date().getFullYear()); setNMes(new Date().getMonth() + 1)
+              setNErrRancho(false); setSheetNuevo(true)
+            }}
+            className="pointer-events-auto w-14 h-14 bg-primary rounded-full flex items-center justify-center"
+            style={{ boxShadow: '0 2px 12px rgba(43,122,181,0.35)' }}
+            aria-label="Nuevo registro mensual"
+          >
+            <Plus className="w-6 h-6 text-white" />
+          </button>
+        </div>
+      )}
+
+      {/* ═══ SHEET: NUEVO REGISTRO ═══════════════════════════════════════════════ */}
+      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
+        <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
+        <div className="px-4 pb-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nuevo registro mensual</h2>
+            <button type="button" onClick={() => setSheetNuevo(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
+          </div>
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{termino} *</label>
+              <select
+                value={nRanchoId}
+                onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
+                className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                style={{ borderColor: nErrRancho ? 'var(--agro-red)' : undefined }}
+              >
+                <option value="">Selecciona una {termino.toLowerCase()}</option>
+                {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+              {nErrRancho && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>}
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-1 space-y-1">
+                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Año *</label>
+                <select
+                  value={nAnio}
+                  onChange={(e) => setNAnio(Number(e.target.value))}
+                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                >
+                  {anioOpts.map((y) => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
+              <div className="flex-1 space-y-1">
+                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Mes *</label>
+                <select
+                  value={nMes}
+                  onChange={(e) => setNMes(Number(e.target.value))}
+                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                >
+                  {MESES.map((m, i) => (
+                    <option key={i + 1} value={i + 1}>{m}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleCrearRegistro}
+              disabled={nGuardando}
+              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60"
+              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+            >
+              {nGuardando ? 'Guardando…' : 'Crear registro'}
+            </button>
+          </div>
+        </div>
+      </BottomSheet>
+
+      {/* ═══ SHEET: DÍA ══════════════════════════════════════════════════════════ */}
+      <BottomSheet open={sheetDia !== null} onClose={() => setSheetDia(null)} height="85%">
+        <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
+        <div className="px-4 pb-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Día {sheetDia ?? ''}</h2>
+            <button type="button" onClick={() => setSheetDia(null)}><X className="w-5 h-5 text-muted-foreground" /></button>
+          </div>
+          <div className="space-y-4">
+            <div className="flex gap-3">
+              <div className="flex-1 space-y-1">
+                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Conc. Cloro (ppm)</label>
+                <input
+                  type="number"
+                  value={diaConcCloro}
+                  onChange={(e) => setDiaConcCloro(e.target.value)}
+                  placeholder="0"
+                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                />
+              </div>
+              <div className="flex-1 space-y-1">
+                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Ajuste Cloro</label>
+                <input
+                  type="text"
+                  value={diaAjCloro}
+                  onChange={(e) => setDiaAjCloro(e.target.value)}
+                  placeholder="Ej: Agregar 5ml"
+                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-1 space-y-1">
+                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Conc. Ác. Peracético (ppm)</label>
+                <input
+                  type="number"
+                  value={diaConcAcido}
+                  onChange={(e) => setDiaConcAcido(e.target.value)}
+                  placeholder="0"
+                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                />
+              </div>
+              <div className="flex-1 space-y-1">
+                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Ajuste Ác. Peracético</label>
+                <input
+                  type="text"
+                  value={diaAjAcido}
+                  onChange={(e) => setDiaAjAcido(e.target.value)}
+                  placeholder="Ej: Ajustar dosis"
+                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Realizó</label>
+              <input
+                type="text"
+                value={diaRealizo}
+                onChange={(e) => setDiaRealizo(e.target.value)}
+                placeholder="Nombre de quien realizó"
+                className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Aprobó</label>
+              <input
+                type="text"
+                value={diaAprobo}
+                onChange={(e) => setDiaAprobo(e.target.value)}
+                placeholder="Nombre de quien aprobó"
+                className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleGuardarDia}
+              disabled={diaSaving}
+              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60"
+              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+            >
+              {diaSaving ? 'Guardando…' : 'Guardar día'}
+            </button>
+          </div>
+        </div>
+      </BottomSheet>
+
+      {/* ═══ SHEET: CONFIGURAR CATÁLOGO ══════════════════════════════════════════ */}
+      <BottomSheet open={sheetConfigurar} onClose={() => setSheetConfigurar(false)} height="85%">
+        <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
+        <div className="px-4 pb-4 overflow-y-auto h-full">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Configurar ítems</h2>
+            <button type="button" onClick={() => setSheetConfigurar(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
+          </div>
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{termino}</label>
+              <select
+                value={catRanchoId}
+                onChange={(e) => setCatRanchoId(e.target.value)}
+                className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+              >
+                <option value="">Selecciona una {termino.toLowerCase()}</option>
+                {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+
+            {catRanchoId && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleCargarPlantilla}
+                  disabled={catCargandoPlantilla}
+                  className="w-full h-9 rounded-xl border border-border text-xs text-foreground flex items-center justify-center gap-1.5 disabled:opacity-60"
+                  style={{ fontWeight: 600 }}
+                >
+                  {catCargandoPlantilla ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                  Sembrar 12 ítems estándar
+                </button>
+
+                {loadingGestion ? (
+                  <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 text-primary animate-spin" /></div>
+                ) : itemsGestion.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-2">Sin ítems configurados.</p>
+                ) : (
+                  <div className="bg-card border border-border rounded-xl divide-y divide-border">
+                    {itemsGestion.map((item) => (
+                      <div key={item.id} className="flex items-center gap-3 px-3 py-2.5">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-foreground truncate">{item.nombre}</p>
+                          <p className="text-xs text-muted-foreground">{item.frecuencia}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleActivo(item)}
+                          disabled={catToggling === item.id}
+                          className="flex-shrink-0 w-16 h-6 rounded-full text-xs transition-colors disabled:opacity-60"
+                          style={{
+                            backgroundColor: item.activo ? 'var(--primary)' : 'var(--switch-background)',
+                            color: item.activo ? '#fff' : 'var(--muted-foreground)',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {catToggling === item.id ? '…' : item.activo ? 'Activo' : 'Inactivo'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="bg-card border border-border rounded-xl p-3 space-y-3">
+                  <p className="text-xs text-foreground" style={{ fontWeight: 600 }}>Agregar ítem personalizado</p>
+                  <div className="space-y-1">
+                    <label className="text-xs text-muted-foreground">Nombre de actividad</label>
+                    <input
+                      type="text"
+                      value={catNombre}
+                      onChange={(e) => setCatNombre(e.target.value)}
+                      placeholder="Ej: Limpieza de pisos"
+                      className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-muted-foreground">Frecuencia</label>
+                    <select
+                      value={catFrecuencia}
+                      onChange={(e) => setCatFrecuencia(e.target.value)}
+                      className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
+                    >
+                      {FRECUENCIA_OPTS.map((f) => <option key={f} value={f}>{f}</option>)}
+                    </select>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAgregarItem}
+                    disabled={catAgregando}
+                    className="w-full h-9 rounded-xl text-sm text-white disabled:opacity-60"
+                    style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+                  >
+                    {catAgregando ? 'Agregando…' : 'Agregar'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </BottomSheet>
+
+      {/* ═══ SHEET: CONSOLIDADO ══════════════════════════════════════════════════ */}
+      <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="85%">
+        <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
+        <div className="px-4 pb-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+            <button type="button" onClick={() => setSheetConsolidado(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
+          </div>
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{termino} *</label>
+              <select
+                value={cRanchoId}
+                onChange={(e) => { setCRanchoId(e.target.value); setCErrRancho(false) }}
+                className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                style={{ borderColor: cErrRancho ? 'var(--agro-red)' : undefined }}
+              >
+                <option value="">Selecciona una {termino.toLowerCase()}</option>
+                {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+              {cErrRancho && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>}
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-1 space-y-1">
+                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Desde</label>
+                <input
+                  type="month"
+                  value={cDesde}
+                  onChange={(e) => setCDesde(e.target.value)}
+                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                />
+              </div>
+              <div className="flex-1 space-y-1">
+                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Hasta</label>
+                <input
+                  type="month"
+                  value={cHasta}
+                  onChange={(e) => setCHasta(e.target.value)}
+                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                />
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleConsolidado}
+              disabled={cGenerando}
+              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
+              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+            >
+              {cGenerando ? <><Loader2 className="w-4 h-4 animate-spin" />Generando…</> : 'Descargar PDF'}
+            </button>
+          </div>
+        </div>
+      </BottomSheet>
+
+    </div>
+  )
+}
