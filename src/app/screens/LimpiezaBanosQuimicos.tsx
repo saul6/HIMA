@@ -1,7 +1,7 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   ChevronLeft, Plus, FileDown, Loader2, Sparkles,
-  TriangleAlert, X, Settings,
+  TriangleAlert, X, Settings, ChevronDown, ChevronUp,
 } from 'lucide-react'
 import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -23,30 +23,41 @@ import type { M28ItemPDF, M28DiaDataPDF, ValorM28PDF } from '@/lib/pdf/m28/Limpi
 
 const tbl = (name: string) => (supabase as any).from(name)
 
-const DAY_W = 40
-
+// Los valores de frecuencia deben coincidir exactamente con el CHECK de BD
 const PLANTILLA_ESTANDAR: { nombre: string; frecuencia: string; orden: number }[] = [
-  { nombre: 'Limpieza de pisos - Banos',                frecuencia: 'Diario',  orden: 1 },
-  { nombre: 'Desinfeccion de pisos - Banos',            frecuencia: 'Diario',  orden: 2 },
-  { nombre: 'Limpieza de retretes',                     frecuencia: 'Diario',  orden: 3 },
-  { nombre: 'Desinfeccion de retretes',                 frecuencia: 'Diario',  orden: 4 },
-  { nombre: 'Limpieza de lavabos',                      frecuencia: 'Diario',  orden: 5 },
-  { nombre: 'Limpieza de espejos y paredes',            frecuencia: 'Diario',  orden: 6 },
-  { nombre: 'Reposicion de papel sanitario',            frecuencia: 'Diario',  orden: 7 },
-  { nombre: 'Reposicion de jabon y gel antibacterial',  frecuencia: 'Diario',  orden: 8 },
-  { nombre: 'Limpieza de pisos - Almacen Quimicos',     frecuencia: 'Diario',  orden: 9 },
-  { nombre: 'Orden y organizacion - Almacen Quimicos',  frecuencia: 'Diario',  orden: 10 },
-  { nombre: 'Verificacion de etiquetado',               frecuencia: 'Semanal', orden: 11 },
-  { nombre: 'Condiciones de almacenamiento',            frecuencia: 'Semanal', orden: 12 },
+  { nombre: 'Porta toallas, papel y dispensadores', frecuencia: 'diario',    orden: 1  },
+  { nombre: 'Lavamanos',                            frecuencia: 'diario',    orden: 2  },
+  { nombre: 'Sanitarios',                           frecuencia: 'diario',    orden: 3  },
+  { nombre: 'Techos',                               frecuencia: 'mensual',   orden: 4  },
+  { nombre: 'Lamparas',                             frecuencia: 'mensual',   orden: 5  },
+  { nombre: 'Paredes',                              frecuencia: 'semanal',   orden: 6  },
+  { nombre: 'Puertas',                              frecuencia: 'semanal',   orden: 7  },
+  { nombre: 'Botes de basura',                      frecuencia: 'diario',    orden: 8  },
+  { nombre: 'Pisos',                                frecuencia: 'diario',    orden: 9  },
+  { nombre: 'Desague',                              frecuencia: 'semanal',   orden: 10 },
+  { nombre: 'Estantes',                             frecuencia: 'quincenal', orden: 11 },
+  { nombre: 'Contenedores de productos quimicos',   frecuencia: 'semanal',   orden: 12 },
 ]
 
-const FRECUENCIA_OPTS = ['Diario', 'Semanal', 'Quincenal', 'Mensual']
+const FRECUENCIA_OPTS = [
+  { label: 'Diario',     value: 'diario'     },
+  { label: 'Tercer día', value: 'tercer_dia' },
+  { label: 'Semanal',    value: 'semanal'    },
+  { label: 'Quincenal',  value: 'quincenal'  },
+  { label: 'Mensual',    value: 'mensual'    },
+  { label: '6 meses',    value: 'semestral'  },
+]
+
+const FRECUENCIA_LABELS: Record<string, string> = {
+  diario: 'Diario', tercer_dia: 'Tercer día', semanal: 'Semanal',
+  quincenal: 'Quincenal', mensual: 'Mensual', semestral: '6 meses',
+}
+
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
 type Vista = 'lista' | 'detalle'
 
 interface DiaDataLocal {
-  id?: string
   concentracion_cloro: number | null
   ajuste_cloro: string | null
   concentracion_acido: number | null
@@ -67,32 +78,8 @@ function formatMesLabel(anio: number, mes: number): string {
   } catch { return `${mes}/${anio}` }
 }
 
-function siguienteValor(v: ValorM28 | undefined): ValorM28 | null {
-  if (v === undefined) return 'hecho'
-  if (v === 'hecho')    return 'no_hecho'
-  if (v === 'no_hecho') return 'na'
-  return null
-}
-
-function cellBg(v: ValorM28 | undefined): string {
-  if (v === 'hecho')    return 'var(--agro-success-fill)'
-  if (v === 'no_hecho') return 'var(--agro-danger-fill)'
-  if (v === 'na')       return 'var(--muted)'
-  return 'var(--card)'
-}
-
-function cellFg(v: ValorM28 | undefined): string {
-  if (v === 'hecho')    return 'var(--agro-success-text)'
-  if (v === 'no_hecho') return 'var(--agro-danger-text)'
-  if (v === 'na')       return 'var(--muted-foreground)'
-  return 'var(--muted-foreground)'
-}
-
-function cellLabel(v: ValorM28 | undefined): string {
-  if (v === 'hecho')    return '✓'
-  if (v === 'no_hecho') return '✗'
-  if (v === 'na')       return '—'
-  return ''
+function frecuenciaLabel(f: string): string {
+  return FRECUENCIA_LABELS[f] ?? f
 }
 
 export function LimpiezaBanosQuimicos() {
@@ -105,6 +92,7 @@ export function LimpiezaBanosQuimicos() {
 
   const [vista, setVista] = useState<Vista>('lista')
   const [registroActivo, setRegistroActivo] = useState<M28RegistroResumen | null>(null)
+  const [diaSeleccionado, setDiaSeleccionado] = useState(1)
 
   const [resultados, setResultados] = useState<Record<number, Record<string, ValorM28>>>({})
   const [diasData, setDiasData] = useState<Record<number, DiaDataLocal>>({})
@@ -119,6 +107,48 @@ export function LimpiezaBanosQuimicos() {
 
   const numDias = registroActivo ? new Date(registroActivo.anio, registroActivo.mes, 0).getDate() : 0
   const days = useMemo(() => Array.from({ length: numDias }, (_, i) => i + 1), [numDias])
+
+  const diasConDatos = useMemo(() => {
+    const s = new Set<number>()
+    for (const d of Object.keys(resultados).map(Number)) {
+      if (Object.keys(resultados[d] ?? {}).length > 0) s.add(d)
+    }
+    for (const d of Object.keys(diasData).map(Number)) s.add(d)
+    return s
+  }, [resultados, diasData])
+
+  // ── Form state para el día seleccionado ──────────────────────────────────────
+  const [diaConcCloro, setDiaConcCloro] = useState('')
+  const [diaAjCloro, setDiaAjCloro] = useState('')
+  const [diaConcAcido, setDiaConcAcido] = useState('')
+  const [diaAjAcido, setDiaAjAcido] = useState('')
+  const [diaRealizo, setDiaRealizo] = useState('')
+  const [diaAprobo, setDiaAprobo] = useState('')
+  const [diaSaving, setDiaSaving] = useState(false)
+
+  useEffect(() => {
+    if (vista !== 'detalle') return
+    const d = diasData[diaSeleccionado]
+    setDiaConcCloro(d?.concentracion_cloro != null ? String(d.concentracion_cloro) : '')
+    setDiaAjCloro(d?.ajuste_cloro ?? '')
+    setDiaConcAcido(d?.concentracion_acido != null ? String(d.concentracion_acido) : '')
+    setDiaAjAcido(d?.ajuste_acido ?? '')
+    setDiaRealizo(d?.realizo ?? '')
+    setDiaAprobo(d?.aprobo ?? '')
+  }, [diaSeleccionado, diasData, vista])
+
+  const [mostrarResumen, setMostrarResumen] = useState(false)
+
+  const resumenItems = useMemo(() => activeItems.map((item) => {
+    let hecho = 0, noHecho = 0, na = 0
+    for (const d of days) {
+      const v = resultados[d]?.[item.id]
+      if (v === 'hecho') hecho++
+      else if (v === 'no_hecho') noHecho++
+      else if (v === 'na') na++
+    }
+    return { item, hecho, noHecho, na }
+  }), [activeItems, resultados, days])
 
   const cargarDetalle = useCallback(async (regId: string) => {
     if (!orgId) return
@@ -141,7 +171,6 @@ export function LimpiezaBanosQuimicos() {
       const dd: Record<number, DiaDataLocal> = {}
       for (const d of (diasRes.data ?? []) as any[]) {
         dd[d.dia] = {
-          id: d.id,
           concentracion_cloro: d.concentracion_cloro ?? null,
           ajuste_cloro: d.ajuste_cloro ?? null,
           concentracion_acido: d.concentracion_acido ?? null,
@@ -163,6 +192,10 @@ export function LimpiezaBanosQuimicos() {
     setObsLocal(reg.observaciones ?? '')
     setResultados({})
     setDiasData({})
+    const totalDias = new Date(reg.anio, reg.mes, 0).getDate()
+    const now = new Date()
+    const esEsteMes = reg.anio === now.getFullYear() && reg.mes === now.getMonth() + 1
+    setDiaSeleccionado(esEsteMes ? Math.min(now.getDate(), totalDias) : 1)
     setVista('detalle')
     cargarDetalle(reg.id)
   }
@@ -183,8 +216,6 @@ export function LimpiezaBanosQuimicos() {
         .eq('id', registroActivo.id)
         .eq('org_id', orgId)
       if (e) throw e
-      setRegistroActivo((prev) => prev ? { ...prev, observaciones: obsLocal || null } : prev)
-      refetch()
       toast.success('Observaciones guardadas')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar')
@@ -193,17 +224,15 @@ export function LimpiezaBanosQuimicos() {
     }
   }
 
-  async function handleToggle(itemId: string, dia: number) {
+  // Selección directa de valor (toca el mismo botón activo para deseleccionar)
+  async function handleSetValor(itemId: string, dia: number, valor: ValorM28) {
     if (!registroActivo || !orgId) return
     const cellKey = `${dia}|${itemId}`
     if (togglingCells.has(cellKey)) return
-
     const current = resultados[dia]?.[itemId]
-    const next = siguienteValor(current)
-
     setTogglingCells((prev) => new Set(prev).add(cellKey))
     try {
-      if (next === null) {
+      if (current === valor) {
         const { error: e } = await tbl('m28_resultados')
           .delete()
           .eq('registro_id', registroActivo.id)
@@ -223,13 +252,13 @@ export function LimpiezaBanosQuimicos() {
       } else {
         const { error: e } = await tbl('m28_resultados')
           .upsert(
-            { registro_id: registroActivo.id, item_id: itemId, dia, org_id: orgId, valor: next },
+            { registro_id: registroActivo.id, item_id: itemId, dia, org_id: orgId, valor },
             { onConflict: 'registro_id,item_id,dia' }
           )
         if (e) throw e
         setResultados((prev) => ({
           ...prev,
-          [dia]: { ...(prev[dia] ?? {}), [itemId]: next },
+          [dia]: { ...(prev[dia] ?? {}), [itemId]: valor },
         }))
       }
     } catch (e: unknown) {
@@ -243,7 +272,43 @@ export function LimpiezaBanosQuimicos() {
     }
   }
 
-  // ── Sheet: nuevo registro ──
+  async function handleGuardarDia() {
+    if (!registroActivo || !orgId) return
+    setDiaSaving(true)
+    try {
+      const payload: any = {
+        registro_id: registroActivo.id,
+        dia: diaSeleccionado,
+        concentracion_cloro: diaConcCloro !== '' ? parseFloat(diaConcCloro) : null,
+        ajuste_cloro: diaAjCloro.trim() || null,
+        concentracion_acido: diaConcAcido !== '' ? parseFloat(diaConcAcido) : null,
+        ajuste_acido: diaAjAcido.trim() || null,
+        realizo: diaRealizo.trim() || null,
+        aprobo: diaAprobo.trim() || null,
+      }
+      const { error: e } = await tbl('m28_dias')
+        .upsert(payload, { onConflict: 'registro_id,dia' })
+      if (e) throw e
+      setDiasData((prev) => ({
+        ...prev,
+        [diaSeleccionado]: {
+          concentracion_cloro: payload.concentracion_cloro,
+          ajuste_cloro: payload.ajuste_cloro,
+          concentracion_acido: payload.concentracion_acido,
+          ajuste_acido: payload.ajuste_acido,
+          realizo: payload.realizo,
+          aprobo: payload.aprobo,
+        },
+      }))
+      toast.success(`Día ${diaSeleccionado} guardado`)
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al guardar día')
+    } finally {
+      setDiaSaving(false)
+    }
+  }
+
+  // ── Sheet: nuevo registro ─────────────────────────────────────────────────────
   const [sheetNuevo, setSheetNuevo] = useState(false)
   const [nRanchoId, setNRanchoId] = useState('')
   const [nAnio, setNAnio] = useState(new Date().getFullYear())
@@ -266,12 +331,9 @@ export function LimpiezaBanosQuimicos() {
       await refetch()
       const r = data as any
       const nuevo: M28RegistroResumen = {
-        id: r.id,
-        rancho_id: r.rancho_id,
+        id: r.id, rancho_id: r.rancho_id,
         rancho_nombre: r.ranchos?.nombre ?? '—',
-        anio: r.anio,
-        mes: r.mes,
-        observaciones: null,
+        anio: r.anio, mes: r.mes, observaciones: null,
       }
       abrirDetalle(nuevo)
     } catch (e: unknown) {
@@ -286,83 +348,23 @@ export function LimpiezaBanosQuimicos() {
     }
   }
 
-  // ── Sheet: editar día ──
-  const [sheetDia, setSheetDia] = useState<number | null>(null)
-  const [diaConcCloro, setDiaConcCloro] = useState('')
-  const [diaAjCloro, setDiaAjCloro] = useState('')
-  const [diaConcAcido, setDiaConcAcido] = useState('')
-  const [diaAjAcido, setDiaAjAcido] = useState('')
-  const [diaRealizo, setDiaRealizo] = useState('')
-  const [diaAprobo, setDiaAprobo] = useState('')
-  const [diaSaving, setDiaSaving] = useState(false)
-
-  function abrirSheetDia(dia: number) {
-    const d = diasData[dia]
-    setDiaConcCloro(d?.concentracion_cloro != null ? String(d.concentracion_cloro) : '')
-    setDiaAjCloro(d?.ajuste_cloro ?? '')
-    setDiaConcAcido(d?.concentracion_acido != null ? String(d.concentracion_acido) : '')
-    setDiaAjAcido(d?.ajuste_acido ?? '')
-    setDiaRealizo(d?.realizo ?? '')
-    setDiaAprobo(d?.aprobo ?? '')
-    setSheetDia(dia)
-  }
-
-  async function handleGuardarDia() {
-    if (sheetDia === null || !registroActivo || !orgId) return
-    setDiaSaving(true)
-    try {
-      const payload: any = {
-        registro_id: registroActivo.id,
-        dia: sheetDia,
-        concentracion_cloro: diaConcCloro !== '' ? parseFloat(diaConcCloro) : null,
-        ajuste_cloro: diaAjCloro.trim() || null,
-        concentracion_acido: diaConcAcido !== '' ? parseFloat(diaConcAcido) : null,
-        ajuste_acido: diaAjAcido.trim() || null,
-        realizo: diaRealizo.trim() || null,
-        aprobo: diaAprobo.trim() || null,
-      }
-      const { error: e } = await tbl('m28_dias')
-        .upsert(payload, { onConflict: 'registro_id,dia' })
-      if (e) throw e
-      setDiasData((prev) => ({
-        ...prev,
-        [sheetDia]: {
-          ...prev[sheetDia],
-          concentracion_cloro: payload.concentracion_cloro,
-          ajuste_cloro: payload.ajuste_cloro,
-          concentracion_acido: payload.concentracion_acido,
-          ajuste_acido: payload.ajuste_acido,
-          realizo: payload.realizo,
-          aprobo: payload.aprobo,
-        },
-      }))
-      toast.success(`Día ${sheetDia} guardado`)
-      setSheetDia(null)
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Error al guardar día')
-    } finally {
-      setDiaSaving(false)
-    }
-  }
-
-  // ── Sheet: configurar catálogo ──
+  // ── Sheet: configurar catálogo ────────────────────────────────────────────────
   const [sheetConfigurar, setSheetConfigurar] = useState(false)
   const [catRanchoId, setCatRanchoId] = useState('')
   const [catNombre, setCatNombre] = useState('')
-  const [catFrecuencia, setCatFrecuencia] = useState('Diario')
+  const [catFrecuencia, setCatFrecuencia] = useState('diario')
   const [catAgregando, setCatAgregando] = useState(false)
   const [catCargandoPlantilla, setCatCargandoPlantilla] = useState(false)
   const [catToggling, setCatToggling] = useState<string | null>(null)
 
   const { items: itemsGestion, loading: loadingGestion, refetch: refetchGestion } = useM28Items(
-    catRanchoId || null,
-    orgId
+    catRanchoId || null, orgId
   )
 
   function abrirConfigurar() {
     setCatRanchoId(registroActivo?.rancho_id ?? '')
     setCatNombre('')
-    setCatFrecuencia('Diario')
+    setCatFrecuencia('diario')
     setSheetConfigurar(true)
   }
 
@@ -373,12 +375,9 @@ export function LimpiezaBanosQuimicos() {
     try {
       const maxOrden = itemsGestion.reduce((m, i) => Math.max(m, i.orden), 0)
       const { error: e } = await tbl('m28_items').insert({
-        org_id: orgId,
-        rancho_id: catRanchoId,
-        nombre: catNombre.trim(),
-        frecuencia: catFrecuencia,
-        activo: true,
-        orden: maxOrden + 1,
+        org_id: orgId, rancho_id: catRanchoId,
+        nombre: catNombre.trim(), frecuencia: catFrecuencia,
+        activo: true, orden: maxOrden + 1,
       })
       if (e) {
         if (e.message.includes('23505') || e.message.includes('unique') || e.message.includes('duplicate')) {
@@ -403,8 +402,7 @@ export function LimpiezaBanosQuimicos() {
     try {
       const { error: e } = await tbl('m28_items')
         .update({ activo: !item.activo })
-        .eq('id', item.id)
-        .eq('org_id', orgId)
+        .eq('id', item.id).eq('org_id', orgId)
       if (e) throw e
       refetchGestion()
       if (registroActivo?.rancho_id === catRanchoId) refetchItems()
@@ -420,27 +418,25 @@ export function LimpiezaBanosQuimicos() {
     setCatCargandoPlantilla(true)
     try {
       const rows = PLANTILLA_ESTANDAR.map((item) => ({
-        org_id: orgId,
-        rancho_id: catRanchoId,
-        nombre: item.nombre,
-        frecuencia: item.frecuencia,
-        activo: true,
-        orden: item.orden,
+        org_id: orgId, rancho_id: catRanchoId,
+        nombre: item.nombre, frecuencia: item.frecuencia,
+        activo: true, orden: item.orden,
       }))
       const { error: e } = await tbl('m28_items')
         .upsert(rows, { onConflict: 'rancho_id,nombre', ignoreDuplicates: true })
       if (e) throw e
-      toast.success('Plantilla cargada (12 ítems estándar)')
+      toast.success('12 ítems estándar cargados')
       refetchGestion()
       if (registroActivo?.rancho_id === catRanchoId) refetchItems()
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Error al cargar plantilla')
+      const msg = e instanceof Error ? e.message : 'Error desconocido'
+      toast.error(`Error al sembrar plantilla: ${msg}`)
     } finally {
       setCatCargandoPlantilla(false)
     }
   }
 
-  // ── Sheet: consolidado ──
+  // ── Sheet: consolidado ────────────────────────────────────────────────────────
   const [sheetConsolidado, setSheetConsolidado] = useState(false)
   const [cRanchoId, setCRanchoId] = useState('')
   const [cDesde, setCDesde] = useState(mesActual())
@@ -464,7 +460,7 @@ export function LimpiezaBanosQuimicos() {
     }
   }
 
-  // ── PDF individual ──
+  // ── PDF individual ────────────────────────────────────────────────────────────
   const [generandoPDF, setGenerandoPDF] = useState(false)
 
   async function handlePDFIndividual() {
@@ -495,8 +491,8 @@ export function LimpiezaBanosQuimicos() {
   }
 
   const anioOpts = useMemo(() => {
-    const current = new Date().getFullYear()
-    return [current - 1, current, current + 1]
+    const y = new Date().getFullYear()
+    return [y - 1, y, y + 1]
   }, [])
 
   const ranchoOptions = ranchos.map((r) => ({
@@ -504,16 +500,15 @@ export function LimpiezaBanosQuimicos() {
     label: `${r.nombre}${(r as any).codigo ? ` (${(r as any).codigo})` : ''}`,
   }))
 
-  const diaFields = [
-    { key: 'concentracion_cloro', fmt: (v: any) => v != null ? String(v) : '' },
-    { key: 'ajuste_cloro',        fmt: (v: any) => v ?? '' },
-    { key: 'concentracion_acido', fmt: (v: any) => v != null ? String(v) : '' },
-    { key: 'ajuste_acido',        fmt: (v: any) => v ?? '' },
-    { key: 'realizo',             fmt: (v: any) => v ?? '' },
-    { key: 'aprobo',              fmt: (v: any) => v ?? '' },
-  ]
+  function esHoyEnMes(d: number): boolean {
+    if (!registroActivo) return false
+    const now = new Date()
+    return registroActivo.anio === now.getFullYear()
+      && registroActivo.mes === now.getMonth() + 1
+      && d === now.getDate()
+  }
 
-  const diaRowLabels = ['Conc. Cloro (ppm)', 'Ajuste Cloro', 'Conc. Ac. Per. (ppm)', 'Ajuste Ac. Per.', 'Realizó', 'Aprobó']
+  // ── Render ────────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-full pb-[calc(72px+34px)]">
@@ -529,13 +524,16 @@ export function LimpiezaBanosQuimicos() {
               <ChevronLeft className="w-5 h-5 text-foreground" />
             </Link>
           )}
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
             <Sparkles className="w-4 h-4" style={{ color: 'var(--agro-warning-text)' }} />
           </div>
           <div className="flex-1 min-w-0">
             {vista === 'lista' ? (
               <>
-                <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>Limpieza de Baños y Almacén de Químicos</h1>
+                <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                  Limpieza de Baños y Almacén de Químicos
+                </h1>
                 <div className="text-xs text-muted-foreground">F-FRUS-SAN-06</div>
               </>
             ) : (
@@ -547,10 +545,11 @@ export function LimpiezaBanosQuimicos() {
               </>
             )}
           </div>
+
           {vista === 'lista' && (
             <div className="flex items-center gap-2">
               <button
-                onClick={() => { setCatRanchoId(''); setCatNombre(''); setCatFrecuencia('Diario'); setSheetConfigurar(true) }}
+                onClick={() => { setCatRanchoId(''); setCatNombre(''); setCatFrecuencia('diario'); setSheetConfigurar(true) }}
                 className="flex items-center gap-1 h-8 px-2.5 rounded-lg border border-border text-xs text-foreground"
               >
                 <Settings className="w-3.5 h-3.5" />
@@ -565,6 +564,7 @@ export function LimpiezaBanosQuimicos() {
               </button>
             </div>
           )}
+
           {vista === 'detalle' && registroActivo && (
             <div className="flex items-center gap-2">
               <button
@@ -587,11 +587,12 @@ export function LimpiezaBanosQuimicos() {
         </div>
       </header>
 
-      {/* ── LISTA ── */}
+      {/* ── LISTA ────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
         <div className="p-4 space-y-4">
           {error && (
-            <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
+            <div className="flex items-start gap-2 rounded-xl p-3"
+              style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
               <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
               <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>Error al cargar registros.</p>
             </div>
@@ -617,7 +618,8 @@ export function LimpiezaBanosQuimicos() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="mb-1">
-                        <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                        <span className="text-xs px-2 py-0.5 rounded"
+                          style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
                           {formatMesLabel(reg.anio, reg.mes)}
                         </span>
                       </div>
@@ -632,20 +634,23 @@ export function LimpiezaBanosQuimicos() {
         </div>
       )}
 
-      {/* ── DETALLE ── */}
+      {/* ── DETALLE ──────────────────────────────────────────────────────────── */}
       {vista === 'detalle' && registroActivo && (
         <div className="p-4 space-y-4">
           <div className="flex gap-2 flex-wrap">
-            <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
+            <span className="text-xs px-2 py-1 rounded"
+              style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
               {formatMesLabel(registroActivo.anio, registroActivo.mes)}
             </span>
-            <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+            <span className="text-xs px-2 py-1 rounded"
+              style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
               {registroActivo.rancho_nombre}
             </span>
           </div>
 
           {activeItems.length === 0 && !loadingDetalle && (
-            <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}>
+            <div className="flex items-start gap-2 rounded-xl p-3"
+              style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}>
               <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
               <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
                 No hay ítems activos. Configura el catálogo con el ícono de ajustes.
@@ -654,164 +659,261 @@ export function LimpiezaBanosQuimicos() {
           )}
 
           {loadingDetalle ? (
-            <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 text-primary animate-spin" /></div>
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-5 h-5 text-primary animate-spin" />
+            </div>
           ) : (
-            <div className="bg-card border border-border rounded-xl overflow-hidden">
-              <p className="text-xs text-muted-foreground px-3 py-2" style={{ borderBottom: '1px solid var(--border)' }}>
-                Toca un número de día para editar concentraciones y personal. Toca una celda de actividad para cambiar su estado.
-              </p>
-              <div style={{ display: 'flex', width: '100%' }}>
-                {/* Columna izquierda fija */}
-                <div style={{ width: 160, flexShrink: 0 }}>
-                  <div style={{ height: 36, display: 'flex', alignItems: 'center', padding: '0 8px', backgroundColor: 'var(--muted)', borderBottom: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--muted-foreground)' }}>Actividad / Frec.</span>
+            <>
+              {/* Selector de día */}
+              <div className="bg-card border border-border rounded-xl p-3">
+                <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>Selecciona el día</p>
+                <div className="overflow-x-auto pb-1" style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+                  <div className="flex gap-1.5" style={{ minWidth: 'max-content' }}>
+                    {days.map((d) => {
+                      const isSelected = d === diaSeleccionado
+                      const hasDatos = diasConDatos.has(d)
+                      const isToday = esHoyEnMes(d)
+                      return (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setDiaSeleccionado(d)}
+                          style={{
+                            width: 34, height: 34, flexShrink: 0, borderRadius: 8,
+                            border: isToday && !isSelected ? '2px solid var(--primary)' : '1px solid var(--border)',
+                            backgroundColor: isSelected ? 'var(--primary)'
+                              : hasDatos ? 'var(--agro-success-fill)' : 'var(--card)',
+                            color: isSelected ? '#fff'
+                              : hasDatos ? 'var(--agro-success-text)'
+                              : isToday ? 'var(--primary)' : 'var(--foreground)',
+                            fontWeight: isSelected || isToday ? 700 : 400,
+                            fontSize: 12, cursor: 'pointer',
+                          }}
+                        >
+                          {d}
+                        </button>
+                      )
+                    })}
                   </div>
-                  {activeItems.map((item) => (
-                    <div key={item.id} style={{ minHeight: 44, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4px 8px', borderBottom: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>
-                      <span style={{ fontSize: 10, color: 'var(--foreground)', lineHeight: 1.3 }}>{item.nombre}</span>
-                      <span style={{ fontSize: 9, color: 'var(--muted-foreground)' }}>{item.frecuencia}</span>
-                    </div>
-                  ))}
-                  <div style={{ borderTop: '2px solid var(--border)' }} />
-                  {diaRowLabels.map((label) => (
-                    <div key={label} style={{ height: 32, display: 'flex', alignItems: 'center', padding: '0 8px', backgroundColor: 'var(--muted)', borderBottom: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>
-                      <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--muted-foreground)' }}>{label}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Área scrollable */}
-                <div style={{ flex: 1, overflowX: 'auto' }}>
-                  {/* Encabezado de días */}
-                  <div style={{ display: 'flex', minWidth: numDias * DAY_W }}>
-                    {days.map((d) => (
-                      <button
-                        key={d}
-                        type="button"
-                        onClick={() => abrirSheetDia(d)}
-                        style={{
-                          width: DAY_W,
-                          height: 36,
-                          flexShrink: 0,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          backgroundColor: diasData[d] ? 'var(--agro-success-fill)' : 'var(--muted)',
-                          borderBottom: '1px solid var(--border)',
-                          borderRight: '1px solid var(--border)',
-                          fontSize: 11,
-                          fontWeight: 600,
-                          color: diasData[d] ? 'var(--agro-success-text)' : 'var(--muted-foreground)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {d}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Filas de ítems */}
-                  {activeItems.map((item, itemIdx) => (
-                    <div key={item.id} style={{ display: 'flex', minWidth: numDias * DAY_W }}>
-                      {days.map((d) => {
-                        const v = resultados[d]?.[item.id]
-                        const cellKey = `${d}|${item.id}`
-                        const isLoading = togglingCells.has(cellKey)
-                        return (
-                          <button
-                            key={d}
-                            type="button"
-                            onClick={() => handleToggle(item.id, d)}
-                            disabled={isLoading}
-                            style={{
-                              width: DAY_W,
-                              minHeight: 44,
-                              flexShrink: 0,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              backgroundColor: itemIdx % 2 === 0 ? cellBg(v) : (v ? cellBg(v) : 'var(--background)'),
-                              borderBottom: '1px solid var(--border)',
-                              borderRight: '1px solid var(--border)',
-                              fontSize: 13,
-                              color: cellFg(v),
-                              cursor: 'pointer',
-                            }}
-                          >
-                            {isLoading
-                              ? <Loader2 style={{ width: 10, height: 10, color: 'var(--muted-foreground)' }} className="animate-spin" />
-                              : cellLabel(v)
-                            }
-                          </button>
-                        )
-                      })}
-                    </div>
-                  ))}
-
-                  {/* Separador visual */}
-                  <div style={{ borderTop: '2px solid var(--border)', minWidth: numDias * DAY_W }} />
-
-                  {/* Filas de datos de día */}
-                  {diaFields.map((field) => (
-                    <div key={field.key} style={{ display: 'flex', minWidth: numDias * DAY_W }}>
-                      {days.map((d) => {
-                        const val = field.fmt((diasData[d] as any)?.[field.key])
-                        return (
-                          <button
-                            key={d}
-                            type="button"
-                            onClick={() => abrirSheetDia(d)}
-                            style={{
-                              width: DAY_W,
-                              height: 32,
-                              flexShrink: 0,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              backgroundColor: val ? 'var(--agro-success-fill)' : 'var(--card)',
-                              borderBottom: '1px solid var(--border)',
-                              borderRight: '1px solid var(--border)',
-                              fontSize: 8,
-                              color: val ? 'var(--agro-success-text)' : 'var(--muted-foreground)',
-                              overflow: 'hidden',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: DAY_W - 4 }}>
-                              {val}
-                            </span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  ))}
                 </div>
               </div>
-            </div>
-          )}
 
-          <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-            <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Observaciones del mes</h2>
-            <textarea
-              value={obsLocal}
-              onChange={(e) => setObsLocal(e.target.value)}
-              rows={2}
-              placeholder="Observaciones generales…"
-              className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm resize-none"
-            />
-            <button
-              onClick={handleGuardarObs}
-              disabled={savingObs}
-              className="h-9 px-4 rounded-xl text-sm text-white disabled:opacity-60"
-              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-            >
-              {savingObs ? 'Guardando…' : 'Guardar observaciones'}
-            </button>
-          </div>
+              {/* Actividades del día seleccionado */}
+              {activeItems.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm text-foreground px-1" style={{ fontWeight: 600 }}>
+                    Actividades · Día {diaSeleccionado}
+                  </p>
+                  {activeItems.map((item) => {
+                    const v = resultados[diaSeleccionado]?.[item.id]
+                    const isLoading = togglingCells.has(`${diaSeleccionado}|${item.id}`)
+                    return (
+                      <div key={item.id} className="bg-card border border-border rounded-xl p-3">
+                        <div className="flex items-start gap-2 mb-2.5">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-foreground leading-tight" style={{ fontWeight: 600 }}>
+                              {item.nombre}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {frecuenciaLabel(item.frecuencia)}
+                            </p>
+                          </div>
+                          {isLoading && (
+                            <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin flex-shrink-0 mt-0.5" />
+                          )}
+                        </div>
+                        <div className="flex gap-1.5">
+                          {(['hecho', 'no_hecho', 'na'] as ValorM28[]).map((opcion) => {
+                            const isActive = v === opcion
+                            return (
+                              <button
+                                key={opcion}
+                                type="button"
+                                onClick={() => handleSetValor(item.id, diaSeleccionado, opcion)}
+                                disabled={isLoading}
+                                style={{
+                                  flex: 1, height: 32, borderRadius: 8,
+                                  border: isActive ? 'none' : '1px solid var(--border)',
+                                  backgroundColor: isActive
+                                    ? opcion === 'hecho' ? 'var(--agro-success-fill)'
+                                      : opcion === 'no_hecho' ? 'var(--agro-danger-fill)'
+                                      : 'var(--muted)'
+                                    : 'var(--card)',
+                                  color: isActive
+                                    ? opcion === 'hecho' ? 'var(--agro-success-text)'
+                                      : opcion === 'no_hecho' ? 'var(--agro-danger-text)'
+                                      : 'var(--muted-foreground)'
+                                    : 'var(--muted-foreground)',
+                                  fontSize: 11, fontWeight: isActive ? 700 : 400,
+                                  cursor: 'pointer', opacity: isLoading ? 0.5 : 1,
+                                }}
+                              >
+                                {opcion === 'hecho' ? 'Hecho' : opcion === 'no_hecho' ? 'No hecho' : 'N/A'}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Desinfección del día */}
+              <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+                <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                  Desinfección · Día {diaSeleccionado}
+                </p>
+                <div className="flex gap-3">
+                  <div className="flex-1 space-y-1">
+                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Conc. Cloro (ppm)</label>
+                    <input
+                      type="number"
+                      value={diaConcCloro}
+                      onChange={(e) => setDiaConcCloro(e.target.value)}
+                      placeholder="0"
+                      className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Ajuste Cloro</label>
+                    <input
+                      type="text"
+                      value={diaAjCloro}
+                      onChange={(e) => setDiaAjCloro(e.target.value)}
+                      placeholder="Ej: OK"
+                      className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-1 space-y-1">
+                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Conc. Ác. Peracético (ppm)</label>
+                    <input
+                      type="number"
+                      value={diaConcAcido}
+                      onChange={(e) => setDiaConcAcido(e.target.value)}
+                      placeholder="0"
+                      className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Ajuste Ác. Peracético</label>
+                    <input
+                      type="text"
+                      value={diaAjAcido}
+                      onChange={(e) => setDiaAjAcido(e.target.value)}
+                      placeholder="Ej: OK"
+                      className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-1 space-y-1">
+                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Realizó</label>
+                    <input
+                      type="text"
+                      value={diaRealizo}
+                      onChange={(e) => setDiaRealizo(e.target.value)}
+                      placeholder="Nombre"
+                      className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Aprobó</label>
+                    <input
+                      type="text"
+                      value={diaAprobo}
+                      onChange={(e) => setDiaAprobo(e.target.value)}
+                      placeholder="Nombre"
+                      className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleGuardarDia}
+                  disabled={diaSaving}
+                  className="w-full h-10 rounded-xl text-sm text-white disabled:opacity-60"
+                  style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+                >
+                  {diaSaving ? 'Guardando…' : `Guardar día ${diaSeleccionado}`}
+                </button>
+              </div>
+
+              {/* Resumen mensual (solo lectura, colapsable) */}
+              {activeItems.length > 0 && (
+                <div className="bg-card border border-border rounded-xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setMostrarResumen((v) => !v)}
+                    className="w-full flex items-center justify-between px-4 py-3"
+                  >
+                    <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>Resumen mensual</span>
+                    {mostrarResumen
+                      ? <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                      : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                  </button>
+                  {mostrarResumen && (
+                    <div className="divide-y divide-border border-t border-border">
+                      {resumenItems.map(({ item, hecho, noHecho, na }) => (
+                        <div key={item.id} className="flex items-center gap-3 px-4 py-2.5">
+                          <p className="flex-1 text-xs text-foreground truncate">{item.nombre}</p>
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            {hecho > 0 && (
+                              <span className="text-xs px-1.5 py-0.5 rounded"
+                                style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}>
+                                {hecho} ✓
+                              </span>
+                            )}
+                            {noHecho > 0 && (
+                              <span className="text-xs px-1.5 py-0.5 rounded"
+                                style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', fontWeight: 600 }}>
+                                {noHecho} ✗
+                              </span>
+                            )}
+                            {na > 0 && (
+                              <span className="text-xs px-1.5 py-0.5 rounded"
+                                style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                                {na} N/A
+                              </span>
+                            )}
+                            {hecho === 0 && noHecho === 0 && na === 0 && (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Observaciones del mes */}
+              <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+                <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Observaciones del mes</h2>
+                <textarea
+                  value={obsLocal}
+                  onChange={(e) => setObsLocal(e.target.value)}
+                  rows={2}
+                  placeholder="Observaciones generales…"
+                  className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm resize-none"
+                />
+                <button
+                  onClick={handleGuardarObs}
+                  disabled={savingObs}
+                  className="h-9 px-4 rounded-xl text-sm text-white disabled:opacity-60"
+                  style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+                >
+                  {savingObs ? 'Guardando…' : 'Guardar observaciones'}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 
-      {/* ── FAB (solo en lista) ── */}
+      {/* ── FAB ──────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
         <div className="fixed bottom-[calc(72px+34px+16px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
           <button
@@ -829,7 +931,7 @@ export function LimpiezaBanosQuimicos() {
         </div>
       )}
 
-      {/* ═══ SHEET: NUEVO REGISTRO ═══════════════════════════════════════════════ */}
+      {/* ═══ SHEET: NUEVO REGISTRO ══════════════════════════════════════════════ */}
       <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
         <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
         <div className="px-4 pb-4">
@@ -869,9 +971,7 @@ export function LimpiezaBanosQuimicos() {
                   onChange={(e) => setNMes(Number(e.target.value))}
                   className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
                 >
-                  {MESES.map((m, i) => (
-                    <option key={i + 1} value={i + 1}>{m}</option>
-                  ))}
+                  {MESES.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
                 </select>
               </div>
             </div>
@@ -883,92 +983,6 @@ export function LimpiezaBanosQuimicos() {
               style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
             >
               {nGuardando ? 'Guardando…' : 'Crear registro'}
-            </button>
-          </div>
-        </div>
-      </BottomSheet>
-
-      {/* ═══ SHEET: DÍA ══════════════════════════════════════════════════════════ */}
-      <BottomSheet open={sheetDia !== null} onClose={() => setSheetDia(null)} height="85%">
-        <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
-        <div className="px-4 pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Día {sheetDia ?? ''}</h2>
-            <button type="button" onClick={() => setSheetDia(null)}><X className="w-5 h-5 text-muted-foreground" /></button>
-          </div>
-          <div className="space-y-4">
-            <div className="flex gap-3">
-              <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Conc. Cloro (ppm)</label>
-                <input
-                  type="number"
-                  value={diaConcCloro}
-                  onChange={(e) => setDiaConcCloro(e.target.value)}
-                  placeholder="0"
-                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
-                />
-              </div>
-              <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Ajuste Cloro</label>
-                <input
-                  type="text"
-                  value={diaAjCloro}
-                  onChange={(e) => setDiaAjCloro(e.target.value)}
-                  placeholder="Ej: Agregar 5ml"
-                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
-                />
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Conc. Ác. Peracético (ppm)</label>
-                <input
-                  type="number"
-                  value={diaConcAcido}
-                  onChange={(e) => setDiaConcAcido(e.target.value)}
-                  placeholder="0"
-                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
-                />
-              </div>
-              <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Ajuste Ác. Peracético</label>
-                <input
-                  type="text"
-                  value={diaAjAcido}
-                  onChange={(e) => setDiaAjAcido(e.target.value)}
-                  placeholder="Ej: Ajustar dosis"
-                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
-                />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Realizó</label>
-              <input
-                type="text"
-                value={diaRealizo}
-                onChange={(e) => setDiaRealizo(e.target.value)}
-                placeholder="Nombre de quien realizó"
-                className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Aprobó</label>
-              <input
-                type="text"
-                value={diaAprobo}
-                onChange={(e) => setDiaAprobo(e.target.value)}
-                placeholder="Nombre de quien aprobó"
-                className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={handleGuardarDia}
-              disabled={diaSaving}
-              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60"
-              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-            >
-              {diaSaving ? 'Guardando…' : 'Guardar día'}
             </button>
           </div>
         </div>
@@ -1018,7 +1032,7 @@ export function LimpiezaBanosQuimicos() {
                       <div key={item.id} className="flex items-center gap-3 px-3 py-2.5">
                         <div className="flex-1 min-w-0">
                           <p className="text-xs text-foreground truncate">{item.nombre}</p>
-                          <p className="text-xs text-muted-foreground">{item.frecuencia}</p>
+                          <p className="text-xs text-muted-foreground">{frecuenciaLabel(item.frecuencia)}</p>
                         </div>
                         <button
                           type="button"
@@ -1057,7 +1071,9 @@ export function LimpiezaBanosQuimicos() {
                       onChange={(e) => setCatFrecuencia(e.target.value)}
                       className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
                     >
-                      {FRECUENCIA_OPTS.map((f) => <option key={f} value={f}>{f}</option>)}
+                      {FRECUENCIA_OPTS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
                     </select>
                   </div>
                   <button
