@@ -1,4 +1,22 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, useRouteError } from "react-router";
+
+function InocuidadError() {
+  const err = useRouteError() as Error | null
+  return (
+    <div className="flex flex-col items-center justify-center min-h-full px-6 py-16 gap-4">
+      <p className="text-sm text-center" style={{ color: 'var(--agro-danger-text)' }}>
+        {err?.message ?? 'Error inesperado en el módulo.'}
+      </p>
+      <button
+        onClick={() => window.location.assign('/')}
+        className="text-sm underline"
+        style={{ color: 'var(--primary)' }}
+      >
+        Volver al inicio
+      </button>
+    </div>
+  )
+}
 import { Layout } from "./components/Layout";
 import { RequireAuth } from "./components/RequireAuth";
 import { RequireOrg } from "./components/RequireOrg";
@@ -77,6 +95,7 @@ export const router = createBrowserRouter([
               {
                 path: "inocuidad",
                 Component: RequireModulo,
+                ErrorBoundary: InocuidadError,
                 children: [
                   { path: "botiquin", Component: BotiquinPrimerosAuxilios },
                   { path: "vidrio-plastico", Component: InspeccionVidrioPlastico },

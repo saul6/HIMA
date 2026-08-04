@@ -161,7 +161,7 @@ export function AccionesCorrectivas() {
   const navigate = useNavigate()
   const { profile } = useAuthContext()
   const { terminosSitio } = useModulosContext()
-  const { organizacion } = useOrganizacion()
+  const orgNombre = useOrganizacion(profile?.org_id)
   const { items, loading, error, refetch, upsertAccion, agregarFoto, eliminarFotoDb } =
     useAccionesCorrectivas()
 
@@ -311,7 +311,7 @@ export function AccionesCorrectivas() {
       await generarAccionesCorrectivasPDF(
         conAccion.map((i) => i.accion!.id),
         profile?.org_id ?? '',
-        organizacion?.nombre ?? '—',
+        orgNombre ?? '—',
         terminosSitio.plural,
         hoy(),
       )
