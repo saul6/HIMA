@@ -33,6 +33,7 @@ import { RegistroMuestrasLaboratorio } from "./screens/RegistroMuestrasLaborator
 import { VerificacionInsumos } from "./screens/VerificacionInsumos"
 import { ControlInventarioQuimicos } from "./screens/ControlInventarioQuimicos";
 import { ResumenNoConformidades } from "./screens/ResumenNoConformidades";
+import { AccionesCorrectivas } from "./screens/AccionesCorrectivas";
 import { RequireModulo } from "./components/RequireModulo";
 import TestSupabase from "./screens/TestSupabase";
 
@@ -97,6 +98,7 @@ export const router = createBrowserRouter([
                   { path: "verificacion-insumos", Component: VerificacionInsumos },
                   { path: "inventario-quimicos", Component: ControlInventarioQuimicos },
                   { path: "no-conformidades", Component: ResumenNoConformidades },
+                  { path: "acciones-correctivas", Component: AccionesCorrectivas },
                 ],
               },
             ],

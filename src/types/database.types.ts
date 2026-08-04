@@ -1836,3 +1836,34 @@ export interface NoConformidad {
   texto_pregunta: string
   comentario: string
 }
+
+export interface AccionCorrectiva {
+  id: string
+  org_id: string
+  modulo: string
+  respuesta_id: string
+  visita_id: string | null
+  codigo_pregunta: string
+  no_conformidad: string | null
+  fecha_deteccion: string | null
+  causa: string | null
+  accion_correctiva: string | null
+  accion_preventiva: string | null
+  fecha_cumplimiento: string | null
+  realizo: string | null
+  verifico: string | null
+  estado: 'abierta' | 'cerrada'
+  created_at: string
+  updated_at: string
+  creado_por: string | null
+}
+
+export interface AccionCorrectivaFoto {
+  id: string
+  org_id: string
+  accion_id: string
+  tipo: 'no_conformidad' | 'evidencia_correccion'
+  storage_path: string
+  leyenda: string | null
+  created_at: string
+}
