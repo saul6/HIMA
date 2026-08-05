@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Link } from 'react-router'
 import {
   Plus, CheckCircle, Clock, Loader2, TriangleAlert, Clock3,
-  AlertTriangle, ChevronRight, ClipboardList, BarChart2, FileCheck, ShieldAlert,
+  Users, AlertTriangle, ChevronRight, ClipboardList, BarChart2, FileCheck, ShieldAlert,
 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useHomeDashboard } from '@/hooks/useHomeDashboard'
@@ -318,6 +318,25 @@ export function Home() {
               )}
             </div>
           </div>
+        )}
+
+        {/* Acceso rápido al equipo — solo admin_org en sectores de campo */}
+        {esAdmin && !loading && terminosSitio.singular === 'Rancho' && (
+          <Link
+            to="/equipo/actividad"
+            className="flex items-center gap-3 bg-card border border-border rounded-xl p-4 hover:border-primary transition-colors"
+          >
+            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Users className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Actividad del equipo</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Ver registros de todos los empleados
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          </Link>
         )}
 
         {/* Actividad reciente */}
