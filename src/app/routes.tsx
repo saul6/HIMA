@@ -52,6 +52,7 @@ import { VerificacionInsumos } from "./screens/VerificacionInsumos"
 import { LimpiezaBanosQuimicos } from "./screens/LimpiezaBanosQuimicos"
 import { LimpiezaAduana } from "./screens/LimpiezaAduana"
 import { LimpiezaComedor } from "./screens/LimpiezaComedor"
+import { LimpiezaOficinas } from "./screens/LimpiezaOficinas"
 import { PreparacionCloro } from "./screens/PreparacionCloro"
 import { ControlInventarioQuimicos } from "./screens/ControlInventarioQuimicos";
 import { ResumenNoConformidades } from "./screens/ResumenNoConformidades";
@@ -121,6 +122,7 @@ export const router = createBrowserRouter([
                   { path: "limpieza-banos-quimicos", Component: LimpiezaBanosQuimicos },
                   { path: "limpieza-aduana", Component: LimpiezaAduana },
                   { path: "limpieza-comedor", Component: LimpiezaComedor },
+                  { path: "limpieza-oficinas", Component: LimpiezaOficinas },
                 ],
               },
             ],

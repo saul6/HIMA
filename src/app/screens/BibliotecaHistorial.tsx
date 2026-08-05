@@ -38,6 +38,9 @@ const MODULO_META: Record<ModuloKey, { label: string; color: string }> = {
   M26: { label: 'Acciones Correctivas', color: '#BF360C' },
   M27: { label: 'Preparacion Cloro',   color: '#00796B' },
   M28: { label: 'Limpieza Banos/Quimicos', color: '#1B5E20' },
+  M29: { label: 'Limpieza Aduana',         color: '#00695C' },
+  M30: { label: 'Limpieza Comedor',        color: '#E65100' },
+  M31: { label: 'Limpieza Oficinas',       color: '#0D47A1' },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -73,7 +76,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tbl = (name: string) => (supabase as any).from(name)
 
-  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28] = await Promise.all([
+  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31] = await Promise.all([
     supabase.from('aplicaciones')
       .select('id, fecha_aplicacion, rancho_id, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha_aplicacion', desde).lte('fecha_aplicacion', hasta)
@@ -167,6 +170,30 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
       .order('fecha', { ascending: false }).limit(500),
     tbl('m28_registro_mensual')
+      .select('id, rancho_id, anio, mes, ranchos(nombre)')
+      .eq('org_id', orgId)
+      .gte('anio', parseInt(desdeM.slice(0, 4)))
+      .lte('anio', parseInt(hastaM.slice(0, 4)))
+      .order('anio', { ascending: false })
+      .order('mes', { ascending: false })
+      .limit(200),
+    tbl('m29_registro_mensual')
+      .select('id, rancho_id, anio, mes, ranchos(nombre)')
+      .eq('org_id', orgId)
+      .gte('anio', parseInt(desdeM.slice(0, 4)))
+      .lte('anio', parseInt(hastaM.slice(0, 4)))
+      .order('anio', { ascending: false })
+      .order('mes', { ascending: false })
+      .limit(200),
+    tbl('m30_registro_mensual')
+      .select('id, rancho_id, anio, mes, ranchos(nombre)')
+      .eq('org_id', orgId)
+      .gte('anio', parseInt(desdeM.slice(0, 4)))
+      .lte('anio', parseInt(hastaM.slice(0, 4)))
+      .order('anio', { ascending: false })
+      .order('mes', { ascending: false })
+      .limit(200),
+    tbl('m31_registro_mensual')
       .select('id, rancho_id, anio, mes, ranchos(nombre)')
       .eq('org_id', orgId)
       .gte('anio', parseInt(desdeM.slice(0, 4)))
@@ -539,6 +566,48 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       fecha: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
       resumen: `Limpieza de baños y almacen - ${mesLabel}`,
       pdfRef: { tipo: 'M28', id: r.id },
+    })
+  }
+
+  // M29 — una fila = un registro mensual de limpieza de la aduana
+  for (const r of (r29 as any)?.data ?? []) {
+    const mesLabel = new Date(r.anio, r.mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    todos.push({
+      key: `M29-${r.id}`,
+      modulo: 'M29',
+      rancho_id: r.rancho_id,
+      rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
+      fecha: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
+      resumen: `Limpieza de la aduana - ${mesLabel}`,
+      pdfRef: { tipo: 'M29', id: r.id },
+    })
+  }
+
+  // M30 — una fila = un registro mensual de limpieza del comedor
+  for (const r of (r30 as any)?.data ?? []) {
+    const mesLabel = new Date(r.anio, r.mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    todos.push({
+      key: `M30-${r.id}`,
+      modulo: 'M30',
+      rancho_id: r.rancho_id,
+      rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
+      fecha: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
+      resumen: `Limpieza del comedor - ${mesLabel}`,
+      pdfRef: { tipo: 'M30', id: r.id },
+    })
+  }
+
+  // M31 — una fila = un registro mensual de limpieza de las oficinas
+  for (const r of (r31 as any)?.data ?? []) {
+    const mesLabel = new Date(r.anio, r.mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    todos.push({
+      key: `M31-${r.id}`,
+      modulo: 'M31',
+      rancho_id: r.rancho_id,
+      rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
+      fecha: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
+      resumen: `Limpieza de las oficinas - ${mesLabel}`,
+      pdfRef: { tipo: 'M31', id: r.id },
     })
   }
 
