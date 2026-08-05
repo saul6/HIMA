@@ -51,6 +51,7 @@ import { RegistroMuestrasLaboratorio } from "./screens/RegistroMuestrasLaborator
 import { VerificacionInsumos } from "./screens/VerificacionInsumos"
 import { LimpiezaBanosQuimicos } from "./screens/LimpiezaBanosQuimicos"
 import { LimpiezaAduana } from "./screens/LimpiezaAduana"
+import { LimpiezaComedor } from "./screens/LimpiezaComedor"
 import { PreparacionCloro } from "./screens/PreparacionCloro"
 import { ControlInventarioQuimicos } from "./screens/ControlInventarioQuimicos";
 import { ResumenNoConformidades } from "./screens/ResumenNoConformidades";
@@ -119,6 +120,7 @@ export const router = createBrowserRouter([
                   { path: "acciones-correctivas", Component: AccionesCorrectivas },
                   { path: "limpieza-banos-quimicos", Component: LimpiezaBanosQuimicos },
                   { path: "limpieza-aduana", Component: LimpiezaAduana },
+                  { path: "limpieza-comedor", Component: LimpiezaComedor },
                 ],
               },
             ],

@@ -2,7 +2,7 @@ import {
   SprayCan, Boxes, Library, BriefcaseMedical, Wine, Sprout, Radar, Wheat,
   ClipboardCheck, Droplets, Camera, ClipboardList, Users, Shield, ShieldCheck, Eye,
   Package, FileCheck, Factory, Bandage, Bug, FlaskConical, ListChecks, TestTubes,
-  Warehouse, LayoutGrid, type LucideIcon,
+  Warehouse, UtensilsCrossed, LayoutGrid, type LucideIcon,
 } from 'lucide-react'
 
 const ICONOS: Record<string, LucideIcon> = {
@@ -31,6 +31,7 @@ const ICONOS: Record<string, LucideIcon> = {
   'list-checks': ListChecks,
   'test-tubes': TestTubes,
   'warehouse': Warehouse,
+  'utensils-crossed': UtensilsCrossed,
   'layout-grid': LayoutGrid,
 }
 
