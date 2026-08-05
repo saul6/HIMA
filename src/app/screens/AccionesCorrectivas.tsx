@@ -19,6 +19,7 @@ import {
   borrarFotosAccion,
   getSignedUrlsAccion,
 } from '@/lib/storage/accionesCorrectivasStorage'
+import { validarImagen } from '@/lib/validarImagen'
 import {
   generarAccionCorrectivaIndividualPDF,
   generarAccionesCorrectivasPDF,
@@ -272,6 +273,8 @@ export function AccionesCorrectivas() {
       })
 
       for (const fp of fotosPendientes) {
+        const errImg = validarImagen(fp.file)
+        if (errImg) throw new Error(errImg)
         const ext = fp.file.name.split('.').pop() ?? 'jpg'
         const path = `${profile.org_id}/${accionId}/${crypto.randomUUID()}.${ext}`
         await subirFotoAccion(path, fp.file)

@@ -14,6 +14,7 @@ import { useM20Accidentes, type M20AccidenteConFotos } from '@/hooks/useM20Accid
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { subirFoto, borrarFotos, getSignedUrls } from '@/lib/storage/incidenciasStorage'
+import { validarImagen } from '@/lib/validarImagen'
 import { generarAccidenteLaboralPDF } from '@/lib/pdf/m20/generarAccidenteLaboralPDF'
 import { generarAccidenteLaboralConsolidadoPDF } from '@/lib/pdf/m20/generarAccidenteLaboralConsolidadoPDF'
 import { Button } from '@/app/components/ui/button'
@@ -345,6 +346,11 @@ export function RegistroAccidentesLaborales() {
     if (!form.fecha) { toast.error('Selecciona la fecha del accidente'); return }
     if (!form.trabajadorNombre.trim()) { toast.error('Ingresa el nombre del trabajador'); return }
     if (!profile?.org_id) return
+
+    for (const foto of fotosLocal) {
+      const errImg = validarImagen(foto.file)
+      if (errImg) { toast.error(errImg); return }
+    }
 
     setGuardando(true)
     const pathsSubidos: string[] = []

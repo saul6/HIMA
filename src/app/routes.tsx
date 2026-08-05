@@ -55,13 +55,8 @@ import { ControlInventarioQuimicos } from "./screens/ControlInventarioQuimicos";
 import { ResumenNoConformidades } from "./screens/ResumenNoConformidades";
 import { AccionesCorrectivas } from "./screens/AccionesCorrectivas";
 import { RequireModulo } from "./components/RequireModulo";
-import TestSupabase from "./screens/TestSupabase";
 
 export const router = createBrowserRouter([
-  {
-    path: "/test",
-    Component: TestSupabase,
-  },
   {
     path: "/login",
     Component: Login,

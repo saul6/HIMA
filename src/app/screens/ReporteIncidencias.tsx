@@ -13,6 +13,7 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { useM13Incidencias, type M13ReporteConRancho } from '@/hooks/useM13Incidencias'
 import { supabase } from '@/lib/supabase'
 import { getSignedUrls, borrarFotos, subirFoto } from '@/lib/storage/incidenciasStorage'
+import { validarImagen } from '@/lib/validarImagen'
 import { generarReporteIncidenciasPDF } from '@/lib/pdf/m13/generarReporteIncidenciasPDF'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { generarReporteIncidenciasConsolidadoPDF } from '@/lib/pdf/m13/generarReporteIncidenciasConsolidadoPDF'
@@ -341,6 +342,14 @@ export function ReporteIncidencias() {
   async function handleGuardar() {
     if (!validarFormulario()) return
     const orgId = profile!.org_id!
+
+    for (const inc of incidencias) {
+      for (const fotoLocal of inc.fotos) {
+        const errImg = validarImagen(fotoLocal.file)
+        if (errImg) { toast.error(errImg); return }
+      }
+    }
+
     setGuardando(true)
 
     const pathsSubidos: string[] = []
