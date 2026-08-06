@@ -16,6 +16,7 @@ const ICONOS: Record<string, LucideIcon> = {
   'wheat': Wheat,
   'clipboard-check': ClipboardCheck,
   'droplet': Droplet,
+  'droplet-half-2': Droplet,
   'droplets': Droplets,
   'camera': Camera,
   'clipboard-list': ClipboardList,

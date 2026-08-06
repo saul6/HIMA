@@ -58,6 +58,7 @@ import { LimpiezaPatiosAzoteas } from "./screens/LimpiezaPatiosAzoteas"
 import { LimpiezaRecepcion } from "./screens/LimpiezaRecepcion"
 import { LimpiezaPreenfrio } from "./screens/LimpiezaPreenfrio"
 import { LimpiezaAlmacenEmpaque } from "./screens/LimpiezaAlmacenEmpaque"
+import { LimpiezaCisterna } from "./screens/LimpiezaCisterna"
 import { PreparacionCloro } from "./screens/PreparacionCloro"
 import { ControlInventarioQuimicos } from "./screens/ControlInventarioQuimicos";
 import { ResumenNoConformidades } from "./screens/ResumenNoConformidades";
@@ -133,6 +134,7 @@ export const router = createBrowserRouter([
                   { path: "limpieza-preenfrio-conservador", Component: LimpiezaPreenfrio },
                   { path: "limpieza-almacen-empaque", Component: LimpiezaAlmacenEmpaque },
                   { path: "monitoreo-germicida", Component: MonitoreoGermicida },
+                  { path: "limpieza-cisterna", Component: LimpiezaCisterna },
                 ],
               },
             ],
