@@ -23,7 +23,7 @@ export function BottomSheet({ open, onClose, height, children }: BottomSheetProp
         className={[
           'fixed left-1/2 -translate-x-1/2 w-full bg-card flex flex-col z-50',
           'bottom-0 max-w-[390px] rounded-t-[0.625rem]',
-          'lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:max-w-[560px] lg:rounded-xl',
+          'md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:max-w-[560px] md:rounded-xl',
         ].join(' ')}
         style={height ? { height } : { maxHeight: '85vh' }}
       >

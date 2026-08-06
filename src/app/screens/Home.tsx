@@ -84,10 +84,10 @@ export function Home() {
   const hayActividad = recientes.length > 0
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)] lg:pb-8">
+    <div className="min-h-full pb-[calc(72px+34px)] md:pb-8">
 
       {/* Header — solo móvil; en escritorio el sidebar tiene logo + usuario */}
-      <header className="lg:hidden bg-card border-b border-border px-4 py-4">
+      <header className="md:hidden bg-card border-b border-border px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center justify-between gap-3 w-full">
           {/* Contenedor del logo para asegurar que quede bien alineado a la izquierda */}
@@ -108,7 +108,7 @@ export function Home() {
         </div>
       </header>
 
-      <div className="p-4 space-y-6 lg:px-8 lg:py-6 xl:px-10">
+      <div className="p-4 space-y-6 md:px-6 md:py-5 lg:px-8 lg:py-6 xl:px-10">
 
         {/* Banner de cuenta pendiente de activación */}
         {!loading && orgPlan === 'pendiente' && (
@@ -150,7 +150,7 @@ export function Home() {
         )}
 
         {/* Métricas — panel según sector */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
 
           {loadingModulos ? (
             // Skeleton genérico mientras no sabemos el sector
@@ -288,7 +288,7 @@ export function Home() {
         </div>
 
         {/* ── Contenido inferior: dos columnas en escritorio ─────────────── */}
-        <div className="lg:grid lg:grid-cols-[320px_1fr] lg:gap-6 lg:items-start">
+        <div className="md:grid md:grid-cols-[230px_1fr] md:gap-5 lg:grid-cols-[320px_1fr] lg:gap-6 md:items-start">
 
         {/* Columna izquierda: actividad */}
         <div className="space-y-6">
@@ -448,7 +448,7 @@ export function Home() {
         </div>{/* fin columna izquierda */}
 
         {/* Columna derecha: módulos de inocuidad */}
-        <div className="mt-6 lg:mt-0">
+        <div className="mt-6 md:mt-0">
 
         {/* Inocuidad y BPAs */}
         <div>
