@@ -49,6 +49,7 @@ import { RegistroAccidentesLaborales } from "./screens/RegistroAccidentesLaboral
 import { MonitoreoEstacionesPlagas } from "./screens/MonitoreoEstacionesPlagas";
 import { RegistroMuestrasLaboratorio } from "./screens/RegistroMuestrasLaboratorio";
 import { VerificacionInsumos } from "./screens/VerificacionInsumos"
+import { MonitoreoGermicida } from "./screens/MonitoreoGermicida"
 import { LimpiezaBanosQuimicos } from "./screens/LimpiezaBanosQuimicos"
 import { LimpiezaAduana } from "./screens/LimpiezaAduana"
 import { LimpiezaComedor } from "./screens/LimpiezaComedor"
@@ -131,6 +132,7 @@ export const router = createBrowserRouter([
                   { path: "limpieza-recepcion", Component: LimpiezaRecepcion },
                   { path: "limpieza-preenfrio-conservador", Component: LimpiezaPreenfrio },
                   { path: "limpieza-almacen-empaque", Component: LimpiezaAlmacenEmpaque },
+                  { path: "monitoreo-germicida", Component: MonitoreoGermicida },
                 ],
               },
             ],

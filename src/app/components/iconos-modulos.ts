@@ -1,6 +1,6 @@
 import {
   SprayCan, Boxes, Library, BriefcaseMedical, Wine, Sprout, Radar, Wheat,
-  ClipboardCheck, Droplets, Camera, ClipboardList, Users, Shield, ShieldCheck, Eye,
+  ClipboardCheck, Droplet, Droplets, Camera, ClipboardList, Users, Shield, ShieldCheck, Eye,
   Package, FileCheck, Factory, Bandage, Bug, FlaskConical, ListChecks, TestTubes,
   Warehouse, UtensilsCrossed, Building2, Trees, PackageOpen, Snowflake, LayoutGrid, type LucideIcon,
 } from 'lucide-react'
@@ -15,6 +15,7 @@ const ICONOS: Record<string, LucideIcon> = {
   'radar': Radar,
   'wheat': Wheat,
   'clipboard-check': ClipboardCheck,
+  'droplet': Droplet,
   'droplets': Droplets,
   'camera': Camera,
   'clipboard-list': ClipboardList,
