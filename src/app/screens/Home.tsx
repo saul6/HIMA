@@ -108,7 +108,7 @@ export function Home() {
         </div>
       </header>
 
-      <div className="p-4 space-y-6 lg:px-8 lg:py-6">
+      <div className="p-4 space-y-6 lg:px-8 lg:py-6 xl:px-10">
 
         {/* Banner de cuenta pendiente de activación */}
         {!loading && orgPlan === 'pendiente' && (
@@ -288,10 +288,10 @@ export function Home() {
         </div>
 
         {/* ── Contenido inferior: dos columnas en escritorio ─────────────── */}
-        <div className="lg:flex lg:gap-8 lg:items-start">
+        <div className="lg:grid lg:grid-cols-[320px_1fr] lg:gap-6 lg:items-start">
 
         {/* Columna izquierda: actividad */}
-        <div className="lg:w-[340px] lg:flex-shrink-0 space-y-6">
+        <div className="space-y-6">
 
         {/* Correcciones pendientes — visible para todos si tienen correcciones */}
         {!loading && countCorrecciones > 0 && (
@@ -448,14 +448,14 @@ export function Home() {
         </div>{/* fin columna izquierda */}
 
         {/* Columna derecha: módulos de inocuidad */}
-        <div className="mt-6 lg:mt-0 lg:flex-1">
+        <div className="mt-6 lg:mt-0">
 
         {/* Inocuidad y BPAs */}
         <div>
           <h2 className="mb-3 text-foreground" style={{ fontWeight: 600 }}>Inocuidad y BPAs</h2>
 
           {loadingModulos ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
               {[0, 1, 2].map(i => (
                 <div key={i} className="bg-card rounded-xl p-4 border border-border animate-pulse">
                   <div className="flex items-center gap-3">
@@ -491,7 +491,7 @@ export function Home() {
                       {grupo.nombre}
                     </p>
                   )}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
                     {grupo.modulos.map(modulo => {
                       const Icon = resolverIcono(modulo.icono)
                       return (
@@ -505,7 +505,7 @@ export function Home() {
                               <Icon className="w-5 h-5 text-primary" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                              <div className="text-sm text-foreground truncate lg:whitespace-normal lg:line-clamp-2" style={{ fontWeight: 600 }}>
                                 {modulo.nombre}
                               </div>
                             </div>

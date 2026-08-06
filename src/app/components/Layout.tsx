@@ -136,12 +136,12 @@ export function Layout() {
               {terminosSitio.singular !== 'Rancho' ? 'Instalaciones' : 'Campo'} · M.A.D.Y
             </p>
           </div>
-          <span className="text-xs text-muted-foreground capitalize">{fechaHoy}</span>
+          <span className="text-xs text-muted-foreground">{fechaHoy.charAt(0).toUpperCase() + fechaHoy.slice(1)}</span>
         </header>
 
         {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto">
-          <div className="w-full max-w-[390px] mx-auto lg:max-w-[1100px]">
+          <div className="w-full max-w-[390px] mx-auto lg:max-w-[1600px] lg:mx-0">
             <Outlet />
           </div>
         </div>
