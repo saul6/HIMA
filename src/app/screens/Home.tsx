@@ -84,10 +84,10 @@ export function Home() {
   const hayActividad = recientes.length > 0
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)]">
+    <div className="min-h-full pb-[calc(72px+34px)] lg:pb-8">
 
-      {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4">
+      {/* Header — solo móvil; en escritorio el sidebar tiene logo + usuario */}
+      <header className="lg:hidden bg-card border-b border-border px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center justify-between gap-3 w-full">
           {/* Contenedor del logo para asegurar que quede bien alineado a la izquierda */}
@@ -108,7 +108,7 @@ export function Home() {
         </div>
       </header>
 
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-6 lg:px-8 lg:py-6">
 
         {/* Banner de cuenta pendiente de activación */}
         {!loading && orgPlan === 'pendiente' && (
@@ -150,7 +150,7 @@ export function Home() {
         )}
 
         {/* Métricas — panel según sector */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
 
           {loadingModulos ? (
             // Skeleton genérico mientras no sabemos el sector
@@ -286,6 +286,12 @@ export function Home() {
           )}
 
         </div>
+
+        {/* ── Contenido inferior: dos columnas en escritorio ─────────────── */}
+        <div className="lg:flex lg:gap-8 lg:items-start">
+
+        {/* Columna izquierda: actividad */}
+        <div className="lg:w-[340px] lg:flex-shrink-0 space-y-6">
 
         {/* Correcciones pendientes — visible para todos si tienen correcciones */}
         {!loading && countCorrecciones > 0 && (
@@ -439,12 +445,17 @@ export function Home() {
           )}
         </div>
 
+        </div>{/* fin columna izquierda */}
+
+        {/* Columna derecha: módulos de inocuidad */}
+        <div className="mt-6 lg:mt-0 lg:flex-1">
+
         {/* Inocuidad y BPAs */}
         <div>
           <h2 className="mb-3 text-foreground" style={{ fontWeight: 600 }}>Inocuidad y BPAs</h2>
 
           {loadingModulos ? (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {[0, 1, 2].map(i => (
                 <div key={i} className="bg-card rounded-xl p-4 border border-border animate-pulse">
                   <div className="flex items-center gap-3">
@@ -480,7 +491,7 @@ export function Home() {
                       {grupo.nombre}
                     </p>
                   )}
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                     {grupo.modulos.map(modulo => {
                       const Icon = resolverIcono(modulo.icono)
                       return (
@@ -509,14 +520,16 @@ export function Home() {
           )}
         </div>
 
+        </div>{/* fin columna derecha */}
+        </div>{/* fin dos columnas */}
+
       </div>
 
-      {/* FAB — solo si el sector incluye aplicaciones de plaguicidas */}
+      {/* FAB — solo móvil; en escritorio el sidebar ya tiene el enlace */}
       {tieneAplicaciones && (
         <Link
           to="/nueva-aplicacion"
-          className="fixed bottom-[calc(72px+34px+16px)] right-4 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg z-10 hover:bg-agro-blue transition-colors"
-          style={{ maxWidth: 'calc(390px - 32px - 56px + 56px)' }}
+          className="lg:hidden fixed bottom-[calc(72px+34px+16px)] right-4 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg z-10 hover:bg-agro-blue transition-colors"
           aria-label="Nueva aplicación"
         >
           <Plus className="w-6 h-6 text-white" />

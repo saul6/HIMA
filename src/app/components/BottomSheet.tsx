@@ -9,23 +9,23 @@ interface BottomSheetProps {
 }
 
 /**
- * Posiciona un panel en la parte inferior de la pantalla, centrado y limitado
- * al mismo ancho máximo que el contenedor principal (390 px).
- * El overlay cubre toda la ventana; el panel queda centrado horizontalmente.
+ * Móvil: panel anclado al fondo centrado en 390 px.
+ * Escritorio (lg:): modal centrado en 560 px.
  */
 export function BottomSheet({ open, onClose, height, children }: BottomSheetProps) {
   if (!open) return null
   return (
     <>
-      {/* Overlay full-screen */}
+      {/* Overlay */}
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
-      {/* Panel centrado al ancho mobile */}
+      {/* Panel — bottom sheet on mobile, centered dialog on desktop */}
       <div
-        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-card flex flex-col z-50"
-        style={{
-          borderRadius: '0.625rem 0.625rem 0 0',
-          ...(height ? { height } : { maxHeight: '85vh' }),
-        }}
+        className={[
+          'fixed left-1/2 -translate-x-1/2 w-full bg-card flex flex-col z-50',
+          'bottom-0 max-w-[390px] rounded-t-[0.625rem]',
+          'lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:max-w-[560px] lg:rounded-xl',
+        ].join(' ')}
+        style={height ? { height } : { maxHeight: '85vh' }}
       >
         {children}
       </div>
