@@ -252,7 +252,7 @@ export function Home() {
 
               {(resumen?.hallazgos_por_corregir ?? 0) > 0 ? (
                 <Link
-                  to="/equipo/actividad"
+                  to="/inocuidad/acciones-correctivas"
                   className="rounded-xl p-4 border"
                   style={{
                     backgroundColor: 'var(--agro-warning-fill)',
