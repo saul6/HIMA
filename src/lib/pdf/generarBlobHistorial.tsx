@@ -34,10 +34,11 @@ import { generarBlobLimpiezaAduana } from './m29/generarLimpiezaAduanaPDF'
 import { generarBlobLimpiezaComedor } from './m30/generarLimpiezaComedorPDF'
 import { generarBlobLimpiezaOficinas } from './m31/generarLimpiezaOficinasPDF'
 import { generarBlobLimpiezaPatiosAzoteas } from './m32/generarLimpiezaPatiosAzoteasPDF'
+import { generarBlobLimpiezaRecepcion } from './m33/generarLimpiezaRecepcionPDF'
 
 // ── Tipos públicos ────────────────────────────────────────────────────────────
 
-export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18' | 'M19' | 'M20' | 'M21' | 'M22' | 'M23' | 'M24' | 'M25' | 'M26' | 'M27' | 'M28' | 'M29' | 'M30' | 'M31' | 'M32'
+export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18' | 'M19' | 'M20' | 'M21' | 'M22' | 'M23' | 'M24' | 'M25' | 'M26' | 'M27' | 'M28' | 'M29' | 'M30' | 'M31' | 'M32' | 'M33'
 
 export type PDFRef =
   | { tipo: 'M1'; id: string }
@@ -59,6 +60,7 @@ export type PDFRef =
   | { tipo: 'M30'; id: string }
   | { tipo: 'M31'; id: string }
   | { tipo: 'M32'; id: string }
+  | { tipo: 'M33'; id: string }
 
 export interface RegistroHistorial {
   key: string
@@ -331,6 +333,7 @@ export async function generarBlobParaRef(ref: PDFRef, orgId: string): Promise<Bl
     case 'M30': return generarBlobLimpiezaComedor(ref.id, orgId)
     case 'M31': return generarBlobLimpiezaOficinas(ref.id, orgId)
     case 'M32': return generarBlobLimpiezaPatiosAzoteas(ref.id, orgId)
+    case 'M33': return generarBlobLimpiezaRecepcion(ref.id, orgId)
   }
 }
 

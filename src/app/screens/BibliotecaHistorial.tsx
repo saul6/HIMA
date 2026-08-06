@@ -42,6 +42,7 @@ const MODULO_META: Record<ModuloKey, { label: string; color: string }> = {
   M30: { label: 'Limpieza Comedor',        color: '#E65100' },
   M31: { label: 'Limpieza Oficinas',       color: '#0D47A1' },
   M32: { label: 'Limpieza Patios/Azoteas', color: '#2E7D32' },
+  M33: { label: 'Limpieza Recepción',      color: '#006064' },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -77,7 +78,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tbl = (name: string) => (supabase as any).from(name)
 
-  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31, r32] = await Promise.all([
+  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31, r32, r33] = await Promise.all([
     supabase.from('aplicaciones')
       .select('id, fecha_aplicacion, rancho_id, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha_aplicacion', desde).lte('fecha_aplicacion', hasta)
@@ -203,6 +204,14 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       .order('mes', { ascending: false })
       .limit(200),
     tbl('m32_registro_mensual')
+      .select('id, rancho_id, anio, mes, ranchos(nombre)')
+      .eq('org_id', orgId)
+      .gte('anio', parseInt(desdeM.slice(0, 4)))
+      .lte('anio', parseInt(hastaM.slice(0, 4)))
+      .order('anio', { ascending: false })
+      .order('mes', { ascending: false })
+      .limit(200),
+    tbl('m33_registro_mensual')
       .select('id, rancho_id, anio, mes, ranchos(nombre)')
       .eq('org_id', orgId)
       .gte('anio', parseInt(desdeM.slice(0, 4)))
@@ -631,6 +640,20 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       fecha: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
       resumen: `Limpieza de patios exteriores y azoteas - ${mesLabel}`,
       pdfRef: { tipo: 'M32', id: r.id },
+    })
+  }
+
+  // M33 — una fila = un registro mensual de limpieza del área de recepción
+  for (const r of (r33 as any)?.data ?? []) {
+    const mesLabel = new Date(r.anio, r.mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    todos.push({
+      key: `M33-${r.id}`,
+      modulo: 'M33',
+      rancho_id: r.rancho_id,
+      rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
+      fecha: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
+      resumen: `Limpieza del área de recepción - ${mesLabel}`,
+      pdfRef: { tipo: 'M33', id: r.id },
     })
   }
 
