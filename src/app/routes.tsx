@@ -62,6 +62,7 @@ import { LimpiezaCisterna } from "./screens/LimpiezaCisterna"
 import { ManifiestoEmbarque } from "./screens/ManifiestoEmbarque"
 import { RecepcionFruta } from "./screens/RecepcionFruta"
 import { EntradasSalidasPreFrio } from "./screens/EntradasSalidasPreFrio"
+import { TemperaturasConservador } from "./screens/TemperaturasConservador"
 import { PreparacionCloro } from "./screens/PreparacionCloro"
 import { ControlInventarioQuimicos } from "./screens/ControlInventarioQuimicos";
 import { ResumenNoConformidades } from "./screens/ResumenNoConformidades";
@@ -141,6 +142,7 @@ export const router = createBrowserRouter([
                   { path: "manifiesto-embarque", Component: ManifiestoEmbarque },
                   { path: "recepcion-fruta", Component: RecepcionFruta },
                   { path: "entradas-salidas-prefrio", Component: EntradasSalidasPreFrio },
+                  { path: "temperaturas-conservador", Component: TemperaturasConservador },
                 ],
               },
             ],

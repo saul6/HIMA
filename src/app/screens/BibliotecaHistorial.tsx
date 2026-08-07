@@ -48,6 +48,7 @@ const MODULO_META: Record<ModuloKey, { label: string; color: string }> = {
   M38: { label: 'Manifiesto Embarque',      color: '#1565C0' },
   M39: { label: 'Recepción Fruta',          color: '#006064' },
   M40: { label: 'Entradas/Salidas Pre-frío', color: '#004D61' },
+  M41: { label: 'Temperaturas Conservador',  color: '#00695C' },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -83,7 +84,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tbl = (name: string) => (supabase as any).from(name)
 
-  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31, r32, r33, r34, r35, r38, r39, r40] = await Promise.all([
+  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31, r32, r33, r34, r35, r38, r39, r40, r41] = await Promise.all([
     supabase.from('aplicaciones')
       .select('id, fecha_aplicacion, rancho_id, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha_aplicacion', desde).lte('fecha_aplicacion', hasta)
@@ -250,6 +251,10 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       .order('fecha', { ascending: false }).limit(500),
     tbl('m40_registros')
       .select('id, rancho_id, fecha, empresa, ranchos(nombre)')
+      .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
+      .order('fecha', { ascending: false }).limit(500),
+    tbl('m41_registros')
+      .select('id, rancho_id, fecha, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
       .order('fecha', { ascending: false }).limit(500),
   ])
@@ -754,6 +759,19 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       fecha: r.fecha,
       resumen: `Entradas y Salidas en Pre-enfriamiento${r.empresa ? ' · ' + r.empresa : ''}`,
       pdfRef: { tipo: 'M40', id: r.id },
+    })
+  }
+
+  // M41 — un registro por día por instalación
+  for (const r of (r41 as any)?.data ?? []) {
+    todos.push({
+      key: `M41-${r.id}`,
+      modulo: 'M41',
+      rancho_id: r.rancho_id,
+      rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
+      fecha: r.fecha,
+      resumen: 'Temperaturas del Conservador',
+      pdfRef: { tipo: 'M41', id: r.id },
     })
   }
 
