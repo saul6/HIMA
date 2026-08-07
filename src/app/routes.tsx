@@ -60,6 +60,7 @@ import { LimpiezaPreenfrio } from "./screens/LimpiezaPreenfrio"
 import { LimpiezaAlmacenEmpaque } from "./screens/LimpiezaAlmacenEmpaque"
 import { LimpiezaCisterna } from "./screens/LimpiezaCisterna"
 import { ManifiestoEmbarque } from "./screens/ManifiestoEmbarque"
+import { RecepcionFruta } from "./screens/RecepcionFruta"
 import { PreparacionCloro } from "./screens/PreparacionCloro"
 import { ControlInventarioQuimicos } from "./screens/ControlInventarioQuimicos";
 import { ResumenNoConformidades } from "./screens/ResumenNoConformidades";
@@ -137,6 +138,7 @@ export const router = createBrowserRouter([
                   { path: "monitoreo-germicida", Component: MonitoreoGermicida },
                   { path: "limpieza-cisterna", Component: LimpiezaCisterna },
                   { path: "manifiesto-embarque", Component: ManifiestoEmbarque },
+                  { path: "recepcion-fruta", Component: RecepcionFruta },
                 ],
               },
             ],
