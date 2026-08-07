@@ -66,6 +66,7 @@ import { TemperaturasConservador } from "./screens/TemperaturasConservador"
 import { MaterialEmpaqueMovimientos } from "./screens/MaterialEmpaqueMovimientos"
 import { InspeccionAlmacenEmpaque } from "./screens/InspeccionAlmacenEmpaque"
 import { OrdenMantenimiento } from "./screens/OrdenMantenimiento"
+import { MantenimientoPreventivo } from "./screens/MantenimientoPreventivo"
 import { PreparacionCloro } from "./screens/PreparacionCloro"
 import { ControlInventarioQuimicos } from "./screens/ControlInventarioQuimicos";
 import { ResumenNoConformidades } from "./screens/ResumenNoConformidades";
@@ -149,6 +150,7 @@ export const router = createBrowserRouter([
                   { path: "material-empaque-movimientos", Component: MaterialEmpaqueMovimientos },
                   { path: "inspeccion-almacen-empaque", Component: InspeccionAlmacenEmpaque },
                   { path: "orden-mantenimiento", Component: OrdenMantenimiento },
+                  { path: "mantenimiento-preventivo", Component: MantenimientoPreventivo },
                 ],
               },
             ],

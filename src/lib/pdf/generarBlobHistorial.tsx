@@ -46,10 +46,11 @@ import { generarBlobTemperaturaConservador } from './m41/generarTemperaturaConse
 import { generarBlobMaterialEmpaque } from './m42/generarMaterialEmpaquePDF'
 import { generarBlobInspeccionAlmacenEmpaque } from './m43/generarInspeccionAlmacenEmpaquePDF'
 import { generarBlobOrdenMantenimiento } from './m44/generarOrdenMantenimientoPDF'
+import { generarBlobMttoPreventivo } from './m45/generarMttoPreventivoPDF'
 
 // ── Tipos públicos ────────────────────────────────────────────────────────────
 
-export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18' | 'M19' | 'M20' | 'M21' | 'M22' | 'M23' | 'M24' | 'M25' | 'M26' | 'M27' | 'M28' | 'M29' | 'M30' | 'M31' | 'M32' | 'M33' | 'M34' | 'M35' | 'M36' | 'M37' | 'M38' | 'M39' | 'M40' | 'M41' | 'M42' | 'M43' | 'M44'
+export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18' | 'M19' | 'M20' | 'M21' | 'M22' | 'M23' | 'M24' | 'M25' | 'M26' | 'M27' | 'M28' | 'M29' | 'M30' | 'M31' | 'M32' | 'M33' | 'M34' | 'M35' | 'M36' | 'M37' | 'M38' | 'M39' | 'M40' | 'M41' | 'M42' | 'M43' | 'M44' | 'M45'
 
 export type PDFRef =
   | { tipo: 'M1'; id: string }
@@ -83,6 +84,7 @@ export type PDFRef =
   | { tipo: 'M42'; id: string }
   | { tipo: 'M43'; id: string }
   | { tipo: 'M44'; id: string }
+  | { tipo: 'M45'; id: string }
 
 export interface RegistroHistorial {
   key: string
@@ -367,6 +369,7 @@ export async function generarBlobParaRef(ref: PDFRef, orgId: string): Promise<Bl
     case 'M42': return generarBlobMaterialEmpaque(ref.id, orgId)
     case 'M43': return generarBlobInspeccionAlmacenEmpaque(ref.id, orgId)
     case 'M44': return generarBlobOrdenMantenimiento(ref.id, orgId)
+    case 'M45': return generarBlobMttoPreventivo(ref.id, orgId)
   }
 }
 

@@ -52,6 +52,7 @@ const MODULO_META: Record<ModuloKey, { label: string; color: string }> = {
   M42: { label: 'Material de Empaque',       color: '#4A148C' },
   M43: { label: 'Insp. Almacén Empaque',     color: '#1B5E20' },
   M44: { label: 'Orden de Mantenimiento',    color: '#37474F' },
+  M45: { label: 'Mtto. Preventivo',          color: '#455A64' },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -87,7 +88,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tbl = (name: string) => (supabase as any).from(name)
 
-  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31, r32, r33, r34, r35, r38, r39, r40, r41, r42, r43, r44] = await Promise.all([
+  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31, r32, r33, r34, r35, r38, r39, r40, r41, r42, r43, r44, r45] = await Promise.all([
     supabase.from('aplicaciones')
       .select('id, fecha_aplicacion, rancho_id, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha_aplicacion', desde).lte('fecha_aplicacion', hasta)
@@ -272,6 +273,14 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       .select('id, rancho_id, fecha, folio, descripcion_solicitud, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
       .order('fecha', { ascending: false }).limit(500),
+    tbl('m45_registro_mensual')
+      .select('id, rancho_id, anio, mes, ranchos(nombre)')
+      .eq('org_id', orgId)
+      .gte('anio', parseInt(desdeM.slice(0, 4)))
+      .lte('anio', parseInt(hastaM.slice(0, 4)))
+      .order('anio', { ascending: false })
+      .order('mes', { ascending: false })
+      .limit(200),
   ])
 
   const todos: RegistroHistorial[] = []
@@ -813,6 +822,24 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       fecha: r.fecha,
       resumen: `Orden de Mantenimiento${r.folio ? ' #' + r.folio : ''}${r.descripcion_solicitud ? ' · ' + r.descripcion_solicitud : ''}`,
       pdfRef: { tipo: 'M44', id: r.id },
+    })
+  }
+
+  // M45 — una fila = un registro mensual de mantenimiento preventivo
+  for (const r of (r45 as any)?.data ?? []) {
+    const desdeV = parseInt(desdeM.slice(0, 4)) * 12 + parseInt(desdeM.slice(5, 7))
+    const hastaV = parseInt(hastaM.slice(0, 4)) * 12 + parseInt(hastaM.slice(5, 7))
+    const v = (r.anio as number) * 12 + (r.mes as number)
+    if (v < desdeV || v > hastaV) continue
+    const ml = new Date(r.anio, r.mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    todos.push({
+      key: `M45-${r.id}`,
+      modulo: 'M45',
+      rancho_id: r.rancho_id,
+      rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
+      fecha: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
+      resumen: `Mtto. Preventivo - ${ml}`,
+      pdfRef: { tipo: 'M45', id: r.id },
     })
   }
 
