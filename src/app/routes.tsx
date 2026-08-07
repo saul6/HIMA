@@ -64,6 +64,7 @@ import { RecepcionFruta } from "./screens/RecepcionFruta"
 import { EntradasSalidasPreFrio } from "./screens/EntradasSalidasPreFrio"
 import { TemperaturasConservador } from "./screens/TemperaturasConservador"
 import { MaterialEmpaqueMovimientos } from "./screens/MaterialEmpaqueMovimientos"
+import { InspeccionAlmacenEmpaque } from "./screens/InspeccionAlmacenEmpaque"
 import { PreparacionCloro } from "./screens/PreparacionCloro"
 import { ControlInventarioQuimicos } from "./screens/ControlInventarioQuimicos";
 import { ResumenNoConformidades } from "./screens/ResumenNoConformidades";
@@ -145,6 +146,7 @@ export const router = createBrowserRouter([
                   { path: "entradas-salidas-prefrio", Component: EntradasSalidasPreFrio },
                   { path: "temperaturas-conservador", Component: TemperaturasConservador },
                   { path: "material-empaque-movimientos", Component: MaterialEmpaqueMovimientos },
+                  { path: "inspeccion-almacen-empaque", Component: InspeccionAlmacenEmpaque },
                 ],
               },
             ],

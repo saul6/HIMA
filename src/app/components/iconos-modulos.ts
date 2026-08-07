@@ -39,6 +39,7 @@ const ICONOS: Record<string, LucideIcon> = {
   'package-open': PackageOpen,
   'package-import': PackageOpen,
   'packages': PackageOpen,
+  'package-search': PackageOpen,
   'snowflake': Snowflake,
   'truck': Truck,
   'arrow-left-right': ArrowLeftRight,
