@@ -4,7 +4,7 @@ import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
 export interface M43PuntoPDFRow {
   id: string
   orden: number
-  descripcion: string
+  texto: string
 }
 
 export interface InspeccionAlmacenEmpaquePaginaProps {
@@ -17,11 +17,12 @@ export interface InspeccionAlmacenEmpaquePaginaProps {
   autoriza: string | null
   observaciones: string | null
   puntos: M43PuntoPDFRow[]
-  diasInspeccionados: string[]
-  // dia_fecha -> punto_id -> valor raw ('cumple'|'no_cumple'|'na')
-  matriz: Record<string, Record<string, string>>
-  // dia_fecha -> acciones_tomadas
-  accionesTomadas: Record<string, string>
+  // días del mes que tuvieron inspección (1-31)
+  diasInspeccionados: number[]
+  // dia (1-31) -> punto_id -> valor raw ('cumple'|'no_cumple'|'na')
+  matriz: Record<number, Record<string, string>>
+  // dia (1-31) -> acciones_tomadas
+  accionesTomadas: Record<number, string>
 }
 
 export interface InspeccionAlmacenEmpaqueConsolidadoPDFProps {
@@ -51,21 +52,10 @@ function dayColW(numDias: number): number {
   return Math.floor(DAY_AREA_W / Math.max(numDias, 1))
 }
 
-function diasDelMes(mesDate: string): string[] {
+function diasDelMes(mesDate: string): number[] {
   const d = new Date(mesDate + 'T12:00:00')
-  const year  = d.getFullYear()
-  const month = d.getMonth()
-  const total = new Date(year, month + 1, 0).getDate()
-  const result: string[] = []
-  for (let i = 1; i <= total; i++) {
-    result.push(`${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`)
-  }
-  return result
-}
-
-function formatDayNum(iso: string): string {
-  try { return String(new Date(iso + 'T12:00:00').getDate()) }
-  catch { return iso }
+  const total = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
+  return Array.from({ length: total }, (_, i) => i + 1)
 }
 
 function valorLabel(val: string): string {
@@ -149,12 +139,14 @@ export function InspeccionAlmacenEmpaquePagina({
   realizadoPor, verifica, autoriza, observaciones,
   puntos, diasInspeccionados, matriz, accionesTomadas,
 }: InspeccionAlmacenEmpaquePaginaProps) {
-  const todosLosDias = diasDelMes(mesDate)
-  const dW = dayColW(todosLosDias.length)
+  const todosLosDias    = diasDelMes(mesDate)
+  const dW              = dayColW(todosLosDias.length)
   const inspeccionadosSet = new Set(diasInspeccionados)
-  const accionesEntries = Object.entries(accionesTomadas)
+
+  const accionesEntries = (Object.entries(accionesTomadas) as [string, string][])
+    .map(([k, v]) => [Number(k), v] as [number, string])
     .filter(([, v]) => v?.trim())
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([a], [b]) => a - b)
 
   return (
     <Page size="A4" orientation="landscape" style={s.page}>
@@ -211,9 +203,9 @@ export function InspeccionAlmacenEmpaquePagina({
         <View style={s.puntoColHeader}>
           <Text style={s.puntoColHeaderText}>Punto de inspeccion</Text>
         </View>
-        {todosLosDias.map((fecha) => (
-          <View key={fecha} style={[s.dayHeader, { width: dW }]}>
-            <Text style={s.dayHeaderText}>{formatDayNum(fecha)}</Text>
+        {todosLosDias.map((d) => (
+          <View key={d} style={[s.dayHeader, { width: dW }]}>
+            <Text style={s.dayHeaderText}>{d}</Text>
           </View>
         ))}
       </View>
@@ -224,18 +216,18 @@ export function InspeccionAlmacenEmpaquePagina({
         return (
           <View key={punto.id} style={[s.dataRow, { backgroundColor: bg }]}>
             <View style={[s.puntoCell, { backgroundColor: bg }]}>
-              <Text style={s.puntoText}>{punto.orden}. {punto.descripcion}</Text>
+              <Text style={s.puntoText}>{punto.orden}. {punto.texto}</Text>
             </View>
-            {todosLosDias.map((fecha) => {
-              if (!inspeccionadosSet.has(fecha)) {
-                return <View key={fecha} style={[s.valueCell, { width: dW, backgroundColor: bg }]} />
+            {todosLosDias.map((d) => {
+              if (!inspeccionadosSet.has(d)) {
+                return <View key={d} style={[s.valueCell, { width: dW, backgroundColor: bg }]} />
               }
-              const rawVal = matriz[fecha]?.[punto.id]
-              if (!rawVal) return <View key={fecha} style={[s.valueCell, { width: dW, backgroundColor: bg }]} />
+              const rawVal = matriz[d]?.[punto.id]
+              if (!rawVal) return <View key={d} style={[s.valueCell, { width: dW, backgroundColor: bg }]} />
               const label = valorLabel(rawVal)
               const color = valorColor(rawVal)
               return (
-                <View key={fecha} style={[s.valueCell, { width: dW, backgroundColor: bg }]}>
+                <View key={d} style={[s.valueCell, { width: dW, backgroundColor: bg }]}>
                   <Text style={{ fontSize: label === 'NC' ? 5 : 6, fontFamily: 'Helvetica-Bold', color }}>{label}</Text>
                 </View>
               )
@@ -249,9 +241,9 @@ export function InspeccionAlmacenEmpaquePagina({
         {accionesEntries.length > 0 && (
           <View style={{ marginBottom: 4 }}>
             <Text style={s.accionesTitle}>ACCIONES TOMADAS:</Text>
-            {accionesEntries.map(([fecha, texto]) => (
-              <View key={fecha} style={s.accionRow}>
-                <Text style={s.accionDia}>Dia {formatDayNum(fecha)}:</Text>
+            {accionesEntries.map(([diaNum, texto]) => (
+              <View key={diaNum} style={s.accionRow}>
+                <Text style={s.accionDia}>Dia {diaNum}:</Text>
                 <Text style={s.accionTexto}>{texto}</Text>
               </View>
             ))}

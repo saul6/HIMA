@@ -7,12 +7,12 @@ export type ValorM43 = 'cumple' | 'no_cumple' | 'na'
 export interface M43Punto {
   id: string
   orden: number
-  descripcion: string
+  texto: string
 }
 
 export interface M43DiaSummary {
   id: string
-  fecha: string
+  dia: number
   acciones_tomadas: string | null
   num_cumple: number
   num_no_cumple: number
@@ -51,21 +51,31 @@ export function useM43InspeccionAlmacen() {
         .select(`
           id, org_id, rancho_id, mes, realizado_por, verifica, autoriza, observaciones,
           ranchos(nombre, codigo),
-          m43_dias(id, fecha, acciones_tomadas, m43_resultados(id, punto_id, valor, incidencia_id))
+          m43_dias(id, dia, acciones_tomadas),
+          m43_resultados(id, punto_id, dia, valor, incidencia_id)
         `)
         .eq('org_id', profile.org_id)
         .order('mes', { ascending: false })
       if (err) throw err
 
       const items: M43RegistroMensual[] = ((data ?? []) as any[]).map((r: any) => {
-        const diasRaw: any[] = r.m43_dias ?? []
+        const diasRaw: any[]      = r.m43_dias ?? []
+        const resultadosRaw: any[] = r.m43_resultados ?? []
+
+        const resPorDia: Record<number, any[]> = {}
+        for (const res of resultadosRaw) {
+          const d = res.dia as number
+          if (!resPorDia[d]) resPorDia[d] = []
+          resPorDia[d].push(res)
+        }
+
         const dias: M43DiaSummary[] = diasRaw
-          .sort((a: any, b: any) => a.fecha.localeCompare(b.fecha))
+          .sort((a: any, b: any) => a.dia - b.dia)
           .map((d: any) => {
-            const res: any[] = d.m43_resultados ?? []
+            const res = resPorDia[d.dia as number] ?? []
             return {
-              id: d.id,
-              fecha: d.fecha,
+              id:               d.id,
+              dia:              d.dia as number,
               acciones_tomadas: d.acciones_tomadas ?? null,
               num_cumple:       res.filter((x: any) => x.valor === 'cumple').length,
               num_no_cumple:    res.filter((x: any) => x.valor === 'no_cumple').length,
@@ -73,6 +83,7 @@ export function useM43InspeccionAlmacen() {
               num_incidencias:  res.filter((x: any) => x.incidencia_id).length,
             }
           })
+
         return {
           id:            r.id,
           org_id:        r.org_id,

@@ -44,10 +44,8 @@ function valorLabel(v: ValorM43): string {
 
 // ── DiaCard ───────────────────────────────────────────────────────────────────
 
-function DiaCard({ dia, onClick }: { dia: M43DiaSummary; onClick: () => void }) {
-  const fecha  = new Date(dia.fecha + 'T12:00:00')
-  const diaNum = fecha.getDate()
-  const mesStr = fecha.toLocaleDateString('es-MX', { month: 'short' })
+function DiaCard({ dia, registroMes, onClick }: { dia: M43DiaSummary; registroMes: string; onClick: () => void }) {
+  const mesStr = new Date(registroMes + 'T12:00:00').toLocaleDateString('es-MX', { month: 'short' })
   return (
     <button
       onClick={onClick}
@@ -59,7 +57,7 @@ function DiaCard({ dia, onClick }: { dia: M43DiaSummary; onClick: () => void }) 
           style={{ backgroundColor: 'var(--agro-success-fill)' }}
         >
           <span className="leading-none" style={{ fontSize: 15, fontWeight: 700, color: 'var(--agro-success-text)' }}>
-            {diaNum}
+            {dia.dia}
           </span>
           <span style={{ fontSize: 9, color: 'var(--agro-success-text)' }}>{mesStr}</span>
         </div>
@@ -122,7 +120,7 @@ function TogglePunto({
   return (
     <div className="border border-border rounded-xl overflow-hidden">
       <button onClick={onToggle} className="w-full flex items-center gap-3 p-3 text-left">
-        <p className="flex-1 text-xs text-foreground">{punto.orden}. {punto.descripcion}</p>
+        <p className="flex-1 text-xs text-foreground">{punto.orden}. {punto.texto}</p>
         <span
           className="text-xs px-2 py-1 rounded-lg flex-shrink-0"
           style={{
@@ -175,7 +173,7 @@ export function InspeccionAlmacenEmpaque() {
   const [puntos, setPuntos] = useState<M43Punto[]>([])
   useEffect(() => {
     const tbl = supabase as any
-    tbl.from('m43_puntos').select('id, orden, descripcion').order('orden')
+    tbl.from('m43_puntos').select('id, orden, texto').order('orden')
       .then(({ data }: any) => { if (data) setPuntos(data as M43Punto[]) })
   }, [])
 
@@ -188,22 +186,32 @@ export function InspeccionAlmacenEmpaque() {
   const cargarDias = useCallback(async (regId: string) => {
     setLoadingDias(true)
     const tbl = supabase as any
-    const { data } = await tbl
-      .from('m43_dias')
-      .select('id, fecha, acciones_tomadas, m43_resultados(id, punto_id, valor, incidencia_id)')
-      .eq('registro_id', regId)
-      .order('fecha', { ascending: true })
-    if (data) {
-      const mapped: M43DiaSummary[] = (data as any[]).map((d: any) => {
-        const res: any[] = d.m43_resultados ?? []
+    const [{ data: diasData }, { data: resData }] = await Promise.all([
+      tbl.from('m43_dias')
+        .select('id, dia, acciones_tomadas')
+        .eq('registro_id', regId)
+        .order('dia', { ascending: true }),
+      tbl.from('m43_resultados')
+        .select('id, punto_id, dia, valor, incidencia_id')
+        .eq('registro_id', regId),
+    ])
+    if (diasData) {
+      const resPorDia: Record<number, any[]> = {}
+      for (const res of (resData ?? []) as any[]) {
+        const d = res.dia as number
+        if (!resPorDia[d]) resPorDia[d] = []
+        resPorDia[d].push(res)
+      }
+      const mapped: M43DiaSummary[] = (diasData as any[]).map((d: any) => {
+        const res = resPorDia[d.dia as number] ?? []
         return {
-          id:             d.id,
-          fecha:          d.fecha,
+          id:               d.id,
+          dia:              d.dia as number,
           acciones_tomadas: d.acciones_tomadas ?? null,
-          num_cumple:     res.filter((x: any) => x.valor === 'cumple').length,
-          num_no_cumple:  res.filter((x: any) => x.valor === 'no_cumple').length,
-          num_na:         res.filter((x: any) => x.valor === 'na').length,
-          num_incidencias:res.filter((x: any) => x.incidencia_id).length,
+          num_cumple:       res.filter((x: any) => x.valor === 'cumple').length,
+          num_no_cumple:    res.filter((x: any) => x.valor === 'no_cumple').length,
+          num_na:           res.filter((x: any) => x.valor === 'na').length,
+          num_incidencias:  res.filter((x: any) => x.incidencia_id).length,
         }
       })
       setDias(mapped)
@@ -386,25 +394,24 @@ export function InspeccionAlmacenEmpaque() {
       }
 
       // 2. Insertar día
-      const { data: diaData, error: dErr } = await tbl
+      const diaNum = parseInt(dFecha.slice(8, 10))
+      const { error: dErr } = await tbl
         .from('m43_dias')
         .insert({
           registro_id:      registroActivo.id,
           org_id:           profile.org_id,
-          fecha:            dFecha,
+          dia:              diaNum,
           acciones_tomadas: dAcciones.trim() || null,
         })
-        .select('id')
-        .single()
       if (dErr) throw dErr
-      const diaId = diaData.id as string
 
       // 3. Batch insertar resultados
       const batch = puntos.map((p) => ({
-        dia_id:       diaId,
-        punto_id:     p.id,
-        org_id:       profile.org_id,
-        valor:        dValores[p.id] ?? 'cumple',
+        registro_id:   registroActivo.id,
+        punto_id:      p.id,
+        org_id:        profile.org_id,
+        dia:           diaNum,
+        valor:         dValores[p.id] ?? 'cumple',
         incidencia_id: incMap[p.id] ?? null,
       }))
       const { error: bErr } = await tbl.from('m43_resultados').insert(batch)
@@ -714,7 +721,7 @@ export function InspeccionAlmacenEmpaque() {
             ) : (
               <div className="space-y-2">
                 {dias.map((dia) => (
-                  <DiaCard key={dia.id} dia={dia} onClick={() => {/* readonly — días ya guardados */}} />
+                  <DiaCard key={dia.id} dia={dia} registroMes={registroActivo.mes} onClick={() => {/* readonly — días ya guardados */}} />
                 ))}
               </div>
             )}
