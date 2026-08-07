@@ -2,7 +2,7 @@ import {
   SprayCan, Boxes, Library, BriefcaseMedical, Wine, Sprout, Radar, Wheat,
   ClipboardCheck, Droplet, Droplets, Camera, ClipboardList, Users, Shield, ShieldCheck, Eye,
   Package, FileCheck, Factory, Bandage, Bug, FlaskConical, ListChecks, TestTubes,
-  Warehouse, UtensilsCrossed, Building2, Trees, PackageOpen, Snowflake, LayoutGrid, type LucideIcon,
+  Warehouse, UtensilsCrossed, Building2, Trees, PackageOpen, Snowflake, Truck, LayoutGrid, type LucideIcon,
 } from 'lucide-react'
 
 const ICONOS: Record<string, LucideIcon> = {
@@ -38,6 +38,7 @@ const ICONOS: Record<string, LucideIcon> = {
   'trees': Trees,
   'package-open': PackageOpen,
   'snowflake': Snowflake,
+  'truck': Truck,
   'layout-grid': LayoutGrid,
 }
 
