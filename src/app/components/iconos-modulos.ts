@@ -38,6 +38,7 @@ const ICONOS: Record<string, LucideIcon> = {
   'trees': Trees,
   'package-open': PackageOpen,
   'package-import': PackageOpen,
+  'packages': PackageOpen,
   'snowflake': Snowflake,
   'truck': Truck,
   'arrow-left-right': ArrowLeftRight,

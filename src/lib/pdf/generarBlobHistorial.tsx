@@ -43,10 +43,11 @@ import { generarBlobManifiestoEmbarque } from './m38/generarManifiestoEmbarquePD
 import { generarBlobRecepcionFruta } from './m39/generarRecepcionFrutaPDF'
 import { generarBlobEntradasSalidasPreFrio } from './m40/generarEntradasSalidasPreFrioPDF'
 import { generarBlobTemperaturaConservador } from './m41/generarTemperaturaConservadorPDF'
+import { generarBlobMaterialEmpaque } from './m42/generarMaterialEmpaquePDF'
 
 // ── Tipos públicos ────────────────────────────────────────────────────────────
 
-export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18' | 'M19' | 'M20' | 'M21' | 'M22' | 'M23' | 'M24' | 'M25' | 'M26' | 'M27' | 'M28' | 'M29' | 'M30' | 'M31' | 'M32' | 'M33' | 'M34' | 'M35' | 'M36' | 'M37' | 'M38' | 'M39' | 'M40' | 'M41'
+export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18' | 'M19' | 'M20' | 'M21' | 'M22' | 'M23' | 'M24' | 'M25' | 'M26' | 'M27' | 'M28' | 'M29' | 'M30' | 'M31' | 'M32' | 'M33' | 'M34' | 'M35' | 'M36' | 'M37' | 'M38' | 'M39' | 'M40' | 'M41' | 'M42'
 
 export type PDFRef =
   | { tipo: 'M1'; id: string }
@@ -77,6 +78,7 @@ export type PDFRef =
   | { tipo: 'M39'; id: string }
   | { tipo: 'M40'; id: string }
   | { tipo: 'M41'; id: string }
+  | { tipo: 'M42'; id: string }
 
 export interface RegistroHistorial {
   key: string
@@ -358,6 +360,7 @@ export async function generarBlobParaRef(ref: PDFRef, orgId: string): Promise<Bl
     case 'M39': return generarBlobRecepcionFruta(ref.id, orgId)
     case 'M40': return generarBlobEntradasSalidasPreFrio(ref.id, orgId)
     case 'M41': return generarBlobTemperaturaConservador(ref.id, orgId)
+    case 'M42': return generarBlobMaterialEmpaque(ref.id, orgId)
   }
 }
 

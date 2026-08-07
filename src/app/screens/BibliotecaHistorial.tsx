@@ -49,6 +49,7 @@ const MODULO_META: Record<ModuloKey, { label: string; color: string }> = {
   M39: { label: 'Recepción Fruta',          color: '#006064' },
   M40: { label: 'Entradas/Salidas Pre-frío', color: '#004D61' },
   M41: { label: 'Temperaturas Conservador',  color: '#00695C' },
+  M42: { label: 'Material de Empaque',       color: '#4A148C' },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -84,7 +85,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tbl = (name: string) => (supabase as any).from(name)
 
-  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31, r32, r33, r34, r35, r38, r39, r40, r41] = await Promise.all([
+  const [r1, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31, r32, r33, r34, r35, r38, r39, r40, r41, r42] = await Promise.all([
     supabase.from('aplicaciones')
       .select('id, fecha_aplicacion, rancho_id, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha_aplicacion', desde).lte('fecha_aplicacion', hasta)
@@ -255,6 +256,10 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       .order('fecha', { ascending: false }).limit(500),
     tbl('m41_registros')
       .select('id, rancho_id, fecha, ranchos(nombre)')
+      .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
+      .order('fecha', { ascending: false }).limit(500),
+    tbl('m42_movimientos')
+      .select('id, rancho_id, fecha, descripcion_material, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
       .order('fecha', { ascending: false }).limit(500),
   ])
@@ -772,6 +777,19 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       fecha: r.fecha,
       resumen: 'Temperaturas del Conservador',
       pdfRef: { tipo: 'M41', id: r.id },
+    })
+  }
+
+  // M42 — una fila = un movimiento de material de empaque
+  for (const r of (r42 as any)?.data ?? []) {
+    todos.push({
+      key: `M42-${r.id}`,
+      modulo: 'M42',
+      rancho_id: r.rancho_id,
+      rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
+      fecha: r.fecha,
+      resumen: `Material de Empaque${r.descripcion_material ? ' · ' + r.descripcion_material : ''}`,
+      pdfRef: { tipo: 'M42', id: r.id },
     })
   }
 
