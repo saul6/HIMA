@@ -671,13 +671,14 @@ export function Home() {
                         {isOpen && (
                           <div className="px-3 pt-3 pb-2 flex flex-wrap gap-2">
                             {grupo.modulos.map(modulo => {
+                              const ModIcon = resolverIcono(modulo.icono || 'file-text')
                               const esFijado = modulosFijados.includes(modulo.codigo)
                               const puedeFijar = esFijado || modulosFijados.length < MAX_PINNED
                               return (
                                 <div key={modulo.codigo} className="relative">
                                   <Link
                                     to={modulo.ruta}
-                                    className="inline-flex items-center pl-3 pr-7 py-1.5 rounded-full text-xs border transition-colors hover:border-primary"
+                                    className="inline-flex items-center gap-1.5 pl-3 pr-7 py-1.5 rounded-full text-xs border transition-colors hover:border-primary"
                                     style={{
                                       backgroundColor: 'var(--agro-background)',
                                       borderColor: 'var(--border)',
@@ -685,6 +686,7 @@ export function Home() {
                                       fontWeight: 600,
                                     }}
                                   >
+                                    <ModIcon className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--primary)' }} />
                                     {modulo.nombre}
                                   </Link>
                                   {puedeFijar && (
