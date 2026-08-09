@@ -134,9 +134,13 @@ export function Layout() {
 
         {/* Desktop top bar */}
         <header className="hidden md:grid md:grid-cols-[auto_1fr_auto] items-center gap-4 px-6 py-3 border-b border-border bg-card flex-shrink-0">
-          {/* Left: page title */}
+          {/* Left: page title or greeting on home */}
           <div className="min-w-0">
-            <p className="text-sm" style={{ color: 'var(--foreground)', fontWeight: 600 }}>{pageTitle}</p>
+            <p className="text-sm" style={{ color: 'var(--foreground)', fontWeight: 600 }}>
+              {isHome
+                ? `Hola, ${profile?.nombre_completo?.split(' ')[0] ?? '—'}`
+                : pageTitle}
+            </p>
             <p className="text-xs text-muted-foreground">
               {terminosSitio.singular !== 'Rancho' ? 'Instalaciones' : 'Campo'} · M.A.D.Y
             </p>

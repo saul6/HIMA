@@ -61,11 +61,14 @@ function MetricCard({
   label: string
 }) {
   return (
-    <div className="bg-card rounded-xl p-4 border border-border">
+    <div
+      className="rounded-xl p-4 border border-border"
+      style={{ backgroundColor: 'var(--agro-background)' }}
+    >
       {loading ? (
         <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-2" />
       ) : (
-        <div className="text-2xl mb-1 flex items-end gap-1.5" style={{ fontWeight: 600 }}>
+        <div className="text-3xl tracking-tight mb-1 flex items-end gap-1.5" style={{ fontWeight: 600 }}>
           {icon}
           {value}
         </div>
@@ -86,7 +89,7 @@ function HallazgosCard({ loading, value }: { loading: boolean; value: number }) 
         />
       ) : (
         <div
-          className="text-2xl mb-1 flex items-end gap-1.5"
+          className="text-3xl tracking-tight mb-1 flex items-end gap-1.5"
           style={{ fontWeight: 600, color: alerta ? 'var(--agro-warning-text)' : 'var(--foreground)' }}
         >
           <ShieldAlert
@@ -120,7 +123,10 @@ function HallazgosCard({ loading, value }: { loading: boolean; value: number }) 
     )
   }
   return (
-    <div className="bg-card rounded-xl p-4 border border-border">
+    <div
+      className="rounded-xl p-4 border border-border"
+      style={{ backgroundColor: 'var(--agro-background)' }}
+    >
       {inner}
     </div>
   )
@@ -239,7 +245,7 @@ export function Home() {
           </div>
           <div className="text-right min-w-0 flex-1">
             <div className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
-              {loading ? '…' : profile?.nombre_completo ?? '—'}
+              {loading ? '…' : `Hola, ${profile?.nombre_completo?.split(' ')[0] ?? '—'}`}
             </div>
             <div className="text-xs text-muted-foreground truncate">
               {loading ? '…' : nombreOrg}
@@ -383,7 +389,7 @@ export function Home() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {loadingModulos ? (
             [0, 1, 2, 3].map(i => (
-              <div key={i} className="bg-card rounded-xl p-4 border border-border">
+              <div key={i} className="rounded-xl p-4 border border-border" style={{ backgroundColor: 'var(--agro-background)' }}>
                 <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-2" />
                 <div className="h-2.5 rounded w-2/3" style={{ backgroundColor: 'var(--muted)' }} />
               </div>
@@ -634,7 +640,7 @@ export function Home() {
             {loadingModulos ? (
               <div className="space-y-2">
                 {[0, 1, 2].map(i => (
-                  <div key={i} className="bg-card rounded-xl p-4 border border-border animate-pulse">
+                  <div key={i} className="rounded-xl p-4 border border-border animate-pulse" style={{ backgroundColor: 'var(--agro-background)' }}>
                     <div className="h-4 rounded w-1/3" style={{ backgroundColor: 'var(--muted)' }} />
                   </div>
                 ))}
@@ -669,7 +675,7 @@ export function Home() {
                           <div className="flex items-center gap-2">
                             <span style={{ fontWeight: 600 }}>{grupo.nombre}</span>
                             <span
-                              className="text-xs px-1.5 py-0.5 rounded"
+                              className="text-xs px-1.5 py-0.5 rounded-full"
                               style={{
                                 backgroundColor: 'var(--muted)',
                                 color: 'var(--muted-foreground)',
