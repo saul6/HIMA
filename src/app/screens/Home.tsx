@@ -2,16 +2,10 @@ import { useState, useMemo, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import {
-  Plus, CheckCircle, Clock, Loader2, TriangleAlert, Clock3,
-  Users, AlertTriangle, ChevronRight, ClipboardList, BarChart2,
+  Plus, Loader2, TriangleAlert, Clock3,
+  Users, AlertTriangle, ChevronRight, ChevronDown, ClipboardList, BarChart2,
   FileCheck, ShieldAlert, Search, Pin,
 } from 'lucide-react'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/app/components/ui/accordion'
 import { useAuthContext } from '@/context/AuthContext'
 import { useHomeDashboard } from '@/hooks/useHomeDashboard'
 import { useDashboardResumen } from '@/hooks/useDashboardResumen'
@@ -159,7 +153,7 @@ export function Home() {
   // y reemplazar useState por un hook que lea/escriba en Supabase.
   const [modulosFijados, setModulosFijados] = useState<string[]>([])
 
-  // Estado controlado del accordion
+  // Estado de categorías abiertas
   const [openGroups, setOpenGroups] = useState<string[]>([])
 
   const esAdmin = profile?.rol === 'admin_org'
@@ -188,18 +182,16 @@ export function Home() {
       .sort((a, b) => a.orden - b.orden)
   }, [modulos])
 
-  // En escritorio abrir todos los grupos; en móvil/tablet solo el primero
+  // Abrir las primeras dos categorías por defecto
   useEffect(() => {
     if (modulosAgrupados.length === 0) return
     setOpenGroups(prev => {
       if (prev.length > 0) return prev
-      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024
-      const keys = modulosAgrupados.map(g => g.key)
-      return isDesktop ? keys : [keys[0]]
+      return modulosAgrupados.slice(0, 2).map(g => g.key)
     })
   }, [modulosAgrupados])
 
-  // Limpiar búsqueda al desmontar (navegar fuera de Home)
+  // Limpiar búsqueda al desmontar
   useEffect(() => {
     return () => setBusqueda('')
   }, [setBusqueda])
@@ -292,7 +284,7 @@ export function Home() {
           </div>
         )}
 
-        {/* Buscador — móvil + tablet (escritorio lo muestra en el top bar del Layout) */}
+        {/* Buscador — móvil + tablet */}
         <div className="relative lg:hidden">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
@@ -312,7 +304,7 @@ export function Home() {
           />
         </div>
 
-        {/* Resultados de búsqueda — todos los breakpoints */}
+        {/* Resultados de búsqueda — chips aplanados */}
         {busqueda.trim() && (
           <div className="rounded-xl border border-border bg-card overflow-hidden">
             {modulosFiltrados.length === 0 ? (
@@ -320,7 +312,7 @@ export function Home() {
                 Sin resultados para "{busqueda}"
               </p>
             ) : (
-              <div className="divide-y divide-border">
+              <div className="flex flex-wrap gap-2 p-3">
                 {modulosFiltrados.map(modulo => {
                   const Icon = resolverIcono(modulo.icono)
                   return (
@@ -328,17 +320,16 @@ export function Home() {
                       key={modulo.codigo}
                       to={modulo.ruta}
                       onClick={() => setBusqueda('')}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border transition-colors hover:border-primary"
+                      style={{
+                        backgroundColor: 'var(--agro-background)',
+                        borderColor: 'var(--border)',
+                        color: 'var(--foreground)',
+                        fontWeight: 600,
+                      }}
                     >
-                      <div
-                        className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: 'var(--accent)' }}
-                      >
-                        <Icon className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-                      </div>
-                      <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
-                        {modulo.nombre}
-                      </span>
+                      <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--primary)' }} />
+                      {modulo.nombre}
                     </Link>
                   )
                 })}
@@ -347,7 +338,7 @@ export function Home() {
           </div>
         )}
 
-        {/* Correcciones pendientes — banner full-width de prioridad alta */}
+        {/* Correcciones pendientes */}
         {!loading && countCorrecciones > 0 && (
           <div
             className="rounded-xl overflow-hidden border"
@@ -451,7 +442,7 @@ export function Home() {
                 <div className="rounded-xl border border-dashed border-border p-5 text-center">
                   <Pin className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Fija los módulos que más usas. Toca el ícono de pin junto a cualquier módulo de la lista.
+                    Fija los módulos que más usas. Toca el ícono de pin en cualquier módulo.
                   </p>
                 </div>
               ) : (
@@ -571,8 +562,8 @@ export function Home() {
                   )}
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {recientes.slice(0, 4).map(app => {
+                <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
+                  {recientes.slice(0, 5).map(app => {
                     const productosTexto =
                       app.productos.length === 0
                         ? 'Sin productos'
@@ -583,45 +574,28 @@ export function Home() {
                       <Link
                         key={app.id}
                         to={`/historial/${app.id}`}
-                        className="block bg-card rounded-lg p-3 border border-border hover:border-primary transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 hover:opacity-80 transition-opacity"
                       >
-                        <div className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
-                          {productosTexto}
+                        <div
+                          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                          style={{ backgroundColor: 'var(--accent)' }}
+                        >
+                          <FileCheck className="w-3.5 h-3.5" style={{ color: 'var(--primary)' }} />
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-muted-foreground">
-                            {formatFechaCorta(app.fecha)}
-                          </span>
-                          <span
-                            className="text-xs px-1.5 py-0.5 rounded flex items-center gap-1"
-                            style={
-                              app.status === 'completado'
-                                ? {
-                                    backgroundColor: 'var(--agro-success-fill)',
-                                    color: 'var(--agro-success-text)',
-                                    fontWeight: 600,
-                                  }
-                                : {
-                                    backgroundColor: 'var(--agro-warning-fill)',
-                                    color: 'var(--agro-warning-text)',
-                                    fontWeight: 600,
-                                  }
-                            }
-                          >
-                            {app.status === 'completado' ? (
-                              <><CheckCircle className="w-3 h-3" /> Completado</>
-                            ) : (
-                              <><Clock className="w-3 h-3" /> Borrador</>
-                            )}
-                          </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-foreground truncate" style={{ fontWeight: 600 }}>
+                            {productosTexto}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{formatFechaCorta(app.fecha)}</p>
                         </div>
+                        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                       </Link>
                     )
                   })}
-                  {recientes.length > 4 && (
+                  {recientes.length > 5 && (
                     <Link
                       to="/historial"
-                      className="flex items-center justify-center gap-1 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      className="flex items-center justify-center gap-1 py-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
                     >
                       Ver todo el historial <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
@@ -632,14 +606,14 @@ export function Home() {
 
           </div>{/* fin columna izquierda */}
 
-          {/* Columna derecha: módulos por categoría */}
+          {/* Columna derecha: módulos por categoría — tarjetas con chips */}
           <div className="mt-5 md:mt-0">
 
             {loadingModulos ? (
-              <div className="space-y-2">
-                {[0, 1, 2].map(i => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[0, 1, 2, 3].map(i => (
                   <div key={i} className="rounded-xl p-4 border border-border animate-pulse" style={{ backgroundColor: 'var(--agro-background)' }}>
-                    <div className="h-4 rounded w-1/3" style={{ backgroundColor: 'var(--muted)' }} />
+                    <div className="h-4 rounded w-1/2" style={{ backgroundColor: 'var(--muted)' }} />
                   </div>
                 ))}
               </div>
@@ -661,61 +635,62 @@ export function Home() {
                 <h2 className="mb-3 text-sm text-foreground" style={{ fontWeight: 600 }}>
                   Inocuidad y BPAs
                 </h2>
-                <div className="rounded-xl border border-border bg-card overflow-hidden">
-                  <Accordion
-                    type="multiple"
-                    value={openGroups}
-                    onValueChange={setOpenGroups}
-                  >
-                    {modulosAgrupados.map(grupo => {
-                      const GrupoIcon = resolverIcono(grupo.icono)
-                      return (
-                      <AccordionItem key={grupo.key} value={grupo.key}>
-                        <AccordionTrigger className="px-4 hover:no-underline">
-                          <div className="flex items-center gap-2">
-                            <GrupoIcon className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--primary)' }} />
-                            <span style={{ fontWeight: 600 }}>{grupo.label}</span>
-                            <span
-                              className="text-xs px-1.5 py-0.5 rounded-full"
-                              style={{
-                                backgroundColor: 'var(--muted)',
-                                color: 'var(--muted-foreground)',
-                                fontWeight: 400,
-                              }}
-                            >
-                              {grupo.modulos.length}
-                            </span>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-4">
-                          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                  {modulosAgrupados.map(grupo => {
+                    const GrupoIcon = resolverIcono(grupo.icono)
+                    const isOpen = openGroups.includes(grupo.key)
+                    return (
+                      <div key={grupo.key} className="rounded-xl border border-border bg-card overflow-hidden">
+                        {/* Cabecera de categoría */}
+                        <button
+                          className="w-full flex items-center gap-2.5 px-4 py-3 text-left"
+                          style={{ backgroundColor: 'var(--muted)' }}
+                          onClick={() => setOpenGroups(prev =>
+                            isOpen ? prev.filter(k => k !== grupo.key) : [...prev, grupo.key]
+                          )}
+                        >
+                          <GrupoIcon className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--primary)' }} />
+                          <span className="flex-1 text-sm text-foreground" style={{ fontWeight: 600 }}>
+                            {grupo.label}
+                          </span>
+                          <span
+                            className="text-xs px-1.5 py-0.5 rounded-full"
+                            style={{
+                              backgroundColor: 'var(--background)',
+                              color: 'var(--muted-foreground)',
+                            }}
+                          >
+                            {grupo.modulos.length}
+                          </span>
+                          <ChevronDown
+                            className="w-4 h-4 flex-shrink-0 text-muted-foreground transition-transform duration-200"
+                            style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                          />
+                        </button>
+                        {/* Chips de módulos */}
+                        {isOpen && (
+                          <div className="px-3 pt-3 pb-2 flex flex-wrap gap-2">
                             {grupo.modulos.map(modulo => {
-                              const Icon = resolverIcono(modulo.icono)
                               const esFijado = modulosFijados.includes(modulo.codigo)
                               const puedeFijar = esFijado || modulosFijados.length < MAX_PINNED
                               return (
                                 <div key={modulo.codigo} className="relative">
                                   <Link
                                     to={modulo.ruta}
-                                    className="flex items-center gap-2.5 p-3 rounded-lg border border-border bg-card hover:border-primary transition-colors"
+                                    className="inline-flex items-center pl-3 pr-7 py-1.5 rounded-full text-xs border transition-colors hover:border-primary"
+                                    style={{
+                                      backgroundColor: 'var(--agro-background)',
+                                      borderColor: 'var(--border)',
+                                      color: 'var(--foreground)',
+                                      fontWeight: 600,
+                                    }}
                                   >
-                                    <div
-                                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                                      style={{ backgroundColor: 'var(--accent)' }}
-                                    >
-                                      <Icon className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-                                    </div>
-                                    <span
-                                      className="text-xs text-foreground line-clamp-2 leading-snug pr-5"
-                                      style={{ fontWeight: 600 }}
-                                    >
-                                      {modulo.nombre}
-                                    </span>
+                                    {modulo.nombre}
                                   </Link>
                                   {puedeFijar && (
                                     <button
                                       onClick={() => toggleFijar(modulo.codigo)}
-                                      className="absolute top-2 right-2 flex items-center justify-center transition-colors"
+                                      className="absolute top-1/2 right-2 -translate-y-1/2 flex items-center justify-center transition-colors"
                                       style={{
                                         color: esFijado ? 'var(--primary)' : 'var(--muted-foreground)',
                                       }}
@@ -723,7 +698,7 @@ export function Home() {
                                       title={esFijado ? 'Quitar' : 'Fijar'}
                                     >
                                       <Pin
-                                        className="w-3.5 h-3.5"
+                                        className="w-3 h-3"
                                         style={{ fill: esFijado ? 'var(--primary)' : 'none' }}
                                       />
                                     </button>
@@ -732,11 +707,10 @@ export function Home() {
                               )
                             })}
                           </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                      )
-                    })}
-                  </Accordion>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               </>
             )}
