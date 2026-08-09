@@ -1,7 +1,8 @@
 import { Outlet, useLocation, Link } from "react-router";
-import { Home, PlusCircle, Package, History, User, Users } from "lucide-react";
+import { Home, PlusCircle, Package, History, User, Users, Search } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
+import { useHomeSearch } from "@/context/HomeSearchContext";
 import { MadyLogo } from "@/app/components/MadyLogo";
 
 const PATH_TITLES: Record<string, string> = {
@@ -39,6 +40,8 @@ export function Layout() {
   const location = useLocation();
   const { profile } = useAuthContext();
   const { modulos, loading: loadingModulos, terminosSitio } = useModulosContext();
+  const { busqueda, setBusqueda } = useHomeSearch();
+  const isHome = location.pathname === '/';
 
   const esAdmin = profile?.rol === 'admin_org';
   const initials = profile?.nombre_completo ? getInitials(profile.nombre_completo) : '—';
@@ -130,14 +133,43 @@ export function Layout() {
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
 
         {/* Desktop top bar */}
-        <header className="hidden md:flex items-center justify-between px-6 py-3 border-b border-border bg-card flex-shrink-0">
-          <div>
+        <header className="hidden md:grid md:grid-cols-[auto_1fr_auto] items-center gap-4 px-6 py-3 border-b border-border bg-card flex-shrink-0">
+          {/* Left: page title */}
+          <div className="min-w-0">
             <p className="text-sm" style={{ color: 'var(--foreground)', fontWeight: 600 }}>{pageTitle}</p>
             <p className="text-xs text-muted-foreground">
               {terminosSitio.singular !== 'Rancho' ? 'Instalaciones' : 'Campo'} · M.A.D.Y
             </p>
           </div>
-          <span className="text-xs text-muted-foreground">{fechaHoy.charAt(0).toUpperCase() + fechaHoy.slice(1)}</span>
+
+          {/* Center: search — desktop + home route only */}
+          <div className="flex justify-center">
+            {isHome && (
+              <div className="hidden lg:flex w-full max-w-xs relative">
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+                  style={{ color: 'var(--muted-foreground)' }}
+                />
+                <input
+                  type="search"
+                  placeholder="Buscar formato…"
+                  value={busqueda}
+                  onChange={e => setBusqueda(e.target.value)}
+                  className="w-full h-9 pl-9 pr-4 rounded-lg text-sm outline-none transition-colors"
+                  style={{
+                    backgroundColor: 'var(--input-background)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--foreground)',
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Right: date */}
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            {fechaHoy.charAt(0).toUpperCase() + fechaHoy.slice(1)}
+          </span>
         </header>
 
         {/* Scrollable content area */}
