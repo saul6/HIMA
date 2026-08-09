@@ -23,6 +23,15 @@ import { MadyLogo } from '@/app/components/MadyLogo'
 
 const MAX_PINNED = 4
 
+const CATEGORIA_MAP: Record<string, { label: string; orden: number; icono: string }> = {
+  auditorias:     { label: 'Auditorías e inocuidad',     orden: 1, icono: 'clipboard-check' },
+  producto:       { label: 'Producto y cadena de frío',  orden: 2, icono: 'package'         },
+  limpieza:       { label: 'Limpieza y sanitización',    orden: 3, icono: 'spray'           },
+  plagas_insumos: { label: 'Plagas, muestras e insumos', orden: 4, icono: 'bug'             },
+  mantenimiento:  { label: 'Mantenimiento',              orden: 5, icono: 'settings'        },
+  seguridad:      { label: 'Seguridad y personal',       orden: 6, icono: 'shield'          },
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatFechaCorta(iso: string): string {
@@ -156,38 +165,27 @@ export function Home() {
   const esAdmin = profile?.rol === 'admin_org'
   const tieneAplicaciones = modulos.some(m => m.clave === 'aplicaciones')
 
-  // Grupos por sector — misma lógica que antes
+  // Grupos por categoría temática
   const modulosAgrupados = useMemo(() => {
-    const grupos: { key: string; nombre: string; modulos: typeof modulos }[] = []
     const visibles = modulos.filter(m => m.mostrar_en_menu)
-
-    const transversales = visibles
-      .filter(m => m.es_transversal)
-      .sort((a, b) => a.orden - b.orden)
-    if (transversales.length > 0) {
-      grupos.push({ key: 'general', nombre: 'General', modulos: transversales })
+    const catMap = new Map<string, typeof modulos>()
+    for (const m of visibles) {
+      const cat = m.categoria ?? 'otros'
+      if (!catMap.has(cat)) catMap.set(cat, [])
+      catMap.get(cat)!.push(m)
     }
-
-    const sectorMap = new Map<string, { nombre: string; orden: number; modulos: typeof modulos }>()
-    for (const m of visibles.filter(m => !m.es_transversal)) {
-      if (!m.sector_clave) continue
-      if (!sectorMap.has(m.sector_clave)) {
-        sectorMap.set(m.sector_clave, {
-          nombre: m.sector_nombre!,
-          orden: m.sector_orden!,
-          modulos: [],
-        })
-      }
-      sectorMap.get(m.sector_clave)!.modulos.push(m)
-    }
-    for (const [clave, data] of Array.from(sectorMap.entries()).sort(([, a], [, b]) => a.orden - b.orden)) {
-      grupos.push({
-        key: clave,
-        nombre: data.nombre,
-        modulos: data.modulos.sort((a, b) => a.orden - b.orden),
+    return Array.from(catMap.entries())
+      .map(([cat, mods]) => {
+        const config = CATEGORIA_MAP[cat]
+        return {
+          key: cat,
+          label: config?.label ?? 'Otros',
+          orden: config?.orden ?? 99,
+          icono: config?.icono ?? 'layout-grid',
+          modulos: mods.sort((a, b) => a.orden - b.orden),
+        }
       })
-    }
-    return grupos
+      .sort((a, b) => a.orden - b.orden)
   }, [modulos])
 
   // En escritorio abrir todos los grupos; en móvil/tablet solo el primero
@@ -669,11 +667,14 @@ export function Home() {
                     value={openGroups}
                     onValueChange={setOpenGroups}
                   >
-                    {modulosAgrupados.map(grupo => (
+                    {modulosAgrupados.map(grupo => {
+                      const GrupoIcon = resolverIcono(grupo.icono)
+                      return (
                       <AccordionItem key={grupo.key} value={grupo.key}>
                         <AccordionTrigger className="px-4 hover:no-underline">
                           <div className="flex items-center gap-2">
-                            <span style={{ fontWeight: 600 }}>{grupo.nombre}</span>
+                            <GrupoIcon className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--primary)' }} />
+                            <span style={{ fontWeight: 600 }}>{grupo.label}</span>
                             <span
                               className="text-xs px-1.5 py-0.5 rounded-full"
                               style={{
@@ -733,7 +734,8 @@ export function Home() {
                           </div>
                         </AccordionContent>
                       </AccordionItem>
-                    ))}
+                      )
+                    })}
                   </Accordion>
                 </div>
               </>

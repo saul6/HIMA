@@ -13,6 +13,7 @@ export interface ModuloVisible {
   sector_clave: string | null
   sector_nombre: string | null
   sector_orden: number | null
+  categoria?: string | null
 }
 
 export function useMisModulos() {
