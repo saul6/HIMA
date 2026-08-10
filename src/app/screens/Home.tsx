@@ -160,6 +160,15 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose }: Categor
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+  // Overflow oculto durante el stagger para evitar barra parpadeante
+  const [animating, setAnimating] = useState(!prefersReducedMotion)
+  useEffect(() => {
+    if (!animating) return
+    const totalMs = (grupo.modulos.length - 1) * 90 + 220 + 30
+    const id = setTimeout(() => setAnimating(false), totalMs)
+    return () => clearTimeout(id)
+  }, [animating, grupo.modulos.length])
+
   // Foco inicial + trampa de foco + Esc
   useEffect(() => {
     const el = dialogRef.current
@@ -244,8 +253,11 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose }: Categor
           </button>
         </div>
 
-        {/* Lista de módulos */}
-        <div className="overflow-y-auto" style={{ maxHeight: 'calc(85vh - 9rem)' }}>
+        {/* Lista de módulos — overflow oculto mientras dura el stagger */}
+        <div
+          className="no-scrollbar"
+          style={{ maxHeight: 'calc(85vh - 9rem)', overflowY: animating ? 'hidden' : 'auto' }}
+        >
           {grupo.modulos.map((modulo, index) => {
             const ModIcon = resolverIcono(modulo.icono)
             const esFijado = modulosFijados.includes(modulo.codigo)
