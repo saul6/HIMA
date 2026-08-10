@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+﻿import { useState, useMemo, useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import {
@@ -422,7 +422,7 @@ export function Home() {
     : null
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)] md:pb-8">
+    <div className="min-h-full pb-safe-nav md:pb-8">
 
       {/* Header — solo móvil */}
       <header className="md:hidden bg-card border-b border-border px-4 py-3">
@@ -902,7 +902,7 @@ export function Home() {
       {tieneAplicaciones && (
         <Link
           to="/nueva-aplicacion"
-          className="lg:hidden fixed bottom-[calc(72px+34px+16px)] right-4 w-14 h-14 rounded-full flex items-center justify-center z-10 bg-primary hover:opacity-90 transition-opacity"
+          className="lg:hidden fixed bottom-safe-fab right-4 w-14 h-14 rounded-full flex items-center justify-center z-10 bg-primary hover:opacity-90 transition-opacity"
           aria-label="Nueva aplicación"
         >
           <Plus className="w-6 h-6" style={{ color: 'var(--primary-foreground)' }} />

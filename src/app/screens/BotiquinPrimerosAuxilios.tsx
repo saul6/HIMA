@@ -1,4 +1,4 @@
-// ╔══════════════════════════════════════════════════════════════════════╗
+﻿// ╔══════════════════════════════════════════════════════════════════════╗
 // ║  PATRÓN INOCUIDAD M6 — copia esta estructura para M7–M12           ║
 // ║                                                                      ║
 // ║  Flujo estándar de cada módulo de inocuidad:                        ║
@@ -335,7 +335,7 @@ export function BotiquinPrimerosAuxilios() {
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)]">
+    <div className="min-h-full pb-safe-nav">
 
       {/* Header */}
       <header className="bg-card border-b border-border px-4 py-4 sticky top-0 z-20">
@@ -484,7 +484,7 @@ export function BotiquinPrimerosAuxilios() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-[calc(72px+34px+16px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
+      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
         <button
           onClick={abrirSheet}
           className="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-lg pointer-events-auto hover:bg-agro-blue transition-colors"

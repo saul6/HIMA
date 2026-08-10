@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+﻿import { useState, useCallback } from 'react'
 import { Link } from 'react-router'
 import { ChevronLeft, Wrench, Plus, FileText, Loader2, AlertTriangle, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
@@ -222,7 +222,7 @@ export function OrdenMantenimiento() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)]" style={{ backgroundColor: 'var(--background)' }}>
+    <div className="min-h-full pb-safe-nav" style={{ backgroundColor: 'var(--background)' }}>
 
       {/* Header */}
       <header className="bg-card border-b border-border px-4 py-3 sticky top-0 z-30">

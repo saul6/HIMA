@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { ChevronLeft, Plus, FileDown, X, Loader2, FlaskConical, Files } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -232,7 +232,7 @@ export function RegistroMuestrasLaboratorio() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-[calc(72px+34px+16px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
+      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
         <button
           onClick={abrirNueva}
           className="pointer-events-auto w-14 h-14 rounded-full bg-[var(--primary)] text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform"

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react"
+﻿import { useState, useCallback, useMemo } from "react"
 import {
   Search,
   Plus,
@@ -400,7 +400,7 @@ export function Inventario() {
   }
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)]">
+    <div className="min-h-full pb-safe-nav">
       <header className="bg-card border-b border-border px-4 py-4">
         <h1 className="text-foreground" style={{ fontWeight: 600 }}>
           Inventario de Plaguicidas
@@ -575,7 +575,7 @@ export function Inventario() {
       </div>
 
       {/* FAB — mismo ancla que el bottom-nav para quedar dentro del contenedor de 390px */}
-      <div className="fixed bottom-[calc(72px+34px+16px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
+      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
         <button
           onClick={() => setShowSheet(true)}
           className="pointer-events-auto w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg hover:bg-agro-blue transition-colors"

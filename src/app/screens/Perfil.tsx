@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { LogOut, Pencil, Check, X, ChevronRight, Building2 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
@@ -55,7 +55,7 @@ export function Perfil() {
   const iniciales = nombre !== '—' ? inicialesDe(nombre) : '?'
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)]">
+    <div className="min-h-full pb-safe-nav">
       {/* Header */}
       <header className="bg-card border-b border-border px-4 py-4">
         <h1 className="text-foreground" style={{ fontWeight: 600 }}>

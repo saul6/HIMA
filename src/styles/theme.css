@@ -177,6 +177,14 @@
   mix-blend-mode: normal;
 }
 
+/* Mobile nav safe-area offsets — used by screens and fixed elements */
+.pb-safe-nav {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+.bottom-safe-fab {
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 16px);
+}
+
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 

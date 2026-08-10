@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+﻿import { useState, useMemo } from 'react'
 import {
   ChevronLeft, Plus, FileDown, X, Loader2, PackageOpen,
   Files, TriangleAlert, Minus,
@@ -251,7 +251,7 @@ export function RecepcionFruta() {
   const fieldCls = 'w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm'
 
   return (
-    <div className="flex flex-col min-h-full bg-background pb-[calc(72px+34px)]">
+    <div className="flex flex-col min-h-full bg-background pb-safe-nav">
 
       {/* Header */}
       <header className="bg-card border-b border-border px-4 py-3 sticky top-0 z-30">
@@ -344,7 +344,7 @@ export function RecepcionFruta() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-[calc(72px+34px+16px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10 md:bottom-6">
+      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10 md:bottom-6">
         <button
           onClick={abrirNuevo}
           className="pointer-events-auto w-14 h-14 rounded-full text-white flex items-center justify-center"

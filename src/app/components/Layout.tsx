@@ -223,7 +223,10 @@ export function Layout() {
       </div>
 
       {/* ── Mobile Bottom Navigation ──────────────────────────────────────── */}
-      <nav className="md:hidden fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-card border-t border-border pb-[34px] z-30">
+      <nav
+        className="md:hidden fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-card border-t border-border z-30"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
         <div className="flex items-center justify-around h-[72px]">
           {navItems.map(({ path, icon: Icon, label }) => {
             const active = isActive(path);

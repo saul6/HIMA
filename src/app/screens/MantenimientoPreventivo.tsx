@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+﻿import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link } from 'react-router'
 import {
   ChevronLeft, Plus, FileDown, Loader2, TriangleAlert, Settings,
@@ -495,7 +495,7 @@ export function MantenimientoPreventivo() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)]">
+    <div className="min-h-full pb-safe-nav">
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="bg-card border-b border-border px-4 py-3 sticky top-0 z-30">

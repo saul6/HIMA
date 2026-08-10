@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { ChevronLeft, Plus, FileDown, X, Loader2, Droplets, Files } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -228,7 +228,7 @@ export function MonitoreoGermicida() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-[calc(72px+34px+16px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10 md:bottom-6">
+      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10 md:bottom-6">
         <button
           onClick={abrirNuevo}
           className="pointer-events-auto w-14 h-14 rounded-full text-white flex items-center justify-center active:scale-95 transition-transform"

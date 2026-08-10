@@ -1,4 +1,4 @@
-// MÓDULO M8 — Registro de Fertilización
+﻿// MÓDULO M8 — Registro de Fertilización
 // Clave: MXA-F-SC-SIG-030.14 · Frecuencia: Por evento
 // Patrón: dos tabs (Registros | Inventario), FAB contextual, bottom sheets.
 
@@ -806,7 +806,7 @@ export function RegistroFertilizacion() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)]">
+    <div className="min-h-full pb-safe-nav">
 
       {/* Header */}
       <header className="bg-card border-b border-border px-4 py-4 sticky top-0 z-20">
@@ -1006,7 +1006,7 @@ export function RegistroFertilizacion() {
       )}
 
       {/* FAB contextual */}
-      <div className="fixed bottom-[calc(72px+34px+16px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
+      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
         <button
           onClick={tab === 'registros' ? abrirSheetNuevo : abrirSheetMov}
           className="w-14 h-14 rounded-full text-white flex items-center justify-center shadow-lg pointer-events-auto transition-colors"

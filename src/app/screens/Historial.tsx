@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { Calendar, FileDown, ChevronDown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -90,7 +90,7 @@ export function Historial() {
   };
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)]">
+    <div className="min-h-full pb-safe-nav">
       {/* Header */}
       <header className="bg-white border-b border-black/10 px-4 py-4">
         <div className="flex items-center justify-between mb-4">

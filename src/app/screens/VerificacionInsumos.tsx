@@ -1,4 +1,4 @@
-// M23 — Verificación de Insumos (F-FRUS-SAN-01, Cuarto Frío)
+﻿// M23 — Verificación de Insumos (F-FRUS-SAN-01, Cuarto Frío)
 // Motor espejo de M19: lista de registros mensuales → detalle → días de inspección
 // Diferencias: catálogo por instalación (m23_insumos), dos responsables (verificó/autorizó),
 // gestión de catálogo con plantilla estándar de 30 ítems.
@@ -625,7 +625,7 @@ export function VerificacionInsumos() {
   // ── Render ────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)]">
+    <div className="min-h-full pb-safe-nav">
 
       {/* ── Header ── */}
       <header className="bg-card border-b border-border px-4 py-3 sticky top-0 z-30">
@@ -824,7 +824,7 @@ export function VerificacionInsumos() {
       )}
 
       {/* ── FAB ── */}
-      <div className="fixed bottom-[calc(72px+34px+16px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
+      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
         <button
           onClick={() => {
             if (vista === 'lista') {

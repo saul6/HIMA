@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+﻿import { useState, useRef, useEffect } from 'react'
 import {
   ChevronLeft, Loader2, FileDown, Camera, Trash2,
   AlertTriangle, ClipboardCheck,
@@ -360,7 +360,7 @@ export function AccionesCorrectivas() {
   }
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)]">
+    <div className="min-h-full pb-safe-nav">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background border-b border-border">
         <div className="flex items-center gap-3 px-4 py-3">

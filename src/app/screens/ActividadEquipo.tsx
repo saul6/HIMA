@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+﻿import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import {
   ChevronLeft, RefreshCw, Loader2, TriangleAlert, X,
@@ -195,7 +195,7 @@ export function ActividadEquipo() {
   }
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)]">
+    <div className="min-h-full pb-safe-nav">
 
       {/* Header */}
       <header className="bg-card border-b border-border px-4 py-4 flex items-center gap-3">

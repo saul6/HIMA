@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+﻿import { useState, useEffect, useMemo } from 'react'
 import {
   ChevronLeft, Plus, Settings, FileDown, X, Loader2, AlertTriangle,
 } from 'lucide-react'
@@ -260,7 +260,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
       {/* FAB */}
       <button
         onClick={abrirForm}
-        className="fixed bottom-[calc(72px+34px+16px)] right-4 w-14 h-14 bg-primary rounded-full flex items-center justify-center z-10 hover:bg-agro-blue transition-colors"
+        className="fixed bottom-safe-fab right-4 w-14 h-14 bg-primary rounded-full flex items-center justify-center z-10 hover:bg-agro-blue transition-colors"
         aria-label="Nuevo movimiento"
       >
         <Plus className="w-6 h-6 text-white" />
@@ -485,7 +485,7 @@ export function ControlInventarioQuimicos() {
   }
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)]">
+    <div className="min-h-full pb-safe-nav">
       <header className="bg-card border-b border-border px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-1 -ml-1 rounded-lg hover:bg-muted transition-colors">
           <ChevronLeft className="w-5 h-5" />

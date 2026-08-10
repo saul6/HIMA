@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+﻿import { useState, useRef, useEffect, useCallback } from 'react'
 import {
   ChevronLeft, Plus, Loader2, Files, Camera, Trash2,
   AlertTriangle, FileDown, ShieldAlert,
@@ -535,7 +535,7 @@ export function RegistroAccidentesLaborales() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-[calc(72px+34px+16px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
+      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
         <button
           type="button"
           onClick={() => { setForm(FORM_INICIAL); setFotosLocal([]); setSheetNuevo(true) }}

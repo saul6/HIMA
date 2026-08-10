@@ -1,4 +1,4 @@
-// ╔══════════════════════════════════════════════════════════════════════╗
+﻿// ╔══════════════════════════════════════════════════════════════════════╗
 // ║  M19 — Inspección Pre-operacional (Cuarto Frío)                     ║
 // ║  Patrón: lista de registros mensuales (instalación+mes) → detalle   ║
 // ║  → agregar días de inspección → 25 ítems BPM (SI/NO/NA)            ║
@@ -610,7 +610,7 @@ export function InspeccionPreoperacionalCooler() {
   )
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)]">
+    <div className="min-h-full pb-safe-nav">
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="bg-card border-b border-border px-4 py-3 sticky top-0 z-30">
@@ -824,7 +824,7 @@ export function InspeccionPreoperacionalCooler() {
       )}
 
       {/* ── FAB ────────────────────────────────────────────────────────── */}
-      <div className="fixed bottom-[calc(72px+34px+16px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
+      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
         <button
           onClick={() => {
             if (vista === 'lista') {

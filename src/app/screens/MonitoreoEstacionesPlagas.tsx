@@ -1,4 +1,4 @@
-// M21 — Revisión de Estaciones de Monitoreo de Plagas (Cuarto Frío)
+﻿// M21 — Revisión de Estaciones de Monitoreo de Plagas (Cuarto Frío)
 // Formato F-FRUS-CAL-19. Por evento. Sector Cuarto Frío.
 // Gestión de catálogo de estaciones por instalación + formulario de revisión.
 
@@ -788,7 +788,7 @@ export function MonitoreoEstacionesPlagas() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-[calc(72px+34px+16px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
+      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
         <button
           type="button"
           onClick={() => {
