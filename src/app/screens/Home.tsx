@@ -4,7 +4,7 @@ import { Link } from 'react-router'
 import {
   Plus, Loader2, TriangleAlert, Clock3,
   Users, AlertTriangle, ChevronRight, ClipboardList, BarChart2,
-  FileCheck, ShieldAlert, Search, Pin, X, Sun, Moon, Monitor,
+  FileCheck, ShieldAlert, Search, Pin, X, Sun, Moon,
 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useHomeDashboard } from '@/hooks/useHomeDashboard'
@@ -326,8 +326,8 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose }: Categor
 export function Home() {
   const { profile } = useAuthContext()
   const { theme, resolvedTheme, cycleTheme } = useTheme()
-  const ThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor
-  const themeLabel = theme === 'light' ? 'Claro' : theme === 'dark' ? 'Oscuro' : 'Sistema'
+  const ThemeIcon = theme === 'dark' ? Moon : Sun
+  const themeLabel = theme === 'dark' ? 'Oscuro' : 'Claro'
   const { orgNombre, orgPlan, metricas, recientes, loading, error } = useHomeDashboard()
   const { resumen, loading: resumenLoading } = useDashboardResumen()
   const { items: correcciones, count: countCorrecciones } = useCorreccionesPendientes()
@@ -443,9 +443,9 @@ export function Home() {
             </div>
           </div>
           <button
-            onClick={cycleTheme}
+            onClick={e => cycleTheme(e.currentTarget as HTMLElement)}
             className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary flex-shrink-0"
-            aria-label={`Cambiar tema (actual: ${themeLabel})`}
+            aria-label={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
             title={themeLabel}
           >
             <ThemeIcon className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />

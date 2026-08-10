@@ -170,6 +170,13 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Disable default crossfade so the JS clip-path reveal animation takes over */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 

@@ -1,5 +1,5 @@
 import { Outlet, useLocation, Link } from "react-router";
-import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, Monitor } from "lucide-react";
+import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
 import { useHomeSearch } from "@/context/HomeSearchContext";
@@ -65,8 +65,8 @@ export function Layout() {
   ];
 
   const pageTitle = getPageTitle(location.pathname);
-  const ThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor;
-  const themeLabel = theme === 'light' ? 'Claro' : theme === 'dark' ? 'Oscuro' : 'Sistema';
+  const ThemeIcon = theme === 'dark' ? Moon : Sun;
+  const themeLabel = theme === 'dark' ? 'Oscuro' : 'Claro';
 
   function isActive(path: string) {
     return path === "/"
@@ -121,9 +121,9 @@ export function Layout() {
         {/* Theme toggle */}
         <div className="px-1 lg:px-3 py-2 border-t border-border">
           <button
-            onClick={cycleTheme}
+            onClick={e => cycleTheme(e.currentTarget as HTMLElement)}
             className="w-full flex items-center justify-center lg:justify-start gap-0 lg:gap-3 px-0 lg:px-3 py-2.5 rounded-lg transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
-            aria-label={`Cambiar tema (actual: ${themeLabel})`}
+            aria-label={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
             title={themeLabel}
           >
             <ThemeIcon
@@ -201,9 +201,9 @@ export function Layout() {
           {/* Right: theme toggle + date */}
           <div className="flex items-center gap-3">
             <button
-              onClick={cycleTheme}
+              onClick={e => cycleTheme(e.currentTarget as HTMLElement)}
               className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
-              aria-label={`Cambiar tema (actual: ${themeLabel})`}
+              aria-label={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
               title={themeLabel}
             >
               <ThemeIcon className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
