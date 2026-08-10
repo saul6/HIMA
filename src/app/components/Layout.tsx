@@ -216,7 +216,7 @@ export function Layout() {
 
         {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto">
-          <div className="w-full max-w-[390px] mx-auto md:max-w-[1100px] md:mx-0">
+          <div className="w-full max-w-[390px] mx-auto md:max-w-none">
             <Outlet />
           </div>
         </div>

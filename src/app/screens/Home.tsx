@@ -117,7 +117,7 @@ function HallazgosCard({ loading, value }: { loading: boolean; value: number }) 
   if (alerta) {
     return (
       <Link
-        to="/equipo/actividad"
+        to="/inocuidad/acciones-correctivas"
         className="block rounded-xl p-4 border"
         style={{
           backgroundColor: 'var(--agro-warning-fill)',
