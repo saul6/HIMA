@@ -7,6 +7,7 @@ import {
 
 const ICONOS: Record<string, LucideIcon> = {
   'spray-can': SprayCan,
+  'spray': SprayCan,
   'boxes': Boxes,
   'library': Library,
   'briefcase-medical': BriefcaseMedical,

@@ -1,10 +1,10 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import {
   Plus, Loader2, TriangleAlert, Clock3,
-  Users, AlertTriangle, ChevronRight, ChevronDown, ClipboardList, BarChart2,
-  FileCheck, ShieldAlert, Search, Pin,
+  Users, AlertTriangle, ChevronRight, ClipboardList, BarChart2,
+  FileCheck, ShieldAlert, Search, Pin, X,
 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useHomeDashboard } from '@/hooks/useHomeDashboard'
@@ -14,6 +14,8 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { useHomeSearch } from '@/context/HomeSearchContext'
 import { resolverIcono } from '@/app/components/iconos-modulos'
 import { MadyLogo } from '@/app/components/MadyLogo'
+import { BottomSheet } from '@/app/components/BottomSheet'
+import type { ModuloVisible } from '@/hooks/useMisModulos'
 
 const MAX_PINNED = 4
 
@@ -135,6 +137,177 @@ function HallazgosCard({ loading, value }: { loading: boolean; value: number }) 
   )
 }
 
+// ── CategoriaPopup ─────────────────────────────────────────────────────────────
+
+interface CategoriaGrupo {
+  key: string
+  label: string
+  icono: string
+  modulos: ModuloVisible[]
+}
+
+interface CategoriaPopupProps {
+  grupo: CategoriaGrupo
+  modulosFijados: string[]
+  toggleFijar: (codigo: string) => void
+  onClose: () => void
+}
+
+function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose }: CategoriaPopupProps) {
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const GrupoIcon = resolverIcono(grupo.icono)
+  const prefersReducedMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  // Foco inicial + trampa de foco + Esc
+  useEffect(() => {
+    const el = dialogRef.current
+    if (!el) return
+
+    const getFocusable = () =>
+      Array.from(
+        el.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+      )
+
+    getFocusable()[0]?.focus()
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') { onClose(); return }
+      if (e.key === 'Tab') {
+        const focusable = getFocusable()
+        if (focusable.length === 0) { e.preventDefault(); return }
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last?.focus() }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first?.focus() }
+        }
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [onClose])
+
+  return (
+    <BottomSheet open onClose={onClose}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cat-popup-title"
+      >
+        {/* Handle bar — solo móvil */}
+        <div className="flex justify-center pt-3 pb-1 md:hidden">
+          <div
+            className="w-10 h-1 rounded-full"
+            style={{ backgroundColor: 'var(--muted-foreground)', opacity: 0.3 }}
+          />
+        </div>
+
+        {/* Cabecera */}
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: 'var(--agro-success-fill)' }}
+          >
+            <GrupoIcon className="w-5 h-5" style={{ color: 'var(--agro-success-text)' }} />
+          </div>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span
+              id="cat-popup-title"
+              className="text-sm text-foreground truncate"
+              style={{ fontWeight: 600 }}
+            >
+              {grupo.label}
+            </span>
+            <span
+              className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
+              style={{
+                backgroundColor: 'var(--agro-success-fill)',
+                color: 'var(--agro-success-text)',
+                fontWeight: 600,
+              }}
+            >
+              {grupo.modulos.length}
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-muted flex-shrink-0"
+            aria-label="Cerrar"
+          >
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        {/* Lista de módulos */}
+        <div className="overflow-y-auto" style={{ maxHeight: 'calc(85vh - 9rem)' }}>
+          {grupo.modulos.map((modulo, index) => {
+            const ModIcon = resolverIcono(modulo.icono)
+            const esFijado = modulosFijados.includes(modulo.codigo)
+            const puedeFijar = esFijado || modulosFijados.length < MAX_PINNED
+            return (
+              <div
+                key={modulo.codigo}
+                className="border-b border-border last:border-b-0"
+                style={
+                  prefersReducedMotion
+                    ? undefined
+                    : {
+                        animation: 'slideUpFade 0.22s ease both',
+                        animationDelay: `${index * 90}ms`,
+                      }
+                }
+              >
+                <Link
+                  to={modulo.ruta}
+                  onClick={onClose}
+                  className="flex items-center gap-3 px-4 py-3.5 hover:bg-muted transition-colors"
+                >
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: 'var(--accent)' }}
+                  >
+                    <ModIcon className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                  </div>
+                  <span className="flex-1 text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    {modulo.nombre}
+                  </span>
+                  {puedeFijar && (
+                    <button
+                      onClick={e => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        toggleFijar(modulo.codigo)
+                      }}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors hover:bg-accent"
+                      aria-label={esFijado ? 'Quitar de accesos rápidos' : 'Fijar en accesos rápidos'}
+                      title={esFijado ? 'Quitar' : 'Fijar'}
+                    >
+                      <Pin
+                        className="w-3.5 h-3.5"
+                        style={{
+                          color: esFijado ? 'var(--secondary)' : 'var(--muted-foreground)',
+                          fill: esFijado ? 'var(--secondary)' : 'none',
+                        }}
+                      />
+                    </button>
+                  )}
+                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                </Link>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </BottomSheet>
+  )
+}
+
 // ── Pantalla ──────────────────────────────────────────────────────────────────
 
 export function Home() {
@@ -153,8 +326,9 @@ export function Home() {
   // y reemplazar useState por un hook que lea/escriba en Supabase.
   const [modulosFijados, setModulosFijados] = useState<string[]>([])
 
-  // Estado de categorías abiertas
-  const [openGroups, setOpenGroups] = useState<string[]>([])
+  // Categoría abierta en popup
+  const [categoriaAbierta, setCategoriaAbierta] = useState<string | null>(null)
+  const btnRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
 
   const esAdmin = profile?.rol === 'admin_org'
   const tieneAplicaciones = modulos.some(m => m.clave === 'aplicaciones')
@@ -181,15 +355,6 @@ export function Home() {
       })
       .sort((a, b) => a.orden - b.orden)
   }, [modulos])
-
-  // Abrir las primeras dos categorías por defecto
-  useEffect(() => {
-    if (modulosAgrupados.length === 0) return
-    setOpenGroups(prev => {
-      if (prev.length > 0) return prev
-      return modulosAgrupados.slice(0, 2).map(g => g.key)
-    })
-  }, [modulosAgrupados])
 
   // Limpiar búsqueda al desmontar
   useEffect(() => {
@@ -222,7 +387,23 @@ export function Home() {
     )
   }
 
+  function abrirCategoria(key: string) {
+    setCategoriaAbierta(key)
+  }
+
+  function cerrarCategoria() {
+    const key = categoriaAbierta
+    setCategoriaAbierta(null)
+    // Restaurar foco al botón que abrió el popup
+    setTimeout(() => {
+      if (key) btnRefs.current.get(key)?.focus()
+    }, 0)
+  }
+
   const nombreOrg = orgNombre ?? '—'
+  const grupoAbierto = categoriaAbierta
+    ? modulosAgrupados.find(g => g.key === categoriaAbierta) ?? null
+    : null
 
   return (
     <div className="min-h-full pb-[calc(72px+34px)] md:pb-8">
@@ -320,7 +501,7 @@ export function Home() {
                       key={modulo.codigo}
                       to={modulo.ruta}
                       onClick={() => setBusqueda('')}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border transition-colors hover:border-primary"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border transition-colors hover:border-secondary"
                       style={{
                         backgroundColor: 'var(--agro-background)',
                         borderColor: 'var(--border)',
@@ -453,13 +634,13 @@ export function Home() {
                       <div key={modulo.codigo} className="relative">
                         <Link
                           to={modulo.ruta}
-                          className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card hover:border-primary transition-colors"
+                          className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card hover:border-secondary transition-colors"
                         >
                           <div
                             className="w-9 h-9 rounded-xl flex items-center justify-center"
-                            style={{ backgroundColor: 'var(--accent)' }}
+                            style={{ backgroundColor: 'var(--agro-success-fill)' }}
                           >
-                            <Icon className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+                            <Icon className="w-5 h-5" style={{ color: 'var(--agro-success-text)' }} />
                           </div>
                           <span
                             className="text-xs text-center text-foreground line-clamp-2 leading-snug"
@@ -487,7 +668,7 @@ export function Home() {
             {esAdmin && !loading && terminosSitio.singular === 'Rancho' && (
               <Link
                 to="/equipo/actividad"
-                className="flex items-center gap-3 bg-card border border-border rounded-xl p-4 hover:border-primary transition-colors"
+                className="flex items-center gap-3 bg-card border border-border rounded-xl p-4 hover:border-secondary transition-colors"
               >
                 <div
                   className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -606,14 +787,20 @@ export function Home() {
 
           </div>{/* fin columna izquierda */}
 
-          {/* Columna derecha: módulos por categoría — tarjetas con chips */}
+          {/* Columna derecha: botones de categoría */}
           <div className="mt-5 md:mt-0">
 
             {loadingModulos ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {[0, 1, 2, 3].map(i => (
-                  <div key={i} className="rounded-xl p-4 border border-border animate-pulse" style={{ backgroundColor: 'var(--agro-background)' }}>
-                    <div className="h-4 rounded w-1/2" style={{ backgroundColor: 'var(--muted)' }} />
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {[0, 1, 2, 3, 4, 5].map(i => (
+                  <div
+                    key={i}
+                    className="rounded-xl p-4 border border-border animate-pulse flex flex-col items-center gap-2"
+                    style={{ backgroundColor: 'var(--agro-background)' }}
+                  >
+                    <div className="w-10 h-10 rounded-xl" style={{ backgroundColor: 'var(--muted)' }} />
+                    <div className="h-3 rounded w-3/4" style={{ backgroundColor: 'var(--muted)' }} />
+                    <div className="h-4 rounded-full w-8" style={{ backgroundColor: 'var(--muted)' }} />
                   </div>
                 ))}
               </div>
@@ -630,87 +817,47 @@ export function Home() {
                   </button>
                 </p>
               </div>
-            ) : (
+            ) : modulosAgrupados.length === 0 ? null : (
               <>
                 <h2 className="mb-3 text-sm text-foreground" style={{ fontWeight: 600 }}>
                   Inocuidad y BPAs
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {modulosAgrupados.map(grupo => {
                     const GrupoIcon = resolverIcono(grupo.icono)
-                    const isOpen = openGroups.includes(grupo.key)
                     return (
-                      <div key={grupo.key} className="rounded-xl border border-border bg-card overflow-hidden">
-                        {/* Cabecera de categoría */}
-                        <button
-                          className="w-full flex items-center gap-2.5 px-4 py-3 text-left"
-                          style={{ backgroundColor: 'var(--muted)' }}
-                          onClick={() => setOpenGroups(prev =>
-                            isOpen ? prev.filter(k => k !== grupo.key) : [...prev, grupo.key]
-                          )}
+                      <button
+                        key={grupo.key}
+                        ref={el => {
+                          if (el) btnRefs.current.set(grupo.key, el)
+                          else btnRefs.current.delete(grupo.key)
+                        }}
+                        onClick={() => abrirCategoria(grupo.key)}
+                        className="flex flex-col items-center gap-2.5 p-4 rounded-xl border border-border bg-card transition-all duration-150 hover:border-secondary hover:-translate-y-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-1"
+                      >
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center"
+                          style={{ backgroundColor: 'var(--agro-success-fill)' }}
                         >
-                          <GrupoIcon className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--primary)' }} />
-                          <span className="flex-1 text-sm text-foreground" style={{ fontWeight: 600 }}>
-                            {grupo.label}
-                          </span>
-                          <span
-                            className="text-xs px-1.5 py-0.5 rounded-full"
-                            style={{
-                              backgroundColor: 'var(--background)',
-                              color: 'var(--muted-foreground)',
-                            }}
-                          >
-                            {grupo.modulos.length}
-                          </span>
-                          <ChevronDown
-                            className="w-4 h-4 flex-shrink-0 text-muted-foreground transition-transform duration-200"
-                            style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                          />
-                        </button>
-                        {/* Chips de módulos */}
-                        {isOpen && (
-                          <div className="px-3 pt-3 pb-2 flex flex-wrap gap-2">
-                            {grupo.modulos.map(modulo => {
-                              const ModIcon = resolverIcono(modulo.icono || 'file-text')
-                              const esFijado = modulosFijados.includes(modulo.codigo)
-                              const puedeFijar = esFijado || modulosFijados.length < MAX_PINNED
-                              return (
-                                <div key={modulo.codigo} className="relative">
-                                  <Link
-                                    to={modulo.ruta}
-                                    className="inline-flex items-center gap-1.5 pl-3 pr-7 py-1.5 rounded-full text-xs border transition-colors hover:border-primary"
-                                    style={{
-                                      backgroundColor: 'var(--agro-background)',
-                                      borderColor: 'var(--border)',
-                                      color: 'var(--foreground)',
-                                      fontWeight: 600,
-                                    }}
-                                  >
-                                    <ModIcon className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--primary)' }} />
-                                    {modulo.nombre}
-                                  </Link>
-                                  {puedeFijar && (
-                                    <button
-                                      onClick={() => toggleFijar(modulo.codigo)}
-                                      className="absolute top-1/2 right-2 -translate-y-1/2 flex items-center justify-center transition-colors"
-                                      style={{
-                                        color: esFijado ? 'var(--primary)' : 'var(--muted-foreground)',
-                                      }}
-                                      aria-label={esFijado ? 'Quitar de accesos rápidos' : 'Fijar en accesos rápidos'}
-                                      title={esFijado ? 'Quitar' : 'Fijar'}
-                                    >
-                                      <Pin
-                                        className="w-3 h-3"
-                                        style={{ fill: esFijado ? 'var(--primary)' : 'none' }}
-                                      />
-                                    </button>
-                                  )}
-                                </div>
-                              )
-                            })}
-                          </div>
-                        )}
-                      </div>
+                          <GrupoIcon className="w-5 h-5" style={{ color: 'var(--agro-success-text)' }} />
+                        </div>
+                        <span
+                          className="text-xs text-center text-foreground line-clamp-2 leading-snug w-full"
+                          style={{ fontWeight: 600 }}
+                        >
+                          {grupo.label}
+                        </span>
+                        <span
+                          className="text-xs px-2 py-0.5 rounded-full"
+                          style={{
+                            backgroundColor: 'var(--agro-success-fill)',
+                            color: 'var(--agro-success-text)',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {grupo.modulos.length}
+                        </span>
+                      </button>
                     )
                   })}
                 </div>
@@ -732,6 +879,16 @@ export function Home() {
         >
           <Plus className="w-6 h-6" style={{ color: 'var(--primary-foreground)' }} />
         </Link>
+      )}
+
+      {/* Popup de categoría */}
+      {grupoAbierto && (
+        <CategoriaPopup
+          grupo={grupoAbierto}
+          modulosFijados={modulosFijados}
+          toggleFijar={toggleFijar}
+          onClose={cerrarCategoria}
+        />
       )}
     </div>
   )
