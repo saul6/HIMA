@@ -4,7 +4,7 @@ import { Link } from 'react-router'
 import {
   Plus, Loader2, TriangleAlert, Clock3,
   Users, AlertTriangle, ChevronRight, ClipboardList, BarChart2,
-  FileCheck, ShieldAlert, Search, Pin, X,
+  FileCheck, ShieldAlert, Search, Pin, X, Sun, Moon, Monitor,
 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useHomeDashboard } from '@/hooks/useHomeDashboard'
@@ -12,6 +12,7 @@ import { useDashboardResumen } from '@/hooks/useDashboardResumen'
 import { useCorreccionesPendientes } from '@/hooks/useCorreccionesPendientes'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useHomeSearch } from '@/context/HomeSearchContext'
+import { useTheme } from '@/context/ThemeContext'
 import { resolverIcono } from '@/app/components/iconos-modulos'
 import { MadyLogo } from '@/app/components/MadyLogo'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -324,6 +325,9 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose }: Categor
 
 export function Home() {
   const { profile } = useAuthContext()
+  const { theme, resolvedTheme, cycleTheme } = useTheme()
+  const ThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor
+  const themeLabel = theme === 'light' ? 'Claro' : theme === 'dark' ? 'Oscuro' : 'Sistema'
   const { orgNombre, orgPlan, metricas, recientes, loading, error } = useHomeDashboard()
   const { resumen, loading: resumenLoading } = useDashboardResumen()
   const { items: correcciones, count: countCorrecciones } = useCorreccionesPendientes()
@@ -421,11 +425,15 @@ export function Home() {
     <div className="min-h-full pb-[calc(72px+34px)] md:pb-8">
 
       {/* Header — solo móvil */}
-      <header className="md:hidden bg-card border-b border-border px-4 py-4">
+      <header className="md:hidden bg-card border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
-          <div className="flex-shrink-0">
-            <MadyLogo theme="light" className="h-15 w-auto" />
-          </div>
+          <Link
+            to="/"
+            aria-label="Ir al inicio"
+            className="flex-shrink-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
+          >
+            <MadyLogo theme={resolvedTheme} className="h-8 w-auto" />
+          </Link>
           <div className="text-right min-w-0 flex-1">
             <div className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
               {loading ? '…' : `Hola, ${profile?.nombre_completo?.split(' ')[0] ?? '—'}`}
@@ -434,6 +442,14 @@ export function Home() {
               {loading ? '…' : nombreOrg}
             </div>
           </div>
+          <button
+            onClick={cycleTheme}
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary flex-shrink-0"
+            aria-label={`Cambiar tema (actual: ${themeLabel})`}
+            title={themeLabel}
+          >
+            <ThemeIcon className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
+          </button>
         </div>
       </header>
 
@@ -807,10 +823,10 @@ export function Home() {
                 {[0, 1, 2, 3, 4, 5].map(i => (
                   <div
                     key={i}
-                    className="rounded-xl p-4 border border-border animate-pulse flex flex-col items-center gap-2"
+                    className="rounded-xl p-3 border border-border animate-pulse flex flex-col items-center gap-2"
                     style={{ backgroundColor: 'var(--agro-background)' }}
                   >
-                    <div className="w-10 h-10 rounded-xl" style={{ backgroundColor: 'var(--muted)' }} />
+                    <div className="w-9 h-9 rounded-lg" style={{ backgroundColor: 'var(--muted)' }} />
                     <div className="h-3 rounded w-3/4" style={{ backgroundColor: 'var(--muted)' }} />
                     <div className="h-4 rounded-full w-8" style={{ backgroundColor: 'var(--muted)' }} />
                   </div>
@@ -831,7 +847,7 @@ export function Home() {
               </div>
             ) : modulosAgrupados.length === 0 ? null : (
               <>
-                <h2 className="mb-3 text-sm text-foreground" style={{ fontWeight: 600 }}>
+                <h2 className="mb-2 text-sm text-foreground" style={{ fontWeight: 600 }}>
                   Inocuidad y BPAs
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -845,13 +861,13 @@ export function Home() {
                           else btnRefs.current.delete(grupo.key)
                         }}
                         onClick={() => abrirCategoria(grupo.key)}
-                        className="flex flex-col items-center gap-2.5 p-4 rounded-xl border border-border bg-card transition-all duration-150 hover:border-secondary hover:-translate-y-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-1"
+                        className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border bg-card transition-all duration-150 hover:border-secondary hover:-translate-y-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-1"
                       >
                         <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center"
+                          className="w-9 h-9 rounded-lg flex items-center justify-center"
                           style={{ backgroundColor: 'var(--agro-success-fill)' }}
                         >
-                          <GrupoIcon className="w-5 h-5" style={{ color: 'var(--agro-success-text)' }} />
+                          <GrupoIcon className="w-[18px] h-[18px]" style={{ color: 'var(--agro-success-text)' }} />
                         </div>
                         <span
                           className="text-xs text-center text-foreground line-clamp-2 leading-snug w-full"

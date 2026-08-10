@@ -95,6 +95,18 @@
   --sidebar-accent-foreground: #FFFFFF;
   --sidebar-border: rgba(255, 255, 255, 0.15);
   --sidebar-ring: #2AAD95;
+  /* Agro semantic tokens — dark overrides */
+  --input-background: #1A2332;
+  --agro-primary: #81BEE5;
+  --agro-red: #E54D4D;
+  --agro-background: #0D1520;
+  --agro-surface: #121824;
+  --agro-success-fill: #0F2318;
+  --agro-success-text: #5DCAA5;
+  --agro-warning-fill: #0F1E2E;
+  --agro-warning-text: #81BEE5;
+  --agro-danger-fill: #2D1515;
+  --agro-danger-text: #E54D4D;
 }
 
 @theme inline {
