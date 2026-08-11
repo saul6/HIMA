@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
+import { Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { MadyLogo } from '@/app/components/MadyLogo'
 
@@ -21,11 +22,25 @@ const SLIDES = [
   },
 ]
 
+function getInputStyle(focused: boolean): React.CSSProperties {
+  return {
+    background: 'var(--input-background)',
+    borderColor: focused ? 'var(--secondary)' : 'var(--border)',
+    boxShadow: focused
+      ? '0 0 0 3px color-mix(in srgb, var(--secondary) 18%, transparent)'
+      : 'none',
+    color: 'var(--foreground)',
+    borderRadius: 10,
+  }
+}
+
 export function Login() {
   const { user, loading, signIn } = useAuthContext()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [focusedField, setFocusedField] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
@@ -82,15 +97,16 @@ export function Login() {
     )
   }
 
-  return (
-    <div className="flex min-h-screen" style={{ background: 'var(--primary)' }}>
+  const iconCls = 'absolute left-3 top-1/2 -translate-y-1/2 w-[17px] h-[17px] pointer-events-none'
 
-      {/* ── PANEL IZQUIERDO: carrusel (solo lg+) ── */}
+  return (
+    <div className="flex min-h-screen" style={{ background: 'var(--background)' }}>
+
+      {/* ── PANEL IZQUIERDO: carrusel de fotos (solo lg+) ── */}
       <div
         className="hidden lg:flex lg:w-[55%] relative flex-col overflow-hidden"
         style={{ background: 'var(--primary)' }}
       >
-        {/* Imágenes */}
         {SLIDES.map((slide, i) => (
           <div
             key={slide.src}
@@ -104,7 +120,6 @@ export function Login() {
           />
         ))}
 
-        {/* Overlay degradado oscuro arriba y abajo */}
         <div
           aria-hidden="true"
           className="absolute inset-0"
@@ -113,10 +128,7 @@ export function Login() {
           }}
         />
 
-        {/* Contenido sobre las fotos */}
         <div className="relative flex flex-col justify-between h-full p-10 z-10">
-
-          {/* Logo arriba */}
           <div>
             <MadyLogo theme="dark" style={{ height: 38, width: 'auto' }} />
             <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.72)', fontWeight: 400 }}>
@@ -124,7 +136,6 @@ export function Login() {
             </p>
           </div>
 
-          {/* Caption + dots (abajo) */}
           <div className="pb-2">
             <div className="relative" style={{ minHeight: '5.5rem' }}>
               {SLIDES.map((slide, i) => (
@@ -143,7 +154,7 @@ export function Login() {
               ))}
             </div>
 
-            {/* Dots: círculos discretos, sin pill ni verde */}
+            {/* Dots discretos — círculos uniformes, sin pill ni verde */}
             <div className="flex items-center gap-[6px] mt-4">
               {SLIDES.map((_, i) => (
                 <button
@@ -168,130 +179,158 @@ export function Login() {
         </div>
       </div>
 
-      {/* ── PANEL DERECHO: formulario ── */}
+      {/* ── PANEL DERECHO: formulario (surface claro) ── */}
       <div
         className="flex-1 flex flex-col items-center justify-center p-6 lg:p-14 min-h-screen"
-        style={{ background: 'var(--primary)' }}
+        style={{ background: 'var(--background)' }}
       >
-        <div className="w-full max-w-[360px]">
+        <div className="w-full max-w-[380px] space-y-7">
 
-          {/* Logo M.A.D.Y encima del formulario (visible en todos los breakpoints) */}
-          <div className="flex flex-col items-start gap-1 mb-8">
-            <MadyLogo theme="dark" style={{ height: 34, width: 'auto' }} />
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
-              Inocuidad Alimentaria
+          {/* Logo M.A.D.Y + tagline */}
+          <div className="space-y-[3px]">
+            <MadyLogo theme="light" style={{ height: 36, width: 'auto' }} />
+            <p
+              className="text-[10px] tracking-widest uppercase"
+              style={{ color: 'var(--muted-foreground)', letterSpacing: '0.1em' }}
+            >
+              Inocuidad Digital
             </p>
           </div>
 
-          {/* Tarjeta del formulario con elevación sutil */}
-          <div
-            className="rounded-2xl p-7 space-y-6"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.1)',
-            }}
-          >
-            {/* Encabezado */}
-            <div className="space-y-1">
-              <h1 className="text-[22px] font-bold" style={{ color: 'rgba(255,255,255,0.96)' }}>
-                Iniciar sesión
-              </h1>
-              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                Accede a tu cuenta M.A.D.Y
-              </p>
-            </div>
+          {/* Título + subtítulo */}
+          <div className="space-y-1">
+            <h1
+              className="text-[22px] leading-tight"
+              style={{ fontWeight: 600, color: 'var(--primary)' }}
+            >
+              Bienvenido de nuevo
+            </h1>
+            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+              Accede a tu cuenta para continuar
+            </p>
+          </div>
 
-            {/* Formulario */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1">
-                <label
-                  className="text-xs block"
-                  style={{ fontWeight: 600, color: 'rgba(255,255,255,0.65)' }}
-                >
-                  Correo electrónico
-                </label>
+          {/* Formulario */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+
+            {/* Correo */}
+            <div className="space-y-[6px]">
+              <label className="text-xs font-semibold block" style={{ color: 'var(--primary)' }}>
+                Correo electrónico
+              </label>
+              <div className="relative">
+                <Mail className={iconCls} style={{ color: 'var(--muted-foreground)' }} />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => setFocusedField('email')}
+                  onBlur={() => setFocusedField(null)}
                   placeholder="correo@ejemplo.com"
                   required
                   autoComplete="email"
-                  className="w-full h-12 px-4 rounded-lg border focus:outline-none focus:ring-1 focus:ring-white/30 placeholder:text-white/35"
-                  style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    borderColor: 'rgba(255,255,255,0.14)',
-                    color: 'rgba(255,255,255,0.92)',
-                  }}
+                  className="w-full h-12 border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--muted-foreground)]"
+                  style={getInputStyle(focusedField === 'email')}
                 />
               </div>
+            </div>
 
-              <div className="space-y-1">
-                <label
-                  className="text-xs block"
-                  style={{ fontWeight: 600, color: 'rgba(255,255,255,0.65)' }}
-                >
-                  Contraseña
-                </label>
+            {/* Contraseña */}
+            <div className="space-y-[6px]">
+              <label className="text-xs font-semibold block" style={{ color: 'var(--primary)' }}>
+                Contraseña
+              </label>
+              <div className="relative">
+                <Lock className={iconCls} style={{ color: 'var(--muted-foreground)' }} />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setFocusedField('password')}
+                  onBlur={() => setFocusedField(null)}
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
-                  className="w-full h-12 px-4 rounded-lg border focus:outline-none focus:ring-1 focus:ring-white/30 placeholder:text-white/35"
-                  style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    borderColor: 'rgba(255,255,255,0.14)',
-                    color: 'rgba(255,255,255,0.92)',
+                  className="w-full h-12 border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--muted-foreground)]"
+                  style={getInputStyle(focusedField === 'password')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded"
+                  style={{ color: 'var(--muted-foreground)' }}
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showPassword
+                    ? <EyeOff className="w-[17px] h-[17px]" />
+                    : <Eye className="w-[17px] h-[17px]" />}
+                </button>
+              </div>
+              <div className="flex justify-end pt-[1px]">
+                <span className="text-xs cursor-pointer" style={{ color: 'var(--muted-foreground)' }}>
+                  ¿Olvidaste tu contraseña?
+                </span>
+              </div>
+            </div>
+
+            {/* Turnstile con icono de verificación */}
+            {SITE_KEY && (
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="w-5 h-5 shrink-0" style={{ color: 'var(--secondary)' }} />
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={SITE_KEY}
+                  options={{ theme: 'light', size: 'normal' }}
+                  onSuccess={(token) => setCaptchaToken(token)}
+                  onExpire={() => setCaptchaToken(null)}
+                  onError={() => {
+                    setCaptchaToken(null)
+                    setError('Verificación fallida, intenta de nuevo')
                   }}
                 />
               </div>
+            )}
 
-              {/* Turnstile CAPTCHA */}
-              {SITE_KEY && (
-                <div className="flex justify-center">
-                  <Turnstile
-                    ref={turnstileRef}
-                    siteKey={SITE_KEY}
-                    options={{ theme: 'dark', size: 'normal' }}
-                    onSuccess={(token) => setCaptchaToken(token)}
-                    onExpire={() => setCaptchaToken(null)}
-                    onError={() => {
-                      setCaptchaToken(null)
-                      setError('Verificación fallida, intenta de nuevo')
-                    }}
-                  />
-                </div>
-              )}
-
-              {error && (
-                <div
-                  className="p-3 rounded-lg text-sm"
-                  style={{ background: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
-                >
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={submitting || (!!SITE_KEY && !captchaToken)}
-                className="w-full h-12 rounded-xl text-white font-semibold transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ background: 'var(--secondary)', marginTop: '4px' }}
+            {error && (
+              <div
+                className="p-3 rounded-lg text-sm"
+                style={{ background: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
               >
-                {submitting ? 'Iniciando sesión...' : 'Iniciar sesión'}
-              </button>
-            </form>
+                {error}
+              </div>
+            )}
 
-            <p className="text-sm text-center" style={{ color: 'rgba(255,255,255,0.5)' }}>
-              ¿No tienes cuenta?{' '}
-              <Link to="/registro" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
-                Regístrate
-              </Link>
-            </p>
-          </div>
+            {/* Botón navy con flecha */}
+            <button
+              type="submit"
+              disabled={submitting || (!!SITE_KEY && !captchaToken)}
+              className="w-full h-12 text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                background: 'var(--primary)',
+                borderRadius: 10,
+              }}
+            >
+              {submitting ? (
+                'Iniciando sesión...'
+              ) : (
+                <>
+                  Iniciar sesión
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
+
+          <p className="text-sm text-center" style={{ color: 'var(--muted-foreground)' }}>
+            ¿No tienes cuenta?{' '}
+            <Link
+              to="/registro"
+              className="font-semibold"
+              style={{ color: 'var(--secondary)' }}
+            >
+              Regístrate
+            </Link>
+          </p>
         </div>
       </div>
     </div>
