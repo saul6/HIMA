@@ -7,6 +7,7 @@ import { MadyLogo } from '@/app/components/MadyLogo'
 
 const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
 
+// Para usar imágenes locales: agrega archivos en public/images/ y pon la ruta aquí, ej. '/images/campo.jpg'
 const SLIDES = [
   {
     src: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1400&q=80',
@@ -15,10 +16,6 @@ const SLIDES = [
   {
     src: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1400&q=80',
     caption: 'Trazabilidad completa del campo a la empacadora',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1500651230702-0e2d8a49d4e9?auto=format&fit=crop&w=1400&q=80',
-    caption: 'Registros en tiempo real. Formatos PDF listos para el auditor',
   },
 ]
 
@@ -47,6 +44,7 @@ export function Login() {
   const turnstileRef = useRef<TurnstileInstance>(null)
   const [active, setActive] = useState(0)
   const [reducedMotion, setReducedMotion] = useState(false)
+  const [erroredSlides, setErroredSlides] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     if (!loading && user) navigate('/', { replace: true })
@@ -61,14 +59,25 @@ export function Login() {
   }, [])
 
   useEffect(() => {
-    if (reducedMotion) return
-    const t = setInterval(() => setActive(p => (p + 1) % SLIDES.length), 3500)
-    return () => clearInterval(t)
-  }, [reducedMotion])
+    SLIDES.forEach(({ src }, idx) => {
+      const img = new Image()
+      img.src = src
+      img.onerror = () => setErroredSlides(prev => new Set([...prev, idx]))
+    })
+  }, [])
 
   useEffect(() => {
-    SLIDES.forEach(({ src }) => { const img = new Image(); img.src = src })
-  }, [])
+    if (reducedMotion) return
+    const valid = SLIDES.map((_, i) => i).filter(i => !erroredSlides.has(i))
+    if (valid.length <= 1) return
+    const t = setInterval(() => {
+      setActive(prev => {
+        const pos = valid.indexOf(prev)
+        return valid[(pos + 1) % valid.length]
+      })
+    }, 3500)
+    return () => clearInterval(t)
+  }, [reducedMotion, erroredSlides])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -114,7 +123,7 @@ export function Login() {
             className="absolute inset-0 bg-cover bg-center"
             style={{
               backgroundImage: `url(${slide.src})`,
-              opacity: i === active ? 1 : 0,
+              opacity: i === active && !erroredSlides.has(i) ? 1 : 0,
               transition: reducedMotion ? 'none' : 'opacity 1s ease-in-out',
             }}
           />
