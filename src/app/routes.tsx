@@ -1,5 +1,33 @@
 import { createBrowserRouter, useRouteError } from "react-router";
 
+function RootError() {
+  return (
+    <div
+      style={{
+        minHeight: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1.5rem',
+        gap: '1rem',
+        background: 'var(--background, #F8F9FA)',
+      }}
+    >
+      <p className="text-sm text-center" style={{ color: 'var(--agro-danger-text, #993C1D)' }}>
+        Algo salió mal. Recarga para continuar.
+      </p>
+      <button
+        onClick={() => window.location.reload()}
+        className="text-sm underline"
+        style={{ color: 'var(--primary, #2B7AB5)' }}
+      >
+        Recargar
+      </button>
+    </div>
+  )
+}
+
 function InocuidadError() {
   const err = useRouteError() as Error | null
   return (
@@ -77,14 +105,17 @@ export const router = createBrowserRouter([
   {
     path: "/login",
     Component: Login,
+    ErrorBoundary: RootError,
   },
   {
     path: "/registro",
     Component: Registro,
+    ErrorBoundary: RootError,
   },
   {
     path: "/",
     Component: RequireAuth,
+    ErrorBoundary: RootError,
     children: [
       // Accesible sin org — para completar el alta después del signUp
       {
