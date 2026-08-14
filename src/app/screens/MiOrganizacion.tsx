@@ -15,7 +15,8 @@ import {
 } from '@/lib/queries'
 import type { Organizacion, Rancho } from '@/types/database.types'
 
-const CULTIVOS = ['Zarzamora', 'Frambuesa', 'Fresa', 'Mora azul']
+const CULTIVOS = ['Zarzamora', 'Frambuesa', 'Fresa', 'Mora azul', 'Coco']
+const CULTIVO_OTRO = '__otro__'
 
 const LIMITE_POR_PLAN: Record<string, number | null> = {
   pendiente: 0,
@@ -52,10 +53,11 @@ interface FormRancho {
   nombre: string
   codigo: string
   cultivo: string
+  cultivoOtro: string
   superficie_ha: string
 }
 
-const FORM_VACÍO: FormRancho = { nombre: '', codigo: '', cultivo: '', superficie_ha: '' }
+const FORM_VACÍO: FormRancho = { nombre: '', codigo: '', cultivo: '', cultivoOtro: '', superficie_ha: '' }
 
 export function MiOrganizacion() {
   const navigate = useNavigate()
@@ -115,10 +117,12 @@ export function MiOrganizacion() {
 
   function abrirEditar(rancho: Rancho) {
     setRanchoEditando(rancho)
+    const esPersonalizado = !CULTIVOS.includes(rancho.cultivo)
     setForm({
       nombre: rancho.nombre,
       codigo: rancho.codigo,
-      cultivo: rancho.cultivo,
+      cultivo: esPersonalizado ? CULTIVO_OTRO : rancho.cultivo,
+      cultivoOtro: esPersonalizado ? rancho.cultivo : '',
       superficie_ha: rancho.superficie_ha?.toString() ?? '',
     })
     setErrores({})
@@ -135,6 +139,7 @@ export function MiOrganizacion() {
     if (!form.nombre.trim()) e.nombre = 'El nombre es requerido'
     if (!ranchoEditando && !form.codigo.trim()) e.codigo = 'El código es requerido'
     if (!form.cultivo) e.cultivo = 'Selecciona un cultivo'
+    else if (form.cultivo === CULTIVO_OTRO && !form.cultivoOtro.trim()) e.cultivoOtro = 'Especifica el cultivo'
     const sup = parseFloat(form.superficie_ha)
     if (!form.superficie_ha || isNaN(sup) || sup <= 0) e.superficie_ha = 'Debe ser mayor a 0'
     setErrores(e)
@@ -163,11 +168,12 @@ export function MiOrganizacion() {
   async function handleGuardar() {
     if (!validar()) return
     setGuardando(true)
+    const cultivoFinal = form.cultivo === CULTIVO_OTRO ? form.cultivoOtro.trim() : form.cultivo
     try {
       if (ranchoEditando) {
         await actualizarRancho(ranchoEditando.id, {
           nombre: form.nombre.trim(),
-          cultivo: form.cultivo,
+          cultivo: cultivoFinal,
           superficie_ha: parseFloat(form.superficie_ha),
         })
         toast.success(`${sTermino} ${sGenero === 'f' ? 'actualizada' : 'actualizado'}`)
@@ -176,7 +182,7 @@ export function MiOrganizacion() {
         await crearRancho({
           nombre: form.nombre.trim(),
           codigo: form.codigo.trim().toUpperCase(),
-          cultivo: form.cultivo,
+          cultivo: cultivoFinal,
           superficie_ha: parseFloat(form.superficie_ha),
           productor_id: productorId,
           org_id: profile!.org_id!,
@@ -535,9 +541,25 @@ export function MiOrganizacion() {
                       {c}
                     </option>
                   ))}
+                  <option value={CULTIVO_OTRO}>Otro (especificar)…</option>
                 </select>
                 {errores.cultivo && (
                   <p className="text-xs text-agro-red mt-1">{errores.cultivo}</p>
+                )}
+                {form.cultivo === CULTIVO_OTRO && (
+                  <div className="mt-2">
+                    <input
+                      value={form.cultivoOtro}
+                      onChange={(e) => setForm((f) => ({ ...f, cultivoOtro: e.target.value }))}
+                      placeholder="Especifica el cultivo"
+                      className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
+                        errores.cultivoOtro ? 'border-agro-red' : 'border-border'
+                      }`}
+                    />
+                    {errores.cultivoOtro && (
+                      <p className="text-xs text-agro-red mt-1">{errores.cultivoOtro}</p>
+                    )}
+                  </div>
                 )}
               </div>
 
