@@ -7,6 +7,7 @@ import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import {
@@ -74,7 +75,7 @@ function frecuenciaLabel(f: string): string {
 }
 
 export function LimpiezaCisterna() {
-  const { profile } = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { registros, loading, error, refetch } = useM37LimpiezaCisterna()
@@ -524,7 +525,7 @@ export function LimpiezaCisterna() {
     setCGenerando(true)
     try {
       const instalacionNombre = ranchos.find((r) => r.id === cRanchoId)?.nombre ?? cRanchoId
-      await generarLimpiezaCisternaConsolidadoPDF(cRanchoId, instalacionNombre, orgId, cDesde, cHasta)
+      await generarLimpiezaCisternaConsolidadoPDF(cRanchoId, instalacionNombre, orgId, cDesde, cHasta, codigoClave)
       toast.success('PDF consolidado generado')
       setSheetConsolidado(false)
     } catch (e: unknown) {
@@ -557,7 +558,7 @@ export function LimpiezaCisterna() {
           aprobo: v.aprobo,
         }
       }
-      await generarLimpiezaCisternaPDF(registroActivo, ranchoCodigo, pdfItems, res, dd)
+      await generarLimpiezaCisternaPDF(registroActivo, ranchoCodigo, pdfItems, res, dd, codigoClave)
       toast.success('PDF descargado')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al generar PDF')
@@ -608,7 +609,7 @@ export function LimpiezaCisterna() {
                 <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
                   Limpieza y Cloración de la Cisterna
                 </h1>
-                <div className="text-xs text-muted-foreground">F-FRUS-SAN-15</div>
+                <div className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-SAN-15', codigoClave)}</div>
               </>
             ) : (
               <>

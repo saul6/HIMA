@@ -15,6 +15,7 @@ function formatMesLabel(mes: string): string {
 export async function construirDatosPaginaM43(
   registroId: string,
   orgId: string,
+  codigoClave: string,
 ): Promise<InspeccionAlmacenEmpaquePaginaProps> {
   const tbl = supabase as any
   const [
@@ -86,14 +87,16 @@ export async function construirDatosPaginaM43(
     diasInspeccionados,
     matriz,
     accionesTomadas,
+    codigoClave,
   }
 }
 
 export async function generarInspeccionAlmacenEmpaquePDF(
   registroId: string,
   orgId: string,
+  codigoClave: string,
 ): Promise<void> {
-  const datos = await construirDatosPaginaM43(registroId, orgId)
+  const datos = await construirDatosPaginaM43(registroId, orgId, codigoClave)
   const blob  = await pdf(<InspeccionAlmacenEmpaquePDF {...datos} />).toBlob()
   const url   = URL.createObjectURL(blob)
   const a     = document.createElement('a')
@@ -106,7 +109,8 @@ export async function generarInspeccionAlmacenEmpaquePDF(
 export async function generarBlobInspeccionAlmacenEmpaque(
   registroId: string,
   orgId: string,
+  codigoClave: string,
 ): Promise<Blob> {
-  const datos = await construirDatosPaginaM43(registroId, orgId)
+  const datos = await construirDatosPaginaM43(registroId, orgId, codigoClave)
   return pdf(<InspeccionAlmacenEmpaquePDF {...datos} />).toBlob()
 }

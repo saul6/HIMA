@@ -57,13 +57,13 @@ async function cargarDatos(id: string, orgId: string): Promise<M39RecepcionDataP
   }
 }
 
-export async function generarRecepcionFrutaPDF(id: string, orgId: string): Promise<void> {
+export async function generarRecepcionFrutaPDF(id: string, orgId: string, codigoClave: string): Promise<void> {
   const d = await cargarDatos(id, orgId)
-  const blob = await pdf(<RecepcionFrutaPDF d={d} />).toBlob()
+  const blob = await pdf(<RecepcionFrutaPDF d={d} codigoClave={codigoClave} />).toBlob()
   descargar(blob, nombrePdf('Recepcion_Fruta', d.fecha, d.instalacion))
 }
 
-export async function generarBlobRecepcionFruta(id: string, orgId: string): Promise<Blob> {
+export async function generarBlobRecepcionFruta(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const d = await cargarDatos(id, orgId)
-  return pdf(<RecepcionFrutaPDF d={d} />).toBlob()
+  return pdf(<RecepcionFrutaPDF d={d} codigoClave={codigoClave} />).toBlob()
 }

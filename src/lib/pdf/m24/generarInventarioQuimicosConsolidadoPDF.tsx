@@ -8,6 +8,7 @@ export async function generarInventarioQuimicosConsolidadoPDF(
   orgId: string,
   desde: string,
   hasta: string,
+  codigoClave: string,
 ) {
   const [qRes, mRes] = await Promise.all([
     (supabase as any)
@@ -52,6 +53,7 @@ export async function generarInventarioQuimicosConsolidadoPDF(
           consolidado={true}
           desde={desde}
           hasta={hasta}
+          codigoClave={codigoClave}
         />
       ))}
     </Document>

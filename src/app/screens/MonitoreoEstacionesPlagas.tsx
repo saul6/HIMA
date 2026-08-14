@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import {
@@ -407,7 +408,7 @@ function EstacionRevisionRow({
 
 export function MonitoreoEstacionesPlagas() {
   const navigate = useNavigate()
-  const { profile } = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
@@ -727,7 +728,7 @@ export function MonitoreoEstacionesPlagas() {
         </button>
         <div className="flex-1 min-w-0">
           <h1 className="text-base font-semibold text-foreground truncate">{TITULO_MODULO}</h1>
-          <p className="text-xs text-muted-foreground">F-FRUS-CAL-19 · Cuarto Frío</p>
+          <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-CAL-19', codigoClave)} · Cuarto Frío</p>
         </div>
         <Button
           variant="ghost"
@@ -906,7 +907,7 @@ export function MonitoreoEstacionesPlagas() {
           </div>
           <div className="px-4 pb-2 shrink-0">
             <h2 className="text-base font-semibold text-foreground">Nueva revisión</h2>
-            <p className="text-xs text-muted-foreground">F-FRUS-CAL-19 · Cuarto Frío</p>
+            <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-CAL-19', codigoClave)} · Cuarto Frío</p>
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 pb-6 flex flex-col gap-5">

@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export interface M43PuntoPDFRow {
   id: string
@@ -17,12 +18,10 @@ export interface InspeccionAlmacenEmpaquePaginaProps {
   autoriza: string | null
   observaciones: string | null
   puntos: M43PuntoPDFRow[]
-  // días del mes que tuvieron inspección (1-31)
   diasInspeccionados: number[]
-  // dia (1-31) -> punto_id -> valor raw ('cumple'|'no_cumple'|'na')
   matriz: Record<number, Record<string, string>>
-  // dia (1-31) -> acciones_tomadas
   accionesTomadas: Record<number, string>
+  codigoClave: string
 }
 
 export interface InspeccionAlmacenEmpaqueConsolidadoPDFProps {
@@ -137,7 +136,7 @@ const s = StyleSheet.create({
 export function InspeccionAlmacenEmpaquePagina({
   instalacion, instalacionCodigo, mesLabel, mesDate,
   realizadoPor, verifica, autoriza, observaciones,
-  puntos, diasInspeccionados, matriz, accionesTomadas,
+  puntos, diasInspeccionados, matriz, accionesTomadas, codigoClave,
 }: InspeccionAlmacenEmpaquePaginaProps) {
   const todosLosDias    = diasDelMes(mesDate)
   const dW              = dayColW(todosLosDias.length)
@@ -160,7 +159,7 @@ export function InspeccionAlmacenEmpaquePagina({
         <View style={{ flex: 1, alignItems: 'center' }}>
           <Text style={s.headerTitle}>INSPECCION DE ALMACEN DE MATERIAL DE EMPAQUE</Text>
           <Text style={{ fontSize: 6, color: MUTED, marginTop: 2 }}>
-            Codigo: F-FRUS-PRO-08  |  Frecuencia: Mensual  |  Mes: {mesLabel}
+            {`Codigo: ${codigoFormato('F-FRUS-PRO-08', codigoClave)}  |  Frecuencia: Mensual  |  Mes: ${mesLabel}`}
           </Text>
         </View>
         <View style={s.headerMeta}>

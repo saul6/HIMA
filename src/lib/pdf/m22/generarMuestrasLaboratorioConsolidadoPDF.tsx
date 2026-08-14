@@ -17,7 +17,8 @@ export async function generarMuestrasLaboratorioConsolidadoPDF(
   desde: string,
   hasta: string,
   instalacion: string,
-  instalacionCodigo: string
+  instalacionCodigo: string,
+  codigoClave: string,
 ) {
   const [microorganismos, muestrasRes] = await Promise.all([
     cargarMicroorganismos(),
@@ -57,6 +58,7 @@ export async function generarMuestrasLaboratorioConsolidadoPDF(
       hasta={hasta}
       microorganismos={microorganismos}
       muestras={muestras}
+      codigoClave={codigoClave}
     />
   ).toBlob()
 

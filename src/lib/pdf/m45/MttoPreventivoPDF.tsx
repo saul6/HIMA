@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export interface M45ItemPDFRow {
   id: string
@@ -28,10 +29,9 @@ export interface M45PaginaProps {
   mesLabel: string
   observaciones: string | null
   areas: M45AreaPDF[]
-  // item_id -> dia (1-31) -> valor ('hecho'|'no_hecho'|'na')
   resultados: Record<string, Record<number, string>>
-  // item_id -> acciones del mes
   acciones: Record<string, M45AccionesPDF>
+  codigoClave: string
 }
 
 export interface MttoPreventivoConsolidadoPDFProps {
@@ -197,7 +197,7 @@ const s = StyleSheet.create({
 })
 
 function MttoPreventivoPaginaContent({
-  instalacion, instalacionCodigo, anio, mes, mesLabel, observaciones, areas, resultados, acciones,
+  instalacion, instalacionCodigo, anio, mes, mesLabel, observaciones, areas, resultados, acciones, codigoClave,
 }: M45PaginaProps) {
   const dias = diasDelMes(anio, mes)
 
@@ -206,7 +206,7 @@ function MttoPreventivoPaginaContent({
       {/* Fixed top bar on every page */}
       <View style={s.topBar} fixed>
         <Text style={s.topBarText}>
-          VERIFICACION, MANTENIMIENTO PREVENTIVO Y CORRECTIVO  |  {instalacion}  |  {mesLabel}  |  F-FRUS-MTT-03
+          {`VERIFICACION, MANTENIMIENTO PREVENTIVO Y CORRECTIVO  |  ${instalacion}  |  ${mesLabel}  |  ${codigoFormato('F-FRUS-MTT-03', codigoClave)}`}
         </Text>
       </View>
 
@@ -219,7 +219,7 @@ function MttoPreventivoPaginaContent({
         <View style={{ flex: 1, alignItems: 'center' }}>
           <Text style={s.docTitle}>VERIFICACION, MANTENIMIENTO PREVENTIVO Y CORRECTIVO</Text>
           <Text style={{ fontSize: 5.5, color: MUTED, marginTop: 1 }}>
-            Codigo: F-FRUS-MTT-03  |  Rev 01  |  Frecuencia: Mensual
+            {`Codigo: ${codigoFormato('F-FRUS-MTT-03', codigoClave)}  |  Rev 01  |  Frecuencia: Mensual`}
           </Text>
         </View>
         <View style={s.docMeta}>

@@ -9,6 +9,7 @@ export async function generarPreparacionCloroConsolidadoPDF(
   orgId: string,
   desde: string,
   hasta: string,
+  codigoClave: string,
 ): Promise<void> {
   const { data, error } = await (supabase as any)
     .from('m27_preparaciones')
@@ -45,6 +46,7 @@ export async function generarPreparacionCloroConsolidadoPDF(
       desde={desde}
       hasta={hasta}
       preparaciones={preparaciones}
+      codigoClave={codigoClave}
     />
   ).toBlob()
 

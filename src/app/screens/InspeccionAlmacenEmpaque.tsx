@@ -160,7 +160,7 @@ function TogglePunto({
 type Vista = 'lista' | 'detalle'
 
 export function InspeccionAlmacenEmpaque() {
-  const { profile }        = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const { terminosSitio }  = useModulosContext()
   const { ranchos }        = useRanchos()
   const { registros, loading, error, refetch } = useM43InspeccionAlmacen()
@@ -443,7 +443,7 @@ export function InspeccionAlmacenEmpaque() {
     if (!profile?.org_id) return
     setGenerandoPDF(regId)
     try {
-      await generarInspeccionAlmacenEmpaquePDF(regId, profile.org_id)
+      await generarInspeccionAlmacenEmpaquePDF(regId, profile.org_id, codigoClave)
       toast.success('PDF descargado')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al generar PDF')
@@ -467,7 +467,7 @@ export function InspeccionAlmacenEmpaque() {
     try {
       const instalacionNombre = ranchos.find((r) => r.id === cRanchoId)?.nombre ?? cRanchoId
       await generarInspeccionAlmacenEmpaqueConsolidadoPDF(
-        cRanchoId, instalacionNombre, profile.org_id, cDesde, cHasta,
+        cRanchoId, instalacionNombre, profile.org_id, cDesde, cHasta, codigoClave,
       )
       toast.success('PDF consolidado generado')
       setSheetConsolidado(false)

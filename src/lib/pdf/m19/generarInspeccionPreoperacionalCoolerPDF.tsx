@@ -114,9 +114,10 @@ export async function construirDatosPaginaM19(
 export async function generarInspeccionPreoperacionalCoolerPDF(
   registroId: string,
   orgId: string,
+  codigoClave: string,
 ): Promise<void> {
   const datos = await construirDatosPaginaM19(registroId, orgId)
-  const blob = await pdf(<InspeccionPreoperacionalCoolerPDF {...datos} />).toBlob()
+  const blob = await pdf(<InspeccionPreoperacionalCoolerPDF {...datos} codigoClave={codigoClave} />).toBlob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

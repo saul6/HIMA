@@ -27,7 +27,7 @@ async function cargarDatosQuimico(quimicoId: string, orgId: string) {
   }
 }
 
-export async function generarInventarioQuimicosPDF(quimicoId: string, orgId: string) {
+export async function generarInventarioQuimicosPDF(quimicoId: string, orgId: string, codigoClave: string) {
   const { quimico, movimientos } = await cargarDatosQuimico(quimicoId, orgId)
   const blob = await pdf(
     <InventarioQuimicosPDF
@@ -35,6 +35,7 @@ export async function generarInventarioQuimicosPDF(quimicoId: string, orgId: str
       quimicoNombre={quimico.nombre}
       unidad={quimico.unidad}
       movimientos={movimientos}
+      codigoClave={codigoClave}
     />
   ).toBlob()
   const url = URL.createObjectURL(blob)
@@ -45,7 +46,7 @@ export async function generarInventarioQuimicosPDF(quimicoId: string, orgId: str
   URL.revokeObjectURL(url)
 }
 
-export async function generarBlobInventarioQuimicos(quimicoId: string, orgId: string): Promise<Blob> {
+export async function generarBlobInventarioQuimicos(quimicoId: string, orgId: string, codigoClave: string): Promise<Blob> {
   const { quimico, movimientos } = await cargarDatosQuimico(quimicoId, orgId)
   return pdf(
     <InventarioQuimicosPDF
@@ -53,6 +54,7 @@ export async function generarBlobInventarioQuimicos(quimicoId: string, orgId: st
       quimicoNombre={quimico.nombre}
       unidad={quimico.unidad}
       movimientos={movimientos}
+      codigoClave={codigoClave}
     />
   ).toBlob()
 }

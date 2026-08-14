@@ -6,6 +6,7 @@ import {
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import {
@@ -150,7 +151,7 @@ function AccionToggle({
 type Vista = 'lista' | 'detalle'
 
 export function MantenimientoPreventivo() {
-  const { profile }       = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos }       = useRanchos()
   const { registros, loading, error, refetch } = useM45MttoPreventivo()
@@ -457,7 +458,7 @@ export function MantenimientoPreventivo() {
     if (!profile?.org_id) return
     setGenerandoPDF(regId)
     try {
-      await generarMttoPreventivoPDF(regId, profile.org_id)
+      await generarMttoPreventivoPDF(regId, profile.org_id, codigoClave)
       toast.success('PDF descargado')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al generar PDF')
@@ -480,7 +481,7 @@ export function MantenimientoPreventivo() {
     setCGenerando(true)
     try {
       const nombre = ranchos.find((r) => r.id === cRanchoId)?.nombre ?? cRanchoId
-      await generarMttoPreventivoConsolidadoPDF(cRanchoId, nombre, profile.org_id, cDesde, cHasta)
+      await generarMttoPreventivoConsolidadoPDF(cRanchoId, nombre, profile.org_id, cDesde, cHasta, codigoClave)
       toast.success('PDF consolidado generado')
       setSheetConsolidado(false)
     } catch (e: unknown) {
@@ -518,7 +519,7 @@ export function MantenimientoPreventivo() {
                 <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
                   Mantenimiento Preventivo
                 </h1>
-                <div className="text-xs text-muted-foreground">Cuarto Frío · Mensual · F-FRUS-MTT-03</div>
+                <div className="text-xs text-muted-foreground">Cuarto Frío · Mensual · {codigoFormato('F-FRUS-MTT-03', codigoClave)}</div>
               </>
             ) : (
               <>

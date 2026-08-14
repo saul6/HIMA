@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export interface MonitoreoRow {
   fecha: string
@@ -15,6 +16,7 @@ interface Props {
   desde: string
   hasta: string
   monitoreos: MonitoreoRow[]
+  codigoClave: string
 }
 
 function fmtFecha(iso: string): string {
@@ -40,14 +42,14 @@ const s = StyleSheet.create({
 
 const C = { FECHA: 55, TIPO: 105, USO: 105, PPM: 52, CORR: 100, PREP: 95 }
 
-export function MonitoreoGermicidaPDF({ rancho, orgNombre, desde, hasta, monitoreos }: Props) {
+export function MonitoreoGermicidaPDF({ rancho, orgNombre, desde, hasta, monitoreos, codigoClave }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
 
   return (
     <Document>
       <Page size="A4" orientation="landscape" style={s.page}>
         <Text style={s.title}>Monitoreo de Solución Germicida</Text>
-        <Text style={s.codigo}>F-FRUS-SAN-14</Text>
+        <Text style={s.codigo}>{codigoFormato('F-FRUS-SAN-14', codigoClave)}</Text>
         {orgNombre ? <Text style={s.meta}>{orgNombre}</Text> : null}
         <Text style={s.meta}>Instalación: {rancho}</Text>
         <Text style={s.meta}>Período: {periodo}</Text>

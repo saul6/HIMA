@@ -45,13 +45,13 @@ async function cargarDatos(id: string, orgId: string): Promise<M41RegistroDataPD
   }
 }
 
-export async function generarTemperaturaConservadorPDF(id: string, orgId: string): Promise<void> {
+export async function generarTemperaturaConservadorPDF(id: string, orgId: string, codigoClave: string): Promise<void> {
   const d = await cargarDatos(id, orgId)
-  const blob = await pdf(<TemperaturaConservadorPDF d={d} />).toBlob()
+  const blob = await pdf(<TemperaturaConservadorPDF d={d} codigoClave={codigoClave} />).toBlob()
   descargar(blob, nombrePdf('Temperaturas_Conservador', d.fecha, d.instalacion))
 }
 
-export async function generarBlobTemperaturaConservador(id: string, orgId: string): Promise<Blob> {
+export async function generarBlobTemperaturaConservador(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const d = await cargarDatos(id, orgId)
-  return pdf(<TemperaturaConservadorPDF d={d} />).toBlob()
+  return pdf(<TemperaturaConservadorPDF d={d} codigoClave={codigoClave} />).toBlob()
 }

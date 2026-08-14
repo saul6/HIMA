@@ -7,6 +7,7 @@ import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import {
@@ -77,7 +78,7 @@ function frecuenciaLabel(f: string): string {
 }
 
 export function LimpiezaPreenfrio() {
-  const { profile } = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { registros, loading, error, refetch } = useM34LimpiezaPreenfrio()
@@ -527,7 +528,7 @@ export function LimpiezaPreenfrio() {
     setCGenerando(true)
     try {
       const instalacionNombre = ranchos.find((r) => r.id === cRanchoId)?.nombre ?? cRanchoId
-      await generarLimpiezaPreenfrioConsolidadoPDF(cRanchoId, instalacionNombre, orgId, cDesde, cHasta)
+      await generarLimpiezaPreenfrioConsolidadoPDF(cRanchoId, instalacionNombre, orgId, cDesde, cHasta, codigoClave)
       toast.success('PDF consolidado generado')
       setSheetConsolidado(false)
     } catch (e: unknown) {
@@ -560,7 +561,7 @@ export function LimpiezaPreenfrio() {
           aprobo: v.aprobo,
         }
       }
-      await generarLimpiezaPreenfrioPDF(registroActivo, ranchoCodigo, pdfItems, res, dd)
+      await generarLimpiezaPreenfrioPDF(registroActivo, ranchoCodigo, pdfItems, res, dd, codigoClave)
       toast.success('PDF descargado')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al generar PDF')
@@ -611,7 +612,7 @@ export function LimpiezaPreenfrio() {
                 <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
                   Limpieza de Pre-enfrío y Conservador
                 </h1>
-                <div className="text-xs text-muted-foreground">F-FRUS-SAN-12</div>
+                <div className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-SAN-12', codigoClave)}</div>
               </>
             ) : (
               <>

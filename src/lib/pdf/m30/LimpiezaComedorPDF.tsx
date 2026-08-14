@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export type ValorM30PDF = 'hecho' | 'no_hecho' | 'na'
 
@@ -23,6 +24,7 @@ export interface LimpiezaComedorPaginaProps {
   resultados: Record<number, Record<string, ValorM30PDF>>
   diasData: Record<number, M30DiaDataPDF>
   observaciones: string | null
+  codigoClave: string
 }
 
 export interface LimpiezaComedorConsolidadoProps {
@@ -109,7 +111,7 @@ function valorDisplay(v: ValorM30PDF | undefined): { text: string; color: string
   return { text: '', color: DARK }
 }
 
-export function LimpiezaComedorPagina({ instalacion, instalacionCodigo, anio, mes, items, resultados, diasData, observaciones }: LimpiezaComedorPaginaProps) {
+export function LimpiezaComedorPagina({ instalacion, instalacionCodigo, anio, mes, items, resultados, diasData, observaciones, codigoClave }: LimpiezaComedorPaginaProps) {
   const numDias = diasEnMes(anio, mes)
   const days = Array.from({ length: numDias }, (_, i) => i + 1)
   const dW = dayColW(numDias)
@@ -128,7 +130,7 @@ export function LimpiezaComedorPagina({ instalacion, instalacionCodigo, anio, me
           <Text style={s.title}>BITACORA DE LIMPIEZA DEL COMEDOR</Text>
           <Text style={s.subtitle}>{mesLabel}</Text>
         </View>
-        <Text style={s.codigoText}>Codigo: F-FRUS-SAN-08</Text>
+        <Text style={s.codigoText}>Codigo: {codigoFormato('F-FRUS-SAN-08', codigoClave)}</Text>
       </View>
 
       <View style={s.infoRow}>
@@ -230,7 +232,7 @@ export function LimpiezaComedorPagina({ instalacion, instalacionCodigo, anio, me
       </View>
 
       <View style={s.footer}>
-        <Text style={s.footerText}>F-FRUS-SAN-08</Text>
+        <Text style={s.footerText}>{codigoFormato('F-FRUS-SAN-08', codigoClave)}</Text>
         <Text style={s.footerText}>M.A.D.Y — DuoMind Solutions</Text>
       </View>
     </Page>

@@ -21,6 +21,7 @@ export async function generarManifiestoEmbarqueConsolidadoPDF(
   hasta: string,
   instalacionNombre: string,
   orgNombre: string,
+  codigoClave: string,
 ): Promise<void> {
   let query = (supabase as any)
     .from('m38_manifiestos')
@@ -93,7 +94,7 @@ export async function generarManifiestoEmbarqueConsolidadoPDF(
       lineas: lineasPorManifiesto[m.id] ?? [],
       observaciones: m.observaciones ?? null,
     }
-    const blob = await pdf(<ManifiestoEmbarquePDF d={d} />).toBlob()
+    const blob = await pdf(<ManifiestoEmbarquePDF d={d} codigoClave={codigoClave} />).toBlob()
     const bytes = await blob.arrayBuffer()
     const doc = await PDFDocument.load(bytes)
     const pages = await merged.copyPages(doc, doc.getPageIndices())

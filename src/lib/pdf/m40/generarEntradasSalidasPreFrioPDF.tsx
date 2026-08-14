@@ -59,13 +59,13 @@ async function cargarDatos(id: string, orgId: string): Promise<M40RegistroDataPD
   }
 }
 
-export async function generarEntradasSalidasPreFrioPDF(id: string, orgId: string): Promise<void> {
+export async function generarEntradasSalidasPreFrioPDF(id: string, orgId: string, codigoClave: string): Promise<void> {
   const d = await cargarDatos(id, orgId)
-  const blob = await pdf(<EntradasSalidasPreFrioPDF d={d} />).toBlob()
+  const blob = await pdf(<EntradasSalidasPreFrioPDF d={d} codigoClave={codigoClave} />).toBlob()
   descargar(blob, nombrePdf('Entradas_Salidas_Prefrio', d.fecha, d.instalacion))
 }
 
-export async function generarBlobEntradasSalidasPreFrio(id: string, orgId: string): Promise<Blob> {
+export async function generarBlobEntradasSalidasPreFrio(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const d = await cargarDatos(id, orgId)
-  return pdf(<EntradasSalidasPreFrioPDF d={d} />).toBlob()
+  return pdf(<EntradasSalidasPreFrioPDF d={d} codigoClave={codigoClave} />).toBlob()
 }

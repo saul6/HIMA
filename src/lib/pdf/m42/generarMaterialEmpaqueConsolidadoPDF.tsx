@@ -20,6 +20,7 @@ export async function generarMaterialEmpaqueConsolidadoPDF(
   desde: string,
   hasta: string,
   orgNombre: string,
+  codigoClave: string,
 ): Promise<void> {
   let query = (supabase as any)
     .from('m42_movimientos')
@@ -61,7 +62,7 @@ export async function generarMaterialEmpaqueConsolidadoPDF(
       tr_otros: r.tr_otros ?? null,
       observaciones: r.observaciones ?? null,
     }
-    const blob = await pdf(<MaterialEmpaquePDF d={d} />).toBlob()
+    const blob = await pdf(<MaterialEmpaquePDF d={d} codigoClave={codigoClave} />).toBlob()
     const bytes = await blob.arrayBuffer()
     const doc = await PDFDocument.load(bytes)
     const pages = await merged.copyPages(doc, doc.getPageIndices())

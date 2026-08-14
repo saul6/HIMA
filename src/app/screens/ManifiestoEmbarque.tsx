@@ -7,6 +7,7 @@ import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM38Manifiestos } from '@/hooks/useM38Manifiestos'
@@ -144,7 +145,7 @@ function ToggleBuenMalo({ value, onChange }: { value: BuenMalo; onChange: (v: Bu
 }
 
 export function ManifiestoEmbarque() {
-  const { profile } = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
@@ -271,7 +272,7 @@ export function ManifiestoEmbarque() {
       toast.success('Manifiesto registrado')
 
       try {
-        await generarManifiestoEmbarquePDF(manifiestoId, orgId)
+        await generarManifiestoEmbarquePDF(manifiestoId, orgId, codigoClave)
       } catch {
         toast.error('PDF no generado')
       }
@@ -291,7 +292,7 @@ export function ManifiestoEmbarque() {
     if (!orgId) return
     setPdfLoading(id)
     try {
-      await generarManifiestoEmbarquePDF(id, orgId)
+      await generarManifiestoEmbarquePDF(id, orgId, codigoClave)
     } catch {
       toast.error('Error al generar PDF')
     } finally {
@@ -312,6 +313,7 @@ export function ManifiestoEmbarque() {
         consolidadoForm.hasta,
         instName,
         orgNombre ?? '—',
+        codigoClave,
       )
       setConsolidadoOpen(false)
     } catch (e: any) {
@@ -340,7 +342,7 @@ export function ManifiestoEmbarque() {
             <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
               Manifiesto de Embarque
             </h1>
-            <p className="text-xs text-muted-foreground">F-FRUS-PRO-01 · Por evento</p>
+            <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-PRO-01', codigoClave)} · Por evento</p>
           </div>
           <button
             onClick={() => setConsolidadoOpen(true)}

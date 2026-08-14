@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export type ValorM34PDF = 'hecho' | 'no_hecho' | 'na'
 
@@ -23,6 +24,7 @@ export interface LimpiezaPreenfrioPaginaProps {
   resultados: Record<number, Record<string, ValorM34PDF>>
   diasData: Record<number, M34DiaDataPDF>
   observaciones: string | null
+  codigoClave: string
 }
 
 export interface LimpiezaPreenfrioConsolidadoProps {
@@ -115,7 +117,7 @@ function valorDisplay(v: ValorM34PDF | undefined, isPlaga: boolean): { text: str
   return { text: '', color: DARK }
 }
 
-export function LimpiezaPreenfrioPagina({ instalacion, instalacionCodigo, anio, mes, items, resultados, diasData, observaciones }: LimpiezaPreenfrioPaginaProps) {
+export function LimpiezaPreenfrioPagina({ instalacion, instalacionCodigo, anio, mes, items, resultados, diasData, observaciones, codigoClave }: LimpiezaPreenfrioPaginaProps) {
   const numDias = diasEnMes(anio, mes)
   const days = Array.from({ length: numDias }, (_, i) => i + 1)
   const dW = dayColW(numDias)
@@ -134,7 +136,7 @@ export function LimpiezaPreenfrioPagina({ instalacion, instalacionCodigo, anio, 
           <Text style={s.title}>BITACORA DE LIMPIEZA DE LOS CUARTOS DE PRE-ENFRIO Y CONSERVADOR</Text>
           <Text style={s.subtitle}>{mesLabel}</Text>
         </View>
-        <Text style={s.codigoText}>Codigo: F-FRUS-SAN-12</Text>
+        <Text style={s.codigoText}>Codigo: {codigoFormato('F-FRUS-SAN-12', codigoClave)}</Text>
       </View>
 
       <View style={s.infoRow}>
@@ -240,7 +242,7 @@ export function LimpiezaPreenfrioPagina({ instalacion, instalacionCodigo, anio, 
       </View>
 
       <View style={s.footer}>
-        <Text style={s.footerText}>F-FRUS-SAN-12</Text>
+        <Text style={s.footerText}>{codigoFormato('F-FRUS-SAN-12', codigoClave)}</Text>
         <Text style={s.footerText}>M.A.D.Y — DuoMind Solutions</Text>
       </View>
     </Page>

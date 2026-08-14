@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export type ValorM32PDF = 'hecho' | 'no_hecho' | 'na'
 
@@ -19,6 +20,7 @@ export interface LimpiezaPatiosAzoteasPaginaProps {
   resultados: Record<number, Record<string, ValorM32PDF>>
   diasData: Record<number, M32DiaDataPDF>
   observaciones: string | null
+  codigoClave: string
 }
 
 export interface LimpiezaPatiosAzoteasConsolidadoProps {
@@ -106,7 +108,7 @@ function valorDisplay(v: ValorM32PDF | undefined): { text: string; color: string
 }
 
 export function LimpiezaPatiosAzoteasPagina({
-  instalacion, instalacionCodigo, anio, mes, items, resultados, diasData, observaciones,
+  instalacion, instalacionCodigo, anio, mes, items, resultados, diasData, observaciones, codigoClave,
 }: LimpiezaPatiosAzoteasPaginaProps) {
   const numDias = diasEnMes(anio, mes)
   const days = Array.from({ length: numDias }, (_, i) => i + 1)
@@ -129,7 +131,7 @@ export function LimpiezaPatiosAzoteasPagina({
           <Text style={s.title}>BITACORA DE LIMPIEZA DE PATIOS EXTERIORES Y AZOTEAS</Text>
           <Text style={s.subtitle}>{mesLabel}</Text>
         </View>
-        <Text style={s.codigoText}>Codigo: F-FRUS-SAN-10</Text>
+        <Text style={s.codigoText}>Codigo: {codigoFormato('F-FRUS-SAN-10', codigoClave)}</Text>
       </View>
 
       <View style={s.infoRow}>
@@ -223,7 +225,7 @@ export function LimpiezaPatiosAzoteasPagina({
       </View>
 
       <View style={s.footer}>
-        <Text style={s.footerText}>F-FRUS-SAN-10</Text>
+        <Text style={s.footerText}>{codigoFormato('F-FRUS-SAN-10', codigoClave)}</Text>
         <Text style={s.footerText}>M.A.D.Y — DuoMind Solutions</Text>
       </View>
     </Page>

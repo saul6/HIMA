@@ -863,7 +863,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export function BibliotecaHistorial() {
-  const { profile } = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const orgId = profile?.org_id ?? ''
   const { modulos: misModulos, terminosSitio } = useModulosContext()
 
@@ -955,7 +955,7 @@ export function BibliotecaHistorial() {
   async function handleDescargarPDF(reg: RegistroHistorial) {
     setDescargandoPDF(reg.key)
     try {
-      const blob = await generarBlobParaRef(reg.pdfRef, orgId)
+      const blob = await generarBlobParaRef(reg.pdfRef, orgId, codigoClave)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -983,7 +983,7 @@ export function BibliotecaHistorial() {
       const blobs: Blob[] = []
       for (let i = 0; i < filtrados.length; i++) {
         setProgresoActual(i + 1)
-        const blob = await generarBlobParaRef(filtrados[i].pdfRef, orgId)
+        const blob = await generarBlobParaRef(filtrados[i].pdfRef, orgId, codigoClave)
         blobs.push(blob)
       }
       const megaBlob = await mergePDFBlobs(blobs)

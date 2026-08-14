@@ -1,5 +1,6 @@
 import React from 'react'
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export interface MicroorganismoPDF {
   codigo: string
@@ -27,6 +28,7 @@ export interface MuestrasLaboratorioPaginaProps {
   consolidado?: boolean
   desde?: string
   hasta?: string
+  codigoClave: string
 }
 
 export interface MuestrasLaboratorioConsolidadoProps {
@@ -36,6 +38,7 @@ export interface MuestrasLaboratorioConsolidadoProps {
   hasta: string
   microorganismos: MicroorganismoPDF[]
   muestras: MuestraPDF[]
+  codigoClave: string
 }
 
 const styles = StyleSheet.create({
@@ -131,7 +134,7 @@ function DataRow({ muestra, num, indicadores, patogenos }: { muestra: MuestraPDF
   )
 }
 
-export function MuestrasLaboratorioPagina({ instalacion, instalacionCodigo, fecha, microorganismos, muestras, consolidado, desde, hasta }: MuestrasLaboratorioPaginaProps) {
+export function MuestrasLaboratorioPagina({ instalacion, instalacionCodigo, fecha, microorganismos, muestras, consolidado, desde, hasta, codigoClave }: MuestrasLaboratorioPaginaProps) {
   const indicadores = microorganismos.filter(m => m.tipo === 'indicador').sort((a, b) => a.orden - b.orden)
   const patogenos = microorganismos.filter(m => m.tipo === 'patogeno').sort((a, b) => a.orden - b.orden)
   const periodoLabel = consolidado && desde && hasta ? `${formatFecha(desde)} al ${formatFecha(hasta)}` : formatFecha(fecha)
@@ -147,7 +150,7 @@ export function MuestrasLaboratorioPagina({ instalacion, instalacionCodigo, fech
           </View>
           <View style={[styles.titleBlock]}>
             <Text style={styles.title}>REGISTRO DE MUESTRAS ENVIADAS AL LABORATORIO</Text>
-            <Text style={styles.subtitle}>F-FRUS-CAL-24  |  Rev 01</Text>
+            <Text style={styles.subtitle}>{codigoFormato('F-FRUS-CAL-24', codigoClave)}  |  Rev 01</Text>
           </View>
           <View style={[styles.headerCell, { width: 120 }]}>
             <Text><Text style={styles.metaLabel}>Instalacion: </Text>{instalacion}</Text>
@@ -197,7 +200,7 @@ export function MuestrasLaboratorioPDF(props: MuestrasLaboratorioPaginaProps) {
   )
 }
 
-export function MuestrasLaboratorioConsolidadoPDF({ instalacion, instalacionCodigo, desde, hasta, microorganismos, muestras }: MuestrasLaboratorioConsolidadoProps) {
+export function MuestrasLaboratorioConsolidadoPDF({ instalacion, instalacionCodigo, desde, hasta, microorganismos, muestras, codigoClave }: MuestrasLaboratorioConsolidadoProps) {
   return (
     <Document>
       <MuestrasLaboratorioPagina
@@ -209,6 +212,7 @@ export function MuestrasLaboratorioConsolidadoPDF({ instalacion, instalacionCodi
         consolidado={true}
         desde={desde}
         hasta={hasta}
+        codigoClave={codigoClave}
       />
     </Document>
   )

@@ -55,9 +55,10 @@ export async function construirDatosM20(
 export async function generarAccidenteLaboralPDF(
   accidenteId: string,
   orgId: string,
+  codigoClave: string,
 ): Promise<void> {
   const datos = await construirDatosM20(accidenteId, orgId)
-  const blob = await pdf(<AccidenteLaboralPDF {...datos} />).toBlob()
+  const blob = await pdf(<AccidenteLaboralPDF {...datos} codigoClave={codigoClave} />).toBlob()
 
   const filename = nombrePdf('Accidente_Laboral', datos.fecha, datos.instalacion)
 
@@ -74,7 +75,8 @@ export async function generarAccidenteLaboralPDF(
 export async function generarBlobAccidenteLaboral(
   accidenteId: string,
   orgId: string,
+  codigoClave: string,
 ): Promise<Blob> {
   const datos = await construirDatosM20(accidenteId, orgId)
-  return pdf(<AccidenteLaboralPDF {...datos} />).toBlob()
+  return pdf(<AccidenteLaboralPDF {...datos} codigoClave={codigoClave} />).toBlob()
 }

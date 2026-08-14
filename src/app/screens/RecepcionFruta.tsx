@@ -7,6 +7,7 @@ import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM39Recepciones } from '@/hooks/useM39Recepciones'
@@ -114,7 +115,7 @@ function ToggleSiNo({ value, onChange }: { value: boolean; onChange: (v: boolean
 }
 
 export function RecepcionFruta() {
-  const { profile } = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
@@ -198,7 +199,7 @@ export function RecepcionFruta() {
       toast.success('Recepción registrada')
 
       try {
-        await generarRecepcionFrutaPDF(recepcionId, orgId)
+        await generarRecepcionFrutaPDF(recepcionId, orgId, codigoClave)
       } catch {
         toast.error('PDF no generado')
       }
@@ -218,7 +219,7 @@ export function RecepcionFruta() {
     if (!orgId) return
     setPdfLoading(id)
     try {
-      await generarRecepcionFrutaPDF(id, orgId)
+      await generarRecepcionFrutaPDF(id, orgId, codigoClave)
     } catch {
       toast.error('Error al generar PDF')
     } finally {
@@ -239,6 +240,7 @@ export function RecepcionFruta() {
         consolidadoForm.hasta,
         instName,
         orgNombre ?? '—',
+        codigoClave,
       )
       setConsolidadoOpen(false)
     } catch (e: any) {
@@ -267,7 +269,7 @@ export function RecepcionFruta() {
             <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
               Recepción Diaria de Fruta
             </h1>
-            <p className="text-xs text-muted-foreground">F-FRUS-PRO-02 · Por evento</p>
+            <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-PRO-02', codigoClave)} · Por evento</p>
           </div>
           <button
             onClick={() => setConsolidadoOpen(true)}

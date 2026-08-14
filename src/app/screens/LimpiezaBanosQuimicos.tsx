@@ -7,6 +7,7 @@ import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import {
@@ -83,7 +84,7 @@ function frecuenciaLabel(f: string): string {
 }
 
 export function LimpiezaBanosQuimicos() {
-  const { profile } = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { registros, loading, error, refetch } = useM28LimpiezaBanosQuimicos()
@@ -534,7 +535,7 @@ export function LimpiezaBanosQuimicos() {
                 <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
                   Limpieza de Baños y Almacén de Químicos
                 </h1>
-                <div className="text-xs text-muted-foreground">F-FRUS-SAN-06</div>
+                <div className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-SAN-06', codigoClave)}</div>
               </>
             ) : (
               <>

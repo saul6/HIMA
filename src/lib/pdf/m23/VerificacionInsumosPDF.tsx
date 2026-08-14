@@ -3,6 +3,7 @@
 
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export interface M23ItemPDFRow {
   id: string
@@ -22,6 +23,7 @@ export interface VerificacionInsumosPaginaProps {
   matriz: Record<string, Record<string, string>>
   codigosCorrectivos: { diaNum: string; itemLabel: string; codigo: string }[]
   observaciones: string | null
+  codigoClave: string
 }
 
 export interface VerificacionInsumosConsolidadoPDFProps {
@@ -192,7 +194,7 @@ const s = StyleSheet.create({
 export function VerificacionInsumosPagina({
   instalacion, instalacionCodigo, mesLabel, mesDate,
   verificoNombre, autorizoNombre,
-  items, diasInspeccionados, matriz, codigosCorrectivos, observaciones,
+  items, diasInspeccionados, matriz, codigosCorrectivos, observaciones, codigoClave,
 }: VerificacionInsumosPaginaProps) {
   const grupos = agruparPorArea(items)
   const todosLosDias = diasDelMes(mesDate)
@@ -210,7 +212,7 @@ export function VerificacionInsumosPagina({
         <View style={{ flex: 1, alignItems: 'center' }}>
           <Text style={s.headerTitle}>VERIFICACION DE INSUMOS</Text>
           <Text style={{ fontSize: 6, color: MUTED, marginTop: 2 }}>
-            Codigo: F-FRUS-SAN-01  |  Rev 01  |  Frecuencia: Diaria  |  Mes: {mesLabel}
+            {`Codigo: ${codigoFormato('F-FRUS-SAN-01', codigoClave)}  |  Rev 01  |  Frecuencia: Diaria  |  Mes: ${mesLabel}`}
           </Text>
         </View>
         <View style={s.headerMeta}>

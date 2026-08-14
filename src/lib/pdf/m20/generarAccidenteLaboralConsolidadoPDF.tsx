@@ -12,6 +12,7 @@ export async function generarAccidenteLaboralConsolidadoPDF(
   orgId: string,
   desde: string,    // YYYY-MM-DD
   hasta: string,    // YYYY-MM-DD
+  codigoClave: string,
 ): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase as any)
@@ -35,6 +36,7 @@ export async function generarAccidenteLaboralConsolidadoPDF(
       instalacionNombre={instalacionNombre}
       desde={desde}
       hasta={hasta}
+      codigoClave={codigoClave}
     />
   ).toBlob()
 

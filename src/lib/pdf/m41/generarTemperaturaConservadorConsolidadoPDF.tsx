@@ -21,6 +21,7 @@ export async function generarTemperaturaConservadorConsolidadoPDF(
   hasta: string,
   instalacionNombre: string,
   orgNombre: string,
+  codigoClave: string,
 ): Promise<void> {
   let query = (supabase as any)
     .from('m41_registros')
@@ -60,7 +61,7 @@ export async function generarTemperaturaConservadorConsolidadoPDF(
       observaciones: r.observaciones ?? null,
       lecturas: lecturasPorRegistro[r.id] ?? [],
     }
-    const blob = await pdf(<TemperaturaConservadorPDF d={d} />).toBlob()
+    const blob = await pdf(<TemperaturaConservadorPDF d={d} codigoClave={codigoClave} />).toBlob()
     const bytes = await blob.arrayBuffer()
     const doc = await PDFDocument.load(bytes)
     const pages = await merged.copyPages(doc, doc.getPageIndices())

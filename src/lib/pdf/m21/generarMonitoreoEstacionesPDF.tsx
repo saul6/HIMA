@@ -126,9 +126,10 @@ export async function construirDatosM21(
 export async function generarMonitoreoEstacionesPDF(
   revisionId: string,
   orgId: string,
+  codigoClave: string,
 ): Promise<void> {
   const datos = await construirDatosM21(revisionId, orgId)
-  const blob = await pdf(<MonitoreoEstacionesPDF {...datos} />).toBlob()
+  const blob = await pdf(<MonitoreoEstacionesPDF {...datos} codigoClave={codigoClave} />).toBlob()
 
   const filename = nombrePdf('Monitoreo_Plagas', datos.fecha, datos.instalacion)
 
@@ -145,7 +146,8 @@ export async function generarMonitoreoEstacionesPDF(
 export async function generarBlobMonitoreoEstaciones(
   revisionId: string,
   orgId: string,
+  codigoClave: string,
 ): Promise<Blob> {
   const datos = await construirDatosM21(revisionId, orgId)
-  return pdf(<MonitoreoEstacionesPDF {...datos} />).toBlob()
+  return pdf(<MonitoreoEstacionesPDF {...datos} codigoClave={codigoClave} />).toBlob()
 }

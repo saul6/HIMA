@@ -41,7 +41,7 @@ function fmtFecha(iso: string): string {
 
 export function TemperaturasConservador() {
   const navigate = useNavigate()
-  const { profile } = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { registros, loading, error, refetch } = useM41TemperaturaConservador()
@@ -196,7 +196,7 @@ export function TemperaturasConservador() {
       await refetch()
       setAbierto(false)
       toast.success('Registro guardado')
-      await generarTemperaturaConservadorPDF(regId, orgId)
+      await generarTemperaturaConservadorPDF(regId, orgId, codigoClave)
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
       if (msg.includes('FECHA_SOLO_HOY')) {
@@ -218,14 +218,14 @@ export function TemperaturasConservador() {
       const orgNombre = (orgData as any)?.nombre ?? '—'
       const ranchoSel = consolRanchoId ? ranchos.find((r: any) => r.id === consolRanchoId) : null
       const instalNombre = (ranchoSel as any)?.nombre ?? terminosSitio.plural
-      await generarTemperaturaConservadorConsolidadoPDF(orgId, consolRanchoId || null, consolDesde, consolHasta, instalNombre, orgNombre)
+      await generarTemperaturaConservadorConsolidadoPDF(orgId, consolRanchoId || null, consolDesde, consolHasta, instalNombre, orgNombre, codigoClave)
       setConsolAbierto(false)
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al generar PDF consolidado')
     } finally {
       setConsolCargando(false)
     }
-  }, [orgId, consolRanchoId, consolDesde, consolHasta, ranchos, terminosSitio])
+  }, [orgId, consolRanchoId, consolDesde, consolHasta, ranchos, terminosSitio, codigoClave])
 
   return (
     <div className="flex flex-col min-h-full" style={{ backgroundColor: 'var(--background)' }}>

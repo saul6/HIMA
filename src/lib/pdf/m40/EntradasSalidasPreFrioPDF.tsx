@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export interface M40LineaPDF {
   orden: number
@@ -51,7 +52,7 @@ const s = StyleSheet.create({
 
 const W = { cuarto: 60, fruta: 60, pres: 55, tar: 28, restos: 40, hora: 30, temp: 28, tiempo: 34 }
 
-export function EntradasSalidasPreFrioPDF({ d }: { d: M40RegistroDataPDF }) {
+export function EntradasSalidasPreFrioPDF({ d, codigoClave }: { d: M40RegistroDataPDF; codigoClave: string }) {
   return (
     <Document>
       <Page size="A4" orientation="landscape" style={s.page}>
@@ -60,7 +61,7 @@ export function EntradasSalidasPreFrioPDF({ d }: { d: M40RegistroDataPDF }) {
         <View style={s.hdr}>
           <View style={{ flex: 1 }}>
             <Text style={s.title}>Entradas y Salidas de Producto en Pre-enfriamiento</Text>
-            <Text style={s.codigo}>F-FRUS-PRO-04</Text>
+            <Text style={s.codigo}>{codigoFormato('F-FRUS-PRO-04', codigoClave)}</Text>
             <Text style={s.meta}>{d.orgNombre}</Text>
             <Text style={s.meta}>Instalacion: {d.instalacion}</Text>
             {d.empresa ? <Text style={s.meta}>Empresa: {d.empresa}</Text> : null}

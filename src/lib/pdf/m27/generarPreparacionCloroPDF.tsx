@@ -25,7 +25,7 @@ function descargar(blob: Blob, filename: string) {
   URL.revokeObjectURL(url)
 }
 
-export async function generarPreparacionCloroPDF(props: GenerarProps): Promise<void> {
+export async function generarPreparacionCloroPDF(props: GenerarProps, codigoClave: string): Promise<void> {
   const filename = nombrePdf('Preparacion_de_Cloro', props.fecha, props.rancho)
   const row: PreparacionPDFRow = {
     fecha: props.fecha,
@@ -42,12 +42,13 @@ export async function generarPreparacionCloroPDF(props: GenerarProps): Promise<v
       desde={props.fecha}
       hasta={props.fecha}
       preparaciones={[row]}
+      codigoClave={codigoClave}
     />
   ).toBlob()
   descargar(blob, filename)
 }
 
-export async function generarBlobPreparacionCloro(id: string, orgId: string): Promise<Blob> {
+export async function generarBlobPreparacionCloro(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const { data, error } = await (supabase as any)
     .from('m27_preparaciones')
     .select('*, ranchos(nombre)')
@@ -70,6 +71,7 @@ export async function generarBlobPreparacionCloro(id: string, orgId: string): Pr
       desde={r.fecha}
       hasta={r.fecha}
       preparaciones={[row]}
+      codigoClave={codigoClave}
     />
   ).toBlob()
 }

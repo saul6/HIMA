@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth, type UseAuthReturn } from '@/hooks/useAuth'
 
@@ -11,12 +11,21 @@ interface AuthContextValue extends UseAuthReturn {
     nombreCompleto: string,
     captchaToken?: string
   ) => Promise<{ error: string | null; requiresConfirmation: boolean }>
+  codigoClave: string
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const authState = useAuth()
+  const [codigoClave, setCodigoClave] = useState('FRUS')
+
+  useEffect(() => {
+    if (!authState.user) { setCodigoClave('FRUS'); return }
+    supabase.rpc('get_mi_codigo_clave').then(({ data }) => {
+      if (data) setCodigoClave(data as string)
+    })
+  }, [authState.user?.id])
 
   async function signIn(email: string, password: string, captchaToken?: string): Promise<{ error: string | null }> {
     const { error } = await supabase.auth.signInWithPassword({
@@ -51,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ ...authState, signIn, signOut, signUp }}>
+    <AuthContext.Provider value={{ ...authState, signIn, signOut, signUp, codigoClave }}>
       {children}
     </AuthContext.Provider>
   )

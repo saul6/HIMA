@@ -244,9 +244,9 @@ async function generarBlobM11(id: string, orgId: string): Promise<Blob> {
   return pdf(<PreoperacionalPDF {...datos} />).toBlob()
 }
 
-async function generarBlobM19(id: string, orgId: string): Promise<Blob> {
+async function generarBlobM19(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const datos = await construirDatosPaginaM19(id, orgId)
-  return pdf(<InspeccionPreoperacionalCoolerPDF {...datos} />).toBlob()
+  return pdf(<InspeccionPreoperacionalCoolerPDF {...datos} codigoClave={codigoClave} />).toBlob()
 }
 
 async function generarBlobM12(ranchoId: string, fecha: string, orgId: string): Promise<Blob> {
@@ -327,7 +327,7 @@ async function generarBlobM13(id: string, orgId: string): Promise<Blob> {
 
 // ── Generador unificado ───────────────────────────────────────────────────────
 
-export async function generarBlobParaRef(ref: PDFRef, orgId: string): Promise<Blob> {
+export async function generarBlobParaRef(ref: PDFRef, orgId: string, codigoClave: string): Promise<Blob> {
   switch (ref.tipo) {
     case 'M1':  return generarBlobM1(ref.id)
     case 'M6':  return generarBlobM6(ref.id, orgId)
@@ -336,7 +336,7 @@ export async function generarBlobParaRef(ref: PDFRef, orgId: string): Promise<Bl
     case 'M9':  return generarBlobM9(ref.id, orgId)
     case 'M10': return generarBlobM10(ref.ranchoId, ref.fecha, orgId)
     case 'M11': return generarBlobM11(ref.id, orgId)
-    case 'M19': return generarBlobM19(ref.id, orgId)
+    case 'M19': return generarBlobM19(ref.id, orgId, codigoClave)
     case 'M12': return generarBlobM12(ref.ranchoId, ref.fecha, orgId)
     case 'M13': return generarBlobM13(ref.id, orgId)
     case 'M14': return generarBlobAuditoria(ref.id, orgId, 'm14')
@@ -344,32 +344,32 @@ export async function generarBlobParaRef(ref: PDFRef, orgId: string): Promise<Bl
     case 'M16': return generarBlobAuditoria(ref.id, orgId, 'm16')
     case 'M17': return generarBlobAuditoria(ref.id, orgId, 'm17')
     case 'M18': return generarBlobAuditoria(ref.id, orgId, 'm18')
-    case 'M20': return generarBlobAccidenteLaboral(ref.id, orgId)
-    case 'M21': return generarBlobMonitoreoEstaciones(ref.id, orgId)
-    case 'M22': return generarBlobMuestrasLaboratorio(ref.id, orgId)
-    case 'M23': return generarBlobVerificacionInsumos(ref.id, orgId)
-    case 'M24': return generarBlobInventarioQuimicos(ref.id, orgId)
+    case 'M20': return generarBlobAccidenteLaboral(ref.id, orgId, codigoClave)
+    case 'M21': return generarBlobMonitoreoEstaciones(ref.id, orgId, codigoClave)
+    case 'M22': return generarBlobMuestrasLaboratorio(ref.id, orgId, codigoClave)
+    case 'M23': return generarBlobVerificacionInsumos(ref.id, orgId, codigoClave)
+    case 'M24': return generarBlobInventarioQuimicos(ref.id, orgId, codigoClave)
     case 'M25': return generarBlobResumenNoConformidades(ref.id, orgId)
     case 'M26': return generarBlobAccionCorrectiva(ref.id, orgId)
-    case 'M27': return generarBlobPreparacionCloro(ref.id, orgId)
-    case 'M28': return generarBlobLimpiezaBanosQuimicos(ref.id, orgId)
-    case 'M29': return generarBlobLimpiezaAduana(ref.id, orgId)
-    case 'M30': return generarBlobLimpiezaComedor(ref.id, orgId)
-    case 'M31': return generarBlobLimpiezaOficinas(ref.id, orgId)
-    case 'M32': return generarBlobLimpiezaPatiosAzoteas(ref.id, orgId)
-    case 'M33': return generarBlobLimpiezaRecepcion(ref.id, orgId)
-    case 'M34': return generarBlobLimpiezaPreenfrio(ref.id, orgId)
-    case 'M35': return generarBlobLimpiezaAlmacenEmpaque(ref.id, orgId)
-    case 'M36': return generarBlobMonitoreoGermicida(ref.id, orgId)
-    case 'M37': return generarBlobLimpiezaCisterna(ref.id, orgId)
-    case 'M38': return generarBlobManifiestoEmbarque(ref.id, orgId)
-    case 'M39': return generarBlobRecepcionFruta(ref.id, orgId)
-    case 'M40': return generarBlobEntradasSalidasPreFrio(ref.id, orgId)
-    case 'M41': return generarBlobTemperaturaConservador(ref.id, orgId)
-    case 'M42': return generarBlobMaterialEmpaque(ref.id, orgId)
-    case 'M43': return generarBlobInspeccionAlmacenEmpaque(ref.id, orgId)
-    case 'M44': return generarBlobOrdenMantenimiento(ref.id, orgId)
-    case 'M45': return generarBlobMttoPreventivo(ref.id, orgId)
+    case 'M27': return generarBlobPreparacionCloro(ref.id, orgId, codigoClave)
+    case 'M28': return generarBlobLimpiezaBanosQuimicos(ref.id, orgId, codigoClave)
+    case 'M29': return generarBlobLimpiezaAduana(ref.id, orgId, codigoClave)
+    case 'M30': return generarBlobLimpiezaComedor(ref.id, orgId, codigoClave)
+    case 'M31': return generarBlobLimpiezaOficinas(ref.id, orgId, codigoClave)
+    case 'M32': return generarBlobLimpiezaPatiosAzoteas(ref.id, orgId, codigoClave)
+    case 'M33': return generarBlobLimpiezaRecepcion(ref.id, orgId, codigoClave)
+    case 'M34': return generarBlobLimpiezaPreenfrio(ref.id, orgId, codigoClave)
+    case 'M35': return generarBlobLimpiezaAlmacenEmpaque(ref.id, orgId, codigoClave)
+    case 'M36': return generarBlobMonitoreoGermicida(ref.id, orgId, codigoClave)
+    case 'M37': return generarBlobLimpiezaCisterna(ref.id, orgId, codigoClave)
+    case 'M38': return generarBlobManifiestoEmbarque(ref.id, orgId, codigoClave)
+    case 'M39': return generarBlobRecepcionFruta(ref.id, orgId, codigoClave)
+    case 'M40': return generarBlobEntradasSalidasPreFrio(ref.id, orgId, codigoClave)
+    case 'M41': return generarBlobTemperaturaConservador(ref.id, orgId, codigoClave)
+    case 'M42': return generarBlobMaterialEmpaque(ref.id, orgId, codigoClave)
+    case 'M43': return generarBlobInspeccionAlmacenEmpaque(ref.id, orgId, codigoClave)
+    case 'M44': return generarBlobOrdenMantenimiento(ref.id, orgId, codigoClave)
+    case 'M45': return generarBlobMttoPreventivo(ref.id, orgId, codigoClave)
   }
 }
 

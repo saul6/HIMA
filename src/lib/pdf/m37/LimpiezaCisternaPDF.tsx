@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export type ValorM37PDF = 'hecho' | 'no_hecho' | 'na'
 
@@ -23,6 +24,7 @@ export interface LimpiezaCisternaPaginaProps {
   resultados: Record<number, Record<string, ValorM37PDF>>
   diasData: Record<number, M37DiaDataPDF>
   observaciones: string | null
+  codigoClave: string
 }
 
 export interface LimpiezaCisternaConsolidadoProps {
@@ -115,7 +117,7 @@ function valorDisplay(v: ValorM37PDF | undefined, isPlaga: boolean): { text: str
   return { text: '', color: DARK }
 }
 
-export function LimpiezaCisternaPagina({ instalacion, instalacionCodigo, anio, mes, items, resultados, diasData, observaciones }: LimpiezaCisternaPaginaProps) {
+export function LimpiezaCisternaPagina({ instalacion, instalacionCodigo, anio, mes, items, resultados, diasData, observaciones, codigoClave }: LimpiezaCisternaPaginaProps) {
   const numDias = diasEnMes(anio, mes)
   const days = Array.from({ length: numDias }, (_, i) => i + 1)
   const dW = dayColW(numDias)
@@ -134,7 +136,7 @@ export function LimpiezaCisternaPagina({ instalacion, instalacionCodigo, anio, m
           <Text style={s.title}>BITACORA DE LIMPIEZA Y CLORACION DE LA CISTERNA</Text>
           <Text style={s.subtitle}>{mesLabel}</Text>
         </View>
-        <Text style={s.codigoText}>Codigo: F-FRUS-SAN-15</Text>
+        <Text style={s.codigoText}>Codigo: {codigoFormato('F-FRUS-SAN-15', codigoClave)}</Text>
       </View>
 
       <View style={s.infoRow}>
@@ -240,7 +242,7 @@ export function LimpiezaCisternaPagina({ instalacion, instalacionCodigo, anio, m
       </View>
 
       <View style={s.footer}>
-        <Text style={s.footerText}>F-FRUS-SAN-15</Text>
+        <Text style={s.footerText}>{codigoFormato('F-FRUS-SAN-15', codigoClave)}</Text>
         <Text style={s.footerText}>M.A.D.Y — DuoMind Solutions</Text>
       </View>
     </Page>

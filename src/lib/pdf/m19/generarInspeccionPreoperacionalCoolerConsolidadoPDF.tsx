@@ -18,6 +18,7 @@ export async function generarInspeccionPreoperacionalCoolerConsolidadoPDF(
   orgId: string,
   desdeYYYYMM: string,
   hastaYYYYMM: string,
+  codigoClave: string,
 ): Promise<void> {
   const desdeDate = desdeYYYYMM + '-01'
   const hastaDate = hastaYYYYMM + '-01'
@@ -45,6 +46,7 @@ export async function generarInspeccionPreoperacionalCoolerConsolidadoPDF(
       instalacionNombre={instalacionNombre}
       desde={desdeYYYYMM}
       hasta={hastaYYYYMM}
+      codigoClave={codigoClave}
     />
   ).toBlob()
 

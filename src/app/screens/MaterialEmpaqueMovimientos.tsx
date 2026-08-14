@@ -88,7 +88,7 @@ function fmtFecha(iso: string): string {
 
 export function MaterialEmpaqueMovimientos() {
   const navigate = useNavigate()
-  const { profile } = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { movimientos, loading, error, refetch } = useM42Movimientos()
@@ -191,7 +191,7 @@ export function MaterialEmpaqueMovimientos() {
       await refetch()
       setAbierto(false)
       toast.success('Movimiento guardado')
-      await generarMaterialEmpaquePDF(movId, orgId)
+      await generarMaterialEmpaquePDF(movId, orgId, codigoClave)
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
       if (msg.includes('FECHA_SOLO_HOY')) {
@@ -210,14 +210,14 @@ export function MaterialEmpaqueMovimientos() {
     try {
       const { data: orgData } = await tbl('organizaciones').select('nombre').eq('id', orgId).single()
       const orgNombre = (orgData as any)?.nombre ?? '—'
-      await generarMaterialEmpaqueConsolidadoPDF(orgId, consolRanchoId || null, consolDesde, consolHasta, orgNombre)
+      await generarMaterialEmpaqueConsolidadoPDF(orgId, consolRanchoId || null, consolDesde, consolHasta, orgNombre, codigoClave)
       setConsolAbierto(false)
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al generar PDF consolidado')
     } finally {
       setConsolCargando(false)
     }
-  }, [orgId, consolRanchoId, consolDesde, consolHasta])
+  }, [orgId, consolRanchoId, consolDesde, consolHasta, codigoClave])
 
   return (
     <div className="flex flex-col min-h-full" style={{ backgroundColor: 'var(--background)' }}>

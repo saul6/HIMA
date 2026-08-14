@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { codigoFormato } from '@/lib/codigoFormato'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM27PreparacionCloro, type M27Preparacion } from '@/hooks/useM27PreparacionCloro'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
@@ -18,7 +19,6 @@ import { useModulosContext } from '@/context/ModulosContext'
 // ── Constantes ────────────────────────────────────────────────────────────────
 
 const TITULO_MODULO = 'Preparación de Cloro a 200 ppm'
-const CODIGO_FORMATO = 'F-FRUS-SAN-03'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -42,7 +42,7 @@ function calcMlCloro(litros: number): number {
 
 export function PreparacionCloro() {
   const navigate = useNavigate()
-  const { profile } = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
   const { ranchos } = useRanchos()
   const { preparaciones, loading, refetch } = useM27PreparacionCloro()
@@ -221,7 +221,7 @@ export function PreparacionCloro() {
             <h1 className="text-foreground truncate" style={{ fontWeight: 600 }}>
               {TITULO_MODULO}
             </h1>
-            <p className="text-xs text-muted-foreground">{CODIGO_FORMATO}</p>
+            <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-SAN-03', codigoClave)}</p>
           </div>
           <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
             <FlaskConical className="w-5 h-5 text-primary" />

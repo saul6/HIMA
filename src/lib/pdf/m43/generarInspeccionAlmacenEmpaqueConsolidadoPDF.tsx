@@ -9,6 +9,7 @@ export async function generarInspeccionAlmacenEmpaqueConsolidadoPDF(
   orgId: string,
   desde: string,
   hasta: string,
+  codigoClave: string,
 ): Promise<void> {
   const tbl = supabase as any
   const { data, error } = await tbl
@@ -23,7 +24,7 @@ export async function generarInspeccionAlmacenEmpaqueConsolidadoPDF(
   if (!data?.length) throw new Error('Sin registros en el rango seleccionado')
 
   const paginas = await Promise.all(
-    (data as any[]).map((r: any) => construirDatosPaginaM43(r.id, orgId))
+    (data as any[]).map((r: any) => construirDatosPaginaM43(r.id, orgId, codigoClave))
   )
 
   const blob = await pdf(

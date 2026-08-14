@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export interface M38LineaPDF {
   orden: number
@@ -82,7 +83,7 @@ const s = StyleSheet.create({
 const TW = { ord: 20, tar: 38, cajas: 28, pres: 60, ts: 34, tm: 34, ti: 34 }
 const TEMP_COL = 40
 
-export function ManifiestoEmbarquePDF({ d }: { d: M38ManifiestoDataPDF }) {
+export function ManifiestoEmbarquePDF({ d, codigoClave }: { d: M38ManifiestoDataPDF; codigoClave: string }) {
   const totales: Record<string, number> = {}
   for (const l of d.lineas) {
     if (l.producto.trim()) {
@@ -98,7 +99,7 @@ export function ManifiestoEmbarquePDF({ d }: { d: M38ManifiestoDataPDF }) {
         <View style={s.hdr}>
           <View style={{ flex: 1 }}>
             <Text style={s.title}>Manifiesto de Embarque</Text>
-            <Text style={s.codigo}>F-FRUS-PRO-01</Text>
+            <Text style={s.codigo}>{codigoFormato('F-FRUS-PRO-01', codigoClave)}</Text>
             <Text style={s.meta}>{d.orgNombre}</Text>
             <Text style={s.meta}>Instalacion: {d.instalacion}</Text>
           </View>

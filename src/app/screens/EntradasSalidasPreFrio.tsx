@@ -7,6 +7,7 @@ import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM40RegistrosPrefrio } from '@/hooks/useM40RegistrosPrefrio'
@@ -71,7 +72,7 @@ const FORM_BASE: Omit<FormState, 'fecha'> = {
 }
 
 export function EntradasSalidasPreFrio() {
-  const { profile } = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
@@ -152,7 +153,7 @@ export function EntradasSalidasPreFrio() {
       toast.success('Registro guardado')
 
       try {
-        await generarEntradasSalidasPreFrioPDF(registroId, orgId)
+        await generarEntradasSalidasPreFrioPDF(registroId, orgId, codigoClave)
       } catch {
         toast.error('PDF no generado')
       }
@@ -172,7 +173,7 @@ export function EntradasSalidasPreFrio() {
     if (!orgId) return
     setPdfLoading(id)
     try {
-      await generarEntradasSalidasPreFrioPDF(id, orgId)
+      await generarEntradasSalidasPreFrioPDF(id, orgId, codigoClave)
     } catch {
       toast.error('Error al generar PDF')
     } finally {
@@ -193,6 +194,7 @@ export function EntradasSalidasPreFrio() {
         consolidadoForm.hasta,
         instName,
         orgNombre ?? '—',
+        codigoClave,
       )
       setConsolidadoOpen(false)
     } catch (e: any) {
@@ -222,7 +224,7 @@ export function EntradasSalidasPreFrio() {
             <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
               Entradas y Salidas en Pre-enfriamiento
             </h1>
-            <p className="text-xs text-muted-foreground">F-FRUS-PRO-04 · Por evento</p>
+            <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-PRO-04', codigoClave)} · Por evento</p>
           </div>
           <button
             onClick={() => setConsolidadoOpen(true)}

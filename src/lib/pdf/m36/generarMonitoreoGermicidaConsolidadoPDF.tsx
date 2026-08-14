@@ -21,6 +21,7 @@ export async function generarMonitoreoGermicidaConsolidadoPDF(
   hasta: string,
   ranchoNombre: string,
   orgNombre?: string | null,
+  codigoClave?: string,
 ): Promise<void> {
   let query = (supabase as any)
     .from('m36_monitoreos')
@@ -52,6 +53,7 @@ export async function generarMonitoreoGermicidaConsolidadoPDF(
       desde={desde}
       hasta={hasta}
       monitoreos={monitoreos}
+      codigoClave={codigoClave ?? 'FRUS'}
     />
   ).toBlob()
   descargar(blob, nombrePdf('Monitoreo_Solucion_Germicida_consolidado', `${desde}_${hasta}`, ranchoNombre))

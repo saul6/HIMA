@@ -52,13 +52,13 @@ async function cargarDatos(id: string, orgId: string): Promise<M42MovimientoPDF>
   }
 }
 
-export async function generarMaterialEmpaquePDF(id: string, orgId: string): Promise<void> {
+export async function generarMaterialEmpaquePDF(id: string, orgId: string, codigoClave: string): Promise<void> {
   const d = await cargarDatos(id, orgId)
-  const blob = await pdf(<MaterialEmpaquePDF d={d} />).toBlob()
+  const blob = await pdf(<MaterialEmpaquePDF d={d} codigoClave={codigoClave} />).toBlob()
   descargar(blob, nombrePdf('Material_Empaque_Movimientos', d.fecha, d.instalacion))
 }
 
-export async function generarBlobMaterialEmpaque(id: string, orgId: string): Promise<Blob> {
+export async function generarBlobMaterialEmpaque(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const d = await cargarDatos(id, orgId)
-  return pdf(<MaterialEmpaquePDF d={d} />).toBlob()
+  return pdf(<MaterialEmpaquePDF d={d} codigoClave={codigoClave} />).toBlob()
 }

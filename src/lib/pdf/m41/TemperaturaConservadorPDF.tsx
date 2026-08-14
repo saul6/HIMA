@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export interface M41LecturaPDF {
   hora: number
@@ -48,7 +49,7 @@ const s = StyleSheet.create({
 
 const HORAS = Array.from({ length: 24 }, (_, i) => i + 1)
 
-export function TemperaturaConservadorPDF({ d }: { d: M41RegistroDataPDF }) {
+export function TemperaturaConservadorPDF({ d, codigoClave }: { d: M41RegistroDataPDF; codigoClave: string }) {
   const lecturaPorHora: Record<number, number | null> = {}
   for (const l of d.lecturas) lecturaPorHora[l.hora] = l.temperatura
 
@@ -63,7 +64,7 @@ export function TemperaturaConservadorPDF({ d }: { d: M41RegistroDataPDF }) {
         <View style={s.hdr}>
           <View style={{ flex: 1 }}>
             <Text style={s.title}>Registro de Temperaturas del Conservador</Text>
-            <Text style={s.codigo}>F-FRUS-PRO-05</Text>
+            <Text style={s.codigo}>{codigoFormato('F-FRUS-PRO-05', codigoClave)}</Text>
             <Text style={s.meta}>{d.orgNombre}</Text>
             <Text style={s.meta}>Instalacion: {d.instalacion}</Text>
           </View>

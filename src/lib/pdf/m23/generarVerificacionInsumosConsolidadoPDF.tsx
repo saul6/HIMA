@@ -16,6 +16,7 @@ export async function generarVerificacionInsumosConsolidadoPDF(
   orgId: string,
   desdeYYYYMM: string,
   hastaYYYYMM: string,
+  codigoClave: string,
 ): Promise<void> {
   const desdeDate = desdeYYYYMM + '-01'
   const hastaDate = hastaYYYYMM + '-01'
@@ -43,6 +44,7 @@ export async function generarVerificacionInsumosConsolidadoPDF(
       instalacionNombre={instalacionNombre}
       desde={desdeYYYYMM}
       hasta={hastaYYYYMM}
+      codigoClave={codigoClave}
     />
   ).toBlob()
 

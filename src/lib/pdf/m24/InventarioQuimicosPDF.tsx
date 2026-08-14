@@ -1,5 +1,6 @@
 import React from 'react'
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export interface MovimientoPDF {
   fecha: string
@@ -17,6 +18,7 @@ export interface InventarioQuimicosProps {
   consolidado?: boolean
   desde?: string
   hasta?: string
+  codigoClave: string
 }
 
 const s = StyleSheet.create({
@@ -62,7 +64,7 @@ function calcSaldo(movs: MovimientoPDF[]) {
 }
 
 export function InventarioQuimicosPagina({
-  instalacion, quimicoNombre, unidad, movimientos, consolidado, desde, hasta,
+  instalacion, quimicoNombre, unidad, movimientos, consolidado, desde, hasta, codigoClave,
 }: InventarioQuimicosProps) {
   const filas = calcSaldo(movimientos)
   const periodo = consolidado && desde && hasta
@@ -81,7 +83,7 @@ export function InventarioQuimicosPagina({
           </View>
           <View style={s.titleBlock}>
             <Text style={s.title}>CONTROL DE INVENTARIO DE QUIMICOS E INSUMOS</Text>
-            <Text style={s.subtitle}>F-FRUS-SAN-02  |  Rev 01</Text>
+            <Text style={s.subtitle}>{codigoFormato('F-FRUS-SAN-02', codigoClave)}  |  Rev 01</Text>
           </View>
           <View style={s.metaCol}>
             <Text><Text style={s.bold}>Instalacion: </Text>{instalacion}</Text>

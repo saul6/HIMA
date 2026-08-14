@@ -8,6 +8,7 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import imageCompression from 'browser-image-compression'
 import { useAuthContext } from '@/context/AuthContext'
+import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM20Accidentes, type M20AccidenteConFotos } from '@/hooks/useM20Accidentes'
@@ -262,7 +263,7 @@ function SiNoToggle({
 
 export function RegistroAccidentesLaborales() {
   const navigate = useNavigate()
-  const { profile } = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
@@ -487,7 +488,7 @@ export function RegistroAccidentesLaborales() {
         </button>
         <div className="flex-1 min-w-0">
           <h1 className="text-base font-semibold text-foreground truncate">{TITULO_MODULO}</h1>
-          <p className="text-xs text-muted-foreground">F-FRUS-CAL-15 · Cuarto Frío</p>
+          <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-CAL-15', codigoClave)} · Cuarto Frío</p>
         </div>
         <Button
           variant="ghost"
@@ -554,7 +555,7 @@ export function RegistroAccidentesLaborales() {
           </div>
           <div className="px-4 pb-2 shrink-0">
             <h2 className="text-base font-semibold text-foreground">Registrar accidente</h2>
-            <p className="text-xs text-muted-foreground">F-FRUS-CAL-15 · Cuarto Frío</p>
+            <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-CAL-15', codigoClave)} · Cuarto Frío</p>
           </div>
 
           {/* Scroll content */}

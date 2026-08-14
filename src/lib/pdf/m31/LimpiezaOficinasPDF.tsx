@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export type ValorM31PDF = 'hecho' | 'no_hecho' | 'na'
 
@@ -19,6 +20,7 @@ export interface LimpiezaOficinasPaginaProps {
   resultados: Record<number, Record<string, ValorM31PDF>>
   diasData: Record<number, M31DiaDataPDF>
   observaciones: string | null
+  codigoClave: string
 }
 
 export interface LimpiezaOficinasConsolidadoProps {
@@ -106,7 +108,7 @@ function valorDisplay(v: ValorM31PDF | undefined): { text: string; color: string
 }
 
 export function LimpiezaOficinasPagina({
-  instalacion, instalacionCodigo, anio, mes, items, resultados, diasData, observaciones,
+  instalacion, instalacionCodigo, anio, mes, items, resultados, diasData, observaciones, codigoClave,
 }: LimpiezaOficinasPaginaProps) {
   const numDias = diasEnMes(anio, mes)
   const days = Array.from({ length: numDias }, (_, i) => i + 1)
@@ -129,7 +131,7 @@ export function LimpiezaOficinasPagina({
           <Text style={s.title}>BITACORA DE LIMPIEZA DE LAS OFICINAS</Text>
           <Text style={s.subtitle}>{mesLabel}</Text>
         </View>
-        <Text style={s.codigoText}>Codigo: F-FRUS-SAN-09</Text>
+        <Text style={s.codigoText}>Codigo: {codigoFormato('F-FRUS-SAN-09', codigoClave)}</Text>
       </View>
 
       <View style={s.infoRow}>
@@ -223,7 +225,7 @@ export function LimpiezaOficinasPagina({
       </View>
 
       <View style={s.footer}>
-        <Text style={s.footerText}>F-FRUS-SAN-09</Text>
+        <Text style={s.footerText}>{codigoFormato('F-FRUS-SAN-09', codigoClave)}</Text>
         <Text style={s.footerText}>M.A.D.Y — DuoMind Solutions</Text>
       </View>
     </Page>

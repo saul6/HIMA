@@ -27,6 +27,7 @@ export async function generarLimpiezaAduanaPDF(
   items: M29ItemPDF[],
   resultados: Record<number, Record<string, ValorM29PDF>>,
   diasData: Record<number, M29DiaDataPDF>,
+  codigoClave: string,
 ): Promise<void> {
   const mesStr = String(registro.mes).padStart(2, '0')
   const filename = `Limpieza_Aduana_${registro.anio}-${mesStr}.pdf`
@@ -40,13 +41,14 @@ export async function generarLimpiezaAduanaPDF(
     resultados,
     diasData,
     observaciones: registro.observaciones,
+    codigoClave,
   }
 
   const blob = await pdf(<LimpiezaAduanaPDF {...props} />).toBlob()
   descargar(blob, filename)
 }
 
-export async function generarBlobLimpiezaAduana(id: string, orgId: string): Promise<Blob> {
+export async function generarBlobLimpiezaAduana(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const { data: reg, error: e1 } = await tbl('m29_registro_mensual')
     .select('*, ranchos(nombre, codigo)')
     .eq('id', id)
@@ -89,6 +91,7 @@ export async function generarBlobLimpiezaAduana(id: string, orgId: string): Prom
     resultados,
     diasData,
     observaciones: reg.observaciones ?? null,
+    codigoClave,
   }
 
   return pdf(<LimpiezaAduanaPDF {...props} />).toBlob()

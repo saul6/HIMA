@@ -27,6 +27,7 @@ export async function generarLimpiezaPreenfrioPDF(
   items: M34ItemPDF[],
   resultados: Record<number, Record<string, ValorM34PDF>>,
   diasData: Record<number, M34DiaDataPDF>,
+  codigoClave: string,
 ): Promise<void> {
   const mesStr = String(registro.mes).padStart(2, '0')
   const filename = `Limpieza_Preenfrio_Conservador_${registro.anio}-${mesStr}.pdf`
@@ -40,13 +41,14 @@ export async function generarLimpiezaPreenfrioPDF(
     resultados,
     diasData,
     observaciones: registro.observaciones,
+    codigoClave,
   }
 
   const blob = await pdf(<LimpiezaPreenfrioPDF {...props} />).toBlob()
   descargar(blob, filename)
 }
 
-export async function generarBlobLimpiezaPreenfrio(id: string, orgId: string): Promise<Blob> {
+export async function generarBlobLimpiezaPreenfrio(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const { data: reg, error: e1 } = await tbl('m34_registro_mensual')
     .select('*, ranchos(nombre, codigo)')
     .eq('id', id)
@@ -89,6 +91,7 @@ export async function generarBlobLimpiezaPreenfrio(id: string, orgId: string): P
     resultados,
     diasData,
     observaciones: reg.observaciones ?? null,
+    codigoClave,
   }
 
   return pdf(<LimpiezaPreenfrioPDF {...props} />).toBlob()

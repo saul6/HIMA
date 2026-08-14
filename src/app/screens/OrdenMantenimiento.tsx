@@ -105,7 +105,7 @@ function formInicial(): FormState {
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export function OrdenMantenimiento() {
-  const { profile }       = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos }       = useRanchos()
   const { ordenes, loading, error, refetch } = useM44OrdenesMantenimiento()
@@ -188,7 +188,7 @@ export function OrdenMantenimiento() {
       await refetch()
       setAbierto(false)
       toast.success('Orden de mantenimiento guardada')
-      await generarOrdenMantenimientoPDF(ordenId, orgId)
+      await generarOrdenMantenimientoPDF(ordenId, orgId, codigoClave)
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
       if (msg.includes('FECHA_SOLO_HOY')) {
@@ -208,7 +208,7 @@ export function OrdenMantenimiento() {
     if (!orgId) return
     setGenerandoPDF(orden.id)
     try {
-      await generarOrdenMantenimientoPDF(orden.id, orgId)
+      await generarOrdenMantenimientoPDF(orden.id, orgId, codigoClave)
       toast.success('PDF descargado')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al generar PDF')

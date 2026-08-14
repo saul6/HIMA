@@ -10,7 +10,7 @@ import {
 
 const tbl = (name: string) => (supabase as any).from(name)
 
-async function construirPagina(id: string, orgId: string): Promise<LimpiezaPreenfrioPaginaProps> {
+async function construirPagina(id: string, orgId: string, codigoClave: string): Promise<LimpiezaPreenfrioPaginaProps> {
   const { data: reg, error: e1 } = await tbl('m34_registro_mensual')
     .select('*, ranchos(nombre, codigo)')
     .eq('id', id)
@@ -53,6 +53,7 @@ async function construirPagina(id: string, orgId: string): Promise<LimpiezaPreen
     resultados,
     diasData,
     observaciones: reg.observaciones ?? null,
+    codigoClave,
   }
 }
 
@@ -62,6 +63,7 @@ export async function generarLimpiezaPreenfrioConsolidadoPDF(
   orgId: string,
   desde: string,
   hasta: string,
+  codigoClave: string,
 ): Promise<void> {
   const anioDesde = parseInt(desde.slice(0, 4))
   const mesDesde  = parseInt(desde.slice(5, 7))
@@ -89,7 +91,7 @@ export async function generarLimpiezaPreenfrioConsolidadoPDF(
 
   if (ids.length === 0) throw new Error('No hay registros en ese rango para la instalacion seleccionada')
 
-  const paginas = await Promise.all(ids.map((id) => construirPagina(id, orgId)))
+  const paginas = await Promise.all(ids.map((id) => construirPagina(id, orgId, codigoClave)))
 
   const blob = await pdf(
     <LimpiezaPreenfrioConsolidadoPDF
@@ -97,6 +99,7 @@ export async function generarLimpiezaPreenfrioConsolidadoPDF(
       instalacionNombre={ranchoNombre}
       desde={desde}
       hasta={hasta}
+      codigoClave={codigoClave}
     />
   ).toBlob()
 

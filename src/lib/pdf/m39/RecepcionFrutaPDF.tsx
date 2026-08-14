@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export interface M39LineaPDF {
   orden: number
@@ -53,7 +54,7 @@ const s = StyleSheet.create({
   marca:    { fontSize: 6.5, color: '#aaaaaa' },
 })
 
-export function RecepcionFrutaPDF({ d }: { d: M39RecepcionDataPDF }) {
+export function RecepcionFrutaPDF({ d, codigoClave }: { d: M39RecepcionDataPDF; codigoClave: string }) {
   const sumAll = (field: keyof M39LineaPDF) =>
     d.lineas.reduce((acc, l) => acc + ((l[field] as number) ?? 0), 0)
   const sumAnden = (field: keyof M39LineaPDF) =>
@@ -70,7 +71,7 @@ export function RecepcionFrutaPDF({ d }: { d: M39RecepcionDataPDF }) {
         <View style={s.hdr}>
           <View style={{ flex: 1 }}>
             <Text style={s.title}>Recepcion Diaria de Fruta</Text>
-            <Text style={s.codigo}>F-FRUS-PRO-02</Text>
+            <Text style={s.codigo}>{codigoFormato('F-FRUS-PRO-02', codigoClave)}</Text>
             <Text style={s.meta}>{d.orgNombre}</Text>
             <Text style={s.meta}>Instalacion: {d.instalacion}</Text>
             {d.empresa ? <Text style={s.meta}>Empresa: {d.empresa}</Text> : null}

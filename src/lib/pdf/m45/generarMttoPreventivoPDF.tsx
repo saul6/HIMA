@@ -11,6 +11,7 @@ import {
 export async function construirDatosM45(
   registroId: string,
   orgId: string,
+  codigoClave: string,
 ): Promise<M45PaginaProps> {
   const tbl = supabase as any
   const [
@@ -92,14 +93,16 @@ export async function construirDatosM45(
     areas,
     resultados,
     acciones,
+    codigoClave,
   }
 }
 
 export async function generarMttoPreventivoPDF(
   registroId: string,
   orgId: string,
+  codigoClave: string,
 ): Promise<void> {
-  const datos = await construirDatosM45(registroId, orgId)
+  const datos = await construirDatosM45(registroId, orgId, codigoClave)
   const blob  = await pdf(<MttoPreventivoPDF {...datos} />).toBlob()
   const url   = URL.createObjectURL(blob)
   const a     = document.createElement('a')
@@ -112,8 +115,9 @@ export async function generarMttoPreventivoPDF(
 export async function generarBlobMttoPreventivo(
   registroId: string,
   orgId: string,
+  codigoClave: string,
 ): Promise<Blob> {
-  const datos = await construirDatosM45(registroId, orgId)
+  const datos = await construirDatosM45(registroId, orgId, codigoClave)
   return pdf(<MttoPreventivoPDF {...datos} />).toBlob()
 }
 
@@ -123,6 +127,7 @@ export async function generarMttoPreventivoConsolidadoPDF(
   orgId: string,
   desde: string,   // YYYY-MM
   hasta: string,   // YYYY-MM
+  codigoClave: string,
 ): Promise<void> {
   const tbl = supabase as any
   const desdeAnio = parseInt(desde.slice(0, 4))
@@ -149,7 +154,7 @@ export async function generarMttoPreventivoConsolidadoPDF(
 
   if (!filtrados.length) throw new Error('Sin registros en el rango seleccionado')
 
-  const paginas = await Promise.all(filtrados.map((r: any) => construirDatosM45(r.id, orgId)))
+  const paginas = await Promise.all(filtrados.map((r: any) => construirDatosM45(r.id, orgId, codigoClave)))
 
   const blob = await pdf(
     <MttoPreventivoConsolidadoPDF

@@ -4,6 +4,7 @@
 
 import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -28,6 +29,7 @@ export interface AccidenteLaboralPaginaProps {
   atencionRecibida: string[]      // etiquetas como vienen del DB (con acentos)
   requirioIncapacidad: boolean
   incapacidadMotivo: string | null
+  codigoClave: string
   requirioLimpieza: boolean
   limpiezaDescripcion: string | null
   productoInvolucrado: boolean
@@ -291,6 +293,7 @@ export function AccidenteLaboralPagina({
   atencionRecibida,
   requirioIncapacidad,
   incapacidadMotivo,
+  codigoClave,
   requirioLimpieza,
   limpiezaDescripcion,
   productoInvolucrado,
@@ -316,7 +319,7 @@ export function AccidenteLaboralPagina({
         </View>
         <View style={s.headerCenter}>
           <Text style={s.headerTitle}>REGISTRO DE ACCIDENTES LABORALES</Text>
-          <Text style={s.headerSub}>F-FRUS-CAL-15  Rev. 01</Text>
+          <Text style={s.headerSub}>{codigoFormato('F-FRUS-CAL-15', codigoClave)}  Rev. 01</Text>
         </View>
         <View style={{ flex: 2, alignItems: 'flex-end' }}>
           <Text style={s.headerMeta}>Emision: {emision}</Text>

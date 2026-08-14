@@ -25,7 +25,7 @@ async function cargar(id: string, orgId: string) {
   return data as any
 }
 
-export async function generarMonitoreoGermicidaPDF(id: string, orgId: string): Promise<void> {
+export async function generarMonitoreoGermicidaPDF(id: string, orgId: string, codigoClave: string): Promise<void> {
   const r = await cargar(id, orgId)
   const rancho = r.ranchos?.nombre ?? '—'
   const row: MonitoreoRow = {
@@ -37,12 +37,12 @@ export async function generarMonitoreoGermicidaPDF(id: string, orgId: string): P
     preparado_por: r.preparado_por,
   }
   const blob = await pdf(
-    <MonitoreoGermicidaPDF rancho={rancho} desde={r.fecha} hasta={r.fecha} monitoreos={[row]} />
+    <MonitoreoGermicidaPDF rancho={rancho} desde={r.fecha} hasta={r.fecha} monitoreos={[row]} codigoClave={codigoClave} />
   ).toBlob()
   descargar(blob, nombrePdf('Monitoreo_Solucion_Germicida', r.fecha, rancho))
 }
 
-export async function generarBlobMonitoreoGermicida(id: string, orgId: string): Promise<Blob> {
+export async function generarBlobMonitoreoGermicida(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const r = await cargar(id, orgId)
   const row: MonitoreoRow = {
     fecha: r.fecha,
@@ -53,6 +53,6 @@ export async function generarBlobMonitoreoGermicida(id: string, orgId: string): 
     preparado_por: r.preparado_por,
   }
   return pdf(
-    <MonitoreoGermicidaPDF rancho={r.ranchos?.nombre ?? '—'} desde={r.fecha} hasta={r.fecha} monitoreos={[row]} />
+    <MonitoreoGermicidaPDF rancho={r.ranchos?.nombre ?? '—'} desde={r.fecha} hasta={r.fecha} monitoreos={[row]} codigoClave={codigoClave} />
   ).toBlob()
 }

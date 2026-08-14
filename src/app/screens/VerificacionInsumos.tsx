@@ -12,6 +12,7 @@ import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import {
@@ -188,7 +189,7 @@ function DiaCardM23({ dia }: { dia: M23DiaConResultados }) {
 // ── Pantalla principal ────────────────────────────────────────────────────────
 
 export function VerificacionInsumos() {
-  const { profile, user } = useAuthContext()
+  const { profile, user, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
@@ -646,7 +647,7 @@ export function VerificacionInsumos() {
             {vista === 'lista' ? (
               <>
                 <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>Verificación de Insumos</h1>
-                <div className="text-xs text-muted-foreground">F-FRUS-SAN-01 · Diaria</div>
+                <div className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-SAN-01', codigoClave)} · Diaria</div>
               </>
             ) : (
               <>

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM36Monitoreos } from '@/hooks/useM36Monitoreos'
@@ -42,7 +43,7 @@ const FORM_VACIO: FormState = {
 
 export function MonitoreoGermicida() {
   const navigate = useNavigate()
-  const { profile } = useAuthContext()
+  const { profile, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
@@ -95,7 +96,7 @@ export function MonitoreoGermicida() {
       toast.success('Monitoreo registrado')
 
       try {
-        await generarMonitoreoGermicidaPDF(data.id, orgId)
+        await generarMonitoreoGermicidaPDF(data.id, orgId, codigoClave)
       } catch (e) {
         toast.error('PDF no generado')
         console.error(e)
@@ -116,7 +117,7 @@ export function MonitoreoGermicida() {
     if (!orgId) return
     setPdfLoading(id)
     try {
-      await generarMonitoreoGermicidaPDF(id, orgId)
+      await generarMonitoreoGermicidaPDF(id, orgId, codigoClave)
     } catch {
       toast.error('Error al generar PDF')
     } finally {
@@ -137,6 +138,7 @@ export function MonitoreoGermicida() {
         consolidadoForm.hasta,
         instName,
         orgNombre,
+        codigoClave,
       )
       setConsolidadoOpen(false)
     } catch (e: any) {
@@ -155,7 +157,7 @@ export function MonitoreoGermicida() {
         </button>
         <div className="flex-1">
           <h1 className="text-lg font-semibold leading-tight">Monitoreo de Solución Germicida</h1>
-          <p className="text-xs text-muted-foreground">F-FRUS-SAN-14 · Por evento</p>
+          <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-SAN-14', codigoClave)} · Por evento</p>
         </div>
         <Droplets className="w-5 h-5 text-muted-foreground" />
       </div>

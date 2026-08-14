@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -18,6 +19,7 @@ export interface PreparacionCloroPaginaProps {
   desde: string
   hasta: string
   preparaciones: PreparacionPDFRow[]
+  codigoClave: string
 }
 
 // ── Paleta ────────────────────────────────────────────────────────────────────
@@ -172,7 +174,7 @@ function fmt(iso: string): string {
 // ── Componente de página ──────────────────────────────────────────────────────
 
 export function PreparacionCloroPagina({
-  rancho, orgNombre, desde, hasta, preparaciones,
+  rancho, orgNombre, desde, hasta, preparaciones, codigoClave,
 }: PreparacionCloroPaginaProps) {
   const emision = new Date().toLocaleDateString('es-MX')
   const periodoLabel = desde === hasta ? fmt(desde) : `${fmt(desde)} — ${fmt(hasta)}`
@@ -197,7 +199,7 @@ export function PreparacionCloroPagina({
         </View>
         <View style={{ flex: 6 }}>
           <Text style={s.headerTitle}>PREPARACION DE CLORO A 200 ppm</Text>
-          <Text style={s.headerSub}>F-FRUS-SAN-03</Text>
+          <Text style={s.headerSub}>{codigoFormato('F-FRUS-SAN-03', codigoClave)}</Text>
         </View>
         <View style={{ flex: 2, alignItems: 'flex-end' }}>
           <Text style={s.headerMeta}>Emision: {emision}</Text>
@@ -290,7 +292,7 @@ export function PreparacionCloroPDF(props: PreparacionCloroPaginaProps) {
     <Document
       title={`Preparacion de Cloro ${props.rancho} ${props.desde}`}
       author="M.A.D.Y — DuoMind Solutions"
-      subject="Preparacion de Cloro a 200 ppm — F-FRUS-SAN-03"
+      subject={`Preparacion de Cloro a 200 ppm — ${codigoFormato('F-FRUS-SAN-03', props.codigoClave)}`}
     >
       <PreparacionCloroPagina {...props} />
     </Document>

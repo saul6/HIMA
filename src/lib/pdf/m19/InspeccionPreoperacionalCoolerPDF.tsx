@@ -2,6 +2,7 @@
 
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export interface M19ItemPDFRow {
   id: string
@@ -21,6 +22,7 @@ export interface InspeccionPreoperacionalCoolerPaginaProps {
   matriz: Record<string, Record<string, string>>
   codigosCorrectivos: { diaNum: string; itemLabel: string; codigo: string }[]
   observaciones: string | null
+  codigoClave: string
 }
 
 export interface InspeccionPreoperacionalCoolerConsolidadoPDFProps {
@@ -189,7 +191,7 @@ const s = StyleSheet.create({
 
 export function InspeccionPreoperacionalCoolerPagina({
   instalacion, instalacionCodigo, mesLabel, mesDate, realizadoPor,
-  items, diasInspeccionados, matriz, codigosCorrectivos, observaciones,
+  items, diasInspeccionados, matriz, codigosCorrectivos, observaciones, codigoClave,
 }: InspeccionPreoperacionalCoolerPaginaProps) {
   const secciones = agruparPorSeccion(items)
   const todosLosDias = diasDelMes(mesDate)
@@ -207,7 +209,7 @@ export function InspeccionPreoperacionalCoolerPagina({
         <View style={{ flex: 1, alignItems: 'center' }}>
           <Text style={s.headerTitle}>INSPECCION PRE-OPERACIONAL</Text>
           <Text style={{ fontSize: 6, color: MUTED, marginTop: 2 }}>
-            Codigo: F-FRUS-CAL-07  |  Rev 04  |  Frecuencia: Diaria  |  Mes: {mesLabel}
+            {`Codigo: ${codigoFormato('F-FRUS-CAL-07', codigoClave)}  |  Rev 04  |  Frecuencia: Diaria  |  Mes: ${mesLabel}`}
           </Text>
         </View>
         <View style={s.headerMeta}>

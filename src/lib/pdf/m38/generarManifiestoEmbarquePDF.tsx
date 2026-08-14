@@ -79,13 +79,13 @@ async function cargarDatos(id: string, orgId: string): Promise<M38ManifiestoData
   }
 }
 
-export async function generarManifiestoEmbarquePDF(id: string, orgId: string): Promise<void> {
+export async function generarManifiestoEmbarquePDF(id: string, orgId: string, codigoClave: string): Promise<void> {
   const d = await cargarDatos(id, orgId)
-  const blob = await pdf(<ManifiestoEmbarquePDF d={d} />).toBlob()
+  const blob = await pdf(<ManifiestoEmbarquePDF d={d} codigoClave={codigoClave} />).toBlob()
   descargar(blob, nombrePdf('Manifiesto_Embarque', d.fecha, d.instalacion))
 }
 
-export async function generarBlobManifiestoEmbarque(id: string, orgId: string): Promise<Blob> {
+export async function generarBlobManifiestoEmbarque(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const d = await cargarDatos(id, orgId)
-  return pdf(<ManifiestoEmbarquePDF d={d} />).toBlob()
+  return pdf(<ManifiestoEmbarquePDF d={d} codigoClave={codigoClave} />).toBlob()
 }

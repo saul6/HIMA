@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export type ValorM28PDF = 'hecho' | 'no_hecho' | 'na'
 
@@ -23,6 +24,7 @@ export interface LimpiezaBanosQuimicosPaginaProps {
   resultados: Record<number, Record<string, ValorM28PDF>>
   diasData: Record<number, M28DiaDataPDF>
   observaciones: string | null
+  codigoClave: string
 }
 
 export interface LimpiezaBanosQuimicosConsolidadoProps {
@@ -109,7 +111,7 @@ function valorDisplay(v: ValorM28PDF | undefined): { text: string; color: string
   return { text: '', color: DARK }
 }
 
-export function LimpiezaBanosQuimicosPagina({ instalacion, instalacionCodigo, anio, mes, items, resultados, diasData, observaciones }: LimpiezaBanosQuimicosPaginaProps) {
+export function LimpiezaBanosQuimicosPagina({ instalacion, instalacionCodigo, anio, mes, items, resultados, diasData, observaciones, codigoClave }: LimpiezaBanosQuimicosPaginaProps) {
   const numDias = diasEnMes(anio, mes)
   const days = Array.from({ length: numDias }, (_, i) => i + 1)
   const dW = dayColW(numDias)
@@ -128,7 +130,7 @@ export function LimpiezaBanosQuimicosPagina({ instalacion, instalacionCodigo, an
           <Text style={s.title}>LIMPIEZA DE BANOS Y ALMACEN DE QUIMICOS</Text>
           <Text style={s.subtitle}>{mesLabel}</Text>
         </View>
-        <Text style={s.codigoText}>Codigo: F-FRUS-SAN-06</Text>
+        <Text style={s.codigoText}>Codigo: {codigoFormato('F-FRUS-SAN-06', codigoClave)}</Text>
       </View>
 
       <View style={s.infoRow}>
@@ -226,7 +228,7 @@ export function LimpiezaBanosQuimicosPagina({ instalacion, instalacionCodigo, an
       </View>
 
       <View style={s.footer}>
-        <Text style={s.footerText}>F-FRUS-SAN-06</Text>
+        <Text style={s.footerText}>{codigoFormato('F-FRUS-SAN-06', codigoClave)}</Text>
         <Text style={s.footerText}>M.A.D.Y — DuoMind Solutions</Text>
       </View>
     </Page>

@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export type ValorM35PDF = 'hecho' | 'no_hecho' | 'na'
 
@@ -19,6 +20,7 @@ export interface LimpiezaAlmacenEmpaquePaginaProps {
   resultados: Record<number, Record<string, ValorM35PDF>>
   diasData: Record<number, M35DiaDataPDF>
   observaciones: string | null
+  codigoClave: string
 }
 
 export interface LimpiezaAlmacenEmpaqueConsolidadoProps {
@@ -112,7 +114,7 @@ function valorDisplay(v: ValorM35PDF | undefined, generaIncidencia: boolean): { 
 }
 
 export function LimpiezaAlmacenEmpaquePagina({
-  instalacion, instalacionCodigo, anio, mes, items, resultados, diasData, observaciones,
+  instalacion, instalacionCodigo, anio, mes, items, resultados, diasData, observaciones, codigoClave,
 }: LimpiezaAlmacenEmpaquePaginaProps) {
   const numDias = diasEnMes(anio, mes)
   const days = Array.from({ length: numDias }, (_, i) => i + 1)
@@ -135,7 +137,7 @@ export function LimpiezaAlmacenEmpaquePagina({
           <Text style={s.title}>BITACORA DE LIMPIEZA DEL ALMACEN DE MATERIAL DE EMPAQUE</Text>
           <Text style={s.subtitle}>{mesLabel}</Text>
         </View>
-        <Text style={s.codigoText}>Codigo: F-FRUS-SAN-13</Text>
+        <Text style={s.codigoText}>Codigo: {codigoFormato('F-FRUS-SAN-13', codigoClave)}</Text>
       </View>
 
       <View style={s.infoRow}>
@@ -233,7 +235,7 @@ export function LimpiezaAlmacenEmpaquePagina({
       </View>
 
       <View style={s.footer}>
-        <Text style={s.footerText}>F-FRUS-SAN-13</Text>
+        <Text style={s.footerText}>{codigoFormato('F-FRUS-SAN-13', codigoClave)}</Text>
         <Text style={s.footerText}>M.A.D.Y — DuoMind Solutions</Text>
       </View>
     </Page>

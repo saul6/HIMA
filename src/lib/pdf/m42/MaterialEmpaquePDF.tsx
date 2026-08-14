@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export interface M42MovimientoPDF {
   orgNombre: string
@@ -92,7 +93,7 @@ function ChecklistBlock({ d, tipo }: { d: M42MovimientoPDF; tipo: 'mat' | 'tr' }
   )
 }
 
-export function MaterialEmpaquePDF({ d }: { d: M42MovimientoPDF }) {
+export function MaterialEmpaquePDF({ d, codigoClave }: { d: M42MovimientoPDF; codigoClave: string }) {
   return (
     <Document>
       <Page size="A4" orientation="landscape" style={s.page}>
@@ -101,7 +102,7 @@ export function MaterialEmpaquePDF({ d }: { d: M42MovimientoPDF }) {
         <View style={s.hdr}>
           <View style={{ flex: 1 }}>
             <Text style={s.title}>Entradas y Salidas de Material de Empaque</Text>
-            <Text style={s.codigo}>F-FRUS-PRO-03</Text>
+            <Text style={s.codigo}>{codigoFormato('F-FRUS-PRO-03', codigoClave)}</Text>
             <Text style={s.meta}>{d.orgNombre}</Text>
             <Text style={s.meta}>Instalacion: {d.instalacion}</Text>
             {d.empresa ? <Text style={s.meta}>Empresa: {d.empresa}</Text> : null}

@@ -4,6 +4,7 @@
 
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -43,6 +44,7 @@ export interface MonitoreoEstacionesPaginaProps {
   catalogoEstado: CatalogoCodigo[]
   catalogoCondiciones: CatalogoCodigo[]
   catalogoPlagas: CatalogoCodigo[]
+  codigoClave: string
 }
 
 export interface MonitoreoEstacionesConsolidadoPDFProps {
@@ -366,6 +368,7 @@ export function MonitoreoEstacionesPagina({
   catalogoEstado,
   catalogoCondiciones,
   catalogoPlagas,
+  codigoClave,
 }: MonitoreoEstacionesPaginaProps) {
   const emision = new Date().toLocaleDateString('es-MX')
 
@@ -386,7 +389,7 @@ export function MonitoreoEstacionesPagina({
         </View>
         <View style={s.headerCenter}>
           <Text style={s.headerTitle}>REVISION DE ESTACIONES DE MONITOREO DE PLAGAS</Text>
-          <Text style={s.headerSub}>F-FRUS-CAL-19  Rev. 01</Text>
+          <Text style={s.headerSub}>{codigoFormato('F-FRUS-CAL-19', codigoClave)}  Rev. 01</Text>
         </View>
         <View style={{ flex: 2, alignItems: 'flex-end' }}>
           <Text style={s.headerMeta}>Emision: {emision}</Text>

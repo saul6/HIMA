@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 export type PrioridadM44PDF = 'inmediata' | 'turno' | 'siguientes_dias'
 
@@ -18,6 +19,7 @@ export interface OrdenMantenimientoPDFProps {
   observaciones: string | null
   entrega_mtto: string | null
   recibe: string | null
+  codigoClave: string
 }
 
 const PRIMARY = '#2B7AB5'
@@ -116,7 +118,7 @@ function formatFecha(iso: string): string {
 export function OrdenMantenimientoPDF({
   organizacion, instalacion, instalacionCodigo, fecha, folio,
   descripcion_solicitud, prioridad, solicita, recibe_mtto,
-  equipo_produccion, lavado_sanitizado, observaciones, entrega_mtto, recibe,
+  equipo_produccion, lavado_sanitizado, observaciones, entrega_mtto, recibe, codigoClave,
 }: OrdenMantenimientoPDFProps) {
   return (
     <Document>
@@ -131,7 +133,7 @@ export function OrdenMantenimientoPDF({
           <View style={{ flex: 1, alignItems: 'center' }}>
             <Text style={s.headerTitle}>ORDEN DE MANTENIMIENTO</Text>
             <Text style={{ fontSize: 7, color: MUTED, marginTop: 2 }}>
-              Codigo: F-FRUS-MTT-01
+              {`Codigo: ${codigoFormato('F-FRUS-MTT-01', codigoClave)}`}
             </Text>
           </View>
           <View>

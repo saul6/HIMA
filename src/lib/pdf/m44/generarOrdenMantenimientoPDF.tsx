@@ -49,9 +49,9 @@ function slugFolio(folio: string | null): string {
   return folio.trim().replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 30)
 }
 
-export async function generarOrdenMantenimientoPDF(id: string, orgId: string): Promise<void> {
+export async function generarOrdenMantenimientoPDF(id: string, orgId: string, codigoClave: string): Promise<void> {
   const datos = await cargarDatos(id, orgId)
-  const blob  = await pdf(<OrdenMantenimientoPDF {...datos} />).toBlob()
+  const blob  = await pdf(<OrdenMantenimientoPDF {...datos} codigoClave={codigoClave} />).toBlob()
   const slug  = slugFolio(datos.folio)
   const url   = URL.createObjectURL(blob)
   const a     = document.createElement('a')
@@ -61,7 +61,7 @@ export async function generarOrdenMantenimientoPDF(id: string, orgId: string): P
   URL.revokeObjectURL(url)
 }
 
-export async function generarBlobOrdenMantenimiento(id: string, orgId: string): Promise<Blob> {
+export async function generarBlobOrdenMantenimiento(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const datos = await cargarDatos(id, orgId)
-  return pdf(<OrdenMantenimientoPDF {...datos} />).toBlob()
+  return pdf(<OrdenMantenimientoPDF {...datos} codigoClave={codigoClave} />).toBlob()
 }
