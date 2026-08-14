@@ -100,6 +100,7 @@ import { ControlInventarioQuimicos } from "./screens/ControlInventarioQuimicos";
 import { ResumenNoConformidades } from "./screens/ResumenNoConformidades";
 import { AccionesCorrectivas } from "./screens/AccionesCorrectivas";
 import { RondinesVigilancia } from "./screens/RondinesVigilancia";
+import { RegistroPersonal } from "./screens/RegistroPersonal";
 import { RequireModulo } from "./components/RequireModulo";
 
 export const router = createBrowserRouter([
@@ -184,6 +185,7 @@ export const router = createBrowserRouter([
                   { path: "orden-mantenimiento", Component: OrdenMantenimiento },
                   { path: "mantenimiento-preventivo", Component: MantenimientoPreventivo },
                   { path: "rondines-vigilancia", Component: RondinesVigilancia },
+                  { path: "registro-personal", Component: RegistroPersonal },
                 ],
               },
             ],
