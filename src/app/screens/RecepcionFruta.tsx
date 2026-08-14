@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import {
   ChevronLeft, Plus, FileDown, X, Loader2, PackageOpen,
   Files, TriangleAlert, Minus,
@@ -31,6 +31,7 @@ type Tipo = 'organico' | 'convencional'
 interface LineaForm {
   _key: string
   hora: string
+  // Cuarto frío fields
   codigo_productor: string
   tipo: Tipo
   pase_anden: boolean
@@ -38,12 +39,22 @@ interface LineaForm {
   cant_6oz: string
   cant_12oz: string
   cant_18oz: string
+  // Almacén fields
+  cultivo: string
+  cajas: string
+  piezas: string
+  entrega: string
+  limp_be: boolean | null
+  limp_l: boolean | null
+  limp_lp: boolean | null
+  codigo_trazabilidad: string
 }
 
 interface FormState {
   rancho_id: string
   fecha: string
   empresa: string
+  hoja_no: string
   observaciones: string
 }
 
@@ -53,12 +64,17 @@ function nuevaLinea(): LineaForm {
     hora: '', codigo_productor: '', tipo: 'convencional',
     pase_anden: false, producto: '',
     cant_6oz: '', cant_12oz: '', cant_18oz: '',
+    cultivo: '', cajas: '', piezas: '', entrega: '',
+    limp_be: null, limp_l: null, limp_lp: null,
+    codigo_trazabilidad: '',
   }
 }
 
 const FORM_BASE: Omit<FormState, 'fecha'> = {
-  rancho_id: '', empresa: '', observaciones: '',
+  rancho_id: '', empresa: '', hoja_no: '', observaciones: '',
 }
+
+// ── Toggle components ─────────────────────────────────────────────────────────
 
 function ToggleTipo({ value, onChange }: { value: Tipo; onChange: (v: Tipo) => void }) {
   return (
@@ -114,14 +130,47 @@ function ToggleSiNo({ value, onChange }: { value: boolean; onChange: (v: boolean
   )
 }
 
+function ToggleTriEstado({ value, onChange }: { value: boolean | null; onChange: (v: boolean | null) => void }) {
+  return (
+    <div className="flex gap-1">
+      {([null, true, false] as const).map(v => {
+        const active = value === v
+        let bg = 'var(--card)', color = 'var(--muted-foreground)', border = '1px solid var(--border)'
+        if (active && v === null) { bg = 'var(--muted)'; color = 'var(--muted-foreground)'; border = 'none' }
+        if (active && v === true) { bg = 'var(--agro-success-fill)'; color = 'var(--agro-success-text)'; border = 'none' }
+        if (active && v === false) { bg = 'var(--agro-danger-fill)'; color = 'var(--agro-danger-text)'; border = 'none' }
+        return (
+          <button
+            key={String(v)}
+            type="button"
+            onClick={() => onChange(v)}
+            style={{
+              flex: 1, height: 28, borderRadius: 8, cursor: 'pointer',
+              border, backgroundColor: bg, color,
+              fontSize: 11, fontWeight: active ? 700 : 400,
+            }}
+          >
+            {v === null ? '—' : v ? 'Si' : 'No'}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── Screen ────────────────────────────────────────────────────────────────────
+
 export function RecepcionFruta() {
   const { profile, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
-  const { terminosSitio } = useModulosContext()
+  const { terminosSitio, modulos } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
   const { recepciones, loading, error, refetch } = useM39Recepciones()
   const orgNombre = useOrganizacion(orgId)
+
+  // Almacén sector → simplified variant; cuarto frío → original
+  const esAlmacen = modulos.some(m => m.sector_clave === 'almacen')
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
@@ -146,7 +195,9 @@ export function RecepcionFruta() {
     setLineas(prev => prev.map(l => l._key === key ? { ...l, [field]: value } : l))
   }
 
-  const totales = useMemo(() => {
+  // Totals for cuarto frío
+  const totalesCF = useMemo(() => {
+    if (esAlmacen) return { t6: 0, t12: 0, t18: 0, a6: 0, a12: 0, a18: 0 }
     const p = (s: string) => parseInt(s, 10) || 0
     const t6  = lineas.reduce((s, l) => s + p(l.cant_6oz), 0)
     const t12 = lineas.reduce((s, l) => s + p(l.cant_12oz), 0)
@@ -155,43 +206,90 @@ export function RecepcionFruta() {
     const a12 = lineas.filter(l => l.pase_anden).reduce((s, l) => s + p(l.cant_12oz), 0)
     const a18 = lineas.filter(l => l.pase_anden).reduce((s, l) => s + p(l.cant_18oz), 0)
     return { t6, t12, t18, a6, a12, a18 }
-  }, [lineas])
+  }, [esAlmacen, lineas])
+
+  // Inventory by cultivo for almacén
+  const invCultivoForm = useMemo(() => {
+    if (!esAlmacen) return null
+    const p = (s: string) => parseInt(s, 10) || 0
+    const map: Record<string, { cajas: number; piezas: number }> = {}
+    for (const l of lineas) {
+      const k = l.cultivo.trim() || 'Sin cultivo'
+      if (!map[k]) map[k] = { cajas: 0, piezas: 0 }
+      map[k].cajas += p(l.cajas)
+      map[k].piezas += p(l.piezas)
+    }
+    return map
+  }, [esAlmacen, lineas])
 
   async function guardar() {
     if (!orgId) return
     if (!form.rancho_id) { toast.error(`Selecciona una ${terminosSitio.singular}`); return }
     setGuardando(true)
     try {
-      const { data: rec, error: eRec } = await tbl('m39_recepciones').insert({
+      const recepcionPayload: any = {
         org_id: orgId,
         rancho_id: form.rancho_id,
         fecha: form.fecha,
         empresa: form.empresa.trim() || null,
         observaciones: form.observaciones.trim() || null,
-      }).select('id').single()
+      }
+      // almacén: always set hoja_no (even empty string) so detection works
+      if (esAlmacen) {
+        recepcionPayload.hoja_no = form.hoja_no.trim() || ''
+      }
+
+      const { data: rec, error: eRec } = await tbl('m39_recepciones')
+        .insert(recepcionPayload)
+        .select('id')
+        .single()
       if (eRec) throw eRec
 
       const recepcionId = (rec as any).id as string
 
-      const lineasFiltradas = lineas.filter(l =>
-        l.producto.trim() || l.codigo_productor.trim() || l.cant_6oz || l.cant_12oz || l.cant_18oz
-      )
-      if (lineasFiltradas.length > 0) {
-        const rows = lineasFiltradas.map((l, i) => ({
-          recepcion_id: recepcionId,
-          org_id: orgId,
-          orden: i + 1,
-          hora: l.hora || null,
-          codigo_productor: l.codigo_productor.trim() || null,
-          tipo: l.tipo,
-          pase_anden: l.pase_anden,
-          producto: l.producto.trim() || null,
-          cant_6oz:  l.cant_6oz  !== '' ? parseInt(l.cant_6oz,  10) : null,
-          cant_12oz: l.cant_12oz !== '' ? parseInt(l.cant_12oz, 10) : null,
-          cant_18oz: l.cant_18oz !== '' ? parseInt(l.cant_18oz, 10) : null,
-        }))
-        const { error: eLineas } = await tbl('m39_lineas').insert(rows)
-        if (eLineas) throw eLineas
+      if (esAlmacen) {
+        const lineasFiltradas = lineas.filter(l =>
+          l.cultivo.trim() || l.cajas || l.piezas || l.entrega.trim() || l.codigo_trazabilidad.trim()
+        )
+        if (lineasFiltradas.length > 0) {
+          const rows = lineasFiltradas.map((l, i) => ({
+            recepcion_id: recepcionId,
+            org_id: orgId,
+            orden: i + 1,
+            hora: l.hora || null,
+            cultivo: l.cultivo.trim() || null,
+            cajas: l.cajas !== '' ? parseInt(l.cajas, 10) : null,
+            piezas: l.piezas !== '' ? parseInt(l.piezas, 10) : null,
+            entrega: l.entrega.trim() || null,
+            limp_be: l.limp_be,
+            limp_l: l.limp_l,
+            limp_lp: l.limp_lp,
+            codigo_trazabilidad: l.codigo_trazabilidad.trim() || null,
+          }))
+          const { error: eLineas } = await tbl('m39_lineas').insert(rows)
+          if (eLineas) throw eLineas
+        }
+      } else {
+        const lineasFiltradas = lineas.filter(l =>
+          l.producto.trim() || l.codigo_productor.trim() || l.cant_6oz || l.cant_12oz || l.cant_18oz
+        )
+        if (lineasFiltradas.length > 0) {
+          const rows = lineasFiltradas.map((l, i) => ({
+            recepcion_id: recepcionId,
+            org_id: orgId,
+            orden: i + 1,
+            hora: l.hora || null,
+            codigo_productor: l.codigo_productor.trim() || null,
+            tipo: l.tipo,
+            pase_anden: l.pase_anden,
+            producto: l.producto.trim() || null,
+            cant_6oz:  l.cant_6oz  !== '' ? parseInt(l.cant_6oz,  10) : null,
+            cant_12oz: l.cant_12oz !== '' ? parseInt(l.cant_12oz, 10) : null,
+            cant_18oz: l.cant_18oz !== '' ? parseInt(l.cant_18oz, 10) : null,
+          }))
+          const { error: eLineas } = await tbl('m39_lineas').insert(rows)
+          if (eLineas) throw eLineas
+        }
       }
 
       setSheetOpen(false)
@@ -304,7 +402,7 @@ export function RecepcionFruta() {
           </div>
         ) : (
           recepciones.map(r => {
-            const totalCajas = r.total_6oz + r.total_12oz + r.total_18oz
+            const esAL = r.hoja_no !== null
             return (
               <div key={r.id} className="bg-card border border-border rounded-xl p-4">
                 <div className="flex items-start justify-between gap-2">
@@ -316,15 +414,29 @@ export function RecepcionFruta() {
                     {r.empresa && (
                       <p className="text-xs mt-0.5" style={{ fontWeight: 600 }}>{r.empresa}</p>
                     )}
+                    {r.hoja_no && (
+                      <p className="text-xs text-muted-foreground mt-0.5">Hoja No.: {r.hoja_no}</p>
+                    )}
                     <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                      <span className="text-xs px-2 py-0.5 rounded-full"
-                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}>
-                        {totalCajas} cajas totales
-                      </span>
-                      {(r.total_6oz > 0 || r.total_12oz > 0 || r.total_18oz > 0) && (
-                        <span className="text-xs text-muted-foreground">
-                          {r.total_6oz} · {r.total_12oz} · {r.total_18oz} (6/12/18 oz)
-                        </span>
+                      {esAL ? (
+                        <>
+                          <span className="text-xs px-2 py-0.5 rounded-full"
+                            style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}>
+                            {r.total_cajas} cajas · {r.total_piezas} piezas
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-xs px-2 py-0.5 rounded-full"
+                            style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}>
+                            {r.total_6oz + r.total_12oz + r.total_18oz} cajas totales
+                          </span>
+                          {(r.total_6oz > 0 || r.total_12oz > 0 || r.total_18oz > 0) && (
+                            <span className="text-xs text-muted-foreground">
+                              {r.total_6oz} · {r.total_12oz} · {r.total_18oz} (6/12/18 oz)
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -414,6 +526,19 @@ export function RecepcionFruta() {
                 />
               </div>
             </div>
+
+            {esAlmacen && (
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Hoja No.</label>
+                <input
+                  type="text"
+                  className={fieldCls}
+                  placeholder="Ej: 001"
+                  value={form.hoja_no}
+                  onChange={e => setF('hoja_no', e.target.value)}
+                />
+              </div>
+            )}
           </section>
 
           {/* ── Líneas de recepción ── */}
@@ -451,80 +576,169 @@ export function RecepcionFruta() {
                     )}
                   </div>
 
-                  {/* Hora + Código productor */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <label className="text-xs text-muted-foreground">Hora</label>
-                      <input
-                        type="time"
-                        className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
-                        value={l.hora}
-                        onChange={e => actualizarLinea(l._key, 'hora', e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs text-muted-foreground">Cód. Productor</label>
-                      <input
-                        type="text"
-                        className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
-                        placeholder="Ej: P-001"
-                        value={l.codigo_productor}
-                        onChange={e => actualizarLinea(l._key, 'codigo_productor', e.target.value)}
-                      />
-                    </div>
-                  </div>
+                  {esAlmacen ? (
+                    /* ── Almacén line fields ── */
+                    <>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Hora</label>
+                          <input
+                            type="time"
+                            className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                            value={l.hora}
+                            onChange={e => actualizarLinea(l._key, 'hora', e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Cultivo</label>
+                          <input
+                            type="text"
+                            className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                            placeholder="Ej: Zarzamora"
+                            value={l.cultivo}
+                            onChange={e => actualizarLinea(l._key, 'cultivo', e.target.value)}
+                          />
+                        </div>
+                      </div>
 
-                  {/* Tipo */}
-                  <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground">Tipo</label>
-                    <ToggleTipo value={l.tipo} onChange={v => actualizarLinea(l._key, 'tipo', v)} />
-                  </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Cajas</label>
+                          <input
+                            type="number"
+                            inputMode="numeric"
+                            min="0"
+                            placeholder="0"
+                            className="w-full h-9 rounded-lg border border-border bg-input-background px-2 text-sm text-center"
+                            value={l.cajas}
+                            onChange={e => actualizarLinea(l._key, 'cajas', e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Piezas</label>
+                          <input
+                            type="number"
+                            inputMode="numeric"
+                            min="0"
+                            placeholder="0"
+                            className="w-full h-9 rounded-lg border border-border bg-input-background px-2 text-sm text-center"
+                            value={l.piezas}
+                            onChange={e => actualizarLinea(l._key, 'piezas', e.target.value)}
+                          />
+                        </div>
+                      </div>
 
-                  {/* Pase de andén */}
-                  <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground">Pase de andén</label>
-                    <ToggleSiNo value={l.pase_anden} onChange={v => actualizarLinea(l._key, 'pase_anden', v)} />
-                  </div>
-
-                  {/* Producto */}
-                  <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground">Producto</label>
-                    <input
-                      type="text"
-                      className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
-                      placeholder="Nombre del producto"
-                      value={l.producto}
-                      onChange={e => actualizarLinea(l._key, 'producto', e.target.value)}
-                    />
-                  </div>
-
-                  {/* Cantidades */}
-                  <div className="grid grid-cols-3 gap-2">
-                    {([
-                      { label: '6 oz',  key: 'cant_6oz'  as const },
-                      { label: '12 oz', key: 'cant_12oz' as const },
-                      { label: '18 oz', key: 'cant_18oz' as const },
-                    ] as const).map(({ label, key }) => (
-                      <div key={key} className="space-y-1">
-                        <label className="text-xs text-muted-foreground">{label}</label>
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Entrega</label>
                         <input
-                          type="number"
-                          inputMode="numeric"
-                          min="0"
-                          placeholder="0"
-                          className="w-full h-9 rounded-lg border border-border bg-input-background px-2 text-sm text-center"
-                          value={l[key]}
-                          onChange={e => actualizarLinea(l._key, key, e.target.value)}
+                          type="text"
+                          className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                          placeholder="Nombre o referencia de entrega"
+                          value={l.entrega}
+                          onChange={e => actualizarLinea(l._key, 'entrega', e.target.value)}
                         />
                       </div>
-                    ))}
-                  </div>
+
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Limp. BE</label>
+                          <ToggleTriEstado value={l.limp_be} onChange={v => actualizarLinea(l._key, 'limp_be', v)} />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Limp. L</label>
+                          <ToggleTriEstado value={l.limp_l} onChange={v => actualizarLinea(l._key, 'limp_l', v)} />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Limp. LP</label>
+                          <ToggleTriEstado value={l.limp_lp} onChange={v => actualizarLinea(l._key, 'limp_lp', v)} />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Cód. Trazabilidad</label>
+                        <input
+                          type="text"
+                          className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                          placeholder="Código de trazabilidad"
+                          value={l.codigo_trazabilidad}
+                          onChange={e => actualizarLinea(l._key, 'codigo_trazabilidad', e.target.value)}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    /* ── Cuarto frío line fields (unchanged) ── */
+                    <>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Hora</label>
+                          <input
+                            type="time"
+                            className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                            value={l.hora}
+                            onChange={e => actualizarLinea(l._key, 'hora', e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Cód. Productor</label>
+                          <input
+                            type="text"
+                            className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                            placeholder="Ej: P-001"
+                            value={l.codigo_productor}
+                            onChange={e => actualizarLinea(l._key, 'codigo_productor', e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Tipo</label>
+                        <ToggleTipo value={l.tipo} onChange={v => actualizarLinea(l._key, 'tipo', v)} />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Pase de andén</label>
+                        <ToggleSiNo value={l.pase_anden} onChange={v => actualizarLinea(l._key, 'pase_anden', v)} />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Producto</label>
+                        <input
+                          type="text"
+                          className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                          placeholder="Nombre del producto"
+                          value={l.producto}
+                          onChange={e => actualizarLinea(l._key, 'producto', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2">
+                        {([
+                          { label: '6 oz',  key: 'cant_6oz'  as const },
+                          { label: '12 oz', key: 'cant_12oz' as const },
+                          { label: '18 oz', key: 'cant_18oz' as const },
+                        ] as const).map(({ label, key }) => (
+                          <div key={key} className="space-y-1">
+                            <label className="text-xs text-muted-foreground">{label}</label>
+                            <input
+                              type="number"
+                              inputMode="numeric"
+                              min="0"
+                              placeholder="0"
+                              className="w-full h-9 rounded-lg border border-border bg-input-background px-2 text-sm text-center"
+                              value={l[key]}
+                              onChange={e => actualizarLinea(l._key, key, e.target.value)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
 
-            {/* Totales auto-calculados */}
-            {(totales.t6 + totales.t12 + totales.t18) > 0 && (
+            {/* Totales — cuarto frío */}
+            {!esAlmacen && (totalesCF.t6 + totalesCF.t12 + totalesCF.t18) > 0 && (
               <div className="space-y-2">
                 <div className="rounded-xl p-3 space-y-1.5"
                   style={{ backgroundColor: 'var(--agro-success-fill)' }}>
@@ -532,7 +746,7 @@ export function RecepcionFruta() {
                     Total recepción del día
                   </p>
                   <div className="flex gap-4">
-                    {([['6 oz', totales.t6], ['12 oz', totales.t12], ['18 oz', totales.t18]] as const).map(([lbl, val]) => (
+                    {([['6 oz', totalesCF.t6], ['12 oz', totalesCF.t12], ['18 oz', totalesCF.t18]] as const).map(([lbl, val]) => (
                       <div key={lbl} className="flex items-center gap-1">
                         <span className="text-xs" style={{ color: 'var(--agro-success-text)' }}>{lbl}:</span>
                         <span className="text-xs" style={{ color: 'var(--agro-success-text)', fontWeight: 700 }}>{val}</span>
@@ -541,14 +755,14 @@ export function RecepcionFruta() {
                   </div>
                 </div>
 
-                {(totales.a6 + totales.a12 + totales.a18) > 0 && (
+                {(totalesCF.a6 + totalesCF.a12 + totalesCF.a18) > 0 && (
                   <div className="rounded-xl p-3 space-y-1.5"
                     style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
                     <p className="text-xs" style={{ fontWeight: 700, color: 'var(--agro-warning-text)' }}>
                       Total pase aduanal
                     </p>
                     <div className="flex gap-4">
-                      {([['6 oz', totales.a6], ['12 oz', totales.a12], ['18 oz', totales.a18]] as const).map(([lbl, val]) => (
+                      {([['6 oz', totalesCF.a6], ['12 oz', totalesCF.a12], ['18 oz', totalesCF.a18]] as const).map(([lbl, val]) => (
                         <div key={lbl} className="flex items-center gap-1">
                           <span className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>{lbl}:</span>
                           <span className="text-xs" style={{ color: 'var(--agro-warning-text)', fontWeight: 700 }}>{val}</span>
@@ -557,6 +771,24 @@ export function RecepcionFruta() {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Totales — almacén: inventario por cultivo */}
+            {esAlmacen && invCultivoForm && Object.values(invCultivoForm).some(v => v.cajas > 0 || v.piezas > 0) && (
+              <div className="rounded-xl p-3 space-y-2"
+                style={{ backgroundColor: 'var(--agro-success-fill)' }}>
+                <p className="text-xs" style={{ fontWeight: 700, color: 'var(--agro-success-text)' }}>
+                  Inventario por cultivo
+                </p>
+                {Object.entries(invCultivoForm).map(([cultivo, tot]) => (
+                  <div key={cultivo} className="flex items-center justify-between">
+                    <span className="text-xs" style={{ color: 'var(--agro-success-text)' }}>{cultivo}</span>
+                    <span className="text-xs" style={{ color: 'var(--agro-success-text)', fontWeight: 700 }}>
+                      {tot.cajas} cajas · {tot.piezas} piezas
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
           </section>

@@ -8,9 +8,12 @@ export interface M39RecepcionResumen {
   rancho_nombre: string
   fecha: string
   empresa: string | null
+  hoja_no: string | null
   total_6oz: number
   total_12oz: number
   total_18oz: number
+  total_cajas: number
+  total_piezas: number
 }
 
 const tbl = (name: string) => (supabase as any).from(name)
@@ -26,7 +29,7 @@ export function useM39Recepciones() {
     setLoading(true); setError(null)
     try {
       const { data, error: err } = await tbl('m39_recepciones')
-        .select('id, rancho_id, fecha, empresa, ranchos(nombre), m39_lineas(cant_6oz, cant_12oz, cant_18oz)')
+        .select('id, rancho_id, fecha, empresa, hoja_no, ranchos(nombre), m39_lineas(cant_6oz, cant_12oz, cant_18oz, cajas, piezas)')
         .eq('org_id', profile.org_id)
         .order('fecha', { ascending: false })
         .order('created_at', { ascending: false })
@@ -40,9 +43,12 @@ export function useM39Recepciones() {
           rancho_nombre: r.ranchos?.nombre ?? '—',
           fecha: r.fecha,
           empresa: r.empresa ?? null,
+          hoja_no: r.hoja_no ?? null,
           total_6oz: sum('cant_6oz'),
           total_12oz: sum('cant_12oz'),
           total_18oz: sum('cant_18oz'),
+          total_cajas: sum('cajas'),
+          total_piezas: sum('piezas'),
         }
       }))
     } catch (e: unknown) {

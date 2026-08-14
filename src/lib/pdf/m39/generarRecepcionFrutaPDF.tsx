@@ -1,6 +1,7 @@
 import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { RecepcionFrutaPDF, type M39RecepcionDataPDF, type M39LineaPDF } from './RecepcionFrutaPDF'
+import { RecepcionFrutaAlmacenPDF, type M39RecepcionAlmacenDataPDF, type M39LineaAlmacenPDF } from './RecepcionFrutaAlmacenPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
 
 function descargar(blob: Blob, filename: string) {
@@ -14,7 +15,11 @@ function descargar(blob: Blob, filename: string) {
   URL.revokeObjectURL(url)
 }
 
-async function cargarDatos(id: string, orgId: string): Promise<M39RecepcionDataPDF> {
+type CargarResult =
+  | { esAlmacen: false; d: M39RecepcionDataPDF }
+  | { esAlmacen: true; d: M39RecepcionAlmacenDataPDF }
+
+async function cargarDatos(id: string, orgId: string): Promise<CargarResult> {
   const [recRes, linRes, orgRes] = await Promise.all([
     (supabase as any).from('m39_recepciones')
       .select('*, ranchos(nombre)')
@@ -35,7 +40,39 @@ async function cargarDatos(id: string, orgId: string): Promise<M39RecepcionDataP
   if (linRes.error) throw linRes.error
 
   const r = recRes.data as any
-  const lineas: M39LineaPDF[] = ((linRes.data ?? []) as any[]).map((l) => ({
+  const rawLineas: any[] = linRes.data ?? []
+  const orgNombre: string = orgRes.data?.nombre ?? '—'
+  const instalacion: string = r.ranchos?.nombre ?? '—'
+
+  // hoja_no !== null → almacén variant (CF records never set hoja_no)
+  const esAlmacen = r.hoja_no !== null && r.hoja_no !== undefined
+
+  if (esAlmacen) {
+    const lineas: M39LineaAlmacenPDF[] = rawLineas.map((l) => ({
+      orden: l.orden,
+      hora: l.hora ?? null,
+      cultivo: l.cultivo ?? null,
+      cajas: l.cajas ?? null,
+      piezas: l.piezas ?? null,
+      entrega: l.entrega ?? null,
+      limp_be: l.limp_be ?? null,
+      limp_l: l.limp_l ?? null,
+      limp_lp: l.limp_lp ?? null,
+      codigo_trazabilidad: l.codigo_trazabilidad ?? null,
+    }))
+    const d: M39RecepcionAlmacenDataPDF = {
+      orgNombre,
+      instalacion,
+      fecha: r.fecha,
+      hoja_no: r.hoja_no || null,
+      empresa: r.empresa ?? null,
+      observaciones: r.observaciones ?? null,
+      lineas,
+    }
+    return { esAlmacen: true, d }
+  }
+
+  const lineas: M39LineaPDF[] = rawLineas.map((l) => ({
     orden: l.orden,
     hora: l.hora ?? null,
     codigo_productor: l.codigo_productor ?? null,
@@ -46,24 +83,32 @@ async function cargarDatos(id: string, orgId: string): Promise<M39RecepcionDataP
     cant_12oz: l.cant_12oz ?? null,
     cant_18oz: l.cant_18oz ?? null,
   }))
-
-  return {
-    orgNombre: orgRes.data?.nombre ?? '—',
-    instalacion: r.ranchos?.nombre ?? '—',
+  const d: M39RecepcionDataPDF = {
+    orgNombre,
+    instalacion,
     fecha: r.fecha,
     empresa: r.empresa ?? null,
     observaciones: r.observaciones ?? null,
     lineas,
   }
+  return { esAlmacen: false, d }
 }
 
 export async function generarRecepcionFrutaPDF(id: string, orgId: string, codigoClave: string): Promise<void> {
-  const d = await cargarDatos(id, orgId)
-  const blob = await pdf(<RecepcionFrutaPDF d={d} codigoClave={codigoClave} />).toBlob()
-  descargar(blob, nombrePdf('Recepcion_Fruta', d.fecha, d.instalacion))
+  const result = await cargarDatos(id, orgId)
+  let blob: Blob
+  if (result.esAlmacen) {
+    blob = await pdf(<RecepcionFrutaAlmacenPDF d={result.d} codigoClave={codigoClave} />).toBlob()
+  } else {
+    blob = await pdf(<RecepcionFrutaPDF d={result.d} codigoClave={codigoClave} />).toBlob()
+  }
+  descargar(blob, nombrePdf('Recepcion_Fruta', result.d.fecha))
 }
 
 export async function generarBlobRecepcionFruta(id: string, orgId: string, codigoClave: string): Promise<Blob> {
-  const d = await cargarDatos(id, orgId)
-  return pdf(<RecepcionFrutaPDF d={d} codigoClave={codigoClave} />).toBlob()
+  const result = await cargarDatos(id, orgId)
+  if (result.esAlmacen) {
+    return pdf(<RecepcionFrutaAlmacenPDF d={result.d} codigoClave={codigoClave} />).toBlob()
+  }
+  return pdf(<RecepcionFrutaPDF d={result.d} codigoClave={codigoClave} />).toBlob()
 }
