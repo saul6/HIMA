@@ -104,15 +104,32 @@ interface EtiquetaForm { verificado_por: string; cantidad_etiquetas: string }
 
 interface PrintData {
   lptCodigo: string
+  producto: string
   presentacion: string | null
   fechaEmpaque: string
   turno: number
   origenCodigo: string | null
   origenTipo: 'LR' | 'LC' | null
+  proveedorCodigo: string | null
+  clienteDestino: string
   cantEmpacada: number | null
   orgNombre: string
   ranchoNombre: string
   qrDataUrl: string
+}
+
+function buildQrText(d: Omit<PrintData, 'qrDataUrl'>): string {
+  return [
+    `LPT: ${d.lptCodigo}`,
+    `Producto: ${d.producto}`,
+    `Presentacion: ${d.presentacion ?? 'Caja / segun cliente'}`,
+    `Turno: T${d.turno}`,
+    `Fecha empaque: ${fmtFecha(d.fechaEmpaque)}`,
+    `${d.origenTipo ?? 'LR'}: ${d.origenCodigo ?? '—'}`,
+    `Proveedor: ${d.proveedorCodigo ?? '—'}`,
+    `Cliente/destino: ${d.clienteDestino}`,
+    `Empresa: ${d.orgNombre}`,
+  ].join('\n')
 }
 
 const PRINT_CSS = `
@@ -366,19 +383,30 @@ export function TrazabilidadProducto() {
         fecha: hoyMX(), verificado_por: formEtiqueta.verificado_por.trim(),
         cantidad_etiquetas: parseInt(formEtiqueta.cantidad_etiquetas) || 1, impreso: true,
       })
-      const qrDataUrl = await QRCode.toDataURL(sheetEtiqueta.lpt.codigo, { width: 320, margin: 1, errorCorrectionLevel: 'M' })
+      const lpt = sheetEtiqueta.lpt
       const orgRes = await tbl('organizaciones').select('nombre').eq('id', orgId).single()
       const orgNombre: string = orgRes.data?.nombre ?? '—'
       const ranchoNombre: string = ranchos.find((r: any) => r.id === ranchoId)?.nombre ?? '—'
-      const lpt = sheetEtiqueta.lpt
-      setPrintData({
-        lptCodigo: lpt.codigo, presentacion: lpt.presentacion ?? null,
+
+      let proveedorCodigo: string | null = null
+      if (lpt.lr_id) {
+        const lrRes = await tbl('m48_lotes_recepcion').select('proveedor_codigo').eq('id', lpt.lr_id).single()
+        proveedorCodigo = lrRes.data?.proveedor_codigo ?? null
+      }
+      const feRes = await tbl('m48_fe_lpt').select('m48_folios_embarque(cliente)').eq('lpt_id', lpt.id).maybeSingle()
+      const clienteDestino: string = feRes.data?.m48_folios_embarque?.cliente ?? 'Segun programacion'
+      const producto: string = lpt.codigo.split('-')[1] ?? '—'
+
+      const base: Omit<PrintData, 'qrDataUrl'> = {
+        lptCodigo: lpt.codigo, producto, presentacion: lpt.presentacion ?? null,
         fechaEmpaque: lpt.fecha_empaque, turno: lpt.turno,
         origenCodigo: lpt.lr_codigo ?? lpt.lc_codigo ?? null,
         origenTipo: lpt.lr_id ? 'LR' : lpt.lc_id ? 'LC' : null,
-        cantEmpacada: lpt.cant_empacada ?? null,
-        orgNombre, ranchoNombre, qrDataUrl,
-      })
+        proveedorCodigo, clienteDestino, cantEmpacada: lpt.cant_empacada ?? null,
+        orgNombre, ranchoNombre,
+      }
+      const qrDataUrl = await QRCode.toDataURL(buildQrText(base), { width: 400, margin: 1, errorCorrectionLevel: 'M' })
+      setPrintData({ ...base, qrDataUrl })
       toast.success('Liberacion registrada — selecciona la impresora en el dialogo')
       setSheetEtiqueta(null)
       setFormEtiqueta({ verificado_por: '', cantidad_etiquetas: '1' })
@@ -393,22 +421,36 @@ export function TrazabilidadProducto() {
     if (!orgId) return
     setLoadingPreview(lpt.id)
     try {
-      const qrDataUrl = await QRCode.toDataURL(lpt.codigo, { width: 320, margin: 1, errorCorrectionLevel: 'M' })
       const orgRes = await tbl('organizaciones').select('nombre').eq('id', orgId).single()
       const orgNombre: string = orgRes.data?.nombre ?? '—'
       const ranchoNombre: string = ranchos.find((r: any) => r.id === ranchoId)?.nombre ?? '—'
-      setPreviewInfo({
+
+      let proveedorCodigo: string | null = null
+      if (lpt.lr_id) {
+        const lrRes = await tbl('m48_lotes_recepcion').select('proveedor_codigo').eq('id', lpt.lr_id).single()
+        proveedorCodigo = lrRes.data?.proveedor_codigo ?? null
+      }
+
+      const feRes = await tbl('m48_fe_lpt').select('m48_folios_embarque(cliente)').eq('lpt_id', lpt.id).maybeSingle()
+      const clienteDestino: string = feRes.data?.m48_folios_embarque?.cliente ?? 'Segun programacion'
+
+      const producto: string = lpt.codigo.split('-')[1] ?? '—'
+      const base: Omit<PrintData, 'qrDataUrl'> = {
         lptCodigo: lpt.codigo,
+        producto,
         presentacion: lpt.presentacion ?? null,
         fechaEmpaque: lpt.fecha_empaque,
         turno: lpt.turno,
         origenCodigo: lpt.lr_codigo ?? lpt.lc_codigo ?? null,
         origenTipo: lpt.lr_id ? 'LR' : lpt.lc_id ? 'LC' : null,
+        proveedorCodigo,
+        clienteDestino,
         cantEmpacada: lpt.cant_empacada ?? null,
         orgNombre,
         ranchoNombre,
-        qrDataUrl,
-      })
+      }
+      const qrDataUrl = await QRCode.toDataURL(buildQrText(base), { width: 400, margin: 1, errorCorrectionLevel: 'M' })
+      setPreviewInfo({ ...base, qrDataUrl })
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al cargar vista previa')
     } finally {
@@ -974,7 +1016,7 @@ export function TrazabilidadProducto() {
             </button>
             {/* Container clipped to scaled size; inner div holds the real mm layout */}
             <div style={{ width: 258, height: 514, overflow: 'hidden', borderRadius: 8, boxShadow: '0 4px 32px rgba(0,0,0,0.5)' }}>
-              <div style={{ transform: 'scale(0.67)', transformOrigin: 'top left', width: 385, height: 768, background: '#fff', fontFamily: 'Arial, Helvetica, sans-serif', padding: '4mm', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ transform: 'scale(0.67)', transformOrigin: 'top left', width: 385, height: 768, background: '#fff', fontFamily: 'Arial, Helvetica, sans-serif', padding: 0, boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
                 <EtiquetaContent d={previewInfo} />
               </div>
             </div>
@@ -991,7 +1033,7 @@ export function TrazabilidadProducto() {
           <style>{PRINT_CSS}</style>
           <div
             id="etiqueta-print"
-            style={{ position: 'fixed', left: '-9999px', top: 0, width: '102mm', height: '203mm', background: '#fff', fontFamily: 'Arial, Helvetica, sans-serif', padding: '4mm', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}
+            style={{ position: 'fixed', left: '-9999px', top: 0, width: '102mm', height: '203mm', background: '#fff', fontFamily: 'Arial, Helvetica, sans-serif', padding: 0, boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}
           >
             <EtiquetaContent d={printData} />
           </div>
@@ -1193,40 +1235,71 @@ function TrazChip({ label, code, sub }: { label: string; code: string; sub?: str
   )
 }
 
-function EtiquetaContent({ d }: { d: PrintData }) {
+const BD_HTML = '1px solid #2a2a2a'
+
+function Cel({ label, value, border, small }: { label: string; value: string; border?: boolean; small?: boolean }) {
   return (
-    <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3mm' }}>
-        <span style={{ fontSize: '13pt', fontWeight: 800 }}>M.A.D.Y</span>
-        <div style={{ textAlign: 'right', fontSize: '6.5pt', color: '#555', maxWidth: '55mm', lineHeight: 1.3 }}>
-          <div>{d.orgNombre}</div>
-          <div style={{ color: '#888' }}>{d.ranchoNombre}</div>
+    <div style={{ flex: 1, padding: '1.5mm 2mm', ...(border ? { borderRight: BD_HTML } : {}) }}>
+      <div style={{ fontSize: '5.5pt', fontWeight: 700, color: '#555', marginBottom: '0.8mm', letterSpacing: '0.04em' }}>{label}</div>
+      <div style={{ fontSize: small ? '6.5pt' : '8pt', fontWeight: 700, color: '#111', lineHeight: 1.2 }}>{value}</div>
+    </div>
+  )
+}
+
+function EtiquetaContent({ d }: { d: PrintData }) {
+  const origenLabel = d.origenTipo ? `LR/LC (${d.origenTipo})` : 'LR / LC'
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', border: BD_HTML, flex: 1 }}>
+
+      {/* Header: logo cliente | titulo */}
+      <div style={{ display: 'flex', flexDirection: 'row', height: '18mm', borderBottom: BD_HTML, flexShrink: 0 }}>
+        <div style={{ width: '26mm', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight: BD_HTML, padding: '1.5mm' }}>
+          <img
+            src="/images/logo-los-gemelos.png"
+            alt="Logo"
+            style={{ maxWidth: '22mm', maxHeight: '14mm', objectFit: 'contain' }}
+            onError={(e: any) => { e.target.style.display = 'none' }}
+          />
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '2mm 3mm' }}>
+          <div style={{ fontSize: '9.5pt', fontWeight: 800, color: '#111', marginBottom: '1mm' }}>Etiqueta de trazabilidad</div>
+          <div style={{ fontSize: '7.5pt', color: '#444' }}>{d.orgNombre}</div>
         </div>
       </div>
-      <div style={{ height: '0.5px', background: '#ddd', marginBottom: '3mm' }} />
-      <div style={{ textAlign: 'center', marginBottom: '4mm' }}>
-        <div style={{ fontSize: '6.5pt', color: '#888', fontWeight: 700, letterSpacing: '0.08em', marginBottom: '1mm' }}>LOTE DE PRODUCTO TERMINADO</div>
-        <div style={{ fontSize: '15pt', fontWeight: 800, color: '#1a1a1a' }}>{d.lptCodigo}</div>
+
+      {/* Fila 1: Producto | Presentacion | Turno */}
+      <div style={{ display: 'flex', flexDirection: 'row', height: '13mm', borderBottom: BD_HTML, flexShrink: 0 }}>
+        <Cel label="PRODUCTO" value={d.producto} border />
+        <Cel label="PRESENTACION" value={d.presentacion ?? 'Caja / segun cliente'} border small />
+        <Cel label="TURNO" value={`T${d.turno}`} />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4mm' }}>
-        <img src={d.qrDataUrl} style={{ width: '60mm', height: '60mm', display: 'block' }} alt="" />
+
+      {/* Fila 2: Fecha empaque | LR/LC | Proveedor */}
+      <div style={{ display: 'flex', flexDirection: 'row', height: '13mm', borderBottom: BD_HTML, flexShrink: 0 }}>
+        <Cel label="FECHA DE EMPAQUE" value={fmtFecha(d.fechaEmpaque)} border />
+        <Cel label={origenLabel} value={d.origenCodigo ?? '—'} border small />
+        <Cel label="ORIGEN / PROVEEDOR" value={d.proveedorCodigo ?? '—'} />
       </div>
-      <div style={{ height: '0.5px', background: '#ddd', marginBottom: '3mm' }} />
-      <div style={{ fontSize: '6.5pt', flex: 1 }}>
-        {([
-          ['Producto:', d.presentacion ?? '—'],
-          ['F. Empaque:', fmtFecha(d.fechaEmpaque)],
-          ['Turno:', String(d.turno)],
-          [`Origen (${d.origenTipo ?? '—'}):`, d.origenCodigo ?? '—'],
-          ...(d.cantEmpacada != null ? [['Cantidad:', String(d.cantEmpacada)]] : []),
-        ] as [string, string][]).map(([lbl, val]) => (
-          <div key={lbl} style={{ display: 'flex', marginBottom: '2mm' }}>
-            <span style={{ color: '#666', fontWeight: 700, width: '26mm', flexShrink: 0 }}>{lbl}</span>
-            <span style={{ color: '#222', flex: 1 }}>{val}</span>
-          </div>
-        ))}
+
+      {/* Fila 3: LPT en grande | Cliente/destino */}
+      <div style={{ display: 'flex', flexDirection: 'row', height: '18mm', borderBottom: BD_HTML, flexShrink: 0 }}>
+        <div style={{ flex: 3, padding: '2mm', borderRight: BD_HTML, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ fontSize: '5.5pt', fontWeight: 700, color: '#555', marginBottom: '1.5mm', letterSpacing: '0.04em' }}>LOTE DE PRODUCTO TERMINADO</div>
+          <div style={{ fontSize: '11pt', fontWeight: 800, color: '#111', lineHeight: 1.1 }}>{d.lptCodigo}</div>
+        </div>
+        <div style={{ flex: 2, padding: '2mm', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ fontSize: '5.5pt', fontWeight: 700, color: '#555', marginBottom: '1.5mm', letterSpacing: '0.04em' }}>CLIENTE / DESTINO</div>
+          <div style={{ fontSize: '7pt', fontWeight: 700, color: '#111' }}>{d.clienteDestino}</div>
+        </div>
       </div>
-      <div style={{ textAlign: 'center', fontSize: '5.5pt', color: '#bbb' }}>M.A.D.Y - DuoMind Solutions</div>
-    </>
+
+      {/* Seccion QR */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3mm' }}>
+        <div style={{ fontSize: '6.5pt', fontWeight: 700, color: '#555', letterSpacing: '0.05em', marginBottom: '2mm' }}>CODIGO VISUAL DEL LOTE</div>
+        <img src={d.qrDataUrl} style={{ width: '58mm', height: '58mm' }} alt="" />
+        <div style={{ fontSize: '7.5pt', fontWeight: 800, color: '#111', marginTop: '2mm', textAlign: 'center' }}>{d.lptCodigo}</div>
+      </div>
+
+    </div>
   )
 }
