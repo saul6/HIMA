@@ -225,6 +225,7 @@ export function RecepcionFruta() {
   async function guardar() {
     if (!orgId) return
     if (!form.rancho_id) { toast.error(`Selecciona una ${terminosSitio.singular}`); return }
+    if (esAlmacen && !form.empresa.trim()) { toast.error('Indica la empresa proveedora (requerida para trazabilidad)'); return }
     setGuardando(true)
     try {
       const recepcionPayload: any = {
@@ -249,25 +250,65 @@ export function RecepcionFruta() {
 
       if (esAlmacen) {
         const lineasFiltradas = lineas.filter(l =>
-          l.cultivo.trim() || l.cajas || l.piezas || l.entrega.trim() || l.codigo_trazabilidad.trim()
+          l.cultivo.trim() || l.cajas || l.piezas || l.entrega.trim()
         )
         if (lineasFiltradas.length > 0) {
-          const rows = lineasFiltradas.map((l, i) => ({
-            recepcion_id: recepcionId,
-            org_id: orgId,
-            orden: i + 1,
-            hora: l.hora || null,
-            cultivo: l.cultivo.trim() || null,
-            cajas: l.cajas !== '' ? parseInt(l.cajas, 10) : null,
-            piezas: l.piezas !== '' ? parseInt(l.piezas, 10) : null,
-            entrega: l.entrega.trim() || null,
-            limp_be: l.limp_be,
-            limp_l: l.limp_l,
-            limp_lp: l.limp_lp,
-            codigo_trazabilidad: l.codigo_trazabilidad.trim() || null,
-          }))
-          const { error: eLineas } = await tbl('m39_lineas').insert(rows)
-          if (eLineas) throw eLineas
+          // Cada línea = una llegada física = un LR en M48 (fuente única de numeración)
+          // Se insertan de forma secuencial para que el trigger de consecutivo no colisione
+          const lrIds: string[] = []
+          const rows: any[] = []
+          try {
+            for (let i = 0; i < lineasFiltradas.length; i++) {
+              const l = lineasFiltradas[i]
+              const partes = [
+                l.limp_be !== null ? `BE:${l.limp_be ? 'Si' : 'No'}` : null,
+                l.limp_l  !== null ? `L:${l.limp_l  ? 'Si' : 'No'}` : null,
+                l.limp_lp !== null ? `LP:${l.limp_lp ? 'Si' : 'No'}` : null,
+              ].filter(Boolean)
+              const { data: lrData, error: lrErr } = await tbl('m48_lotes_recepcion')
+                .insert({
+                  org_id: orgId,
+                  rancho_id: form.rancho_id,
+                  fecha: form.fecha,
+                  hora: l.hora || null,
+                  proveedor_nombre: form.empresa.trim(),
+                  proveedor_origen: null,
+                  proveedor_codigo: 'P000',
+                  cantidad: l.cajas !== '' ? parseInt(l.cajas, 10) : null,
+                  unidad: l.cajas !== '' ? 'cajas' : null,
+                  condicion_vehiculo: partes.length > 0 ? partes.join(' ') : null,
+                  resultado: l.limp_lp === false ? 'rechazado' : 'aceptado',
+                  responsable: null,
+                  observaciones: form.observaciones.trim() || null,
+                })
+                .select('id, codigo')
+                .single()
+              if (lrErr) throw lrErr
+              lrIds.push(lrData.id)
+              rows.push({
+                recepcion_id: recepcionId,
+                org_id: orgId,
+                orden: i + 1,
+                hora: l.hora || null,
+                cultivo: l.cultivo.trim() || null,
+                cajas: l.cajas !== '' ? parseInt(l.cajas, 10) : null,
+                piezas: l.piezas !== '' ? parseInt(l.piezas, 10) : null,
+                entrega: l.entrega.trim() || null,
+                limp_be: l.limp_be,
+                limp_l: l.limp_l,
+                limp_lp: l.limp_lp,
+                lr_id: lrData.id,
+                codigo_trazabilidad: lrData.codigo,
+              })
+            }
+            const { error: eLineas } = await tbl('m39_lineas').insert(rows)
+            if (eLineas) throw eLineas
+          } catch (e) {
+            // Rollback: eliminar LRs creados y la recepcion para no dejar huerfanos
+            if (lrIds.length > 0) await tbl('m48_lotes_recepcion').delete().in('id', lrIds)
+            await tbl('m39_recepciones').delete().eq('id', recepcionId)
+            throw e
+          }
         }
       } else {
         const lineasFiltradas = lineas.filter(l =>
@@ -516,7 +557,7 @@ export function RecepcionFruta() {
                 />
               </div>
               <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Empresa</label>
+                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{esAlmacen ? 'Empresa *' : 'Empresa'}</label>
                 <input
                   type="text"
                   className={fieldCls}
@@ -656,13 +697,12 @@ export function RecepcionFruta() {
 
                       <div className="space-y-1">
                         <label className="text-xs text-muted-foreground">Cód. Trazabilidad</label>
-                        <input
-                          type="text"
-                          className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
-                          placeholder="Código de trazabilidad"
-                          value={l.codigo_trazabilidad}
-                          onChange={e => actualizarLinea(l._key, 'codigo_trazabilidad', e.target.value)}
-                        />
+                        <div
+                          className="w-full h-9 rounded-lg border border-border px-2.5 text-sm flex items-center font-mono"
+                          style={{ background: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                        >
+                          Se genera al guardar
+                        </div>
                       </div>
                     </>
                   ) : (
