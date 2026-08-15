@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import {
   ChevronLeft, Plus, FileDown, X, Loader2, PackageOpen,
   Files, TriangleAlert, Minus,
@@ -48,6 +48,7 @@ interface LineaForm {
   limp_l: boolean | null
   limp_lp: boolean | null
   codigo_trazabilidad: string
+  lr_id: string | null
 }
 
 interface FormState {
@@ -66,7 +67,7 @@ function nuevaLinea(): LineaForm {
     cant_6oz: '', cant_12oz: '', cant_18oz: '',
     cultivo: '', cajas: '', piezas: '', entrega: '',
     limp_be: null, limp_l: null, limp_lp: null,
-    codigo_trazabilidad: '',
+    codigo_trazabilidad: '', lr_id: null,
   }
 }
 
@@ -177,6 +178,7 @@ export function RecepcionFruta() {
   const [form, setForm] = useState<FormState>({ ...FORM_BASE, fecha: hoyMX() })
   const [lineas, setLineas] = useState<LineaForm[]>([nuevaLinea()])
   const [guardando, setGuardando] = useState(false)
+  const savingRef = useRef(false) // bloqueo síncrono contra doble-submit
   const [pdfLoading, setPdfLoading] = useState<string | null>(null)
   const [consolidadoForm, setConsolidadoForm] = useState({ rancho_id: '', desde: hoyMX(), hasta: hoyMX() })
   const [exportando, setExportando] = useState(false)
@@ -223,9 +225,11 @@ export function RecepcionFruta() {
   }, [esAlmacen, lineas])
 
   async function guardar() {
+    if (savingRef.current) return // evita doble-submit antes de que React deshabilite el botón
     if (!orgId) return
     if (!form.rancho_id) { toast.error(`Selecciona una ${terminosSitio.singular}`); return }
     if (esAlmacen && !form.empresa.trim()) { toast.error('Indica la empresa proveedora (requerida para trazabilidad)'); return }
+    savingRef.current = true
     setGuardando(true)
     try {
       const recepcionPayload: any = {
@@ -260,31 +264,41 @@ export function RecepcionFruta() {
           try {
             for (let i = 0; i < lineasFiltradas.length; i++) {
               const l = lineasFiltradas[i]
-              const partes = [
-                l.limp_be !== null ? `BE:${l.limp_be ? 'Si' : 'No'}` : null,
-                l.limp_l  !== null ? `L:${l.limp_l  ? 'Si' : 'No'}` : null,
-                l.limp_lp !== null ? `LP:${l.limp_lp ? 'Si' : 'No'}` : null,
-              ].filter(Boolean)
-              const { data: lrData, error: lrErr } = await tbl('m48_lotes_recepcion')
-                .insert({
-                  org_id: orgId,
-                  rancho_id: form.rancho_id,
-                  fecha: form.fecha,
-                  hora: l.hora || null,
-                  proveedor_nombre: form.empresa.trim(),
-                  proveedor_origen: null,
-                  proveedor_codigo: 'P000',
-                  cantidad: l.cajas !== '' ? parseInt(l.cajas, 10) : null,
-                  unidad: l.cajas !== '' ? 'cajas' : null,
-                  condicion_vehiculo: partes.length > 0 ? partes.join(' ') : null,
-                  resultado: l.limp_lp === false ? 'rechazado' : 'aceptado',
-                  responsable: null,
-                  observaciones: form.observaciones.trim() || null,
-                })
-                .select('id, codigo')
-                .single()
-              if (lrErr) throw lrErr
-              lrIds.push(lrData.id)
+              let lrId = l.lr_id
+              let lrCodigo = l.codigo_trazabilidad || null
+
+              if (!lrId) {
+                // Línea nueva: crear LR en M48 — NO enviar codigo/consecutivo/id;
+                // el trigger los genera y los devuelve via .select()
+                const partes = [
+                  l.limp_be !== null ? `BE:${l.limp_be ? 'Si' : 'No'}` : null,
+                  l.limp_l  !== null ? `L:${l.limp_l  ? 'Si' : 'No'}` : null,
+                  l.limp_lp !== null ? `LP:${l.limp_lp ? 'Si' : 'No'}` : null,
+                ].filter(Boolean)
+                const { data: lrData, error: lrErr } = await tbl('m48_lotes_recepcion')
+                  .insert({
+                    org_id: orgId,
+                    rancho_id: form.rancho_id,
+                    fecha: form.fecha,
+                    hora: l.hora || null,
+                    proveedor_nombre: form.empresa.trim(),
+                    proveedor_origen: null,
+                    proveedor_codigo: 'P000',
+                    cantidad: l.cajas !== '' ? parseInt(l.cajas, 10) : null,
+                    unidad: l.cajas !== '' ? 'cajas' : null,
+                    condicion_vehiculo: partes.length > 0 ? partes.join(' ') : null,
+                    resultado: l.limp_lp === false ? 'rechazado' : 'aceptado',
+                    responsable: null,
+                    observaciones: form.observaciones.trim() || null,
+                  })
+                  .select('id, codigo')
+                  .single()
+                if (lrErr) throw lrErr
+                lrId = lrData.id
+                lrCodigo = lrData.codigo
+                lrIds.push(lrData.id)
+              }
+
               rows.push({
                 recepcion_id: recepcionId,
                 org_id: orgId,
@@ -297,8 +311,8 @@ export function RecepcionFruta() {
                 limp_be: l.limp_be,
                 limp_l: l.limp_l,
                 limp_lp: l.limp_lp,
-                lr_id: lrData.id,
-                codigo_trazabilidad: lrData.codigo,
+                lr_id: lrId,
+                codigo_trazabilidad: lrCodigo,
               })
             }
             const { error: eLineas } = await tbl('m39_lineas').insert(rows)
@@ -343,13 +357,17 @@ export function RecepcionFruta() {
         toast.error('PDF no generado')
       }
     } catch (e: any) {
+      console.error('save recepcion error', e)
+      console.error('details', e?.details, 'code', e?.code, 'hint', e?.hint)
       const msg: string = e?.message ?? 'Error al guardar'
+      const details: string = e?.details ? ` (${e.details})` : ''
       if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
-        toast.error(msg)
+        toast.error(msg + details)
       }
     } finally {
+      savingRef.current = false
       setGuardando(false)
     }
   }
