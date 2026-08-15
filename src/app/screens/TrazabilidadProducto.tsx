@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import {
   ChevronLeft, Plus, X, Loader2, Search, Printer,
@@ -18,7 +18,8 @@ import {
   type M48LoteCompuesto, type M48FolioEmbarque,
   type TrazabilidadNodo,
 } from '@/hooks/useM48Trazabilidad'
-import { generarEtiquetaLPT, registrarYGenerarEtiqueta } from '@/lib/pdf/m48/generarM48PDF'
+import { registrarYGenerarEtiqueta } from '@/lib/pdf/m48/generarM48PDF'
+import QRCode from 'qrcode'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -101,6 +102,29 @@ const FE_VACÍO: FEForm = {
 
 interface EtiquetaForm { verificado_por: string; cantidad_etiquetas: string }
 
+interface PrintData {
+  lptCodigo: string
+  presentacion: string | null
+  fechaEmpaque: string
+  turno: number
+  origenCodigo: string | null
+  origenTipo: 'LR' | 'LC' | null
+  cantEmpacada: number | null
+  orgNombre: string
+  ranchoNombre: string
+  qrDataUrl: string
+}
+
+const PRINT_CSS = `
+@media print {
+  @page { size: 102mm 203mm; margin: 0; }
+  html, body { margin: 0; }
+  body * { visibility: hidden; }
+  #etiqueta-print, #etiqueta-print * { visibility: visible; }
+  #etiqueta-print { position: absolute; inset: 0; width: 102mm; height: 203mm; }
+}
+`
+
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export function TrazabilidadProducto() {
@@ -137,6 +161,7 @@ export function TrazabilidadProducto() {
   const [busqueda, setBusqueda] = useState('')
   const [resultadoTraz, setResultadoTraz] = useState<TrazabilidadNodo | null>(null)
   const [buscandoTraz, setBuscandoTraz] = useState(false)
+  const [printData, setPrintData] = useState<PrintData | null>(null)
 
   // Search filter
   const [filtroLR, setFiltroLR] = useState('')
@@ -312,6 +337,53 @@ export function TrazabilidadProducto() {
       toast.error(e instanceof Error ? e.message : 'Error en la consulta')
     } finally { setBuscandoTraz(false) }
   }, [busqueda, orgId])
+
+  // ── Imprimir etiqueta ───────────────────────────────────────────────────────
+
+  // El navegador no permite seleccionar impresora por codigo ni imprimir en silencio;
+  // siempre pasa por el dialogo del sistema. Impresion 100% automatica requeriria
+  // un agente local o SDK de impresion — fuera del alcance de esta app web.
+  useEffect(() => {
+    if (!printData) return
+    const timeout = setTimeout(() => { window.print() }, 100)
+    const onAfterPrint = () => setPrintData(null)
+    window.addEventListener('afterprint', onAfterPrint)
+    return () => {
+      clearTimeout(timeout)
+      window.removeEventListener('afterprint', onAfterPrint)
+    }
+  }, [printData])
+
+  async function handleImprimirEtiqueta() {
+    if (!sheetEtiqueta || !orgId || !ranchoId) return
+    if (!formEtiqueta.verificado_por.trim()) { toast.error('Ingresa quien verifica'); return }
+    setGuardando(true)
+    try {
+      await tbl('m48_etiquetas').insert({
+        lpt_id: sheetEtiqueta.lpt.id, org_id: orgId, rancho_id: ranchoId,
+        fecha: hoyMX(), verificado_por: formEtiqueta.verificado_por.trim(),
+        cantidad_etiquetas: parseInt(formEtiqueta.cantidad_etiquetas) || 1, impreso: true,
+      })
+      const qrDataUrl = await QRCode.toDataURL(sheetEtiqueta.lpt.codigo, { width: 320, margin: 1, errorCorrectionLevel: 'M' })
+      const orgRes = await tbl('organizaciones').select('nombre').eq('id', orgId).single()
+      const orgNombre: string = orgRes.data?.nombre ?? '—'
+      const ranchoNombre: string = ranchos.find((r: any) => r.id === ranchoId)?.nombre ?? '—'
+      const lpt = sheetEtiqueta.lpt
+      setPrintData({
+        lptCodigo: lpt.codigo, presentacion: lpt.presentacion ?? null,
+        fechaEmpaque: lpt.fecha_empaque, turno: lpt.turno,
+        origenCodigo: lpt.lr_codigo ?? lpt.lc_codigo ?? null,
+        origenTipo: lpt.lr_id ? 'LR' : lpt.lc_id ? 'LC' : null,
+        cantEmpacada: lpt.cant_empacada ?? null,
+        orgNombre, ranchoNombre, qrDataUrl,
+      })
+      toast.success('Liberacion registrada — selecciona la impresora en el dialogo')
+      setSheetEtiqueta(null)
+      setFormEtiqueta({ verificado_por: '', cantidad_etiquetas: '1' })
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al imprimir')
+    } finally { setGuardando(false) }
+  }
 
   // ── Filtros de lista ────────────────────────────────────────────────────────
 
@@ -834,6 +906,59 @@ export function TrazabilidadProducto() {
         </BottomSheet>
       )}
 
+      {/* ── Overlay de impresion — oculto en pantalla, visible solo en @media print ── */}
+      {printData && (
+        <>
+          <style>{PRINT_CSS}</style>
+          <div
+            id="etiqueta-print"
+            style={{ position: 'fixed', left: '-9999px', top: 0, width: '102mm', height: '203mm', background: '#fff', fontFamily: 'Arial, Helvetica, sans-serif', padding: '4mm', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3mm' }}>
+              <span style={{ fontSize: '13pt', fontWeight: 800 }}>M.A.D.Y</span>
+              <div style={{ textAlign: 'right', fontSize: '6.5pt', color: '#555', maxWidth: '55mm', lineHeight: 1.3 }}>
+                <div>{printData.orgNombre}</div>
+                <div style={{ color: '#888' }}>{printData.ranchoNombre}</div>
+              </div>
+            </div>
+            <div style={{ height: '0.5px', background: '#ddd', marginBottom: '3mm' }} />
+
+            {/* LPT code */}
+            <div style={{ textAlign: 'center', marginBottom: '4mm' }}>
+              <div style={{ fontSize: '6.5pt', color: '#888', fontWeight: 700, letterSpacing: '0.08em', marginBottom: '1mm' }}>LOTE DE PRODUCTO TERMINADO</div>
+              <div style={{ fontSize: '15pt', fontWeight: 800, color: '#1a1a1a' }}>{printData.lptCodigo}</div>
+            </div>
+
+            {/* QR */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4mm' }}>
+              <img src={printData.qrDataUrl} style={{ width: '60mm', height: '60mm', display: 'block' }} alt="" />
+            </div>
+
+            <div style={{ height: '0.5px', background: '#ddd', marginBottom: '3mm' }} />
+
+            {/* Data rows */}
+            <div style={{ fontSize: '6.5pt', flex: 1 }}>
+              {([
+                ['Producto:', printData.presentacion ?? '—'],
+                ['F. Empaque:', fmtFecha(printData.fechaEmpaque)],
+                ['Turno:', String(printData.turno)],
+                [`Origen (${printData.origenTipo ?? '—'}):`, printData.origenCodigo ?? '—'],
+                ...(printData.cantEmpacada != null ? [['Cantidad:', String(printData.cantEmpacada)]] : []),
+              ] as [string, string][]).map(([lbl, val]) => (
+                <div key={lbl} style={{ display: 'flex', marginBottom: '2mm' }}>
+                  <span style={{ color: '#666', fontWeight: 700, width: '26mm', flexShrink: 0 }}>{lbl}</span>
+                  <span style={{ color: '#222', flex: 1 }}>{val}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div style={{ textAlign: 'center', fontSize: '5.5pt', color: '#bbb' }}>M.A.D.Y - DuoMind Solutions</div>
+          </div>
+        </>
+      )}
+
       {/* ── Bottom Sheet: Etiqueta ───────────────────────────────────────── */}
       {sheetEtiqueta && (
         <BottomSheet title={`Etiqueta ${sheetEtiqueta.lpt.codigo}`} onClose={() => setSheetEtiqueta(null)}>
@@ -845,7 +970,7 @@ export function TrazabilidadProducto() {
             {sheetEtiqueta.lpt.lc_codigo && <p className="text-xs mt-0.5" style={{ color: 'var(--agro-success-text)' }}>LC: {sheetEtiqueta.lpt.lc_codigo}</p>}
           </div>
           <p className="text-xs text-muted-foreground mb-3">
-            Al generar la etiqueta se registra la liberacion del producto (POE-COCO-CAL-13).
+            Al generar o imprimir se registra la liberacion del producto (POE-COCO-CAL-13).
           </p>
           <FormField label="VERIFICADO POR *">
             <input value={formEtiqueta.verificado_por} onChange={e => setFormEtiqueta(f => ({ ...f, verificado_por: e.target.value }))} placeholder="Nombre del responsable de calidad" className={inputCls} />
@@ -853,7 +978,11 @@ export function TrazabilidadProducto() {
           <FormField label="CANTIDAD DE ETIQUETAS">
             <input type="number" min="1" value={formEtiqueta.cantidad_etiquetas} onChange={e => setFormEtiqueta(f => ({ ...f, cantidad_etiquetas: e.target.value }))} className={inputCls} />
           </FormField>
-          <SaveBtn loading={guardando} onClick={handleGenerarEtiqueta} label="Registrar liberacion y generar etiqueta PDF" />
+          <SaveBtn loading={guardando} onClick={handleImprimirEtiqueta} label="Imprimir etiqueta" icon={<Printer className="w-4 h-4" />} />
+          <SaveBtn loading={guardando} onClick={handleGenerarEtiqueta} label="Generar etiqueta (PDF)" secondary />
+          <p className="text-xs text-center" style={{ color: 'var(--muted-foreground)' }}>
+            Al imprimir: elige "Tamano real / 100%" (sin ajustar a pagina) en el dialogo.
+          </p>
         </BottomSheet>
       )}
     </div>
@@ -874,14 +1003,14 @@ function FormField({ label, hint, children, className }: { label: string; hint?:
   )
 }
 
-function SaveBtn({ loading, onClick, label }: { loading: boolean; onClick: () => void; label: string }) {
+function SaveBtn({ loading, onClick, label, secondary, icon }: { loading: boolean; onClick: () => void; label: string; secondary?: boolean; icon?: React.ReactNode }) {
   return (
     <button
       onClick={onClick} disabled={loading}
-      className="w-full h-12 rounded-3xl text-white text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
-      style={{ fontWeight: 600, background: 'var(--primary)' }}
+      className="w-full h-12 rounded-3xl text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+      style={{ fontWeight: 600, background: secondary ? 'var(--muted)' : 'var(--primary)', color: secondary ? 'var(--primary)' : '#fff' }}
     >
-      {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
       {label}
     </button>
   )
