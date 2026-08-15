@@ -923,8 +923,8 @@ export function VerificacionInsumos() {
                 <input
                   type="date"
                   value={dFecha}
-                  min={puedeEditarFecha ? registroActivo.mes : hoy()}
-                  max={puedeEditarFecha ? ultimoDiaMes(registroActivo.mes) : hoy()}
+                  min={puedeEditarFecha && registroActivo ? registroActivo.mes : hoy()}
+                  max={puedeEditarFecha && registroActivo ? ultimoDiaMes(registroActivo.mes) : hoy()}
                   onChange={(e) => { if (puedeEditarFecha) { setDFecha(e.target.value); setDErrFecha(false) } }}
                   className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
                   style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
