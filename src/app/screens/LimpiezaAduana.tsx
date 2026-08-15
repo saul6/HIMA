@@ -275,6 +275,7 @@ export function LimpiezaAduana() {
     try {
       const payload: any = {
         registro_id: registroActivo.id,
+        org_id: orgId,
         dia: diaSeleccionado,
         concentracion_cloro: diaConcCloro !== '' ? parseFloat(diaConcCloro) : null,
         ajuste_cloro: diaAjCloro.trim() || null,
@@ -285,7 +286,10 @@ export function LimpiezaAduana() {
       }
       const { error: e } = await tbl('m29_dias')
         .upsert(payload, { onConflict: 'registro_id,dia' })
-      if (e) throw e
+      if (e) {
+        console.error('m29 dia error', e?.message, e?.details)
+        throw e
+      }
       setDiasData((prev) => ({
         ...prev,
         [diaSeleccionado]: {
