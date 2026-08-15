@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import {
-  ChevronLeft, Plus, X, Loader2, Search, Printer,
+  ChevronLeft, Plus, X, Loader2, Search, Printer, Eye, FileDown,
   Package, Truck, Layers, ArrowLeftRight, GitBranch,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -162,6 +162,8 @@ export function TrazabilidadProducto() {
   const [resultadoTraz, setResultadoTraz] = useState<TrazabilidadNodo | null>(null)
   const [buscandoTraz, setBuscandoTraz] = useState(false)
   const [printData, setPrintData] = useState<PrintData | null>(null)
+  const [previewInfo, setPreviewInfo] = useState<PrintData | null>(null)
+  const [loadingPreview, setLoadingPreview] = useState<string | null>(null)
 
   // Search filter
   const [filtroLR, setFiltroLR] = useState('')
@@ -385,6 +387,35 @@ export function TrazabilidadProducto() {
     } finally { setGuardando(false) }
   }
 
+  // ── Vista previa de etiqueta ────────────────────────────────────────────────
+
+  async function handleVerPreview(lpt: M48LoteProducto) {
+    if (!orgId) return
+    setLoadingPreview(lpt.id)
+    try {
+      const qrDataUrl = await QRCode.toDataURL(lpt.codigo, { width: 320, margin: 1, errorCorrectionLevel: 'M' })
+      const orgRes = await tbl('organizaciones').select('nombre').eq('id', orgId).single()
+      const orgNombre: string = orgRes.data?.nombre ?? '—'
+      const ranchoNombre: string = ranchos.find((r: any) => r.id === ranchoId)?.nombre ?? '—'
+      setPreviewInfo({
+        lptCodigo: lpt.codigo,
+        presentacion: lpt.presentacion ?? null,
+        fechaEmpaque: lpt.fecha_empaque,
+        turno: lpt.turno,
+        origenCodigo: lpt.lr_codigo ?? lpt.lc_codigo ?? null,
+        origenTipo: lpt.lr_id ? 'LR' : lpt.lc_id ? 'LC' : null,
+        cantEmpacada: lpt.cant_empacada ?? null,
+        orgNombre,
+        ranchoNombre,
+        qrDataUrl,
+      })
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al cargar vista previa')
+    } finally {
+      setLoadingPreview(null)
+    }
+  }
+
   // ── Filtros de lista ────────────────────────────────────────────────────────
 
   const lrFiltrados = filtroLR
@@ -527,14 +558,35 @@ export function TrazabilidadProducto() {
                         {lpt.lr_codigo ? ` · LR: ${lpt.lr_codigo}` : lpt.lc_codigo ? ` · LC: ${lpt.lc_codigo}` : ''}
                       </p>
                     </div>
-                    <button
-                      onClick={() => { setSheetEtiqueta({ lpt }); setFormEtiqueta({ verificado_por: profile?.nombre_completo ?? '', cantidad_etiquetas: '1' }) }}
-                      className="p-2 rounded-lg flex-shrink-0"
-                      style={{ background: 'var(--muted)', color: 'var(--primary)' }}
-                      title="Generar etiqueta 4x8"
-                    >
-                      <Printer className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        onClick={() => handleVerPreview(lpt)}
+                        disabled={loadingPreview === lpt.id}
+                        className="p-2 rounded-lg"
+                        style={{ background: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                        title="Vista previa de etiqueta"
+                      >
+                        {loadingPreview === lpt.id
+                          ? <Loader2 className="w-4 h-4 animate-spin" />
+                          : <Eye className="w-4 h-4" />}
+                      </button>
+                      <button
+                        onClick={() => { setSheetEtiqueta({ lpt }); setFormEtiqueta({ verificado_por: profile?.nombre_completo ?? '', cantidad_etiquetas: '1' }) }}
+                        className="p-2 rounded-lg"
+                        style={{ background: 'var(--muted)', color: 'var(--primary)' }}
+                        title="Generar etiqueta PDF"
+                      >
+                        <FileDown className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => { setSheetEtiqueta({ lpt }); setFormEtiqueta({ verificado_por: profile?.nombre_completo ?? '', cantidad_etiquetas: '1' }) }}
+                        className="p-2 rounded-lg"
+                        style={{ background: 'var(--muted)', color: 'var(--primary)' }}
+                        title="Imprimir etiqueta"
+                      >
+                        <Printer className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                   {deseq && (
                     <div className="rounded-lg px-3 py-1.5 text-xs" style={{ background: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
@@ -906,6 +958,33 @@ export function TrazabilidadProducto() {
         </BottomSheet>
       )}
 
+      {/* ── Modal: Vista previa de etiqueta 4x8 ─────────────────────────── */}
+      {previewInfo && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.7)' }}
+          onClick={() => setPreviewInfo(null)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}
+          >
+            <button onClick={() => setPreviewInfo(null)} style={{ alignSelf: 'flex-end', color: '#fff', padding: 4 }}>
+              <X className="w-5 h-5" />
+            </button>
+            {/* Container clipped to scaled size; inner div holds the real mm layout */}
+            <div style={{ width: 258, height: 514, overflow: 'hidden', borderRadius: 8, boxShadow: '0 4px 32px rgba(0,0,0,0.5)' }}>
+              <div style={{ transform: 'scale(0.67)', transformOrigin: 'top left', width: 385, height: 768, background: '#fff', fontFamily: 'Arial, Helvetica, sans-serif', padding: '4mm', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+                <EtiquetaContent d={previewInfo} />
+              </div>
+            </div>
+            <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 11, margin: 0 }}>
+              Vista previa — proporcional 102×203 mm
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ── Overlay de impresion — oculto en pantalla, visible solo en @media print ── */}
       {printData && (
         <>
@@ -914,47 +993,7 @@ export function TrazabilidadProducto() {
             id="etiqueta-print"
             style={{ position: 'fixed', left: '-9999px', top: 0, width: '102mm', height: '203mm', background: '#fff', fontFamily: 'Arial, Helvetica, sans-serif', padding: '4mm', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}
           >
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3mm' }}>
-              <span style={{ fontSize: '13pt', fontWeight: 800 }}>M.A.D.Y</span>
-              <div style={{ textAlign: 'right', fontSize: '6.5pt', color: '#555', maxWidth: '55mm', lineHeight: 1.3 }}>
-                <div>{printData.orgNombre}</div>
-                <div style={{ color: '#888' }}>{printData.ranchoNombre}</div>
-              </div>
-            </div>
-            <div style={{ height: '0.5px', background: '#ddd', marginBottom: '3mm' }} />
-
-            {/* LPT code */}
-            <div style={{ textAlign: 'center', marginBottom: '4mm' }}>
-              <div style={{ fontSize: '6.5pt', color: '#888', fontWeight: 700, letterSpacing: '0.08em', marginBottom: '1mm' }}>LOTE DE PRODUCTO TERMINADO</div>
-              <div style={{ fontSize: '15pt', fontWeight: 800, color: '#1a1a1a' }}>{printData.lptCodigo}</div>
-            </div>
-
-            {/* QR */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4mm' }}>
-              <img src={printData.qrDataUrl} style={{ width: '60mm', height: '60mm', display: 'block' }} alt="" />
-            </div>
-
-            <div style={{ height: '0.5px', background: '#ddd', marginBottom: '3mm' }} />
-
-            {/* Data rows */}
-            <div style={{ fontSize: '6.5pt', flex: 1 }}>
-              {([
-                ['Producto:', printData.presentacion ?? '—'],
-                ['F. Empaque:', fmtFecha(printData.fechaEmpaque)],
-                ['Turno:', String(printData.turno)],
-                [`Origen (${printData.origenTipo ?? '—'}):`, printData.origenCodigo ?? '—'],
-                ...(printData.cantEmpacada != null ? [['Cantidad:', String(printData.cantEmpacada)]] : []),
-              ] as [string, string][]).map(([lbl, val]) => (
-                <div key={lbl} style={{ display: 'flex', marginBottom: '2mm' }}>
-                  <span style={{ color: '#666', fontWeight: 700, width: '26mm', flexShrink: 0 }}>{lbl}</span>
-                  <span style={{ color: '#222', flex: 1 }}>{val}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Footer */}
-            <div style={{ textAlign: 'center', fontSize: '5.5pt', color: '#bbb' }}>M.A.D.Y - DuoMind Solutions</div>
+            <EtiquetaContent d={printData} />
           </div>
         </>
       )}
@@ -1151,5 +1190,43 @@ function TrazChip({ label, code, sub }: { label: string; code: string; sub?: str
         {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
       </div>
     </div>
+  )
+}
+
+function EtiquetaContent({ d }: { d: PrintData }) {
+  return (
+    <>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3mm' }}>
+        <span style={{ fontSize: '13pt', fontWeight: 800 }}>M.A.D.Y</span>
+        <div style={{ textAlign: 'right', fontSize: '6.5pt', color: '#555', maxWidth: '55mm', lineHeight: 1.3 }}>
+          <div>{d.orgNombre}</div>
+          <div style={{ color: '#888' }}>{d.ranchoNombre}</div>
+        </div>
+      </div>
+      <div style={{ height: '0.5px', background: '#ddd', marginBottom: '3mm' }} />
+      <div style={{ textAlign: 'center', marginBottom: '4mm' }}>
+        <div style={{ fontSize: '6.5pt', color: '#888', fontWeight: 700, letterSpacing: '0.08em', marginBottom: '1mm' }}>LOTE DE PRODUCTO TERMINADO</div>
+        <div style={{ fontSize: '15pt', fontWeight: 800, color: '#1a1a1a' }}>{d.lptCodigo}</div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4mm' }}>
+        <img src={d.qrDataUrl} style={{ width: '60mm', height: '60mm', display: 'block' }} alt="" />
+      </div>
+      <div style={{ height: '0.5px', background: '#ddd', marginBottom: '3mm' }} />
+      <div style={{ fontSize: '6.5pt', flex: 1 }}>
+        {([
+          ['Producto:', d.presentacion ?? '—'],
+          ['F. Empaque:', fmtFecha(d.fechaEmpaque)],
+          ['Turno:', String(d.turno)],
+          [`Origen (${d.origenTipo ?? '—'}):`, d.origenCodigo ?? '—'],
+          ...(d.cantEmpacada != null ? [['Cantidad:', String(d.cantEmpacada)]] : []),
+        ] as [string, string][]).map(([lbl, val]) => (
+          <div key={lbl} style={{ display: 'flex', marginBottom: '2mm' }}>
+            <span style={{ color: '#666', fontWeight: 700, width: '26mm', flexShrink: 0 }}>{lbl}</span>
+            <span style={{ color: '#222', flex: 1 }}>{val}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ textAlign: 'center', fontSize: '5.5pt', color: '#bbb' }}>M.A.D.Y - DuoMind Solutions</div>
+    </>
   )
 }
