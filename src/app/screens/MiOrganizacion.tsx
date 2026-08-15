@@ -179,9 +179,21 @@ export function MiOrganizacion() {
         toast.success(`${sTermino} ${sGenero === 'f' ? 'actualizada' : 'actualizado'}`)
       } else {
         const productorId = await obtenerProductorId()
+        const codigoNorm = form.codigo.trim().toUpperCase()
+        // Verificar duplicado solo dentro del mismo productor (igual al constraint UNIQUE(productor_id, codigo))
+        const { data: yaExiste } = await (supabase as any)
+          .from('ranchos')
+          .select('id')
+          .eq('productor_id', productorId)
+          .eq('codigo', codigoNorm)
+          .maybeSingle()
+        if (yaExiste) {
+          setErrores({ codigo: `Ya existe ${sGenero === 'f' ? 'una' : 'un'} ${sTerminoL} con este código` })
+          return
+        }
         await crearRancho({
           nombre: form.nombre.trim(),
-          codigo: form.codigo.trim().toUpperCase(),
+          codigo: codigoNorm,
           cultivo: cultivoFinal,
           superficie_ha: parseFloat(form.superficie_ha),
           productor_id: productorId,
@@ -195,7 +207,8 @@ export function MiOrganizacion() {
       const msg = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
       if (msg.includes('LIMITE_RANCHOS_PLAN')) {
         toast.warning(parsearErrorLimiteSitios(msg, organizacion?.plan, sPlural), { duration: 7000 })
-      } else if (msg.includes('23505') || msg.includes('duplicate')) {
+      } else if (msg.includes('ranchos_productor_id_codigo_key')) {
+        // Constraint de BD: UNIQUE(productor_id, codigo) — caso de carrera (TOCTOU)
         setErrores({ codigo: `Ya existe ${sGenero === 'f' ? 'una' : 'un'} ${sTerminoL} con este código` })
       } else {
         toast.error('No se pudo guardar los cambios')
