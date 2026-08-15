@@ -7,6 +7,7 @@ import {
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { hoyMX } from '@/lib/fecha'
@@ -167,13 +168,14 @@ function ItemChecklist({
 // ── Pantalla principal ────────────────────────────────────────────────────────
 
 export function RondinesVigilancia() {
-  const { profile, codigoClave } = useAuthContext()
+  const { profile, user, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { rondines, loading, error, refetch } = useM46Rondines()
 
   const orgId = profile?.org_id ?? null
   const esSuperAdmin = profile?.rol === 'super_admin'
+  const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const termino = terminosSitio.singular
 
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }))
@@ -265,7 +267,7 @@ export function RondinesVigilancia() {
     if (!nRanchoId) { setNErrRancho(true); hasErr = true }
     if (!nVigilante.trim()) { setNErrVigilante(true); hasErr = true }
     if (hasErr) return
-    if (!esSuperAdmin && nFecha !== hoyMX()) {
+    if (!puedeEditarFecha && nFecha !== hoyMX()) {
       toast.warning('Solo puedes registrar con la fecha de hoy')
       return
     }
@@ -636,9 +638,9 @@ export function RondinesVigilancia() {
                     <input
                       type="date"
                       value={nFecha}
-                      min={esSuperAdmin ? undefined : hoyMX()}
-                      max={esSuperAdmin ? undefined : hoyMX()}
-                      onChange={(e) => { if (esSuperAdmin) setNFecha(e.target.value) }}
+                      min={puedeEditarFecha ? undefined : hoyMX()}
+                      max={puedeEditarFecha ? undefined : hoyMX()}
+                      onChange={(e) => { if (puedeEditarFecha) setNFecha(e.target.value) }}
                       className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
                     />
                   </div>

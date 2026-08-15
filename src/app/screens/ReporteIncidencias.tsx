@@ -8,6 +8,7 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import imageCompression from 'browser-image-compression'
 import { useAuthContext } from '@/context/AuthContext'
+import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM13Incidencias, type M13ReporteConRancho } from '@/hooks/useM13Incidencias'
@@ -255,8 +256,9 @@ function IncidenciaForm({
 
 export function ReporteIncidencias() {
   const navigate = useNavigate()
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
+  const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { reportes, loading, refetch } = useM13Incidencias()
@@ -808,9 +810,9 @@ export function ReporteIncidencias() {
                 <input
                   type="date"
                   value={fecha}
-                  min={esSuperAdmin ? undefined : hoy()}
-                  max={esSuperAdmin ? undefined : hoy()}
-                  onChange={(e) => { if (esSuperAdmin) setFecha(e.target.value) }}
+                  min={puedeEditarFecha ? undefined : hoy()}
+                  max={puedeEditarFecha ? undefined : hoy()}
+                  onChange={(e) => { if (puedeEditarFecha) setFecha(e.target.value) }}
                   className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>

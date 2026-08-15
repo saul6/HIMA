@@ -191,6 +191,7 @@ function DiaCardM23({ dia }: { dia: M23DiaConResultados }) {
 export function VerificacionInsumos() {
   const { profile, user, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
+  const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { registros, loading, error, refetch } = useM23VerificacionInsumos()
@@ -383,7 +384,7 @@ export function VerificacionInsumos() {
     setDValores(init)
     setDCodigos({})
     setDIncidencias({})
-    setDFecha(registroActivo ? (esSuperAdmin ? registroActivo.mes.slice(0, 7) + '-01' : hoy()) : '')
+    setDFecha(registroActivo ? (puedeEditarFecha ? registroActivo.mes.slice(0, 7) + '-01' : hoy()) : '')
     setDErrFecha(false)
     setDYaExiste(false)
   }, [sheetDia, insumosActivosFiltrados.length, registroActivo])
@@ -922,9 +923,9 @@ export function VerificacionInsumos() {
                 <input
                   type="date"
                   value={dFecha}
-                  min={esSuperAdmin ? registroActivo.mes : hoy()}
-                  max={esSuperAdmin ? ultimoDiaMes(registroActivo.mes) : hoy()}
-                  onChange={(e) => { if (esSuperAdmin) { setDFecha(e.target.value); setDErrFecha(false) } }}
+                  min={puedeEditarFecha ? registroActivo.mes : hoy()}
+                  max={puedeEditarFecha ? ultimoDiaMes(registroActivo.mes) : hoy()}
+                  onChange={(e) => { if (puedeEditarFecha) { setDFecha(e.target.value); setDErrFecha(false) } }}
                   className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
                   style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
                 />

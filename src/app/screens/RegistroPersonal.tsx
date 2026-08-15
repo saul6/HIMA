@@ -7,6 +7,7 @@ import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { hoyMX } from '@/lib/fecha'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -96,8 +97,9 @@ function ToggleSiNo({ value, onChange }: { value: boolean; onChange: (v: boolean
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export function RegistroPersonal() {
-  const { profile, codigoClave } = useAuthContext()
+  const { profile, user, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
+  const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
@@ -543,9 +545,9 @@ export function RegistroPersonal() {
                   className={fieldCls}
                   value={form.fecha}
                   readOnly={!!editingId}
-                  min={!editingId && !esSuperAdmin ? hoyMX() : undefined}
-                  max={!editingId && !esSuperAdmin ? hoyMX() : undefined}
-                  onChange={e => { if (!editingId && esSuperAdmin) setF('fecha', e.target.value) }}
+                  min={!editingId && !puedeEditarFecha ? hoyMX() : undefined}
+                  max={!editingId && !puedeEditarFecha ? hoyMX() : undefined}
+                  onChange={e => { if (!editingId && puedeEditarFecha) setF('fecha', e.target.value) }}
                 />
               </div>
               <div className="flex-1 space-y-1">

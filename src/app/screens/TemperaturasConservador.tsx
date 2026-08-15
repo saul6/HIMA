@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { ChevronLeft, Thermometer, Download, Plus, FileText, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM41TemperaturaConservador } from '@/hooks/useM41TemperaturaConservador'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -41,12 +42,13 @@ function fmtFecha(iso: string): string {
 
 export function TemperaturasConservador() {
   const navigate = useNavigate()
-  const { profile, codigoClave } = useAuthContext()
+  const { profile, user, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { registros, loading, error, refetch } = useM41TemperaturaConservador()
 
   const esSuperAdmin = profile?.rol === 'super_admin'
+  const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const orgId = profile?.org_id ?? ''
 
   const [abierto, setAbierto] = useState(false)
@@ -356,9 +358,9 @@ export function TemperaturasConservador() {
                 <input
                   type="date"
                   value={form.fecha}
-                  min={esSuperAdmin ? undefined : hoyMX()}
-                  max={esSuperAdmin ? undefined : hoyMX()}
-                  onChange={e => { if (esSuperAdmin) setForm(f => ({ ...f, fecha: e.target.value })) }}
+                  min={puedeEditarFecha ? undefined : hoyMX()}
+                  max={puedeEditarFecha ? undefined : hoyMX()}
+                  onChange={e => { if (puedeEditarFecha) setForm(f => ({ ...f, fecha: e.target.value })) }}
                   className="w-full rounded-lg px-3 py-2 text-[13px] border"
                   style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
                 />

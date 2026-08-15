@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM8Fertilizacion, type M8Registro } from '@/hooks/useM8Fertilizacion'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
@@ -334,8 +335,9 @@ function FilaFertilizanteForm({
 
 export function RegistroFertilizacion() {
   const navigate = useNavigate()
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
+  const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { ranchos } = useRanchos()
   const { registros, loading, refetch: refetchRegistros } = useM8Fertilizacion()
   const { fertilizantes: catalogo, refetch: refetchCatalogo } = useFertilizantesOrg()
@@ -1063,9 +1065,9 @@ export function RegistroFertilizacion() {
                   <input
                     type="date"
                     value={fecha}
-                    min={esSuperAdmin ? undefined : hoy()}
-                    max={esSuperAdmin ? undefined : hoy()}
-                    onChange={(e) => { if (esSuperAdmin) setFecha(e.target.value) }}
+                    min={puedeEditarFecha ? undefined : hoy()}
+                    max={puedeEditarFecha ? undefined : hoy()}
+                    onChange={(e) => { if (puedeEditarFecha) setFecha(e.target.value) }}
                     className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>

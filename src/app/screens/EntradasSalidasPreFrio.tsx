@@ -7,6 +7,7 @@ import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
@@ -72,8 +73,9 @@ const FORM_BASE: Omit<FormState, 'fecha'> = {
 }
 
 export function EntradasSalidasPreFrio() {
-  const { profile, codigoClave } = useAuthContext()
+  const { profile, user, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
+  const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
@@ -339,9 +341,9 @@ export function EntradasSalidasPreFrio() {
                   type="date"
                   className={fieldCls}
                   value={form.fecha}
-                  min={esSuperAdmin ? undefined : hoyMX()}
-                  max={esSuperAdmin ? undefined : hoyMX()}
-                  onChange={e => { if (esSuperAdmin) setF('fecha', e.target.value) }}
+                  min={puedeEditarFecha ? undefined : hoyMX()}
+                  max={puedeEditarFecha ? undefined : hoyMX()}
+                  onChange={e => { if (puedeEditarFecha) setF('fecha', e.target.value) }}
                 />
               </div>
               <div className="flex-1 space-y-1">

@@ -8,6 +8,7 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import imageCompression from 'browser-image-compression'
 import { useAuthContext } from '@/context/AuthContext'
+import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
@@ -263,8 +264,9 @@ function SiNoToggle({
 
 export function RegistroAccidentesLaborales() {
   const navigate = useNavigate()
-  const { profile, codigoClave } = useAuthContext()
+  const { profile, user, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
+  const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { accidentes, loading, error, refetch } = useM20Accidentes()
@@ -587,9 +589,9 @@ export function RegistroAccidentesLaborales() {
                 type="date"
                 className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
                 value={form.fecha}
-                min={esSuperAdmin ? undefined : hoy()}
+                min={puedeEditarFecha ? undefined : hoy()}
                 max={hoy()}
-                onChange={(e) => { if (esSuperAdmin) set('fecha', e.target.value) }}
+                onChange={(e) => { if (puedeEditarFecha) set('fecha', e.target.value) }}
               />
             </div>
 

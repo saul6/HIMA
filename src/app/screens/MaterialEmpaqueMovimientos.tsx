@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { ChevronLeft, PackageOpen, Download, Plus, FileText, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM42Movimientos } from '@/hooks/useM42Movimientos'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -88,12 +89,13 @@ function fmtFecha(iso: string): string {
 
 export function MaterialEmpaqueMovimientos() {
   const navigate = useNavigate()
-  const { profile, codigoClave } = useAuthContext()
+  const { profile, user, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { movimientos, loading, error, refetch } = useM42Movimientos()
 
   const esSuperAdmin = profile?.rol === 'super_admin'
+  const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const orgId = profile?.org_id ?? ''
 
   const [abierto, setAbierto] = useState(false)
@@ -348,9 +350,9 @@ export function MaterialEmpaqueMovimientos() {
                 <input
                   type="date"
                   value={form.fecha}
-                  min={esSuperAdmin ? undefined : hoyMX()}
-                  max={esSuperAdmin ? undefined : hoyMX()}
-                  onChange={e => { if (esSuperAdmin) setF({ fecha: e.target.value }) }}
+                  min={puedeEditarFecha ? undefined : hoyMX()}
+                  max={puedeEditarFecha ? undefined : hoyMX()}
+                  onChange={e => { if (puedeEditarFecha) setF({ fecha: e.target.value }) }}
                   className="w-full rounded-lg px-3 py-2 text-[13px] border"
                   style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
                 />

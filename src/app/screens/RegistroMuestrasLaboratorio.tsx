@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
@@ -43,8 +44,9 @@ const FORM_INICIAL: FormState = {
 
 export function RegistroMuestrasLaboratorio() {
   const navigate = useNavigate()
-  const { profile, codigoClave } = useAuthContext()
+  const { profile, user, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
+  const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos(orgId)
@@ -273,9 +275,9 @@ export function RegistroMuestrasLaboratorio() {
                   type="date"
                   className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                   value={form.fecha_muestreo}
-                  min={esSuperAdmin ? undefined : hoy()}
-                  max={esSuperAdmin ? undefined : hoy()}
-                  onChange={e => { if (esSuperAdmin) setForm(f => ({ ...f, fecha_muestreo: e.target.value })) }}
+                  min={puedeEditarFecha ? undefined : hoy()}
+                  max={puedeEditarFecha ? undefined : hoy()}
+                  onChange={e => { if (puedeEditarFecha) setForm(f => ({ ...f, fecha_muestreo: e.target.value })) }}
                 />
               </div>
 

@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM12LimpiezaBanos, type M12Jornada } from '@/hooks/useM12LimpiezaBanos'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
@@ -94,8 +95,9 @@ function Toggle({
 
 export function RegistroLimpiezaBanos() {
   const navigate = useNavigate()
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
+  const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { ranchos } = useRanchos()
   const { jornadas, loading, refetch } = useM12LimpiezaBanos()
   const { terminosSitio } = useModulosContext()
@@ -602,9 +604,9 @@ export function RegistroLimpiezaBanos() {
                 <input
                   type="date"
                   value={fecha}
-                  min={esSuperAdmin ? undefined : hoy()}
-                  max={esSuperAdmin ? undefined : hoy()}
-                  onChange={(e) => { if (esSuperAdmin) setFecha(e.target.value) }}
+                  min={puedeEditarFecha ? undefined : hoy()}
+                  max={puedeEditarFecha ? undefined : hoy()}
+                  onChange={(e) => { if (puedeEditarFecha) setFecha(e.target.value) }}
                   className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>

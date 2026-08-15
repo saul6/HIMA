@@ -15,6 +15,7 @@ import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import {
@@ -248,6 +249,7 @@ type Vista = 'lista' | 'detalle'
 export function InspeccionPreoperacionalCooler() {
   const { profile, user } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
+  const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { registros, loading, error, refetch } = useM19InspeccionPreoperacional()
@@ -448,7 +450,7 @@ export function InspeccionPreoperacionalCooler() {
     setDValores(init)
     setDCodigos({})
     setDIncidencias({})
-    setDFecha(registroActivo ? (esSuperAdmin ? registroActivo.mes.slice(0, 7) + '-01' : hoy()) : '')
+    setDFecha(registroActivo ? (puedeEditarFecha ? registroActivo.mes.slice(0, 7) + '-01' : hoy()) : '')
     setDErrFecha(false)
     setDYaExiste(false)
   }, [sheetDia, items, registroActivo])
@@ -963,9 +965,9 @@ export function InspeccionPreoperacionalCooler() {
                 <input
                   type="date"
                   value={dFecha}
-                  min={esSuperAdmin ? registroActivo.mes : hoy()}
-                  max={esSuperAdmin ? ultimoDiaMes(registroActivo.mes) : hoy()}
-                  onChange={(e) => { if (esSuperAdmin) { setDFecha(e.target.value); setDErrFecha(false) } }}
+                  min={puedeEditarFecha ? registroActivo.mes : hoy()}
+                  max={puedeEditarFecha ? ultimoDiaMes(registroActivo.mes) : hoy()}
+                  onChange={(e) => { if (puedeEditarFecha) { setDFecha(e.target.value); setDErrFecha(false) } }}
                   className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                   style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
                 />

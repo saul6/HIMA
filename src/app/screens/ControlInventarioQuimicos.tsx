@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { supabase } from '@/lib/supabase'
@@ -317,9 +318,9 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                 <input
                   type="date"
                   value={movForm.fecha}
-                  min={esSuperAdmin ? undefined : hoy()}
-                  max={esSuperAdmin ? undefined : hoy()}
-                  onChange={e => { if (esSuperAdmin) setMovForm(f => ({ ...f, fecha: e.target.value })) }}
+                  min={puedeEditarFecha ? undefined : hoy()}
+                  max={puedeEditarFecha ? undefined : hoy()}
+                  onChange={e => { if (puedeEditarFecha) setMovForm(f => ({ ...f, fecha: e.target.value })) }}
                   className="w-full rounded-xl px-3 py-2.5 text-sm border border-border"
                   style={{ backgroundColor: 'var(--input-background)' }}
                 />
@@ -365,8 +366,9 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
 
 export function ControlInventarioQuimicos() {
   const navigate = useNavigate()
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
+  const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos(orgId)
@@ -477,7 +479,7 @@ export function ControlInventarioQuimicos() {
         quimico={selectedQuimico}
         ranchoNombre={ranchoNombreById[selectedQuimico.rancho_id] ?? '—'}
         orgId={orgId!}
-        esSuperAdmin={esSuperAdmin}
+        esSuperAdmin={puedeEditarFecha}
         perfilNombre={profile?.nombre_completo ?? ''}
         onBack={() => { setSelectedQuimico(null); refetchSaldos() }}
       />

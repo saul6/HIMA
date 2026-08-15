@@ -4,6 +4,7 @@ import { ChevronLeft, Wrench, Plus, FileText, Loader2, AlertTriangle, TriangleAl
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import {
@@ -105,12 +106,13 @@ function formInicial(): FormState {
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export function OrdenMantenimiento() {
-  const { profile, codigoClave } = useAuthContext()
+  const { profile, user, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos }       = useRanchos()
   const { ordenes, loading, error, refetch } = useM44OrdenesMantenimiento()
 
   const esSuperAdmin = profile?.rol === 'super_admin'
+  const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const orgId        = profile?.org_id ?? ''
   const termino      = terminosSitio.singular
 
@@ -383,9 +385,9 @@ export function OrdenMantenimiento() {
                   <input
                     type="date"
                     value={form.fecha}
-                    min={esSuperAdmin ? undefined : hoyMX()}
-                    max={esSuperAdmin ? undefined : hoyMX()}
-                    onChange={(e) => { if (esSuperAdmin) setF({ fecha: e.target.value }) }}
+                    min={puedeEditarFecha ? undefined : hoyMX()}
+                    max={puedeEditarFecha ? undefined : hoyMX()}
+                    onChange={(e) => { if (puedeEditarFecha) setF({ fecha: e.target.value }) }}
                     className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>

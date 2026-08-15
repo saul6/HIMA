@@ -6,6 +6,7 @@ import {
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import {
@@ -160,13 +161,14 @@ function TogglePunto({
 type Vista = 'lista' | 'detalle'
 
 export function InspeccionAlmacenEmpaque() {
-  const { profile, codigoClave } = useAuthContext()
+  const { profile, user, codigoClave } = useAuthContext()
   const { terminosSitio }  = useModulosContext()
   const { ranchos }        = useRanchos()
   const { registros, loading, error, refetch } = useM43InspeccionAlmacen()
 
   const mesActual    = hoyMX().slice(0, 7)
   const esSuperAdmin = profile?.rol === 'super_admin'
+  const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const termino      = terminosSitio.singular
 
   // ── Catalog ──
@@ -351,7 +353,7 @@ export function InspeccionAlmacenEmpaque() {
   async function handleGuardarDia() {
     if (!registroActivo || !profile?.org_id) return
     if (!dFecha) { toast.warning('Selecciona la fecha'); return }
-    if (!esSuperAdmin && dFecha !== hoyMX()) {
+    if (!puedeEditarFecha && dFecha !== hoyMX()) {
       toast.warning('Solo puedes registrar con la fecha de hoy')
       return
     }
@@ -785,8 +787,8 @@ export function InspeccionAlmacenEmpaque() {
                 <input
                   type="month"
                   value={nMes}
-                  max={esSuperAdmin ? undefined : mesActual}
-                  onChange={(e) => { if (esSuperAdmin || e.target.value <= mesActual) setNMes(e.target.value) }}
+                  max={puedeEditarFecha ? undefined : mesActual}
+                  onChange={(e) => { if (puedeEditarFecha || e.target.value <= mesActual) setNMes(e.target.value) }}
                   className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
@@ -853,9 +855,9 @@ export function InspeccionAlmacenEmpaque() {
                 <input
                   type="date"
                   value={dFecha}
-                  min={esSuperAdmin ? undefined : hoyMX()}
-                  max={esSuperAdmin ? undefined : hoyMX()}
-                  onChange={(e) => { if (esSuperAdmin) setDFecha(e.target.value) }}
+                  min={puedeEditarFecha ? undefined : hoyMX()}
+                  max={puedeEditarFecha ? undefined : hoyMX()}
+                  onChange={(e) => { if (puedeEditarFecha) setDFecha(e.target.value) }}
                   className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
