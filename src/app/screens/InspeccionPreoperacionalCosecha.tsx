@@ -293,12 +293,13 @@ export function InspeccionPreoperacionalCosecha() {
     if (!sheetNuevo) { setNYaExiste(false); return }
     if (!nRanchoId || !nMes || !profile?.org_id) { setNYaExiste(false); return }
     let cancelado = false
-    supabase
+    ;(supabase as any)
       .from('m11_registro_mensual')
       .select('id')
       .eq('org_id', profile.org_id)
       .eq('rancho_id', nRanchoId)
-      .eq('mes', nMes + '-01')
+      .eq('anio', Number(nMes.split('-')[0]))
+      .eq('mes', Number(nMes.split('-')[1]))
       .maybeSingle()
       .then(({ data }) => { if (!cancelado) setNYaExiste(!!data) })
     return () => { cancelado = true }
@@ -310,12 +311,13 @@ export function InspeccionPreoperacionalCosecha() {
     if (nYaExiste) { toast.warning(`Ya existe un registro para este mes y ${terminosSitio.singular.toLowerCase()}`); return }
     setNGuardando(true)
     try {
-      const { data, error: e } = await supabase
+      const { data, error: e } = await (supabase as any)
         .from('m11_registro_mensual')
         .insert({
           rancho_id: nRanchoId,
           org_id: profile.org_id,
-          mes: nMes + '-01',
+          anio: Number(nMes.split('-')[0]),
+          mes: Number(nMes.split('-')[1]),
           realizado_por_nombre: nRealizadoPor.trim() || null,
           responsable_id: user?.id ?? null,
         })
@@ -331,7 +333,7 @@ export function InspeccionPreoperacionalCosecha() {
         rancho_id: r.rancho_id,
         rancho_nombre: r.ranchos?.nombre ?? '—',
         rancho_codigo: r.ranchos?.codigo ?? '—',
-        mes: r.mes,
+        mes: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
         realizado_por_nombre: r.realizado_por_nombre ?? null,
         responsable_id: r.responsable_id ?? null,
         observaciones: null,

@@ -59,7 +59,7 @@ export function useM23VerificacionInsumos() {
           rancho_id: r.rancho_id,
           rancho_nombre: r.ranchos?.nombre ?? '—',
           rancho_codigo: r.ranchos?.codigo ?? '—',
-          mes: r.mes as string,
+          mes: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
           verifico_nombre: r.verifico_nombre ?? null,
           autorizo_nombre: r.autorizo_nombre ?? null,
           observaciones: r.observaciones ?? null,

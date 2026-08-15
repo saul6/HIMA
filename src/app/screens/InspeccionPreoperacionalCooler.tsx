@@ -381,7 +381,7 @@ export function InspeccionPreoperacionalCooler() {
       .select('id')
       .eq('org_id', profile.org_id)
       .eq('rancho_id', nRanchoId)
-      .eq('mes', nMes + '-01')
+      .eq('anio', Number(nMes.split('-')[0])).eq('mes', Number(nMes.split('-')[1]))
       .maybeSingle()
       .then(({ data }: { data: any }) => { if (!cancelado) setNYaExiste(!!data) })
     return () => { cancelado = true }
@@ -397,7 +397,8 @@ export function InspeccionPreoperacionalCooler() {
         .insert({
           rancho_id: nRanchoId,
           org_id: profile.org_id,
-          mes: nMes + '-01',
+          anio: Number(nMes.split('-')[0]),
+          mes: Number(nMes.split('-')[1]),
           realizado_por_nombre: nRealizadoPor.trim() || null,
           responsable_id: user?.id ?? null,
         })
@@ -413,7 +414,7 @@ export function InspeccionPreoperacionalCooler() {
         rancho_id: r.rancho_id,
         rancho_nombre: r.ranchos?.nombre ?? '—',
         rancho_codigo: r.ranchos?.codigo ?? '—',
-        mes: r.mes,
+        mes: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
         realizado_por_nombre: r.realizado_por_nombre ?? null,
         responsable_id: r.responsable_id ?? null,
         observaciones: null,

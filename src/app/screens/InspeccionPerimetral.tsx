@@ -285,12 +285,13 @@ export function InspeccionPerimetral() {
     if (!sheetNuevo) { setNYaExiste(false); return }
     if (!nRanchoId || !nMes || !profile?.org_id) { setNYaExiste(false); return }
     let cancelado = false
-    supabase
+    ;(supabase as any)
       .from('m9_registro_mensual')
       .select('id')
       .eq('org_id', profile.org_id)
       .eq('rancho_id', nRanchoId)
-      .eq('mes', nMes + '-01')
+      .eq('anio', Number(nMes.split('-')[0]))
+      .eq('mes', Number(nMes.split('-')[1]))
       .maybeSingle()
       .then(({ data }) => { if (!cancelado) setNYaExiste(!!data) })
     return () => { cancelado = true }
@@ -302,12 +303,13 @@ export function InspeccionPerimetral() {
     if (nYaExiste) { toast.warning(`Ya existe un registro para este mes y ${terminosSitio.singular.toLowerCase()}`); return }
     setNGuardando(true)
     try {
-      const { data, error: e } = await supabase
+      const { data, error: e } = await (supabase as any)
         .from('m9_registro_mensual')
         .insert({
           rancho_id: nRanchoId,
           org_id: profile.org_id,
-          mes: nMes + '-01',
+          anio: Number(nMes.split('-')[0]),
+          mes: Number(nMes.split('-')[1]),
           tiene_almacen: nAlmacen,
           responsable_id: user?.id ?? null,
         })
@@ -324,7 +326,7 @@ export function InspeccionPerimetral() {
         rancho_id: r.rancho_id,
         rancho_nombre: r.ranchos?.nombre ?? '—',
         rancho_codigo: r.ranchos?.codigo ?? '—',
-        mes: r.mes,
+        mes: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
         tiene_almacen: r.tiene_almacen,
         responsable_id: r.responsable_id,
         responsable_nombre: r.profiles?.nombre_completo ?? null,

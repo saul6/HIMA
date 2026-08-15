@@ -316,7 +316,7 @@ export function VerificacionInsumos() {
     if (!sheetNuevo || !nRanchoId || !nMes || !orgId) { setNYaExiste(false); return }
     let cancelado = false
     tbl('m23_registro_mensual')
-      .select('id').eq('org_id', orgId).eq('rancho_id', nRanchoId).eq('mes', nMes + '-01')
+      .select('id').eq('org_id', orgId).eq('rancho_id', nRanchoId).eq('anio', Number(nMes.split('-')[0])).eq('mes', Number(nMes.split('-')[1]))
       .maybeSingle()
       .then(({ data }: { data: any }) => { if (!cancelado) setNYaExiste(!!data) })
     return () => { cancelado = true }
@@ -332,7 +332,8 @@ export function VerificacionInsumos() {
         .insert({
           rancho_id: nRanchoId,
           org_id: orgId,
-          mes: nMes + '-01',
+          anio: Number(nMes.split('-')[0]),
+          mes: Number(nMes.split('-')[1]),
           verifico_nombre: nVerificoNombre.trim() || null,
           autorizo_nombre: nAutorizoNombre.trim() || null,
         })
@@ -348,7 +349,7 @@ export function VerificacionInsumos() {
         rancho_id: r.rancho_id,
         rancho_nombre: r.ranchos?.nombre ?? '—',
         rancho_codigo: r.ranchos?.codigo ?? '—',
-        mes: r.mes,
+        mes: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
         verifico_nombre: r.verifico_nombre ?? null,
         autorizo_nombre: r.autorizo_nombre ?? null,
         observaciones: null,

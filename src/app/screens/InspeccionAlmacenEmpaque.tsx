@@ -302,7 +302,8 @@ export function InspeccionAlmacenEmpaque() {
         .insert({
           org_id:        profile.org_id,
           rancho_id:     nRanchoId,
-          mes:           nMes + '-01',
+          anio:          Number(nMes.split('-')[0]),
+          mes:           Number(nMes.split('-')[1]),
           realizado_por: nRealizadoPor.trim() || null,
           verifica:      nVerifica.trim() || null,
           autoriza:      nAutoriza.trim() || null,

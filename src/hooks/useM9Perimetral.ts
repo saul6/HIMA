@@ -49,7 +49,7 @@ export function useM9Perimetral() {
         rancho_id: r.rancho_id,
         rancho_nombre: r.ranchos?.nombre ?? '—',
         rancho_codigo: r.ranchos?.codigo ?? '—',
-        mes: r.mes as string,
+        mes: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
         tiene_almacen: r.tiene_almacen,
         responsable_id: r.responsable_id,
         responsable_nombre: (r.profiles as any)?.nombre_completo ?? null,

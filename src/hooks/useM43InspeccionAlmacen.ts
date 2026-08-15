@@ -90,7 +90,7 @@ export function useM43InspeccionAlmacen() {
           rancho_id:     r.rancho_id,
           rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
           rancho_codigo: (r.ranchos as any)?.codigo ?? '—',
-          mes:           r.mes,
+          mes:           `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
           realizado_por: r.realizado_por ?? null,
           verifica:      r.verifica ?? null,
           autoriza:      r.autoriza ?? null,
