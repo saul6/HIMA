@@ -101,6 +101,7 @@ import { ResumenNoConformidades } from "./screens/ResumenNoConformidades";
 import { AccionesCorrectivas } from "./screens/AccionesCorrectivas";
 import { RondinesVigilancia } from "./screens/RondinesVigilancia";
 import { RegistroPersonal } from "./screens/RegistroPersonal";
+import { TrazabilidadProducto } from "./screens/TrazabilidadProducto";
 import { RequireModulo } from "./components/RequireModulo";
 
 export const router = createBrowserRouter([
@@ -186,6 +187,7 @@ export const router = createBrowserRouter([
                   { path: "mantenimiento-preventivo", Component: MantenimientoPreventivo },
                   { path: "rondines-vigilancia", Component: RondinesVigilancia },
                   { path: "registro-personal", Component: RegistroPersonal },
+                  { path: "trazabilidad", Component: TrazabilidadProducto },
                 ],
               },
             ],
