@@ -51,9 +51,9 @@ type Vista = 'lista' | 'detalle'
 
 interface DiaDataLocal {
   cloro_cisterna: number | null
-  ajuste_cloro_cisterna: string | null
+  ajuste_cloro_cisterna: number | null
   cloro_desinfeccion: number | null
-  ajuste_cloro_desinfeccion: string | null
+  ajuste_cloro_desinfeccion: number | null
   realizo: string | null
   aprobo: string | null
 }
@@ -122,9 +122,9 @@ export function LimpiezaCisterna() {
     if (vista !== 'detalle') return
     const d = diasData[diaSeleccionado]
     setDiaCloroCist(d?.cloro_cisterna != null ? String(d.cloro_cisterna) : '')
-    setDiaAjCist(d?.ajuste_cloro_cisterna ?? '')
+    setDiaAjCist(d?.ajuste_cloro_cisterna != null ? String(d.ajuste_cloro_cisterna) : '')
     setDiaCloroDes(d?.cloro_desinfeccion != null ? String(d.cloro_desinfeccion) : '')
-    setDiaAjDes(d?.ajuste_cloro_desinfeccion ?? '')
+    setDiaAjDes(d?.ajuste_cloro_desinfeccion != null ? String(d.ajuste_cloro_desinfeccion) : '')
     setDiaRealizo(d?.realizo ?? '')
     setDiaAprobo(d?.aprobo ?? '')
   }, [diaSeleccionado, diasData, vista])
@@ -354,9 +354,9 @@ export function LimpiezaCisterna() {
         registro_id: registroActivo.id,
         dia: diaSeleccionado,
         cloro_cisterna: diaCloroCist !== '' ? parseFloat(diaCloroCist) : null,
-        ajuste_cloro_cisterna: diaAjCist.trim() || null,
+        ajuste_cloro_cisterna: diaAjCist !== '' ? parseFloat(diaAjCist) : null,
         cloro_desinfeccion: diaCloroDes !== '' ? parseFloat(diaCloroDes) : null,
-        ajuste_cloro_desinfeccion: diaAjDes.trim() || null,
+        ajuste_cloro_desinfeccion: diaAjDes !== '' ? parseFloat(diaAjDes) : null,
         realizo: diaRealizo.trim() || null,
         aprobo: diaAprobo.trim() || null,
       }
@@ -924,10 +924,10 @@ export function LimpiezaCisterna() {
                   <div className="flex-1 space-y-1">
                     <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Ajuste cloro cisterna</label>
                     <input
-                      type="text"
+                      type="number"
                       value={diaAjCist}
                       onChange={(e) => setDiaAjCist(e.target.value)}
-                      placeholder="Ej: OK"
+                      placeholder="0"
                       className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
                     />
                   </div>
@@ -948,10 +948,10 @@ export function LimpiezaCisterna() {
                   <div className="flex-1 space-y-1">
                     <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Ajuste cloro desinfección</label>
                     <input
-                      type="text"
+                      type="number"
                       value={diaAjDes}
                       onChange={(e) => setDiaAjDes(e.target.value)}
-                      placeholder="Ej: OK"
+                      placeholder="0"
                       className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
                     />
                   </div>

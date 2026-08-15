@@ -58,9 +58,9 @@ type Vista = 'lista' | 'detalle'
 
 interface DiaDataLocal {
   concentracion_cloro: number | null
-  ajuste_cloro: string | null
+  ajuste_cloro: number | null
   concentracion_acido: number | null
-  ajuste_acido: string | null
+  ajuste_acido: number | null
   realizo: string | null
   aprobo: string | null
 }
@@ -128,9 +128,9 @@ export function LimpiezaComedor() {
     if (vista !== 'detalle') return
     const d = diasData[diaSeleccionado]
     setDiaConcCloro(d?.concentracion_cloro != null ? String(d.concentracion_cloro) : '')
-    setDiaAjCloro(d?.ajuste_cloro ?? '')
+    setDiaAjCloro(d?.ajuste_cloro != null ? String(d.ajuste_cloro) : '')
     setDiaConcAcido(d?.concentracion_acido != null ? String(d.concentracion_acido) : '')
-    setDiaAjAcido(d?.ajuste_acido ?? '')
+    setDiaAjAcido(d?.ajuste_acido != null ? String(d.ajuste_acido) : '')
     setDiaRealizo(d?.realizo ?? '')
     setDiaAprobo(d?.aprobo ?? '')
   }, [diaSeleccionado, diasData, vista])
@@ -277,9 +277,9 @@ export function LimpiezaComedor() {
         registro_id: registroActivo.id,
         dia: diaSeleccionado,
         concentracion_cloro: diaConcCloro !== '' ? parseFloat(diaConcCloro) : null,
-        ajuste_cloro: diaAjCloro.trim() || null,
+        ajuste_cloro: diaAjCloro !== '' ? parseFloat(diaAjCloro) : null,
         concentracion_acido: diaConcAcido !== '' ? parseFloat(diaConcAcido) : null,
-        ajuste_acido: diaAjAcido.trim() || null,
+        ajuste_acido: diaAjAcido !== '' ? parseFloat(diaAjAcido) : null,
         realizo: diaRealizo.trim() || null,
         aprobo: diaAprobo.trim() || null,
       }
@@ -776,10 +776,10 @@ export function LimpiezaComedor() {
                   <div className="flex-1 space-y-1">
                     <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Ajuste Cloro</label>
                     <input
-                      type="text"
+                      type="number"
                       value={diaAjCloro}
                       onChange={(e) => setDiaAjCloro(e.target.value)}
-                      placeholder="Ej: OK"
+                      placeholder="0"
                       className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
                     />
                   </div>
@@ -798,10 +798,10 @@ export function LimpiezaComedor() {
                   <div className="flex-1 space-y-1">
                     <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Ajuste Ác. Peracético</label>
                     <input
-                      type="text"
+                      type="number"
                       value={diaAjAcido}
                       onChange={(e) => setDiaAjAcido(e.target.value)}
-                      placeholder="Ej: OK"
+                      placeholder="0"
                       className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
                     />
                   </div>
