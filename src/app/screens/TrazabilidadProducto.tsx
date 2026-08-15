@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router'
 import {
   ChevronLeft, Plus, X, Loader2, Search, Printer, Eye, FileDown,
@@ -18,7 +18,7 @@ import {
   type M48LoteCompuesto, type M48FolioEmbarque,
   type TrazabilidadNodo,
 } from '@/hooks/useM48Trazabilidad'
-import { registrarYGenerarEtiqueta } from '@/lib/pdf/m48/generarM48PDF'
+import { registrarYGenerarEtiqueta, registrarEImprimirEtiqueta } from '@/lib/pdf/m48/generarM48PDF'
 import QRCode from 'qrcode'
 
 const tbl = (name: string) => (supabase as any).from(name)
@@ -132,16 +132,6 @@ function buildQrText(d: Omit<PrintData, 'qrDataUrl'>): string {
   ].join('\n')
 }
 
-const PRINT_CSS = `
-@media print {
-  @page { size: 102mm 203mm; margin: 0; }
-  html, body { margin: 0; }
-  body * { visibility: hidden; }
-  #etiqueta-print, #etiqueta-print * { visibility: visible; }
-  #etiqueta-print { position: absolute; inset: 0; width: 102mm; height: 203mm; }
-}
-`
-
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export function TrazabilidadProducto() {
@@ -178,7 +168,6 @@ export function TrazabilidadProducto() {
   const [busqueda, setBusqueda] = useState('')
   const [resultadoTraz, setResultadoTraz] = useState<TrazabilidadNodo | null>(null)
   const [buscandoTraz, setBuscandoTraz] = useState(false)
-  const [printData, setPrintData] = useState<PrintData | null>(null)
   const [previewInfo, setPreviewInfo] = useState<PrintData | null>(null)
   const [loadingPreview, setLoadingPreview] = useState<string | null>(null)
 
@@ -359,54 +348,16 @@ export function TrazabilidadProducto() {
 
   // ── Imprimir etiqueta ───────────────────────────────────────────────────────
 
-  // El navegador no permite seleccionar impresora por codigo ni imprimir en silencio;
-  // siempre pasa por el dialogo del sistema. Impresion 100% automatica requeriria
-  // un agente local o SDK de impresion — fuera del alcance de esta app web.
-  useEffect(() => {
-    if (!printData) return
-    const timeout = setTimeout(() => { window.print() }, 100)
-    const onAfterPrint = () => setPrintData(null)
-    window.addEventListener('afterprint', onAfterPrint)
-    return () => {
-      clearTimeout(timeout)
-      window.removeEventListener('afterprint', onAfterPrint)
-    }
-  }, [printData])
-
   async function handleImprimirEtiqueta() {
     if (!sheetEtiqueta || !orgId || !ranchoId) return
     if (!formEtiqueta.verificado_por.trim()) { toast.error('Ingresa quien verifica'); return }
     setGuardando(true)
     try {
-      await tbl('m48_etiquetas').insert({
-        lpt_id: sheetEtiqueta.lpt.id, org_id: orgId, rancho_id: ranchoId,
-        fecha: hoyMX(), verificado_por: formEtiqueta.verificado_por.trim(),
-        cantidad_etiquetas: parseInt(formEtiqueta.cantidad_etiquetas) || 1, impreso: true,
-      })
-      const lpt = sheetEtiqueta.lpt
-      const orgRes = await tbl('organizaciones').select('nombre').eq('id', orgId).single()
-      const orgNombre: string = orgRes.data?.nombre ?? '—'
-      const ranchoNombre: string = ranchos.find((r: any) => r.id === ranchoId)?.nombre ?? '—'
-
-      let proveedorCodigo: string | null = null
-      if (lpt.lr_id) {
-        const lrRes = await tbl('m48_lotes_recepcion').select('proveedor_codigo').eq('id', lpt.lr_id).single()
-        proveedorCodigo = lrRes.data?.proveedor_codigo ?? null
-      }
-      const feRes = await tbl('m48_fe_lpt').select('m48_folios_embarque(cliente)').eq('lpt_id', lpt.id).maybeSingle()
-      const clienteDestino: string = feRes.data?.m48_folios_embarque?.cliente ?? 'Segun programacion'
-      const producto: string = lpt.codigo.split('-')[1] ?? '—'
-
-      const base: Omit<PrintData, 'qrDataUrl'> = {
-        lptCodigo: lpt.codigo, producto, presentacion: lpt.presentacion ?? null,
-        fechaEmpaque: lpt.fecha_empaque, turno: lpt.turno,
-        origenCodigo: lpt.lr_codigo ?? lpt.lc_codigo ?? null,
-        origenTipo: lpt.lr_id ? 'LR' : lpt.lc_id ? 'LC' : null,
-        proveedorCodigo, clienteDestino, cantEmpacada: lpt.cant_empacada ?? null,
-        orgNombre, ranchoNombre,
-      }
-      const qrDataUrl = await QRCode.toDataURL(buildQrText(base), { width: 400, margin: 1, errorCorrectionLevel: 'M' })
-      setPrintData({ ...base, qrDataUrl })
+      await registrarEImprimirEtiqueta(
+        sheetEtiqueta.lpt.id, orgId, ranchoId,
+        formEtiqueta.verificado_por.trim(),
+        parseInt(formEtiqueta.cantidad_etiquetas) || 1,
+      )
       toast.success('Liberacion registrada — selecciona la impresora en el dialogo')
       setSheetEtiqueta(null)
       setFormEtiqueta({ verificado_por: '', cantidad_etiquetas: '1' })
@@ -1027,18 +978,6 @@ export function TrazabilidadProducto() {
         </div>
       )}
 
-      {/* ── Overlay de impresion — oculto en pantalla, visible solo en @media print ── */}
-      {printData && (
-        <>
-          <style>{PRINT_CSS}</style>
-          <div
-            id="etiqueta-print"
-            style={{ position: 'fixed', left: '-9999px', top: 0, width: '102mm', height: '203mm', background: '#fff', fontFamily: 'Arial, Helvetica, sans-serif', padding: 0, boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}
-          >
-            <EtiquetaContent d={printData} />
-          </div>
-        </>
-      )}
 
       {/* ── Bottom Sheet: Etiqueta ───────────────────────────────────────── */}
       {sheetEtiqueta && (

@@ -18,6 +18,20 @@ function descargar(blob: Blob, filename: string) {
   URL.revokeObjectURL(url)
 }
 
+function imprimirPdfBlob(blob: Blob): void {
+  const url = URL.createObjectURL(blob)
+  const iframe = document.createElement('iframe')
+  iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0'
+  iframe.src = url
+  document.body.appendChild(iframe)
+  iframe.onload = () => {
+    iframe.contentWindow?.focus()
+    iframe.contentWindow?.print()
+    // Limpia después de 60 s para dar tiempo al diálogo de impresión
+    setTimeout(() => { URL.revokeObjectURL(url); iframe.remove() }, 60_000)
+  }
+}
+
 function ff(iso: string | null | undefined): string {
   if (!iso) return '—'
   try { const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}` } catch { return iso }
@@ -107,6 +121,20 @@ export async function registrarYGenerarEtiqueta(
     cantidad_etiquetas: cantidadEtiquetas, impreso: true,
   })
   await generarEtiquetaLPT(lptId, orgId)
+}
+
+export async function registrarEImprimirEtiqueta(
+  lptId: string, orgId: string, ranchoId: string,
+  verificadoPor: string, cantidadEtiquetas: number,
+): Promise<void> {
+  const fecha = hoyMX()
+  await tbl('m48_etiquetas').insert({
+    lpt_id: lptId, org_id: orgId, rancho_id: ranchoId,
+    fecha, verificado_por: verificadoPor,
+    cantidad_etiquetas: cantidadEtiquetas, impreso: true,
+  })
+  const blob = await generarBlobEtiquetaLPT(lptId, orgId)
+  imprimirPdfBlob(blob)
 }
 
 export { hoyMX, nombrePdf }
