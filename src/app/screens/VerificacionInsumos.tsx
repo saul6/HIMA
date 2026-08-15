@@ -26,6 +26,7 @@ import { supabase } from '@/lib/supabase'
 import { generarVerificacionInsumosPDF } from '@/lib/pdf/m23/generarVerificacionInsumosPDF'
 import { generarVerificacionInsumosConsolidadoPDF } from '@/lib/pdf/m23/generarVerificacionInsumosConsolidadoPDF'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
+import { puedeEditarFechaLibre } from '@/lib/permisos'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)

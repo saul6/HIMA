@@ -318,9 +318,9 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                 <input
                   type="date"
                   value={movForm.fecha}
-                  min={puedeEditarFecha ? undefined : hoy()}
-                  max={puedeEditarFecha ? undefined : hoy()}
-                  onChange={e => { if (puedeEditarFecha) setMovForm(f => ({ ...f, fecha: e.target.value })) }}
+                  min={esSuperAdmin ? undefined : hoy()}
+                  max={esSuperAdmin ? undefined : hoy()}
+                  onChange={e => { if (esSuperAdmin) setMovForm(f => ({ ...f, fecha: e.target.value })) }}
                   className="w-full rounded-xl px-3 py-2.5 text-sm border border-border"
                   style={{ backgroundColor: 'var(--input-background)' }}
                 />
