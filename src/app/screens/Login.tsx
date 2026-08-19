@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, type FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router'
+import { useNavigate, useSearchParams, Link } from 'react-router'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
@@ -34,6 +34,8 @@ function getInputStyle(focused: boolean): React.CSSProperties {
 export function Login() {
   const { user, loading, signIn } = useAuthContext()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const returnTo = (() => { const r = searchParams.get('returnTo') ?? ''; return r.startsWith('/') ? r : '/' })()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -47,7 +49,7 @@ export function Login() {
   const [erroredSlides, setErroredSlides] = useState<Set<number>>(new Set())
 
   useEffect(() => {
-    if (!loading && user) navigate('/', { replace: true })
+    if (!loading && user) navigate(returnTo, { replace: true })
   }, [user, loading, navigate])
 
   useEffect(() => {
@@ -94,7 +96,7 @@ export function Login() {
       turnstileRef.current?.reset()
       setCaptchaToken(null)
     } else {
-      navigate('/', { replace: true })
+      navigate(returnTo, { replace: true })
     }
   }
 

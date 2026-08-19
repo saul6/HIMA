@@ -7,7 +7,7 @@ import {
   ChevronLeft, Plus, Loader2, Files, Bug, FileDown, Settings, Power,
   AlertTriangle, X,
 } from 'lucide-react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -214,6 +214,7 @@ function EstacionRevisionRow({
   catalogoEstado,
   catalogoCondiciones,
   catalogoPlagas,
+  destacar,
 }: {
   est: M21Estacion
   data: EstFormData
@@ -221,6 +222,7 @@ function EstacionRevisionRow({
   catalogoEstado: CatCodigo[]
   catalogoCondiciones: CatCodigo[]
   catalogoPlagas: CatCodigo[]
+  destacar?: boolean
 }) {
   const esLuz = est.tipo_trampa === 'luz'
   const tieneHallazgoAuto = esLuz && data.plaga_detectada.length > 0
@@ -234,7 +236,10 @@ function EstacionRevisionRow({
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div
+      id={`est-rev-${est.id}`}
+      className={`rounded-xl border bg-card overflow-hidden ${destacar ? 'border-[var(--primary)] ring-2 ring-[var(--primary)]/30' : 'border-border'}`}
+    >
       {/* Header de estación */}
       <div className="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border">
         <span className="text-xs font-bold text-[var(--primary)]">N.° {est.numero}</span>
@@ -409,6 +414,7 @@ function EstacionRevisionRow({
 
 export function MonitoreoEstacionesPlagas() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { profile, user, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
@@ -516,6 +522,34 @@ export function MonitoreoEstacionesPlagas() {
 
   // Estado de cada estación en el formulario
   const [estForm, setEstForm] = useState<Record<string, EstFormData>>({})
+
+  // ── NFC: preselección de estación ──────────────────────────────────────────
+  const [nfcEstacionId, setNfcEstacionId] = useState<string | null>(null)
+
+  // Efecto de entrada por NFC — se ejecuta una sola vez al montar si vienen params
+  useEffect(() => {
+    const estId = searchParams.get('estacion')
+    const rId = searchParams.get('rancho')
+    if (!estId || !rId) return
+    setForm(prev => ({ ...prev, ranchoId: rId }))
+    setEstForm({})
+    setNfcEstacionId(estId)
+    setSheetNuevo(true)
+    setSearchParams({}, { replace: true })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Scroll a la estación destacada una vez que el formulario termina de cargar
+  useEffect(() => {
+    if (!sheetNuevo || loadingEstForm || !nfcEstacionId) return
+    const t = setTimeout(() => {
+      document.getElementById(`est-rev-${nfcEstacionId}`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      })
+    }, 350)
+    return () => clearTimeout(t)
+  }, [sheetNuevo, loadingEstForm, nfcEstacionId])
 
   // Reiniciar estados de estaciones cuando cambia el rancho o se abre el sheet
   useEffect(() => {
@@ -644,6 +678,7 @@ export function MonitoreoEstacionesPlagas() {
       await refetch()
       toast.success('Revisión registrada')
       setSheetNuevo(false)
+      setNfcEstacionId(null)
       setForm({ ...FORM_INICIAL, inspectorNombre: profile.nombre_completo ?? '' })
       setEstForm({})
 
@@ -903,7 +938,7 @@ export function MonitoreoEstacionesPlagas() {
       </BottomSheet>
 
       {/* ── Sheet: Nueva Revisión ─────────────────────────────────────────────── */}
-      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="90%">
+      <BottomSheet open={sheetNuevo} onClose={() => { setSheetNuevo(false); setNfcEstacionId(null) }} height="90%">
           <div className="flex justify-center pt-3 pb-1 shrink-0">
             <div className="w-10 h-1 rounded-full bg-muted" />
           </div>
@@ -994,6 +1029,7 @@ export function MonitoreoEstacionesPlagas() {
                         catalogoEstado={catalogoEstado}
                         catalogoCondiciones={catalogoCondiciones}
                         catalogoPlagas={catalogoPlagas}
+                        destacar={est.id === nfcEstacionId}
                       />
                     ))}
                   </div>

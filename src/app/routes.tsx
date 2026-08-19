@@ -103,6 +103,7 @@ import { RondinesVigilancia } from "./screens/RondinesVigilancia";
 import { RegistroPersonal } from "./screens/RegistroPersonal";
 import { TrazabilidadProducto } from "./screens/TrazabilidadProducto";
 import { RequireModulo } from "./components/RequireModulo";
+import { NfcEstacion } from "./screens/NfcEstacion";
 
 export const router = createBrowserRouter([
   {
@@ -113,6 +114,11 @@ export const router = createBrowserRouter([
   {
     path: "/registro",
     Component: Registro,
+    ErrorBoundary: RootError,
+  },
+  {
+    path: "/nfc/:token",
+    Component: NfcEstacion,
     ErrorBoundary: RootError,
   },
   {
