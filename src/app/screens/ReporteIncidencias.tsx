@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   ChevronLeft, Plus, X, Loader2, Files, AlertTriangle,
   Camera, Trash2, ImageOff, ClipboardList, FileDown,
@@ -24,14 +24,15 @@ import { generarReporteIncidenciasConsolidadoPDF } from '@/lib/pdf/m13/generarRe
 const TITULO_MODULO = 'Reporte de Incidencias'
 const CLAVE_MODULO = 'M.A.D.Y · Por evento'
 const MAX_FOTOS_AVISO = 6
+const MAX_FOTOS_REPORTE = 150   // Hard cap: total de fotos por reporte (todas las incidencias)
 const MAX_FOTO_BYTES = 5.5 * 1024 * 1024
+const MAX_REINTENTOS_FOTO = 3
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
 // ── Tipos internos ────────────────────────────────────────────────────────────
 
 interface FotoLocal {
-  /** UUID temporal para identificar en el estado */
   uid: string
   file: File
   preview: string
@@ -41,6 +42,12 @@ interface IncidenciaLocal {
   uid: string
   descripcion: string
   fotos: FotoLocal[]
+}
+
+interface ProgresoSubida {
+  total: number
+  procesadas: number
+  fallidas: number
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -60,7 +67,6 @@ async function comprimirFoto(file: File): Promise<File> {
     useWebWorker: true,
     fileType: 'image/jpeg',
     initialQuality: 0.7,
-    // exifOrientation: undefined — la librería auto-rota y elimina EXIF/GPS
   })
 }
 
@@ -123,35 +129,56 @@ function IncidenciaForm({
   index,
   onChange,
   onQuitar,
+  totalFotosReporte,
 }: {
   inc: IncidenciaLocal
   index: number
   onChange: (upd: Partial<IncidenciaLocal>) => void
   onQuitar: () => void
+  totalFotosReporte: number
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
-  // Revoca previews en cleanup
+  const atLimit = totalFotosReporte >= MAX_FOTOS_REPORTE
+
   useEffect(() => {
     return () => { inc.fotos.forEach((f) => URL.revokeObjectURL(f.preview)) }
   }, [])
 
   function handleFiles(files: FileList | null) {
     if (!files) return
-    const nuevas: FotoLocal[] = []
-    for (const file of Array.from(files)) {
-      if (!file.type.startsWith('image/')) {
-        toast.error(`${file.name} no es una imagen`)
-        continue
-      }
-      nuevas.push({
-        uid: crypto.randomUUID(),
-        file,
-        preview: URL.createObjectURL(file),
-      })
+
+    const slotsRestantes = MAX_FOTOS_REPORTE - totalFotosReporte
+    if (slotsRestantes <= 0) {
+      toast.warning(
+        'Alcanzaste el máximo de 150 fotos por reporte. Para subir más, crea otro reporte.',
+        { duration: 6000 }
+      )
+      return
     }
+
+    const candidatas = Array.from(files).filter((f) => {
+      if (!f.type.startsWith('image/')) { toast.error(`${f.name} no es una imagen`); return false }
+      return true
+    })
+
+    // Cap al límite disponible
+    const aAgregar = candidatas.slice(0, slotsRestantes)
+    if (aAgregar.length < candidatas.length) {
+      toast.warning(
+        'Alcanzaste el máximo de 150 fotos por reporte. Para subir más, crea otro reporte.',
+        { duration: 6000 }
+      )
+    }
+
+    const nuevas: FotoLocal[] = aAgregar.map((file) => ({
+      uid: crypto.randomUUID(),
+      file,
+      preview: URL.createObjectURL(file),
+    }))
     if (nuevas.length === 0) return
-    const total = inc.fotos.length + nuevas.length
-    if (total > MAX_FOTOS_AVISO) {
+
+    const totalEnEstaInc = inc.fotos.length + nuevas.length
+    if (totalEnEstaInc > MAX_FOTOS_AVISO && !atLimit) {
       toast.warning('Límite recomendado: máximo 6 fotos por incidencia', { duration: 4000 })
     }
     onChange({ fotos: [...inc.fotos, ...nuevas] })
@@ -188,21 +215,28 @@ function IncidenciaForm({
         className="w-full px-3 py-2 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
       />
 
-      {/* Aviso mín. 1 foto */}
+      {/* Avisos */}
       {inc.fotos.length === 0 && (
         <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>
           Se requiere al menos 1 foto como evidencia
         </p>
       )}
-
-      {/* Aviso soft cap */}
-      {inc.fotos.length >= MAX_FOTOS_AVISO && (
+      {inc.fotos.length >= MAX_FOTOS_AVISO && !atLimit && (
         <div
           className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs"
           style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
         >
           <AlertTriangle className="w-3 h-3 flex-shrink-0" />
           Límite recomendado alcanzado (6 fotos). Puedes agregar más, pero puede afectar el rendimiento.
+        </div>
+      )}
+      {atLimit && (
+        <div
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs"
+          style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+        >
+          <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+          Máximo de 150 fotos por reporte alcanzado. Para subir más, crea otro reporte.
         </div>
       )}
 
@@ -237,16 +271,16 @@ function IncidenciaForm({
         multiple
         className="hidden"
         onChange={(e) => handleFiles(e.target.files)}
-        // Resetear para poder seleccionar la misma foto dos veces
         onClick={(e) => { (e.target as HTMLInputElement).value = '' }}
       />
       <button
         type="button"
-        onClick={() => inputRef.current?.click()}
-        className="w-full h-10 flex items-center justify-center gap-2 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+        onClick={() => { if (!atLimit) inputRef.current?.click() }}
+        disabled={atLimit}
+        className="w-full h-10 flex items-center justify-center gap-2 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-border disabled:hover:text-muted-foreground"
       >
         <Camera className="w-4 h-4" />
-        Agregar foto / tomar foto
+        {atLimit ? 'Límite de fotos alcanzado' : 'Agregar foto / tomar foto'}
       </button>
     </div>
   )
@@ -272,6 +306,7 @@ export function ReporteIncidencias() {
   const [incidencias, setIncidencias] = useState<IncidenciaLocal[]>([nuevaIncidencia()])
   const [errRancho, setErrRancho] = useState(false)
   const [guardando, setGuardando] = useState(false)
+  const [progreso, setProgreso] = useState<ProgresoSubida | null>(null)
 
   // Sheet consolidado
   const [sheetConsolidadoAbierto, setSheetConsolidadoAbierto] = useState(false)
@@ -287,6 +322,9 @@ export function ReporteIncidencias() {
   // Reporte expandido (para ver fotos)
   const [expandido, setExpandido] = useState<string | null>(null)
 
+  // Total de fotos en el formulario actual (computed, para el cap global)
+  const totalFotos = incidencias.reduce((sum, inc) => sum + inc.fotos.length, 0)
+
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }))
 
   function abrirSheet() {
@@ -295,6 +333,7 @@ export function ReporteIncidencias() {
     setAuditorNombre('')
     setIncidencias([nuevaIncidencia()])
     setErrRancho(false)
+    setProgreso(null)
     setSheetAbierto(true)
   }
 
@@ -353,12 +392,17 @@ export function ReporteIncidencias() {
     }
 
     setGuardando(true)
+    const totalFotosASubir = incidencias.reduce((sum, inc) => sum + inc.fotos.length, 0)
+    setProgreso({ total: totalFotosASubir, procesadas: 0, fallidas: 0 })
 
     const pathsSubidos: string[] = []
     let reporteId: string | null = null
+    // IDs de incidencias guardadas y fotos subidas por incidencia (para PDF automático)
+    const incidenciaIds: string[] = []
+    const fotosSubidasPorIncidencia: Array<Array<{ id: string; storage_path: string; orden: number }>> = []
 
     try {
-      // 1. INSERT reporte padre
+      // PASO 1: INSERT reporte padre
       const { data: reporteData, error: errReporte } = await supabase
         .from('m13_reportes')
         .insert({
@@ -373,11 +417,9 @@ export function ReporteIncidencias() {
       if (errReporte) throw errReporte
       reporteId = reporteData.id
 
-      // 2. Por cada incidencia
+      // PASO 2: INSERT todas las incidencias (texto, sin fotos — comentarios quedan guardados)
       for (let i = 0; i < incidencias.length; i++) {
         const inc = incidencias[i]
-
-        // 2a. INSERT incidencia
         const { data: incData, error: errInc } = await supabase
           .from('m13_incidencias')
           .insert({
@@ -389,40 +431,123 @@ export function ReporteIncidencias() {
           .select('id')
           .single()
         if (errInc) throw errInc
-        const incidenciaId = incData.id
+        incidenciaIds.push(incData.id)
+        fotosSubidasPorIncidencia.push([])
+      }
 
-        // 2b. Por cada foto
+      // PASO 3: Subir fotos secuencialmente con reintento (hasta MAX_REINTENTOS_FOTO por foto)
+      let procesadas = 0
+      let fallidas = 0
+      let sesionExpirada = false
+
+      for (let i = 0; i < incidencias.length && !sesionExpirada; i++) {
+        const inc = incidencias[i]
+        const incidenciaId = incidenciaIds[i]
+
         for (let j = 0; j < inc.fotos.length; j++) {
           const fotoLocal = inc.fotos[j]
+          const path = `${orgId}/${reporteId}/${incidenciaId}/${crypto.randomUUID()}.jpg`
+          let subida = false
 
-          // Comprimir
-          const comprimida = await comprimirFoto(fotoLocal.file)
-          if (comprimida.size > MAX_FOTO_BYTES) {
-            throw new Error(
-              `La foto ${j + 1} de la incidencia ${i + 1} sigue siendo demasiado grande tras comprimir (${(comprimida.size / 1024 / 1024).toFixed(1)} MB). Usa una foto con menor resolución.`
-            )
+          for (let intento = 0; intento < MAX_REINTENTOS_FOTO; intento++) {
+            try {
+              const comprimida = await comprimirFoto(fotoLocal.file)
+              if (comprimida.size > MAX_FOTO_BYTES) {
+                throw new Error(
+                  `La foto ${j + 1} de la incidencia ${i + 1} sigue siendo demasiado grande (${(comprimida.size / 1024 / 1024).toFixed(1)} MB). Usa una foto con menor resolución.`
+                )
+              }
+              await subirFoto(path, comprimida)
+              const { data: fotoData, error: errFoto } = await supabase
+                .from('m13_incidencia_fotos')
+                .insert({
+                  incidencia_id: incidenciaId,
+                  org_id: orgId,
+                  storage_path: path,
+                  orden: j + 1,
+                })
+                .select('id')
+                .single()
+              if (errFoto) throw errFoto
+              pathsSubidos.push(path)
+              fotosSubidasPorIncidencia[i].push({ id: fotoData.id, storage_path: path, orden: j + 1 })
+              subida = true
+              break
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : ''
+              // Detectar sesión expirada (401/JWT) — abortar subida sin rollback
+              if (msg.includes('401') || msg.includes('JWT') || msg.toLowerCase().includes('token')) {
+                sesionExpirada = true
+                break
+              }
+              // Si quedan reintentos, continuar; si no, marcar como fallida
+              if (intento === MAX_REINTENTOS_FOTO - 1) {
+                // Foto falló definitivamente
+              }
+            }
           }
 
-          const path = `${orgId}/${reporteId}/${incidenciaId}/${crypto.randomUUID()}.jpg`
-          await subirFoto(path, comprimida)
-          pathsSubidos.push(path)
-
-          // INSERT foto
-          const { error: errFoto } = await supabase
-            .from('m13_incidencia_fotos')
-            .insert({
-              incidencia_id: incidenciaId,
-              org_id: orgId,
-              storage_path: path,
-              orden: j + 1,
-            })
-          if (errFoto) throw errFoto
+          if (!subida) fallidas++
+          procesadas++
+          setProgreso({ total: totalFotosASubir, procesadas, fallidas })
         }
       }
 
-      toast.success('Reporte guardado correctamente')
+      // Sesión expirada durante la subida — el reporte y comentarios ya están guardados
+      if (sesionExpirada) {
+        toast.error(
+          'Tu sesión expiró durante la subida. El reporte y sus comentarios quedaron guardados. Vuelve a iniciar sesión para reintentar las fotos.',
+          { duration: 10000 }
+        )
+        setSheetAbierto(false)
+        await refetch()
+        return
+      }
+
+      // PASO 4: Resultado
+      if (fallidas === 0) {
+        toast.success('Reporte guardado correctamente')
+      } else {
+        toast.warning(
+          `Reporte guardado. ${fallidas} foto(s) no se pudieron subir — el reporte y sus comentarios están guardados.`,
+          { duration: 8000 }
+        )
+      }
+
       setSheetAbierto(false)
       await refetch()
+
+      // PASO 5: Descarga automática del PDF con lo guardado
+      try {
+        const ranchoInfo = ranchos.find((r) => r.id === ranchoId)
+        const reporteParaPDF: M13ReporteConRancho = {
+          id: reporteId!,
+          org_id: orgId,
+          rancho_id: ranchoId,
+          rancho_nombre: ranchoInfo?.nombre ?? '—',
+          rancho_codigo: (ranchoInfo as any)?.codigo ?? '',
+          fecha,
+          auditor_nombre: auditorNombre.trim() || null,
+          realizado_por_id: profile!.id,
+          created_at: new Date().toISOString(),
+          creado_por: profile!.id,
+          creado_por_nombre: profile!.nombre_completo ?? '—',
+          requiere_correccion: false,
+          comentario_correccion: null,
+          marcado_por: null,
+          marcado_en: null,
+          incidencias: incidenciaIds.map((incId, i) => ({
+            id: incId,
+            orden: i + 1,
+            descripcion: incidencias[i].descripcion.trim(),
+            fotos: fotosSubidasPorIncidencia[i],
+          })),
+        }
+        await generarReporteIncidenciasPDF(reporteParaPDF)
+      } catch {
+        // La descarga automática falla silenciosamente — el usuario puede descargar manualmente
+      }
+
     } catch (err: unknown) {
       const mensaje = err instanceof Error ? err.message : 'No se pudo guardar el reporte'
       if (mensaje.includes('FECHA_SOLO_HOY')) {
@@ -431,7 +556,7 @@ export function ReporteIncidencias() {
         toast.error(mensaje, { duration: 7000 })
       }
 
-      // Rollback: borrar Storage + reporte (cascade limpia hijas)
+      // Rollback: borrar Storage + reporte (cascade limpia incidencias y fotos)
       try {
         if (pathsSubidos.length > 0) await borrarFotos(pathsSubidos)
         if (reporteId) {
@@ -442,6 +567,7 @@ export function ReporteIncidencias() {
       }
     } finally {
       setGuardando(false)
+      setProgreso(null)
     }
   }
 
@@ -557,7 +683,7 @@ export function ReporteIncidencias() {
           </div>
         ) : (
           reportes.map((r) => {
-            const totalFotos = r.incidencias.reduce((acc, inc) => acc + inc.fotos.length, 0)
+            const totalFotosReporte = r.incidencias.reduce((acc, inc) => acc + inc.fotos.length, 0)
             const abierto = expandido === r.id
             return (
               <div
@@ -599,7 +725,7 @@ export function ReporteIncidencias() {
                           {r.incidencias.length} incidencia{r.incidencias.length !== 1 ? 's' : ''}
                         </span>
                         <span className="text-[11px] px-2 py-0.5 rounded flex-shrink-0 bg-muted text-muted-foreground">
-                          {totalFotos} foto{totalFotos !== 1 ? 's' : ''}
+                          {totalFotosReporte} foto{totalFotosReporte !== 1 ? 's' : ''}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground">{formatFecha(r.fecha)}</p>
@@ -616,7 +742,7 @@ export function ReporteIncidencias() {
                     </div>
 
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      {/* PDF individual */}
+                      {/* PDF individual / Descargar PDF */}
                       <button
                         onClick={() => handleDescargarPDF(r)}
                         disabled={generandoPDF === r.id}
@@ -833,9 +959,40 @@ export function ReporteIncidencias() {
 
               {/* Incidencias */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
-                  INCIDENCIAS *
-                </label>
+                {/* Header con contador de fotos */}
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                    INCIDENCIAS *
+                  </label>
+                  <span
+                    className="text-xs"
+                    style={{
+                      fontWeight: 600,
+                      color: totalFotos >= MAX_FOTOS_REPORTE
+                        ? 'var(--agro-danger-text)'
+                        : totalFotos >= MAX_FOTOS_REPORTE * 0.8
+                          ? 'var(--agro-warning-text)'
+                          : 'var(--muted-foreground)',
+                    }}
+                  >
+                    {totalFotos} / {MAX_FOTOS_REPORTE} fotos
+                  </span>
+                </div>
+
+                {/* Banner de límite alcanzado */}
+                {totalFotos >= MAX_FOTOS_REPORTE && (
+                  <div
+                    className="flex items-start gap-2 rounded-lg px-3 py-2 mb-3 text-xs"
+                    style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+                  >
+                    <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                    <span>
+                      Alcanzaste el máximo de {MAX_FOTOS_REPORTE} fotos por reporte.
+                      Para subir más evidencia, crea otro reporte.
+                    </span>
+                  </div>
+                )}
+
                 <div className="space-y-3">
                   {incidencias.map((inc, idx) => (
                     <IncidenciaForm
@@ -844,6 +1001,7 @@ export function ReporteIncidencias() {
                       index={idx}
                       onChange={(upd) => actualizarIncidencia(inc.uid, upd)}
                       onQuitar={() => quitarIncidencia(inc.uid)}
+                      totalFotosReporte={totalFotos}
                     />
                   ))}
                 </div>
@@ -861,17 +1019,48 @@ export function ReporteIncidencias() {
 
             </div>
 
-            {/* Guardar */}
-            <div className="p-4 border-t border-border flex-shrink-0">
-              <button
-                onClick={handleGuardar}
-                disabled={guardando}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-                style={{ fontWeight: 600 }}
-              >
-                {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-                {guardando ? 'Guardando...' : 'Guardar reporte'}
-              </button>
+            {/* Barra de progreso + Guardar */}
+            <div className="border-t border-border flex-shrink-0">
+              {guardando && progreso && (
+                <div className="px-4 pt-3 pb-1 space-y-1.5">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>
+                      {progreso.procesadas < progreso.total
+                        ? `Subiendo fotos...`
+                        : 'Finalizando...'}
+                    </span>
+                    <span style={{ fontWeight: 600 }}>
+                      {progreso.procesadas} / {progreso.total}
+                      {progreso.fallidas > 0 && (
+                        <span style={{ color: 'var(--agro-warning-text)' }}>
+                          {' '}({progreso.fallidas} error{progreso.fallidas !== 1 ? 'es' : ''})
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all duration-300"
+                      style={{ width: `${Math.round((progreso.procesadas / progreso.total) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              <div className="p-4">
+                <button
+                  onClick={handleGuardar}
+                  disabled={guardando}
+                  className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
+                  style={{ fontWeight: 600 }}
+                >
+                  {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {guardando
+                    ? progreso
+                      ? `Subiendo ${progreso.procesadas} / ${progreso.total} fotos...`
+                      : 'Guardando...'
+                    : 'Guardar reporte'}
+                </button>
+              </div>
             </div>
       </BottomSheet>
     </div>
