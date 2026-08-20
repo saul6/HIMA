@@ -17,13 +17,14 @@ import { nombrePdf } from '@/lib/pdf/nombrePdf'
 // ── Orden y etiquetas por tipo de trampa ──────────────────────────────────────
 
 const TIPO_LABEL: Record<string, string> = {
-  cebo:     'Trampas con Cebo',
-  interior: 'Interiores',
-  mecanica: 'Mecanicas',
-  luz:      'Trampa de Luz',
+  cebo:      'Trampas con Cebo',
+  interior:  'Interiores',
+  mecanica:  'Mecanicas',
+  pegamento: 'Trampas con Pegamento',
+  luz:       'Trampa de Luz',
 }
 
-const TIPO_ORDER = ['cebo', 'interior', 'mecanica', 'luz']
+const TIPO_ORDER = ['cebo', 'interior', 'mecanica', 'pegamento', 'luz']
 
 // ── Consulta + construccion de datos ─────────────────────────────────────────
 

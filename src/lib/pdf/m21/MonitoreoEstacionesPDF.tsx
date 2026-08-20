@@ -28,7 +28,7 @@ export interface EstacionResultadoPDF {
 }
 
 export interface GrupoEstacionesPDF {
-  tipo_trampa: 'cebo' | 'interior' | 'mecanica' | 'luz'
+  tipo_trampa: 'cebo' | 'interior' | 'mecanica' | 'pegamento' | 'luz'
   label: string
   estaciones: EstacionResultadoPDF[]
 }

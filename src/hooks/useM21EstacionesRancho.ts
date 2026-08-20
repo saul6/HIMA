@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
 
-export type TipoTrampa = 'cebo' | 'interior' | 'mecanica' | 'luz'
+export type TipoTrampa = 'cebo' | 'interior' | 'mecanica' | 'pegamento' | 'luz'
 
 export interface M21Estacion {
   id: string

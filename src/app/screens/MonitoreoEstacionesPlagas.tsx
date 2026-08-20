@@ -35,10 +35,11 @@ const TIPO_TRAMPA_LABELS: Record<TipoTrampa, string> = {
   cebo: 'Con Cebo',
   interior: 'Interior',
   mecanica: 'Mecánica',
+  pegamento: 'Con Pegamento',
   luz: 'Trampa de Luz',
 }
 
-const TIPOS_ORDEN: TipoTrampa[] = ['cebo', 'interior', 'mecanica', 'luz']
+const TIPOS_ORDEN: TipoTrampa[] = ['cebo', 'interior', 'mecanica', 'pegamento', 'luz']
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
