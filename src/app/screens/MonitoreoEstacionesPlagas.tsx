@@ -523,33 +523,48 @@ export function MonitoreoEstacionesPlagas() {
   // Estado de cada estación en el formulario
   const [estForm, setEstForm] = useState<Record<string, EstFormData>>({})
 
-  // ── NFC: preselección de estación ──────────────────────────────────────────
-  const [nfcEstacionId, setNfcEstacionId] = useState<string | null>(null)
+  // ── NFC: modal enfocado en una sola trampa ─────────────────────────────────
+  const [nfcModal, setNfcModal] = useState<{
+    estacionId: string; ranchoId: string; estacion: M21Estacion | null
+  } | null>(null)
+  const [nfcFormData, setNfcFormData] = useState<EstFormData>({ ...EST_FORM_INICIAL })
+  const [nfcGuardando, setNfcGuardando] = useState(false)
+  const [nfcCargandoEst, setNfcCargandoEst] = useState(false)
 
-  // Efecto de entrada por NFC — se ejecuta una sola vez al montar si vienen params
+  // Entrada por NFC — abre el modal enfocado en esa trampa
   useEffect(() => {
     const estId = searchParams.get('estacion')
     const rId = searchParams.get('rancho')
     if (!estId || !rId) return
-    setForm(prev => ({ ...prev, ranchoId: rId }))
-    setEstForm({})
-    setNfcEstacionId(estId)
-    setSheetNuevo(true)
+    setNfcModal({ estacionId: estId, ranchoId: rId, estacion: null })
     setSearchParams({}, { replace: true })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Scroll a la estación destacada una vez que el formulario termina de cargar
+  // Cargar datos de la estación cuando se abre el modal NFC
   useEffect(() => {
-    if (!sheetNuevo || loadingEstForm || !nfcEstacionId) return
-    const t = setTimeout(() => {
-      document.getElementById(`est-rev-${nfcEstacionId}`)?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
+    if (!nfcModal?.estacionId || nfcModal.estacion) return
+    let cancelado = false
+    setNfcCargandoEst(true)
+    ;(supabase as any)
+      .from('m21_estaciones')
+      .select('*')
+      .eq('id', nfcModal.estacionId)
+      .single()
+      .then(({ data, error }: { data: M21Estacion | null; error: unknown }) => {
+        if (cancelado) return
+        if (data && !error) {
+          setNfcModal(prev => prev ? { ...prev, estacion: data } : null)
+          setNfcFormData({ ...EST_FORM_INICIAL })
+        } else {
+          toast.error('No se encontró la estación')
+          setNfcModal(null)
+        }
+        setNfcCargandoEst(false)
       })
-    }, 350)
-    return () => clearTimeout(t)
-  }, [sheetNuevo, loadingEstForm, nfcEstacionId])
+    return () => { cancelado = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nfcModal?.estacionId])
 
   // Reiniciar estados de estaciones cuando cambia el rancho o se abre el sheet
   useEffect(() => {
@@ -678,7 +693,6 @@ export function MonitoreoEstacionesPlagas() {
       await refetch()
       toast.success('Revisión registrada')
       setSheetNuevo(false)
-      setNfcEstacionId(null)
       setForm({ ...FORM_INICIAL, inspectorNombre: profile.nombre_completo ?? '' })
       setEstForm({})
 
@@ -701,6 +715,143 @@ export function MonitoreoEstacionesPlagas() {
       }
     } finally {
       setGuardando(false)
+    }
+  }
+
+  // ── Guardar trampa individual desde NFC ────────────────────────────────────
+  async function handleGuardarNfc() {
+    if (!nfcModal?.estacion || !profile?.org_id) return
+    const { estacionId, ranchoId, estacion } = nfcModal
+    const fechaHoy = hoy()
+    const esLuz = estacion.tipo_trampa === 'luz'
+    const d = nfcFormData
+
+    setNfcGuardando(true)
+    try {
+      // 1. Buscar revisión de hoy para este rancho (unique por rancho_id+fecha)
+      const { data: revRows, error: revBuscErr } = await (supabase as any)
+        .from('m21_revision')
+        .select('id')
+        .eq('rancho_id', ranchoId)
+        .eq('org_id', profile.org_id)
+        .eq('fecha', fechaHoy)
+        .limit(1)
+      if (revBuscErr) throw revBuscErr
+
+      let revisionId: string
+      if (revRows && revRows.length > 0) {
+        revisionId = (revRows[0] as any).id as string
+      } else {
+        const { data: revNueva, error: revNuevaErr } = await (supabase as any)
+          .from('m21_revision')
+          .insert({
+            org_id: profile.org_id,
+            rancho_id: ranchoId,
+            fecha: fechaHoy,
+            inspector_nombre: profile.nombre_completo ?? '',
+            observaciones: null,
+          })
+          .select('id')
+          .single()
+        if (revNuevaErr) throw revNuevaErr
+        revisionId = (revNueva as any).id as string
+      }
+
+      // 2. Hallazgo → M13 si aplica
+      let incidenciaId: string | null = null
+      const tieneHallazgo = (d.tieneHallazgo || (esLuz && d.plaga_detectada.length > 0)) && d.hallazgoDescripcion.trim()
+
+      if (tieneHallazgo) {
+        // Reusar el reporte de M13 de hoy para este rancho si existe
+        const { data: repRows } = await (supabase as any)
+          .from('m13_reportes')
+          .select('id')
+          .eq('rancho_id', ranchoId)
+          .eq('org_id', profile.org_id)
+          .eq('fecha', fechaHoy)
+          .order('created_at', { ascending: false })
+          .limit(1)
+        let reporteId: string
+        if (repRows && repRows.length > 0) {
+          reporteId = (repRows[0] as any).id as string
+        } else {
+          const { data: nuevoRep, error: repErr } = await (supabase as any)
+            .from('m13_reportes')
+            .insert({
+              org_id: profile.org_id,
+              rancho_id: ranchoId,
+              fecha: fechaHoy,
+              auditor_nombre: profile.nombre_completo ?? '',
+            })
+            .select('id')
+            .single()
+          if (repErr) throw repErr
+          reporteId = (nuevoRep as any).id as string
+        }
+
+        // Determinar siguiente orden en el reporte
+        const { data: incRows } = await (supabase as any)
+          .from('m13_incidencias')
+          .select('orden')
+          .eq('reporte_id', reporteId)
+          .order('orden', { ascending: false })
+          .limit(1)
+        const maxOrden: number = incRows?.[0]?.orden ?? 0
+
+        const { data: inc, error: iErr } = await (supabase as any)
+          .from('m13_incidencias')
+          .insert({
+            org_id: profile.org_id,
+            reporte_id: reporteId,
+            orden: maxOrden + 1,
+            descripcion: d.hallazgoDescripcion.trim(),
+          })
+          .select('id')
+          .single()
+        if (iErr) throw iErr
+        incidenciaId = (inc as any).id as string
+      }
+
+      // 3. Upsert m21_resultado por (revision_id, estacion_id)
+      const resultado = {
+        revision_id: revisionId,
+        estacion_id: estacionId,
+        org_id: profile.org_id,
+        tipo_consumo: !esLuz && d.tipo_consumo.trim() ? d.tipo_consumo.trim() : null,
+        estado_trampa: !esLuz && d.estado_trampa ? d.estado_trampa : null,
+        condiciones: !esLuz && d.condiciones ? d.condiciones : null,
+        senalizacion: !esLuz && d.senalizacion ? d.senalizacion : null,
+        estado_equipo: esLuz && d.estado_equipo.trim() ? d.estado_equipo.trim() : null,
+        estado_lampara: esLuz && d.estado_lampara.trim() ? d.estado_lampara.trim() : null,
+        plaga_detectada: esLuz ? d.plaga_detectada : [],
+        incidencia_id: incidenciaId,
+      }
+
+      const { error: resErr } = await (supabase as any)
+        .from('m21_resultado')
+        .upsert(resultado, { onConflict: 'revision_id,estacion_id' })
+      if (resErr) throw resErr
+
+      // 4. Refetch + cierre
+      await refetch()
+      toast.success(`Trampa N.° ${estacion.numero} guardada`)
+      setNfcModal(null)
+
+      // 5. PDF automático
+      try {
+        await generarMonitoreoEstacionesPDF(revisionId, profile.org_id)
+      } catch {
+        toast.warning('Registro guardado. No se pudo generar el PDF automáticamente.')
+      }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Error al guardar'
+      if (msg.includes('FECHA_SOLO_HOY')) {
+        toast.warning('Solo puedes registrar con la fecha de hoy')
+      } else {
+        toast.error(msg)
+      }
+    } finally {
+      setNfcGuardando(false)
     }
   }
 
@@ -938,7 +1089,7 @@ export function MonitoreoEstacionesPlagas() {
       </BottomSheet>
 
       {/* ── Sheet: Nueva Revisión ─────────────────────────────────────────────── */}
-      <BottomSheet open={sheetNuevo} onClose={() => { setSheetNuevo(false); setNfcEstacionId(null) }} height="90%">
+      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="90%">
           <div className="flex justify-center pt-3 pb-1 shrink-0">
             <div className="w-10 h-1 rounded-full bg-muted" />
           </div>
@@ -1029,7 +1180,6 @@ export function MonitoreoEstacionesPlagas() {
                         catalogoEstado={catalogoEstado}
                         catalogoCondiciones={catalogoCondiciones}
                         catalogoPlagas={catalogoPlagas}
-                        destacar={est.id === nfcEstacionId}
                       />
                     ))}
                   </div>
@@ -1124,6 +1274,68 @@ export function MonitoreoEstacionesPlagas() {
                 : <><Files className="w-4 h-4 mr-2" /> Descargar PDF</>}
             </Button>
           </div>
+      </BottomSheet>
+
+      {/* ── Sheet: Modal NFC (trampa individual) ─────────────────────────────── */}
+      <BottomSheet open={!!nfcModal} onClose={() => setNfcModal(null)} height="85%">
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
+          <div className="w-10 h-1 rounded-full bg-muted" />
+        </div>
+        <div className="px-4 pb-2 shrink-0 flex items-start gap-2">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base font-semibold text-foreground">
+              {nfcModal?.estacion
+                ? `Trampa N.° ${nfcModal.estacion.numero} · ${TIPO_TRAMPA_LABELS[nfcModal.estacion.tipo_trampa]}`
+                : 'Cargando trampa...'}
+            </h2>
+            <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-CAL-19', codigoClave)} · Cuarto Frío</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setNfcModal(null)}
+            className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Cerrar"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 pb-6 flex flex-col gap-4">
+          {nfcCargandoEst && (
+            <div className="flex justify-center py-10">
+              <Loader2 className="w-6 h-6 animate-spin text-[var(--primary)]" />
+            </div>
+          )}
+          {!nfcCargandoEst && nfcModal?.estacion && (
+            <EstacionRevisionRow
+              est={nfcModal.estacion}
+              data={nfcFormData}
+              onUpdate={(_id, patch) => setNfcFormData(prev => ({ ...prev, ...patch }))}
+              catalogoEstado={catalogoEstado}
+              catalogoCondiciones={catalogoCondiciones}
+              catalogoPlagas={catalogoPlagas}
+            />
+          )}
+        </div>
+
+        <div className="px-4 pb-safe-bottom pb-6 pt-3 border-t border-border shrink-0 flex gap-3">
+          <Button
+            variant="outline"
+            className="flex-1 h-12"
+            onClick={() => setNfcModal(null)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            className="flex-1 h-12 bg-[var(--primary)] hover:bg-[var(--agro-blue)] text-white"
+            onClick={handleGuardarNfc}
+            disabled={nfcGuardando || nfcCargandoEst || !nfcModal?.estacion}
+          >
+            {nfcGuardando
+              ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Guardando...</>
+              : 'Guardar'}
+          </Button>
+        </div>
       </BottomSheet>
 
     </div>
