@@ -4,7 +4,7 @@ import { Link } from 'react-router'
 import {
   Plus, Loader2, TriangleAlert, Clock3,
   Users, AlertTriangle, ChevronRight, ClipboardList, BarChart2,
-  FileCheck, ShieldAlert, Search, Pin, X, Sun, Moon,
+  FileCheck, ShieldAlert, Search, Pin, X, Sun, Moon, Lock,
 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useHomeDashboard } from '@/hooks/useHomeDashboard'
@@ -152,9 +152,10 @@ interface CategoriaPopupProps {
   modulosFijados: string[]
   toggleFijar: (codigo: string) => void
   onClose: () => void
+  onBloqueado: (modulo: ModuloVisible) => void
 }
 
-function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose }: CategoriaPopupProps) {
+function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloqueado }: CategoriaPopupProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const GrupoIcon = resolverIcono(grupo.icono)
   const prefersReducedMotion =
@@ -261,60 +262,128 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose }: Categor
         >
           {grupo.modulos.map((modulo, index) => {
             const ModIcon = resolverIcono(modulo.icono)
+            const esBloqueado = !modulo.desbloqueado
             const esFijado = modulosFijados.includes(modulo.codigo)
-            const puedeFijar = esFijado || modulosFijados.length < MAX_PINNED
+            const puedeFijar = !esBloqueado && (esFijado || modulosFijados.length < MAX_PINNED)
+            const animStyle = prefersReducedMotion
+              ? undefined
+              : { animation: 'slideUpFade 0.22s ease both', animationDelay: `${index * 90}ms` }
             return (
               <div
                 key={modulo.codigo}
                 className="border-b border-border last:border-b-0"
-                style={
-                  prefersReducedMotion
-                    ? undefined
-                    : {
-                        animation: 'slideUpFade 0.22s ease both',
-                        animationDelay: `${index * 90}ms`,
-                      }
-                }
+                style={animStyle}
               >
-                <Link
-                  to={modulo.ruta}
-                  onClick={onClose}
-                  className="flex items-center gap-3 px-4 py-3.5 hover:bg-muted transition-colors"
-                >
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: 'var(--accent)' }}
+                {esBloqueado ? (
+                  <button
+                    onClick={() => onBloqueado(modulo)}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 transition-colors text-left"
+                    style={{ opacity: 0.55 }}
                   >
-                    <ModIcon className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-                  </div>
-                  <span className="flex-1 text-sm text-foreground" style={{ fontWeight: 600 }}>
-                    {modulo.nombre}
-                  </span>
-                  {puedeFijar && (
-                    <button
-                      onClick={e => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        toggleFijar(modulo.codigo)
-                      }}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors hover:bg-accent"
-                      aria-label={esFijado ? 'Quitar de accesos rápidos' : 'Fijar en accesos rápidos'}
-                      title={esFijado ? 'Quitar' : 'Fijar'}
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: 'var(--muted)' }}
                     >
-                      <Pin
-                        className="w-3.5 h-3.5"
-                        style={{
-                          color: esFijado ? 'var(--secondary)' : 'var(--muted-foreground)',
-                          fill: esFijado ? 'var(--secondary)' : 'none',
+                      <ModIcon className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
+                    </div>
+                    <span className="flex-1 text-sm text-muted-foreground" style={{ fontWeight: 600 }}>
+                      {modulo.nombre}
+                    </span>
+                    <Lock className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+                  </button>
+                ) : (
+                  <Link
+                    to={modulo.ruta}
+                    onClick={onClose}
+                    className="flex items-center gap-3 px-4 py-3.5 hover:bg-muted transition-colors"
+                  >
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: 'var(--accent)' }}
+                    >
+                      <ModIcon className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                    </div>
+                    <span className="flex-1 text-sm text-foreground" style={{ fontWeight: 600 }}>
+                      {modulo.nombre}
+                    </span>
+                    {puedeFijar && (
+                      <button
+                        onClick={e => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          toggleFijar(modulo.codigo)
                         }}
-                      />
-                    </button>
-                  )}
-                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                </Link>
+                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors hover:bg-accent"
+                        aria-label={esFijado ? 'Quitar de accesos rápidos' : 'Fijar en accesos rápidos'}
+                        title={esFijado ? 'Quitar' : 'Fijar'}
+                      >
+                        <Pin
+                          className="w-3.5 h-3.5"
+                          style={{
+                            color: esFijado ? 'var(--secondary)' : 'var(--muted-foreground)',
+                            fill: esFijado ? 'var(--secondary)' : 'none',
+                          }}
+                        />
+                      </button>
+                    )}
+                    <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  </Link>
+                )}
               </div>
             )
           })}
+        </div>
+      </div>
+    </BottomSheet>
+  )
+}
+
+// ── UpsellModal ───────────────────────────────────────────────────────────────
+
+function UpsellModal({ modulo, onClose }: { modulo: ModuloVisible | null; onClose: () => void }) {
+  if (!modulo) return null
+  const ModIcon = resolverIcono(modulo.icono)
+  const mailtoHref = `mailto:contacto@duomindsolutions.com?subject=${encodeURIComponent(`Activar módulo: ${modulo.nombre}`)}`
+  return (
+    <BottomSheet open onClose={onClose}>
+      <div>
+        <div className="flex justify-center pt-3 pb-1 md:hidden">
+          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--muted-foreground)', opacity: 0.3 }} />
+        </div>
+        <div className="px-6 py-6 flex flex-col items-center text-center gap-4">
+          <div className="relative">
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center"
+              style={{ backgroundColor: 'var(--muted)' }}
+            >
+              <ModIcon className="w-6 h-6" style={{ color: 'var(--muted-foreground)', opacity: 0.5 }} />
+            </div>
+            <div
+              className="absolute -bottom-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center border-2"
+              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+            >
+              <Lock className="w-2.5 h-2.5" style={{ color: 'var(--muted-foreground)' }} />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>{modulo.nombre}</p>
+            <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
+              Este módulo no está incluido en tu plan actual. Contáctanos para activarlo.
+            </p>
+          </div>
+          <a
+            href={mailtoHref}
+            className="h-9 px-6 rounded-lg text-sm inline-flex items-center justify-center w-full max-w-xs"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
+          >
+            Contactar para activarlo
+          </a>
+          <button
+            onClick={onClose}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Cerrar
+          </button>
         </div>
       </div>
     </BottomSheet>
@@ -341,6 +410,9 @@ export function Home() {
   // TODO: persistir por usuario — añadir columna `pinned_modules jsonb` a tabla `profiles`
   // y reemplazar useState por un hook que lea/escriba en Supabase.
   const [modulosFijados, setModulosFijados] = useState<string[]>([])
+
+  // Módulo bloqueado seleccionado para el modal de upsell
+  const [moduloBloqueadoUpsell, setModuloBloqueadoUpsell] = useState<ModuloVisible | null>(null)
 
   // Categoría abierta en popup
   const [categoriaAbierta, setCategoriaAbierta] = useState<string | null>(null)
@@ -414,6 +486,11 @@ export function Home() {
     setTimeout(() => {
       if (key) btnRefs.current.get(key)?.focus()
     }, 0)
+  }
+
+  function handleBloqueadoEnPopup(modulo: ModuloVisible) {
+    setCategoriaAbierta(null)
+    setModuloBloqueadoUpsell(modulo)
   }
 
   const nombreOrg = orgNombre ?? '—'
@@ -524,6 +601,26 @@ export function Home() {
               <div className="flex flex-wrap gap-2 p-3">
                 {modulosFiltrados.map(modulo => {
                   const Icon = resolverIcono(modulo.icono)
+                  const bloqueado = !modulo.desbloqueado
+                  if (bloqueado) {
+                    return (
+                      <button
+                        key={modulo.codigo}
+                        onClick={() => { setBusqueda(''); setModuloBloqueadoUpsell(modulo) }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border"
+                        style={{
+                          backgroundColor: 'var(--agro-background)',
+                          borderColor: 'var(--border)',
+                          color: 'var(--muted-foreground)',
+                          fontWeight: 600,
+                          opacity: 0.55,
+                        }}
+                      >
+                        <Lock className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+                        {modulo.nombre}
+                      </button>
+                    )
+                  }
                   return (
                     <Link
                       key={modulo.codigo}
@@ -658,25 +755,48 @@ export function Home() {
                 <div className="grid grid-cols-2 gap-2">
                   {modulosFijadosObjs.map(modulo => {
                     const Icon = resolverIcono(modulo.icono)
+                    const bloqueado = !modulo.desbloqueado
                     return (
                       <div key={modulo.codigo} className="relative">
-                        <Link
-                          to={modulo.ruta}
-                          className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card hover:border-secondary transition-colors"
-                        >
-                          <div
-                            className="w-9 h-9 rounded-xl flex items-center justify-center"
-                            style={{ backgroundColor: 'var(--agro-success-fill)' }}
+                        {bloqueado ? (
+                          <button
+                            onClick={() => setModuloBloqueadoUpsell(modulo)}
+                            className="w-full flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card transition-colors"
+                            style={{ opacity: 0.55 }}
                           >
-                            <Icon className="w-5 h-5" style={{ color: 'var(--agro-success-text)' }} />
-                          </div>
-                          <span
-                            className="text-xs text-center text-foreground line-clamp-2 leading-snug"
-                            style={{ fontWeight: 600 }}
+                            <div
+                              className="w-9 h-9 rounded-xl flex items-center justify-center"
+                              style={{ backgroundColor: 'var(--muted)' }}
+                            >
+                              <Icon className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
+                            </div>
+                            <span
+                              className="text-xs text-center text-muted-foreground line-clamp-2 leading-snug"
+                              style={{ fontWeight: 600 }}
+                            >
+                              {modulo.nombre}
+                            </span>
+                            <Lock className="w-3 h-3" style={{ color: 'var(--muted-foreground)' }} />
+                          </button>
+                        ) : (
+                          <Link
+                            to={modulo.ruta}
+                            className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card hover:border-secondary transition-colors"
                           >
-                            {modulo.nombre}
-                          </span>
-                        </Link>
+                            <div
+                              className="w-9 h-9 rounded-xl flex items-center justify-center"
+                              style={{ backgroundColor: 'var(--agro-success-fill)' }}
+                            >
+                              <Icon className="w-5 h-5" style={{ color: 'var(--agro-success-text)' }} />
+                            </div>
+                            <span
+                              className="text-xs text-center text-foreground line-clamp-2 leading-snug"
+                              style={{ fontWeight: 600 }}
+                            >
+                              {modulo.nombre}
+                            </span>
+                          </Link>
+                        )}
                         <button
                           onClick={() => toggleFijar(modulo.codigo)}
                           className="absolute top-1.5 right-1.5 w-6 h-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
@@ -916,8 +1036,15 @@ export function Home() {
           modulosFijados={modulosFijados}
           toggleFijar={toggleFijar}
           onClose={cerrarCategoria}
+          onBloqueado={handleBloqueadoEnPopup}
         />
       )}
+
+      {/* Modal de upsell para módulos bloqueados */}
+      <UpsellModal
+        modulo={moduloBloqueadoUpsell}
+        onClose={() => setModuloBloqueadoUpsell(null)}
+      />
     </div>
   )
 }

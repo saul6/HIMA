@@ -14,6 +14,7 @@ export interface ModuloVisible {
   sector_nombre: string | null
   sector_orden: number | null
   categoria?: string | null
+  desbloqueado: boolean
 }
 
 export function useMisModulos() {
