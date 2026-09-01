@@ -343,7 +343,7 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
 function UpsellModal({ modulo, onClose }: { modulo: ModuloVisible | null; onClose: () => void }) {
   if (!modulo) return null
   const ModIcon = resolverIcono(modulo.icono)
-  const mailtoHref = `mailto:contacto@duomindsolutions.com?subject=${encodeURIComponent(`Activar módulo: ${modulo.nombre}`)}`
+  const mailtoHref = `mailto:ventas@mady.com.mx?subject=${encodeURIComponent(`Activar módulo: ${modulo.nombre}`)}`
   return (
     <BottomSheet open onClose={onClose}>
       <div>
@@ -546,7 +546,7 @@ export function Home() {
               <p className="text-xs mt-0.5" style={{ color: 'var(--agro-warning-text)' }}>
                 Si ya realizaste tu pago, en breve activaremos tu plan.{' '}
                 <a
-                  href="mailto:contacto@duomindsolutions.com"
+                  href="mailto:ventas@mady.com.mx"
                   className="underline"
                   style={{ color: 'var(--agro-warning-text)' }}
                 >

@@ -9,7 +9,7 @@ import type { ModuloVisible } from '@/hooks/useMisModulos'
 function UpsellPage({ modulo }: { modulo: ModuloVisible }) {
   const navigate = useNavigate()
   const ModIcon = resolverIcono(modulo.icono)
-  const mailtoHref = `mailto:contacto@duomindsolutions.com?subject=${encodeURIComponent(`Activar módulo: ${modulo.nombre}`)}`
+  const mailtoHref = `mailto:ventas@mady.com.mx?subject=${encodeURIComponent(`Activar módulo: ${modulo.nombre}`)}`
 
   return (
     <div className="min-h-full pb-safe-nav flex flex-col">
