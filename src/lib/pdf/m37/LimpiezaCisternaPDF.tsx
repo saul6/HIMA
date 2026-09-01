@@ -1,4 +1,4 @@
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
+﻿import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
 import { codigoFormato } from '@/lib/codigoFormato'
 
@@ -243,7 +243,7 @@ export function LimpiezaCisternaPagina({ instalacion, instalacionCodigo, anio, m
 
       <View style={s.footer}>
         <Text style={s.footerText}>{codigoFormato('F-FRUS-SAN-15', codigoClave)}</Text>
-        <Text style={s.footerText}>M.A.D.Y — DuoMind Solutions</Text>
+        <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
       </View>
     </Page>
   )

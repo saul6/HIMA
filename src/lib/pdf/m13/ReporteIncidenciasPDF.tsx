@@ -1,4 +1,4 @@
-// PDF M13 — Reporte de Incidencias
+﻿// PDF M13 — Reporte de Incidencias
 // Formato oficial: tabla dos columnas EVIDENCIA | INCIDENCIAS, A4 portrait.
 // Las fotos se reciben como data URIs base64 (ya descargadas y re-comprimidas).
 // Helvetica built-in, sin Unicode, firma en blanco.
@@ -251,7 +251,7 @@ export function ReporteIncidenciasPagina({
 
       {/* Footer fijo */}
       <View fixed style={s.footer}>
-        <Text style={s.footerText}>M.A.D.Y - DuoMind Solutions</Text>
+        <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
         <Text
           style={s.footerText}
           render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} de ${totalPages}`}
@@ -310,7 +310,7 @@ export function ReporteIncidenciasPDF(props: ReporteIncidenciasPDFProps) {
   return (
     <Document
       title={`Reporte de Incidencias ${props.rancho} ${props.fecha}`}
-      author="M.A.D.Y - DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Reporte de Incidencias"
     >
       <ReporteIncidenciasPagina {...props} />
@@ -328,7 +328,7 @@ export function ReporteIncidenciasConsolidadoPDF({
   return (
     <Document
       title="Reporte de Incidencias Consolidado"
-      author="M.A.D.Y - DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Reporte de Incidencias Consolidado"
     >
       {reportes.map((r, i) => (

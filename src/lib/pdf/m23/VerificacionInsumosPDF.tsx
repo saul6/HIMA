@@ -1,4 +1,4 @@
-// PDF M23 — Verificación de Insumos (F-FRUS-SAN-01, Cuarto Frío)
+﻿// PDF M23 — Verificación de Insumos (F-FRUS-SAN-01, Cuarto Frío)
 // Motor espejo de M19 con dos firmas y agrupación por área.
 
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
@@ -316,7 +316,7 @@ export function VerificacionInsumosPagina({
         </View>
       </View>
 
-      <Text style={s.piePagina} fixed>M.A.D.Y — DuoMind Solutions</Text>
+      <Text style={s.piePagina} fixed>M.A.D.Y · Inocuidad Inteligente</Text>
     </Page>
   )
 }

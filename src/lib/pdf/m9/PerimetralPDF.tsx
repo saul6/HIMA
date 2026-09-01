@@ -1,4 +1,4 @@
-// PATRÓN INOCUIDAD — PDF M9
+﻿// PATRÓN INOCUIDAD — PDF M9
 // PerimetralPagina: una página A4 landscape por mes (reutilizable).
 // PerimetralPDF:    documento individual (1 mes).
 // PerimetralConsolidadoPDF: documento multi-página, uno por mes.
@@ -353,7 +353,7 @@ export function PerimetralPagina({
       </View>
 
       {/* Pie */}
-      <Text style={s.piePagina} fixed>M.A.D.Y — DuoMind Solutions &amp; Inocuidad Alimentaria</Text>
+      <Text style={s.piePagina} fixed>M.A.D.Y · Inocuidad Inteligente</Text>
     </Page>
   )
 }

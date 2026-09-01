@@ -1,4 +1,4 @@
-// PDF M21 — Revisión de Estaciones de Monitoreo de Plagas (Cuarto Frío)
+﻿// PDF M21 — Revisión de Estaciones de Monitoreo de Plagas (Cuarto Frío)
 // Formato F-FRUS-CAL-19 Rev 01. A4 landscape. Helvetica.
 // No Unicode: sin checkmarks. Acentos/ñ permitidos. Una firma en blanco.
 
@@ -377,7 +377,7 @@ export function MonitoreoEstacionesPagina({
 
       {/* Footer fijo */}
       <View fixed style={s.footer}>
-        <Text style={s.footerText}>M.A.D.Y — DuoMind Solutions</Text>
+        <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
         <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} de ${totalPages}`} />
       </View>
 
@@ -507,7 +507,7 @@ export function MonitoreoEstacionesPDF(props: MonitoreoEstacionesPaginaProps) {
   return (
     <Document
       title={`Monitoreo de Plagas ${props.instalacion} ${props.fecha}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Revisión de Estaciones de Monitoreo de Plagas"
     >
       <MonitoreoEstacionesPagina {...props} />
@@ -526,7 +526,7 @@ export function MonitoreoEstacionesConsolidadoPDF({
   return (
     <Document
       title={`Monitoreo de Plagas Consolidado ${instalacionNombre} ${desde} ${hasta}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Revisión de Estaciones de Monitoreo de Plagas Consolidado"
     >
       {revisiones.map((r, i) => (

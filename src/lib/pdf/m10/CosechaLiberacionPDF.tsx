@@ -1,4 +1,4 @@
-// PATRÓN INOCUIDAD — PDF M10 (landscape A4)
+﻿// PATRÓN INOCUIDAD — PDF M10 (landscape A4)
 // CosechaLiberacionPagina: una página A4 landscape por registro de jornada.
 // CosechaLiberacionPDF:           documento individual (1 jornada).
 // CosechaLiberacionConsolidadoPDF: documento multi-página, una página por jornada.
@@ -251,7 +251,7 @@ export function CosechaLiberacionPagina({
 
       {/* Footer fijo */}
       <View fixed style={s.footer}>
-        <Text style={s.footerText}>M.A.D.Y — DuoMind Solutions &amp; Inocuidad Alimentaria</Text>
+        <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
         <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} de ${totalPages}`} />
       </View>
 
@@ -391,7 +391,7 @@ export function CosechaLiberacionPDF(props: CosechaLiberacionPaginaProps) {
   return (
     <Document
       title={`Cosecha y Liberacion ${props.rancho} ${props.fecha}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Registro de Cosecha y Liberacion"
     >
       <CosechaLiberacionPagina {...props} />
@@ -407,7 +407,7 @@ export function CosechaLiberacionConsolidadoPDF({
   return (
     <Document
       title={`Cosecha Liberacion Consolidado ${ranchoNombre} ${desde} ${hasta}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Registro Consolidado de Cosecha y Liberacion"
     >
       {registros.map((reg, i) => (

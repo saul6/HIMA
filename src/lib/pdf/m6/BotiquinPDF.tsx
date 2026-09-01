@@ -1,4 +1,4 @@
-// PATRÓN INOCUIDAD — PDF M6
+﻿// PATRÓN INOCUIDAD — PDF M6
 // BotiquinPagina: una página del formato oficial (reutilizable en individual y consolidado).
 // BotiquinPDF:    documento individual (1 página).
 // BotiquinConsolidadoPDF: documento multi-página, una BotiquinPagina por registro.
@@ -264,7 +264,7 @@ export function BotiquinPagina({
       {/* Footer fijo en esta página */}
       <View fixed style={s.footer}>
         <Text style={s.footerText}>
-          M.A.D.Y — DuoMind Solutions &amp; Inocuidad Alimentaria
+          M.A.D.Y · Inocuidad Inteligente
         </Text>
         <Text
           style={s.footerText}
@@ -375,7 +375,7 @@ export function BotiquinPDF(props: BotiquinPDFProps) {
   return (
     <Document
       title={`Botiquin ${props.folio}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Revision de Materiales de Botiquin de Primeros Auxilios"
     >
       <BotiquinPagina {...props} />
@@ -390,7 +390,7 @@ export function BotiquinConsolidadoPDF({ registros, ranchoNombre, desde, hasta }
   return (
     <Document
       title={`Botiquin Consolidado ${ranchoNombre} ${desde} ${hasta}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Revision Consolidada de Materiales de Botiquin de Primeros Auxilios"
     >
       {registros.map((r) => (

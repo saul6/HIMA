@@ -1,4 +1,4 @@
-// AuditoriaPDF — formato checklist PrimusGFS v3.2 para M14 (SAIA), M15 (Granja), M16 (Cosecha)
+﻿// AuditoriaPDF — formato checklist PrimusGFS v3.2 para M14 (SAIA), M15 (Granja), M16 (Cosecha)
 // AuditoriaPagina : una <Page> A4 por auditoria (auto-pagina si el contenido desborda)
 // AuditoriaPDF    : Document individual (1 auditoria)
 // Las dos variantes usan AuditoriaPagina internamente.
@@ -403,7 +403,7 @@ export function AuditoriaPagina({
 
       {/* ── Footer fijo ──────────────────────────────────────────────────── */}
       <View fixed style={s.footer}>
-        <Text style={s.footerText}>M.A.D.Y - DuoMind Solutions</Text>
+        <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
         <Text
           style={s.footerText}
           render={({ pageNumber, totalPages }) =>
@@ -555,7 +555,7 @@ export function AuditoriaPDF(props: AuditoriaPaginaProps) {
   return (
     <Document
       title={`${cfg.titulo} - ${props.ranchoNombre} ${props.fecha}`}
-      author="M.A.D.Y - DuoMind Solutions"
+      author="M.A.D.Y"
       subject={cfg.subtitulo}
     >
       <AuditoriaPagina {...props} />
@@ -576,7 +576,7 @@ export function AuditoriaConsolidadoPDF({
   return (
     <Document
       title={`${cfg.titulo} - Consolidado`}
-      author="M.A.D.Y - DuoMind Solutions"
+      author="M.A.D.Y"
       subject={`${cfg.subtitulo} - Reporte consolidado`}
     >
       {auditorias.map((a) => (

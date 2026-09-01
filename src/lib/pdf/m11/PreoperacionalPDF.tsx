@@ -1,4 +1,4 @@
-// PATRÓN INOCUIDAD — PDF M11 (modelo calendario)
+﻿// PATRÓN INOCUIDAD — PDF M11 (modelo calendario)
 // PreoperacionalPagina: matriz mensual A4 landscape por mes (reutilizable).
 // PreoperacionalPDF:    documento individual (1 mes).
 // PreoperacionalConsolidadoPDF: multi-página, uno por mes.
@@ -366,7 +366,7 @@ export function PreoperacionalPagina({
       </View>
 
       {/* Pie */}
-      <Text style={s.piePagina} fixed>M.A.D.Y — DuoMind Solutions &amp; Inocuidad Alimentaria</Text>
+      <Text style={s.piePagina} fixed>M.A.D.Y · Inocuidad Inteligente</Text>
     </Page>
   )
 }

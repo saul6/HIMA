@@ -1,4 +1,4 @@
-# Auditoría de Seguridad — M.A.D.Y
+﻿# Auditoría de Seguridad — M.A.D.Y
 
 **Fecha:** 2026-08-04
 **Alcance:** Frontend React+TS+Vite (`src/`) + integración Supabase + configuración de despliegue
@@ -90,4 +90,4 @@ El aislamiento multi-tenant está correctamente delegado a RLS en Supabase — n
 
 ---
 
-*Generado el 2026-08-04 — DuoMind Solutions / M.A.D.Y*
+*Generado el 2026-08-04 — M.A.D.Y / M.A.D.Y*

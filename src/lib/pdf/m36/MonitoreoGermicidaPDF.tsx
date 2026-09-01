@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+﻿import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import { codigoFormato } from '@/lib/codigoFormato'
 
 export interface MonitoreoRow {
@@ -79,7 +79,7 @@ export function MonitoreoGermicidaPDF({ rancho, orgNombre, desde, hasta, monitor
           <View style={s.firma}>
             <Text>Verifico: Responsable del cooler</Text>
           </View>
-          <Text style={s.marca}>M.A.D.Y — DuoMind Solutions</Text>
+          <Text style={s.marca}>M.A.D.Y · Inocuidad Inteligente</Text>
         </View>
       </Page>
     </Document>

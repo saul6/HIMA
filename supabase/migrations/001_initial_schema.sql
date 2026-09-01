@@ -1,6 +1,6 @@
--- ============================================================
+﻿-- ============================================================
 -- AgroCampo — Migración inicial del esquema completo
--- DuoMind Solutions · Sprint 0 · Mayo 2026
+-- M.A.D.Y · Sprint 0 · Mayo 2026
 -- ============================================================
 -- INSTRUCCIONES: aplicar desde el dashboard de Supabase en
 -- SQL Editor, o con: supabase db push

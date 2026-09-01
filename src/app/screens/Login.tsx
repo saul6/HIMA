@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type FormEvent } from 'react'
+﻿import { useState, useRef, useEffect, type FormEvent } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react'
@@ -11,7 +11,7 @@ const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
 const SLIDES = [
   {
     src: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1400&q=80',
-    caption: 'Inocuidad digital, lista para auditoría PrimusGFS',
+    caption: 'Inocuidad Inteligente, lista para auditoría PrimusGFS',
   },
   {
     src: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1400&q=80',
@@ -143,7 +143,7 @@ export function Login() {
           <div>
             <MadyLogo theme="dark" style={{ height: 38, width: 'auto' }} />
             <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.72)', fontWeight: 400 }}>
-              Inocuidad Alimentaria Digital
+              Inocuidad Inteligente
             </p>
           </div>
 
@@ -204,7 +204,7 @@ export function Login() {
               className="text-[10px] tracking-widest uppercase"
               style={{ color: 'var(--muted-foreground)', letterSpacing: '0.1em' }}
             >
-              Inocuidad Digital
+              Inocuidad Inteligente
             </p>
           </div>
 

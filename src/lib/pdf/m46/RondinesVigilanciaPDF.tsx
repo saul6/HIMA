@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+﻿import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import { codigoFormato } from '@/lib/codigoFormato'
 
 export interface M46ItemPDF {
@@ -94,7 +94,7 @@ export function RondinesVigilanciaPDF({
     <Document>
       <Page size="A4" style={s.page}>
         <Text style={s.titulo}>Bitacora de Rondines de Vigilancia</Text>
-        <Text style={s.codigo}>{codigo}  |  M.A.D.Y — DuoMind Solutions</Text>
+        <Text style={s.codigo}>{codigo}  |  M.A.D.Y · Inocuidad Inteligente</Text>
 
         <View style={s.infoRow}>
           <View style={s.infoBlock}>
@@ -180,7 +180,7 @@ export function RondinesVigilanciaPDF({
           </View>
         </View>
 
-        <Text style={s.footer}>M.A.D.Y — DuoMind Solutions</Text>
+        <Text style={s.footer}>M.A.D.Y · Inocuidad Inteligente</Text>
       </Page>
     </Document>
   )

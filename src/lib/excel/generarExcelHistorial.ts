@@ -1,4 +1,4 @@
-import ExcelJS from 'exceljs'
+﻿import ExcelJS from 'exceljs'
 import { formatFenologia } from '@/lib/fenologia'
 import type { AplicacionRica } from '@/types/database.types'
 
@@ -381,7 +381,7 @@ export async function generarExcelHistorial(
   }
 
   const wb = new ExcelJS.Workbook()
-  wb.creator  = 'M.A.D.Y — DuoMind Solutions'
+  wb.creator  = 'M.A.D.Y'
   wb.created  = new Date()
 
   // ── Hoja 1 ──

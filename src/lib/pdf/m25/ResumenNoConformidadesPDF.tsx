@@ -1,4 +1,4 @@
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
+﻿import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
 
 export interface NcrFila {
@@ -205,12 +205,12 @@ export function ResumenNoConformidadesPDF({
   return (
     <Document
       title={`Resumen_No_Conformidades_${fecha}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Resumen de No-Conformidades PrimusGFS"
     >
       <Page size="A4" style={s.page}>
         <View fixed style={s.footer}>
-          <Text style={s.footerText}>M.A.D.Y — DuoMind Solutions</Text>
+          <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
           <Text
             style={s.footerText}
             render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} de ${totalPages}`}

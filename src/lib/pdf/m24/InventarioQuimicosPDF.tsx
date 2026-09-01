@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer'
 import { codigoFormato } from '@/lib/codigoFormato'
 
@@ -79,7 +79,7 @@ export function InventarioQuimicosPagina({
         <View style={s.headerTopRow}>
           <View style={s.logoCell}>
             <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold' }}>M.A.D.Y</Text>
-            <Text style={{ fontSize: 5 }}>DuoMind Solutions</Text>
+            <Text style={{ fontSize: 5 }}>M.A.D.Y</Text>
           </View>
           <View style={s.titleBlock}>
             <Text style={s.title}>CONTROL DE INVENTARIO DE QUIMICOS E INSUMOS</Text>
@@ -129,7 +129,7 @@ export function InventarioQuimicosPagina({
         <View style={s.sigBox}><Text style={{ fontSize: 6.5 }}>Gerente General</Text></View>
       </View>
 
-      <Text style={s.footer}>M.A.D.Y — DuoMind Solutions</Text>
+      <Text style={s.footer}>M.A.D.Y · Inocuidad Inteligente</Text>
     </Page>
   )
 }

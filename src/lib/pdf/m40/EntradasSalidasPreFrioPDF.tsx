@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+﻿import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import { codigoFormato } from '@/lib/codigoFormato'
 
 export interface M40LineaPDF {
@@ -120,7 +120,7 @@ export function EntradasSalidasPreFrioPDF({ d, codigoClave }: { d: M40RegistroDa
           <View style={s.firma}>
             <Text>Responsable de la empresa</Text>
           </View>
-          <Text style={s.marca}>M.A.D.Y — DuoMind Solutions</Text>
+          <Text style={s.marca}>M.A.D.Y · Inocuidad Inteligente</Text>
         </View>
 
       </Page>

@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer'
 import { codigoFormato } from '@/lib/codigoFormato'
 
@@ -146,7 +146,7 @@ export function MuestrasLaboratorioPagina({ instalacion, instalacionCodigo, fech
         <View style={styles.headerRow}>
           <View style={[styles.headerCell, { width: 80, alignItems: 'center', justifyContent: 'center' }]}>
             <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold' }}>M.A.D.Y</Text>
-            <Text style={{ fontSize: 6 }}>DuoMind Solutions</Text>
+            <Text style={{ fontSize: 6 }}>M.A.D.Y</Text>
           </View>
           <View style={[styles.titleBlock]}>
             <Text style={styles.title}>REGISTRO DE MUESTRAS ENVIADAS AL LABORATORIO</Text>
@@ -187,7 +187,7 @@ export function MuestrasLaboratorioPagina({ instalacion, instalacionCodigo, fech
         </View>
       </View>
 
-      <Text style={styles.footer}>M.A.D.Y — DuoMind Solutions</Text>
+      <Text style={styles.footer}>M.A.D.Y · Inocuidad Inteligente</Text>
     </Page>
   )
 }

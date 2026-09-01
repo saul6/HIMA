@@ -1,4 +1,4 @@
-// PATRÓN INOCUIDAD — PDF M7
+﻿// PATRÓN INOCUIDAD — PDF M7
 // VidrioPlasticoPagina: una página A4 por inspección (reutilizable en individual y consolidado).
 // VidrioPlasticoPDF: documento individual (1 página).
 // VidrioPlasticoConsolidadoPDF: documento multi-página, una VidrioPlasticoPagina por inspección.
@@ -243,7 +243,7 @@ export function VidrioPlasticoPagina({
       {/* Footer fijo en esta página */}
       <View fixed style={s.footer}>
         <Text style={s.footerText}>
-          M.A.D.Y — DuoMind Solutions &amp; Inocuidad Alimentaria
+          M.A.D.Y · Inocuidad Inteligente
         </Text>
         <Text
           style={s.footerText}
@@ -366,7 +366,7 @@ export function VidrioPlasticoPDF(props: VidrioPlasticoPDFProps) {
   return (
     <Document
       title={`Vidrio y Plastico ${props.folio}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Inspeccion de Vidrio y Plastico Duro"
     >
       <VidrioPlasticoPagina {...props} />
@@ -386,7 +386,7 @@ export function VidrioPlasticoConsolidadoPDF({
   return (
     <Document
       title={`Vidrio y Plastico Consolidado ${ranchoNombre} ${desde} ${hasta}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Inspeccion Consolidada de Vidrio y Plastico Duro"
     >
       {inspecciones.map((insp) => (

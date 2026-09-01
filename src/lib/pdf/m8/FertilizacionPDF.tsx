@@ -1,4 +1,4 @@
-// PATRÓN INOCUIDAD — PDF M8
+﻿// PATRÓN INOCUIDAD — PDF M8
 // FertilizacionPagina: una página A4 por registro de jornada (reutilizable en individual y consolidado).
 // FertilizacionPDF: documento individual (1 página).
 // FertilizacionConsolidadoPDF: documento multi-página, una FertilizacionPagina por registro.
@@ -241,7 +241,7 @@ export function FertilizacionPagina({
       {/* Footer fijo en esta página */}
       <View fixed style={s.footer}>
         <Text style={s.footerText}>
-          M.A.D.Y — DuoMind Solutions &amp; Inocuidad Alimentaria
+          M.A.D.Y · Inocuidad Inteligente
         </Text>
         <Text
           style={s.footerText}
@@ -351,7 +351,7 @@ export function FertilizacionPDF(props: FertilizacionPDFProps) {
   return (
     <Document
       title={`Fertilizacion ${props.folio}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Registro de Fertilizacion"
     >
       <FertilizacionPagina {...props} />
@@ -371,7 +371,7 @@ export function FertilizacionConsolidadoPDF({
   return (
     <Document
       title={`Fertilizacion Consolidado ${ranchoNombre} ${desde} ${hasta}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Registro Consolidado de Fertilizacion"
     >
       {registros.map((reg) => (

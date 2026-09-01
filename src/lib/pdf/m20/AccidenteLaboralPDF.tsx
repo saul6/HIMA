@@ -1,4 +1,4 @@
-// PDF M20 — Registro de Accidentes Laborales (Cuarto Frio)
+﻿// PDF M20 — Registro de Accidentes Laborales (Cuarto Frio)
 // Formato F-FRUS-CAL-15 Rev 01. A4 portrait. Helvetica.
 // No Unicode: checklist (X) / ( ). Dos firmas en blanco.
 
@@ -307,7 +307,7 @@ export function AccidenteLaboralPagina({
 
       {/* Footer fijo */}
       <View fixed style={s.footer}>
-        <Text style={s.footerText}>M.A.D.Y — DuoMind Solutions</Text>
+        <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
         <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} de ${totalPages}`} />
       </View>
 
@@ -474,7 +474,7 @@ export function AccidenteLaboralPDF(props: AccidenteLaboralPaginaProps) {
   return (
     <Document
       title={`Accidente Laboral ${props.instalacion} ${props.fecha}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Registro de Accidentes Laborales"
     >
       <AccidenteLaboralPagina {...props} />
@@ -493,7 +493,7 @@ export function AccidenteLaboralConsolidadoPDF({
   return (
     <Document
       title={`Accidentes Laborales Consolidado ${instalacionNombre} ${desde} ${hasta}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Registro de Accidentes Laborales Consolidado"
     >
       {registros.map((r, i) => (

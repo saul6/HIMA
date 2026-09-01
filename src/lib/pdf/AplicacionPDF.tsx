@@ -1,4 +1,4 @@
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
+﻿import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
 import type { Aplicacion, AplicacionProducto, CatalogoProducto, Rancho, Profile } from '@/types/database.types'
 import { formatFenologia } from '@/lib/fenologia'
@@ -340,7 +340,7 @@ export function AplicacionPDF({
     <Document
       key={Date.now()}
       title={`Aplicación Foliar ${folio}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Registro de Aplicaciones Foliares de Agroquímicos"
     >
       <Page size="A4" orientation="landscape" style={s.page}>
@@ -348,7 +348,7 @@ export function AplicacionPDF({
         {/* ── Fixed footer ── */}
         <View fixed style={s.footer}>
           <Text style={s.footerText}>
-            M.A.D.Y — DuoMind Solutions & Inocuidad Alimentaria
+            M.A.D.Y · Inocuidad Inteligente
           </Text>
           <Text
             style={s.footerText}

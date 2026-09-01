@@ -1,4 +1,4 @@
-// PATRÓN INOCUIDAD — PDF M12
+﻿// PATRÓN INOCUIDAD — PDF M12
 // LimpiezaBanosPagina: una página A4 portrait por jornada (reutilizable).
 // LimpiezaBanosPDF:    documento individual (1 jornada).
 // LimpiezaBanosConsolidadoPDF: documento multi-página, uno por jornada.
@@ -215,7 +215,7 @@ export function LimpiezaBanosPagina({
 
       {/* Footer fijo */}
       <View fixed style={s.footer}>
-        <Text style={s.footerText}>M.A.D.Y — DuoMind Solutions &amp; Inocuidad Alimentaria</Text>
+        <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
         <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} de ${totalPages}`} />
       </View>
 
@@ -360,7 +360,7 @@ export function LimpiezaBanosPDF(props: LimpiezaBanosPaginaProps) {
   return (
     <Document
       title={`Limpieza de Banos ${props.rancho} ${props.fecha}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Limpieza y Desinfeccion de Banos"
     >
       <LimpiezaBanosPagina {...props} />
@@ -376,7 +376,7 @@ export function LimpiezaBanosConsolidadoPDF({
   return (
     <Document
       title={`Limpieza Banos Consolidado ${ranchoNombre} ${desde} ${hasta}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject="Limpieza y Desinfeccion de Banos Consolidado"
     >
       {jornadas.map((j, i) => (

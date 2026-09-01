@@ -1,4 +1,4 @@
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
+﻿import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
 import { codigoFormato } from '@/lib/codigoFormato'
 
@@ -184,7 +184,7 @@ export function PreparacionCloroPagina({
 
       {/* Footer fijo */}
       <View fixed style={s.footer}>
-        <Text style={s.footerText}>M.A.D.Y — DuoMind Solutions</Text>
+        <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
         <Text
           style={s.footerText}
           render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} de ${totalPages}`}
@@ -291,7 +291,7 @@ export function PreparacionCloroPDF(props: PreparacionCloroPaginaProps) {
   return (
     <Document
       title={`Preparacion de Cloro ${props.rancho} ${props.desde}`}
-      author="M.A.D.Y — DuoMind Solutions"
+      author="M.A.D.Y"
       subject={`Preparacion de Cloro a 200 ppm — ${codigoFormato('F-FRUS-SAN-03', props.codigoClave)}`}
     >
       <PreparacionCloroPagina {...props} />

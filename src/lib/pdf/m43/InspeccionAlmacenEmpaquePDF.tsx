@@ -1,4 +1,4 @@
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
+﻿import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
 import { codigoFormato } from '@/lib/codigoFormato'
 
@@ -274,7 +274,7 @@ export function InspeccionAlmacenEmpaquePagina({
         </View>
       </View>
 
-      <Text style={s.piePagina} fixed>M.A.D.Y — DuoMind Solutions</Text>
+      <Text style={s.piePagina} fixed>M.A.D.Y · Inocuidad Inteligente</Text>
     </Page>
   )
 }

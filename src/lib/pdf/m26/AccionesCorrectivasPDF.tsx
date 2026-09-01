@@ -1,4 +1,4 @@
-import { Document, Page, View, Text, StyleSheet, Image, Svg, Line, Rect, Path, G } from '@react-pdf/renderer'
+﻿import { Document, Page, View, Text, StyleSheet, Image, Svg, Line, Rect, Path, G } from '@react-pdf/renderer'
 import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
 
 export interface AccionPDFFila {
@@ -407,14 +407,14 @@ export function AccionesCorrectivasPDF({
       <MadyLogoPDF width={56} />
       <View style={s.headerInfo}>
         <Text style={s.headerTitle}>Formato de Acciones Correctivas</Text>
-        <Text style={s.headerSub}>M.A.D.Y — DuoMind Solutions</Text>
+        <Text style={s.headerSub}>M.A.D.Y · Inocuidad Inteligente</Text>
       </View>
     </View>
   )
 
   const footerFixed = (
     <View style={s.footerFixed} fixed>
-      <Text style={s.footerText}>M.A.D.Y — DuoMind Solutions | Formato de Acciones Correctivas</Text>
+      <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente | Formato de Acciones Correctivas</Text>
       <Text style={s.pageNum} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
     </View>
   )
