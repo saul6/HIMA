@@ -1,6 +1,16 @@
-﻿import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
-import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+// PATRÓN INOCUIDAD — PDF M27 (plantilla homogénea M.A.D.Y)
+// Preparación de Cloro a 200 ppm — A4 portrait.
+// PdfPageFrame + PdfHeader + tabla de preparaciones + PdfSignatures.
+
+import { Document, Page, View, Text } from '@react-pdf/renderer'
+import { PdfPageFrame, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
+import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
+import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
+import { PdfTable, PdfTableRow, PdfTableCell } from '@/lib/pdf/components/PdfTable'
+import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
+import { PC } from '@/lib/pdf/components/tokens'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -20,146 +30,8 @@ export interface PreparacionCloroPaginaProps {
   hasta: string
   preparaciones: PreparacionPDFRow[]
   codigoClave: string
+  terminoSitio?: string
 }
-
-// ── Paleta ────────────────────────────────────────────────────────────────────
-
-const PRIMARY = '#2B7AB5'
-const DARK    = '#1A1A1A'
-const BORDER  = '#CCCCCC'
-const WHITE   = '#FFFFFF'
-const MUTED   = '#555555'
-const ROW_ALT = '#F5F9FE'
-
-// ── Estilos ───────────────────────────────────────────────────────────────────
-
-const s = StyleSheet.create({
-  page: {
-    fontFamily: 'Helvetica',
-    fontSize: 9,
-    color: DARK,
-    paddingTop: 50,
-    paddingBottom: 50,
-    paddingLeft: 40,
-    paddingRight: 40,
-  },
-
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: PRIMARY,
-    paddingBottom: 8,
-  },
-  headerLogo:    { fontSize: 11, fontFamily: 'Helvetica-Bold', color: PRIMARY },
-  headerLogoSub: { fontSize: 7, color: MUTED, marginTop: 2 },
-  headerTitle:   { flex: 1, textAlign: 'center', fontSize: 10, fontFamily: 'Helvetica-Bold', color: DARK },
-  headerSub:     { textAlign: 'center', fontSize: 7, color: MUTED, marginTop: 2 },
-  headerMeta:    { fontSize: 7, textAlign: 'right', color: MUTED },
-
-  infoTable: {
-    borderLeftWidth: 1,
-    borderLeftColor: BORDER,
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-    marginBottom: 10,
-  },
-  infoRow:    { flexDirection: 'row' },
-  infoCell: {
-    flex: 1,
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    paddingTop: 5,
-    paddingBottom: 5,
-    paddingLeft: 8,
-    paddingRight: 8,
-  },
-  infoCellLabel: { fontSize: 6, color: MUTED, marginBottom: 2, fontFamily: 'Helvetica-Bold' },
-  infoCellValue: { fontSize: 9, color: DARK },
-
-  tbl: {
-    borderLeftWidth: 1,
-    borderLeftColor: BORDER,
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-  },
-  hdrRow:     { flexDirection: 'row', backgroundColor: PRIMARY },
-  dataRow:    { flexDirection: 'row' },
-  dataRowAlt: { flexDirection: 'row', backgroundColor: ROW_ALT },
-  hdrCell: {
-    color: WHITE,
-    fontFamily: 'Helvetica-Bold',
-    fontSize: 7,
-    paddingTop: 5,
-    paddingBottom: 5,
-    paddingLeft: 4,
-    paddingRight: 4,
-    borderRightWidth: 1,
-    borderRightColor: '#5599CC',
-    borderBottomWidth: 1,
-    borderBottomColor: '#5599CC',
-    textAlign: 'center',
-  },
-  cell: {
-    fontSize: 8,
-    paddingTop: 5,
-    paddingBottom: 5,
-    paddingLeft: 4,
-    paddingRight: 4,
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-  },
-  cellCenter: {
-    fontSize: 8,
-    paddingTop: 5,
-    paddingBottom: 5,
-    paddingLeft: 4,
-    paddingRight: 4,
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    textAlign: 'center',
-    fontFamily: 'Helvetica-Bold',
-  },
-
-  nota: {
-    marginTop: 10,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: BORDER,
-  },
-  notaText: { fontSize: 7, color: MUTED },
-
-  firmaSection: { marginTop: 32 },
-  firmaRow:     { flexDirection: 'row', gap: 32 },
-  firmaBox:     { flex: 1 },
-  firmaLinea: {
-    borderTopWidth: 1,
-    borderTopColor: DARK,
-    paddingTop: 4,
-    marginTop: 32,
-  },
-  firmaLabel: { fontSize: 7, color: MUTED },
-
-  footer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 40,
-    right: 40,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-    paddingTop: 4,
-  },
-  footerText: { fontSize: 6, color: '#888888' },
-})
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -171,128 +43,124 @@ function fmt(iso: string): string {
   } catch { return iso }
 }
 
-// ── Componente de página ──────────────────────────────────────────────────────
+// Anchos de columna — contenido portrait PdfPageFrame ≈ 517pt
+const W_N    = 20
+const W_FECHA = 60
+const W_AREA  = 160
+const W_LITROS = 44
+const W_ML    = 44
+const W_RESP  = 100
+const W_OBS   = 89
+// Total: 20+60+160+44+44+100+89 = 517pt
+
+// ── PreparacionCloroPagina ────────────────────────────────────────────────────
 
 export function PreparacionCloroPagina({
-  rancho, orgNombre, desde, hasta, preparaciones, codigoClave,
+  rancho, orgNombre, desde, hasta, preparaciones, codigoClave, terminoSitio = 'Instalación',
 }: PreparacionCloroPaginaProps) {
   const emision = new Date().toLocaleDateString('es-MX')
+  const codigoFmt = codigoFormato('F-FRUS-SAN-03', codigoClave)
   const periodoLabel = desde === hasta ? fmt(desde) : `${fmt(desde)} — ${fmt(hasta)}`
+  const totalLabel = String(preparaciones.length)
 
   return (
-    <Page size="A4" style={s.page}>
+    <Page
+      size="A4"
+      orientation="portrait"
+      style={{ fontFamily: 'Helvetica', fontSize: 9, padding: 24, paddingBottom: 50, backgroundColor: PC.white }}
+    >
+      <PdfFooter moduloCodigo="M27" />
 
-      {/* Footer fijo */}
-      <View fixed style={s.footer}>
-        <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
-        <Text
-          style={s.footerText}
-          render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} de ${totalPages}`}
+      <PdfPageFrame>
+        <PdfHeader
+          titulo="PREPARACIÓN DE CLORO A 200 ppm"
+          subtitulo={`Formato operativo | ${rancho}`}
+          codigoFormato={codigoFmt}
+          folio={desde}
+          fecha={emision}
         />
-      </View>
 
-      {/* Header */}
-      <View style={s.header}>
-        <View style={{ flex: 2 }}>
-          <MadyLogoPDF style={s.headerLogo} />
-          <Text style={s.headerLogoSub}>Inocuidad Alimentaria</Text>
-        </View>
-        <View style={{ flex: 6 }}>
-          <Text style={s.headerTitle}>PREPARACION DE CLORO A 200 ppm</Text>
-          <Text style={s.headerSub}>{codigoFormato('F-FRUS-SAN-03', codigoClave)}</Text>
-        </View>
-        <View style={{ flex: 2, alignItems: 'flex-end' }}>
-          <Text style={s.headerMeta}>Emision: {emision}</Text>
-        </View>
-      </View>
+        <View style={{ padding: 14 }}>
 
-      {/* Datos generales */}
-      <View style={s.infoTable}>
-        <View style={s.infoRow}>
-          {orgNombre ? (
-            <View style={[s.infoCell, { flex: 2 }]}>
-              <Text style={s.infoCellLabel}>ORGANIZACION</Text>
-              <Text style={s.infoCellValue}>{orgNombre}</Text>
-            </View>
-          ) : null}
-          <View style={[s.infoCell, { flex: 2 }]}>
-            <Text style={s.infoCellLabel}>RANCHO / INSTALACION</Text>
-            <Text style={s.infoCellValue}>{rancho}</Text>
+          <PdfSectionBanner>1. Datos generales</PdfSectionBanner>
+          <PdfFieldGrid>
+            <PdfFieldRow>
+              {orgNombre ? <PdfField label="Organización" value={orgNombre} /> : null}
+              <PdfField label={terminoSitio} value={rancho} />
+              <PdfField label="Periodo" value={periodoLabel} />
+              <PdfField label="Total de preparaciones" value={totalLabel} />
+            </PdfFieldRow>
+          </PdfFieldGrid>
+
+          <PdfSectionBanner>2. Registro de preparaciones</PdfSectionBanner>
+
+          <View style={{ marginTop: 6 }}>
+            <PdfTable
+              columns={[
+                { label: 'N.', width: W_N },
+                { label: 'Fecha', width: W_FECHA },
+                { label: 'Area / Punto de aplicacion', width: W_AREA },
+                { label: 'Litros agua', width: W_LITROS },
+                { label: 'mL cloro', width: W_ML },
+                { label: 'Responsable', width: W_RESP },
+                { label: 'Observaciones', width: W_OBS },
+              ]}
+            >
+              {preparaciones.length === 0 ? (
+                <PdfTableRow>
+                  <PdfTableCell width={W_N + W_FECHA + W_AREA + W_LITROS + W_ML + W_RESP + W_OBS} align="center">
+                    Sin registros
+                  </PdfTableCell>
+                </PdfTableRow>
+              ) : (
+                preparaciones.map((p, i) => (
+                  <PdfTableRow key={i} alt={i % 2 === 1}>
+                    <PdfTableCell width={W_N} align="center">{String(i + 1)}</PdfTableCell>
+                    <PdfTableCell width={W_FECHA}>{fmt(p.fecha)}</PdfTableCell>
+                    <PdfTableCell width={W_AREA} align="left">{p.area}</PdfTableCell>
+                    <PdfTableCell width={W_LITROS} align="center">{String(p.litros_agua)} L</PdfTableCell>
+                    <PdfTableCell width={W_ML} align="center">{String(p.ml_cloro)} mL</PdfTableCell>
+                    <PdfTableCell width={W_RESP} align="left">{p.responsable ?? ''}</PdfTableCell>
+                    <PdfTableCell width={W_OBS} align="left">{p.observaciones ?? ''}</PdfTableCell>
+                  </PdfTableRow>
+                ))
+              )}
+            </PdfTable>
           </View>
-          <View style={[s.infoCell, { flex: 2 }]}>
-            <Text style={s.infoCellLabel}>PERIODO</Text>
-            <Text style={s.infoCellValue}>{periodoLabel}</Text>
+
+          {/* Nota de fórmula */}
+          <View style={{ marginTop: 10, padding: 8, borderWidth: 1, borderColor: '#E0C860', borderRadius: 3, backgroundColor: '#FFFDE7' }}>
+            <Text style={{ fontSize: 7, color: '#6D4C00', lineHeight: 1.4 }}>
+              Nota: Para obtener 200 ppm con cloro comercial (~6%): 3.33 mL de cloro por litro de agua.{'\n'}
+              Formula: mL de cloro = Litros de agua x 10/3
+            </Text>
           </View>
-          <View style={[s.infoCell, { flex: 1 }]}>
-            <Text style={s.infoCellLabel}>TOTAL</Text>
-            <Text style={s.infoCellValue}>{preparaciones.length}</Text>
-          </View>
+
+          <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
+          <PdfSignatures
+            signatures={[
+              { label: 'Elaboro', nombre: '', caption: 'Firma' },
+              { label: '', nombre: '', caption: 'Verifico — Responsable de Inocuidad — Firma' },
+            ]}
+          />
+
         </View>
-      </View>
-
-      {/* Tabla */}
-      <View style={s.tbl}>
-        <View style={s.hdrRow}>
-          <Text style={[s.hdrCell, { width: 22 }]}>N.</Text>
-          <Text style={[s.hdrCell, { width: 62 }]}>Fecha</Text>
-          <Text style={[s.hdrCell, { flex: 3 }]}>Area / Punto de aplicacion</Text>
-          <Text style={[s.hdrCell, { width: 48 }]}>Litros{'\n'}agua</Text>
-          <Text style={[s.hdrCell, { width: 48 }]}>mL{'\n'}cloro</Text>
-          <Text style={[s.hdrCell, { flex: 2 }]}>Responsable</Text>
-          <Text style={[s.hdrCell, { flex: 2 }]}>Observaciones</Text>
-        </View>
-
-        {preparaciones.map((p, i) => (
-          <View key={i} style={i % 2 === 0 ? s.dataRow : s.dataRowAlt}>
-            <Text style={[s.cellCenter, { width: 22, fontSize: 7 }]}>{i + 1}</Text>
-            <Text style={[s.cell, { width: 62, fontSize: 7 }]}>{fmt(p.fecha)}</Text>
-            <Text style={[s.cell, { flex: 3 }]}>{p.area}</Text>
-            <Text style={[s.cellCenter, { width: 48 }]}>{p.litros_agua} L</Text>
-            <Text style={[s.cellCenter, { width: 48, color: PRIMARY }]}>{p.ml_cloro} mL</Text>
-            <Text style={[s.cell, { flex: 2 }]}>{p.responsable ?? ''}</Text>
-            <Text style={[s.cell, { flex: 2, fontSize: 7 }]}>{p.observaciones ?? ''}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* Nota */}
-      <View style={s.nota}>
-        <Text style={s.notaText}>
-          Nota: Para obtener 200 ppm con cloro comercial (~6%): 3.33 mL de cloro por cada litro de agua.
-          Formula: mL de cloro = Litros de agua x 10/3
-        </Text>
-      </View>
-
-      {/* Firmas */}
-      <View style={s.firmaSection}>
-        <View style={s.firmaRow}>
-          <View style={s.firmaBox}>
-            <Text style={s.firmaLabel}>Elaboro</Text>
-            <View style={s.firmaLinea}>
-              <Text style={s.firmaLabel}>Firma</Text>
-            </View>
-          </View>
-          <View style={s.firmaBox}>
-            <Text style={s.firmaLabel}>&nbsp;</Text>
-            <View style={s.firmaLinea}>
-              <Text style={s.firmaLabel}>Verifico — Responsable de Inocuidad — Firma</Text>
-            </View>
-          </View>
-        </View>
-      </View>
-
+      </PdfPageFrame>
     </Page>
   )
 }
 
-// ── Documento PDF ─────────────────────────────────────────────────────────────
+// ── PreparacionCloroPDF ───────────────────────────────────────────────────────
 
 export function PreparacionCloroPDF(props: PreparacionCloroPaginaProps) {
   return (
     <Document
       title={`Preparacion de Cloro ${props.rancho} ${props.desde}`}
-      author="M.A.D.Y"
+      author="M.A.D.Y."
+      creator="M.A.D.Y. Inocuidad Inteligente"
+      producer="M.A.D.Y. Inocuidad Inteligente"
       subject={`Preparacion de Cloro a 200 ppm — ${codigoFormato('F-FRUS-SAN-03', props.codigoClave)}`}
+      keywords="MADY, inocuidad, cloro, preparacion, desinfeccion"
     >
       <PreparacionCloroPagina {...props} />
     </Document>

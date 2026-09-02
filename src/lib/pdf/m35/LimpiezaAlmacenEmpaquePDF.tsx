@@ -1,16 +1,18 @@
-﻿import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
-import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+// PATRÓN INOCUIDAD — PDF M35 (plantilla homogénea M.A.D.Y)
+// Bitácora de limpieza del almacén de material de empaque — A4 landscape, matriz mensual.
+
+import { Document, Page, View, Text } from '@react-pdf/renderer'
+import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
+import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
+import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
+import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
+import { PC } from '@/lib/pdf/components/tokens'
 
 export type ValorM35PDF = 'hecho' | 'no_hecho' | 'na'
-
 export interface M35ItemPDF { id: string; nombre: string; frecuencia: string; genera_incidencia: boolean }
-
-export interface M35DiaDataPDF {
-  realizo: string | null
-  aprobo: string | null
-}
-
+export interface M35DiaDataPDF { realizo: string | null; aprobo: string | null }
 export interface LimpiezaAlmacenEmpaquePaginaProps {
   instalacion: string
   instalacionCodigo: string
@@ -21,8 +23,8 @@ export interface LimpiezaAlmacenEmpaquePaginaProps {
   diasData: Record<number, M35DiaDataPDF>
   observaciones: string | null
   codigoClave: string
+  terminoSitio?: string
 }
-
 export interface LimpiezaAlmacenEmpaqueConsolidadoProps {
   paginas: LimpiezaAlmacenEmpaquePaginaProps[]
   instalacionNombre: string
@@ -30,180 +32,121 @@ export interface LimpiezaAlmacenEmpaqueConsolidadoProps {
   hasta: string
 }
 
-const PRIMARY  = '#2B7AB5'
-const DARK     = '#1A1A1A'
-const BORDER   = '#CCCCCC'
-const WHITE    = '#FFFFFF'
-const MUTED    = '#717182'
-const ROW_ALT  = '#F5F9FE'
-const HDR_BG   = '#E8F1F9'
-const OK_COLOR = '#2E7D32'
-const NO_COLOR = '#C02A2A'
-const NA_COLOR = '#717182'
-
-const MARGIN     = 20
-const PAGE_W     = 841.89 - MARGIN * 2
+const OK_COLOR  = '#2E7D32'
+const NO_COLOR  = '#C02A2A'
+const NA_COLOR  = '#717182'
+const ROW_ALT   = '#F5F9FE'
+const MARGIN    = 20
+const PAGE_W    = 841.89 - MARGIN * 2
 const ITEM_COL_W = 160
-const DAY_AREA_W = PAGE_W - ITEM_COL_W
+const D_COL = { dia: 30, realizo: 250, aprobo: 250 }
 
-function dayColW(numDias: number): number {
-  return Math.floor(DAY_AREA_W / Math.max(numDias, 1))
+function dayColW(n: number) { return Math.floor((PAGE_W - ITEM_COL_W) / Math.max(n, 1)) }
+function diasEnMes(a: number, m: number) { return new Date(a, m, 0).getDate() }
+function mesNombre(a: number, m: number) {
+  const n = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+  return `${n[m - 1]} ${a}`
 }
-
-function diasEnMes(anio: number, mes: number): number {
-  return new Date(anio, mes, 0).getDate()
-}
-
-function mesNombre(anio: number, mes: number): string {
-  const nombres = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-  return `${nombres[mes - 1]} ${anio}`
-}
-
-const s = StyleSheet.create({
-  page:         { fontFamily: 'Helvetica', fontSize: 7, color: DARK, paddingHorizontal: MARGIN, paddingVertical: MARGIN, backgroundColor: WHITE },
-  headerRow:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
-  titleBlock:   { flex: 1, alignItems: 'center' },
-  title:        { fontSize: 9, fontFamily: 'Helvetica-Bold', color: PRIMARY, textAlign: 'center' },
-  subtitle:     { fontSize: 6.5, color: MUTED, textAlign: 'center', marginTop: 1 },
-  codigoText:   { fontSize: 6.5, color: MUTED },
-  infoRow:      { flexDirection: 'row', borderWidth: 1, borderColor: BORDER, marginBottom: 4 },
-  infoCell:     { flex: 1, padding: 3, borderRightWidth: 1, borderRightColor: BORDER },
-  infoCellLast: { flex: 1, padding: 3 },
-  infoLabel:    { fontSize: 5.5, color: MUTED, fontFamily: 'Helvetica-Bold', textTransform: 'uppercase', marginBottom: 1 },
-  infoValue:    { fontSize: 7, color: DARK },
-  table:        { borderWidth: 1, borderColor: BORDER },
-  hdrRow:       { flexDirection: 'row', backgroundColor: HDR_BG },
-  hdrCell:      { padding: 3, borderRightWidth: 1, borderRightColor: BORDER, borderBottomWidth: 1, borderBottomColor: BORDER, justifyContent: 'center', alignItems: 'center' },
-  hdrText:      { fontFamily: 'Helvetica-Bold', fontSize: 6.5, textAlign: 'center', color: DARK },
-  itemRow:      { flexDirection: 'row' },
-  itemCell:     { width: ITEM_COL_W, padding: 3, borderRightWidth: 1, borderRightColor: BORDER, borderBottomWidth: 1, borderBottomColor: BORDER, justifyContent: 'center' },
-  itemName:     { fontSize: 6, color: DARK },
-  itemFrec:     { fontSize: 5.5, color: MUTED, marginTop: 0.5 },
-  dayCell:      { borderRightWidth: 1, borderRightColor: BORDER, borderBottomWidth: 1, borderBottomColor: BORDER, justifyContent: 'center', alignItems: 'center', padding: 1 },
-  dayCellText:  { fontSize: 6, textAlign: 'center' },
-  sectionTitle: { fontFamily: 'Helvetica-Bold', fontSize: 7, color: PRIMARY, marginTop: 6, marginBottom: 2 },
-  dTable:       { borderWidth: 1, borderColor: BORDER, marginBottom: 4 },
-  dHdrRow:      { flexDirection: 'row', backgroundColor: HDR_BG },
-  dRow:         { flexDirection: 'row' },
-  dCell:        { padding: 2.5, borderRightWidth: 1, borderRightColor: BORDER, borderBottomWidth: 1, borderBottomColor: BORDER, justifyContent: 'center', alignItems: 'center' },
-  dText:        { fontSize: 6, textAlign: 'center', color: DARK },
-  dHdrText:     { fontSize: 6, fontFamily: 'Helvetica-Bold', textAlign: 'center', color: DARK },
-  obsBox:       { borderWidth: 1, borderColor: BORDER, padding: 4, marginTop: 4, minHeight: 20 },
-  obsLabel:     { fontSize: 5.5, color: MUTED, fontFamily: 'Helvetica-Bold', marginBottom: 2 },
-  obsText:      { fontSize: 6.5, color: DARK },
-  nota:         { fontSize: 5.5, color: MUTED, marginTop: 3 },
-  firmasRow:    { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
-  firmaItem:    { flex: 1, marginHorizontal: 4, borderTopWidth: 1, borderTopColor: DARK, paddingTop: 3, alignItems: 'center' },
-  firmaText:    { fontSize: 6.5, color: DARK, textAlign: 'center' },
-  footer:       { marginTop: 6, borderTopWidth: 1, borderTopColor: BORDER, paddingTop: 3, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  footerText:   { fontSize: 5.5, color: MUTED },
-})
-
-const D_COL_WIDTHS = { dia: 30, realizo: 250, aprobo: 250 }
-
-function valorDisplay(v: ValorM35PDF | undefined, generaIncidencia: boolean): { text: string; color: string } {
+function valorDisplay(v: ValorM35PDF | undefined, generaIncidencia: boolean) {
   if (generaIncidencia) {
-    if (v === 'hecho')   return { text: 'Dano', color: NO_COLOR }
-    if (v === 'na')      return { text: 'OK', color: OK_COLOR }
-    return { text: '', color: DARK }
+    if (v === 'hecho') return { text: 'Dano', color: NO_COLOR }
+    if (v === 'na')    return { text: 'OK', color: OK_COLOR }
+    return { text: '', color: PC.fieldValue }
   }
   if (v === 'hecho')    return { text: 'OK', color: OK_COLOR }
   if (v === 'no_hecho') return { text: 'No', color: NO_COLOR }
   if (v === 'na')       return { text: 'N/A', color: NA_COLOR }
-  return { text: '', color: DARK }
+  return { text: '', color: PC.fieldValue }
 }
 
-export function LimpiezaAlmacenEmpaquePagina({
-  instalacion, instalacionCodigo, anio, mes, items, resultados, diasData, observaciones, codigoClave,
-}: LimpiezaAlmacenEmpaquePaginaProps) {
-  const numDias = diasEnMes(anio, mes)
-  const days = Array.from({ length: numDias }, (_, i) => i + 1)
-  const dW = dayColW(numDias)
-  const mesLabel = mesNombre(anio, mes)
+const thStyle = { padding: 3, borderRightWidth: 1, borderRightColor: '#5599CC', borderBottomWidth: 1, borderBottomColor: '#5599CC', justifyContent: 'center', alignItems: 'center' } as const
+const tdStyle = { borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, justifyContent: 'center', alignItems: 'center', padding: 1 } as const
 
-  const diasDataEntries = Object.keys(diasData)
-    .map(Number)
-    .filter((dia) => {
-      const d = diasData[dia]
-      return d.realizo || d.aprobo
-    })
-    .sort((a, b) => a - b)
+export function LimpiezaAlmacenEmpaquePagina({
+  instalacion, instalacionCodigo, anio, mes, items, resultados, diasData,
+  observaciones, codigoClave, terminoSitio = 'Instalación',
+}: LimpiezaAlmacenEmpaquePaginaProps) {
+  const emision   = new Date().toLocaleDateString('es-MX')
+  const codigoFmt = codigoFormato('F-FRUS-SAN-13', codigoClave)
+  const numDias   = diasEnMes(anio, mes)
+  const days      = Array.from({ length: numDias }, (_, i) => i + 1)
+  const dW        = dayColW(numDias)
+  const mesLabel  = mesNombre(anio, mes)
+
+  const diasDataEntries = Object.keys(diasData).map(Number).filter((dia) => {
+    const d = diasData[dia]; return d.realizo || d.aprobo
+  }).sort((a, b) => a - b)
 
   return (
-    <Page size="A4" orientation="landscape" style={s.page}>
-      <View style={s.headerRow}>
-        <MadyLogoPDF size={28} />
-        <View style={s.titleBlock}>
-          <Text style={s.title}>BITACORA DE LIMPIEZA DEL ALMACEN DE MATERIAL DE EMPAQUE</Text>
-          <Text style={s.subtitle}>{mesLabel}</Text>
-        </View>
-        <Text style={s.codigoText}>Codigo: {codigoFormato('F-FRUS-SAN-13', codigoClave)}</Text>
-      </View>
+    <Page size="A4" orientation="landscape" style={{ fontFamily: 'Helvetica', fontSize: 7, padding: MARGIN, paddingBottom: 50, backgroundColor: PC.white }}>
+      <PdfFooter moduloCodigo="M35" />
+      <TopBar />
+      <PdfHeader titulo="BITÁCORA DE LIMPIEZA DEL ALMACÉN DE MATERIAL DE EMPAQUE" subtitulo={`Bitácora mensual | ${instalacion}`} codigoFormato={codigoFmt} folio={mesLabel} fecha={emision} />
 
-      <View style={s.infoRow}>
-        <View style={s.infoCell}>
-          <Text style={s.infoLabel}>Instalacion</Text>
-          <Text style={s.infoValue}>{instalacion}</Text>
-        </View>
-        <View style={s.infoCell}>
-          <Text style={s.infoLabel}>Codigo</Text>
-          <Text style={s.infoValue}>{instalacionCodigo}</Text>
-        </View>
-        <View style={s.infoCell}>
-          <Text style={s.infoLabel}>Area</Text>
-          <Text style={s.infoValue}>Almacen de material de empaque</Text>
-        </View>
-        <View style={s.infoCellLast}>
-          <Text style={s.infoLabel}>Mes / Ano</Text>
-          <Text style={s.infoValue}>{mesLabel}</Text>
-        </View>
-      </View>
+      <PdfSectionBanner>1. Datos del sitio y mes</PdfSectionBanner>
+      <PdfFieldGrid>
+        <PdfFieldRow>
+          <PdfField label={terminoSitio} value={instalacion} />
+          <PdfField label="Código" value={instalacionCodigo || '—'} />
+          <PdfField label="Área" value="Almacén de material de empaque" />
+          <PdfField label="Mes / Año" value={mesLabel} />
+        </PdfFieldRow>
+      </PdfFieldGrid>
 
-      <View style={s.table}>
-        <View style={s.hdrRow}>
-          <View style={[s.hdrCell, { width: ITEM_COL_W, borderLeftWidth: 0 }]}>
-            <Text style={s.hdrText}>Actividad / Frecuencia</Text>
+      <PdfSectionBanner>2. Actividades de limpieza</PdfSectionBanner>
+      <View style={{ borderLeftWidth: 1, borderLeftColor: PC.border, borderTopWidth: 1, borderTopColor: PC.border, marginTop: 4 }}>
+        <View style={{ flexDirection: 'row' }}>
+          <View style={[thStyle, { width: ITEM_COL_W, backgroundColor: PC.section }]}>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, textAlign: 'center', color: PC.white }}>Actividad / Frecuencia</Text>
           </View>
-          {days.map((d) => (
-            <View key={d} style={[s.hdrCell, { width: dW }]}>
-              <Text style={s.hdrText}>{d}</Text>
+          {days.map(d => (
+            <View key={d} style={[thStyle, { width: dW, backgroundColor: PC.section }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, textAlign: 'center', color: PC.white }}>{d}</Text>
             </View>
           ))}
         </View>
-        {items.map((item, idx) => (
-          <View key={item.id} style={[s.itemRow, { backgroundColor: idx % 2 === 1 ? ROW_ALT : WHITE }]}>
-            <View style={s.itemCell}>
-              <Text style={s.itemName}>{item.nombre}</Text>
-              <Text style={s.itemFrec}>Frec: {item.frecuencia}</Text>
+        {items.map((item, idx) => {
+          const bg = idx % 2 === 1 ? ROW_ALT : PC.white
+          return (
+            <View key={item.id} style={{ flexDirection: 'row', backgroundColor: bg }}>
+              <View style={{ width: ITEM_COL_W, padding: 3, borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, justifyContent: 'center', backgroundColor: bg }}>
+                <Text style={{ fontSize: 6, color: PC.fieldValue }}>{item.nombre}</Text>
+                <Text style={{ fontSize: 5.5, color: PC.textSub, marginTop: 0.5 }}>Frec: {item.frecuencia}</Text>
+              </View>
+              {days.map(d => {
+                const { text, color } = valorDisplay(resultados[d]?.[item.id], item.genera_incidencia)
+                return (
+                  <View key={d} style={[tdStyle, { width: dW, backgroundColor: bg }]}>
+                    <Text style={{ fontSize: 6, textAlign: 'center', color }}>{text}</Text>
+                  </View>
+                )
+              })}
             </View>
-            {days.map((d) => {
-              const { text, color } = valorDisplay(resultados[d]?.[item.id], item.genera_incidencia)
-              return (
-                <View key={d} style={[s.dayCell, { width: dW }]}>
-                  <Text style={[s.dayCellText, { color }]}>{text}</Text>
-                </View>
-              )
-            })}
-          </View>
-        ))}
+          )
+        })}
       </View>
 
       {diasDataEntries.length > 0 && (
         <>
-          <Text style={s.sectionTitle}>Registro diario de personal</Text>
-          <View style={s.dTable}>
-            <View style={s.dHdrRow}>
-              <View style={[s.dCell, { width: D_COL_WIDTHS.dia }]}><Text style={s.dHdrText}>Dia</Text></View>
-              <View style={[s.dCell, { width: D_COL_WIDTHS.realizo }]}><Text style={s.dHdrText}>Realizo</Text></View>
-              <View style={[s.dCell, { width: D_COL_WIDTHS.aprobo, borderRightWidth: 0 }]}><Text style={s.dHdrText}>Aprobo</Text></View>
+          <PdfSectionBanner>Registro diario de personal</PdfSectionBanner>
+          <View style={{ borderLeftWidth: 1, borderLeftColor: PC.border, borderTopWidth: 1, borderTopColor: PC.border, marginTop: 4, marginBottom: 4 }}>
+            <View style={{ flexDirection: 'row' }}>
+              {[{ label: 'Dia', w: D_COL.dia }, { label: 'Realizo', w: D_COL.realizo }, { label: 'Aprobo', w: D_COL.aprobo }].map((col, ci, arr) => (
+                <View key={col.label} style={[thStyle, { width: col.w, backgroundColor: PC.section, borderRightWidth: ci === arr.length - 1 ? 0 : 1 }]}>
+                  <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', textAlign: 'center', color: PC.white }}>{col.label}</Text>
+                </View>
+              ))}
             </View>
             {diasDataEntries.map((dia, idx) => {
               const d = diasData[dia]
+              const bg = idx % 2 === 1 ? ROW_ALT : PC.white
               return (
-                <View key={dia} style={[s.dRow, { backgroundColor: idx % 2 === 1 ? ROW_ALT : WHITE }]}>
-                  <View style={[s.dCell, { width: D_COL_WIDTHS.dia }]}><Text style={s.dText}>{dia}</Text></View>
-                  <View style={[s.dCell, { width: D_COL_WIDTHS.realizo }]}><Text style={s.dText}>{d.realizo ?? ''}</Text></View>
-                  <View style={[s.dCell, { width: D_COL_WIDTHS.aprobo, borderRightWidth: 0 }]}><Text style={s.dText}>{d.aprobo ?? ''}</Text></View>
+                <View key={dia} style={{ flexDirection: 'row', backgroundColor: bg }}>
+                  {[{ val: String(dia), w: D_COL.dia }, { val: d.realizo ?? '', w: D_COL.realizo }, { val: d.aprobo ?? '', w: D_COL.aprobo }].map((cell, ci, arr) => (
+                    <View key={ci} style={[tdStyle, { width: cell.w, backgroundColor: bg, borderRightWidth: ci === arr.length - 1 ? 0 : 1 }]}>
+                      <Text style={{ fontSize: 6, textAlign: 'center', color: PC.fieldValue }}>{cell.val}</Text>
+                    </View>
+                  ))}
                 </View>
               )
             })}
@@ -211,40 +154,35 @@ export function LimpiezaAlmacenEmpaquePagina({
         </>
       )}
 
-      {observaciones && (
-        <View style={s.obsBox}>
-          <Text style={s.obsLabel}>OBSERVACIONES</Text>
-          <Text style={s.obsText}>{observaciones}</Text>
-        </View>
-      )}
-
-      <Text style={s.nota}>
-        Nota: En caso de detectar dano en micas o faros del montacargas, registrar incidencia en M13 - Reporte de Incidencias.
-      </Text>
-
-      <View style={s.firmasRow}>
-        <View style={s.firmaItem}>
-          <Text style={s.firmaText}>Realizo: ___________________</Text>
-        </View>
-        <View style={s.firmaItem}>
-          <Text style={s.firmaText}>Aprobo: ___________________</Text>
-        </View>
-        <View style={s.firmaItem}>
-          <Text style={s.firmaText}>Responsable de Inocuidad — Firma: ___________________</Text>
-        </View>
+      {/* Nota incidencia montacargas */}
+      <View style={{ marginTop: 4, padding: 5, borderWidth: 1, borderColor: '#E0C860', borderRadius: 2, backgroundColor: '#FFFDE7' }}>
+        <Text style={{ fontSize: 5.5, color: '#6D4C00' }}>
+          Nota: En caso de detectar dano en micas o faros del montacargas, registrar incidencia en M13 - Reporte de Incidencias.
+        </Text>
       </View>
 
-      <View style={s.footer}>
-        <Text style={s.footerText}>{codigoFormato('F-FRUS-SAN-13', codigoClave)}</Text>
-        <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
-      </View>
+      {observaciones ? (
+        <View style={{ borderWidth: 1, borderColor: PC.border, padding: 4, marginTop: 4, minHeight: 20 }}>
+          <Text style={{ fontSize: 5.5, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>OBSERVACIONES</Text>
+          <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{observaciones}</Text>
+        </View>
+      ) : null}
+
+      <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
+      <PdfSignatures
+        signatures={[
+          { label: '', nombre: '', caption: 'Realizo' },
+          { label: '', nombre: '', caption: 'Aprobo' },
+          { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
+        ]}
+      />
     </Page>
   )
 }
 
 export function LimpiezaAlmacenEmpaquePDF(props: LimpiezaAlmacenEmpaquePaginaProps) {
   return (
-    <Document>
+    <Document title={`Limpieza Almacen Empaque ${mesNombre(props.anio, props.mes)}`} author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject={`Bitácora de Limpieza del Almacén de Material de Empaque — ${props.instalacion}`} keywords="MADY, inocuidad, limpieza, almacen, empaque">
       <LimpiezaAlmacenEmpaquePagina {...props} />
     </Document>
   )
@@ -252,10 +190,8 @@ export function LimpiezaAlmacenEmpaquePDF(props: LimpiezaAlmacenEmpaquePaginaPro
 
 export function LimpiezaAlmacenEmpaqueConsolidadoPDF({ paginas }: LimpiezaAlmacenEmpaqueConsolidadoProps) {
   return (
-    <Document>
-      {paginas.map((p, i) => (
-        <LimpiezaAlmacenEmpaquePagina key={i} {...p} />
-      ))}
+    <Document title="Limpieza Almacen Empaque Consolidado" author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject="Bitácora de Limpieza del Almacén de Material de Empaque — Consolidado" keywords="MADY, inocuidad, limpieza, almacen, empaque, consolidado">
+      {paginas.map((p, i) => <LimpiezaAlmacenEmpaquePagina key={i} {...p} />)}
     </Document>
   )
 }
