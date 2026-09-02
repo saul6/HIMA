@@ -1,10 +1,12 @@
-﻿// PDF M13 — Reporte de Incidencias
-// Formato oficial: tabla dos columnas EVIDENCIA | INCIDENCIAS, A4 portrait.
+// PATRÓN INOCUIDAD — PDF M13 (plantilla homogénea M.A.D.Y)
+// Reporte visual con fotos: tabla dos columnas EVIDENCIA | INCIDENCIAS, A4 portrait.
 // Las fotos se reciben como data URIs base64 (ya descargadas y re-comprimidas).
 // Helvetica built-in, sin Unicode, firma en blanco.
 
 import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
-import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
+import { PC } from '@/lib/pdf/components/tokens'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -21,22 +23,14 @@ export interface ReporteIncidenciasPDFProps {
   fecha: string
   auditorNombre: string | null
   incidencias: IncidenciaPDFRow[]
+  codigoClave?: string
+  terminoSitio?: string
 }
 
-// ── Paleta (mismos valores que M12) ──────────────────────────────────────────
-
-const PRIMARY   = '#2B7AB5'
-const DARK      = '#1A1A1A'
-const BORDER    = '#CCCCCC'
-const WHITE     = '#FFFFFF'
-const MUTED     = '#555555'
-const HDR_BG    = '#E8EEF4'   // franja gris-azul del encabezado oficial
-const COL_HDR   = '#3A3A3A'   // texto columna header
-
-// Ancho columna izquierda ~40%, derecha ~60% (sobre 515pt usables en A4)
+// Ancho columna izquierda ~40%, derecha ~60% (sobre 515pt usables en A4 portrait con padding 40)
 const COL_EVIDENCIA  = 206
 const COL_INCIDENCIA = 309
-const FOTO_MAX_H     = 110    // altura maxima por foto embebida (pt)
+const FOTO_MAX_H     = 130    // altura maxima por foto embebida (pt)
 
 // ── Estilos ───────────────────────────────────────────────────────────────────
 
@@ -44,67 +38,28 @@ const s = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     fontSize: 9,
-    color: DARK,
-    // paddingTop para dejar espacio al encabezado fijo (~80pt)
-    paddingTop: 82,
+    color: PC.fieldValue,
+    paddingTop: 84,
     paddingBottom: 55,
     paddingLeft: 40,
     paddingRight: 40,
+    backgroundColor: PC.white,
   },
-
-  // ── Encabezado fijo (position absolute, se repite en cada pagina) ──────────
-  pageHeader: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: HDR_BG,
-    paddingLeft: 40,
-    paddingRight: 40,
-    paddingTop: 8,
-    paddingBottom: 6,
-  },
-  hdrRow1: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  hdrTitleBlock: { flex: 1 },
-  hdrTitle: {
-    fontSize: 11,
-    fontFamily: 'Helvetica-Bold',
-    color: DARK,
-  },
-  hdrRight: { alignItems: 'flex-end' },
-  hdrLogo: { fontSize: 10, fontFamily: 'Helvetica-Bold' },
-  hdrFecha: { fontSize: 7, color: MUTED, marginTop: 2 },
-
-  hdrDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    marginBottom: 4,
-  },
-  hdrRow2: {
-    flexDirection: 'row',
-    gap: 24,
-  },
-  hdrMeta: { fontSize: 7, color: COL_HDR },
-  hdrMetaLabel: { fontFamily: 'Helvetica-Bold' },
 
   // ── Tabla principal ────────────────────────────────────────────────────────
   table: {
     borderLeftWidth: 1,
-    borderLeftColor: BORDER,
+    borderLeftColor: PC.border,
     borderTopWidth: 1,
-    borderTopColor: BORDER,
+    borderTopColor: PC.border,
     marginBottom: 16,
   },
   tblHdrRow: {
     flexDirection: 'row',
-    backgroundColor: PRIMARY,
+    backgroundColor: PC.section,
   },
   tblHdrCell: {
-    color: WHITE,
+    color: PC.white,
     fontFamily: 'Helvetica-Bold',
     fontSize: 8,
     paddingTop: 5,
@@ -123,9 +78,9 @@ const s = StyleSheet.create({
   cellEvidencia: {
     width: COL_EVIDENCIA,
     borderRightWidth: 1,
-    borderRightColor: BORDER,
+    borderRightColor: PC.border,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER,
+    borderBottomColor: PC.border,
     paddingTop: 6,
     paddingBottom: 6,
     paddingLeft: 6,
@@ -136,9 +91,9 @@ const s = StyleSheet.create({
   cellIncidencia: {
     width: COL_INCIDENCIA,
     borderRightWidth: 1,
-    borderRightColor: BORDER,
+    borderRightColor: PC.border,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER,
+    borderBottomColor: PC.border,
     paddingTop: 8,
     paddingBottom: 8,
     paddingLeft: 8,
@@ -155,17 +110,17 @@ const s = StyleSheet.create({
     height: FOTO_MAX_H,
     backgroundColor: '#F0F0F0',
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: PC.border,
   },
   numIncidencia: {
     fontSize: 7,
-    color: MUTED,
+    color: PC.textSub,
     fontFamily: 'Helvetica-Bold',
     marginBottom: 4,
   },
   descripcion: {
     fontSize: 9,
-    color: DARK,
+    color: PC.fieldValue,
     lineHeight: 1.4,
   },
 
@@ -173,26 +128,12 @@ const s = StyleSheet.create({
   firmaSection: { marginTop: 24 },
   firmaLinea: {
     borderTopWidth: 1,
-    borderTopColor: DARK,
+    borderTopColor: PC.fieldValue,
     paddingTop: 4,
     marginTop: 32,
     width: '50%',
   },
-  firmaLabel: { fontSize: 7, color: MUTED },
-
-  // ── Footer fijo ────────────────────────────────────────────────────────────
-  footer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 40,
-    right: 40,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-    paddingTop: 3,
-  },
-  footerText: { fontSize: 6, color: '#888888' },
+  firmaLabel: { fontSize: 7, color: PC.textSub },
 })
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -214,49 +155,42 @@ export function ReporteIncidenciasPagina({
   fecha,
   auditorNombre,
   incidencias,
+  codigoClave = 'MXA',
+  terminoSitio = 'Rancho',
 }: ReporteIncidenciasPDFProps) {
   const fechaFormateada = formatFechaPDF(fecha)
+  const codigoFmt = `${codigoClave}-F-SC-SIG`
 
   return (
     <Page size="A4" style={s.page}>
 
       {/* Encabezado fijo — se repite en cada pagina */}
-      <View fixed style={s.pageHeader}>
-        <View style={s.hdrRow1}>
-          <View style={s.hdrTitleBlock}>
-            <Text style={s.hdrTitle}>REPORTE DE INCIDENCIAS</Text>
+      <View fixed style={{ position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: PC.white }}>
+        <TopBar />
+        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 6, paddingBottom: 6, paddingLeft: 40, paddingRight: 40 }}>
+          <View style={{ flex: 6 }}>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 11, color: PC.titleNavy }}>
+              REPORTE DE INCIDENCIAS
+            </Text>
+            <Text style={{ fontSize: 7, color: PC.textSub, marginTop: 2 }}>
+              Reporte visual · {terminoSitio}: {rancho}{ranchoCodigo ? ` (${ranchoCodigo})` : ''}
+            </Text>
           </View>
-          <View style={s.hdrRight}>
-            <MadyLogoPDF style={s.hdrLogo} />
-            <Text style={s.hdrFecha}>{fechaFormateada}</Text>
+          <View style={{ flex: 4, alignItems: 'flex-end' }}>
+            <Image src={LOGO_MADY_PDF} style={{ height: 36, width: 101 }} />
           </View>
         </View>
-        <View style={s.hdrDivider} />
-        <View style={s.hdrRow2}>
-          <Text style={s.hdrMeta}>
-            <Text style={s.hdrMetaLabel}>Rancho: </Text>
-            {rancho}
-            {ranchoCodigo && ranchoCodigo !== '—' ? `  (${ranchoCodigo})` : ''}
+        <View style={{ borderTopWidth: 1, borderTopColor: PC.border, flexDirection: 'row', gap: 20, paddingTop: 3, paddingBottom: 4, paddingLeft: 40, paddingRight: 40 }}>
+          <Text style={{ fontSize: 7, color: PC.textSub }}>
+            Realizo el recorrido: {auditorNombre ?? '—'}
           </Text>
-          <Text style={s.hdrMeta}>
-            <Text style={s.hdrMetaLabel}>Realizo el recorrido: </Text>
-            {auditorNombre ?? '—'}
-          </Text>
-          <Text style={s.hdrMeta}>
-            <Text style={s.hdrMetaLabel}>Folio: </Text>
-            {folio}
-          </Text>
+          <Text style={{ fontSize: 7, color: PC.textSub }}>Folio: {folio}</Text>
+          <Text style={{ fontSize: 7, color: PC.textSub }}>Fecha: {fechaFormateada}</Text>
+          <Text style={{ fontSize: 7, color: PC.textSub }}>Codigo: {codigoFmt}</Text>
         </View>
       </View>
 
-      {/* Footer fijo */}
-      <View fixed style={s.footer}>
-        <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
-        <Text
-          style={s.footerText}
-          render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} de ${totalPages}`}
-        />
-      </View>
+      <PdfFooter moduloCodigo="M13" />
 
       {/* Tabla EVIDENCIA | INCIDENCIAS */}
       <View style={s.table}>
@@ -309,9 +243,12 @@ export function ReporteIncidenciasPagina({
 export function ReporteIncidenciasPDF(props: ReporteIncidenciasPDFProps) {
   return (
     <Document
-      title={`Reporte de Incidencias ${props.rancho} ${props.fecha}`}
-      author="M.A.D.Y"
-      subject="Reporte de Incidencias"
+      title={`Reporte de Incidencias ${props.fecha}`}
+      author="M.A.D.Y."
+      creator="M.A.D.Y. Inocuidad Inteligente"
+      producer="M.A.D.Y. Inocuidad Inteligente"
+      subject={`Reporte de Incidencias — ${props.rancho}`}
+      keywords="MADY, inocuidad, incidencias, reporte"
     >
       <ReporteIncidenciasPagina {...props} />
     </Document>
@@ -328,8 +265,11 @@ export function ReporteIncidenciasConsolidadoPDF({
   return (
     <Document
       title="Reporte de Incidencias Consolidado"
-      author="M.A.D.Y"
-      subject="Reporte de Incidencias Consolidado"
+      author="M.A.D.Y."
+      creator="M.A.D.Y. Inocuidad Inteligente"
+      producer="M.A.D.Y. Inocuidad Inteligente"
+      subject="Reporte Consolidado de Incidencias"
+      keywords="MADY, inocuidad, incidencias, consolidado"
     >
       {reportes.map((r, i) => (
         <ReporteIncidenciasPagina key={i} {...r} />

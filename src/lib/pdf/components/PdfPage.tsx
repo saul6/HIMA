@@ -4,7 +4,7 @@ import { PC } from './tokens'
 
 // ── TopBar SVG gradient ──────────────────────────────────────────────────────
 
-function TopBar() {
+export function TopBar() {
   return (
     <Svg style={{ width: '100%' }} viewBox="0 0 800 8" height={8}>
       <Defs>

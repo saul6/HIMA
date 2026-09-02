@@ -1,10 +1,13 @@
-﻿// AuditoriaPDF — formato checklist PrimusGFS v3.2 para M14 (SAIA), M15 (Granja), M16 (Cosecha)
-// AuditoriaPagina : una <Page> A4 por auditoria (auto-pagina si el contenido desborda)
-// AuditoriaPDF    : Document individual (1 auditoria)
-// Las dos variantes usan AuditoriaPagina internamente.
+// AuditoriaPDF — formato checklist PrimusGFS para M14–M18
+// Plantilla homogénea M.A.D.Y: degradado superior, logo imagen, colores #3277AE, pie estándar.
+// AuditoriaPagina : una <Page> A4 portrait por auditoría (auto-pagina con wrap)
+// AuditoriaPDF    : Document individual
+// AuditoriaConsolidadoPDF: Document multi-página
 
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
-import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
+import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
+import { PC } from '@/lib/pdf/components/tokens'
 import { formatPortadaM15, formatPortadaM16, formatPortadaM17, type PortadaLinea } from './portadaConfig'
 import type { ModuloAuditoria } from '@/hooks/useAuditoria'
 
@@ -28,56 +31,50 @@ export interface AuditoriaPaginaProps {
   secciones: SeccionRow[]
   preguntas: PreguntaRow[]
   respuestas: RespuestaRow[]
+  codigoClave?: string
+  terminoSitio?: string
 }
 
-// ── Config por modulo ─────────────────────────────────────────────────────────
+// ── Config por módulo ─────────────────────────────────────────────────────────
 
 const MODULO_CONFIG: Record<ModuloAuditoria, { titulo: string; subtitulo: string }> = {
   m14: {
-    titulo: 'Modulo 1 - SAIA',
+    titulo: 'Auditoría — Módulo 1 SAIA',
     subtitulo: 'Requisitos del Sistema Administrativo de la Inocuidad Alimentaria',
   },
   m15: {
-    titulo: 'Modulo 2 - Granja',
-    subtitulo: 'Buenas Practicas Agricolas',
+    titulo: 'Auditoría — Módulo 2 Granja',
+    subtitulo: 'Buenas Prácticas Agrícolas',
   },
   m16: {
-    titulo: 'Modulo 4 - Cuadrilla de Cosecha',
-    subtitulo: 'Buenas Practicas Agricolas',
+    titulo: 'Auditoría — Módulo 4 Cuadrilla de Cosecha',
+    subtitulo: 'Buenas Prácticas Agrícolas',
   },
   m17: {
-    titulo: 'Modulo 5 - Operaciones BPM',
-    subtitulo: 'Buenas Practicas de Manufactura',
+    titulo: 'Auditoría — Módulo 5 Operaciones BPM',
+    subtitulo: 'Buenas Prácticas de Manufactura',
   },
   m18: {
-    titulo: 'Modulo 6 - HACCP',
+    titulo: 'Auditoría — Módulo 6 HACCP',
     subtitulo: 'Requisitos del Sistema HACCP',
   },
 }
 
-// ── Paleta (coherente con M9-M13) ────────────────────────────────────────────
+// ── Colores locales (específicos del checklist de auditoría) ──────────────────
 
-const PRIMARY       = '#2B7AB5'
-const PRIMARY_LIGHT = '#E3F2FD'
-const PRIMARY_MID   = '#D0E8F5'
-const DARK          = '#1A1A1A'
-const BORDER        = '#CCCCCC'
-const WHITE         = '#FFFFFF'
-const MUTED         = '#555555'
-const ROW_ALT       = '#F5F9FE'
-const SEC_BG        = '#D6E8F5'
-const CUMPLE_BG     = '#E3F2FD'
-const CUMPLE_FG     = '#0D5A8F'
-const NOCUMPLE_BG   = '#FAEEDA'
-const NOCUMPLE_FG   = '#854F0B'
+const ROW_ALT     = '#F5F9FE'
+const CUMPLE_BG   = '#E3F2FD'
+const CUMPLE_FG   = '#0D5A8F'
+const NOCUMPLE_BG = '#FAEEDA'
+const NOCUMPLE_FG = '#854F0B'
 
-// ── Anchos de columna (contenido = 595 - 50 - 50 = 495pt) ────────────────────
+// ── Anchos de columna (contenido A4 portrait = 595.28 - 50 - 50 = 495pt) ─────
 
 const C_CODIGO   = 42
 const C_PREGUNTA = 220
 const C_PUNTOS   = 35
 const C_RESULT   = 100
-const C_COMENT   = 98   // sin borde derecho = cierre de tabla
+const C_COMENT   = 98
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -116,66 +113,19 @@ const s = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     fontSize: 9,
-    color: DARK,
-    paddingTop: 82,    // reserva para el header fijo (~58pt) + margen
+    color: PC.fieldValue,
+    paddingTop: 82,      // espacio para header fijo (~75pt) + margen
     paddingBottom: 46,
     paddingLeft: 50,
     paddingRight: 50,
   },
-
-  // ── Header fijo (repite en cada pagina) ────────────────────────────────────
-  pageHeader: {
-    position: 'absolute',
-    top: 14,
-    left: 50,
-    right: 50,
-  },
-  phTop: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingBottom: 5,
-    borderBottomWidth: 2,
-    borderBottomColor: PRIMARY,
-    borderBottomStyle: 'solid',
-  },
-  phLeft:  { flex: 1 },
-  phRight: { alignItems: 'flex-end' },
-  phTitulo: {
-    fontSize: 9,
-    fontFamily: 'Helvetica-Bold',
-    color: DARK,
-  },
-  phSubtitulo: { fontSize: 7, color: MUTED, marginTop: 1 },
-  phLogo: { fontSize: 10, fontFamily: 'Helvetica-Bold' },
-  phFecha: { fontSize: 7, color: MUTED, marginTop: 2, textAlign: 'right' },
-  phMeta: {
-    flexDirection: 'row',
-    marginTop: 5,
-    gap: 12,
-  },
-  phMetaText: { fontSize: 7.5, color: MUTED },
-
-  // ── Footer fijo ────────────────────────────────────────────────────────────
-  footer: {
-    position: 'absolute',
-    bottom: 16,
-    left: 50,
-    right: 50,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-    borderTopStyle: 'solid',
-    paddingTop: 3,
-  },
-  footerText: { fontSize: 6, color: '#888888' },
 
   // ── Resumen puntaje ────────────────────────────────────────────────────────
   scoreSummary: {
     flexDirection: 'row',
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: PC.border,
     borderStyle: 'solid',
   },
   scoreMain: {
@@ -184,53 +134,39 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRightWidth: 1,
-    borderRightColor: BORDER,
+    borderRightColor: PC.border,
     borderRightStyle: 'solid',
-    backgroundColor: PRIMARY_LIGHT,
+    backgroundColor: '#EBF3FB',
   },
-  scorePct: {
-    fontSize: 26,
-    fontFamily: 'Helvetica-Bold',
-    color: PRIMARY,
-    lineHeight: 1,
-  },
-  scoreLabel: { fontSize: 7, color: MUTED, marginTop: 3, textAlign: 'center' },
-  scorePts:   { fontSize: 8, color: PRIMARY, fontFamily: 'Helvetica-Bold', marginTop: 2 },
+  scorePct:   { fontSize: 26, fontFamily: 'Helvetica-Bold', color: PC.section, lineHeight: 1 },
+  scoreLabel: { fontSize: 7, color: PC.textSub, marginTop: 3, textAlign: 'center' },
+  scorePts:   { fontSize: 8, color: PC.section, fontFamily: 'Helvetica-Bold', marginTop: 2 },
   scoreTable: { flex: 1, padding: 7 },
   scoreTableTitle: {
     fontSize: 7,
     fontFamily: 'Helvetica-Bold',
-    color: DARK,
+    color: PC.fieldValue,
     marginBottom: 4,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER,
+    borderBottomColor: PC.border,
     borderBottomStyle: 'solid',
     paddingBottom: 2,
   },
-  scoreRow: {
-    flexDirection: 'row',
-    paddingVertical: 1.5,
-  },
-  scoreSecName: { flex: 1, fontSize: 7, color: DARK },
-  scoreSecPct: {
-    fontSize: 7,
-    fontFamily: 'Helvetica-Bold',
-    color: PRIMARY,
-    width: 50,
-    textAlign: 'right',
-  },
+  scoreRow:     { flexDirection: 'row', paddingVertical: 1.5 },
+  scoreSecName: { flex: 1, fontSize: 7, color: PC.fieldValue },
+  scoreSecPct:  { fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.section, width: 50, textAlign: 'right' },
 
-  // ── Portada ────────────────────────────────────────────────────────────────
+  // ── Portada (M15/M16/M17) ─────────────────────────────────────────────────
   portadaTitle: {
-    backgroundColor: PRIMARY_MID,
+    backgroundColor: '#E0EDF6',
     paddingVertical: 5,
     paddingHorizontal: 8,
     marginBottom: 4,
     fontFamily: 'Helvetica-Bold',
     fontSize: 8,
-    color: DARK,
+    color: PC.titleNavy,
     borderLeftWidth: 3,
-    borderLeftColor: PRIMARY,
+    borderLeftColor: PC.section,
     borderLeftStyle: 'solid',
   },
   portadaRow: {
@@ -240,35 +176,22 @@ const s = StyleSheet.create({
     borderBottomColor: '#EEEEEE',
     borderBottomStyle: 'solid',
   },
-  portadaLabel: {
-    width: 135,
-    fontSize: 7,
-    fontFamily: 'Helvetica-Bold',
-    color: MUTED,
-  },
-  portadaValue: {
-    flex: 1,
-    fontSize: 8,
-    color: DARK,
-  },
+  portadaLabel: { width: 135, fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.textSub },
+  portadaValue: { flex: 1, fontSize: 8, color: PC.fieldValue },
 
   // ── Tabla checklist ────────────────────────────────────────────────────────
   tableWrap: {
     borderTopWidth: 1,
     borderLeftWidth: 1,
-    borderTopColor: BORDER,
-    borderLeftColor: BORDER,
+    borderTopColor: PC.border,
+    borderLeftColor: PC.border,
     borderTopStyle: 'solid',
     borderLeftStyle: 'solid',
     marginBottom: 16,
   },
-  // Encabezado de columnas
-  thRow: {
-    flexDirection: 'row',
-    backgroundColor: PRIMARY,
-  },
+  thRow: { flexDirection: 'row', backgroundColor: PC.section },
   thCell: {
-    color: WHITE,
+    color: PC.white,
     fontFamily: 'Helvetica-Bold',
     fontSize: 7,
     paddingTop: 4,
@@ -282,48 +205,37 @@ const s = StyleSheet.create({
     borderBottomColor: '#5599CC',
     borderBottomStyle: 'solid',
   },
-  // Encabezado de sección (fila que abarca todas las columnas)
+  // Encabezado de sección — banda azul con texto blanco (igual que PdfSectionBanner)
   secRow: {
     flexDirection: 'row',
-    backgroundColor: SEC_BG,
+    backgroundColor: PC.section,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER,
+    borderBottomColor: PC.section,
     borderBottomStyle: 'solid',
   },
   secCell: {
     flex: 1,
     fontSize: 8,
     fontFamily: 'Helvetica-Bold',
-    color: DARK,
+    color: PC.white,
     paddingVertical: 4,
     paddingLeft: 6,
     paddingRight: 4,
     borderRightWidth: 1,
-    borderRightColor: BORDER,
+    borderRightColor: '#5599CC',
     borderRightStyle: 'solid',
   },
   secScore: {
     fontSize: 8,
     fontFamily: 'Helvetica-Bold',
-    color: PRIMARY,
+    color: PC.white,
     paddingVertical: 4,
     paddingRight: 6,
     paddingLeft: 4,
   },
-  // Fila de pregunta
-  qRow: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    borderBottomStyle: 'solid',
-  },
-  qRowAlt: {
-    flexDirection: 'row',
-    backgroundColor: ROW_ALT,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    borderBottomStyle: 'solid',
-  },
+  // Filas de preguntas
+  qRow:    { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: PC.border, borderBottomStyle: 'solid' },
+  qRowAlt: { flexDirection: 'row', backgroundColor: ROW_ALT, borderBottomWidth: 1, borderBottomColor: PC.border, borderBottomStyle: 'solid' },
   qCell: {
     fontSize: 8,
     paddingTop: 4,
@@ -331,24 +243,25 @@ const s = StyleSheet.create({
     paddingLeft: 4,
     paddingRight: 4,
     borderRightWidth: 1,
-    borderRightColor: BORDER,
+    borderRightColor: PC.border,
     borderRightStyle: 'solid',
+    color: PC.fieldValue,
   },
   qCellCumple:   { backgroundColor: CUMPLE_BG, color: CUMPLE_FG, fontFamily: 'Helvetica-Bold' },
   qCellNoCumple: { backgroundColor: NOCUMPLE_BG, color: NOCUMPLE_FG, fontFamily: 'Helvetica-Bold' },
-  qCellNA:       { color: MUTED },
+  qCellNA:       { color: PC.textSub },
 
   // ── Firma ──────────────────────────────────────────────────────────────────
   firmaSection: { marginTop: 40 },
-  firmaBox: { width: 220 },
+  firmaBox:  { width: 220 },
   firmaLinea: {
     borderTopWidth: 1,
-    borderTopColor: DARK,
+    borderTopColor: PC.fieldValue,
     borderTopStyle: 'solid',
     paddingTop: 4,
     marginTop: 32,
   },
-  firmaLabel: { fontSize: 7, color: MUTED },
+  firmaLabel: { fontSize: 7, color: PC.textSub },
 })
 
 // ── AuditoriaPagina ───────────────────────────────────────────────────────────
@@ -357,60 +270,64 @@ export function AuditoriaPagina({
   modulo, auditoriaId, ranchoNombre, ranchoCodigo, fecha, auditorNombre,
   puntos_obtenidos, puntos_posibles, porcentaje, portada,
   secciones, preguntas, respuestas,
+  codigoClave = 'MXA', terminoSitio = 'Rancho',
 }: AuditoriaPaginaProps) {
-  const config  = MODULO_CONFIG[modulo]
-  const fechaFmt = formatFechaPDF(fecha)
+  const config    = MODULO_CONFIG[modulo]
+  const fechaFmt  = formatFechaPDF(fecha)
+  const codigoFmt = `${codigoClave}-F-SC-SIG`
+  const folioDsp  = auditoriaId.slice(0, 8).toUpperCase()
 
-  // Mapa de respuestas O(1)
   const respsMap = new Map<string, RespuestaRow>()
   for (const r of respuestas) respsMap.set(r.pregunta_id, r)
 
-  // Secciones ordenadas
   const secsSorted = [...secciones].sort((a, b) => a.orden - b.orden)
 
-  // Lineas de portada (solo M15/M16)
   let portadaLineas: PortadaLinea[] = []
   if (modulo === 'm15' && portada) portadaLineas = formatPortadaM15(portada)
   if (modulo === 'm16' && portada) portadaLineas = formatPortadaM16(portada)
   if (modulo === 'm17' && portada) portadaLineas = formatPortadaM17(portada)
 
-  const _ = auditoriaId  // usado solo como key externo
-
   return (
     <Page size="A4" style={s.page} wrap>
 
-      {/* ── Header fijo ──────────────────────────────────────────────────── */}
-      <View fixed style={s.pageHeader}>
-        <View style={s.phTop}>
-          <View style={s.phLeft}>
-            <Text style={s.phTitulo}>{config.titulo}</Text>
-            <Text style={s.phSubtitulo}>{config.subtitulo}</Text>
+      {/* ── Header fijo: barra de degradado + logo + título + meta ───────── */}
+      <View fixed style={{ position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: PC.white }}>
+        <TopBar />
+        {/* Fila: logo · título · folio */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 6, paddingBottom: 6, paddingLeft: 50, paddingRight: 50 }}>
+          <View style={{ flex: 2 }}>
+            <Image src={LOGO_MADY_PDF} style={{ height: 38, width: 106 }} />
           </View>
-          <View style={s.phRight}>
-            <MadyLogoPDF style={s.phLogo} />
-            <Text style={s.phFecha}>{fechaFmt}</Text>
+          <View style={{ flex: 6, alignItems: 'center' }}>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 10, color: PC.titleNavy, textAlign: 'center' }}>
+              {config.titulo}
+            </Text>
+            <Text style={{ fontSize: 7, color: PC.textSub, marginTop: 2, textAlign: 'center' }}>
+              {config.subtitulo}
+            </Text>
+          </View>
+          <View style={{ flex: 2, alignItems: 'flex-end' }}>
+            <View style={{ backgroundColor: PC.folioBox, borderRadius: 5, paddingTop: 5, paddingBottom: 5, paddingLeft: 7, paddingRight: 7, alignItems: 'flex-end' }}>
+              <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: PC.titleNavy }}>{codigoFmt}</Text>
+              <Text style={{ fontSize: 7, color: PC.textSub, marginTop: 1 }}>Folio: {folioDsp}</Text>
+              <Text style={{ fontSize: 7, color: PC.textSub, marginTop: 1 }}>{fechaFmt}</Text>
+            </View>
           </View>
         </View>
-        <View style={s.phMeta}>
-          <Text style={s.phMetaText}>
-            Rancho/Instalación: {ranchoNombre} ({ranchoCodigo})
+        {/* Meta bar: tipo, sitio, auditor */}
+        <View style={{ borderTopWidth: 1, borderTopColor: PC.border, flexDirection: 'row', gap: 14, paddingTop: 3, paddingBottom: 4, paddingLeft: 50, paddingRight: 50 }}>
+          <Text style={{ fontSize: 7, color: PC.textSub }}>Auditoría interna</Text>
+          <Text style={{ fontSize: 7, color: PC.textSub }}>
+            {terminoSitio}: {ranchoNombre}{ranchoCodigo ? ` (${ranchoCodigo})` : ''}
           </Text>
-          <Text style={s.phMetaText}>
+          <Text style={{ fontSize: 7, color: PC.textSub }}>
             Auditor: {auditorNombre ?? '—'}
           </Text>
         </View>
       </View>
 
       {/* ── Footer fijo ──────────────────────────────────────────────────── */}
-      <View fixed style={s.footer}>
-        <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
-        <Text
-          style={s.footerText}
-          render={({ pageNumber, totalPages }) =>
-            `Página ${pageNumber} de ${totalPages}`
-          }
-        />
-      </View>
+      <PdfFooter moduloCodigo={modulo.toUpperCase()} />
 
       {/* ── Resumen de puntaje ────────────────────────────────────────────── */}
       <View style={s.scoreSummary}>
@@ -432,19 +349,15 @@ export function AuditoriaPagina({
             const { obt, pos, pct } = calcSeccion(pregsS, respsMap)
             return (
               <View key={sec.id} style={s.scoreRow}>
-                <Text style={s.scoreSecName}>
-                  {sec.codigo} - {sec.nombre}
-                </Text>
-                <Text style={s.scoreSecPct}>
-                  {pos > 0 ? `${pct}%` : 'N/A'}
-                </Text>
+                <Text style={s.scoreSecName}>{sec.codigo} - {sec.nombre}</Text>
+                <Text style={s.scoreSecPct}>{pos > 0 ? `${pct}%` : 'N/A'}</Text>
               </View>
             )
           })}
         </View>
       </View>
 
-      {/* ── Portada (M15 / M16) ──────────────────────────────────────────── */}
+      {/* ── Portada (M15 / M16 / M17) ────────────────────────────────────── */}
       {portadaLineas.length > 0 && (
         <View style={{ marginBottom: 14 }}>
           <Text style={s.portadaTitle}>DATOS DE LA OPERACIÓN</Text>
@@ -459,8 +372,7 @@ export function AuditoriaPagina({
 
       {/* ── Tabla checklist ──────────────────────────────────────────────── */}
       <View style={s.tableWrap}>
-
-        {/* Encabezado de columnas */}
+        {/* Encabezado de columnas — se repite en cada página */}
         <View style={s.thRow} fixed>
           <Text style={[s.thCell, { width: C_CODIGO }]}>P#</Text>
           <Text style={[s.thCell, { width: C_PREGUNTA }]}>PREGUNTA</Text>
@@ -471,7 +383,7 @@ export function AuditoriaPagina({
           </Text>
         </View>
 
-        {/* Secciones */}
+        {/* Secciones + preguntas */}
         {secsSorted.map((sec) => {
           const pregsS = preguntas
             .filter((p) => p.seccion_id === sec.id)
@@ -482,9 +394,7 @@ export function AuditoriaPagina({
             <View key={sec.id}>
               {/* Encabezado de sección */}
               <View style={s.secRow} wrap={false}>
-                <Text style={s.secCell}>
-                  {sec.codigo} - {sec.nombre}
-                </Text>
+                <Text style={s.secCell}>{sec.codigo} - {sec.nombre}</Text>
                 <Text style={s.secScore}>
                   {pos > 0
                     ? `${pct}% (${obt}/${pos} pts)`
@@ -494,30 +404,22 @@ export function AuditoriaPagina({
 
               {/* Preguntas */}
               {pregsS.map((preg, idx) => {
-                const resp = respsMap.get(preg.id)
-                const isAlt = idx % 2 === 1
-                const rowStyle = isAlt ? s.qRowAlt : s.qRow
-
-                const resStr = resp ? respLabel(resp.respuesta) : '—'
+                const resp    = respsMap.get(preg.id)
+                const rowStyle = idx % 2 === 1 ? s.qRowAlt : s.qRow
+                const resStr  = resp ? respLabel(resp.respuesta) : '—'
                 const resColor =
                   resp?.respuesta === 'cumple'    ? s.qCellCumple
                   : resp?.respuesta === 'no_cumple' ? s.qCellNoCumple
                   : resp?.respuesta === 'na'         ? s.qCellNA
                   : {}
-
-                const ptsLabel =
-                  preg.puntos > 0 && resp
-                    ? `\n${resp.puntos_otorgados}/${preg.puntos} pts`
-                    : ''
+                const ptsLabel = preg.puntos > 0 && resp
+                  ? `\n${resp.puntos_otorgados}/${preg.puntos} pts`
+                  : ''
 
                 return (
                   <View key={preg.id} style={rowStyle} wrap={false}>
-                    <Text style={[s.qCell, { width: C_CODIGO, fontSize: 7 }]}>
-                      {preg.codigo}
-                    </Text>
-                    <Text style={[s.qCell, { width: C_PREGUNTA }]}>
-                      {preg.texto}
-                    </Text>
+                    <Text style={[s.qCell, { width: C_CODIGO, fontSize: 7 }]}>{preg.codigo}</Text>
+                    <Text style={[s.qCell, { width: C_PREGUNTA }]}>{preg.texto}</Text>
                     <Text style={[s.qCell, { width: C_PUNTOS, textAlign: 'center' }]}>
                       {preg.puntos > 0 ? String(preg.puntos) : 'Info'}
                     </Text>
@@ -535,11 +437,11 @@ export function AuditoriaPagina({
         })}
       </View>
 
-      {/* ── Firma (en blanco — nunca rellenar programaticamente) ─────────── */}
+      {/* ── Firma (en blanco — nunca rellenar programáticamente) ─────────── */}
       <View style={s.firmaSection}>
         <View style={s.firmaBox}>
           <View style={s.firmaLinea}>
-            <Text style={s.firmaLabel}>Responsable de Inocuidad - Firma</Text>
+            <Text style={s.firmaLabel}>Responsable de Inocuidad — Firma</Text>
           </View>
         </View>
       </View>
@@ -554,16 +456,19 @@ export function AuditoriaPDF(props: AuditoriaPaginaProps) {
   const cfg = MODULO_CONFIG[props.modulo]
   return (
     <Document
-      title={`${cfg.titulo} - ${props.ranchoNombre} ${props.fecha}`}
-      author="M.A.D.Y"
+      title={`${cfg.titulo} — ${props.ranchoNombre} ${props.fecha}`}
+      author="M.A.D.Y."
+      creator="M.A.D.Y. Inocuidad Inteligente"
+      producer="M.A.D.Y. Inocuidad Inteligente"
       subject={cfg.subtitulo}
+      keywords="MADY, inocuidad, auditoria"
     >
       <AuditoriaPagina {...props} />
     </Document>
   )
 }
 
-// ── AuditoriaConsolidadoPDF — multiples auditorias ───────────────────────────
+// ── AuditoriaConsolidadoPDF — múltiples auditorías ───────────────────────────
 
 export function AuditoriaConsolidadoPDF({
   auditorias,
@@ -575,9 +480,12 @@ export function AuditoriaConsolidadoPDF({
   const cfg = MODULO_CONFIG[modulo]
   return (
     <Document
-      title={`${cfg.titulo} - Consolidado`}
-      author="M.A.D.Y"
-      subject={`${cfg.subtitulo} - Reporte consolidado`}
+      title={`${cfg.titulo} — Consolidado`}
+      author="M.A.D.Y."
+      creator="M.A.D.Y. Inocuidad Inteligente"
+      producer="M.A.D.Y. Inocuidad Inteligente"
+      subject={`${cfg.subtitulo} — Reporte consolidado`}
+      keywords="MADY, inocuidad, auditoria, consolidado"
     >
       {auditorias.map((a) => (
         <AuditoriaPagina key={a.auditoriaId} {...a} />
