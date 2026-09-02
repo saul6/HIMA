@@ -1,6 +1,6 @@
-import { View, Text } from '@react-pdf/renderer'
-import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { View, Text, Image } from '@react-pdf/renderer'
 import { PC } from './tokens'
+import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
 
 interface PdfHeaderProps {
   titulo: string
@@ -21,12 +21,12 @@ export function PdfHeader({ titulo, subtitulo, codigoFormato, folio, fecha }: Pd
           padding: 14,
         }}
       >
-        {/* Izq — Logo */}
+        {/* Izq — Logotipo oficial (imagen, incluye marca + wordmark + eslogan) */}
         <View style={{ flex: 2 }}>
-          <MadyLogoPDF style={{ fontSize: 12, fontFamily: 'Helvetica-Bold' }} />
-          <Text style={{ fontSize: 7, color: PC.textSub, marginTop: 2 }}>
-            INOCUIDAD INTELIGENTE
-          </Text>
+          <Image
+            src={LOGO_MADY_PDF}
+            style={{ height: 44, width: 123 }}
+          />
         </View>
 
         {/* Centro — título */}
