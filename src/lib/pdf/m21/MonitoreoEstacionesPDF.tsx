@@ -1,10 +1,16 @@
-﻿// PDF M21 — Revisión de Estaciones de Monitoreo de Plagas (Cuarto Frío)
-// Formato F-FRUS-CAL-19 Rev 01. A4 landscape. Helvetica.
-// No Unicode: sin checkmarks. Acentos/ñ permitidos. Una firma en blanco.
+// PATRÓN INOCUIDAD — PDF M21 (plantilla homogénea M.A.D.Y)
+// Revisión de Estaciones de Monitoreo de Plagas — A4 landscape.
+// Formato F-FRUS-CAL-19 Rev 01. Helvetica. Sin Unicode.
+// Una firma en blanco. PdfLegend al pie.
 
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
-import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
-import { codigoFormato } from '@/lib/codigoFormato'
+import { Document, Page, View, Text } from '@react-pdf/renderer'
+import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
+import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
+import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
+import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+import { PdfLegend } from '@/lib/pdf/components/PdfLegend'
+import { PC } from '@/lib/pdf/components/tokens'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -15,7 +21,7 @@ export interface CatalogoCodigo {
 
 export interface EstacionResultadoPDF {
   numero: string
-  // Para cebo / interior / mecanica
+  // Para cebo / interior / mecanica / pegamento
   tipo_consumo?: string | null
   estado_trampa?: string | null   // código
   condiciones?: string | null     // código
@@ -44,7 +50,8 @@ export interface MonitoreoEstacionesPaginaProps {
   catalogoEstado: CatalogoCodigo[]
   catalogoCondiciones: CatalogoCodigo[]
   catalogoPlagas: CatalogoCodigo[]
-  codigoClave: string
+  codigoClave?: string
+  terminoSitio?: string
 }
 
 export interface MonitoreoEstacionesConsolidadoPDFProps {
@@ -54,190 +61,11 @@ export interface MonitoreoEstacionesConsolidadoPDFProps {
   hasta: string
 }
 
-// ── Paleta ────────────────────────────────────────────────────────────────────
+// ── Colores locales ───────────────────────────────────────────────────────────
 
-const PRIMARY       = '#2B7AB5'
-const DARK          = '#1A1A1A'
-const BORDER        = '#CCCCCC'
-const WHITE         = '#FFFFFF'
-const MUTED         = '#555555'
-const HEADER_BG     = '#E8F0F8'
 const HALLAZGO_BG   = '#FAECE7'
 const HALLAZGO_TEXT = '#993C1D'
-
-// ── Estilos ───────────────────────────────────────────────────────────────────
-
-const s = StyleSheet.create({
-  page: {
-    fontFamily: 'Helvetica',
-    fontSize: 8,
-    color: DARK,
-    paddingTop: 40,
-    paddingBottom: 55,
-    paddingLeft: 36,
-    paddingRight: 36,
-  },
-
-  // Header
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-    borderBottomWidth: 2,
-    borderBottomColor: PRIMARY,
-    paddingBottom: 6,
-  },
-  headerLogoSub: { fontSize: 7, color: MUTED, marginTop: 2 },
-  headerCenter: { flex: 1, alignItems: 'center' },
-  headerTitle: { fontSize: 9, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'center' },
-  headerSub:   { fontSize: 7, color: MUTED, textAlign: 'center', marginTop: 2 },
-  headerRight: { alignItems: 'flex-end' },
-  headerMeta:  { fontSize: 7, color: MUTED, textAlign: 'right' },
-
-  // Datos generales
-  infoTable: {
-    borderLeftWidth: 1,
-    borderLeftColor: BORDER,
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-    marginBottom: 0,
-  },
-  infoRow: { flexDirection: 'row' },
-  infoCell: {
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    paddingTop: 4,
-    paddingBottom: 4,
-    paddingLeft: 6,
-    paddingRight: 6,
-  },
-  infoCellLabel: { fontSize: 6, color: MUTED, marginBottom: 2, fontFamily: 'Helvetica-Bold' },
-  infoCellValue: { fontSize: 8, color: DARK },
-
-  // Sección bar
-  sectionBar: {
-    backgroundColor: PRIMARY,
-    color: WHITE,
-    fontFamily: 'Helvetica-Bold',
-    fontSize: 7,
-    paddingTop: 3,
-    paddingBottom: 3,
-    paddingLeft: 6,
-    marginTop: 8,
-    marginBottom: 0,
-  },
-  sectionBarSmall: {
-    backgroundColor: MUTED,
-    color: WHITE,
-    fontFamily: 'Helvetica-Bold',
-    fontSize: 6.5,
-    paddingTop: 2,
-    paddingBottom: 2,
-    paddingLeft: 6,
-    marginTop: 6,
-    marginBottom: 0,
-  },
-
-  // Encabezado de tabla
-  tableHeader: {
-    flexDirection: 'row',
-    backgroundColor: HEADER_BG,
-    borderLeftWidth: 1,
-    borderLeftColor: BORDER,
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-  },
-  thCell: {
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    paddingTop: 4,
-    paddingBottom: 4,
-    paddingLeft: 5,
-    paddingRight: 5,
-    fontFamily: 'Helvetica-Bold',
-    fontSize: 7,
-    color: DARK,
-  },
-
-  // Filas de datos
-  tableRow: {
-    flexDirection: 'row',
-    borderLeftWidth: 1,
-    borderLeftColor: BORDER,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-  },
-  tableRowAlt: { backgroundColor: '#F9FAFB' },
-  tdCell: {
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    paddingTop: 3,
-    paddingBottom: 3,
-    paddingLeft: 5,
-    paddingRight: 5,
-    fontSize: 7,
-    color: DARK,
-  },
-  tdCellHallazgo: {
-    backgroundColor: HALLAZGO_BG,
-    color: HALLAZGO_TEXT,
-    fontFamily: 'Helvetica-Bold',
-  },
-  tdEmpty: {
-    fontFamily: 'Helvetica',
-    fontSize: 7,
-    color: MUTED,
-    fontStyle: 'italic',
-  },
-
-  // Observaciones
-  obsBlock: {
-    borderLeftWidth: 1,
-    borderLeftColor: BORDER,
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    paddingTop: 5,
-    paddingBottom: 5,
-    paddingLeft: 6,
-    paddingRight: 6,
-    minHeight: 28,
-  },
-  obsText: { fontSize: 8, color: DARK, lineHeight: 1.4 },
-
-  // Leyendas
-  leyendaRow: { flexDirection: 'row', gap: 12, marginTop: 4 },
-  leyendaText: { fontSize: 6.5, color: MUTED, flex: 1 },
-
-  // Firma
-  firmaSection: { marginTop: 16, alignItems: 'center' },
-  firmaLinea: {
-    borderTopWidth: 1,
-    borderTopColor: DARK,
-    paddingTop: 4,
-    marginTop: 32,
-    width: 220,
-    alignItems: 'center',
-  },
-  firmaLabel: { fontSize: 7, color: MUTED, textAlign: 'center' },
-
-  // Footer fijo
-  footer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 36,
-    right: 36,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-    paddingTop: 3,
-  },
-  footerText: { fontSize: 6, color: '#888888' },
-})
+const ROW_ALT       = '#F5F9FE'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -250,253 +78,237 @@ function formatFechaPDF(iso: string): string {
 }
 
 export function labelDesde(codigo: string, catalogo: CatalogoCodigo[]): string {
-  const found = catalogo.find((c) => c.codigo === codigo)
-  return found ? found.label : codigo
+  return catalogo.find((c) => c.codigo === codigo)?.label ?? codigo
 }
 
-// ── Columnas por tipo de trampa ───────────────────────────────────────────────
+// ── Estilos de tabla compartidos ──────────────────────────────────────────────
+
+const thCell = {
+  color: PC.white,
+  fontFamily: 'Helvetica-Bold' as const,
+  fontSize: 7,
+  paddingTop: 4,
+  paddingBottom: 4,
+  paddingLeft: 5,
+  paddingRight: 5,
+  borderRightWidth: 1,
+  borderRightColor: '#5599CC',
+  borderBottomWidth: 1,
+  borderBottomColor: '#5599CC',
+  textAlign: 'center' as const,
+}
+
+const tdCell = {
+  borderRightWidth: 1,
+  borderRightColor: PC.border,
+  paddingTop: 3,
+  paddingBottom: 3,
+  paddingLeft: 5,
+  paddingRight: 5,
+  fontSize: 7,
+  color: PC.fieldValue,
+}
+
+const tableWrap = {
+  borderLeftWidth: 1,
+  borderLeftColor: PC.border,
+  borderTopWidth: 1,
+  borderTopColor: PC.border,
+}
+
+const tableRow = {
+  flexDirection: 'row' as const,
+  borderBottomWidth: 1,
+  borderBottomColor: PC.border,
+}
+
+// ── Encabezados de columnas por tipo de trampa ────────────────────────────────
 
 function EncabezadoCeboInteriorMecanica() {
   return (
-    <View style={s.tableHeader}>
-      <Text style={[s.thCell, { width: 40 }]}>No.</Text>
-      <Text style={[s.thCell, { flex: 1 }]}>Tipo de consumo</Text>
-      <Text style={[s.thCell, { flex: 1 }]}>Estado de la trampa</Text>
-      <Text style={[s.thCell, { width: 60 }]}>Condiciones</Text>
-      <Text style={[s.thCell, { width: 65 }]}>Señalización</Text>
-      <Text style={[s.thCell, { width: 50 }]}>Hallazgo</Text>
+    <View style={{ flexDirection: 'row', backgroundColor: PC.section }}>
+      <Text style={[thCell, { width: 40 }]}>No.</Text>
+      <Text style={[thCell, { flex: 1 }]}>Tipo de consumo</Text>
+      <Text style={[thCell, { flex: 1 }]}>Estado de la trampa</Text>
+      <Text style={[thCell, { width: 60 }]}>Condiciones</Text>
+      <Text style={[thCell, { width: 65 }]}>Senalizacion</Text>
+      <Text style={[thCell, { width: 50, borderRightWidth: 0 }]}>Hallazgo</Text>
     </View>
   )
 }
 
 function EncabezadoLuz() {
   return (
-    <View style={s.tableHeader}>
-      <Text style={[s.thCell, { width: 40 }]}>No.</Text>
-      <Text style={[s.thCell, { flex: 1 }]}>Estado del equipo</Text>
-      <Text style={[s.thCell, { flex: 1 }]}>Estado de la lámpara</Text>
-      <Text style={[s.thCell, { flex: 2 }]}>Plaga detectada</Text>
-      <Text style={[s.thCell, { width: 50 }]}>Hallazgo</Text>
+    <View style={{ flexDirection: 'row', backgroundColor: PC.section }}>
+      <Text style={[thCell, { width: 40 }]}>No.</Text>
+      <Text style={[thCell, { flex: 1 }]}>Estado del equipo</Text>
+      <Text style={[thCell, { flex: 1 }]}>Estado de la lampara</Text>
+      <Text style={[thCell, { flex: 2 }]}>Plaga detectada</Text>
+      <Text style={[thCell, { width: 50, borderRightWidth: 0 }]}>Hallazgo</Text>
     </View>
   )
 }
 
+// ── Filas de datos ────────────────────────────────────────────────────────────
+
 function FilaCeboInteriorMecanica({
-  est,
-  index,
-  catalogoEstado,
-  catalogoCondiciones,
-}: {
-  est: EstacionResultadoPDF
-  index: number
-  catalogoEstado: CatalogoCodigo[]
-  catalogoCondiciones: CatalogoCodigo[]
-}) {
-  const rowStyle = [s.tableRow, index % 2 === 1 ? s.tableRowAlt : {}]
+  est, index, catalogoEstado, catalogoCondiciones,
+}: { est: EstacionResultadoPDF; index: number; catalogoEstado: CatalogoCodigo[]; catalogoCondiciones: CatalogoCodigo[] }) {
+  const bg = index % 2 === 1 ? ROW_ALT : PC.white
   return (
-    <View style={rowStyle}>
-      <Text style={[s.tdCell, { width: 40 }]}>{est.numero}</Text>
-      <Text style={[s.tdCell, { flex: 1 }]}>{est.tipo_consumo ?? ''}</Text>
-      <Text style={[s.tdCell, { flex: 1 }]}>
+    <View style={[tableRow, { backgroundColor: bg }]}>
+      <Text style={[tdCell, { width: 40 }]}>{est.numero}</Text>
+      <Text style={[tdCell, { flex: 1 }]}>{est.tipo_consumo ?? ''}</Text>
+      <Text style={[tdCell, { flex: 1 }]}>
         {est.estado_trampa ? labelDesde(est.estado_trampa, catalogoEstado) : ''}
       </Text>
-      <Text style={[s.tdCell, { width: 60 }]}>
+      <Text style={[tdCell, { width: 60 }]}>
         {est.condiciones ? labelDesde(est.condiciones, catalogoCondiciones) : ''}
       </Text>
-      <Text style={[s.tdCell, { width: 65 }]}>{est.senalizacion ?? ''}</Text>
-      <Text
-        style={[
-          s.tdCell,
-          { width: 50, textAlign: 'center' },
-          est.tiene_hallazgo ? s.tdCellHallazgo : {},
-        ]}
-      >
-        {est.tiene_hallazgo ? '!' : ''}
+      <Text style={[tdCell, { width: 65 }]}>{est.senalizacion ?? ''}</Text>
+      <Text style={[tdCell, { width: 50, borderRightWidth: 0, textAlign: 'center',
+        ...(est.tiene_hallazgo ? { backgroundColor: HALLAZGO_BG, color: HALLAZGO_TEXT, fontFamily: 'Helvetica-Bold' } : {}) }]}>
+        {est.tiene_hallazgo ? 'Si' : ''}
       </Text>
     </View>
   )
 }
 
 function FilaLuz({
-  est,
-  index,
-  catalogoEstado,
-  catalogoPlagas,
-}: {
-  est: EstacionResultadoPDF
-  index: number
-  catalogoEstado: CatalogoCodigo[]
-  catalogoPlagas: CatalogoCodigo[]
-}) {
-  const rowStyle = [s.tableRow, index % 2 === 1 ? s.tableRowAlt : {}]
-  const plagasLabel = (est.plaga_detectada ?? [])
-    .map((c) => labelDesde(c, catalogoPlagas))
-    .join(', ')
+  est, index, catalogoEstado, catalogoPlagas,
+}: { est: EstacionResultadoPDF; index: number; catalogoEstado: CatalogoCodigo[]; catalogoPlagas: CatalogoCodigo[] }) {
+  const bg = index % 2 === 1 ? ROW_ALT : PC.white
+  const plagasLabel = (est.plaga_detectada ?? []).map((c) => labelDesde(c, catalogoPlagas)).join(', ')
   return (
-    <View style={rowStyle}>
-      <Text style={[s.tdCell, { width: 40 }]}>{est.numero}</Text>
-      <Text style={[s.tdCell, { flex: 1 }]}>
+    <View style={[tableRow, { backgroundColor: bg }]}>
+      <Text style={[tdCell, { width: 40 }]}>{est.numero}</Text>
+      <Text style={[tdCell, { flex: 1 }]}>
         {est.estado_equipo ? labelDesde(est.estado_equipo, catalogoEstado) : ''}
       </Text>
-      <Text style={[s.tdCell, { flex: 1 }]}>
+      <Text style={[tdCell, { flex: 1 }]}>
         {est.estado_lampara ? labelDesde(est.estado_lampara, catalogoEstado) : ''}
       </Text>
-      <Text style={[s.tdCell, { flex: 2 }]}>{plagasLabel}</Text>
-      <Text
-        style={[
-          s.tdCell,
-          { width: 50, textAlign: 'center' },
-          est.tiene_hallazgo ? s.tdCellHallazgo : {},
-        ]}
-      >
-        {est.tiene_hallazgo ? '!' : ''}
+      <Text style={[tdCell, { flex: 2 }]}>{plagasLabel}</Text>
+      <Text style={[tdCell, { width: 50, borderRightWidth: 0, textAlign: 'center',
+        ...(est.tiene_hallazgo ? { backgroundColor: HALLAZGO_BG, color: HALLAZGO_TEXT, fontFamily: 'Helvetica-Bold' } : {}) }]}>
+        {est.tiene_hallazgo ? 'Si' : ''}
       </Text>
     </View>
   )
 }
 
-// ── Componente de página ──────────────────────────────────────────────────────
+function FilaVacia() {
+  return (
+    <View style={[tableRow]}>
+      <Text style={[tdCell, { flex: 1, borderRightWidth: 0, color: PC.textSub }]}>
+        Sin estaciones registradas
+      </Text>
+    </View>
+  )
+}
+
+// ── MonitoreoEstacionesPagina ─────────────────────────────────────────────────
 
 export function MonitoreoEstacionesPagina({
-  folio,
-  instalacion,
-  instalacionCodigo,
-  fecha,
-  inspector,
-  observaciones,
-  grupos,
-  catalogoEstado,
-  catalogoCondiciones,
-  catalogoPlagas,
-  codigoClave,
+  folio, instalacion, instalacionCodigo, fecha, inspector, observaciones,
+  grupos, catalogoEstado, catalogoCondiciones, catalogoPlagas,
+  codigoClave = 'MXA', terminoSitio = 'Instalación',
 }: MonitoreoEstacionesPaginaProps) {
   const emision = new Date().toLocaleDateString('es-MX')
+  const codigoFmt = `${codigoClave}-F-SC-SIG`
+
+  const leyendaEntradas = [
+    {
+      titulo: 'Estado de la trampa',
+      items: catalogoEstado.map(c => ({ codigo: c.codigo, label: c.label })),
+    },
+    {
+      titulo: 'Condiciones',
+      items: catalogoCondiciones.map(c => ({ codigo: c.codigo, label: c.label })),
+    },
+    {
+      titulo: 'Plagas',
+      items: catalogoPlagas.map(c => ({ codigo: c.codigo, label: c.label })),
+    },
+  ]
 
   return (
-    <Page size="A4" orientation="landscape" style={s.page}>
+    <Page
+      size="A4"
+      orientation="landscape"
+      style={{ fontFamily: 'Helvetica', fontSize: 8, padding: 36, paddingBottom: 55, backgroundColor: PC.white }}
+    >
+      <PdfFooter moduloCodigo="M21" />
 
-      {/* Footer fijo */}
-      <View fixed style={s.footer}>
-        <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
-        <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} de ${totalPages}`} />
-      </View>
+      <TopBar />
 
-      {/* Header */}
-      <View style={s.header}>
-        <View style={{ flex: 2 }}>
-          <MadyLogoPDF style={{ fontSize: 11, fontFamily: 'Helvetica-Bold', color: PRIMARY }} />
-          <Text style={s.headerLogoSub}>Inocuidad Alimentaria</Text>
-        </View>
-        <View style={s.headerCenter}>
-          <Text style={s.headerTitle}>REVISION DE ESTACIONES DE MONITOREO DE PLAGAS</Text>
-          <Text style={s.headerSub}>{codigoFormato('F-FRUS-CAL-19', codigoClave)}  Rev. 01</Text>
-        </View>
-        <View style={{ flex: 2, alignItems: 'flex-end' }}>
-          <Text style={s.headerMeta}>Emision: {emision}</Text>
-          <Text style={s.headerMeta}>Folio: {folio}</Text>
-        </View>
-      </View>
+      <PdfHeader
+        titulo="REVISIÓN DE ESTACIONES DE MONITOREO DE PLAGAS"
+        subtitulo={`Formato operativo | ${instalacion}`}
+        codigoFormato={codigoFmt}
+        folio={folio}
+        fecha={emision}
+      />
 
-      {/* Datos generales */}
-      <View style={s.infoTable}>
-        <View style={s.infoRow}>
-          <View style={[s.infoCell, { flex: 3 }]}>
-            <Text style={s.infoCellLabel}>INSTALACION</Text>
-            <Text style={s.infoCellValue}>{instalacion}</Text>
-          </View>
-          <View style={[s.infoCell, { flex: 1 }]}>
-            <Text style={s.infoCellLabel}>CODIGO</Text>
-            <Text style={s.infoCellValue}>{instalacionCodigo}</Text>
-          </View>
-          <View style={[s.infoCell, { flex: 2 }]}>
-            <Text style={s.infoCellLabel}>FECHA</Text>
-            <Text style={s.infoCellValue}>{formatFechaPDF(fecha)}</Text>
-          </View>
-          <View style={[s.infoCell, { flex: 3 }]}>
-            <Text style={s.infoCellLabel}>INSPECTOR</Text>
-            <Text style={s.infoCellValue}>{inspector ?? '—'}</Text>
-          </View>
-        </View>
-      </View>
+      <PdfSectionBanner>1. Datos del sitio y fecha</PdfSectionBanner>
+      <PdfFieldGrid>
+        <PdfFieldRow>
+          <PdfField label={terminoSitio} value={instalacion} />
+          <PdfField label="Código" value={instalacionCodigo || '—'} />
+          <PdfField label="Fecha de revisión" value={formatFechaPDF(fecha)} />
+          <PdfField label="Inspector" value={inspector ?? '—'} />
+        </PdfFieldRow>
+      </PdfFieldGrid>
 
       {/* Tablas por tipo de trampa */}
       {grupos.map((grupo) => (
         <View key={grupo.tipo_trampa}>
-          <Text style={s.sectionBar}>{grupo.label.toUpperCase()}</Text>
-
-          {grupo.tipo_trampa === 'luz' ? (
-            <>
-              <EncabezadoLuz />
-              {grupo.estaciones.length === 0 ? (
-                <View style={[s.tableRow, { borderLeftWidth: 1, borderLeftColor: BORDER, borderBottomWidth: 1, borderBottomColor: BORDER }]}>
-                  <Text style={[s.tdCell, { flex: 1 }, s.tdEmpty]}>Sin estaciones registradas</Text>
-                </View>
-              ) : (
-                grupo.estaciones.map((est, i) => (
-                  <FilaLuz
-                    key={est.numero}
-                    est={est}
-                    index={i}
-                    catalogoEstado={catalogoEstado}
-                    catalogoPlagas={catalogoPlagas}
-                  />
-                ))
-              )}
-            </>
-          ) : (
-            <>
-              <EncabezadoCeboInteriorMecanica />
-              {grupo.estaciones.length === 0 ? (
-                <View style={[s.tableRow, { borderLeftWidth: 1, borderLeftColor: BORDER, borderBottomWidth: 1, borderBottomColor: BORDER }]}>
-                  <Text style={[s.tdCell, { flex: 1 }, s.tdEmpty]}>Sin estaciones registradas</Text>
-                </View>
-              ) : (
-                grupo.estaciones.map((est, i) => (
-                  <FilaCeboInteriorMecanica
-                    key={est.numero}
-                    est={est}
-                    index={i}
-                    catalogoEstado={catalogoEstado}
-                    catalogoCondiciones={catalogoCondiciones}
-                  />
-                ))
-              )}
-            </>
-          )}
+          <PdfSectionBanner>{grupo.label.toUpperCase()}</PdfSectionBanner>
+          <View style={tableWrap}>
+            {grupo.tipo_trampa === 'luz' ? (
+              <>
+                <EncabezadoLuz />
+                {grupo.estaciones.length === 0 ? <FilaVacia /> : grupo.estaciones.map((est, i) => (
+                  <FilaLuz key={est.numero} est={est} index={i} catalogoEstado={catalogoEstado} catalogoPlagas={catalogoPlagas} />
+                ))}
+              </>
+            ) : (
+              <>
+                <EncabezadoCeboInteriorMecanica />
+                {grupo.estaciones.length === 0 ? <FilaVacia /> : grupo.estaciones.map((est, i) => (
+                  <FilaCeboInteriorMecanica key={est.numero} est={est} index={i} catalogoEstado={catalogoEstado} catalogoCondiciones={catalogoCondiciones} />
+                ))}
+              </>
+            )}
+          </View>
         </View>
       ))}
 
       {/* Observaciones */}
       {observaciones && observaciones.trim() !== '' && (
         <>
-          <Text style={s.sectionBar}>OBSERVACIONES</Text>
-          <View style={s.obsBlock}>
-            <Text style={s.obsText}>{observaciones}</Text>
+          <PdfSectionBanner>Observaciones</PdfSectionBanner>
+          <View style={{
+            borderLeftWidth: 1, borderLeftColor: PC.border,
+            borderRightWidth: 1, borderRightColor: PC.border,
+            borderBottomWidth: 1, borderBottomColor: PC.border,
+            paddingTop: 5, paddingBottom: 5, paddingLeft: 6, paddingRight: 6,
+            minHeight: 24,
+          }}>
+            <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }}>{observaciones}</Text>
           </View>
         </>
       )}
 
-      {/* Leyendas */}
-      <Text style={s.sectionBarSmall}>LEYENDA</Text>
-      <View style={s.leyendaRow}>
-        <Text style={s.leyendaText}>
-          Estado de la trampa: {catalogoEstado.map((c) => `${c.codigo}=${c.label}`).join('  ')}
-        </Text>
-        <Text style={s.leyendaText}>
-          Condiciones: {catalogoCondiciones.map((c) => `${c.codigo}=${c.label}`).join('  ')}
-        </Text>
-        <Text style={s.leyendaText}>
-          Plagas: {catalogoPlagas.map((c) => `${c.codigo}=${c.label}`).join('  ')}
-        </Text>
-      </View>
+      {/* Leyenda */}
+      <PdfLegend entradas={leyendaEntradas} />
 
       {/* Firma */}
-      <View style={s.firmaSection}>
-        <View style={s.firmaLinea}>
-          <Text style={s.firmaLabel}>Firma del Responsable del Cooler</Text>
-        </View>
-      </View>
-
+      <PdfSignatures
+        signatures={[
+          { label: '', nombre: '', caption: `Firma del Responsable del ${terminoSitio}` },
+        ]}
+      />
     </Page>
   )
 }
@@ -506,9 +318,12 @@ export function MonitoreoEstacionesPagina({
 export function MonitoreoEstacionesPDF(props: MonitoreoEstacionesPaginaProps) {
   return (
     <Document
-      title={`Monitoreo de Plagas ${props.instalacion} ${props.fecha}`}
-      author="M.A.D.Y"
-      subject="Revisión de Estaciones de Monitoreo de Plagas"
+      title={`Monitoreo de Plagas ${props.fecha}`}
+      author="M.A.D.Y."
+      creator="M.A.D.Y. Inocuidad Inteligente"
+      producer="M.A.D.Y. Inocuidad Inteligente"
+      subject={`Revisión de Estaciones de Monitoreo de Plagas — ${props.instalacion}`}
+      keywords="MADY, inocuidad, monitoreo, plagas, estaciones"
     >
       <MonitoreoEstacionesPagina {...props} />
     </Document>
@@ -518,16 +333,16 @@ export function MonitoreoEstacionesPDF(props: MonitoreoEstacionesPaginaProps) {
 // ── PDF consolidado ────────────────────────────────────────────────────────────
 
 export function MonitoreoEstacionesConsolidadoPDF({
-  revisiones,
-  instalacionNombre,
-  desde,
-  hasta,
+  revisiones, instalacionNombre, desde, hasta,
 }: MonitoreoEstacionesConsolidadoPDFProps) {
   return (
     <Document
       title={`Monitoreo de Plagas Consolidado ${instalacionNombre} ${desde} ${hasta}`}
-      author="M.A.D.Y"
-      subject="Revisión de Estaciones de Monitoreo de Plagas Consolidado"
+      author="M.A.D.Y."
+      creator="M.A.D.Y. Inocuidad Inteligente"
+      producer="M.A.D.Y. Inocuidad Inteligente"
+      subject="Revisión de Estaciones de Monitoreo de Plagas — Consolidado"
+      keywords="MADY, inocuidad, monitoreo, plagas, consolidado"
     >
       {revisiones.map((r, i) => (
         <MonitoreoEstacionesPagina key={i} {...r} />

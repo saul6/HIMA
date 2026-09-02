@@ -1,9 +1,20 @@
-﻿// PDF M23 — Verificación de Insumos (F-FRUS-SAN-01, Cuarto Frío)
-// Motor espejo de M19 con dos firmas y agrupación por área.
+// PATRÓN INOCUIDAD — PDF M23 (plantilla homogénea M.A.D.Y)
+// Sin PdfPageFrame para preservar el ancho completo (~802pt) y acomodar 31 columnas.
+// Motor espejo de M19 con agrupación por área y dos firmas.
+// VerificacionInsumosPagina: matriz mensual A4 landscape por mes.
+// VerificacionInsumosPDF:    documento individual.
+// VerificacionInsumosConsolidadoPDF: multi-página.
 
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
-import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
-import { codigoFormato } from '@/lib/codigoFormato'
+import { Document, Page, View, Text } from '@react-pdf/renderer'
+import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
+import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
+import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
+import { PdfMonthlyMatrix } from '@/lib/pdf/components/PdfMonthlyMatrix'
+import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+import { PC } from '@/lib/pdf/components/tokens'
+
+// ── Tipos ─────────────────────────────────────────────────────────────────────
 
 export interface M23ItemPDFRow {
   id: string
@@ -20,10 +31,12 @@ export interface VerificacionInsumosPaginaProps {
   autorizoNombre: string | null
   items: M23ItemPDFRow[]
   diasInspeccionados: string[]
-  matriz: Record<string, Record<string, string>>
+  matriz: Record<string, Record<string, string>>  // fecha → item_id → 'Si'|'No'|'N/A'
   codigosCorrectivos: { diaNum: string; itemLabel: string; codigo: string }[]
   observaciones: string | null
-  codigoClave: string
+  codigoClave?: string
+  terminoSitio?: string
+  folio?: string
 }
 
 export interface VerificacionInsumosConsolidadoPDFProps {
@@ -33,25 +46,10 @@ export interface VerificacionInsumosConsolidadoPDFProps {
   hasta: string
 }
 
-const PRIMARY  = '#2B7AB5'
-const DARK     = '#1A1A1A'
-const BORDER   = '#CCCCCC'
-const WHITE    = '#FFFFFF'
-const MUTED    = '#717182'
-const ROW_ALT  = '#F5F9FE'
-const SI_COLOR = '#0D5A8F'
-const NO_COLOR = '#C02A2A'
-const NA_COLOR = '#717182'
-const HDR_BG   = '#E8F1F9'
-
+// A4 landscape: 841.89 × 595.28 — márgenes 20pt para acomodar 31 columnas de días
 const MARGIN     = 20
-const PAGE_W     = 841.89 - MARGIN * 2
+const PAGE_W     = 841.89 - MARGIN * 2  // ~801.89
 const ITEM_COL_W = 160
-const DAY_AREA_W = PAGE_W - ITEM_COL_W
-
-function dayColW(numDias: number): number {
-  return Math.floor(DAY_AREA_W / Math.max(numDias, 1))
-}
 
 function diasDelMes(mesDate: string): string[] {
   const d = new Date(mesDate + 'T12:00:00')
@@ -65,275 +63,131 @@ function diasDelMes(mesDate: string): string[] {
   return result
 }
 
-function formatDayNum(iso: string): string {
-  try { return String(new Date(iso + 'T12:00:00').getDate()) }
-  catch { return iso }
-}
-
-function agruparPorArea(items: M23ItemPDFRow[]) {
-  const grupos: { area: string; items: M23ItemPDFRow[] }[] = []
-  let actual: { area: string; items: M23ItemPDFRow[] } | null = null
-  for (const item of items) {
-    if (!actual || actual.area !== item.area) {
-      actual = { area: item.area, items: [] }
-      grupos.push(actual)
-    }
-    actual.items.push(item)
-  }
-  return grupos
-}
-
-const s = StyleSheet.create({
-  page: {
-    fontFamily: 'Helvetica',
-    fontSize: 8,
-    color: DARK,
-    paddingTop: MARGIN,
-    paddingBottom: MARGIN,
-    paddingLeft: MARGIN,
-    paddingRight: MARGIN,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: PRIMARY,
-    paddingBottom: 6,
-  },
-  headerLogo:    { fontSize: 10, fontFamily: 'Helvetica-Bold', color: PRIMARY },
-  headerLogoSub: { fontSize: 6, color: MUTED, marginTop: 2 },
-  headerTitle:   { flex: 1, textAlign: 'center', fontSize: 9, fontFamily: 'Helvetica-Bold' },
-  headerMeta:    { width: 90, fontSize: 6, textAlign: 'right', color: MUTED },
-  infoRow: { flexDirection: 'row', gap: 8, marginBottom: 6 },
-  infoBox: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: BORDER,
-    borderRadius: 3,
-    paddingTop: 3,
-    paddingBottom: 3,
-    paddingLeft: 5,
-    paddingRight: 5,
-  },
-  infoLabel: { fontSize: 6, color: MUTED, marginBottom: 1 },
-  infoValue: { fontSize: 8, fontFamily: 'Helvetica-Bold' },
-  areaBand: {
-    backgroundColor: PRIMARY,
-    paddingTop: 2,
-    paddingBottom: 2,
-    paddingLeft: 4,
-    flexDirection: 'row',
-  },
-  areaText: { fontSize: 6.5, fontFamily: 'Helvetica-Bold', color: WHITE, flex: 1 },
-  dayHeader: {
-    borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: HDR_BG,
-    paddingTop: 3,
-    paddingBottom: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dayHeaderText: { fontSize: 6, fontFamily: 'Helvetica-Bold', color: PRIMARY },
-  itemColHeader: {
-    width: ITEM_COL_W,
-    borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: HDR_BG,
-    paddingTop: 3,
-    paddingBottom: 3,
-    paddingLeft: 4,
-  },
-  itemColHeaderText: { fontSize: 7, fontFamily: 'Helvetica-Bold', color: DARK },
-  dataRow:  { flexDirection: 'row' },
-  itemCell: {
-    width: ITEM_COL_W,
-    borderWidth: 1,
-    borderColor: BORDER,
-    paddingTop: 2,
-    paddingBottom: 2,
-    paddingLeft: 4,
-    justifyContent: 'center',
-  },
-  itemText:  { fontSize: 5.5 },
-  valueCell: {
-    borderWidth: 1,
-    borderColor: BORDER,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 2,
-    paddingBottom: 2,
-  },
-  footerSep:   { borderTopWidth: 1, borderTopColor: BORDER, marginTop: 6, paddingTop: 4 },
-  footerRow:   { flexDirection: 'row', gap: 10, marginBottom: 4 },
-  footerLabel: { fontSize: 6, color: MUTED },
-  footerValue: { fontSize: 7 },
-  codigosTitle: { fontSize: 6, fontFamily: 'Helvetica-Bold', color: MUTED, marginBottom: 2 },
-  codigosItem:  { fontSize: 5.5, color: DARK, marginBottom: 1 },
-  firmaRow: { marginTop: 8, flexDirection: 'row', gap: 20, justifyContent: 'space-around' },
-  firmaBloque: {
-    flex: 1,
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-    paddingTop: 4,
-  },
-  firmaLabel: { fontSize: 7, color: MUTED },
-  piePagina: {
-    position: 'absolute',
-    bottom: 10,
-    left: MARGIN,
-    right: MARGIN,
-    textAlign: 'center',
-    fontSize: 6,
-    color: MUTED,
-  },
-})
+// ── VerificacionInsumosPagina ─────────────────────────────────────────────────
 
 export function VerificacionInsumosPagina({
   instalacion, instalacionCodigo, mesLabel, mesDate,
   verificoNombre, autorizoNombre,
-  items, diasInspeccionados, matriz, codigosCorrectivos, observaciones, codigoClave,
+  items, diasInspeccionados, matriz, codigosCorrectivos, observaciones,
+  codigoClave = 'MXA', terminoSitio = 'Instalación', folio,
 }: VerificacionInsumosPaginaProps) {
-  const grupos = agruparPorArea(items)
+  const emision = new Date().toLocaleDateString('es-MX')
+  const codigoFmt = `${codigoClave}-F-SC-SIG`
+  const folioDisplay = folio ?? mesLabel
+
   const todosLosDias = diasDelMes(mesDate)
-  const dW = dayColW(todosLosDias.length)
+  const dW = Math.floor((PAGE_W - ITEM_COL_W) / Math.max(todosLosDias.length, 1))
   const inspeccionadosSet = new Set(diasInspeccionados)
 
+  // PdfMonthlyMatrix usa seccion_label+item; M23 usa area+insumo — se mapea aquí
+  const matrixItems = items.map(it => ({ id: it.id, seccion_label: it.area, item: it.insumo }))
+
   return (
-    <Page size="A4" orientation="landscape" style={s.page}>
+    <Page
+      size="A4"
+      orientation="landscape"
+      style={{ fontFamily: 'Helvetica', fontSize: 8, padding: MARGIN, paddingBottom: 50, backgroundColor: PC.white }}
+    >
+      <PdfFooter moduloCodigo="M23" />
 
-      <View style={s.header}>
-        <View>
-          <MadyLogoPDF style={s.headerLogo} />
-          <Text style={s.headerLogoSub}>Inocuidad Alimentaria</Text>
-        </View>
-        <View style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={s.headerTitle}>VERIFICACION DE INSUMOS</Text>
-          <Text style={{ fontSize: 6, color: MUTED, marginTop: 2 }}>
-            {`Codigo: ${codigoFormato('F-FRUS-SAN-01', codigoClave)}  |  Rev 01  |  Frecuencia: Diaria  |  Mes: ${mesLabel}`}
+      <TopBar />
+
+      <PdfHeader
+        titulo="VERIFICACIÓN DE INSUMOS"
+        subtitulo={`Bitácora mensual | ${instalacion}`}
+        codigoFormato={codigoFmt}
+        folio={folioDisplay}
+        fecha={emision}
+      />
+
+      <PdfSectionBanner>1. Datos del sitio y mes</PdfSectionBanner>
+      <PdfFieldGrid>
+        <PdfFieldRow>
+          <PdfField label={terminoSitio} value={instalacion} />
+          <PdfField label="Código" value={instalacionCodigo || '—'} />
+          <PdfField label="Mes" value={mesLabel} />
+          <PdfField label="Días inspeccionados" value={String(diasInspeccionados.length)} />
+          <PdfField label="Verificó" value={verificoNombre ?? '—'} />
+          <PdfField label="Autorizó" value={autorizoNombre ?? '—'} />
+          <PdfField label="Frecuencia" value="Diaria" />
+        </PdfFieldRow>
+      </PdfFieldGrid>
+
+      <PdfSectionBanner>2. Verificación de insumos</PdfSectionBanner>
+      <PdfMonthlyMatrix
+        items={matrixItems}
+        todosLosDias={todosLosDias}
+        inspeccionadosSet={inspeccionadosSet}
+        matriz={matriz}
+        itemColW={ITEM_COL_W}
+        dayColW={dW}
+        defaultVal="Si"
+      />
+
+      <PdfSectionBanner>3. Códigos correctivos y firmas</PdfSectionBanner>
+
+      {codigosCorrectivos.length > 0 && (
+        <View style={{ marginTop: 6, paddingHorizontal: 4 }}>
+          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.textSub, marginBottom: 3 }}>
+            CODIGOS CORRECTIVOS:
           </Text>
+          {codigosCorrectivos.map((cc, i) => (
+            <Text key={i} style={{ fontSize: 6, color: PC.fieldValue, marginBottom: 1 }}>
+              Dia {cc.diaNum} — {cc.itemLabel}: {cc.codigo}
+            </Text>
+          ))}
         </View>
-        <View style={s.headerMeta}>
-          <Text>Dias: {diasInspeccionados.length}</Text>
-        </View>
-      </View>
+      )}
 
-      <View style={s.infoRow}>
-        <View style={[s.infoBox, { flex: 3 }]}>
-          <Text style={s.infoLabel}>Instalacion</Text>
-          <Text style={s.infoValue}>{instalacion}</Text>
-        </View>
-        <View style={s.infoBox}>
-          <Text style={s.infoLabel}>Codigo</Text>
-          <Text style={s.infoValue}>{instalacionCodigo}</Text>
-        </View>
-        <View style={[s.infoBox, { flex: 2 }]}>
-          <Text style={s.infoLabel}>Mes</Text>
-          <Text style={s.infoValue}>{mesLabel}</Text>
-        </View>
-        <View style={[s.infoBox, { flex: 3 }]}>
-          <Text style={s.infoLabel}>Verifico</Text>
-          <Text style={s.infoValue}>{verificoNombre ?? '—'}</Text>
-        </View>
-        <View style={[s.infoBox, { flex: 3 }]}>
-          <Text style={s.infoLabel}>Autorizo</Text>
-          <Text style={s.infoValue}>{autorizoNombre ?? '—'}</Text>
-        </View>
-      </View>
+      {observaciones && (
+        <PdfFieldGrid>
+          <PdfFieldRow>
+            <PdfField label="Observaciones" value={observaciones} />
+          </PdfFieldRow>
+        </PdfFieldGrid>
+      )}
 
-      <View style={{ flexDirection: 'row' }}>
-        <View style={s.itemColHeader}>
-          <Text style={s.itemColHeaderText}>Insumo</Text>
-        </View>
-        {todosLosDias.map((fecha) => (
-          <View key={fecha} style={[s.dayHeader, { width: dW }]}>
-            <Text style={s.dayHeaderText}>{formatDayNum(fecha)}</Text>
-          </View>
-        ))}
-      </View>
-
-      {grupos.map((grupo) => (
-        <View key={grupo.area}>
-          <View style={s.areaBand}>
-            <Text style={s.areaText}>{grupo.area}</Text>
-          </View>
-          {grupo.items.map((item, idx) => {
-            const bg = idx % 2 === 0 ? WHITE : ROW_ALT
-            return (
-              <View key={item.id} style={[s.dataRow, { backgroundColor: bg }]}>
-                <View style={[s.itemCell, { backgroundColor: bg }]}>
-                  <Text style={s.itemText}>{item.insumo}</Text>
-                </View>
-                {todosLosDias.map((fecha) => {
-                  if (!inspeccionadosSet.has(fecha)) {
-                    return <View key={fecha} style={[s.valueCell, { width: dW, backgroundColor: bg }]} />
-                  }
-                  const val = matriz[fecha]?.[item.id] ?? 'Si'
-                  const color = val === 'Si' ? SI_COLOR : val === 'No' ? NO_COLOR : NA_COLOR
-                  return (
-                    <View key={fecha} style={[s.valueCell, { width: dW, backgroundColor: bg }]}>
-                      <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color }}>{val}</Text>
-                    </View>
-                  )
-                })}
-              </View>
-            )
-          })}
-        </View>
-      ))}
-
-      <View style={s.footerSep}>
-        {codigosCorrectivos.length > 0 && (
-          <View style={{ marginBottom: 4 }}>
-            <Text style={s.codigosTitle}>CODIGOS CORRECTIVOS:</Text>
-            {codigosCorrectivos.map((cc, i) => (
-              <Text key={i} style={s.codigosItem}>
-                Dia {cc.diaNum} — {cc.itemLabel}: {cc.codigo}
-              </Text>
-            ))}
-          </View>
-        )}
-        {observaciones && (
-          <View style={[s.footerRow, { marginBottom: 4 }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={s.footerLabel}>Observaciones:</Text>
-              <Text style={s.footerValue}>{observaciones}</Text>
-            </View>
-          </View>
-        )}
-
-        <View style={s.firmaRow}>
-          <View style={s.firmaBloque}>
-            <View style={{ height: 16 }} />
-            <Text style={s.firmaLabel}>Verifico: Jefe del Cooler</Text>
-          </View>
-          <View style={s.firmaBloque}>
-            <View style={{ height: 16 }} />
-            <Text style={s.firmaLabel}>Autorizo: Gerente</Text>
-          </View>
-        </View>
-      </View>
-
-      <Text style={s.piePagina} fixed>M.A.D.Y · Inocuidad Inteligente</Text>
+      <PdfSignatures
+        signatures={[
+          { label: 'Verificó', nombre: verificoNombre ?? '', caption: 'Jefe del Cooler — Firma' },
+          { label: 'Autorizó', nombre: autorizoNombre ?? '', caption: 'Gerente — Firma' },
+        ]}
+      />
     </Page>
   )
 }
 
+// ── VerificacionInsumosPDF ────────────────────────────────────────────────────
+
 export function VerificacionInsumosPDF(props: VerificacionInsumosPaginaProps) {
   return (
-    <Document>
+    <Document
+      title={`Verificacion de Insumos ${props.mesLabel}`}
+      author="M.A.D.Y."
+      creator="M.A.D.Y. Inocuidad Inteligente"
+      producer="M.A.D.Y. Inocuidad Inteligente"
+      subject={`Verificación de Insumos — ${props.instalacion}`}
+      keywords="MADY, inocuidad, verificacion, insumos"
+    >
       <VerificacionInsumosPagina {...props} />
     </Document>
   )
 }
 
+// ── VerificacionInsumosConsolidadoPDF ─────────────────────────────────────────
+
 export function VerificacionInsumosConsolidadoPDF({
   paginas, instalacionNombre, desde, hasta,
 }: VerificacionInsumosConsolidadoPDFProps) {
   return (
-    <Document title={`Verificacion de Insumos Consolidada — ${instalacionNombre} ${desde}-${hasta}`}>
+    <Document
+      title={`Verificacion de Insumos Consolidada ${instalacionNombre} ${desde} ${hasta}`}
+      author="M.A.D.Y."
+      creator="M.A.D.Y. Inocuidad Inteligente"
+      producer="M.A.D.Y. Inocuidad Inteligente"
+      subject="Verificación de Insumos Consolidada"
+      keywords="MADY, inocuidad, verificacion, insumos, consolidado"
+    >
       {paginas.map((p, i) => (
         <VerificacionInsumosPagina key={i} {...p} />
       ))}
