@@ -104,6 +104,7 @@ import { RegistroPersonal } from "./screens/RegistroPersonal";
 import { TrazabilidadProducto } from "./screens/TrazabilidadProducto";
 import { RequireModulo } from "./components/RequireModulo";
 import { NfcEstacion } from "./screens/NfcEstacion";
+import AuditoriasPrimusGFS from "./screens/AuditoriasPrimusGFS";
 
 export const router = createBrowserRouter([
   {
@@ -146,6 +147,7 @@ export const router = createBrowserRouter([
               { path: "perfil", Component: Perfil },
               { path: "perfil/mi-organizacion", Component: MiOrganizacion },
               { path: "equipo/actividad", Component: ActividadEquipo },
+              { path: "inocuidad/auditorias-primusgfs", Component: AuditoriasPrimusGFS },
               {
                 path: "inocuidad",
                 Component: RequireModulo,

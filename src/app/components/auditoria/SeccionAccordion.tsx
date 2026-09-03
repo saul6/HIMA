@@ -1,42 +1,39 @@
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { PreguntaItem } from './PreguntaItem'
-import { calcularProgresoCatalogo } from '@/hooks/useAuditoriaV2'
-import type { AudBloque, AudPregunta, AudComentarioEsquema, AudRespuesta } from '@/types/database.types'
+import { calcularAgregados } from '@/hooks/useAuditoria'
+import type { AuditoriaSeccion, AuditoriaPregunta, RespuestaAuditoria } from '@/types/database.types'
+
+function scoreClass(porcentaje: number, posibles: number): string {
+  if (posibles === 0) return 'bg-muted text-muted-foreground'
+  if (porcentaje >= 85) return 'bg-agro-success-fill text-agro-success-text'
+  if (porcentaje >= 70) return 'bg-agro-warning-fill text-agro-warning-text'
+  return 'bg-agro-danger-fill text-agro-danger-text'
+}
 
 interface SeccionAccordionProps {
-  seccion: Pick<AudBloque, 'id' | 'codigo' | 'nombre'>
-  preguntas: AudPregunta[]
-  esquemas: AudComentarioEsquema[]
-  respuestas: Map<string, AudRespuesta>
-  instanciaValores: Map<string, Map<string, string>>
-  onRespuesta: (preguntaId: string, respuesta: AudRespuesta) => void
-  onValor: (preguntaId: string, esquemaId: string, valor: string) => void
+  seccion: AuditoriaSeccion
+  preguntas: AuditoriaPregunta[]
+  respuestas: Map<string, RespuestaAuditoria>
+  comentarios: Map<string, string>
+  onRespuesta: (preguntaId: string, respuesta: RespuestaAuditoria) => void
+  onComentario: (preguntaId: string, comentario: string) => void
   defaultAbierto?: boolean
 }
 
 export function SeccionAccordion({
   seccion,
   preguntas,
-  esquemas,
   respuestas,
-  instanciaValores,
+  comentarios,
   onRespuesta,
-  onValor,
+  onComentario,
   defaultAbierto = false,
 }: SeccionAccordionProps) {
   const [abierto, setAbierto] = useState(defaultAbierto)
 
-  const { puntos_posibles } = calcularProgresoCatalogo(preguntas, respuestas)
+  const { puntos_obtenidos, puntos_posibles, porcentaje } = calcularAgregados(preguntas, respuestas)
   const respondidas = preguntas.filter((p) => respuestas.has(p.id)).length
-  const total = preguntas.length
-
-  const chipClass =
-    puntos_posibles > 0
-      ? respondidas === total
-        ? 'bg-agro-success-fill text-agro-success-text'
-        : 'bg-agro-warning-fill text-agro-warning-text'
-      : 'bg-muted text-muted-foreground'
 
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
@@ -50,12 +47,19 @@ export function SeccionAccordion({
             {seccion.codigo} · {seccion.nombre}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {respondidas}/{total} respondidas
+            {respondidas}/{preguntas.length} respondidas
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className={`text-[11px] px-2 py-0.5 rounded ${chipClass}`} style={{ fontWeight: 600 }}>
-            {respondidas}/{total}
+          <span
+            className={`text-[11px] px-2 py-0.5 rounded ${scoreClass(porcentaje, puntos_posibles)}`}
+            style={{ fontWeight: 600 }}
+          >
+            {puntos_posibles > 0
+              ? `${porcentaje}% · ${puntos_obtenidos}/${puntos_posibles} pts`
+              : respondidas > 0
+              ? 'Solo info'
+              : '—'}
           </span>
           <ChevronDown
             className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
@@ -71,11 +75,10 @@ export function SeccionAccordion({
             <PreguntaItem
               key={p.id}
               pregunta={p}
-              esquemas={esquemas.filter((e) => e.pregunta_id === p.id)}
               respuesta={respuestas.get(p.id)}
-              instanciaValores={instanciaValores.get(p.id) ?? new Map()}
+              comentario={comentarios.get(p.id)}
               onRespuesta={onRespuesta}
-              onValor={onValor}
+              onComentario={onComentario}
             />
           ))}
         </div>
