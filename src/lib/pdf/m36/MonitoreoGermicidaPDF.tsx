@@ -1,5 +1,11 @@
-﻿import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { Document, Page, View, Text } from '@react-pdf/renderer'
+import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
+import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
+import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
+import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
+import { PC } from '@/lib/pdf/components/tokens'
 
 export interface MonitoreoRow {
   fecha: string
@@ -17,7 +23,32 @@ interface Props {
   hasta: string
   monitoreos: MonitoreoRow[]
   codigoClave: string
+  terminoSitio?: string
 }
+
+const MARGIN = 20
+
+const thStyle = {
+  padding: 3,
+  borderRightWidth: 1,
+  borderRightColor: '#5599CC',
+  borderBottomWidth: 1,
+  borderBottomColor: '#5599CC',
+  justifyContent: 'center',
+  alignItems: 'center',
+} as const
+
+const tdStyle = {
+  borderRightWidth: 1,
+  borderRightColor: PC.border,
+  borderBottomWidth: 1,
+  borderBottomColor: PC.border,
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: 1,
+} as const
+
+const ROW_ALT = '#F5F9FE'
 
 function fmtFecha(iso: string): string {
   try {
@@ -26,61 +57,93 @@ function fmtFecha(iso: string): string {
   } catch { return iso }
 }
 
-const s = StyleSheet.create({
-  page:     { fontFamily: 'Helvetica', fontSize: 8, padding: 28, backgroundColor: '#ffffff' },
-  title:    { fontSize: 13, fontFamily: 'Helvetica-Bold', marginBottom: 2 },
-  codigo:   { fontSize: 8, color: '#666666', marginBottom: 4 },
-  meta:     { fontSize: 8, color: '#333333', marginBottom: 2 },
-  table:    { borderTop: '1pt solid #cccccc', borderLeft: '1pt solid #cccccc', marginTop: 12 },
-  row:      { flexDirection: 'row', borderBottom: '1pt solid #cccccc' },
-  cellHead: { fontFamily: 'Helvetica-Bold', padding: 4, borderRight: '1pt solid #cccccc', backgroundColor: '#f0f0f0', fontSize: 8 },
-  cell:     { padding: 4, borderRight: '1pt solid #cccccc', fontSize: 8 },
-  footer:   { marginTop: 24, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  firma:    { width: 190, borderTop: '1pt solid #000000', paddingTop: 4, fontSize: 7, textAlign: 'center' },
-  marca:    { fontSize: 7, color: '#888888' },
-})
-
 const C = { FECHA: 55, TIPO: 105, USO: 105, PPM: 52, CORR: 100, PREP: 95 }
 
-export function MonitoreoGermicidaPDF({ rancho, orgNombre, desde, hasta, monitoreos, codigoClave }: Props) {
+export function MonitoreoGermicidaPDF({ rancho, orgNombre, desde, hasta, monitoreos, codigoClave, terminoSitio = 'Instalación' }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
+  const codigoFmt = codigoFormato('F-FRUS-SAN-14', codigoClave)
 
   return (
     <Document>
-      <Page size="A4" orientation="landscape" style={s.page}>
-        <Text style={s.title}>Monitoreo de Solución Germicida</Text>
-        <Text style={s.codigo}>{codigoFormato('F-FRUS-SAN-14', codigoClave)}</Text>
-        {orgNombre ? <Text style={s.meta}>{orgNombre}</Text> : null}
-        <Text style={s.meta}>Instalación: {rancho}</Text>
-        <Text style={s.meta}>Período: {periodo}</Text>
+      <Page
+        size="A4"
+        orientation="landscape"
+        style={{ fontFamily: 'Helvetica', fontSize: 7, padding: MARGIN, paddingBottom: 50, backgroundColor: PC.white }}
+      >
+        <PdfFooter moduloCodigo="M36" />
+        <TopBar />
+        <PdfHeader
+          titulo="MONITOREO DE SOLUCIÓN GERMICIDA"
+          subtitulo={`Registro de germicida | ${rancho}`}
+          codigoFormato={codigoFmt}
+          folio={periodo}
+          fecha={periodo}
+        />
 
-        <View style={s.table}>
-          <View style={s.row}>
-            <Text style={[s.cellHead, { width: C.FECHA }]}>Fecha</Text>
-            <Text style={[s.cellHead, { width: C.TIPO  }]}>Tipo de germicida</Text>
-            <Text style={[s.cellHead, { width: C.USO   }]}>Uso</Text>
-            <Text style={[s.cellHead, { width: C.PPM   }]}>Conc. (ppm)</Text>
-            <Text style={[s.cellHead, { width: C.CORR  }]}>Corrección</Text>
-            <Text style={[s.cellHead, { width: C.PREP  }]}>Preparado por</Text>
-          </View>
-          {monitoreos.map((m, i) => (
-            <View key={i} style={s.row}>
-              <Text style={[s.cell, { width: C.FECHA }]}>{fmtFecha(m.fecha)}</Text>
-              <Text style={[s.cell, { width: C.TIPO  }]}>{m.tipo_germicida}</Text>
-              <Text style={[s.cell, { width: C.USO   }]}>{m.uso}</Text>
-              <Text style={[s.cell, { width: C.PPM   }]}>{m.concentracion} ppm</Text>
-              <Text style={[s.cell, { width: C.CORR  }]}>{m.correccion ?? ''}</Text>
-              <Text style={[s.cell, { width: C.PREP  }]}>{m.preparado_por}</Text>
+        <PdfSectionBanner>1. Datos del sitio</PdfSectionBanner>
+        <PdfFieldGrid>
+          <PdfFieldRow>
+            <PdfField label={terminoSitio} value={rancho} />
+            <PdfField label="Periodo" value={periodo} />
+          </PdfFieldRow>
+        </PdfFieldGrid>
+
+        <PdfSectionBanner>2. Registros</PdfSectionBanner>
+
+        <View style={{ marginTop: 4, borderWidth: 1, borderColor: PC.border }}>
+          {/* Header */}
+          <View style={{ flexDirection: 'row', backgroundColor: PC.section }}>
+            <View style={[thStyle, { width: C.FECHA, backgroundColor: PC.section, alignItems: 'flex-start' }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white }}>Fecha</Text>
             </View>
-          ))}
+            <View style={[thStyle, { width: C.TIPO, backgroundColor: PC.section, alignItems: 'flex-start' }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white }}>Tipo de germicida</Text>
+            </View>
+            <View style={[thStyle, { width: C.USO, backgroundColor: PC.section, alignItems: 'flex-start' }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white }}>Uso</Text>
+            </View>
+            <View style={[thStyle, { width: C.PPM, backgroundColor: PC.section }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white }}>Conc. ppm</Text>
+            </View>
+            <View style={[thStyle, { width: C.CORR, backgroundColor: PC.section, alignItems: 'flex-start' }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white }}>Corrección</Text>
+            </View>
+            <View style={[thStyle, { width: C.PREP, backgroundColor: PC.section, alignItems: 'flex-start', borderRightWidth: 0 }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white }}>Preparado por</Text>
+            </View>
+          </View>
+
+          {/* Rows */}
+          {monitoreos.map((m, i) => {
+            const bg = i % 2 === 1 ? ROW_ALT : PC.white
+            return (
+              <View key={i} style={{ flexDirection: 'row', backgroundColor: bg }}>
+                <View style={[tdStyle, { width: C.FECHA, alignItems: 'flex-start', padding: 4 }]}>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{fmtFecha(m.fecha)}</Text>
+                </View>
+                <View style={[tdStyle, { width: C.TIPO, alignItems: 'flex-start', padding: 4 }]}>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{m.tipo_germicida}</Text>
+                </View>
+                <View style={[tdStyle, { width: C.USO, alignItems: 'flex-start', padding: 4 }]}>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{m.uso}</Text>
+                </View>
+                <View style={[tdStyle, { width: C.PPM, padding: 4 }]}>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{m.concentracion} ppm</Text>
+                </View>
+                <View style={[tdStyle, { width: C.CORR, alignItems: 'flex-start', padding: 4 }]}>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{m.correccion ?? '—'}</Text>
+                </View>
+                <View style={[tdStyle, { width: C.PREP, alignItems: 'flex-start', padding: 4, borderRightWidth: 0 }]}>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{m.preparado_por}</Text>
+                </View>
+              </View>
+            )
+          })}
         </View>
 
-        <View style={s.footer}>
-          <View style={s.firma}>
-            <Text>Verifico: Responsable del cooler</Text>
-          </View>
-          <Text style={s.marca}>M.A.D.Y · Inocuidad Inteligente</Text>
-        </View>
+        <PdfSignatures
+          signatures={[{ label: '', nombre: '', caption: 'Verifico: Responsable del cooler' }]}
+        />
       </Page>
     </Document>
   )

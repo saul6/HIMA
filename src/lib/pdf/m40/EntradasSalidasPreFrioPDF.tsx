@@ -1,5 +1,10 @@
-﻿import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { Document, Page, View, Text } from '@react-pdf/renderer'
+import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
+import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
+import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
+import { PC } from '@/lib/pdf/components/tokens'
 
 export interface M40LineaPDF {
   orden: number
@@ -34,72 +39,92 @@ function fmtFecha(iso: string): string {
 const t = (v: string | null | undefined): string => v ?? '—'
 const n = (v: number | null | undefined): string => v != null ? String(v) : '—'
 
-const s = StyleSheet.create({
-  page:     { fontFamily: 'Helvetica', fontSize: 7.5, padding: 20, backgroundColor: '#ffffff' },
-  hdr:      { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, alignItems: 'flex-start' },
-  title:    { fontSize: 11, fontFamily: 'Helvetica-Bold', marginBottom: 1 },
-  codigo:   { fontSize: 7, color: '#666666', marginBottom: 3 },
-  meta:     { fontSize: 7.5, color: '#333333', marginBottom: 1 },
-  secTitle: { fontSize: 7.5, fontFamily: 'Helvetica-Bold', marginBottom: 3, color: '#333333' },
-  table:    { borderTop: '1pt solid #cccccc', borderLeft: '1pt solid #cccccc', marginBottom: 10 },
-  row:      { flexDirection: 'row', borderBottom: '1pt solid #cccccc' },
-  th:       { fontFamily: 'Helvetica-Bold', padding: 3, borderRight: '1pt solid #cccccc', backgroundColor: '#f3f3f3', fontSize: 6.5, textAlign: 'center' },
-  td:       { padding: 3, borderRight: '1pt solid #cccccc', fontSize: 7 },
-  footer:   { marginTop: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  firma:    { width: 200, borderTop: '1pt solid #000000', paddingTop: 3, fontSize: 6.5, textAlign: 'center' },
-  marca:    { fontSize: 6.5, color: '#aaaaaa' },
-})
+const MARGIN = 20
+
+const thStyle = {
+  padding: 3,
+  borderRightWidth: 1,
+  borderRightColor: '#5599CC',
+  borderBottomWidth: 1,
+  borderBottomColor: '#5599CC',
+  justifyContent: 'center' as const,
+  alignItems: 'center' as const,
+  fontFamily: 'Helvetica-Bold',
+  fontSize: 6.5,
+  backgroundColor: PC.section,
+  color: PC.white,
+  textAlign: 'center' as const,
+} as const
+
+const tdStyle = {
+  borderRightWidth: 1,
+  borderRightColor: PC.border,
+  borderBottomWidth: 1,
+  borderBottomColor: PC.border,
+  padding: 3,
+  fontSize: 7,
+  color: PC.fieldValue,
+} as const
+
+const ROW_ALT = '#F5F9FE'
 
 const W = { cuarto: 60, fruta: 60, pres: 55, tar: 28, restos: 40, hora: 30, temp: 28, tiempo: 34 }
 
 export function EntradasSalidasPreFrioPDF({ d, codigoClave }: { d: M40RegistroDataPDF; codigoClave: string }) {
+  const codigoFmt = codigoFormato('F-FRUS-PRO-04', codigoClave)
+
   return (
     <Document>
-      <Page size="A4" orientation="landscape" style={s.page}>
-
-        {/* Encabezado */}
-        <View style={s.hdr}>
-          <View style={{ flex: 1 }}>
-            <Text style={s.title}>Entradas y Salidas de Producto en Pre-enfriamiento</Text>
-            <Text style={s.codigo}>{codigoFormato('F-FRUS-PRO-04', codigoClave)}</Text>
-            <Text style={s.meta}>{d.orgNombre}</Text>
-            <Text style={s.meta}>Instalacion: {d.instalacion}</Text>
-            {d.empresa ? <Text style={s.meta}>Empresa: {d.empresa}</Text> : null}
-          </View>
-          <View style={{ alignItems: 'flex-end' }}>
-            <Text style={[s.meta, { fontFamily: 'Helvetica-Bold' }]}>Fecha: {fmtFecha(d.fecha)}</Text>
-            <Text style={[s.meta, { fontSize: 6.5, color: '#888888', marginTop: 2 }]}>M.A.D.Y</Text>
-          </View>
-        </View>
+      <Page
+        size="A4"
+        orientation="landscape"
+        style={{
+          fontFamily: 'Helvetica',
+          fontSize: 7.5,
+          padding: MARGIN,
+          paddingBottom: 50,
+          backgroundColor: PC.white,
+        }}
+      >
+        <PdfFooter moduloCodigo="M40" />
+        <TopBar />
+        <PdfHeader
+          titulo="ENTRADAS Y SALIDAS EN PRE-ENFRIAMIENTO"
+          subtitulo={`${d.instalacion}${d.empresa ? ` | ${d.empresa}` : ''} | ${fmtFecha(d.fecha)}`}
+          codigoFormato={codigoFmt}
+          fecha={d.fecha}
+        />
 
         {/* Tabla de lineas */}
-        <View style={s.table}>
-          <View style={s.row}>
-            <Text style={[s.th, { width: 22 }]}>No.</Text>
-            <Text style={[s.th, { width: W.cuarto }]}>Cuarto Pre-frio</Text>
-            <Text style={[s.th, { width: W.fruta }]}>Fruta</Text>
-            <Text style={[s.th, { width: W.pres }]}>Presentacion</Text>
-            <Text style={[s.th, { width: W.tar }]}>Tarimas</Text>
-            <Text style={[s.th, { width: W.restos }]}>Restos</Text>
-            <Text style={[s.th, { width: W.hora }]}>E. Hora</Text>
-            <Text style={[s.th, { width: W.temp }]}>E. Temp</Text>
-            <Text style={[s.th, { width: W.hora }]}>S. Hora</Text>
-            <Text style={[s.th, { width: W.temp }]}>S. Temp</Text>
-            <Text style={[s.th, { width: W.tiempo }]}>Tiempo</Text>
+        <PdfSectionBanner>Entradas y salidas de producto</PdfSectionBanner>
+        <View style={{ borderTopWidth: 1, borderTopColor: PC.section, borderLeftWidth: 1, borderLeftColor: PC.section, marginBottom: 10 }}>
+          {/* Header */}
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={[thStyle, { width: 22 }]}>No.</Text>
+            <Text style={[thStyle, { width: W.cuarto }]}>Cuarto Pre-frio</Text>
+            <Text style={[thStyle, { width: W.fruta }]}>Fruta</Text>
+            <Text style={[thStyle, { width: W.pres }]}>Presentacion</Text>
+            <Text style={[thStyle, { width: W.tar }]}>Tarimas</Text>
+            <Text style={[thStyle, { width: W.restos }]}>Restos</Text>
+            <Text style={[thStyle, { width: W.hora }]}>E. Hora</Text>
+            <Text style={[thStyle, { width: W.temp }]}>E. Temp</Text>
+            <Text style={[thStyle, { width: W.hora }]}>S. Hora</Text>
+            <Text style={[thStyle, { width: W.temp }]}>S. Temp</Text>
+            <Text style={[thStyle, { width: W.tiempo, borderRightWidth: 0 }]}>Tiempo</Text>
           </View>
           {d.lineas.map((l, i) => (
-            <View key={i} style={s.row}>
-              <Text style={[s.td, { width: 22 }]}>{l.orden}</Text>
-              <Text style={[s.td, { width: W.cuarto }]}>{t(l.cuarto_prefrio)}</Text>
-              <Text style={[s.td, { width: W.fruta }]}>{t(l.fruta)}</Text>
-              <Text style={[s.td, { width: W.pres }]}>{t(l.presentacion)}</Text>
-              <Text style={[s.td, { width: W.tar }]}>{n(l.num_tarimas)}</Text>
-              <Text style={[s.td, { width: W.restos }]}>{t(l.restos)}</Text>
-              <Text style={[s.td, { width: W.hora }]}>{t(l.entrada_hora)}</Text>
-              <Text style={[s.td, { width: W.temp }]}>{n(l.entrada_temp)}</Text>
-              <Text style={[s.td, { width: W.hora }]}>{t(l.salida_hora)}</Text>
-              <Text style={[s.td, { width: W.temp }]}>{n(l.salida_temp)}</Text>
-              <Text style={[s.td, { width: W.tiempo }]}>{t(l.tiempo_total)}</Text>
+            <View key={i} style={{ flexDirection: 'row', backgroundColor: i % 2 === 1 ? ROW_ALT : PC.white }}>
+              <Text style={[tdStyle, { width: 22 }]}>{l.orden}</Text>
+              <Text style={[tdStyle, { width: W.cuarto }]}>{t(l.cuarto_prefrio)}</Text>
+              <Text style={[tdStyle, { width: W.fruta }]}>{t(l.fruta)}</Text>
+              <Text style={[tdStyle, { width: W.pres }]}>{t(l.presentacion)}</Text>
+              <Text style={[tdStyle, { width: W.tar }]}>{n(l.num_tarimas)}</Text>
+              <Text style={[tdStyle, { width: W.restos }]}>{t(l.restos)}</Text>
+              <Text style={[tdStyle, { width: W.hora }]}>{t(l.entrada_hora)}</Text>
+              <Text style={[tdStyle, { width: W.temp }]}>{n(l.entrada_temp)}</Text>
+              <Text style={[tdStyle, { width: W.hora }]}>{t(l.salida_hora)}</Text>
+              <Text style={[tdStyle, { width: W.temp }]}>{n(l.salida_temp)}</Text>
+              <Text style={[tdStyle, { width: W.tiempo, borderRightWidth: 0 }]}>{t(l.tiempo_total)}</Text>
             </View>
           ))}
         </View>
@@ -107,21 +132,20 @@ export function EntradasSalidasPreFrioPDF({ d, codigoClave }: { d: M40RegistroDa
         {/* Observaciones */}
         {d.observaciones ? (
           <View style={{ marginBottom: 10 }}>
-            <Text style={s.secTitle}>Observaciones</Text>
-            <Text style={{ fontSize: 7.5, color: '#333333' }}>{d.observaciones}</Text>
+            <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.titleNavy, marginBottom: 2 }}>
+              Observaciones
+            </Text>
+            <Text style={{ fontSize: 7.5, color: PC.fieldValue }}>{d.observaciones}</Text>
           </View>
         ) : null}
 
         {/* Firmas */}
-        <View style={s.footer}>
-          <View style={s.firma}>
-            <Text>Responsable de la instalacion</Text>
-          </View>
-          <View style={s.firma}>
-            <Text>Responsable de la empresa</Text>
-          </View>
-          <Text style={s.marca}>M.A.D.Y · Inocuidad Inteligente</Text>
-        </View>
+        <PdfSignatures
+          signatures={[
+            { label: 'Responsable de la instalacion' },
+            { label: 'Responsable de la empresa' },
+          ]}
+        />
 
       </Page>
     </Document>

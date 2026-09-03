@@ -1,5 +1,18 @@
-﻿import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+// PATRÓN INOCUIDAD — PDF M47 (plantilla homogénea M.A.D.Y)
+// Registro de Personal — A4 landscape, tabla compleja de trabajadores.
+// TopBar + PdfHeader + PdfSectionBanner + tabla 3-grupos + PdfLegend + PdfFooter.
+
+import { Document, Page, View, Text } from '@react-pdf/renderer'
+import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
+import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
+import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
+import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+import { PdfLegend } from '@/lib/pdf/components/PdfLegend'
 import { codigoFormato } from '@/lib/codigoFormato'
+import { PC } from '@/lib/pdf/components/tokens'
+
+// ── Tipos ─────────────────────────────────────────────────────────────────────
 
 export interface M47ItemPDF {
   id: string
@@ -29,7 +42,10 @@ export interface RegistroPersonalPDFProps {
   documentos: M47ItemPDF[]
   capacitaciones: M47ItemPDF[]
   codigoClave: string
+  terminoSitio?: string
 }
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 const t = (v: string | null | undefined): string => v ?? '—'
 
@@ -49,174 +65,256 @@ function fmtFechaCorta(iso: string): string {
   } catch { return iso }
 }
 
-// Column widths
-const COL_NO = 16
+// ── Anchos de columna ─────────────────────────────────────────────────────────
+
+const COL_NO     = 16
 const COL_PUESTO = 42
 const COL_NOMBRE = 78
-const COL_DIR = 60
-const COL_TCASA = 36
-const COL_CEL = 36
-const COL_FNAC = 42
+const COL_DIR    = 60
+const COL_TCASA  = 36
+const COL_CEL    = 36
+const COL_FNAC   = 42
 const COL_EM_NOM = 58
 const COL_EM_PAR = 36
 const COL_EM_TEL = 36
-const COL_ITEM = 20
+const COL_ITEM   = 20
 
-const s = StyleSheet.create({
-  page:     { fontFamily: 'Helvetica', fontSize: 6.5, padding: 20, backgroundColor: '#ffffff', color: '#222' },
-  hdr:      { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6, alignItems: 'flex-start' },
-  title:    { fontSize: 11, fontFamily: 'Helvetica-Bold', marginBottom: 1 },
-  codigo:   { fontSize: 6.5, color: '#666', marginBottom: 1 },
-  metaBold: { fontSize: 7, fontFamily: 'Helvetica-Bold' },
-  meta:     { fontSize: 6.5, color: '#444' },
-  // Table
-  groupRow: { flexDirection: 'row', backgroundColor: '#dce8f5' },
-  groupCell:{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, padding: '2 3', textAlign: 'center', borderRight: '0.5pt solid #bbb' },
-  headRow:  { flexDirection: 'row', backgroundColor: '#f0f4f8' },
-  th:       { fontFamily: 'Helvetica-Bold', fontSize: 5.5, padding: '2 2', borderRight: '0.5pt solid #ccc', borderBottom: '0.5pt solid #bbb' },
-  tr:       { flexDirection: 'row', borderBottom: '0.5pt solid #eee' },
-  trAlt:    { backgroundColor: '#f9fbfd' },
-  td:       { fontSize: 6, padding: '2 2', borderRight: '0.5pt solid #eee' },
-  tdC:      { fontSize: 6, padding: '2 2', borderRight: '0.5pt solid #eee', textAlign: 'center' },
-  // Legend
-  legend:   { marginTop: 8, flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
-  legendItem:{ fontSize: 5.5, color: '#555' },
-  // Footer
-  footer:   { marginTop: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  firma:    { width: 180, borderTop: '0.5pt solid #555', paddingTop: 3, fontSize: 6, textAlign: 'center', color: '#444' },
-  marca:    { fontSize: 5.5, color: '#aaa' },
-})
+// ── Constantes de estilo ──────────────────────────────────────────────────────
+
+const ROW_ALT     = '#F5F9FE'
+const GROUP_HDR_BG = '#EFF7F9'
+
+// ── Estilos de celda inline ───────────────────────────────────────────────────
+
+const thStyle = { padding: 3, borderRightWidth: 1, borderRightColor: '#5599CC', borderBottomWidth: 1, borderBottomColor: '#5599CC', justifyContent: 'center', alignItems: 'center' } as const
+const tdStyle = { borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, padding: 3 } as const
+
+// ── RegistroPersonalPDF ───────────────────────────────────────────────────────
 
 export function RegistroPersonalPDF({
-  orgNombre, rancho, fechaPDF, trabajadores, documentos, capacitaciones, codigoClave,
+  orgNombre, rancho, fechaPDF, trabajadores, documentos, capacitaciones,
+  codigoClave, terminoSitio = 'Instalación',
 }: RegistroPersonalPDFProps) {
-  const codigo = codigoFormato('F-FRUS-ADM-04', codigoClave)
+  const emision   = new Date().toLocaleDateString('es-MX')
+  const codigoFmt = codigoFormato('F-FRUS-ADM-04', codigoClave)
+
   const nDocs = documentos.length
   const nCaps = capacitaciones.length
 
-  // Width of items section
-  const wDocs = nDocs * COL_ITEM
-  const wCaps = nCaps * COL_ITEM
-  // Obs takes remaining width
+  const wDocs     = nDocs * COL_ITEM
+  const wCaps     = nCaps * COL_ITEM
   const fixedTotal = COL_NO + COL_PUESTO + COL_NOMBRE + COL_DIR + COL_TCASA + COL_CEL + COL_FNAC
     + COL_EM_NOM + COL_EM_PAR + COL_EM_TEL + wDocs + wCaps
-  const COL_OBS = Math.max(40, 801 - fixedTotal)
+  const COL_OBS   = Math.max(40, 801 - fixedTotal)
+
+  // Leyenda para PdfLegend
+  const legendEntradas = []
+  if (nDocs > 0) {
+    legendEntradas.push({
+      titulo: 'Documentacion',
+      items: documentos.map((d, i) => ({ codigo: `D${i + 1}`, label: d.nombre })),
+    })
+  }
+  if (nCaps > 0) {
+    legendEntradas.push({
+      titulo: 'Capacitaciones',
+      items: capacitaciones.map((c, i) => ({ codigo: `C${i + 1}`, label: c.nombre })),
+    })
+  }
 
   return (
-    <Document>
-      <Page size="A4" orientation="landscape" style={s.page}>
+    <Document
+      title={`Registro de Personal — ${rancho} ${fmtFechaCorta(fechaPDF)}`}
+      author="M.A.D.Y."
+      creator="M.A.D.Y. Inocuidad Inteligente"
+      producer="M.A.D.Y. Inocuidad Inteligente"
+    >
+      <Page
+        size="A4"
+        orientation="landscape"
+        style={{ fontFamily: 'Helvetica', fontSize: 6.5, padding: 20, paddingBottom: 50, backgroundColor: PC.white }}
+      >
+        <PdfFooter moduloCodigo="M47" />
+        <TopBar />
 
-        {/* ── Header ── */}
-        <View style={s.hdr}>
-          <View style={{ flex: 1 }}>
-            <Text style={s.title}>Registro de Personal</Text>
-            <Text style={s.codigo}>{codigo}</Text>
-            <Text style={s.meta}>{orgNombre}</Text>
-            <Text style={s.meta}>Instalacion: {rancho}</Text>
-          </View>
-          <View style={{ alignItems: 'flex-end' }}>
-            <Text style={s.metaBold}>Fecha: {fmtFechaCorta(fechaPDF)}</Text>
-            <Text style={[s.meta, { color: '#888', marginTop: 2 }]}>M.A.D.Y</Text>
-          </View>
-        </View>
+        <PdfHeader
+          titulo="REGISTRO DE PERSONAL"
+          subtitulo={`Personal | ${rancho}`}
+          codigoFormato={codigoFmt}
+          folio={fmtFechaCorta(fechaPDF)}
+          fecha={emision}
+        />
 
-        {/* ── Table ── */}
-        <View style={{ border: '0.5pt solid #bbb' }}>
+        <PdfSectionBanner>1. Datos del sitio</PdfSectionBanner>
+        <PdfFieldGrid>
+          <PdfFieldRow>
+            <PdfField label={terminoSitio} value={rancho} />
+            <PdfField label="Organizacion" value={orgNombre} />
+            <PdfField label="Fecha" value={fmtFechaCorta(fechaPDF)} />
+          </PdfFieldRow>
+        </PdfFieldGrid>
 
-          {/* Group header row */}
-          <View style={s.groupRow}>
-            <Text style={[s.groupCell, { width: COL_NO }]}> </Text>
-            <Text style={[s.groupCell, { width: COL_PUESTO + COL_NOMBRE + COL_DIR + COL_TCASA + COL_CEL + COL_FNAC }]}>
-              Datos personales del trabajador
-            </Text>
-            <Text style={[s.groupCell, { width: COL_EM_NOM + COL_EM_PAR + COL_EM_TEL }]}>
-              Contacto de emergencia
-            </Text>
+        <PdfSectionBanner>2. Registro de trabajadores</PdfSectionBanner>
+
+        {/* Tabla compleja de trabajadores */}
+        <View style={{ borderLeftWidth: 1, borderLeftColor: PC.border, borderTopWidth: 1, borderTopColor: PC.border, marginTop: 4 }}>
+
+          {/* Fila de grupo (encabezado de sección) */}
+          <View style={{ flexDirection: 'row', backgroundColor: PC.section }}>
+            <View style={[thStyle, { width: COL_NO, backgroundColor: PC.section, borderRightColor: '#5599CC' }]}>
+              <Text style={{ fontSize: 5.5, color: PC.white }}> </Text>
+            </View>
+            <View style={[thStyle, { width: COL_PUESTO + COL_NOMBRE + COL_DIR + COL_TCASA + COL_CEL + COL_FNAC, backgroundColor: PC.section, borderRightColor: '#5599CC' }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.white, textAlign: 'center' }}>
+                Datos personales del trabajador
+              </Text>
+            </View>
+            <View style={[thStyle, { width: COL_EM_NOM + COL_EM_PAR + COL_EM_TEL, backgroundColor: PC.section, borderRightColor: '#5599CC' }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.white, textAlign: 'center' }}>
+                Contacto de emergencia
+              </Text>
+            </View>
             {nDocs > 0 && (
-              <Text style={[s.groupCell, { width: wDocs }]}>Documentacion personal</Text>
+              <View style={[thStyle, { width: wDocs, backgroundColor: PC.section, borderRightColor: '#5599CC' }]}>
+                <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.white, textAlign: 'center' }}>
+                  Documentacion personal
+                </Text>
+              </View>
             )}
             {nCaps > 0 && (
-              <Text style={[s.groupCell, { width: wCaps }]}>Capacitaciones</Text>
+              <View style={[thStyle, { width: wCaps, backgroundColor: PC.section, borderRightColor: '#5599CC' }]}>
+                <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.white, textAlign: 'center' }}>
+                  Capacitaciones
+                </Text>
+              </View>
             )}
-            <Text style={[s.groupCell, { width: COL_OBS, borderRight: 'none' }]}>Observaciones</Text>
+            <View style={[thStyle, { width: COL_OBS, backgroundColor: PC.section, borderRightWidth: 0 }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.white, textAlign: 'center' }}>
+                Observaciones
+              </Text>
+            </View>
           </View>
 
-          {/* Column header row */}
-          <View style={s.headRow}>
-            <Text style={[s.th, { width: COL_NO }]}>No.</Text>
-            <Text style={[s.th, { width: COL_PUESTO }]}>Puesto</Text>
-            <Text style={[s.th, { width: COL_NOMBRE }]}>Nombre</Text>
-            <Text style={[s.th, { width: COL_DIR }]}>Direccion</Text>
-            <Text style={[s.th, { width: COL_TCASA }]}>Tel. Casa</Text>
-            <Text style={[s.th, { width: COL_CEL }]}>Celular</Text>
-            <Text style={[s.th, { width: COL_FNAC }]}>F. Nac. D/M/A</Text>
-            <Text style={[s.th, { width: COL_EM_NOM }]}>Nombre</Text>
-            <Text style={[s.th, { width: COL_EM_PAR }]}>Parentesco</Text>
-            <Text style={[s.th, { width: COL_EM_TEL }]}>Telefono</Text>
+          {/* Fila de encabezado de columnas */}
+          <View style={{ flexDirection: 'row', backgroundColor: GROUP_HDR_BG }}>
+            <View style={[thStyle, { width: COL_NO, backgroundColor: GROUP_HDR_BG }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.fieldValue }}>No.</Text>
+            </View>
+            <View style={[thStyle, { width: COL_PUESTO, backgroundColor: GROUP_HDR_BG }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.fieldValue }}>Puesto</Text>
+            </View>
+            <View style={[thStyle, { width: COL_NOMBRE, backgroundColor: GROUP_HDR_BG }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.fieldValue }}>Nombre</Text>
+            </View>
+            <View style={[thStyle, { width: COL_DIR, backgroundColor: GROUP_HDR_BG }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.fieldValue }}>Direccion</Text>
+            </View>
+            <View style={[thStyle, { width: COL_TCASA, backgroundColor: GROUP_HDR_BG }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.fieldValue }}>Tel. Casa</Text>
+            </View>
+            <View style={[thStyle, { width: COL_CEL, backgroundColor: GROUP_HDR_BG }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.fieldValue }}>Celular</Text>
+            </View>
+            <View style={[thStyle, { width: COL_FNAC, backgroundColor: GROUP_HDR_BG }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.fieldValue }}>F. Nac. D/M/A</Text>
+            </View>
+            <View style={[thStyle, { width: COL_EM_NOM, backgroundColor: GROUP_HDR_BG }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.fieldValue }}>Nombre</Text>
+            </View>
+            <View style={[thStyle, { width: COL_EM_PAR, backgroundColor: GROUP_HDR_BG }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.fieldValue }}>Parentesco</Text>
+            </View>
+            <View style={[thStyle, { width: COL_EM_TEL, backgroundColor: GROUP_HDR_BG }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.fieldValue }}>Telefono</Text>
+            </View>
             {documentos.map((d, i) => (
-              <Text key={d.id} style={[s.th, { width: COL_ITEM, textAlign: 'center' }]}>
-                {`D${i + 1}`}
-              </Text>
+              <View key={d.id} style={[thStyle, { width: COL_ITEM, backgroundColor: GROUP_HDR_BG }]}>
+                <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.fieldValue, textAlign: 'center' }}>
+                  {`D${i + 1}`}
+                </Text>
+              </View>
             ))}
             {capacitaciones.map((c, i) => (
-              <Text key={c.id} style={[s.th, { width: COL_ITEM, textAlign: 'center' }]}>
-                {`C${i + 1}`}
-              </Text>
+              <View key={c.id} style={[thStyle, { width: COL_ITEM, backgroundColor: GROUP_HDR_BG }]}>
+                <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.fieldValue, textAlign: 'center' }}>
+                  {`C${i + 1}`}
+                </Text>
+              </View>
             ))}
-            <Text style={[s.th, { width: COL_OBS, borderRight: 'none' }]}>Observaciones</Text>
+            <View style={[thStyle, { width: COL_OBS, backgroundColor: GROUP_HDR_BG, borderRightWidth: 0 }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 5.5, color: PC.fieldValue }}>Observaciones</Text>
+            </View>
           </View>
 
-          {/* Data rows */}
-          {trabajadores.map((w, idx) => (
-            <View key={idx} style={[s.tr, idx % 2 === 1 ? s.trAlt : {}]}>
-              <Text style={[s.td, { width: COL_NO, textAlign: 'center' }]}>{w.numero}</Text>
-              <Text style={[s.td, { width: COL_PUESTO }]}>{t(w.puesto)}</Text>
-              <Text style={[s.td, { width: COL_NOMBRE, fontFamily: 'Helvetica-Bold' }]}>{w.nombre}</Text>
-              <Text style={[s.td, { width: COL_DIR }]}>{t(w.direccion)}</Text>
-              <Text style={[s.td, { width: COL_TCASA }]}>{t(w.telefono_casa)}</Text>
-              <Text style={[s.td, { width: COL_CEL }]}>{t(w.celular)}</Text>
-              <Text style={[s.tdC, { width: COL_FNAC }]}>{fmtFecha(w.fecha_nacimiento)}</Text>
-              <Text style={[s.td, { width: COL_EM_NOM }]}>{t(w.emergencia_nombre)}</Text>
-              <Text style={[s.td, { width: COL_EM_PAR }]}>{t(w.emergencia_parentesco)}</Text>
-              <Text style={[s.td, { width: COL_EM_TEL }]}>{t(w.emergencia_telefono)}</Text>
-              {documentos.map((d) => (
-                <Text key={d.id} style={[s.tdC, { width: COL_ITEM }]}>
-                  {w.checklist[d.id] ? 'Si' : ''}
-                </Text>
-              ))}
-              {capacitaciones.map((c) => (
-                <Text key={c.id} style={[s.tdC, { width: COL_ITEM }]}>
-                  {w.checklist[c.id] ? 'Si' : ''}
-                </Text>
-              ))}
-              <Text style={[s.td, { width: COL_OBS, borderRight: 'none' }]}>{t(w.observaciones)}</Text>
-            </View>
-          ))}
+          {/* Filas de datos */}
+          {trabajadores.map((w, idx) => {
+            const bg = idx % 2 === 1 ? ROW_ALT : PC.white
+            return (
+              <View key={idx} style={{ flexDirection: 'row', backgroundColor: bg }}>
+                <View style={[tdStyle, { width: COL_NO, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }]}>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue, textAlign: 'center' }}>{w.numero}</Text>
+                </View>
+                <View style={[tdStyle, { width: COL_PUESTO, backgroundColor: bg, justifyContent: 'center' }]}>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.puesto)}</Text>
+                </View>
+                <View style={[tdStyle, { width: COL_NOMBRE, backgroundColor: bg, justifyContent: 'center' }]}>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue, fontFamily: 'Helvetica-Bold' }}>{w.nombre}</Text>
+                </View>
+                <View style={[tdStyle, { width: COL_DIR, backgroundColor: bg, justifyContent: 'center' }]}>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.direccion)}</Text>
+                </View>
+                <View style={[tdStyle, { width: COL_TCASA, backgroundColor: bg, justifyContent: 'center' }]}>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.telefono_casa)}</Text>
+                </View>
+                <View style={[tdStyle, { width: COL_CEL, backgroundColor: bg, justifyContent: 'center' }]}>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.celular)}</Text>
+                </View>
+                <View style={[tdStyle, { width: COL_FNAC, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }]}>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue, textAlign: 'center' }}>{fmtFecha(w.fecha_nacimiento)}</Text>
+                </View>
+                <View style={[tdStyle, { width: COL_EM_NOM, backgroundColor: bg, justifyContent: 'center' }]}>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.emergencia_nombre)}</Text>
+                </View>
+                <View style={[tdStyle, { width: COL_EM_PAR, backgroundColor: bg, justifyContent: 'center' }]}>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.emergencia_parentesco)}</Text>
+                </View>
+                <View style={[tdStyle, { width: COL_EM_TEL, backgroundColor: bg, justifyContent: 'center' }]}>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.emergencia_telefono)}</Text>
+                </View>
+                {documentos.map((d) => (
+                  <View key={d.id} style={[tdStyle, { width: COL_ITEM, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }]}>
+                    <Text style={{ fontSize: 6, color: PC.fieldValue, textAlign: 'center' }}>
+                      {w.checklist[d.id] ? 'Si' : ''}
+                    </Text>
+                  </View>
+                ))}
+                {capacitaciones.map((c) => (
+                  <View key={c.id} style={[tdStyle, { width: COL_ITEM, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }]}>
+                    <Text style={{ fontSize: 6, color: PC.fieldValue, textAlign: 'center' }}>
+                      {w.checklist[c.id] ? 'Si' : ''}
+                    </Text>
+                  </View>
+                ))}
+                <View style={[tdStyle, { width: COL_OBS, backgroundColor: bg, justifyContent: 'center', borderRightWidth: 0 }]}>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.observaciones)}</Text>
+                </View>
+              </View>
+            )
+          })}
         </View>
 
-        {/* ── Leyenda ── */}
-        {(nDocs > 0 || nCaps > 0) && (
-          <View style={s.legend}>
-            {documentos.map((d, i) => (
-              <Text key={d.id} style={s.legendItem}>{`D${i + 1}: ${d.nombre}`}</Text>
-            ))}
-            {capacitaciones.map((c, i) => (
-              <Text key={c.id} style={s.legendItem}>{`C${i + 1}: ${c.nombre}`}</Text>
-            ))}
-          </View>
+        {/* Leyenda D1..Dn + C1..Cn */}
+        {legendEntradas.length > 0 && (
+          <PdfLegend entradas={legendEntradas} />
         )}
 
-        {/* ── Firmas ── */}
-        <View style={s.footer}>
-          <View style={s.firma}>
-            <Text>Responsable de Recursos Humanos</Text>
-          </View>
-          <View style={s.firma}>
-            <Text>Jefe de la instalacion</Text>
-          </View>
-          <Text style={s.marca}>M.A.D.Y · Inocuidad Inteligente</Text>
-        </View>
-
+        <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
+        <PdfSignatures
+          signatures={[
+            { label: '', nombre: '', caption: 'Responsable de Recursos Humanos' },
+            { label: '', nombre: '', caption: 'Jefe de la instalacion' },
+          ]}
+        />
       </Page>
     </Document>
   )

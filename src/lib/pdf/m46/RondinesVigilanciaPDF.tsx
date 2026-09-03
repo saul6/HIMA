@@ -1,5 +1,17 @@
-﻿import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+// PATRÓN INOCUIDAD — PDF M46 (plantilla homogénea M.A.D.Y)
+// Bitácora de Rondines de Vigilancia — A4 portrait.
+// TopBar + PdfHeader + PdfSectionBanner + tabla rondas por área + PdfFooter.
+
+import { Document, Page, View, Text } from '@react-pdf/renderer'
+import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
+import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
+import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
+import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
+import { PC } from '@/lib/pdf/components/tokens'
+
+// ── Tipos ─────────────────────────────────────────────────────────────────────
 
 export interface M46ItemPDF {
   id: string
@@ -29,39 +41,16 @@ interface Props {
   rondas: M46RondaPDF[]
   resultados: M46ResultadoPDF[]
   codigoClave: string
+  terminoSitio?: string
 }
 
-const COL_PUNTO = 220
-const COL_RONDA = 78
+// ── Constantes ────────────────────────────────────────────────────────────────
 
-const s = StyleSheet.create({
-  page: { fontFamily: 'Helvetica', fontSize: 8, padding: 30, color: '#222' },
-  titulo: { fontSize: 11, fontFamily: 'Helvetica-Bold', textAlign: 'center', marginBottom: 2 },
-  codigo: { fontSize: 7.5, textAlign: 'center', marginBottom: 8, color: '#555' },
-  infoRow: { flexDirection: 'row', gap: 8, marginBottom: 5 },
-  infoBlock: { flex: 1 },
-  label: { fontFamily: 'Helvetica-Bold', fontSize: 7, color: '#666' },
-  value: { fontSize: 8, marginTop: 1 },
-  table: { border: '0.5 solid #bbb', marginTop: 10 },
-  thead: { flexDirection: 'row', backgroundColor: '#dce8f5' },
-  th: {
-    fontFamily: 'Helvetica-Bold', fontSize: 7, padding: 4,
-    borderRight: '0.5 solid #bbb', borderBottom: '0.5 solid #bbb',
-  },
-  areaHeader: {
-    flexDirection: 'row', backgroundColor: '#f0f0f0',
-    borderBottom: '0.5 solid #ddd',
-  },
-  areaLabel: { fontFamily: 'Helvetica-Bold', fontSize: 7, padding: '3 4', flex: 1 },
-  tr: { flexDirection: 'row', borderBottom: '0.5 solid #eee' },
-  trAlt: { backgroundColor: '#fafafa' },
-  td: { fontSize: 7, padding: 4, borderRight: '0.5 solid #eee' },
-  tdNovedad: { fontSize: 7, padding: 4, borderRight: '0.5 solid #eee', color: '#c02a2a', fontFamily: 'Helvetica-Bold' },
-  obs: { marginTop: 10 },
-  firmasRow: { flexDirection: 'row', gap: 20, marginTop: 24 },
-  firma: { flex: 1, borderTop: '0.5 solid #555', paddingTop: 5, fontSize: 7, color: '#555' },
-  footer: { marginTop: 14, fontSize: 7, textAlign: 'center', color: '#aaa' },
-})
+const COL_PUNTO = 220
+const ROW_ALT   = '#F5F9FE'
+const NOVEDAD_COLOR = '#C02A2A'
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function fmtFecha(f: string): string {
   try {
@@ -70,11 +59,19 @@ function fmtFecha(f: string): string {
   } catch { return f }
 }
 
+// ── Estilos de celda inline ───────────────────────────────────────────────────
+
+const thStyle = { padding: 3, borderRightWidth: 1, borderRightColor: '#5599CC', borderBottomWidth: 1, borderBottomColor: '#5599CC', justifyContent: 'center', alignItems: 'center' } as const
+const tdStyle = { borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, padding: 3 } as const
+
+// ── RondinesVigilanciaPDF ─────────────────────────────────────────────────────
+
 export function RondinesVigilanciaPDF({
   rancho, fecha, turno, vigilante, jefe_seguridad, observaciones,
-  items, rondas, resultados, codigoClave,
+  items, rondas, resultados, codigoClave, terminoSitio = 'Instalación',
 }: Props) {
-  const codigo = codigoFormato('F-FRUS-ADM-07', codigoClave)
+  const emision   = new Date().toLocaleDateString('es-MX')
+  const codigoFmt = codigoFormato('F-FRUS-ADM-07', codigoClave)
 
   const areas = Array.from(new Set(items.map((i) => i.area)))
 
@@ -90,47 +87,63 @@ export function RondinesVigilanciaPDF({
 
   const RONDAS = [1, 2, 3, 4]
 
+  // Ancho por ronda: espacio disponible menos col punto, dividido entre rondas
+  const PAGE_W_P = 595.28 - 40 // A4 portrait con padding 20 c/lado
+  const COL_RONDA = Math.floor((PAGE_W_P - COL_PUNTO) / RONDAS.length)
+
   return (
-    <Document>
-      <Page size="A4" style={s.page}>
-        <Text style={s.titulo}>Bitacora de Rondines de Vigilancia</Text>
-        <Text style={s.codigo}>{codigo}  |  M.A.D.Y · Inocuidad Inteligente</Text>
+    <Document
+      title={`Rondines de Vigilancia — ${rancho} ${fmtFecha(fecha)}`}
+      author="M.A.D.Y."
+      creator="M.A.D.Y. Inocuidad Inteligente"
+      producer="M.A.D.Y. Inocuidad Inteligente"
+    >
+      <Page
+        size="A4"
+        style={{ fontFamily: 'Helvetica', fontSize: 7, padding: 20, paddingBottom: 50, backgroundColor: PC.white }}
+      >
+        <PdfFooter moduloCodigo="M46" />
+        <TopBar />
 
-        <View style={s.infoRow}>
-          <View style={s.infoBlock}>
-            <Text style={s.label}>Instalacion:</Text>
-            <Text style={s.value}>{rancho}</Text>
-          </View>
-          <View style={s.infoBlock}>
-            <Text style={s.label}>Fecha:</Text>
-            <Text style={s.value}>{fmtFecha(fecha)}</Text>
-          </View>
-          <View style={s.infoBlock}>
-            <Text style={s.label}>Turno:</Text>
-            <Text style={s.value}>{turno ?? '—'}</Text>
-          </View>
-        </View>
-        <View style={s.infoRow}>
-          <View style={s.infoBlock}>
-            <Text style={s.label}>Vigilante:</Text>
-            <Text style={s.value}>{vigilante}</Text>
-          </View>
-          <View style={s.infoBlock}>
-            <Text style={s.label}>Jefe de Seguridad:</Text>
-            <Text style={s.value}>{jefe_seguridad ?? '—'}</Text>
-          </View>
-          <View style={s.infoBlock} />
-        </View>
+        <PdfHeader
+          titulo="BITACORA DE RONDINES DE VIGILANCIA"
+          subtitulo={`Rondines | ${rancho} | ${fmtFecha(fecha)}`}
+          codigoFormato={codigoFmt}
+          folio={fmtFecha(fecha)}
+          fecha={emision}
+        />
 
-        {/* Tabla */}
-        <View style={s.table}>
+        <PdfSectionBanner>1. Datos del sitio</PdfSectionBanner>
+        <PdfFieldGrid>
+          <PdfFieldRow>
+            <PdfField label={terminoSitio} value={rancho} />
+            <PdfField label="Fecha" value={fmtFecha(fecha)} />
+            <PdfField label="Turno" value={turno ?? '—'} />
+          </PdfFieldRow>
+          <PdfFieldRow>
+            <PdfField label="Vigilante" value={vigilante} />
+            <PdfField label="Jefe de Seguridad" value={jefe_seguridad ?? '—'} />
+            <PdfField label="" value="" />
+          </PdfFieldRow>
+        </PdfFieldGrid>
+
+        <PdfSectionBanner>2. Rondines de vigilancia</PdfSectionBanner>
+
+        {/* Tabla de rondines */}
+        <View style={{ borderLeftWidth: 1, borderLeftColor: PC.border, borderTopWidth: 1, borderTopColor: PC.border, marginTop: 4 }}>
           {/* Encabezado */}
-          <View style={s.thead}>
-            <Text style={[s.th, { width: COL_PUNTO }]}>Area / Punto de supervision</Text>
-            {RONDAS.map((n) => (
-              <Text key={n} style={[s.th, { width: COL_RONDA, textAlign: 'center' }]}>
-                {`Ronda ${n}\n${horaMap[n] ?? '—'}`}
+          <View style={{ flexDirection: 'row' }}>
+            <View style={[thStyle, { width: COL_PUNTO, backgroundColor: PC.section }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, textAlign: 'center', color: PC.white }}>
+                Area / Punto de supervision
               </Text>
+            </View>
+            {RONDAS.map((n) => (
+              <View key={n} style={[thStyle, { width: COL_RONDA, backgroundColor: PC.section }]}>
+                <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, textAlign: 'center', color: PC.white }}>
+                  {`Ronda ${n}\n${horaMap[n] ?? '—'}`}
+                </Text>
+              </View>
             ))}
           </View>
 
@@ -139,48 +152,53 @@ export function RondinesVigilanciaPDF({
             const areaItems = items.filter((i) => i.area === area)
             return (
               <View key={area}>
-                <View style={s.areaHeader}>
-                  <Text style={s.areaLabel}>{area}</Text>
-                </View>
-                {areaItems.map((item, idx) => (
-                  <View key={item.id} style={[s.tr, idx % 2 === 1 ? s.trAlt : {}]}>
-                    <Text style={[s.td, { width: COL_PUNTO }]}>{item.nombre}</Text>
-                    {RONDAS.map((n) => {
-                      const val = resMap[`${item.id}|${n}`] ?? 'sin_novedad'
-                      const esNovedad = val === 'con_novedad'
-                      return (
-                        <Text
-                          key={n}
-                          style={[esNovedad ? s.tdNovedad : s.td, { width: COL_RONDA, textAlign: 'center' }]}
-                        >
-                          {esNovedad ? 'Con novedad' : 'Sin novedad'}
-                        </Text>
-                      )
-                    })}
+                {/* Banda de área */}
+                <View style={{ flexDirection: 'row', backgroundColor: PC.section }}>
+                  <View style={{ width: COL_PUNTO + COL_RONDA * RONDAS.length, padding: 3, borderBottomWidth: 1, borderBottomColor: '#5599CC' }}>
+                    <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.white }}>{area}</Text>
                   </View>
-                ))}
+                </View>
+                {/* Ítems del área */}
+                {areaItems.map((item, idx) => {
+                  const bg = idx % 2 === 1 ? ROW_ALT : PC.white
+                  return (
+                    <View key={item.id} style={{ flexDirection: 'row', backgroundColor: bg }}>
+                      <View style={[tdStyle, { width: COL_PUNTO, justifyContent: 'center', backgroundColor: bg }]}>
+                        <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{item.nombre}</Text>
+                      </View>
+                      {RONDAS.map((n) => {
+                        const val = resMap[`${item.id}|${n}`] ?? 'sin_novedad'
+                        const esNovedad = val === 'con_novedad'
+                        return (
+                          <View key={n} style={[tdStyle, { width: COL_RONDA, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }]}>
+                            <Text style={{ fontSize: 6.5, textAlign: 'center', color: esNovedad ? NOVEDAD_COLOR : PC.fieldValue }}>
+                              {esNovedad ? 'Con novedad' : 'Sin novedad'}
+                            </Text>
+                          </View>
+                        )
+                      })}
+                    </View>
+                  )
+                })}
               </View>
             )
           })}
         </View>
 
-        {observaciones && (
-          <View style={s.obs}>
-            <Text style={[s.label, { marginBottom: 2 }]}>Observaciones:</Text>
-            <Text style={s.value}>{observaciones}</Text>
+        {observaciones ? (
+          <View style={{ borderWidth: 1, borderColor: PC.border, padding: 4, marginTop: 6, minHeight: 20 }}>
+            <Text style={{ fontSize: 5.5, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>OBSERVACIONES</Text>
+            <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{observaciones}</Text>
           </View>
-        )}
+        ) : null}
 
-        <View style={s.firmasRow}>
-          <View style={s.firma}>
-            <Text>Firma del vigilante</Text>
-          </View>
-          <View style={s.firma}>
-            <Text>Jefe de Seguridad</Text>
-          </View>
-        </View>
-
-        <Text style={s.footer}>M.A.D.Y · Inocuidad Inteligente</Text>
+        <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
+        <PdfSignatures
+          signatures={[
+            { label: '', nombre: '', caption: 'Firma del vigilante' },
+            { label: '', nombre: '', caption: 'Jefe de Seguridad' },
+          ]}
+        />
       </Page>
     </Document>
   )

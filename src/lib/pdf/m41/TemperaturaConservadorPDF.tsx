@@ -1,5 +1,11 @@
-﻿import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { Document, Page, View, Text } from '@react-pdf/renderer'
+import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
+import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
+import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
+import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
+import { PC } from '@/lib/pdf/components/tokens'
 
 export interface M41LecturaPDF {
   hora: number
@@ -16,6 +22,8 @@ export interface M41RegistroDataPDF {
   lecturas: M41LecturaPDF[]
 }
 
+const MARGIN = 14
+
 function fmtFecha(iso: string): string {
   try {
     const [y, m, d] = iso.split('-')
@@ -25,110 +33,114 @@ function fmtFecha(iso: string): string {
 
 const t = (v: number | null | undefined): string => v != null ? String(v) : ''
 
-const s = StyleSheet.create({
-  page:     { fontFamily: 'Helvetica', fontSize: 7.5, padding: 20, backgroundColor: '#ffffff' },
-  hdr:      { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6, alignItems: 'flex-start' },
-  title:    { fontSize: 11, fontFamily: 'Helvetica-Bold', marginBottom: 1 },
-  codigo:   { fontSize: 7, color: '#666666', marginBottom: 2 },
-  meta:     { fontSize: 7.5, color: '#333333', marginBottom: 1 },
-  secTitle: { fontSize: 7.5, fontFamily: 'Helvetica-Bold', marginBottom: 2, color: '#333333' },
-  instr:    { fontSize: 7, color: '#555555', fontStyle: 'italic', marginBottom: 6 },
-  table:    { borderTop: '1pt solid #cccccc', borderLeft: '1pt solid #cccccc', marginBottom: 8 },
-  row:      { flexDirection: 'row', borderBottom: '1pt solid #cccccc' },
-  lbl:      { fontFamily: 'Helvetica-Bold', padding: 3, borderRight: '1pt solid #cccccc', backgroundColor: '#f3f3f3', fontSize: 6.5, width: 42 },
-  th:       { fontFamily: 'Helvetica-Bold', padding: 2, borderRight: '1pt solid #cccccc', backgroundColor: '#f3f3f3', fontSize: 6, flex: 1, textAlign: 'center' },
-  td:       { padding: 3, borderRight: '1pt solid #cccccc', fontSize: 7, flex: 1, textAlign: 'center' },
-  rango:    { flexDirection: 'row', gap: 16, marginBottom: 8 },
-  rangoBox: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  rangoLbl: { fontSize: 7, color: '#555555' },
-  rangoVal: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#222222' },
-  footer:   { marginTop: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  firma:    { width: 200, borderTop: '1pt solid #000000', paddingTop: 3, fontSize: 6.5, textAlign: 'center' },
-  marca:    { fontSize: 6.5, color: '#aaaaaa' },
-})
+const thStyle = {
+  padding: 3,
+  borderRightWidth: 1,
+  borderRightColor: '#5599CC',
+  borderBottomWidth: 1,
+  borderBottomColor: '#5599CC',
+  justifyContent: 'center',
+  alignItems: 'center',
+} as const
+
+const tdStyle = {
+  borderRightWidth: 1,
+  borderRightColor: PC.border,
+  borderBottomWidth: 1,
+  borderBottomColor: PC.border,
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: 1,
+} as const
 
 const HORAS = Array.from({ length: 24 }, (_, i) => i + 1)
+const LABEL_W = 48
 
-export function TemperaturaConservadorPDF({ d, codigoClave }: { d: M41RegistroDataPDF; codigoClave: string }) {
+export function TemperaturaConservadorPDF({ d, codigoClave, terminoSitio = 'Instalación' }: { d: M41RegistroDataPDF; codigoClave: string; terminoSitio?: string }) {
   const lecturaPorHora: Record<number, number | null> = {}
   for (const l of d.lecturas) lecturaPorHora[l.hora] = l.temperatura
 
   const rangoMin = d.temp_min != null ? `${d.temp_min} C` : '—'
   const rangoMax = d.temp_max != null ? `${d.temp_max} C` : '—'
+  const codigoFmt = codigoFormato('F-FRUS-PRO-05', codigoClave)
+  const fechaLabel = fmtFecha(d.fecha)
 
   return (
     <Document>
-      <Page size="A4" orientation="landscape" style={s.page}>
+      <Page
+        size="A4"
+        orientation="landscape"
+        style={{ fontFamily: 'Helvetica', fontSize: 7, paddingHorizontal: MARGIN, paddingTop: MARGIN, paddingBottom: 50, backgroundColor: PC.white }}
+      >
+        <PdfFooter moduloCodigo="M41" />
+        <TopBar />
+        <PdfHeader
+          titulo="REGISTRO DE TEMPERATURAS DEL CONSERVADOR"
+          subtitulo={`Temperaturas | ${d.instalacion} | ${fechaLabel}`}
+          codigoFormato={codigoFmt}
+          folio={fechaLabel}
+          fecha={fechaLabel}
+        />
 
-        {/* Encabezado */}
-        <View style={s.hdr}>
-          <View style={{ flex: 1 }}>
-            <Text style={s.title}>Registro de Temperaturas del Conservador</Text>
-            <Text style={s.codigo}>{codigoFormato('F-FRUS-PRO-05', codigoClave)}</Text>
-            <Text style={s.meta}>{d.orgNombre}</Text>
-            <Text style={s.meta}>Instalacion: {d.instalacion}</Text>
-          </View>
-          <View style={{ alignItems: 'flex-end' }}>
-            <Text style={[s.meta, { fontFamily: 'Helvetica-Bold' }]}>Fecha: {fmtFecha(d.fecha)}</Text>
-            <Text style={[s.meta, { fontSize: 6.5, color: '#888888', marginTop: 2 }]}>M.A.D.Y</Text>
-          </View>
-        </View>
+        <PdfSectionBanner>1. Datos del sitio</PdfSectionBanner>
+        <PdfFieldGrid>
+          <PdfFieldRow>
+            <PdfField label={terminoSitio} value={d.instalacion} />
+            <PdfField label="Fecha" value={fechaLabel} />
+            <PdfField label="Temp. minima" value={rangoMin} />
+            <PdfField label="Temp. maxima" value={rangoMax} />
+          </PdfFieldRow>
+        </PdfFieldGrid>
 
-        {/* Instruccion */}
-        <Text style={s.instr}>
-          Instruccion: revisar temperatura al iniciar turno y cada 2 horas durante la jornada.
+        <PdfSectionBanner>2. Lecturas de temperatura</PdfSectionBanner>
+
+        <Text style={{ fontSize: 6.5, color: PC.textSub, marginTop: 4, marginBottom: 4, fontStyle: 'italic' }}>
+          Instruccion: revisar temperatura al iniciar turno y cada 2 horas.
         </Text>
 
-        {/* Rango objetivo */}
-        <View style={s.rango}>
-          <View style={s.rangoBox}>
-            <Text style={s.rangoLbl}>Temperatura minima objetivo:</Text>
-            <Text style={s.rangoVal}>{rangoMin}</Text>
-          </View>
-          <View style={s.rangoBox}>
-            <Text style={s.rangoLbl}>Temperatura maxima objetivo:</Text>
-            <Text style={s.rangoVal}>{rangoMax}</Text>
-          </View>
-        </View>
-
         {/* Tabla 24 horas */}
-        <Text style={s.secTitle}>Lecturas de temperatura por hora</Text>
-        <View style={s.table}>
+        <View style={{ borderWidth: 1, borderColor: PC.border }}>
           {/* Header row: horas */}
-          <View style={s.row}>
-            <Text style={s.lbl}>Hora</Text>
+          <View style={{ flexDirection: 'row', backgroundColor: PC.section }}>
+            <View style={[thStyle, { width: LABEL_W, backgroundColor: PC.section, alignItems: 'flex-start' }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.white }}>Hora</Text>
+            </View>
             {HORAS.map(h => (
-              <Text key={h} style={s.th}>{String(h).padStart(2, '0')}:00</Text>
+              <View key={h} style={[thStyle, { flex: 1, backgroundColor: PC.section }]}>
+                <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>
+                  {String(h).padStart(2, '0')}:00
+                </Text>
+              </View>
             ))}
           </View>
+
           {/* Data row: temperaturas */}
-          <View style={s.row}>
-            <Text style={s.lbl}>Temp (C)</Text>
+          <View style={{ flexDirection: 'row', backgroundColor: PC.white }}>
+            <View style={[tdStyle, { width: LABEL_W, alignItems: 'flex-start', padding: 3, borderBottomWidth: 0 }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.fieldValue }}>Temp. (C)</Text>
+            </View>
             {HORAS.map(h => (
-              <Text key={h} style={s.td}>{t(lecturaPorHora[h])}</Text>
+              <View key={h} style={[tdStyle, { flex: 1, borderBottomWidth: 0 }]}>
+                <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{t(lecturaPorHora[h])}</Text>
+              </View>
             ))}
           </View>
         </View>
 
         {/* Observaciones */}
         {d.observaciones ? (
-          <View style={{ marginBottom: 8 }}>
-            <Text style={s.secTitle}>Observaciones</Text>
-            <Text style={{ fontSize: 7.5, color: '#333333' }}>{d.observaciones}</Text>
+          <View style={{ marginTop: 10, borderWidth: 1, borderColor: PC.border, padding: 6 }}>
+            <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.fieldValue, marginBottom: 3 }}>Observaciones</Text>
+            <Text style={{ fontSize: 7, color: PC.fieldValue }}>{d.observaciones}</Text>
           </View>
         ) : null}
 
-        {/* Firmas */}
-        <View style={s.footer}>
-          <View style={s.firma}>
-            <Text>Responsable de la instalacion</Text>
-          </View>
-          <View style={s.firma}>
-            <Text>Responsable de la empresa</Text>
-          </View>
-          <Text style={s.marca}>M.A.D.Y · Inocuidad Inteligente</Text>
-        </View>
-
+        <PdfSignatures
+          signatures={[
+            { label: '', nombre: '', caption: 'Responsable de la instalacion' },
+            { label: '', nombre: '', caption: 'Responsable de la empresa' },
+          ]}
+        />
       </Page>
     </Document>
   )

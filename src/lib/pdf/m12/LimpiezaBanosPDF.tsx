@@ -1,10 +1,15 @@
-﻿// PATRÓN INOCUIDAD — PDF M12
+// PATRÓN INOCUIDAD — PDF M12 (plantilla homogénea M.A.D.Y)
 // LimpiezaBanosPagina: una página A4 portrait por jornada (reutilizable).
 // LimpiezaBanosPDF:    documento individual (1 jornada).
 // LimpiezaBanosConsolidadoPDF: documento multi-página, uno por jornada.
 
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
-import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { Document, Page, View, Text } from '@react-pdf/renderer'
+import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
+import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
+import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
+import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+import { PC } from '@/lib/pdf/components/tokens'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -23,6 +28,7 @@ export interface LimpiezaBanosPaginaProps {
   ranchoCodigo: string
   fecha: string       // "2026-06-15" ISO
   banos: LimpiezaBanoPDFRow[]
+  terminoSitio?: string
 }
 
 export interface LimpiezaBanosConsolidadoPDFProps {
@@ -32,164 +38,16 @@ export interface LimpiezaBanosConsolidadoPDFProps {
   hasta: string
 }
 
-// ── Paleta ────────────────────────────────────────────────────────────────────
+// ── Constantes de celda ───────────────────────────────────────────────────────
 
-const PRIMARY  = '#2B7AB5'
-const DARK     = '#1A1A1A'
-const BORDER   = '#CCCCCC'
-const WHITE    = '#FFFFFF'
-const MUTED    = '#555555'
-const ROW_ALT  = '#F5F9FE'
-const SI_BG    = '#E3F2FD'
-const SI_TEXT  = '#0D5A8F'
-const NO_BG    = '#FAECE7'
-const NO_TEXT  = '#993C1D'
+const ROW_ALT = '#F5F9FE'
+const SI_BG   = '#E3F2FD'
+const SI_TEXT = '#0D5A8F'
+const NO_BG   = '#FAECE7'
+const NO_TEXT = '#993C1D'
 
-// ── Estilos ───────────────────────────────────────────────────────────────────
-
-const s = StyleSheet.create({
-  page: {
-    fontFamily: 'Helvetica',
-    fontSize: 9,
-    color: DARK,
-    paddingTop: 50,
-    paddingBottom: 50,
-    paddingLeft: 40,
-    paddingRight: 40,
-  },
-
-  // Header
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: PRIMARY,
-    paddingBottom: 8,
-  },
-  headerLogo:    { fontSize: 11, fontFamily: 'Helvetica-Bold', color: PRIMARY },
-  headerLogoSub: { fontSize: 7, color: MUTED, marginTop: 2 },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 9,
-    fontFamily: 'Helvetica-Bold',
-    color: DARK,
-  },
-  headerTitleSub: { textAlign: 'center', fontSize: 7, color: MUTED, marginTop: 2 },
-  headerMeta: { fontSize: 7, textAlign: 'right', color: MUTED },
-
-  // Section bar
-  sectionTitle: {
-    backgroundColor: PRIMARY,
-    color: WHITE,
-    fontFamily: 'Helvetica-Bold',
-    fontSize: 8,
-    paddingTop: 4,
-    paddingBottom: 4,
-    paddingLeft: 8,
-    marginTop: 12,
-  },
-
-  // Info table
-  infoTable: {
-    borderLeftWidth: 1,
-    borderLeftColor: BORDER,
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-    marginBottom: 4,
-  },
-  infoRow: { flexDirection: 'row' },
-  infoCell: {
-    flex: 1,
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    paddingTop: 5,
-    paddingBottom: 5,
-    paddingLeft: 8,
-    paddingRight: 8,
-  },
-  infoCellLabel: { fontSize: 6, color: MUTED, marginBottom: 2, fontFamily: 'Helvetica-Bold' },
-  infoCellValue: { fontSize: 9, color: DARK },
-
-  // Baños table
-  tbl: {
-    borderLeftWidth: 1,
-    borderLeftColor: BORDER,
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-    marginBottom: 4,
-  },
-  hdrRow: { flexDirection: 'row', backgroundColor: PRIMARY },
-  dataRow: { flexDirection: 'row' },
-  dataRowAlt: { flexDirection: 'row', backgroundColor: ROW_ALT },
-  hdrCell: {
-    color: WHITE,
-    fontFamily: 'Helvetica-Bold',
-    fontSize: 7,
-    paddingTop: 5,
-    paddingBottom: 5,
-    paddingLeft: 5,
-    paddingRight: 5,
-    borderRightWidth: 1,
-    borderRightColor: '#5599CC',
-    borderBottomWidth: 1,
-    borderBottomColor: '#5599CC',
-    textAlign: 'center',
-  },
-  cell: {
-    fontSize: 8,
-    paddingTop: 5,
-    paddingBottom: 5,
-    paddingLeft: 5,
-    paddingRight: 5,
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-  },
-  cellCenter: {
-    fontSize: 8,
-    paddingTop: 5,
-    paddingBottom: 5,
-    paddingLeft: 4,
-    paddingRight: 4,
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    textAlign: 'center',
-    fontFamily: 'Helvetica-Bold',
-  },
-
-  // Firma
-  firmaSection: { marginTop: 32 },
-  firmaRow: { flexDirection: 'row', gap: 32 },
-  firmaBox: { flex: 1 },
-  firmaLinea: {
-    borderTopWidth: 1,
-    borderTopColor: DARK,
-    paddingTop: 4,
-    marginTop: 32,
-  },
-  firmaLabel: { fontSize: 7, color: MUTED },
-
-  // Footer fijo
-  footer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 40,
-    right: 40,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-    paddingTop: 4,
-  },
-  footerText: { fontSize: 6, color: '#888888' },
-})
+const thStyle = { padding: 3, borderRightWidth: 1, borderRightColor: '#5599CC', borderBottomWidth: 1, borderBottomColor: '#5599CC', justifyContent: 'center', alignItems: 'center' } as const
+const tdStyle = { borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, justifyContent: 'center', alignItems: 'center', padding: 2 } as const
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -206,150 +64,103 @@ function siNo(val: boolean): string { return val ? 'Si' : 'No' }
 // ── Componente de página ──────────────────────────────────────────────────────
 
 export function LimpiezaBanosPagina({
-  rancho, ranchoCodigo, fecha, banos,
+  rancho, ranchoCodigo, fecha, banos, terminoSitio = 'Rancho',
 }: LimpiezaBanosPaginaProps) {
   const emision = new Date().toLocaleDateString('es-MX')
 
   return (
-    <Page size="A4" style={s.page}>
+    <Page
+      size="A4"
+      style={{ fontFamily: 'Helvetica', fontSize: 9, padding: 30, paddingBottom: 50, backgroundColor: PC.white }}
+    >
+      <PdfFooter moduloCodigo="M12" />
+      <TopBar />
 
-      {/* Footer fijo */}
-      <View fixed style={s.footer}>
-        <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
-        <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} de ${totalPages}`} />
-      </View>
+      <PdfHeader
+        titulo="LIMPIEZA Y DESINFECCION DE BANOS"
+        subtitulo={`Registro de limpieza | ${rancho}`}
+        codigoFormato="M.A.D.Y-F-SC-SIG-041.14"
+        folio={formatFechaPDF(fecha)}
+        fecha={emision}
+      />
 
-      {/* Header */}
-      <View style={s.header}>
-        <View style={{ flex: 2 }}>
-          <MadyLogoPDF style={s.headerLogo} />
-          <Text style={s.headerLogoSub}>Inocuidad Alimentaria</Text>
-        </View>
-        <View style={{ flex: 6 }}>
-          <Text style={s.headerTitle}>LIMPIEZA Y DESINFECCION DE BANOS</Text>
-          <Text style={s.headerTitleSub}>Clave: MXA-F-SC-SIG-041.14 · FORMATOS MANUAL DEL SAIA Y BPA's</Text>
-        </View>
-        <View style={{ flex: 2, alignItems: 'flex-end' }}>
-          <Text style={s.headerMeta}>Emision: {emision}</Text>
-        </View>
-      </View>
+      <PdfSectionBanner>1. Datos del {terminoSitio.toLowerCase()} y jornada</PdfSectionBanner>
+      <PdfFieldGrid>
+        <PdfFieldRow>
+          <PdfField label={terminoSitio} value={rancho || '—'} />
+          <PdfField label="Código" value={ranchoCodigo || '—'} />
+          <PdfField label="Fecha" value={formatFechaPDF(fecha)} />
+          <PdfField label="Total baños" value={String(banos.length)} />
+        </PdfFieldRow>
+      </PdfFieldGrid>
 
-      {/* Sección 1 — Datos */}
-      <Text style={s.sectionTitle}>1. DATOS DEL RANCHO Y JORNADA</Text>
-      <View style={s.infoTable}>
-        <View style={s.infoRow}>
-          <View style={[s.infoCell, { flex: 3 }]}>
-            <Text style={s.infoCellLabel}>RANCHO / HUERTO</Text>
-            <Text style={s.infoCellValue}>{rancho}</Text>
-          </View>
-          <View style={s.infoCell}>
-            <Text style={s.infoCellLabel}>CODIGO</Text>
-            <Text style={s.infoCellValue}>{ranchoCodigo}</Text>
-          </View>
-          <View style={[s.infoCell, { flex: 3 }]}>
-            <Text style={s.infoCellLabel}>FECHA</Text>
-            <Text style={s.infoCellValue}>{formatFechaPDF(fecha)}</Text>
-          </View>
-          <View style={s.infoCell}>
-            <Text style={s.infoCellLabel}>TOTAL BANOS</Text>
-            <Text style={s.infoCellValue}>{banos.length}</Text>
-          </View>
-        </View>
-      </View>
+      <PdfSectionBanner>2. Registro de limpieza por baño</PdfSectionBanner>
 
-      {/* Sección 2 — Tabla de baños */}
-      <Text style={s.sectionTitle}>2. REGISTRO DE LIMPIEZA POR BANO</Text>
-      <View style={s.tbl}>
-        {/* Header */}
-        <View style={s.hdrRow}>
-          <Text style={[s.hdrCell, { width: 45 }]}>N. Bano</Text>
-          <Text style={[s.hdrCell, { flex: 2 }]}>Limpieza{'\n'}(Lavar y tallar)</Text>
-          <Text style={[s.hdrCell, { flex: 2 }]}>Desinfeccion{'\n'}(3 ml cloro/L)</Text>
-          <Text style={[s.hdrCell, { width: 55 }]}>Conc.{'\n'}(ppm)</Text>
-          <Text style={[s.hdrCell, { flex: 3 }]}>Sustancias utilizadas</Text>
-          <Text style={[s.hdrCell, { flex: 2 }]}>Abasto{'\n'}Papel</Text>
-          <Text style={[s.hdrCell, { flex: 1.5 }]}>Succion</Text>
+      {/* Tabla de baños */}
+      <View style={{ borderLeftWidth: 1, borderLeftColor: PC.border, borderTopWidth: 1, borderTopColor: PC.border, marginTop: 4, marginBottom: 8 }}>
+        {/* Encabezado */}
+        <View style={{ flexDirection: 'row' }}>
+          <View style={[thStyle, { width: 45, backgroundColor: PC.section }]}>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>N.{'°'} Bano</Text>
+          </View>
+          <View style={[thStyle, { flex: 2, backgroundColor: PC.section }]}>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>Limpieza{'\n'}(Lavar y tallar)</Text>
+          </View>
+          <View style={[thStyle, { flex: 2, backgroundColor: PC.section }]}>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>Desinfeccion{'\n'}(3 ml cloro/L)</Text>
+          </View>
+          <View style={[thStyle, { width: 55, backgroundColor: PC.section }]}>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>Conc.{'\n'}(ppm)</Text>
+          </View>
+          <View style={[thStyle, { flex: 3, backgroundColor: PC.section }]}>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>Sustancias utilizadas</Text>
+          </View>
+          <View style={[thStyle, { flex: 2, backgroundColor: PC.section }]}>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>Abasto{'\n'}Papel</Text>
+          </View>
+          <View style={[thStyle, { flex: 1.5, backgroundColor: PC.section }]}>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>Succion</Text>
+          </View>
         </View>
 
-        {/* Filas */}
-        {banos.map((b, i) => (
-          <View key={i} style={i % 2 === 0 ? s.dataRow : s.dataRowAlt}>
-            <Text style={[s.cell, { width: 45, textAlign: 'center', fontFamily: 'Helvetica-Bold' }]}>
-              {b.bano_numero}
-            </Text>
-            <Text
-              style={[
-                s.cellCenter,
-                { flex: 2 },
-                b.limpieza
-                  ? { backgroundColor: SI_BG, color: SI_TEXT }
-                  : { backgroundColor: NO_BG, color: NO_TEXT },
-              ]}
-            >
-              {siNo(b.limpieza)}
-            </Text>
-            <Text
-              style={[
-                s.cellCenter,
-                { flex: 2 },
-                b.desinfeccion
-                  ? { backgroundColor: SI_BG, color: SI_TEXT }
-                  : { backgroundColor: NO_BG, color: NO_TEXT },
-              ]}
-            >
-              {siNo(b.desinfeccion)}
-            </Text>
-            <Text style={[s.cellCenter, { width: 55, color: DARK }]}>
-              {b.concentracion_ppm}
-            </Text>
-            <Text style={[s.cell, { flex: 3, fontSize: 7 }]}>
-              {b.sustancias.join(', ')}
-            </Text>
-            <Text
-              style={[
-                s.cellCenter,
-                { flex: 2 },
-                b.abasto_papel
-                  ? { backgroundColor: SI_BG, color: SI_TEXT }
-                  : { backgroundColor: NO_BG, color: NO_TEXT },
-              ]}
-            >
-              {siNo(b.abasto_papel)}
-            </Text>
-            <Text
-              style={[
-                s.cellCenter,
-                { flex: 1.5 },
-                b.succion
-                  ? { backgroundColor: SI_BG, color: SI_TEXT }
-                  : { backgroundColor: NO_BG, color: NO_TEXT },
-              ]}
-            >
-              {siNo(b.succion)}
-            </Text>
-          </View>
-        ))}
-      </View>
-
-      {/* Sección 3 — Firmas */}
-      <Text style={[s.sectionTitle, { marginTop: 20 }]}>3. FIRMAS Y RESPONSABLES</Text>
-      <View style={s.firmaSection}>
-        <View style={s.firmaRow}>
-          <View style={s.firmaBox}>
-            <Text style={s.firmaLabel}>Realizo la limpieza</Text>
-            <View style={s.firmaLinea}>
-              <Text style={s.firmaLabel}>Firma</Text>
+        {/* Filas de datos */}
+        {banos.map((b, i) => {
+          const bg = i % 2 === 1 ? ROW_ALT : PC.white
+          return (
+            <View key={i} style={{ flexDirection: 'row', backgroundColor: bg }}>
+              <View style={[tdStyle, { width: 45, backgroundColor: bg }]}>
+                <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', textAlign: 'center', color: PC.fieldValue }}>{b.bano_numero}</Text>
+              </View>
+              <View style={[tdStyle, { flex: 2, backgroundColor: b.limpieza ? SI_BG : NO_BG }]}>
+                <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', textAlign: 'center', color: b.limpieza ? SI_TEXT : NO_TEXT }}>{siNo(b.limpieza)}</Text>
+              </View>
+              <View style={[tdStyle, { flex: 2, backgroundColor: b.desinfeccion ? SI_BG : NO_BG }]}>
+                <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', textAlign: 'center', color: b.desinfeccion ? SI_TEXT : NO_TEXT }}>{siNo(b.desinfeccion)}</Text>
+              </View>
+              <View style={[tdStyle, { width: 55, backgroundColor: bg }]}>
+                <Text style={{ fontSize: 8, textAlign: 'center', color: PC.fieldValue }}>{b.concentracion_ppm}</Text>
+              </View>
+              <View style={[tdStyle, { flex: 3, backgroundColor: bg, alignItems: 'flex-start', padding: 3 }]}>
+                <Text style={{ fontSize: 7, color: PC.fieldValue }}>{b.sustancias.length > 0 ? b.sustancias.join(', ') : '—'}</Text>
+              </View>
+              <View style={[tdStyle, { flex: 2, backgroundColor: b.abasto_papel ? SI_BG : NO_BG }]}>
+                <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', textAlign: 'center', color: b.abasto_papel ? SI_TEXT : NO_TEXT }}>{siNo(b.abasto_papel)}</Text>
+              </View>
+              <View style={[tdStyle, { flex: 1.5, backgroundColor: b.succion ? SI_BG : NO_BG }]}>
+                <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', textAlign: 'center', color: b.succion ? SI_TEXT : NO_TEXT }}>{siNo(b.succion)}</Text>
+              </View>
             </View>
-          </View>
-          <View style={s.firmaBox}>
-            <Text style={s.firmaLabel}>&nbsp;</Text>
-            <View style={s.firmaLinea}>
-              <Text style={s.firmaLabel}>Responsable de Inocuidad — Firma</Text>
-            </View>
-          </View>
-        </View>
+          )
+        })}
       </View>
 
+      <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
+      <PdfSignatures
+        signatures={[
+          { label: '', nombre: '', caption: 'Realizo la limpieza' },
+          { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
+        ]}
+      />
     </Page>
   )
 }

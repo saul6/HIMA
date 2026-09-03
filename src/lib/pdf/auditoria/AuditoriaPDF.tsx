@@ -55,7 +55,7 @@ const MODULO_CONFIG: Record<ModuloAuditoria, { titulo: string; subtitulo: string
     subtitulo: 'Buenas Prácticas de Manufactura',
   },
   m18: {
-    titulo: 'Auditoría — Módulo 6 HACCP',
+    titulo: 'Auditoría — HACCP',
     subtitulo: 'Requisitos del Sistema HACCP',
   },
 }

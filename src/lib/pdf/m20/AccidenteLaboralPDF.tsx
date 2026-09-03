@@ -1,10 +1,15 @@
-﻿// PDF M20 — Registro de Accidentes Laborales (Cuarto Frio)
-// Formato F-FRUS-CAL-15 Rev 01. A4 portrait. Helvetica.
+// PDF M20 — Registro de Accidentes Laborales (Cuarto Frio)
+// Formato F-FRUS-CAL-15 Rev 01. A4 portrait. Helvetica. Plantilla homogénea M.A.D.Y.
 // No Unicode: checklist (X) / ( ). Dos firmas en blanco.
 
-import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
-import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+import { Document, Page, View, Text, Image } from '@react-pdf/renderer'
+import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
+import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
+import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
+import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
+import { PC } from '@/lib/pdf/components/tokens'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -16,6 +21,12 @@ export const ATENCIONES_OPCIONES = [
   'Atencion medica',
   'Hospitalizacion',
 ]
+
+const SI_BG   = '#E3F2FD'
+const SI_TEXT = '#0D5A8F'
+const NO_BG   = '#FAECE7'
+const NO_TEXT = '#993C1D'
+const FOTO_COL = 2
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -35,6 +46,7 @@ export interface AccidenteLaboralPaginaProps {
   productoInvolucrado: boolean
   disposicionProducto: string | null
   dataUris: string[]              // data URIs base64, puede ser vacío
+  terminoSitio?: string
 }
 
 export interface AccidenteLaboralConsolidadoPDFProps {
@@ -43,223 +55,6 @@ export interface AccidenteLaboralConsolidadoPDFProps {
   desde: string
   hasta: string
 }
-
-// ── Paleta ────────────────────────────────────────────────────────────────────
-
-const PRIMARY  = '#2B7AB5'
-const DARK     = '#1A1A1A'
-const BORDER   = '#CCCCCC'
-const WHITE    = '#FFFFFF'
-const MUTED    = '#555555'
-const ROW_ALT  = '#F5F9FE'
-const SI_BG    = '#E3F2FD'
-const SI_TEXT  = '#0D5A8F'
-const NO_BG    = '#FAECE7'
-const NO_TEXT  = '#993C1D'
-
-const FOTO_COL = 2  // fotos por fila en la cuadricula
-
-// ── Estilos ───────────────────────────────────────────────────────────────────
-
-const s = StyleSheet.create({
-  page: {
-    fontFamily: 'Helvetica',
-    fontSize: 9,
-    color: DARK,
-    paddingTop: 50,
-    paddingBottom: 55,
-    paddingLeft: 40,
-    paddingRight: 40,
-  },
-
-  // Header
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: PRIMARY,
-    paddingBottom: 8,
-  },
-  headerLogoSub: { fontSize: 7, color: MUTED, marginTop: 2 },
-  headerCenter: { flex: 1, alignItems: 'center' },
-  headerTitle: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'center' },
-  headerSub:   { fontSize: 7, color: MUTED, textAlign: 'center', marginTop: 2 },
-  headerRight: { alignItems: 'flex-end' },
-  headerMeta:  { fontSize: 7, color: MUTED, textAlign: 'right' },
-
-  // Sección bar
-  sectionBar: {
-    backgroundColor: PRIMARY,
-    color: WHITE,
-    fontFamily: 'Helvetica-Bold',
-    fontSize: 8,
-    paddingTop: 4,
-    paddingBottom: 4,
-    paddingLeft: 8,
-    marginTop: 10,
-    marginBottom: 0,
-  },
-
-  // Info table
-  infoTable: {
-    borderLeftWidth: 1,
-    borderLeftColor: BORDER,
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-    marginBottom: 0,
-  },
-  infoRow: { flexDirection: 'row' },
-  infoCell: {
-    flex: 1,
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    paddingTop: 5,
-    paddingBottom: 5,
-    paddingLeft: 8,
-    paddingRight: 8,
-  },
-  infoCellLabel: { fontSize: 6, color: MUTED, marginBottom: 2, fontFamily: 'Helvetica-Bold' },
-  infoCellValue: { fontSize: 9, color: DARK },
-
-  // Bloque de descripcion
-  descBlock: {
-    borderLeftWidth: 1,
-    borderLeftColor: BORDER,
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    paddingTop: 6,
-    paddingBottom: 6,
-    paddingLeft: 8,
-    paddingRight: 8,
-    minHeight: 48,
-  },
-  descText: { fontSize: 9, color: DARK, lineHeight: 1.45 },
-
-  // Checklist atenciones
-  checkList: {
-    borderLeftWidth: 1,
-    borderLeftColor: BORDER,
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    paddingTop: 6,
-    paddingBottom: 6,
-    paddingLeft: 8,
-    paddingRight: 8,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 4,
-  },
-  checkItem: {
-    width: '47%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 2,
-  },
-  checkMark: { fontSize: 9, fontFamily: 'Helvetica-Bold', color: DARK, width: 14 },
-  checkLabel: { fontSize: 9, color: DARK },
-
-  // Bloque Si/No + detalle
-  boolRow: {
-    flexDirection: 'row',
-    borderLeftWidth: 1,
-    borderLeftColor: BORDER,
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-  },
-  boolChip: {
-    paddingTop: 5,
-    paddingBottom: 5,
-    paddingLeft: 10,
-    paddingRight: 10,
-    fontFamily: 'Helvetica-Bold',
-    fontSize: 9,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    width: 40,
-    textAlign: 'center',
-  },
-  boolDetail: {
-    flex: 1,
-    paddingTop: 5,
-    paddingBottom: 5,
-    paddingLeft: 8,
-    paddingRight: 8,
-    fontSize: 9,
-    color: DARK,
-    minHeight: 28,
-  },
-
-  // Fotos cuadricula
-  fotosGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    borderLeftWidth: 1,
-    borderLeftColor: BORDER,
-    borderRightWidth: 1,
-    borderRightColor: BORDER,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    paddingTop: 6,
-    paddingBottom: 6,
-    paddingLeft: 6,
-    paddingRight: 6,
-  },
-  fotoItem: {
-    width: '48%',
-    height: 120,
-  },
-  fotoImg: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'contain',
-  },
-  fotoPlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#F0F0F0',
-    borderWidth: 1,
-    borderColor: BORDER,
-  },
-
-  // Firmas — dos columnas
-  firmasSection: { marginTop: 24 },
-  firmasRow: { flexDirection: 'row', gap: 24 },
-  firmaBox: { flex: 1 },
-  firmaLinea: {
-    borderTopWidth: 1,
-    borderTopColor: DARK,
-    paddingTop: 4,
-    marginTop: 32,
-  },
-  firmaLabel: { fontSize: 7, color: MUTED },
-
-  // Footer fijo
-  footer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 40,
-    right: 40,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-    paddingTop: 3,
-  },
-  footerText: { fontSize: 6, color: '#888888' },
-})
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -299,146 +94,175 @@ export function AccidenteLaboralPagina({
   productoInvolucrado,
   disposicionProducto,
   dataUris,
+  terminoSitio = 'Instalación',
 }: AccidenteLaboralPaginaProps) {
-  const emision = new Date().toLocaleDateString('es-MX')
+  const emision   = new Date().toLocaleDateString('es-MX')
+  const codigoFmt = codigoFormato('F-FRUS-CAL-15', codigoClave)
 
   return (
-    <Page size="A4" style={s.page}>
+    <Page
+      size="A4"
+      style={{ fontFamily: 'Helvetica', fontSize: 9, padding: 30, paddingBottom: 50, backgroundColor: PC.white }}
+    >
+      <PdfFooter moduloCodigo="M20" />
+      <TopBar />
 
-      {/* Footer fijo */}
-      <View fixed style={s.footer}>
-        <Text style={s.footerText}>M.A.D.Y · Inocuidad Inteligente</Text>
-        <Text style={s.footerText} render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} de ${totalPages}`} />
+      <PdfHeader
+        titulo="REGISTRO DE ACCIDENTES LABORALES"
+        subtitulo={`Accidente laboral | ${instalacion} | ${formatFechaPDF(fecha)}`}
+        codigoFormato={codigoFmt}
+        folio={folio}
+        fecha={emision}
+      />
+
+      {/* Sección 1 — Datos generales */}
+      <PdfSectionBanner>1. Datos generales</PdfSectionBanner>
+      <PdfFieldGrid>
+        <PdfFieldRow>
+          <PdfField label={terminoSitio} value={instalacion || '—'} />
+          <PdfField label="Código" value={instalacionCodigo || '—'} />
+          <PdfField label="Fecha del accidente" value={formatFechaPDF(fecha)} />
+        </PdfFieldRow>
+        <PdfFieldRow>
+          <PdfField label="Nombre del trabajador" value={trabajadorNombre || '—'} fullWidth />
+        </PdfFieldRow>
+      </PdfFieldGrid>
+
+      {/* Sección 2 — Descripción del incidente */}
+      <PdfSectionBanner>2. Descripción del incidente</PdfSectionBanner>
+      <View style={{
+        borderLeftWidth: 1, borderLeftColor: PC.border,
+        borderRightWidth: 1, borderRightColor: PC.border,
+        borderBottomWidth: 1, borderBottomColor: PC.border,
+        padding: 6, minHeight: 48, marginBottom: 2,
+      }}>
+        <Text style={{ fontSize: 9, color: PC.fieldValue, lineHeight: 1.45 }}>
+          {descripcionIncidente || '—'}
+        </Text>
       </View>
 
-      {/* Header */}
-      <View style={s.header}>
-        <View style={{ flex: 2 }}>
-          <MadyLogoPDF style={{ fontSize: 11, fontFamily: 'Helvetica-Bold', color: PRIMARY }} />
-          <Text style={s.headerLogoSub}>Inocuidad Alimentaria</Text>
-        </View>
-        <View style={s.headerCenter}>
-          <Text style={s.headerTitle}>REGISTRO DE ACCIDENTES LABORALES</Text>
-          <Text style={s.headerSub}>{codigoFormato('F-FRUS-CAL-15', codigoClave)}  Rev. 01</Text>
-        </View>
-        <View style={{ flex: 2, alignItems: 'flex-end' }}>
-          <Text style={s.headerMeta}>Emision: {emision}</Text>
-          <Text style={s.headerMeta}>Folio: {folio}</Text>
-        </View>
-      </View>
-
-      {/* Seccion 1 — Datos generales */}
-      <Text style={s.sectionBar}>1. DATOS GENERALES</Text>
-      <View style={s.infoTable}>
-        <View style={s.infoRow}>
-          <View style={[s.infoCell, { flex: 3 }]}>
-            <Text style={s.infoCellLabel}>INSTALACION</Text>
-            <Text style={s.infoCellValue}>{instalacion}</Text>
-          </View>
-          <View style={s.infoCell}>
-            <Text style={s.infoCellLabel}>CODIGO</Text>
-            <Text style={s.infoCellValue}>{instalacionCodigo}</Text>
-          </View>
-          <View style={[s.infoCell, { flex: 3 }]}>
-            <Text style={s.infoCellLabel}>FECHA DEL ACCIDENTE</Text>
-            <Text style={s.infoCellValue}>{formatFechaPDF(fecha)}</Text>
-          </View>
-        </View>
-        <View style={s.infoRow}>
-          <View style={[s.infoCell, { flex: 1 }]}>
-            <Text style={s.infoCellLabel}>NOMBRE DEL TRABAJADOR</Text>
-            <Text style={s.infoCellValue}>{trabajadorNombre || '—'}</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Seccion 2 — Descripcion del incidente */}
-      <Text style={s.sectionBar}>2. DESCRIPCION DEL INCIDENTE</Text>
-      <View style={s.descBlock}>
-        <Text style={s.descText}>{descripcionIncidente || '—'}</Text>
-      </View>
-
-      {/* Seccion 3 — Atencion recibida */}
-      <Text style={s.sectionBar}>3. ATENCION RECIBIDA</Text>
-      <View style={s.checkList}>
+      {/* Sección 3 — Atención recibida */}
+      <PdfSectionBanner>3. Atención recibida</PdfSectionBanner>
+      <View style={{
+        borderLeftWidth: 1, borderLeftColor: PC.border,
+        borderRightWidth: 1, borderRightColor: PC.border,
+        borderBottomWidth: 1, borderBottomColor: PC.border,
+        padding: 6, flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginBottom: 2,
+      }}>
         {ATENCIONES_OPCIONES.map((op) => {
           const sel = estaSeleccionada(op, atencionRecibida)
           return (
-            <View key={op} style={s.checkItem}>
-              <Text style={s.checkMark}>{sel ? '(X)' : '( )'}</Text>
-              <Text style={s.checkLabel}>{op}</Text>
+            <View key={op} style={{ width: '47%', flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 2 }}>
+              <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.fieldValue, width: 14 }}>
+                {sel ? '(X)' : '( )'}
+              </Text>
+              <Text style={{ fontSize: 9, color: PC.fieldValue }}>{op}</Text>
             </View>
           )
         })}
       </View>
 
-      {/* Seccion 4 — Incapacidad */}
-      <Text style={s.sectionBar}>4. REQUIRIO INCAPACIDAD</Text>
-      <View style={s.boolRow}>
-        <Text
-          style={[
-            s.boolChip,
-            requirioIncapacidad
-              ? { backgroundColor: SI_BG, color: SI_TEXT }
-              : { backgroundColor: NO_BG, color: NO_TEXT },
-          ]}
-        >
-          {requirioIncapacidad ? 'Si' : 'No'}
-        </Text>
-        <Text style={s.boolDetail}>
-          {requirioIncapacidad && incapacidadMotivo ? incapacidadMotivo : ''}
-        </Text>
+      {/* Sección 4 — Requirió incapacidad */}
+      <PdfSectionBanner>4. Requirió incapacidad</PdfSectionBanner>
+      <View style={{
+        flexDirection: 'row',
+        borderLeftWidth: 1, borderLeftColor: PC.border,
+        borderRightWidth: 1, borderRightColor: PC.border,
+        borderBottomWidth: 1, borderBottomColor: PC.border,
+        marginBottom: 2,
+      }}>
+        <View style={{
+          paddingTop: 5, paddingBottom: 5, paddingLeft: 10, paddingRight: 10,
+          fontFamily: 'Helvetica-Bold', fontSize: 9,
+          justifyContent: 'center', alignItems: 'center',
+          borderRightWidth: 1, borderRightColor: PC.border,
+          width: 40, textAlign: 'center',
+          backgroundColor: requirioIncapacidad ? SI_BG : NO_BG,
+        }}>
+          <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: requirioIncapacidad ? SI_TEXT : NO_TEXT }}>
+            {requirioIncapacidad ? 'Si' : 'No'}
+          </Text>
+        </View>
+        <View style={{ flex: 1, padding: 5, minHeight: 28 }}>
+          <Text style={{ fontSize: 9, color: PC.fieldValue }}>
+            {requirioIncapacidad && incapacidadMotivo ? incapacidadMotivo : ''}
+          </Text>
+        </View>
       </View>
 
-      {/* Seccion 5 — Limpieza del area */}
-      <Text style={s.sectionBar}>5. REQUIRIO LIMPIEZA DEL AREA</Text>
-      <View style={s.boolRow}>
-        <Text
-          style={[
-            s.boolChip,
-            requirioLimpieza
-              ? { backgroundColor: SI_BG, color: SI_TEXT }
-              : { backgroundColor: NO_BG, color: NO_TEXT },
-          ]}
-        >
-          {requirioLimpieza ? 'Si' : 'No'}
-        </Text>
-        <Text style={s.boolDetail}>
-          {requirioLimpieza && limpiezaDescripcion ? limpiezaDescripcion : ''}
-        </Text>
+      {/* Sección 5 — Requirió limpieza del área */}
+      <PdfSectionBanner>5. Requirió limpieza del área</PdfSectionBanner>
+      <View style={{
+        flexDirection: 'row',
+        borderLeftWidth: 1, borderLeftColor: PC.border,
+        borderRightWidth: 1, borderRightColor: PC.border,
+        borderBottomWidth: 1, borderBottomColor: PC.border,
+        marginBottom: 2,
+      }}>
+        <View style={{
+          paddingTop: 5, paddingBottom: 5, paddingLeft: 10, paddingRight: 10,
+          justifyContent: 'center', alignItems: 'center',
+          borderRightWidth: 1, borderRightColor: PC.border,
+          width: 40, textAlign: 'center',
+          backgroundColor: requirioLimpieza ? SI_BG : NO_BG,
+        }}>
+          <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: requirioLimpieza ? SI_TEXT : NO_TEXT }}>
+            {requirioLimpieza ? 'Si' : 'No'}
+          </Text>
+        </View>
+        <View style={{ flex: 1, padding: 5, minHeight: 28 }}>
+          <Text style={{ fontSize: 9, color: PC.fieldValue }}>
+            {requirioLimpieza && limpiezaDescripcion ? limpiezaDescripcion : ''}
+          </Text>
+        </View>
       </View>
 
-      {/* Seccion 6 — Producto involucrado */}
-      <Text style={s.sectionBar}>6. PRODUCTO INVOLUCRADO</Text>
-      <View style={s.boolRow}>
-        <Text
-          style={[
-            s.boolChip,
-            productoInvolucrado
-              ? { backgroundColor: SI_BG, color: SI_TEXT }
-              : { backgroundColor: NO_BG, color: NO_TEXT },
-          ]}
-        >
-          {productoInvolucrado ? 'Si' : 'No'}
-        </Text>
-        <Text style={s.boolDetail}>
-          {productoInvolucrado && disposicionProducto
-            ? `Disposicion: ${disposicionProducto}`
-            : ''}
-        </Text>
+      {/* Sección 6 — Producto involucrado */}
+      <PdfSectionBanner>6. Producto involucrado</PdfSectionBanner>
+      <View style={{
+        flexDirection: 'row',
+        borderLeftWidth: 1, borderLeftColor: PC.border,
+        borderRightWidth: 1, borderRightColor: PC.border,
+        borderBottomWidth: 1, borderBottomColor: PC.border,
+        marginBottom: 2,
+      }}>
+        <View style={{
+          paddingTop: 5, paddingBottom: 5, paddingLeft: 10, paddingRight: 10,
+          justifyContent: 'center', alignItems: 'center',
+          borderRightWidth: 1, borderRightColor: PC.border,
+          width: 40, textAlign: 'center',
+          backgroundColor: productoInvolucrado ? SI_BG : NO_BG,
+        }}>
+          <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: productoInvolucrado ? SI_TEXT : NO_TEXT }}>
+            {productoInvolucrado ? 'Si' : 'No'}
+          </Text>
+        </View>
+        <View style={{ flex: 1, padding: 5, minHeight: 28 }}>
+          <Text style={{ fontSize: 9, color: PC.fieldValue }}>
+            {productoInvolucrado && disposicionProducto
+              ? `Disposicion: ${disposicionProducto}`
+              : ''}
+          </Text>
+        </View>
       </View>
 
-      {/* Seccion 7 — Evidencia fotografica (opcional) */}
+      {/* Sección 7 — Evidencia fotográfica (opcional) */}
       {dataUris.length > 0 && (
         <>
-          <Text style={s.sectionBar}>7. EVIDENCIA FOTOGRAFICA</Text>
-          <View style={s.fotosGrid}>
+          <PdfSectionBanner>7. Evidencia fotográfica</PdfSectionBanner>
+          <View style={{
+            flexDirection: 'row', flexWrap: 'wrap', gap: 6,
+            borderLeftWidth: 1, borderLeftColor: PC.border,
+            borderRightWidth: 1, borderRightColor: PC.border,
+            borderBottomWidth: 1, borderBottomColor: PC.border,
+            padding: 6, marginBottom: 2,
+          }}>
             {dataUris.map((uri, i) => (
-              <View key={i} style={[s.fotoItem, { width: `${Math.floor(100 / FOTO_COL) - 2}%` }]}>
+              <View key={i} style={{ width: `${Math.floor(100 / FOTO_COL) - 2}%`, height: 120 }}>
                 {uri ? (
-                  <Image src={uri} style={s.fotoImg} />
+                  <Image src={uri} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 ) : (
-                  <View style={s.fotoPlaceholder} />
+                  <View style={{ width: '100%', height: '100%', backgroundColor: '#F0F0F0', borderWidth: 1, borderColor: PC.border }} />
                 )}
               </View>
             ))}
@@ -446,24 +270,13 @@ export function AccidenteLaboralPagina({
         </>
       )}
 
-      {/* Seccion de firmas */}
-      <View style={s.firmasSection}>
-        <View style={s.firmasRow}>
-          <View style={s.firmaBox}>
-            <Text style={s.firmaLabel}>Jefe de Seguridad</Text>
-            <View style={s.firmaLinea}>
-              <Text style={s.firmaLabel}>Firma del Jefe de Seguridad</Text>
-            </View>
-          </View>
-          <View style={s.firmaBox}>
-            <Text style={s.firmaLabel}>Jefe del Cooler</Text>
-            <View style={s.firmaLinea}>
-              <Text style={s.firmaLabel}>Firma del Jefe del Cooler</Text>
-            </View>
-          </View>
-        </View>
-      </View>
-
+      {/* Firmas */}
+      <PdfSignatures
+        signatures={[
+          { label: '', nombre: '', caption: 'Firma del Jefe de Seguridad' },
+          { label: '', nombre: '', caption: 'Firma del Jefe del Cooler' },
+        ]}
+      />
     </Page>
   )
 }
