@@ -1813,7 +1813,7 @@ export type AudTriggerFalla = 'ninguno' | 'cualquier_descuento' | 'solo_cero'
 
 export interface AudBloque {
   id: string
-  modulo_id: string
+  modulo_norma_id: string
   codigo: string
   nombre: string
   descripcion: string | null
@@ -1822,6 +1822,7 @@ export interface AudBloque {
 
 export interface AudPregunta {
   id: string
+  modulo_norma_id: string
   bloque_id: string
   codigo: string
   prompt_texto: string
@@ -1830,7 +1831,6 @@ export interface AudPregunta {
   orden: number
   prompt_component_id: number
   trigger_falla_automatica: AudTriggerFalla
-  activo: boolean
 }
 
 export interface AudComentarioEsquema {

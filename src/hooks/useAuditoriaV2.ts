@@ -68,20 +68,17 @@ export function useAuditoriaV2(modulo: ModuloAuditoria) {
         const mid = modData.id as string
         if (!cancelado) setModuloNormaId(mid)
 
+        // aud_bloques y aud_preguntas son tablas globales — SIN org_id
         const { data: blData, error: blErr } = await tbl('aud_bloques')
-          .select('*').eq('modulo_id', mid).order('orden')
+          .select('*').eq('modulo_norma_id', mid).order('orden')
         if (blErr) throw blErr
-        const bloqueIds = ((blData ?? []) as AudBloque[]).map((b) => b.id)
-
-        if (bloqueIds.length === 0) {
-          if (!cancelado) { setBloques([]); setPreguntas([]); setEsquemas([]) }
-          return
-        }
 
         const { data: preData, error: preErr } = await tbl('aud_preguntas')
-          .select('*').in('bloque_id', bloqueIds).eq('activo', true).order('orden')
+          .select('*').eq('modulo_norma_id', mid).order('orden')
         if (preErr) throw preErr
+
         const pregIds = ((preData ?? []) as AudPregunta[]).map((p) => p.id)
+        console.log(`[useAuditoriaV2] ${APP_CODIGO[modulo]} → moduloNormaId=${mid} bloques=${(blData ?? []).length} preguntas=${pregIds.length}`)
 
         let eqData: AudComentarioEsquema[] = []
         if (pregIds.length > 0) {

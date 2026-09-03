@@ -155,18 +155,15 @@ async function construirDatosAuditoriaV2(
 
   if (moduloNormaId) {
     const { data: blRaw, error: blErr } = await tbl('aud_bloques')
-      .select('id, codigo, nombre, orden').eq('modulo_id', moduloNormaId).order('orden')
+      .select('id, codigo, nombre, orden').eq('modulo_norma_id', moduloNormaId).order('orden')
     if (blErr) throw blErr
     bloquesData = blRaw ?? []
 
-    const bloqueIds = bloquesData.map((b) => b.id)
-    if (bloqueIds.length > 0) {
-      const { data: preRaw, error: preErr } = await tbl('aud_preguntas')
-        .select('id, bloque_id, codigo, prompt_texto, max_puntos, orden')
-        .in('bloque_id', bloqueIds).eq('activo', true).order('orden')
-      if (preErr) throw preErr
-      preguntasData = preRaw ?? []
-    }
+    const { data: preRaw, error: preErr } = await tbl('aud_preguntas')
+      .select('id, bloque_id, codigo, prompt_texto, max_puntos, orden')
+      .eq('modulo_norma_id', moduloNormaId).order('orden')
+    if (preErr) throw preErr
+    preguntasData = preRaw ?? []
   }
 
   // Fetch instancias (responses)
