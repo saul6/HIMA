@@ -1,5 +1,14 @@
-﻿import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+// PATRÓN INOCUIDAD — PDF M39 Almacén (plantilla homogénea M.A.D.Y)
+// Recepción diaria de fruta (variante Almacén) — A4 landscape, layout operativo.
+
+import { Document, Page, View, Text } from '@react-pdf/renderer'
+import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
+import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
+import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
+import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
+import { PC } from '@/lib/pdf/components/tokens'
 
 export interface M39LineaAlmacenPDF {
   orden: number
@@ -24,136 +33,217 @@ export interface M39RecepcionAlmacenDataPDF {
   lineas: M39LineaAlmacenPDF[]
 }
 
-function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
-}
+const MARGIN     = 20
+const ROW_ALT    = '#F5F9FE'
+const TRAZ_FILL  = '#E8F5E9'
+const TRAZ_BORD  = '#A5D6A7'
+const TRAZ_TEXT  = '#1B5E20'
 
-const t = (v: string | null | undefined): string => v ?? '—'
-const n = (v: number | null | undefined): string => v != null ? String(v) : '—'
+function fmtFecha(iso: string): string {
+  try { const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}` } catch { return iso }
+}
+const t  = (v: string | null | undefined): string => v ?? '—'
+const n  = (v: number | null | undefined): string => v != null ? String(v) : '—'
 const b3 = (v: boolean | null): string => v === true ? 'Si' : v === false ? 'No' : '—'
 
-const s = StyleSheet.create({
-  page:     { fontFamily: 'Helvetica', fontSize: 7.5, padding: 20, backgroundColor: '#ffffff' },
-  hdr:      { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, alignItems: 'flex-start' },
-  title:    { fontSize: 12, fontFamily: 'Helvetica-Bold', marginBottom: 1 },
-  codigo:   { fontSize: 7, color: '#666666', marginBottom: 3 },
-  meta:     { fontSize: 7.5, color: '#333333', marginBottom: 1 },
-  secTitle: { fontSize: 7.5, fontFamily: 'Helvetica-Bold', marginBottom: 3, color: '#333333' },
-  table:    { borderTop: '1pt solid #cccccc', borderLeft: '1pt solid #cccccc', marginBottom: 8 },
-  row:      { flexDirection: 'row', borderBottom: '1pt solid #cccccc' },
-  th:       { fontFamily: 'Helvetica-Bold', padding: 3, borderRight: '1pt solid #cccccc', backgroundColor: '#f3f3f3', fontSize: 6 },
-  td:       { padding: 3, borderRight: '1pt solid #cccccc', fontSize: 7 },
-  invBlock: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
-  invBox:   { backgroundColor: '#f3f3f3', padding: 7, minWidth: 100 },
-  invLbl:   { fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#333333', marginBottom: 4 },
-  invRow:   { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2, gap: 8 },
-  invKey:   { fontSize: 7, color: '#555555' },
-  invVal:   { fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#222222' },
-  footer:   { marginTop: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  firma:    { width: 200, borderTop: '1pt solid #000000', paddingTop: 3, fontSize: 6.5, textAlign: 'center' },
-  marca:    { fontSize: 6.5, color: '#aaaaaa' },
-})
+const TH = {
+  padding: 3,
+  backgroundColor: PC.section,
+  borderRightWidth: 1,
+  borderRightColor: '#5599CC',
+  borderBottomWidth: 1,
+  borderBottomColor: '#5599CC',
+  justifyContent: 'center',
+  alignItems: 'center',
+} as const
 
-export function RecepcionFrutaAlmacenPDF({ d, codigoClave }: { d: M39RecepcionAlmacenDataPDF; codigoClave: string }) {
+const TD = {
+  padding: 3,
+  borderRightWidth: 1,
+  borderRightColor: PC.border,
+  justifyContent: 'center',
+} as const
+
+export function RecepcionFrutaAlmacenPDF({
+  d, codigoClave, terminoSitio = 'Instalación',
+}: {
+  d: M39RecepcionAlmacenDataPDF
+  codigoClave: string
+  terminoSitio?: string
+}) {
+  const emision    = new Date().toLocaleDateString('es-MX')
+  const codigoFmt  = codigoFormato('F-FRUS-PRO-02', codigoClave)
+  const fechaLabel = fmtFecha(d.fecha)
+
   const invCultivo: Record<string, { cajas: number; piezas: number }> = {}
   for (const l of d.lineas) {
     const k = l.cultivo?.trim() || 'Sin cultivo'
     if (!invCultivo[k]) invCultivo[k] = { cajas: 0, piezas: 0 }
-    invCultivo[k].cajas += l.cajas ?? 0
+    invCultivo[k].cajas  += l.cajas  ?? 0
     invCultivo[k].piezas += l.piezas ?? 0
   }
   const cultivoEntries = Object.entries(invCultivo)
 
   return (
-    <Document>
-      <Page size="A4" orientation="landscape" style={s.page}>
+    <Document
+      title={`Recepcion Diaria de Fruta ${fechaLabel}`}
+      author="M.A.D.Y."
+      creator="M.A.D.Y. Inocuidad Inteligente"
+      producer="M.A.D.Y. Inocuidad Inteligente"
+      subject={`Recepción Diaria de Fruta — ${d.instalacion}`}
+      keywords="MADY, inocuidad, recepcion, fruta, trazabilidad, almacen"
+    >
+      <Page
+        size="A4"
+        orientation="landscape"
+        style={{ fontFamily: 'Helvetica', fontSize: 7, padding: MARGIN, paddingBottom: 50, backgroundColor: PC.white }}
+      >
+        <PdfFooter moduloCodigo="M39" />
+        <TopBar />
+        <PdfHeader
+          titulo="RECEPCIÓN DIARIA DE FRUTA"
+          subtitulo={`Formato operativo | ${d.instalacion}`}
+          codigoFormato={codigoFmt}
+          folio={fechaLabel}
+          fecha={emision}
+        />
 
-        <View style={s.hdr}>
-          <View style={{ flex: 1 }}>
-            <Text style={s.title}>Recepcion Diaria de Fruta</Text>
-            <Text style={s.codigo}>{codigoFormato('F-FRUS-PRO-02', codigoClave)}</Text>
-            <Text style={s.meta}>{d.orgNombre}</Text>
-            <Text style={s.meta}>Instalacion: {d.instalacion}</Text>
-            {d.empresa ? <Text style={s.meta}>Empresa: {d.empresa}</Text> : null}
-          </View>
-          <View style={{ alignItems: 'flex-end' }}>
-            <Text style={[s.meta, { fontFamily: 'Helvetica-Bold' }]}>Fecha: {fmtFecha(d.fecha)}</Text>
-            {d.hoja_no ? <Text style={s.meta}>Hoja No.: {d.hoja_no}</Text> : null}
-            <Text style={[s.meta, { fontSize: 6.5, color: '#888888', marginTop: 2 }]}>M.A.D.Y</Text>
-          </View>
-        </View>
+        <PdfSectionBanner>1. Datos de recepción</PdfSectionBanner>
+        <PdfFieldGrid>
+          <PdfFieldRow>
+            <PdfField label={terminoSitio} value={d.instalacion} />
+            <PdfField label="Empresa" value={d.empresa || '—'} />
+            <PdfField label="Fecha" value={fechaLabel} />
+            {d.hoja_no ? <PdfField label="Hoja No." value={d.hoja_no} /> : null}
+          </PdfFieldRow>
+        </PdfFieldGrid>
 
-        <Text style={s.secTitle}>Lineas de recepcion</Text>
-        <View style={s.table}>
-          <View style={s.row}>
-            <Text style={[s.th, { width: 22 }]}>No.</Text>
-            <Text style={[s.th, { width: 36 }]}>Hora</Text>
-            <Text style={[s.th, { flex: 1 }]}>Cultivo</Text>
-            <Text style={[s.th, { width: 34 }]}>Cajas</Text>
-            <Text style={[s.th, { width: 34 }]}>Piezas</Text>
-            <Text style={[s.th, { width: 48 }]}>Entrega</Text>
-            <Text style={[s.th, { width: 34 }]}>Limp. BE</Text>
-            <Text style={[s.th, { width: 34 }]}>Limp. L</Text>
-            <Text style={[s.th, { width: 34 }]}>Limp. LP</Text>
-            <Text style={[s.th, { width: 78 }]}>Cod. Trazabilidad</Text>
-          </View>
-          {d.lineas.map((l, i) => (
-            <View key={i} style={s.row}>
-              <Text style={[s.td, { width: 22 }]}>{l.orden}</Text>
-              <Text style={[s.td, { width: 36 }]}>{t(l.hora)}</Text>
-              <Text style={[s.td, { flex: 1 }]}>{t(l.cultivo)}</Text>
-              <Text style={[s.td, { width: 34 }]}>{n(l.cajas)}</Text>
-              <Text style={[s.td, { width: 34 }]}>{n(l.piezas)}</Text>
-              <Text style={[s.td, { width: 48 }]}>{t(l.entrega)}</Text>
-              <Text style={[s.td, { width: 34, textAlign: 'center' }]}>{b3(l.limp_be)}</Text>
-              <Text style={[s.td, { width: 34, textAlign: 'center' }]}>{b3(l.limp_l)}</Text>
-              <Text style={[s.td, { width: 34, textAlign: 'center' }]}>{b3(l.limp_lp)}</Text>
-              <Text style={[s.td, { width: 78 }]}>{t(l.codigo_trazabilidad)}</Text>
+        <PdfSectionBanner>2. Líneas de recepción</PdfSectionBanner>
+
+        {d.lineas.map((linea, idx) => (
+          <View key={idx} style={{ marginBottom: 5, borderWidth: 1, borderColor: PC.border }}>
+            {/* Line label */}
+            <View style={{ backgroundColor: PC.folioBox, paddingVertical: 3, paddingHorizontal: 5, borderBottomWidth: 1, borderBottomColor: PC.border }}>
+              <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.titleNavy }}>
+                {`Línea de recepción ${String(linea.orden).padStart(2, '0')}`}
+              </Text>
             </View>
-          ))}
-        </View>
+
+            {/* Column headers */}
+            <View style={{ flexDirection: 'row' }}>
+              <View style={[TH, { width: 50 }]}>
+                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Hora</Text>
+              </View>
+              <View style={[TH, { flex: 1 }]}>
+                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Cultivo</Text>
+              </View>
+              <View style={[TH, { width: 50 }]}>
+                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Cajas</Text>
+              </View>
+              <View style={[TH, { width: 50 }]}>
+                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Piezas</Text>
+              </View>
+              <View style={[TH, { width: 90 }]}>
+                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Entrega</Text>
+              </View>
+              <View style={[TH, { width: 48 }]}>
+                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Limp. BE</Text>
+              </View>
+              <View style={[TH, { width: 48 }]}>
+                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Limp. L</Text>
+              </View>
+              <View style={[TH, { width: 48, borderRightWidth: 0 }]}>
+                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Limp. LP</Text>
+              </View>
+            </View>
+
+            {/* Data row */}
+            <View style={{ flexDirection: 'row' }}>
+              <View style={[TD, { width: 50 }]}>
+                <Text style={{ fontSize: 7, color: PC.fieldValue }}>{t(linea.hora)}</Text>
+              </View>
+              <View style={[TD, { flex: 1 }]}>
+                <Text style={{ fontSize: 7, color: PC.fieldValue }}>{t(linea.cultivo)}</Text>
+              </View>
+              <View style={[TD, { width: 50 }]}>
+                <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{n(linea.cajas)}</Text>
+              </View>
+              <View style={[TD, { width: 50 }]}>
+                <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{n(linea.piezas)}</Text>
+              </View>
+              <View style={[TD, { width: 90 }]}>
+                <Text style={{ fontSize: 7, color: PC.fieldValue }}>{t(linea.entrega)}</Text>
+              </View>
+              <View style={[TD, { width: 48 }]}>
+                <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{b3(linea.limp_be)}</Text>
+              </View>
+              <View style={[TD, { width: 48 }]}>
+                <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{b3(linea.limp_l)}</Text>
+              </View>
+              <View style={[TD, { width: 48, borderRightWidth: 0 }]}>
+                <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{b3(linea.limp_lp)}</Text>
+              </View>
+            </View>
+
+            {/* Trazabilidad — highlighted */}
+            <View style={{
+              backgroundColor: TRAZ_FILL,
+              borderTopWidth: 1,
+              borderTopColor: TRAZ_BORD,
+              paddingVertical: 5,
+              paddingHorizontal: 6,
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}>
+              <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.textSub, marginRight: 8 }}>
+                Código de trazabilidad:
+              </Text>
+              <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: TRAZ_TEXT }}>
+                {linea.codigo_trazabilidad || '—'}
+              </Text>
+            </View>
+          </View>
+        ))}
 
         {cultivoEntries.length > 0 && (
-          <View style={{ marginBottom: 8 }}>
-            <Text style={s.secTitle}>Inventario por cultivo</Text>
-            <View style={s.invBlock}>
-              {cultivoEntries.map(([cultivo, tot]) => (
-                <View key={cultivo} style={s.invBox}>
-                  <Text style={s.invLbl}>{cultivo}</Text>
-                  <View style={s.invRow}>
-                    <Text style={s.invKey}>Cajas:</Text>
-                    <Text style={s.invVal}>{tot.cajas}</Text>
+          <>
+            <PdfSectionBanner>3. Inventario por cultivo</PdfSectionBanner>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4, marginBottom: 4 }}>
+              {cultivoEntries.map(([cultivo, tot], idx) => (
+                <View key={cultivo} style={{ minWidth: 110, borderWidth: 1, borderColor: PC.border, backgroundColor: idx % 2 === 0 ? PC.white : ROW_ALT }}>
+                  <View style={{ backgroundColor: PC.section, paddingVertical: 3, paddingHorizontal: 5 }}>
+                    <Text style={{ fontSize: 6.5, fontFamily: 'Helvetica-Bold', color: PC.white }}>{cultivo}</Text>
                   </View>
-                  <View style={s.invRow}>
-                    <Text style={s.invKey}>Piezas:</Text>
-                    <Text style={s.invVal}>{tot.piezas}</Text>
+                  <View style={{ padding: 5 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
+                      <Text style={{ fontSize: 6, color: PC.textSub }}>Cajas:</Text>
+                      <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.fieldValue }}>{tot.cajas}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <Text style={{ fontSize: 6, color: PC.textSub }}>Piezas:</Text>
+                      <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.fieldValue }}>{tot.piezas}</Text>
+                    </View>
                   </View>
                 </View>
               ))}
             </View>
-          </View>
+          </>
         )}
 
         {d.observaciones ? (
-          <View style={{ marginBottom: 8 }}>
-            <Text style={s.secTitle}>Observaciones</Text>
-            <Text style={{ fontSize: 7.5, color: '#333333' }}>{d.observaciones}</Text>
+          <View style={{ borderWidth: 1, borderColor: PC.border, padding: 4, marginTop: 4, marginBottom: 4 }}>
+            <Text style={{ fontSize: 5.5, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>OBSERVACIONES</Text>
+            <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{d.observaciones}</Text>
           </View>
         ) : null}
 
-        <View style={s.footer}>
-          <View style={s.firma}>
-            <Text>Responsable Empaque</Text>
-          </View>
-          <View style={s.firma}>
-            <Text>Responsable de la empresa</Text>
-          </View>
-          <Text style={s.marca}>M.A.D.Y · Inocuidad Inteligente</Text>
-        </View>
-
+        <PdfSectionBanner>4. Firmas y responsables</PdfSectionBanner>
+        <PdfSignatures
+          signatures={[
+            { label: '', nombre: '', caption: 'Responsable de Empaque — Firma' },
+            { label: '', nombre: '', caption: 'Responsable de la Empresa — Firma' },
+          ]}
+        />
       </Page>
     </Document>
   )

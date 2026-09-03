@@ -1,6 +1,15 @@
-﻿import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
-import { MadyLogoPDF } from '@/lib/pdf/MadyLogoPDF'
+// PATRÓN INOCUIDAD — PDF M45 (plantilla homogénea M.A.D.Y)
+// Verificación y mantenimiento preventivo y correctivo — A4 landscape, matriz mensual extendida.
+
+import { Document, Page, View, Text, Image } from '@react-pdf/renderer'
+import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
+import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
+import { PdfLegend } from '@/lib/pdf/components/PdfLegend'
+import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
 import { codigoFormato } from '@/lib/codigoFormato'
+import { PC } from '@/lib/pdf/components/tokens'
 
 export interface M45ItemPDFRow {
   id: string
@@ -32,6 +41,7 @@ export interface M45PaginaProps {
   resultados: Record<string, Record<number, string>>
   acciones: Record<string, M45AccionesPDF>
   codigoClave: string
+  terminoSitio?: string
 }
 
 export interface MttoPreventivoConsolidadoPDFProps {
@@ -41,25 +51,21 @@ export interface MttoPreventivoConsolidadoPDFProps {
   hasta: string
 }
 
-const PRIMARY  = '#2B7AB5'
-const DARK     = '#1A1A1A'
-const BORDER   = '#CCCCCC'
-const WHITE    = '#FFFFFF'
-const MUTED    = '#717182'
-const ROW_ALT  = '#F5F9FE'
-const HDR_BG   = '#E8F1F9'
-const AREA_BG  = '#1E4976'
 const H_COLOR  = '#0D5A8F'
 const N_COLOR  = '#C02A2A'
+const ROW_ALT  = '#F5F9FE'
 
 const MARGIN   = 15
 const PAGE_W   = 841.89 - MARGIN * 2   // ~812
 
-// Column widths — total = 183 + 52 + 112 + 465 = 812
+// Column widths: 183 + 52 + 28*4 + 15*31 = 812
 const ITEM_COL = 183
 const FREC_COL = 52
-const ACT_COL  = 28   // x4 = 112
-const DAY_COL  = 15   // x31 = 465
+const ACT_COL  = 28
+const DAY_COL  = 15
+
+// Fixed compact header height: TopBar(8) + padding(5*2) + logo row(28) = ~46
+const HDR_H    = 46
 
 function diasDelMes(anio: number, mes: number): number[] {
   const total = new Date(anio, mes, 0).getDate()
@@ -87,242 +93,214 @@ function valorSym(v: string | undefined): string {
 function valorColor(v: string | undefined): string {
   if (v === 'hecho')    return H_COLOR
   if (v === 'no_hecho') return N_COLOR
-  return MUTED
+  return PC.textSub
 }
 
-const s = StyleSheet.create({
-  page: {
-    fontFamily: 'Helvetica',
-    fontSize: 7,
-    color: DARK,
-    paddingTop: MARGIN + 14,   // space for fixed top bar
-    paddingBottom: MARGIN + 14,
-    paddingLeft: MARGIN,
-    paddingRight: MARGIN,
-  },
-  // Fixed top bar (repeats on every page)
-  topBar: {
-    position: 'absolute',
-    top: 6,
-    left: MARGIN,
-    right: MARGIN,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    paddingBottom: 3,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  topBarText: { flex: 1, fontSize: 5.5, color: MUTED, textAlign: 'center' },
-  // Document header (first page only)
-  docHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-    borderBottomWidth: 2,
-    borderBottomColor: PRIMARY,
-    paddingBottom: 4,
-  },
-  docTitle:  { flex: 1, textAlign: 'center', fontSize: 8, fontFamily: 'Helvetica-Bold' },
-  docMeta:   { width: 72, fontSize: 5.5, textAlign: 'right', color: MUTED },
-  infoRow:   { flexDirection: 'row', gap: 4, marginBottom: 6 },
-  infoBox:   {
-    flex: 1, borderWidth: 1, borderColor: BORDER, borderRadius: 2,
-    paddingTop: 2, paddingBottom: 2, paddingLeft: 4, paddingRight: 4,
-  },
-  infoLabel: { fontSize: 5.5, color: MUTED, marginBottom: 1 },
-  infoValue: { fontSize: 7, fontFamily: 'Helvetica-Bold' },
-  // Area header
-  areaHeader: {
-    flexDirection: 'row',
-    backgroundColor: AREA_BG,
-    paddingTop: 3, paddingBottom: 3, paddingLeft: 5,
-    marginTop: 5,
-  },
-  areaHeaderText: { fontSize: 7, fontFamily: 'Helvetica-Bold', color: WHITE },
-  // Column header row
-  colHeaderRow: { flexDirection: 'row' },
-  itemColHdr: {
-    width: ITEM_COL, borderWidth: 1, borderColor: BORDER, backgroundColor: HDR_BG,
-    paddingTop: 2, paddingBottom: 2, paddingLeft: 3, justifyContent: 'center',
-  },
-  frecColHdr: {
-    width: FREC_COL, borderWidth: 1, borderColor: BORDER, backgroundColor: HDR_BG,
-    paddingTop: 2, paddingBottom: 2,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  dayColHdr: {
-    width: DAY_COL, borderWidth: 1, borderColor: BORDER, backgroundColor: HDR_BG,
-    paddingTop: 2, paddingBottom: 2,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  actColHdr: {
-    width: ACT_COL, borderWidth: 1, borderColor: BORDER, backgroundColor: HDR_BG,
-    paddingTop: 2, paddingBottom: 2,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  colHdrText: { fontSize: 5, fontFamily: 'Helvetica-Bold', color: PRIMARY, textAlign: 'center' },
-  // Data rows
-  dataRow: { flexDirection: 'row' },
-  itemCell: {
-    width: ITEM_COL, borderWidth: 1, borderColor: BORDER,
-    paddingTop: 2, paddingBottom: 2, paddingLeft: 3, justifyContent: 'center',
-  },
-  itemText: { fontSize: 5.5 },
-  frecCell: {
-    width: FREC_COL, borderWidth: 1, borderColor: BORDER,
-    paddingTop: 2, paddingBottom: 2,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  frecText: { fontSize: 5, color: MUTED },
-  dayCell: {
-    width: DAY_COL, borderWidth: 1, borderColor: BORDER,
-    alignItems: 'center', justifyContent: 'center',
-    paddingTop: 2, paddingBottom: 2,
-  },
-  actCell: {
-    width: ACT_COL, borderWidth: 1, borderColor: BORDER,
-    alignItems: 'center', justifyContent: 'center',
-    paddingTop: 2, paddingBottom: 2,
-  },
-  // Footer
-  footerSep:   { borderTopWidth: 1, borderTopColor: BORDER, marginTop: 8, paddingTop: 4 },
-  firmaRow:    { flexDirection: 'row', gap: 12, marginTop: 6 },
-  firmaBloque: { flex: 1, alignItems: 'center', borderTopWidth: 1, borderTopColor: BORDER, paddingTop: 4 },
-  firmaLabel:  { fontSize: 6, color: MUTED },
-  leyenda:     { fontSize: 5, color: MUTED, marginTop: 4 },
-  piePagina:   {
-    position: 'absolute', bottom: 6, left: MARGIN, right: MARGIN,
-    textAlign: 'center', fontSize: 5.5, color: MUTED,
-  },
-})
+const colHdrStyle = {
+  borderWidth: 1,
+  borderColor: PC.border,
+  backgroundColor: PC.section,
+  paddingTop: 2,
+  paddingBottom: 2,
+  justifyContent: 'center',
+  alignItems: 'center',
+} as const
+
+const itemCellStyle = {
+  width: ITEM_COL,
+  borderWidth: 1,
+  borderColor: PC.border,
+  paddingTop: 2,
+  paddingBottom: 2,
+  paddingLeft: 3,
+  justifyContent: 'center',
+} as const
+
+const frecCellStyle = {
+  width: FREC_COL,
+  borderWidth: 1,
+  borderColor: PC.border,
+  paddingTop: 2,
+  paddingBottom: 2,
+  alignItems: 'center',
+  justifyContent: 'center',
+} as const
+
+const dayCellStyle = {
+  width: DAY_COL,
+  borderWidth: 1,
+  borderColor: PC.border,
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingTop: 2,
+  paddingBottom: 2,
+} as const
+
+const actCellStyle = {
+  width: ACT_COL,
+  borderWidth: 1,
+  borderColor: PC.border,
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingTop: 2,
+  paddingBottom: 2,
+} as const
+
+const colHdrText = { fontSize: 5, fontFamily: 'Helvetica-Bold', color: PC.white, textAlign: 'center' } as const
 
 function MttoPreventivoPaginaContent({
-  instalacion, instalacionCodigo, anio, mes, mesLabel, observaciones, areas, resultados, acciones, codigoClave,
+  instalacion, instalacionCodigo, anio, mes, mesLabel, observaciones,
+  areas, resultados, acciones, codigoClave, terminoSitio = 'Instalación',
 }: M45PaginaProps) {
+  const codigoFmt = codigoFormato('F-FRUS-MTT-03', codigoClave)
   const dias = diasDelMes(anio, mes)
 
   return (
     <>
-      {/* Fixed top bar on every page */}
-      <View style={s.topBar} fixed>
-        <Text style={s.topBarText}>
-          {`VERIFICACION, MANTENIMIENTO PREVENTIVO Y CORRECTIVO  |  ${instalacion}  |  ${mesLabel}  |  ${codigoFormato('F-FRUS-MTT-03', codigoClave)}`}
-        </Text>
+      {/* Compact fixed header — repeats on every sub-page */}
+      <View fixed style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
+        <TopBar />
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: MARGIN,
+          paddingVertical: 5,
+          borderBottomWidth: 1,
+          borderBottomColor: PC.border,
+          backgroundColor: PC.white,
+        }}>
+          <Image src={LOGO_MADY_PDF} style={{ height: 28, width: 79, marginRight: 10 }} />
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 8.5, color: PC.titleNavy, textAlign: 'center' }}>
+              VERIFICACION, MANTENIMIENTO PREVENTIVO Y CORRECTIVO
+            </Text>
+            <Text style={{ fontSize: 5.5, color: PC.textSub, marginTop: 1, textAlign: 'center' }}>
+              {`${codigoFmt}  |  ${instalacion}  |  ${mesLabel}`}
+            </Text>
+          </View>
+          <View style={{ backgroundColor: PC.folioBox, borderRadius: 4, padding: 5, alignItems: 'flex-end', marginLeft: 10 }}>
+            <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.titleNavy }}>{mesLabel}</Text>
+          </View>
+        </View>
       </View>
 
-      {/* Document header */}
-      <View style={s.docHeader}>
-        <View>
-          <MadyLogoPDF style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PRIMARY }} />
-          <Text style={{ fontSize: 5.5, color: MUTED, marginTop: 1 }}>Inocuidad Alimentaria</Text>
-        </View>
-        <View style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={s.docTitle}>VERIFICACION, MANTENIMIENTO PREVENTIVO Y CORRECTIVO</Text>
-          <Text style={{ fontSize: 5.5, color: MUTED, marginTop: 1 }}>
-            {`Codigo: ${codigoFormato('F-FRUS-MTT-03', codigoClave)}  |  Rev 01  |  Frecuencia: Mensual`}
-          </Text>
-        </View>
-        <View style={s.docMeta}>
-          <Text>Mes: {mesLabel}</Text>
-        </View>
-      </View>
+      <PdfFooter moduloCodigo="M45" />
 
-      {/* Info boxes */}
-      <View style={s.infoRow}>
-        <View style={[s.infoBox, { flex: 3 }]}>
-          <Text style={s.infoLabel}>Instalacion</Text>
-          <Text style={s.infoValue}>{instalacion}</Text>
-        </View>
-        <View style={s.infoBox}>
-          <Text style={s.infoLabel}>Codigo</Text>
-          <Text style={s.infoValue}>{instalacionCodigo}</Text>
-        </View>
-        <View style={[s.infoBox, { flex: 2 }]}>
-          <Text style={s.infoLabel}>Año</Text>
-          <Text style={s.infoValue}>{anio}</Text>
-        </View>
-        <View style={[s.infoBox, { flex: 2 }]}>
-          <Text style={s.infoLabel}>Mes</Text>
-          <Text style={s.infoValue}>{mesLabel}</Text>
-        </View>
-      </View>
+      {/* Section 1 — info grid */}
+      <PdfSectionBanner>1. Datos del sitio y mes</PdfSectionBanner>
+      <PdfFieldGrid>
+        <PdfFieldRow>
+          <PdfField label={terminoSitio} value={instalacion} />
+          <PdfField label="Código" value={instalacionCodigo || '—'} />
+          <PdfField label="Año" value={String(anio)} />
+          <PdfField label="Mes" value={mesLabel} />
+        </PdfFieldRow>
+      </PdfFieldGrid>
 
       {/* Legend */}
-      <Text style={s.leyenda}>
-        H = Hecho  |  N = No hecho  |  — = N/A  |  X = Accion realizada  |  Rev.Gral = Revision general  |  C.Aceit = Cambio aceites  |  C.Pzas = Cambio piezas  |  Rev.Elec = Revision electrica
-      </Text>
+      <PdfLegend entradas={[
+        {
+          titulo: 'Valores de registro',
+          items: [
+            { codigo: 'H', label: 'Hecho' },
+            { codigo: 'N', label: 'No hecho' },
+            { codigo: '—', label: 'N/A' },
+            { codigo: 'X', label: 'Accion realizada' },
+          ],
+        },
+        {
+          titulo: 'Columnas de accion',
+          items: [
+            { codigo: 'Rev.Gral', label: 'Revision general' },
+            { codigo: 'C.Aceit', label: 'Cambio de aceites' },
+            { codigo: 'C.Pzas', label: 'Cambio de piezas' },
+            { codigo: 'Rev.Elec', label: 'Revision electrica' },
+          ],
+        },
+      ]} />
 
-      {/* Areas */}
+      {/* Section 2 — matrix */}
+      <PdfSectionBanner>2. Actividades de verificación y mantenimiento</PdfSectionBanner>
+
       {areas.map((areaData) => (
         <View key={areaData.area}>
           {/* Area header */}
-          <View style={s.areaHeader}>
-            <Text style={s.areaHeaderText}>{areaData.area.toUpperCase()}</Text>
+          <View style={{
+            flexDirection: 'row',
+            backgroundColor: PC.titleNavy,
+            paddingTop: 3,
+            paddingBottom: 3,
+            paddingLeft: 5,
+            marginTop: 5,
+          }}>
+            <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.white }}>
+              {areaData.area.toUpperCase()}
+            </Text>
           </View>
 
           {/* Column header row */}
-          <View style={s.colHeaderRow}>
-            <View style={s.itemColHdr}>
-              <Text style={s.colHdrText}>Equipo / Elemento</Text>
+          <View style={{ flexDirection: 'row' }}>
+            <View style={[colHdrStyle, { width: ITEM_COL, paddingLeft: 3 }]}>
+              <Text style={colHdrText}>Equipo / Elemento</Text>
             </View>
-            <View style={s.frecColHdr}>
-              <Text style={s.colHdrText}>Frecuencia</Text>
+            <View style={[colHdrStyle, { width: FREC_COL }]}>
+              <Text style={colHdrText}>Frecuencia</Text>
             </View>
             {dias.map((d) => (
-              <View key={d} style={s.dayColHdr}>
-                <Text style={s.colHdrText}>{d}</Text>
+              <View key={d} style={[colHdrStyle, { width: DAY_COL }]}>
+                <Text style={colHdrText}>{d}</Text>
               </View>
             ))}
-            <View style={s.actColHdr}>
-              <Text style={s.colHdrText}>{'Rev.\nGral'}</Text>
+            <View style={[colHdrStyle, { width: ACT_COL }]}>
+              <Text style={colHdrText}>{'Rev.\nGral'}</Text>
             </View>
-            <View style={s.actColHdr}>
-              <Text style={s.colHdrText}>{'C.\nAceit'}</Text>
+            <View style={[colHdrStyle, { width: ACT_COL }]}>
+              <Text style={colHdrText}>{'C.\nAceit'}</Text>
             </View>
-            <View style={s.actColHdr}>
-              <Text style={s.colHdrText}>{'C.\nPzas'}</Text>
+            <View style={[colHdrStyle, { width: ACT_COL }]}>
+              <Text style={colHdrText}>{'C.\nPzas'}</Text>
             </View>
-            <View style={s.actColHdr}>
-              <Text style={s.colHdrText}>{'Rev.\nElec'}</Text>
+            <View style={[colHdrStyle, { width: ACT_COL }]}>
+              <Text style={colHdrText}>{'Rev.\nElec'}</Text>
             </View>
           </View>
 
           {/* Item rows */}
           {areaData.items.map((item, idx) => {
-            const bg  = idx % 2 === 0 ? WHITE : ROW_ALT
+            const bg  = idx % 2 === 0 ? PC.white : ROW_ALT
             const acc = acciones[item.id]
             return (
-              <View key={item.id} style={[s.dataRow, { backgroundColor: bg }]}>
-                <View style={[s.itemCell, { backgroundColor: bg }]}>
-                  <Text style={s.itemText}>{item.nombre}</Text>
+              <View key={item.id} style={{ flexDirection: 'row', backgroundColor: bg }}>
+                <View style={[itemCellStyle, { backgroundColor: bg }]}>
+                  <Text style={{ fontSize: 5.5, color: PC.fieldValue }}>{item.nombre}</Text>
                 </View>
-                <View style={[s.frecCell, { backgroundColor: bg }]}>
-                  <Text style={s.frecText}>{frecLabel(item.frecuencia)}</Text>
+                <View style={[frecCellStyle, { backgroundColor: bg }]}>
+                  <Text style={{ fontSize: 5, color: PC.textSub }}>{frecLabel(item.frecuencia)}</Text>
                 </View>
                 {dias.map((d) => {
-                  const v     = resultados[item.id]?.[d]
-                  const sym   = valorSym(v)
-                  const color = valorColor(v)
+                  const v   = resultados[item.id]?.[d]
+                  const sym = valorSym(v)
+                  const col = valorColor(v)
                   return (
-                    <View key={d} style={[s.dayCell, { backgroundColor: bg }]}>
+                    <View key={d} style={[dayCellStyle, { backgroundColor: bg }]}>
                       {sym ? (
-                        <Text style={{ fontSize: sym === '—' ? 6 : 5.5, fontFamily: 'Helvetica-Bold', color }}>
+                        <Text style={{ fontSize: sym === '—' ? 6 : 5.5, fontFamily: 'Helvetica-Bold', color: col }}>
                           {sym}
                         </Text>
                       ) : null}
                     </View>
                   )
                 })}
-                <View style={[s.actCell, { backgroundColor: bg }]}>
-                  {acc?.revision_general  ? <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: H_COLOR }}>X</Text> : null}
+                <View style={[actCellStyle, { backgroundColor: bg }]}>
+                  {acc?.revision_general   ? <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: H_COLOR }}>X</Text> : null}
                 </View>
-                <View style={[s.actCell, { backgroundColor: bg }]}>
-                  {acc?.cambio_aceites    ? <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: H_COLOR }}>X</Text> : null}
+                <View style={[actCellStyle, { backgroundColor: bg }]}>
+                  {acc?.cambio_aceites     ? <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: H_COLOR }}>X</Text> : null}
                 </View>
-                <View style={[s.actCell, { backgroundColor: bg }]}>
-                  {acc?.cambio_piezas     ? <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: H_COLOR }}>X</Text> : null}
+                <View style={[actCellStyle, { backgroundColor: bg }]}>
+                  {acc?.cambio_piezas      ? <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: H_COLOR }}>X</Text> : null}
                 </View>
-                <View style={[s.actCell, { backgroundColor: bg }]}>
+                <View style={[actCellStyle, { backgroundColor: bg }]}>
                   {acc?.revision_electrico ? <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: H_COLOR }}>X</Text> : null}
                 </View>
               </View>
@@ -331,39 +309,48 @@ function MttoPreventivoPaginaContent({
         </View>
       ))}
 
-      {/* Footer */}
-      <View style={s.footerSep}>
-        {observaciones ? (
-          <View style={{ marginBottom: 4 }}>
-            <Text style={{ fontSize: 6, color: MUTED }}>Observaciones:</Text>
-            <Text style={{ fontSize: 7 }}>{observaciones}</Text>
-          </View>
-        ) : null}
-        <View style={s.firmaRow}>
-          <View style={s.firmaBloque}>
-            <View style={{ height: 16 }} />
-            <Text style={s.firmaLabel}>Responsable del Area</Text>
-          </View>
-          <View style={s.firmaBloque}>
-            <View style={{ height: 16 }} />
-            <Text style={s.firmaLabel}>Jefe de Mantenimiento</Text>
-          </View>
-          <View style={s.firmaBloque}>
-            <View style={{ height: 16 }} />
-            <Text style={s.firmaLabel}>Gerente de Operaciones</Text>
-          </View>
+      {observaciones ? (
+        <View style={{ borderWidth: 1, borderColor: PC.border, padding: 4, marginTop: 8, marginBottom: 4 }}>
+          <Text style={{ fontSize: 5.5, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>OBSERVACIONES</Text>
+          <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{observaciones}</Text>
         </View>
-      </View>
+      ) : null}
 
-      <Text style={s.piePagina} fixed>M.A.D.Y · Inocuidad Inteligente</Text>
+      <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
+      <PdfSignatures
+        signatures={[
+          { label: '', nombre: '', caption: 'Responsable del Area' },
+          { label: '', nombre: '', caption: 'Jefe de Mantenimiento' },
+          { label: '', nombre: '', caption: 'Gerente de Operaciones' },
+        ]}
+      />
     </>
   )
 }
 
 export function MttoPreventivoPDF(props: M45PaginaProps) {
   return (
-    <Document>
-      <Page size="A4" orientation="landscape" style={s.page}>
+    <Document
+      title={`Mantenimiento Preventivo ${props.mesLabel}`}
+      author="M.A.D.Y."
+      creator="M.A.D.Y. Inocuidad Inteligente"
+      producer="M.A.D.Y. Inocuidad Inteligente"
+      subject={`Verificación y Mantenimiento Preventivo — ${props.instalacion}`}
+      keywords="MADY, inocuidad, mantenimiento, preventivo, correctivo"
+    >
+      <Page
+        size="A4"
+        orientation="landscape"
+        style={{
+          fontFamily: 'Helvetica',
+          fontSize: 7,
+          color: PC.fieldValue,
+          paddingTop: HDR_H + 4,
+          paddingBottom: 40,
+          paddingLeft: MARGIN,
+          paddingRight: MARGIN,
+        }}
+      >
         <MttoPreventivoPaginaContent {...props} />
       </Page>
     </Document>
@@ -374,9 +361,29 @@ export function MttoPreventivoConsolidadoPDF({
   paginas, instalacionNombre, desde, hasta,
 }: MttoPreventivoConsolidadoPDFProps) {
   return (
-    <Document title={`Mtto. Preventivo — ${instalacionNombre} ${desde} a ${hasta}`}>
+    <Document
+      title={`Mantenimiento Preventivo Consolidado — ${instalacionNombre} ${desde} a ${hasta}`}
+      author="M.A.D.Y."
+      creator="M.A.D.Y. Inocuidad Inteligente"
+      producer="M.A.D.Y. Inocuidad Inteligente"
+      subject={`Verificación y Mantenimiento Preventivo — ${instalacionNombre}`}
+      keywords="MADY, inocuidad, mantenimiento, preventivo, correctivo, consolidado"
+    >
       {paginas.map((p, i) => (
-        <Page key={i} size="A4" orientation="landscape" style={s.page}>
+        <Page
+          key={i}
+          size="A4"
+          orientation="landscape"
+          style={{
+            fontFamily: 'Helvetica',
+            fontSize: 7,
+            color: PC.fieldValue,
+            paddingTop: HDR_H + 4,
+            paddingBottom: 40,
+            paddingLeft: MARGIN,
+            paddingRight: MARGIN,
+          }}
+        >
           <MttoPreventivoPaginaContent {...p} />
         </Page>
       ))}
