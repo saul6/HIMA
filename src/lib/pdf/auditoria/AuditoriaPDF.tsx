@@ -89,9 +89,13 @@ function formatFechaPDF(iso: string): string {
 }
 
 function respLabel(r: string | undefined): string {
-  if (r === 'cumple')    return 'Cumple'
-  if (r === 'no_cumple') return 'No cumple'
-  if (r === 'na')        return 'N/A'
+  if (r === 'cumplimiento_total')  return 'Cumplimiento total'
+  if (r === 'deficiencia_menor')   return 'Def. menor'
+  if (r === 'deficiencia_mayor')   return 'Def. mayor'
+  if (r === 'no_conformidad')      return 'No conformidad'
+  if (r === 'cumple')              return 'Cumple'
+  if (r === 'no_cumple')           return 'No cumple'
+  if (r === 'na')                  return 'N/A'
   return 'Sin resp.'
 }
 
@@ -247,9 +251,10 @@ const s = StyleSheet.create({
     borderRightStyle: 'solid',
     color: PC.fieldValue,
   },
-  qCellCumple:   { backgroundColor: CUMPLE_BG, color: CUMPLE_FG, fontFamily: 'Helvetica-Bold' },
-  qCellNoCumple: { backgroundColor: NOCUMPLE_BG, color: NOCUMPLE_FG, fontFamily: 'Helvetica-Bold' },
-  qCellNA:       { color: PC.textSub },
+  qCellCumple:    { backgroundColor: CUMPLE_BG, color: CUMPLE_FG, fontFamily: 'Helvetica-Bold' },
+  qCellNoCumple:  { backgroundColor: NOCUMPLE_BG, color: NOCUMPLE_FG, fontFamily: 'Helvetica-Bold' },
+  qCellDefMenor:  { backgroundColor: '#FAEEDA', color: '#854F0B', fontFamily: 'Helvetica-Bold' },
+  qCellNA:        { color: PC.textSub },
 
   // ── Firma ──────────────────────────────────────────────────────────────────
   firmaSection: { marginTop: 40 },
@@ -408,9 +413,14 @@ export function AuditoriaPagina({
                 const rowStyle = idx % 2 === 1 ? s.qRowAlt : s.qRow
                 const resStr  = resp ? respLabel(resp.respuesta) : '—'
                 const resColor =
-                  resp?.respuesta === 'cumple'    ? s.qCellCumple
-                  : resp?.respuesta === 'no_cumple' ? s.qCellNoCumple
-                  : resp?.respuesta === 'na'         ? s.qCellNA
+                  (resp?.respuesta === 'cumple' || resp?.respuesta === 'cumplimiento_total')
+                    ? s.qCellCumple
+                  : (resp?.respuesta === 'no_cumple' || resp?.respuesta === 'no_conformidad' || resp?.respuesta === 'deficiencia_mayor')
+                    ? s.qCellNoCumple
+                  : (resp?.respuesta === 'deficiencia_menor')
+                    ? s.qCellDefMenor
+                  : resp?.respuesta === 'na'
+                    ? s.qCellNA
                   : {}
                 const ptsLabel = preg.puntos > 0 && resp
                   ? `\n${resp.puntos_otorgados}/${preg.puntos} pts`
@@ -444,6 +454,13 @@ export function AuditoriaPagina({
             <Text style={s.firmaLabel}>Responsable de Inocuidad — Firma</Text>
           </View>
         </View>
+      </View>
+
+      {/* ── Aviso legal ───────────────────────────────────────────────────── */}
+      <View style={{ marginTop: 20, borderTopWidth: 1, borderTopColor: PC.border, paddingTop: 6 }}>
+        <Text style={{ fontSize: 6, color: PC.textSub, textAlign: 'center' }}>
+          INFORME INTERNO DE PREPARACION. M.A.D.Y. no certifica, no sustituye al auditor autorizado ni al organismo de certificacion.
+        </Text>
       </View>
 
     </Page>

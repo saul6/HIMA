@@ -1,13 +1,13 @@
-import { calcularAgregados } from '@/hooks/useAuditoria'
-import type { AuditoriaPregunta, RespuestaAuditoria } from '@/types/database.types'
+import { calcularProgresoCatalogo } from '@/hooks/useAuditoriaV2'
+import type { AudPregunta, AudRespuesta } from '@/types/database.types'
 
 interface ResumenPuntajeProps {
-  preguntas: AuditoriaPregunta[]
-  respuestas: Map<string, RespuestaAuditoria>
+  preguntas: AudPregunta[]
+  respuestas: Map<string, AudRespuesta>
 }
 
 export function ResumenPuntaje({ preguntas, respuestas }: ResumenPuntajeProps) {
-  const { puntos_obtenidos, puntos_posibles, porcentaje } = calcularAgregados(preguntas, respuestas)
+  const { puntos_obtenidos, puntos_posibles, porcentaje } = calcularProgresoCatalogo(preguntas, respuestas)
   const respondidas = preguntas.filter((p) => respuestas.has(p.id)).length
   const total = preguntas.length
 
@@ -30,25 +30,28 @@ export function ResumenPuntaje({ preguntas, respuestas }: ResumenPuntajeProps) {
       : 'var(--agro-danger-fill)'
 
   return (
-    <div
-      className="rounded-xl p-4 flex items-center gap-4"
-      style={{ backgroundColor: bg }}
-    >
+    <div className="rounded-xl p-4 flex items-center gap-4" style={{ backgroundColor: bg }}>
       <div className="flex-1 min-w-0">
         <p className="text-xs" style={{ color, fontWeight: 600 }}>
-          Puntaje global
+          Progreso
         </p>
         <p className="text-xs mt-0.5" style={{ color }}>
           {respondidas}/{total} preguntas respondidas
         </p>
       </div>
       <div className="text-right shrink-0">
-        <p className="text-2xl" style={{ color, fontWeight: 700, lineHeight: 1 }}>
-          {puntos_posibles > 0 ? `${porcentaje}%` : '—'}
-        </p>
-        {puntos_posibles > 0 && (
-          <p className="text-xs mt-0.5" style={{ color }}>
-            {puntos_obtenidos}/{puntos_posibles} pts
+        {puntos_posibles > 0 ? (
+          <>
+            <p className="text-2xl" style={{ color, fontWeight: 700, lineHeight: 1 }}>
+              {porcentaje}%
+            </p>
+            <p className="text-xs mt-0.5" style={{ color }}>
+              {puntos_obtenidos}/{puntos_posibles} pts
+            </p>
+          </>
+        ) : (
+          <p className="text-2xl" style={{ color, fontWeight: 700, lineHeight: 1 }}>
+            {respondidas}/{total}
           </p>
         )}
       </div>

@@ -1798,6 +1798,66 @@ export interface PortadaBPM {
   productos?: string[]
 }
 
+// ── aud_* PrimusGFS v3.2 — Motor de auditorías ───────────────────────────────
+
+export type AudRespuesta =
+  | 'cumplimiento_total'
+  | 'deficiencia_menor'
+  | 'deficiencia_mayor'
+  | 'no_conformidad'
+  | 'na'
+
+export type AudEstado = 'en_proceso' | 'completada'
+export type AudFallaAutomatica = 'ninguno' | 'alerta'
+export type AudTriggerFalla = 'ninguno' | 'cualquier_descuento' | 'solo_cero'
+
+export interface AudBloque {
+  id: string
+  modulo_id: string
+  codigo: string
+  nombre: string
+  descripcion: string | null
+  orden: number
+}
+
+export interface AudPregunta {
+  id: string
+  bloque_id: string
+  codigo: string
+  prompt_texto: string
+  tipo: 'evaluable' | 'informativa' | 'compuesta'
+  max_puntos: number
+  orden: number
+  prompt_component_id: number
+  trigger_falla_automatica: AudTriggerFalla
+  activo: boolean
+}
+
+export interface AudComentarioEsquema {
+  id: string
+  pregunta_id: string
+  campo: string
+  etiqueta: string
+  tipo: 'texto' | 'seleccion' | 'fecha' | 'numero'
+  requerido: boolean
+  opciones: string[] | null
+  orden: number
+}
+
+export interface AudAuditoriaConRancho {
+  id: string
+  org_id: string
+  rancho_id: string
+  rancho_nombre: string
+  rancho_codigo: string
+  fecha: string
+  auditor_nombre: string | null
+  estado: AudEstado
+  requiere_correccion: boolean
+  comentario_correccion: string | null
+  modulo_norma_id: string | null
+}
+
 // Tipo rico: aplicación con todos los joins necesarios para PDF y Excel
 export type AplicacionRica = Aplicacion & {
   ranchos: Rancho
