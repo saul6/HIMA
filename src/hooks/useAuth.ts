@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { type User } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { supabase, initialAuthParams } from '@/lib/supabase'
 import type { Profile, Productor } from '@/types/database.types'
 import { devLog } from '@/lib/log'
 
@@ -12,11 +12,16 @@ export interface AuthState {
   responsableProfile: Profile | null
   loading: boolean
   error: string | null
+  isRecovery: boolean
 }
 
 export type UseAuthReturn = AuthState & {
   refreshProfile: () => Promise<void>
+  clearRecovery: () => void
 }
+
+// Capturado al cargar el módulo, antes de que Supabase procese el hash
+const IS_INITIAL_RECOVERY = initialAuthParams.get('type') === 'recovery'
 
 const SIN_SESION: Omit<AuthState, 'loading'> = {
   user: null,
@@ -25,13 +30,14 @@ const SIN_SESION: Omit<AuthState, 'loading'> = {
   asesorProfile: null,
   responsableProfile: null,
   error: null,
+  isRecovery: false,
 }
 
 // Garantiza que NUNCA lanza — cualquier error interno queda atrapado y devuelve
 // un resultado parcial en lugar de propagarse al callback de onAuthStateChange.
 async function cargarDatosPerfil(
   userId: string
-): Promise<Omit<AuthState, 'user' | 'loading'>> {
+): Promise<Omit<AuthState, 'user' | 'loading' | 'isRecovery'>> {
   try {
     devLog('[auth] cargarDatosPerfil → profiles query para', userId)
     const { data: profile, error: profileError } = await supabase
@@ -145,7 +151,7 @@ export function useAuth(): UseAuthReturn {
       if (initialSession) {
         try {
           const datosPerfil = await cargarDatosPerfil(initialSession.user.id)
-          setState({ user: initialSession.user, ...datosPerfil, loading: false })
+          setState({ user: initialSession.user, ...datosPerfil, loading: false, isRecovery: IS_INITIAL_RECOVERY })
         } catch (err) {
           console.error('[auth] error cargando perfil desde sesión inicial:', err)
           setState({
@@ -156,6 +162,7 @@ export function useAuth(): UseAuthReturn {
             responsableProfile: null,
             loading: false,
             error: err instanceof Error ? err.message : 'Error cargando perfil',
+            isRecovery: IS_INITIAL_RECOVERY,
           })
         } finally {
           authResolved = true
@@ -168,10 +175,16 @@ export function useAuth(): UseAuthReturn {
         devLog('[auth] onAuthStateChange event:', event, '| session:', session ? 'presente' : 'null')
 
         try {
+          if (event === 'PASSWORD_RECOVERY') {
+            if (session) {
+              const datosPerfil = await cargarDatosPerfil(session.user.id)
+              setState({ user: session.user, ...datosPerfil, loading: false, isRecovery: true })
+            }
+          }
           if (event === 'SIGNED_IN' && !initialSession) {
             // Solo para logins nuevos — la sesión de recarga ya fue manejada por getSession
             const datosPerfil = await cargarDatosPerfil(session!.user.id)
-            setState({ user: session!.user, ...datosPerfil, loading: false })
+            setState({ user: session!.user, ...datosPerfil, loading: false, isRecovery: false })
           }
           if (event === 'SIGNED_OUT') {
             setState({ ...SIN_SESION, loading: false })
@@ -186,6 +199,7 @@ export function useAuth(): UseAuthReturn {
             responsableProfile: null,
             loading: false,
             error: err instanceof Error ? err.message : 'Error inesperado de autenticación',
+            isRecovery: event === 'PASSWORD_RECOVERY',
           })
         } finally {
           authResolved = true
@@ -219,5 +233,9 @@ export function useAuth(): UseAuthReturn {
     setState(prev => ({ ...prev, ...datos }))
   }
 
-  return { ...state, refreshProfile }
+  function clearRecovery() {
+    setState(prev => ({ ...prev, isRecovery: false }))
+  }
+
+  return { ...state, refreshProfile, clearRecovery }
 }

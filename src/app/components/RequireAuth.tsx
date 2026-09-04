@@ -2,7 +2,7 @@ import { Navigate, Outlet } from 'react-router'
 import { useAuthContext } from '@/context/AuthContext'
 
 export function RequireAuth() {
-  const { user, loading } = useAuthContext()
+  const { user, loading, isRecovery } = useAuthContext()
 
   if (loading) {
     return (
@@ -14,6 +14,10 @@ export function RequireAuth() {
 
   if (!user) {
     return <Navigate to="/login" replace />
+  }
+
+  if (isRecovery) {
+    return <Navigate to="/restablecer-contrasena" replace />
   }
 
   return <Outlet />

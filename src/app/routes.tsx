@@ -105,6 +105,7 @@ import { TrazabilidadProducto } from "./screens/TrazabilidadProducto";
 import { RequireModulo } from "./components/RequireModulo";
 import { NfcEstacion } from "./screens/NfcEstacion";
 import AuditoriasPrimusGFS from "./screens/AuditoriasPrimusGFS";
+import { RestablecerContrasena } from "./screens/RestablecerContrasena";
 
 export const router = createBrowserRouter([
   {
@@ -120,6 +121,11 @@ export const router = createBrowserRouter([
   {
     path: "/nfc/:token",
     Component: NfcEstacion,
+    ErrorBoundary: RootError,
+  },
+  {
+    path: "/restablecer-contrasena",
+    Component: RestablecerContrasena,
     ErrorBoundary: RootError,
   },
   {
