@@ -1,5 +1,5 @@
 import { Outlet, useLocation, Link } from "react-router";
-import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon } from "lucide-react";
+import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
 import { useHomeSearch } from "@/context/HomeSearchContext";
@@ -54,14 +54,16 @@ export function Layout() {
   const mostrarAplicaciones    = loadingModulos || modulos.some(m => m.clave === "aplicaciones");
   const mostrarInventario      = loadingModulos || modulos.some(m => m.clave === "inventario");
   const mostrarActividadEquipo = loadingModulos || (esAdmin && terminosSitio.singular !== 'Rancho');
+  const mostrarAuditorias      = ['auditor', 'admin_org', 'super_admin'].includes(profile?.rol ?? '');
 
   const navItems = [
-    { path: "/",               icon: Home,       label: "Inicio"          },
-    ...(mostrarAplicaciones    ? [{ path: "/nueva-aplicacion", icon: PlusCircle, label: "Nueva Aplicación" }] : []),
-    ...(mostrarInventario      ? [{ path: "/inventario",       icon: Package,    label: "Inventario"       }] : []),
-    { path: "/historial",      icon: History,    label: "Historial"       },
-    ...(mostrarActividadEquipo ? [{ path: "/equipo/actividad", icon: Users,      label: "Actividad"        }] : []),
-    { path: "/perfil",         icon: User,       label: "Perfil"          },
+    { path: "/",               icon: Home,           label: "Inicio"          },
+    ...(mostrarAplicaciones    ? [{ path: "/nueva-aplicacion",                   icon: PlusCircle,     label: "Nueva Aplicación" }] : []),
+    ...(mostrarInventario      ? [{ path: "/inventario",                          icon: Package,        label: "Inventario"       }] : []),
+    { path: "/historial",      icon: History,        label: "Historial"       },
+    ...(mostrarActividadEquipo ? [{ path: "/equipo/actividad",                    icon: Users,          label: "Actividad"        }] : []),
+    ...(mostrarAuditorias      ? [{ path: "/inocuidad/auditorias-primusgfs",      icon: ClipboardCheck, label: "Auditorías"        }] : []),
+    { path: "/perfil",         icon: User,           label: "Perfil"          },
   ];
 
   const pageTitle = getPageTitle(location.pathname);
@@ -69,9 +71,14 @@ export function Layout() {
   const themeLabel = theme === 'dark' ? 'Oscuro' : 'Claro';
 
   function isActive(path: string) {
-    return path === "/"
-      ? location.pathname === "/" || location.pathname.startsWith("/inocuidad")
-      : location.pathname.startsWith(path);
+    if (path === "/") {
+      return (
+        location.pathname === "/" ||
+        (location.pathname.startsWith("/inocuidad") &&
+          !location.pathname.startsWith("/inocuidad/auditorias-primusgfs"))
+      )
+    }
+    return location.pathname.startsWith(path)
   }
 
   return (

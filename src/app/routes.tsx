@@ -105,6 +105,8 @@ import { TrazabilidadProducto } from "./screens/TrazabilidadProducto";
 import { RequireModulo } from "./components/RequireModulo";
 import { NfcEstacion } from "./screens/NfcEstacion";
 import AuditoriasPrimusGFS from "./screens/AuditoriasPrimusGFS";
+import { NuevaAuditoriaPGFS } from "./screens/NuevaAuditoriaPGFS";
+import { CapturaAuditoriaPGFS } from "./screens/CapturaAuditoriaPGFS";
 import { RestablecerContrasena } from "./screens/RestablecerContrasena";
 
 export const router = createBrowserRouter([
@@ -154,6 +156,8 @@ export const router = createBrowserRouter([
               { path: "perfil/mi-organizacion", Component: MiOrganizacion },
               { path: "equipo/actividad", Component: ActividadEquipo },
               { path: "inocuidad/auditorias-primusgfs", Component: AuditoriasPrimusGFS },
+              { path: "inocuidad/auditorias-primusgfs/nueva", Component: NuevaAuditoriaPGFS },
+              { path: "inocuidad/auditorias-primusgfs/:auditoriaId", Component: CapturaAuditoriaPGFS },
               {
                 path: "inocuidad",
                 Component: RequireModulo,

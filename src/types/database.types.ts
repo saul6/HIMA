@@ -1,6 +1,6 @@
 // Tipos TypeScript generados manualmente — actualizar si se agregan columnas o tablas.
 
-export type Rol = 'super_admin' | 'admin_org' | 'asesor_tecnico' | 'operario'
+export type Rol = 'super_admin' | 'admin_org' | 'asesor_tecnico' | 'operario' | 'auditor'
 export type TipoOrganizacion = 'empresa' | 'individuo'
 export type PlanOrganizacion = 'pendiente' | 'free' | 'basico' | 'personalizado'
 export type EstadoOrganizacion = 'activa' | 'suspendida' | 'cancelada'
@@ -1807,7 +1807,7 @@ export type AudRespuesta =
   | 'no_conformidad'
   | 'na'
 
-export type AudEstado = 'en_proceso' | 'completada'
+export type AudEstado = 'en_proceso' | 'completada' | 'cerrada'
 export type AudFallaAutomatica = 'ninguno' | 'alerta'
 export type AudTriggerFalla = 'ninguno' | 'cualquier_descuento' | 'solo_cero'
 
@@ -1841,6 +1841,15 @@ export interface AudComentarioEsquema {
   tipo: 'texto' | 'seleccion' | 'fecha' | 'numero'
   requerido: boolean
   opciones: string[] | null
+  info_minima: string | null
+  orden: number
+}
+
+export interface AudModuloNorma {
+  id: string
+  version_id: string
+  nombre: string
+  app_modulo_codigo: string
   orden: number
 }
 
