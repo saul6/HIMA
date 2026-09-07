@@ -18,6 +18,10 @@ import { validarImagen } from '@/lib/validarImagen'
 import { generarReporteIncidenciasPDF } from '@/lib/pdf/m13/generarReporteIncidenciasPDF'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { generarReporteIncidenciasConsolidadoPDF } from '@/lib/pdf/m13/generarReporteIncidenciasConsolidadoPDF'
+import {
+  guardarBorrador, cargarBorrador, borrarBorrador, limpiarBorradoresViejos,
+  type M13DraftData,
+} from '@/lib/idb/m13DraftStore'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -333,14 +337,101 @@ export function ReporteIncidencias() {
 
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }))
 
-  function abrirSheet() {
+  // Draft local (IndexedDB) — clave única por usuario y organización
+  const draftKey = profile?.org_id && user?.id
+    ? `draft:m13:${profile.org_id}:${user.id}`
+    : null
+  const [hayBorrador, setHayBorrador] = useState(false)
+  const [confirmDraftVisible, setConfirmDraftVisible] = useState(false)
+  const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [estadoBorrador, setEstadoBorrador] = useState<'guardando' | 'guardado' | null>(null)
+
+  // Inicialización: limpieza de borradores viejos + check de borrador existente
+  useEffect(() => {
+    if (!draftKey) return
+    limpiarBorradoresViejos().catch(() => {})
+    cargarBorrador(draftKey)
+      .then((draft) => { if (draft) setHayBorrador(true) })
+      .catch(() => {})
+  }, [draftKey])
+
+  // Autosave con debounce de 500 ms mientras el sheet está abierto
+  useEffect(() => {
+    if (!sheetAbierto || !draftKey) return
+    if (draftTimerRef.current) clearTimeout(draftTimerRef.current)
+    setEstadoBorrador('guardando')
+    draftTimerRef.current = setTimeout(() => {
+      const data: M13DraftData = {
+        savedAt: Date.now(),
+        ranchoId,
+        fecha,
+        auditorNombre,
+        incidencias: incidencias.map((inc) => ({
+          uid: inc.uid,
+          descripcion: inc.descripcion,
+          fotos: inc.fotos.map((f) => ({
+            uid: f.uid,
+            blob: f.file,
+            nombre: f.file.name,
+            tipo: f.file.type || 'image/jpeg',
+          })),
+        })),
+      }
+      guardarBorrador(draftKey, data)
+        .then(() => { setEstadoBorrador('guardado'); setHayBorrador(true) })
+        .catch(() => { setEstadoBorrador(null) })
+    }, 500)
+    return () => { if (draftTimerRef.current) clearTimeout(draftTimerRef.current) }
+  }, [sheetAbierto, ranchoId, fecha, auditorNombre, incidencias, draftKey])
+
+  function abrirSheetFresco() {
     setRanchoId('')
     setFecha(hoy())
     setAuditorNombre('')
     setIncidencias([nuevaIncidencia()])
     setErrRancho(false)
     setProgreso(null)
+    setEstadoBorrador(null)
     setSheetAbierto(true)
+  }
+
+  function abrirSheet() {
+    if (hayBorrador) { setConfirmDraftVisible(true); return }
+    abrirSheetFresco()
+  }
+
+  async function handleContinuarBorrador() {
+    setConfirmDraftVisible(false)
+    if (!draftKey) { abrirSheetFresco(); return }
+    try {
+      const draft = await cargarBorrador(draftKey)
+      if (!draft) { abrirSheetFresco(); return }
+      setRanchoId(draft.ranchoId)
+      setFecha(draft.fecha)
+      setAuditorNombre(draft.auditorNombre)
+      setIncidencias(draft.incidencias.map((inc) => ({
+        uid: inc.uid,
+        descripcion: inc.descripcion,
+        fotos: inc.fotos.map((f) => ({
+          uid: f.uid,
+          file: new File([f.blob], f.nombre, { type: f.tipo }),
+          preview: URL.createObjectURL(f.blob),
+        })),
+      })))
+      setErrRancho(false)
+      setProgreso(null)
+      setEstadoBorrador('guardado')
+      setSheetAbierto(true)
+    } catch {
+      abrirSheetFresco()
+    }
+  }
+
+  function handleDescartarBorrador() {
+    setConfirmDraftVisible(false)
+    setHayBorrador(false)
+    if (draftKey) borrarBorrador(draftKey).catch(() => {})
+    abrirSheetFresco()
   }
 
   function actualizarIncidencia(uid: string, upd: Partial<IncidenciaLocal>) {
@@ -512,6 +603,7 @@ export function ReporteIncidencias() {
           'Tu sesión expiró durante la subida. El reporte y sus comentarios quedaron guardados. Vuelve a iniciar sesión para reintentar las fotos.',
           { duration: 10000 }
         )
+        if (draftKey) { borrarBorrador(draftKey).catch(() => {}); setHayBorrador(false) }
         setSheetAbierto(false)
         await refetch()
         return
@@ -529,6 +621,7 @@ export function ReporteIncidencias() {
 
       setSheetAbierto(false)
       await refetch()
+      if (draftKey) { borrarBorrador(draftKey).catch(() => {}); setHayBorrador(false) }
 
       // PASO 5: Descarga automática del PDF con lo guardado
       try {
@@ -898,6 +991,44 @@ export function ReporteIncidencias() {
             </div>
       </BottomSheet>
 
+      {/* Diálogo confirmación borrador */}
+      {confirmDraftVisible && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          onClick={() => setConfirmDraftVisible(false)}
+        >
+          <div
+            className="w-full max-w-[390px] bg-card rounded-2xl p-6 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div>
+              <h3 className="text-base text-foreground mb-1" style={{ fontWeight: 600 }}>
+                Tienes un borrador guardado
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Hay un reporte sin terminar. ¿Quieres continuar donde lo dejaste o empezar uno nuevo?
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleContinuarBorrador}
+                className="w-full h-12 bg-primary text-white rounded-xl text-sm hover:bg-agro-blue transition-colors"
+                style={{ fontWeight: 600 }}
+              >
+                Continuar borrador
+              </button>
+              <button
+                onClick={handleDescartarBorrador}
+                className="w-full h-12 border border-border rounded-xl text-sm text-foreground hover:bg-muted transition-colors"
+              >
+                Descartar y empezar nuevo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Bottom Sheet — formulario */}
       <BottomSheet open={sheetAbierto} onClose={() => !guardando && setSheetAbierto(false)} height="85%">
             {/* Handle */}
@@ -907,9 +1038,14 @@ export function ReporteIncidencias() {
 
             {/* Header sheet */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
-                Nuevo reporte
-              </h2>
+              <div className="flex flex-col">
+                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                  Nuevo reporte
+                </h2>
+                {estadoBorrador === 'guardado' && (
+                  <span className="text-[11px] text-muted-foreground">Borrador guardado</span>
+                )}
+              </div>
               <button
                 onClick={() => !guardando && setSheetAbierto(false)}
                 className="p-1"
