@@ -61,13 +61,19 @@ function formatFecha(iso: string): string {
 }
 
 async function comprimirFoto(file: File): Promise<File> {
-  return imageCompression(file, {
+  const comprimir = imageCompression(file, {
     maxSizeMB: 0.5,
     maxWidthOrHeight: 1600,
-    useWebWorker: true,
+    useWebWorker: false,
     fileType: 'image/jpeg',
     initialQuality: 0.7,
   })
+  return Promise.race([
+    comprimir,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('COMPRESSION_TIMEOUT')), 10_000)
+    ),
+  ])
 }
 
 function nuevaIncidencia(): IncidenciaLocal {
@@ -451,13 +457,21 @@ export function ReporteIncidencias() {
 
           for (let intento = 0; intento < MAX_REINTENTOS_FOTO; intento++) {
             try {
-              const comprimida = await comprimirFoto(fotoLocal.file)
-              if (comprimida.size > MAX_FOTO_BYTES) {
+              // Comprimir con fallback: si la compresión falla o supera el timeout, usar el original
+              let archivoASubir: File
+              try {
+                const comprimida = await comprimirFoto(fotoLocal.file)
+                archivoASubir = comprimida.size <= MAX_FOTO_BYTES ? comprimida : fotoLocal.file
+              } catch (compErr) {
+                console.warn(`M13 foto ${j + 1}/${inc.fotos.length}: compresión fallida, usando original`, compErr)
+                archivoASubir = fotoLocal.file
+              }
+              if (archivoASubir.size > MAX_FOTO_BYTES) {
                 throw new Error(
-                  `La foto ${j + 1} de la incidencia ${i + 1} sigue siendo demasiado grande (${(comprimida.size / 1024 / 1024).toFixed(1)} MB). Usa una foto con menor resolución.`
+                  `La foto ${j + 1} de la incidencia ${i + 1} es demasiado grande (${(archivoASubir.size / 1024 / 1024).toFixed(1)} MB). Usa una foto con menor resolución.`
                 )
               }
-              await subirFoto(path, comprimida)
+              await subirFoto(path, archivoASubir)
               const { data: fotoData, error: errFoto } = await supabase
                 .from('m13_incidencia_fotos')
                 .insert({
@@ -474,16 +488,15 @@ export function ReporteIncidencias() {
               subida = true
               break
             } catch (e) {
+              console.error(`M13 foto ${j + 1} intento ${intento + 1}/${MAX_REINTENTOS_FOTO}:`, e)
               const msg = e instanceof Error ? e.message : ''
               // Detectar sesión expirada (401/JWT) — abortar subida sin rollback
               if (msg.includes('401') || msg.includes('JWT') || msg.toLowerCase().includes('token')) {
                 sesionExpirada = true
                 break
               }
-              // Si quedan reintentos, continuar; si no, marcar como fallida
-              if (intento === MAX_REINTENTOS_FOTO - 1) {
-                // Foto falló definitivamente
-              }
+              // Foto demasiado grande — no tiene sentido reintentar
+              if (msg.includes('demasiado grande')) break
             }
           }
 
