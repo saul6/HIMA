@@ -1,7 +1,7 @@
 ﻿import { useState, useRef, useEffect, useCallback } from 'react'
 import {
   ChevronLeft, Plus, Loader2, Files, Camera, Trash2,
-  AlertTriangle, FileDown, ShieldAlert,
+  AlertTriangle, FileDown, ShieldAlert, Image,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -280,7 +280,8 @@ export function RegistroAccidentesLaborales() {
   const [form, setForm] = useState<FormState>(FORM_INICIAL)
   const [fotosLocal, setFotosLocal] = useState<FotoLocal[]>([])
   const [guardando, setGuardando] = useState(false)
-  const fotoInputRef = useRef<HTMLInputElement>(null)
+  const fotoCamaraRef = useRef<HTMLInputElement>(null)
+  const fotoGaleriaRef = useRef<HTMLInputElement>(null)
 
   // PDF individual
   const [cargandoPDF, setCargandoPDF] = useState<string | null>(null)
@@ -746,22 +747,41 @@ export function RegistroAccidentesLaborales() {
                 </div>
               )}
 
-              <button
-                type="button"
-                onClick={() => fotoInputRef.current?.click()}
-                className="flex items-center gap-2 px-4 py-3 rounded-lg border border-dashed border-border bg-[var(--input-background)] text-sm text-muted-foreground hover:bg-muted transition-colors w-full"
-              >
-                <Camera className="w-4 h-4" />
-                Agregar fotos
-              </button>
               <input
-                ref={fotoInputRef}
+                ref={fotoCamaraRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                multiple
+                className="hidden"
+                onChange={handleFotoInput}
+              />
+              <input
+                ref={fotoGaleriaRef}
                 type="file"
                 accept="image/*"
                 multiple
                 className="hidden"
                 onChange={handleFotoInput}
               />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => fotoCamaraRef.current?.click()}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-3 rounded-lg border border-dashed border-border bg-[var(--input-background)] text-sm text-muted-foreground hover:bg-muted transition-colors"
+                >
+                  <Camera className="w-4 h-4" />
+                  Tomar foto
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fotoGaleriaRef.current?.click()}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-3 rounded-lg border border-dashed border-border bg-[var(--input-background)] text-sm text-muted-foreground hover:bg-muted transition-colors"
+                >
+                  <Image className="w-4 h-4" />
+                  Galería
+                </button>
+              </div>
             </div>
 
           </div>

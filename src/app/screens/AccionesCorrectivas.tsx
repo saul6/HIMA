@@ -1,6 +1,6 @@
 ﻿import { useState, useRef, useEffect } from 'react'
 import {
-  ChevronLeft, Loader2, FileDown, Camera, Trash2,
+  ChevronLeft, Loader2, FileDown, Camera, Image, Trash2,
   AlertTriangle, ClipboardCheck,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
@@ -198,7 +198,8 @@ export function AccionesCorrectivas() {
   // Fotos
   const [fotosGuardadas, setFotosGuardadas] = useState<AccionCorrectivaFoto[]>([])
   const [fotosPendientes, setFotosPendientes] = useState<FotoLocal[]>([])
-  const fotoInputRef = useRef<HTMLInputElement>(null)
+  const fotoCamaraRef = useRef<HTMLInputElement>(null)
+  const fotoGaleriaRef = useRef<HTMLInputElement>(null)
   const [tipoFotoNueva, setTipoFotoNueva] = useState<'no_conformidad' | 'evidencia_correccion'>(
     'evidencia_correccion'
   )
@@ -743,19 +744,37 @@ export function AccionesCorrectivas() {
                   className="w-full h-9 px-3 rounded-lg border border-border bg-input-background text-sm"
                 />
               </div>
-              <button
-                onClick={() => fotoInputRef.current?.click()}
-                className="w-full h-10 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 text-sm text-muted-foreground"
-              >
-                <Camera className="w-4 h-4" /> Agregar foto
-              </button>
               <input
-                ref={fotoInputRef}
+                ref={fotoCamaraRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handlePickFoto}
+              />
+              <input
+                ref={fotoGaleriaRef}
                 type="file"
                 accept="image/*"
                 className="hidden"
                 onChange={handlePickFoto}
               />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => fotoCamaraRef.current?.click()}
+                  className="flex-1 h-10 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                >
+                  <Camera className="w-4 h-4" /> Tomar foto
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fotoGaleriaRef.current?.click()}
+                  className="flex-1 h-10 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                >
+                  <Image className="w-4 h-4" /> Galería
+                </button>
+              </div>
             </div>
           </div>
         </div>

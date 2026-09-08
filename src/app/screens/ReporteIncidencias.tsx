@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import {
   ChevronLeft, Plus, X, Loader2, Files, AlertTriangle,
-  Camera, Trash2, ImageOff, ClipboardList, FileDown,
+  Camera, Image, Trash2, ImageOff, ClipboardList, FileDown,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -147,7 +147,8 @@ function IncidenciaForm({
   onQuitar: () => void
   totalFotosReporte: number
 }) {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputCamaraRef = useRef<HTMLInputElement>(null)
+  const inputGaleriaRef = useRef<HTMLInputElement>(null)
   const atLimit = totalFotosReporte >= MAX_FOTOS_REPORTE
 
   useEffect(() => {
@@ -272,9 +273,19 @@ function IncidenciaForm({
         </div>
       )}
 
-      {/* Input cámara/galería */}
+      {/* Inputs ocultos: cámara y galería */}
       <input
-        ref={inputRef}
+        ref={inputCamaraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        multiple
+        className="hidden"
+        onChange={(e) => handleFiles(e.target.files)}
+        onClick={(e) => { (e.target as HTMLInputElement).value = '' }}
+      />
+      <input
+        ref={inputGaleriaRef}
         type="file"
         accept="image/*"
         multiple
@@ -282,15 +293,30 @@ function IncidenciaForm({
         onChange={(e) => handleFiles(e.target.files)}
         onClick={(e) => { (e.target as HTMLInputElement).value = '' }}
       />
-      <button
-        type="button"
-        onClick={() => { if (!atLimit) inputRef.current?.click() }}
-        disabled={atLimit}
-        className="w-full h-10 flex items-center justify-center gap-2 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-border disabled:hover:text-muted-foreground"
-      >
-        <Camera className="w-4 h-4" />
-        {atLimit ? 'Límite de fotos alcanzado' : 'Agregar foto / tomar foto'}
-      </button>
+      {atLimit ? (
+        <p className="w-full h-10 flex items-center justify-center text-sm text-muted-foreground opacity-40">
+          Límite de fotos alcanzado
+        </p>
+      ) : (
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => inputCamaraRef.current?.click()}
+            className="flex-1 h-10 flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+          >
+            <Camera className="w-4 h-4" />
+            Tomar foto
+          </button>
+          <button
+            type="button"
+            onClick={() => inputGaleriaRef.current?.click()}
+            className="flex-1 h-10 flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+          >
+            <Image className="w-4 h-4" />
+            Galería
+          </button>
+        </div>
+      )}
     </div>
   )
 }
