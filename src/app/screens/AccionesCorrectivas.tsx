@@ -753,7 +753,6 @@ export function AccionesCorrectivas() {
                 ref={fotoInputRef}
                 type="file"
                 accept="image/*"
-                capture="environment"
                 className="hidden"
                 onChange={handlePickFoto}
               />
