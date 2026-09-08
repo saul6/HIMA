@@ -473,7 +473,7 @@ export function MonitoreoEstacionesPlagas() {
   }
 
   async function handleAgregarEstacion() {
-    if (!estRanchoId) { toast.error(`Selecciona una ${terminosSitio.singular}`); return }
+    if (!estRanchoId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     if (!addNumero.trim()) { toast.error('Ingresa el número de la estación'); return }
     if (!profile?.org_id) return
     setAddingEst(true)
@@ -596,7 +596,7 @@ export function MonitoreoEstacionesPlagas() {
     .filter(g => g.estaciones.length > 0)
 
   async function handleGuardar() {
-    if (!form.ranchoId) { toast.error(`Selecciona una ${terminosSitio.singular}`); return }
+    if (!form.ranchoId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     if (!form.fecha) { toast.error('Selecciona la fecha'); return }
     if (!form.inspectorNombre.trim()) { toast.error('Ingresa el nombre del inspector'); return }
     if (estacionesActivas.length === 0) {
@@ -879,7 +879,7 @@ export function MonitoreoEstacionesPlagas() {
   const [cargandoCons, setCargandoCons] = useState(false)
 
   async function handleConsolidado() {
-    if (!consRanchoId) { toast.error(`Selecciona una ${terminosSitio.singular}`); return }
+    if (!consRanchoId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     if (!consDesde || !consHasta) { toast.error('Selecciona el rango de fechas'); return }
     if (!profile?.org_id) return
     const rancho = ranchos.find(r => r.id === consRanchoId)
@@ -1111,7 +1111,7 @@ export function MonitoreoEstacionesPlagas() {
                 value={form.ranchoId}
                 onChange={e => setFormField('ranchoId', e.target.value)}
               >
-                <option value="">Selecciona una {terminosSitio.singular.toLowerCase()}</option>
+                <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
                 {ranchos.map(r => (
                   <option key={r.id} value={r.id}>{r.nombre}</option>
                 ))}

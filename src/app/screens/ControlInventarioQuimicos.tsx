@@ -408,7 +408,7 @@ export function ControlInventarioQuimicos() {
 
   async function guardarQuimico() {
     if (!orgId || !ranchoId) {
-      toast.error(`Selecciona una ${terminosSitio.singular}`)
+      toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`)
       return
     }
     if (!quimicoForm.nombre.trim()) { toast.error('Ingresa el nombre del químico'); return }
@@ -456,7 +456,7 @@ export function ControlInventarioQuimicos() {
 
   async function exportarConsolidado() {
     if (!consolidadoForm.rancho_id) {
-      toast.error(`Selecciona una ${terminosSitio.singular}`)
+      toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`)
       return
     }
     if (!orgId) return

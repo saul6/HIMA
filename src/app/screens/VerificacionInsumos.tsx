@@ -504,7 +504,7 @@ export function VerificacionInsumos() {
   }
 
   async function handleAgregarInsumo() {
-    if (!catRanchoId || !orgId) { toast.error(`Selecciona una ${termino}`); return }
+    if (!catRanchoId || !orgId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${termino}`); return }
     if (!catNuevaArea.trim()) { toast.error('Ingresa el área'); return }
     if (!catNuevoInsumo.trim()) { toast.error('Ingresa el insumo'); return }
     setCatAgregando(true)
@@ -556,7 +556,7 @@ export function VerificacionInsumos() {
   }
 
   async function handleCargarPlantilla() {
-    if (!catRanchoId || !orgId) { toast.error(`Selecciona una ${termino}`); return }
+    if (!catRanchoId || !orgId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${termino}`); return }
     setCatCargandoPlantilla(true)
     try {
       const rows: { org_id: string; rancho_id: string; area: string; insumo: string; activo: boolean; orden: number }[] = []
@@ -867,7 +867,7 @@ export function VerificacionInsumos() {
                     className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
                     style={{ borderColor: nErrRancho ? 'var(--agro-red)' : undefined }}
                   >
-                    <option value="">Selecciona una {termino.toLowerCase()}</option>
+                    <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}</option>
                     {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                   {nErrRancho && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>}
@@ -1002,7 +1002,7 @@ export function VerificacionInsumos() {
                 onChange={(e) => setCatRanchoId(e.target.value)}
                 className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm mb-3"
               >
-                <option value="">Selecciona una {termino.toLowerCase()}</option>
+                <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}</option>
                 {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
 
@@ -1051,7 +1051,7 @@ export function VerificacionInsumos() {
               {loadingGestion ? (
                 <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 text-primary animate-spin" /></div>
               ) : !catRanchoId ? (
-                <p className="text-sm text-muted-foreground text-center py-8">Selecciona una {termino.toLowerCase()} para ver su catálogo</p>
+                <p className="text-sm text-muted-foreground text-center py-8">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()} para ver su catálogo</p>
               ) : insumosGestion.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">Sin insumos. Agrega uno o carga la plantilla estándar.</p>
               ) : (
@@ -1107,7 +1107,7 @@ export function VerificacionInsumos() {
                     className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
                     style={{ borderColor: cErrRancho ? 'var(--agro-red)' : undefined }}
                   >
-                    <option value="">Selecciona una {termino.toLowerCase()}</option>
+                    <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}</option>
                     {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                   {cErrRancho && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>}

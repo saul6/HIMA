@@ -81,7 +81,7 @@ export function RegistroMuestrasLaboratorio() {
 
   async function guardar() {
     if (!orgId) return
-    if (!form.rancho_id) { toast.error(`Selecciona una ${terminosSitio.singular}`); return }
+    if (!form.rancho_id) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     if (!form.fecha_muestreo) { toast.error('Ingresa la fecha de muestreo'); return }
     if (!form.descripcion_muestra.trim()) { toast.error('Ingresa la descripción de la muestra'); return }
     if (form.microorganismos.length === 0) { toast.error('Selecciona al menos un microorganismo'); return }

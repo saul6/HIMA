@@ -346,7 +346,7 @@ export function RegistroAccidentesLaborales() {
   // ── Guardar ─────────────────────────────────────────────────────────────────
 
   async function handleGuardar() {
-    if (!form.ranchoId) { toast.error(`Selecciona una ${terminosSitio.singular}`); return }
+    if (!form.ranchoId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     if (!form.fecha) { toast.error('Selecciona la fecha del accidente'); return }
     if (!form.trabajadorNombre.trim()) { toast.error('Ingresa el nombre del trabajador'); return }
     if (!profile?.org_id) return
@@ -453,7 +453,7 @@ export function RegistroAccidentesLaborales() {
   // ── Consolidado ─────────────────────────────────────────────────────────────
 
   async function handleConsolidado() {
-    if (!consolidadoRanchoId) { toast.error(`Selecciona una ${terminosSitio.singular}`); return }
+    if (!consolidadoRanchoId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     if (!consolidadoDesde || !consolidadoHasta) { toast.error('Selecciona el rango de fechas'); return }
     if (!profile?.org_id) return
     const rancho = ranchos.find((r) => r.id === consolidadoRanchoId)
@@ -574,7 +574,7 @@ export function RegistroAccidentesLaborales() {
                 value={form.ranchoId}
                 onChange={(e) => set('ranchoId', e.target.value)}
               >
-                <option value="">Selecciona una {terminosSitio.singular.toLowerCase()}</option>
+                <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
                 {ranchos.map((r) => (
                   <option key={r.id} value={r.id}>{r.nombre}</option>
                 ))}

@@ -189,7 +189,7 @@ export function RegistroPersonal() {
 
   async function guardar() {
     if (!orgId) return
-    if (!form.rancho_id) { toast.error(`Selecciona una ${terminosSitio.singular}`); return }
+    if (!form.rancho_id) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     if (!form.nombre.trim()) { toast.error('El nombre es obligatorio'); return }
     setGuardando(true)
     try {
@@ -329,7 +329,7 @@ export function RegistroPersonal() {
 
   async function exportarPDF() {
     if (!orgId) return
-    if (!pdfRanchoId) { toast.error(`Selecciona una ${terminosSitio.singular}`); return }
+    if (!pdfRanchoId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     setExportando(true)
     try {
       await generarRegistroPersonalPDF(pdfRanchoId, orgId, codigoClave)

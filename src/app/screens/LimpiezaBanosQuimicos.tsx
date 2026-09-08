@@ -370,7 +370,7 @@ export function LimpiezaBanosQuimicos() {
   }
 
   async function handleAgregarItem() {
-    if (!catRanchoId || !orgId) { toast.error(`Selecciona una ${termino}`); return }
+    if (!catRanchoId || !orgId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${termino}`); return }
     if (!catNombre.trim()) { toast.error('Ingresa el nombre de la actividad'); return }
     setCatAgregando(true)
     try {
@@ -415,7 +415,7 @@ export function LimpiezaBanosQuimicos() {
   }
 
   async function handleCargarPlantilla() {
-    if (!catRanchoId || !orgId) { toast.error(`Selecciona una ${termino}`); return }
+    if (!catRanchoId || !orgId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${termino}`); return }
     setCatCargandoPlantilla(true)
     try {
       const rows = PLANTILLA_ESTANDAR.map((item) => ({
@@ -949,7 +949,7 @@ export function LimpiezaBanosQuimicos() {
                 className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
                 style={{ borderColor: nErrRancho ? 'var(--agro-red)' : undefined }}
               >
-                <option value="">Selecciona una {termino.toLowerCase()}</option>
+                <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}</option>
                 {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
               {nErrRancho && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>}
@@ -1005,7 +1005,7 @@ export function LimpiezaBanosQuimicos() {
                 onChange={(e) => setCatRanchoId(e.target.value)}
                 className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
               >
-                <option value="">Selecciona una {termino.toLowerCase()}</option>
+                <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}</option>
                 {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
@@ -1110,7 +1110,7 @@ export function LimpiezaBanosQuimicos() {
                 className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
                 style={{ borderColor: cErrRancho ? 'var(--agro-red)' : undefined }}
               >
-                <option value="">Selecciona una {termino.toLowerCase()}</option>
+                <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}</option>
                 {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
               {cErrRancho && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>}

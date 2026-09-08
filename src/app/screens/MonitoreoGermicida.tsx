@@ -68,7 +68,7 @@ export function MonitoreoGermicida() {
 
   async function guardar() {
     if (!orgId) return
-    if (!form.rancho_id) { toast.error(`Selecciona una ${terminosSitio.singular}`); return }
+    if (!form.rancho_id) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     if (!form.tipo_germicida.trim()) { toast.error('Ingresa el tipo de germicida'); return }
     if (!form.uso.trim()) { toast.error('Ingresa el uso'); return }
     const conc = parseFloat(form.concentracion)

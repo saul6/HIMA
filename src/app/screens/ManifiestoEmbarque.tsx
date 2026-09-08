@@ -189,7 +189,7 @@ export function ManifiestoEmbarque() {
 
   async function guardar() {
     if (!orgId) return
-    if (!form.rancho_id) { toast.error(`Selecciona una ${terminosSitio.singular}`); return }
+    if (!form.rancho_id) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     if (form.cond_presencia_plagas && !form.plaga_descripcion.trim()) {
       toast.error('Describe el hallazgo de plaga para registrar la incidencia')
       return

@@ -399,7 +399,7 @@ export function RondinesVigilancia() {
   )
 
   async function handleAgregarItem() {
-    if (!confRanchoId || !orgId) { toast.error(`Selecciona una ${termino}`); return }
+    if (!confRanchoId || !orgId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${termino}`); return }
     if (!confArea.trim()) { toast.error('Ingresa el área'); return }
     if (!confNombre.trim()) { toast.error('Ingresa el nombre del punto'); return }
     setConfAgregando(true)
@@ -444,7 +444,7 @@ export function RondinesVigilancia() {
   }
 
   async function handleCargarPlantilla() {
-    if (!confRanchoId || !orgId) { toast.error(`Selecciona una ${termino}`); return }
+    if (!confRanchoId || !orgId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${termino}`); return }
     setConfCargandoPlantilla(true)
     try {
       const rows = PLANTILLA_ESTANDAR.map((item) => ({
@@ -627,7 +627,7 @@ export function RondinesVigilancia() {
                   </select>
                   {nErrRancho && (
                     <p className="text-xs" style={{ color: 'var(--agro-red)' }}>
-                      Selecciona una {termino.toLowerCase()}
+                      Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}
                     </p>
                   )}
                 </div>
@@ -793,7 +793,7 @@ export function RondinesVigilancia() {
                   )
                 ) : (
                   <p className="text-xs text-muted-foreground text-center py-2">
-                    Selecciona una {termino.toLowerCase()} para ver los puntos
+                    Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()} para ver los puntos
                   </p>
                 )}
               </div>

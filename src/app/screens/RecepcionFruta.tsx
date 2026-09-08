@@ -229,7 +229,7 @@ export function RecepcionFruta() {
   async function guardar() {
     if (savingRef.current) return // evita doble-submit antes de que React deshabilite el botón
     if (!orgId) return
-    if (!form.rancho_id) { toast.error(`Selecciona una ${terminosSitio.singular}`); return }
+    if (!form.rancho_id) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     if (esAlmacen && !form.empresa.trim()) { toast.error('Indica la empresa proveedora (requerida para trazabilidad)'); return }
     savingRef.current = true
     setGuardando(true)

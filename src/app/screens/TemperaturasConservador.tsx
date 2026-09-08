@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router'
 import { ChevronLeft, Thermometer, Download, Plus, FileText, AlertTriangle } from 'lucide-react'
+import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
@@ -117,7 +118,7 @@ export function TemperaturasConservador() {
   }, [registros])
 
   const guardar = useCallback(async () => {
-    if (!orgId || !form.rancho_id) { toast.error(`Selecciona una ${terminosSitio.singular.toLowerCase()}`); return }
+    if (!orgId || !form.rancho_id) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular.toLowerCase()}`); return }
     setCargando(true)
     try {
       let regId: string
@@ -309,27 +310,18 @@ export function TemperaturasConservador() {
       </button>
 
       {/* Formulario */}
-      {abierto && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col justify-end"
-          style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
-          onClick={e => { if (e.target === e.currentTarget) setAbierto(false) }}
-        >
-          <div
-            className="rounded-t-[10px] flex flex-col overflow-hidden"
-            style={{ backgroundColor: 'var(--card)', height: '85%' }}
-          >
-            <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
-              <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
-            </div>
-            <div className="flex items-center justify-between px-5 pb-3 flex-shrink-0">
-              <h2 className="text-[15px] font-semibold">
-                {registroExistenteId ? 'Actualizar registro' : 'Nuevo registro'}
-              </h2>
-              <button onClick={() => setAbierto(false)} className="text-[13px]" style={{ color: 'var(--muted-foreground)' }}>
-                Cancelar
-              </button>
-            </div>
+      <BottomSheet open={abierto} onClose={() => setAbierto(false)} height="85%">
+          <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
+            <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
+          </div>
+          <div className="flex items-center justify-between px-5 pb-3 flex-shrink-0">
+            <h2 className="text-[15px] font-semibold">
+              {registroExistenteId ? 'Actualizar registro' : 'Nuevo registro'}
+            </h2>
+            <button onClick={() => setAbierto(false)} className="text-[13px]" style={{ color: 'var(--muted-foreground)' }}>
+              Cancelar
+            </button>
+          </div>
 
             <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-4">
               {/* Instalación */}
@@ -480,21 +472,10 @@ export function TemperaturasConservador() {
                 {cargando ? 'Guardando...' : registroExistenteId ? 'Actualizar y descargar PDF' : 'Guardar y descargar PDF'}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+      </BottomSheet>
 
       {/* Consolidado */}
-      {consolAbierto && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col justify-end"
-          style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
-          onClick={e => { if (e.target === e.currentTarget) setConsolAbierto(false) }}
-        >
-          <div
-            className="rounded-t-[10px] flex flex-col overflow-hidden"
-            style={{ backgroundColor: 'var(--card)', height: '52%' }}
-          >
+      <BottomSheet open={consolAbierto} onClose={() => setConsolAbierto(false)} height="52%">
             <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
               <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
             </div>
@@ -552,9 +533,7 @@ export function TemperaturasConservador() {
                 {consolCargando ? 'Generando...' : 'Generar PDF'}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+      </BottomSheet>
     </div>
   )
 }

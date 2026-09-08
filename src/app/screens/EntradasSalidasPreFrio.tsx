@@ -113,7 +113,7 @@ export function EntradasSalidasPreFrio() {
 
   async function guardar() {
     if (!orgId) return
-    if (!form.rancho_id) { toast.error(`Selecciona una ${terminosSitio.singular}`); return }
+    if (!form.rancho_id) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     setGuardando(true)
     try {
       const { data: reg, error: eReg } = await tbl('m40_registros').insert({

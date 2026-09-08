@@ -32,7 +32,7 @@ function getInputStyle(focused: boolean): React.CSSProperties {
 }
 
 export function Login() {
-  const { user, loading, signIn } = useAuthContext()
+  const { user, loading, signIn, requestPasswordReset } = useAuthContext()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const returnTo = (() => { const r = searchParams.get('returnTo') ?? ''; return r.startsWith('/') ? r : '/' })()
@@ -47,6 +47,12 @@ export function Login() {
   const [active, setActive] = useState(0)
   const [reducedMotion, setReducedMotion] = useState(false)
   const [erroredSlides, setErroredSlides] = useState<Set<number>>(new Set())
+
+  const [modoRecup, setModoRecup] = useState(false)
+  const [recupEmail, setRecupEmail] = useState('')
+  const [recupEnviado, setRecupEnviado] = useState(false)
+  const [recupCargando, setRecupCargando] = useState(false)
+  const [recupError, setRecupError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!loading && user) navigate(returnTo, { replace: true })
@@ -90,13 +96,26 @@ export function Login() {
     }
     setSubmitting(true)
     const result = await signIn(email, password, captchaToken ?? undefined)
-    setSubmitting(false)
     if (result.error) {
+      setSubmitting(false)
       setError('Correo o contraseña incorrectos')
       turnstileRef.current?.reset()
       setCaptchaToken(null)
+    }
+    // En éxito: mantener submitting=true mientras el estado de auth actualiza;
+    // el useEffect navega cuando user queda seteado.
+  }
+
+  async function handleRecuperar(e: FormEvent) {
+    e.preventDefault()
+    setRecupError(null)
+    setRecupCargando(true)
+    const result = await requestPasswordReset(recupEmail)
+    setRecupCargando(false)
+    if (result.error) {
+      setRecupError('No pudimos enviar el correo. Verifica la dirección e intenta de nuevo.')
     } else {
-      navigate(returnTo, { replace: true })
+      setRecupEnviado(true)
     }
   }
 
@@ -221,8 +240,87 @@ export function Login() {
             </p>
           </div>
 
-          {/* Formulario */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* ── Recuperación de contraseña ── */}
+          {modoRecup && (
+            <div className="space-y-4">
+              {recupEnviado ? (
+                <div className="space-y-4">
+                  <div
+                    className="p-4 rounded-xl text-sm space-y-1"
+                    style={{ background: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                  >
+                    <p style={{ fontWeight: 600 }}>Correo enviado</p>
+                    <p>
+                      Revisa tu bandeja de entrada en <strong>{recupEmail}</strong> y sigue el enlace para crear una nueva contraseña.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setModoRecup(false); setRecupEnviado(false); setRecupEmail('') }}
+                    className="w-full text-sm"
+                    style={{ color: 'var(--primary)', fontWeight: 600 }}
+                  >
+                    ← Volver al inicio de sesión
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleRecuperar} className="space-y-4">
+                  <div className="space-y-1">
+                    <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                      Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
+                    </p>
+                  </div>
+                  <div className="space-y-[6px]">
+                    <label className="text-xs font-semibold block" style={{ color: 'var(--primary)' }}>
+                      Correo electrónico
+                    </label>
+                    <div className="relative">
+                      <Mail className={iconCls} style={{ color: 'var(--muted-foreground)' }} />
+                      <input
+                        type="email"
+                        value={recupEmail}
+                        onChange={e => setRecupEmail(e.target.value)}
+                        onFocus={() => setFocusedField('recupEmail')}
+                        onBlur={() => setFocusedField(null)}
+                        placeholder="correo@ejemplo.com"
+                        required
+                        autoComplete="email"
+                        className="w-full h-12 border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--muted-foreground)]"
+                        style={getInputStyle(focusedField === 'recupEmail')}
+                      />
+                    </div>
+                  </div>
+                  {recupError && (
+                    <div
+                      className="p-3 rounded-lg text-sm"
+                      style={{ background: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+                    >
+                      {recupError}
+                    </div>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={recupCargando || !recupEmail}
+                    className="w-full h-12 text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{ background: 'var(--primary)', borderRadius: 10 }}
+                  >
+                    {recupCargando ? 'Enviando…' : 'Enviar enlace de recuperación'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setModoRecup(false); setRecupError(null) }}
+                    className="w-full text-sm"
+                    style={{ color: 'var(--muted-foreground)' }}
+                  >
+                    ← Volver al inicio de sesión
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* Formulario de login */}
+          {!modoRecup && <form onSubmit={handleSubmit} className="space-y-4">
 
             {/* Correo */}
             <div className="space-y-[6px]">
@@ -278,9 +376,14 @@ export function Login() {
                 </button>
               </div>
               <div className="flex justify-end pt-[1px]">
-                <span className="text-xs cursor-pointer" style={{ color: 'var(--muted-foreground)' }}>
+                <button
+                  type="button"
+                  onClick={() => { setModoRecup(true); setRecupEmail(email); setRecupError(null) }}
+                  className="text-xs"
+                  style={{ color: 'var(--primary)', fontWeight: 500 }}
+                >
                   ¿Olvidaste tu contraseña?
-                </span>
+                </button>
               </div>
             </div>
 
@@ -330,18 +433,20 @@ export function Login() {
                 </>
               )}
             </button>
-          </form>
+          </form>}
 
-          <p className="text-sm text-center" style={{ color: 'var(--muted-foreground)' }}>
-            ¿No tienes cuenta?{' '}
-            <Link
-              to="/registro"
-              className="font-semibold"
-              style={{ color: 'var(--secondary)' }}
-            >
-              Regístrate
-            </Link>
-          </p>
+          {!modoRecup && (
+            <p className="text-sm text-center" style={{ color: 'var(--muted-foreground)' }}>
+              ¿No tienes cuenta?{' '}
+              <Link
+                to="/registro"
+                className="font-semibold"
+                style={{ color: 'var(--secondary)' }}
+              >
+                Regístrate
+              </Link>
+            </p>
+          )}
         </div>
       </div>
     </div>
