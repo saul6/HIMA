@@ -1,6 +1,8 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import { ChevronLeft, Plus, Pencil, Trash2, X, Loader2, AlertTriangle } from 'lucide-react'
+import {
+  ChevronLeft, Plus, Pencil, Trash2, X, Loader2, AlertTriangle, Users, Check,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -12,6 +14,11 @@ import {
   actualizarRancho,
   desactivarRancho,
   actualizarAdminEditaAjenos,
+  getEmpleadosOrg,
+  getAsignacionesOrg,
+  asignarRanchoEmpleado,
+  desasignarRanchoEmpleado,
+  type EmpleadoBasicoConRol,
 } from '@/lib/queries'
 import type { Organizacion, Rancho } from '@/types/database.types'
 
@@ -71,42 +78,64 @@ export function MiOrganizacion() {
 
   const [organizacion, setOrganizacion] = useState<Organizacion | null>(null)
   const [ranchos, setRanchos] = useState<Rancho[]>([])
+  const [empleados, setEmpleados] = useState<EmpleadoBasicoConRol[]>([])
+  // Map profile_id → Set<rancho_id>
+  const [asignaciones, setAsignaciones] = useState<Map<string, Set<string>>>(new Map())
   const [cargando, setCargando] = useState(true)
 
+  const esIlimitado = organizacion ? LIMITE_POR_PLAN[organizacion.plan] === null : false
   const esPendiente = organizacion?.plan === 'pendiente'
   const limiteActual = esPendiente ? null : (organizacion ? (LIMITE_POR_PLAN[organizacion.plan] ?? null) : null)
   const enLimite = limiteActual !== null && ranchos.length >= limiteActual
   const bloqueado = esPendiente || enLimite
 
-  const esAdmin = profile?.rol === 'admin_org'
+  const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
   const [actualizandoToggle, setActualizandoToggle] = useState(false)
 
+  // ── Sheet rancho ─────────────────────────────────────────────────────────────
   const [sheetAbierto, setSheetAbierto] = useState(false)
   const [ranchoEditando, setRanchoEditando] = useState<Rancho | null>(null)
   const [form, setForm] = useState<FormRancho>(FORM_VACÍO)
   const [guardando, setGuardando] = useState(false)
   const [errores, setErrores] = useState<Partial<FormRancho>>({})
 
+  // ── Sheet asignación ─────────────────────────────────────────────────────────
+  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<EmpleadoBasicoConRol | null>(null)
+  const [asignandoRancho, setAsignandoRancho] = useState<string | null>(null)
+
   useEffect(() => {
     if (!profile?.org_id) return
     cargar()
-  }, [profile?.org_id, productor?.id])
+  }, [profile?.org_id])
 
   async function cargar() {
     setCargando(true)
     try {
-      const [org, listaRanchos] = await Promise.all([
+      const [org, listaRanchos, listaEmpleados, listaAsignaciones] = await Promise.all([
         getOrganizacion(profile!.org_id!),
-        productor ? getRanchos(productor.id) : Promise.resolve([]),
+        // Sin filtro de productor — RLS muestra todos los ranchos de la org para admin
+        getRanchos(),
+        esAdmin ? getEmpleadosOrg(profile!.org_id!) : Promise.resolve([]),
+        esAdmin ? getAsignacionesOrg(profile!.org_id!) : Promise.resolve([]),
       ])
       setOrganizacion(org)
       setRanchos(listaRanchos)
+      setEmpleados(listaEmpleados)
+
+      const mapa = new Map<string, Set<string>>()
+      for (const a of listaAsignaciones) {
+        if (!mapa.has(a.profile_id)) mapa.set(a.profile_id, new Set())
+        mapa.get(a.profile_id)!.add(a.rancho_id)
+      }
+      setAsignaciones(mapa)
     } catch {
       toast.error('Error al cargar los datos')
     } finally {
       setCargando(false)
     }
   }
+
+  // ── Rancho CRUD ───────────────────────────────────────────────────────────────
 
   function abrirCrear() {
     setRanchoEditando(null)
@@ -148,14 +177,12 @@ export function MiOrganizacion() {
 
   async function obtenerProductorId(): Promise<string> {
     if (productor?.id) return productor.id
-    // Busca el productor por profile_id (creado automáticamente en el onboarding)
     const { data: existente } = await supabase
       .from('productores')
       .select('id')
       .eq('profile_id', profile!.id)
       .single()
     if (existente?.id) return existente.id
-    // Fallback: crear productor si no existe
     const { data: nuevo, error } = await supabase
       .from('productores')
       .insert({ profile_id: profile!.id, org_id: profile!.org_id! })
@@ -180,7 +207,6 @@ export function MiOrganizacion() {
       } else {
         const productorId = await obtenerProductorId()
         const codigoNorm = form.codigo.trim().toUpperCase()
-        // Verificar duplicado solo dentro del mismo productor (igual al constraint UNIQUE(productor_id, codigo))
         const { data: yaExiste } = await (supabase as any)
           .from('ranchos')
           .select('id')
@@ -208,7 +234,6 @@ export function MiOrganizacion() {
       if (msg.includes('LIMITE_RANCHOS_PLAN')) {
         toast.warning(parsearErrorLimiteSitios(msg, organizacion?.plan, sPlural), { duration: 7000 })
       } else if (msg.includes('ranchos_productor_id_codigo_key')) {
-        // Constraint de BD: UNIQUE(productor_id, codigo) — caso de carrera (TOCTOU)
         setErrores({ codigo: `Ya existe ${sGenero === 'f' ? 'una' : 'un'} ${sTerminoL} con este código` })
       } else {
         toast.error('No se pudo guardar los cambios')
@@ -242,6 +267,44 @@ export function MiOrganizacion() {
       toast.error(`No se pudo eliminar`)
     }
   }
+
+  // ── Asignación de sitios a empleados ─────────────────────────────────────────
+
+  const asignacionesEmpleado = useMemo(() => {
+    if (!empleadoSeleccionado) return new Set<string>()
+    return asignaciones.get(empleadoSeleccionado.id) ?? new Set<string>()
+  }, [empleadoSeleccionado, asignaciones])
+
+  async function handleToggleAsignacion(ranchoId: string) {
+    if (!empleadoSeleccionado || asignandoRancho) return
+    const tieneAsignado = asignacionesEmpleado.has(ranchoId)
+    setAsignandoRancho(ranchoId)
+    try {
+      if (tieneAsignado) {
+        await desasignarRanchoEmpleado(empleadoSeleccionado.id, ranchoId)
+      } else {
+        await asignarRanchoEmpleado(empleadoSeleccionado.id, ranchoId)
+      }
+      // Actualizar estado local
+      setAsignaciones((prev) => {
+        const siguiente = new Map(prev)
+        const set = new Set(siguiente.get(empleadoSeleccionado.id) ?? [])
+        if (tieneAsignado) {
+          set.delete(ranchoId)
+        } else {
+          set.add(ranchoId)
+        }
+        siguiente.set(empleadoSeleccionado.id, set)
+        return siguiente
+      })
+    } catch {
+      toast.error('No se pudo actualizar la asignación')
+    } finally {
+      setAsignandoRancho(null)
+    }
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-full pb-safe-nav">
@@ -277,7 +340,7 @@ export function MiOrganizacion() {
               </div>
             )}
 
-            {/* Configuración del equipo — solo admin_org */}
+            {/* Configuración del equipo — solo admin */}
             {esAdmin && organizacion && (
               <div className="bg-card border border-border rounded-xl p-4 space-y-3">
                 <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
@@ -312,19 +375,68 @@ export function MiOrganizacion() {
               </div>
             )}
 
+            {/* Asignación de sitios a operarios — solo admin */}
+            {esAdmin && empleados.length > 0 && (
+              <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                    ASIGNACIÓN DE {sPlural.toUpperCase()} A OPERARIOS
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  {empleados.map((emp) => {
+                    const count = asignaciones.get(emp.id)?.size ?? 0
+                    return (
+                      <button
+                        key={emp.id}
+                        onClick={() => setEmpleadoSeleccionado(emp)}
+                        className="w-full flex items-center justify-between gap-3 py-2.5 px-3 rounded-lg bg-muted hover:bg-border transition-colors text-left"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs text-primary" style={{ fontWeight: 600 }}>
+                              {emp.nombre_completo.split(' ').slice(0, 2).map((p) => p[0]).join('').toUpperCase()}
+                            </span>
+                          </div>
+                          <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                            {emp.nombre_completo}
+                          </span>
+                        </div>
+                        <span
+                          className="text-xs flex-shrink-0 px-2 py-0.5 rounded-full"
+                          style={{
+                            background: count > 0 ? 'var(--primary)' : 'var(--muted-foreground)',
+                            color: '#fff',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {count} {count === 1 ? sTerminoL : sPluralL}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Lista de ranchos */}
             <div>
               <div className="flex items-center justify-between mb-2 px-1">
                 <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
                   {sPlural.toUpperCase()} ({ranchos.length}{limiteActual !== null ? ` de ${limiteActual}` : ''})
                 </p>
-                {limiteActual !== null && (
+                {esIlimitado ? (
+                  <p className="text-xs text-muted-foreground">
+                    Ilimitado
+                  </p>
+                ) : limiteActual !== null ? (
                   <p className="text-xs text-muted-foreground">
                     {ranchos.length < limiteActual
                       ? `${limiteActual - ranchos.length} disponible${limiteActual - ranchos.length !== 1 ? 's' : ''}`
                       : 'Límite alcanzado'}
                   </p>
-                )}
+                ) : null}
               </div>
 
               {esPendiente && (
@@ -404,22 +516,24 @@ export function MiOrganizacion() {
                           {r.superficie_ha ? ` · ${r.superficie_ha} ha` : ''}
                         </p>
                       </div>
-                      <div className="flex items-center gap-0.5 flex-shrink-0">
-                        <button
-                          onClick={() => abrirEditar(r)}
-                          className="p-2 text-muted-foreground hover:text-primary transition-colors"
-                          aria-label={`Editar ${sTerminoL}`}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleEliminar(r)}
-                          className="p-2 text-muted-foreground hover:text-agro-red transition-colors"
-                          aria-label={`Eliminar ${sTerminoL}`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      {esAdmin && (
+                        <div className="flex items-center gap-0.5 flex-shrink-0">
+                          <button
+                            onClick={() => abrirEditar(r)}
+                            className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                            aria-label={`Editar ${sTerminoL}`}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleEliminar(r)}
+                            className="p-2 text-muted-foreground hover:text-agro-red transition-colors"
+                            aria-label={`Eliminar ${sTerminoL}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -429,30 +543,32 @@ export function MiOrganizacion() {
         )}
       </div>
 
-      {/* FAB */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-        <button
-          onClick={bloqueado ? undefined : abrirCrear}
-          disabled={bloqueado}
-          className="w-14 h-14 rounded-full text-white flex items-center justify-center shadow-lg pointer-events-auto transition-colors"
-          style={{
-            background: bloqueado ? 'var(--muted-foreground)' : 'var(--primary)',
-            cursor: bloqueado ? 'not-allowed' : 'pointer',
-            opacity: bloqueado ? 0.5 : 1,
-          }}
-          aria-label={
-            esPendiente
-              ? 'Cuenta pendiente de activación'
-              : enLimite
-                ? `Límite de ${sPluralL} alcanzado`
-                : terminosSitio.agregar
-          }
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      </div>
+      {/* FAB — solo admin */}
+      {esAdmin && (
+        <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
+          <button
+            onClick={bloqueado ? undefined : abrirCrear}
+            disabled={bloqueado}
+            className="w-14 h-14 rounded-full text-white flex items-center justify-center shadow-lg pointer-events-auto transition-colors"
+            style={{
+              background: bloqueado ? 'var(--muted-foreground)' : 'var(--primary)',
+              cursor: bloqueado ? 'not-allowed' : 'pointer',
+              opacity: bloqueado ? 0.5 : 1,
+            }}
+            aria-label={
+              esPendiente
+                ? 'Cuenta pendiente de activación'
+                : enLimite
+                  ? `Límite de ${sPluralL} alcanzado`
+                  : terminosSitio.agregar
+            }
+          >
+            <Plus className="w-6 h-6" />
+          </button>
+        </div>
+      )}
 
-      {/* Bottom Sheet */}
+      {/* Bottom Sheet — crear/editar rancho */}
       {sheetAbierto && (
         <>
           <div
@@ -468,12 +584,10 @@ export function MiOrganizacion() {
               margin: '0 auto',
             }}
           >
-            {/* Handle */}
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
 
-            {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 {ranchoEditando ? `Editar ${sTerminoL}` : `Nuevo ${sTerminoL}`}
@@ -483,14 +597,9 @@ export function MiOrganizacion() {
               </button>
             </div>
 
-            {/* Campos */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {/* Nombre */}
               <div>
-                <label
-                  className="block text-xs text-muted-foreground mb-1.5"
-                  style={{ fontWeight: 600 }}
-                >
+                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
                   NOMBRE {sGenero === 'f' ? 'DE LA' : 'DEL'} {sTermino.toUpperCase()} *
                 </label>
                 <input
@@ -506,20 +615,14 @@ export function MiOrganizacion() {
                 )}
               </div>
 
-              {/* Código — solo al crear */}
               {!ranchoEditando && (
                 <div>
-                  <label
-                    className="block text-xs text-muted-foreground mb-1.5"
-                    style={{ fontWeight: 600 }}
-                  >
+                  <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
                     CÓDIGO *
                   </label>
                   <input
                     value={form.codigo}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, codigo: e.target.value.toUpperCase() }))
-                    }
+                    onChange={(e) => setForm((f) => ({ ...f, codigo: e.target.value.toUpperCase() }))}
                     placeholder="Ej: RS-01"
                     className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
                       errores.codigo ? 'border-agro-red' : 'border-border'
@@ -531,12 +634,8 @@ export function MiOrganizacion() {
                 </div>
               )}
 
-              {/* Cultivo */}
               <div>
-                <label
-                  className="block text-xs text-muted-foreground mb-1.5"
-                  style={{ fontWeight: 600 }}
-                >
+                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
                   CULTIVO *
                 </label>
                 <select
@@ -546,13 +645,9 @@ export function MiOrganizacion() {
                     errores.cultivo ? 'border-agro-red' : 'border-border'
                   } ${!form.cultivo ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
-                  <option value="" disabled>
-                    Seleccionar cultivo
-                  </option>
+                  <option value="" disabled>Seleccionar cultivo</option>
                   {CULTIVOS.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
+                    <option key={c} value={c}>{c}</option>
                   ))}
                   <option value={CULTIVO_OTRO}>Otro (especificar)…</option>
                 </select>
@@ -576,12 +671,8 @@ export function MiOrganizacion() {
                 )}
               </div>
 
-              {/* Superficie */}
               <div>
-                <label
-                  className="block text-xs text-muted-foreground mb-1.5"
-                  style={{ fontWeight: 600 }}
-                >
+                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
                   SUPERFICIE (ha) *
                 </label>
                 <input
@@ -601,7 +692,6 @@ export function MiOrganizacion() {
               </div>
             </div>
 
-            {/* Botón guardar */}
             <div className="p-4 border-t border-border flex-shrink-0">
               <button
                 onClick={handleGuardar}
@@ -612,6 +702,98 @@ export function MiOrganizacion() {
                 {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                 {ranchoEditando ? 'Guardar cambios' : `Crear ${sTerminoL}`}
               </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Bottom Sheet — asignar sitios a operario */}
+      {empleadoSeleccionado && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/40 z-30"
+            onClick={() => setEmpleadoSeleccionado(null)}
+          />
+          <div
+            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col overflow-hidden"
+            style={{
+              height: '85%',
+              borderRadius: '0.625rem 0.625rem 0 0',
+              maxWidth: 390,
+              margin: '0 auto',
+            }}
+          >
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1 rounded-full bg-border" />
+            </div>
+
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-base text-foreground truncate" style={{ fontWeight: 600 }}>
+                  {empleadoSeleccionado.nombre_completo}
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {asignacionesEmpleado.size} {asignacionesEmpleado.size === 1 ? sTerminoL : sPluralL} asignado{sGenero === 'f' ? 'a' : ''}s
+                </p>
+              </div>
+              <button onClick={() => setEmpleadoSeleccionado(null)} className="p-1 ml-2">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              {ranchos.length === 0 ? (
+                <div className="py-8 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    No hay {sPluralL} registrados en la organización.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground px-1 mb-3">
+                    Selecciona los {sPluralL} a los que este operario tendrá acceso.
+                  </p>
+                  {ranchos.map((r) => {
+                    const asignado = asignacionesEmpleado.has(r.id)
+                    const cargando = asignandoRancho === r.id
+                    return (
+                      <button
+                        key={r.id}
+                        onClick={() => handleToggleAsignacion(r.id)}
+                        disabled={!!asignandoRancho}
+                        className="w-full flex items-center gap-3 p-3 rounded-xl border transition-colors disabled:opacity-60"
+                        style={{
+                          borderColor: asignado ? 'var(--primary)' : 'var(--border)',
+                          backgroundColor: asignado ? 'rgba(43,122,181,0.06)' : 'var(--card)',
+                        }}
+                      >
+                        <div
+                          className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition-colors"
+                          style={{
+                            background: asignado ? 'var(--primary)' : 'transparent',
+                            border: asignado ? 'none' : '1.5px solid var(--muted-foreground)',
+                          }}
+                        >
+                          {cargando ? (
+                            <Loader2 className="w-3 h-3 text-white animate-spin" />
+                          ) : asignado ? (
+                            <Check className="w-3 h-3 text-white" />
+                          ) : null}
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                          <p className="text-sm text-foreground truncate" style={{ fontWeight: asignado ? 600 : 400 }}>
+                            {r.nombre}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {r.codigo}
+                            {r.cultivo ? ` · ${r.cultivo}` : ''}
+                          </p>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </>

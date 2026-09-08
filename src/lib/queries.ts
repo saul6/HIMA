@@ -220,6 +220,51 @@ export async function actualizarAplicacion(
   return data
 }
 
+// ── Rancho Asignaciones ───────────────────────────────────────────────────────
+
+export interface EmpleadoBasicoConRol {
+  id: string
+  nombre_completo: string
+  rol: string
+}
+
+export async function getEmpleadosOrg(orgId: string): Promise<EmpleadoBasicoConRol[]> {
+  const { data, error } = await (supabase as any)
+    .from('profiles')
+    .select('id, nombre_completo, rol')
+    .eq('org_id', orgId)
+    .eq('activo', true)
+    .eq('rol', 'operario')
+    .order('nombre_completo')
+  if (error) throw error
+  return data ?? []
+}
+
+export async function getAsignacionesOrg(orgId: string): Promise<{ profile_id: string; rancho_id: string }[]> {
+  const { data, error } = await (supabase as any)
+    .from('rancho_asignaciones')
+    .select('profile_id, rancho_id')
+    .eq('org_id', orgId)
+  if (error) throw error
+  return data ?? []
+}
+
+export async function asignarRanchoEmpleado(profileId: string, ranchoId: string): Promise<void> {
+  const { error } = await (supabase as any)
+    .from('rancho_asignaciones')
+    .insert({ profile_id: profileId, rancho_id: ranchoId })
+  if (error) throw error
+}
+
+export async function desasignarRanchoEmpleado(profileId: string, ranchoId: string): Promise<void> {
+  const { error } = await (supabase as any)
+    .from('rancho_asignaciones')
+    .delete()
+    .eq('profile_id', profileId)
+    .eq('rancho_id', ranchoId)
+  if (error) throw error
+}
+
 // ── Perfil ────────────────────────────────────────────────────────────────────
 
 export async function actualizarNombreCompleto(
