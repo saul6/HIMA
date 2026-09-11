@@ -363,15 +363,19 @@ export function InspeccionPreoperacionalCosecha() {
   const seccionesAgrupadas = useMemo(() => agruparItemsPorSeccion(items), [items])
 
   useEffect(() => {
+    if (!sheetDia) return
+    setDFecha(registroActivo ? registroActivo.mes.slice(0, 7) + '-01' : '')
+    setDErrFecha(false)
+    setDYaExiste(false)
+  }, [sheetDia, registroActivo])
+
+  useEffect(() => {
     if (!sheetDia || items.length === 0) return
     const init: Record<string, boolean> = {}
     items.forEach((i) => { init[i.id] = i.default_valor === 'SI' })
     setDValores(init)
     setDCodigos({})
-    setDFecha(registroActivo ? registroActivo.mes.slice(0, 7) + '-01' : '')
-    setDErrFecha(false)
-    setDYaExiste(false)
-  }, [sheetDia, items, registroActivo])
+  }, [sheetDia, items])
 
   useEffect(() => {
     if (!sheetDia || !dFecha || !registroActivo || !profile?.org_id) {
@@ -559,7 +563,7 @@ export function InspeccionPreoperacionalCosecha() {
             >
               <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
               <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>
-                Error al cargar registros. Verifica tu conexión.
+                {error ?? 'Error al cargar registros. Verifica tu conexión.'}
               </p>
             </div>
           )}

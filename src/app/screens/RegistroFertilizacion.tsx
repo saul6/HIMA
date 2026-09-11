@@ -797,6 +797,7 @@ export function RegistroFertilizacion() {
       setSheetMovAbierto(false)
       await refetchSaldos()
       await refetchCatalogo()
+      await refetchRegistros()
     } catch (err: unknown) {
       const mensaje = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
       toast.error(mensaje || 'No se pudo registrar el movimiento')

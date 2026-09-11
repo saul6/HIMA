@@ -1,5 +1,4 @@
 // PATRÓN INOCUIDAD M9 — registros mensuales de monitoreo perimetral
-// Carga m9_registro_mensual con join a ranchos y responsable.
 
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -38,7 +37,7 @@ export function useM9Perimetral() {
     try {
       const { data, error: err } = await supabase
         .from('m9_registro_mensual')
-        .select('*, ranchos(nombre, codigo), profiles!responsable_id(nombre_completo)')
+        .select('*, ranchos(nombre, codigo)')
         .eq('org_id', profile.org_id)
         .order('mes', { ascending: false })
         .order('created_at', { ascending: false })
@@ -52,7 +51,7 @@ export function useM9Perimetral() {
         mes: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
         tiene_almacen: r.tiene_almacen,
         responsable_id: r.responsable_id,
-        responsable_nombre: (r.profiles as any)?.nombre_completo ?? null,
+        responsable_nombre: null,
         observaciones: r.observaciones,
         otro: r.otro,
         created_at: r.created_at,
