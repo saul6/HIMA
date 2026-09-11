@@ -501,7 +501,7 @@ export function MonitoreoEstacionesPlagas() {
       await refetchEstaciones()
       toast.success('Estación agregada')
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Error al agregar estación')
+      toast.error((e as any)?.message ?? 'Error al agregar estación')
     } finally {
       setAddingEst(false)
     }

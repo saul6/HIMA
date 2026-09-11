@@ -127,10 +127,6 @@ export function NuevaAplicacion() {
 
   const handleSave = async () => {
     // Validaciones de campos requeridos en BD
-    if (!productor) {
-      toast.error("No se encontró el productor asociado a tu cuenta");
-      return;
-    }
     if (!formData.huerto) {
       toast.error("Selecciona un huerto antes de guardar");
       setCurrentStep(1);
@@ -146,7 +142,7 @@ export function NuevaAplicacion() {
     try {
       // ── Paso 1: crear la aplicación ──────────────────────────────────────
       const datosAplicacion: AplicacionInsert = {
-        productor_id: productor.id,
+        productor_id: productor?.id ?? null,
         rancho_id: formData.huerto,
         variedad: formData.variety || null,
         sector: formData.sector || null,
@@ -177,8 +173,8 @@ export function NuevaAplicacion() {
         caldos_agua_lavado_l: formData.washWater ? parseFloat(formData.washWater) : null,
         caldos_area_designada: formData.leftover ? formData.eliminatedDesignatedArea : null,
         aplicadores: formData.applicators || null,
-        asesor_id: productor.asesor_id,
-        responsable_inocuidad_id: productor.responsable_inocuidad_id,
+        asesor_id: productor?.asesor_id ?? null,
+        responsable_inocuidad_id: productor?.responsable_inocuidad_id ?? null,
         observaciones: formData.observations || null,
         status: "completado",
         org_id: profile!.org_id!,

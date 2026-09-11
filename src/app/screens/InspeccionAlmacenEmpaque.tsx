@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link } from 'react-router'
 import {
-  ChevronLeft, Plus, FileDown, Loader2, AlertCircle, TriangleAlert, PackageOpen,
+  ChevronLeft, Plus, FileDown, Loader2, AlertCircle, TriangleAlert, PackageOpen, X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
@@ -751,17 +751,24 @@ export function InspeccionAlmacenEmpaque() {
 
       {/* ── Sheet: crear registro ──────────────────────────────────────── */}
       {sheetCrear && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={(e) => { if (e.target === e.currentTarget) setSheetCrear(false) }}>
-          <div className="absolute inset-0 bg-black/40" />
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setSheetCrear(false)} />
           <div
             className="relative bg-card rounded-t-[10px] flex flex-col"
             style={{ maxHeight: '85dvh' }}
           >
             <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-4 flex-shrink-0" />
-            <div className="px-4 pb-2 flex-shrink-0">
+            <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>
                 Nuevo registro mensual
               </h2>
+              <button
+                onClick={() => setSheetCrear(false)}
+                className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Cerrar"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-4">
               <div>
@@ -838,17 +845,24 @@ export function InspeccionAlmacenEmpaque() {
 
       {/* ── Sheet: agregar día ─────────────────────────────────────────── */}
       {sheetDia && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={(e) => { if (e.target === e.currentTarget) setSheetDia(false) }}>
-          <div className="absolute inset-0 bg-black/40" />
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setSheetDia(false)} />
           <div
             className="relative bg-card rounded-t-[10px] flex flex-col"
             style={{ maxHeight: '85dvh' }}
           >
             <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-4 flex-shrink-0" />
-            <div className="px-4 pb-2 flex-shrink-0">
+            <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>
                 Registrar día de inspección
               </h2>
+              <button
+                onClick={() => setSheetDia(false)}
+                className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Cerrar"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-4">
               <div>
@@ -924,17 +938,24 @@ export function InspeccionAlmacenEmpaque() {
 
       {/* ── Sheet: consolidado ─────────────────────────────────────────── */}
       {sheetConsolidado && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={(e) => { if (e.target === e.currentTarget) setSheetConsolidado(false) }}>
-          <div className="absolute inset-0 bg-black/40" />
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setSheetConsolidado(false)} />
           <div
             className="relative bg-card rounded-t-[10px] flex flex-col"
             style={{ maxHeight: '85dvh' }}
           >
             <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-4 flex-shrink-0" />
-            <div className="px-4 pb-2 flex-shrink-0">
+            <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>
                 Exportar PDF consolidado
               </h2>
+              <button
+                onClick={() => setSheetConsolidado(false)}
+                className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Cerrar"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-4">
               <div>

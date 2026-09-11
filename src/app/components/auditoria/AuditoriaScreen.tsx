@@ -242,7 +242,7 @@ export function AuditoriaScreen({
       setSheetAbierto(false)
       await refetch()
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'No se pudo guardar'
+      const msg = (err as any)?.message ?? 'No se pudo guardar'
       if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
