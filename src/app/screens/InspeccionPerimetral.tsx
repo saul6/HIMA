@@ -866,8 +866,8 @@ export function InspeccionPerimetral() {
                 <input
                   type="date"
                   value={dFecha}
-                  min={registroActivo.mes}
-                  max={ultimoDiaMes(registroActivo.mes)}
+                  min={registroActivo?.mes}
+                  max={registroActivo ? ultimoDiaMes(registroActivo.mes) : undefined}
                   onChange={(e) => { setDFecha(e.target.value); setDErrFecha(false) }}
                   className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                   style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
