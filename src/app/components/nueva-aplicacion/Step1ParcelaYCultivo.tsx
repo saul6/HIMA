@@ -28,6 +28,7 @@ export function Step1ParcelaYCultivo({ formData, updateFormData, onNext }: Props
       huerto: ranchoId,
       huertoCode: selected?.codigo ?? "",
       crop: selected?.cultivo ?? "",
+      productorId: selected?.productor_id ?? "",
     });
   };
 

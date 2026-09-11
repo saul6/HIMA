@@ -39,6 +39,7 @@ export function NuevaAplicacion() {
     huerto: "",
     huertoCode: "",
     crop: "",
+    productorId: "",
     variety: "",
     sector: "",
     surface: "",
@@ -142,7 +143,7 @@ export function NuevaAplicacion() {
     try {
       // ── Paso 1: crear la aplicación ──────────────────────────────────────
       const datosAplicacion: AplicacionInsert = {
-        productor_id: productor?.id ?? null,
+        productor_id: formData.productorId || null,
         rancho_id: formData.huerto,
         variedad: formData.variety || null,
         sector: formData.sector || null,
@@ -292,6 +293,7 @@ export function NuevaAplicacion() {
       toast.success("Aplicación guardada correctamente");
       navigate("/");
     } catch (err: unknown) {
+      console.error('[NuevaAplicacion] error al guardar:', err);
       const msg = err instanceof Error ? err.message : "Error al guardar la aplicación";
       toast.error(msg);
     } finally {
