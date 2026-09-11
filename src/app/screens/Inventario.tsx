@@ -333,6 +333,7 @@ export function Inventario() {
     productor?.id ?? null,
   )
 
+  const esOperario = profile?.rol === 'operario'
   const [vista, setVista] = useState<Vista>("rancho")
   const [searchQuery, setSearchQuery] = useState("")
   const [activeFilter, setActiveFilter] = useState("Todos")
@@ -406,23 +407,25 @@ export function Inventario() {
           Inventario de Plaguicidas
         </h1>
 
-        {/* Toggle vista */}
-        <div className="flex gap-1 mt-3 bg-muted p-1 rounded-lg">
-          {(["rancho", "productor"] as Vista[]).map((v) => (
-            <button
-              key={v}
-              onClick={() => handleVistaChange(v)}
-              className={`flex-1 h-8 rounded-md text-sm transition-all ${
-                vista === v
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground"
-              }`}
-              style={{ fontWeight: 600 }}
-            >
-              {v === "rancho" ? `Por ${terminosSitio.singular.toLowerCase()}` : "Por productor"}
-            </button>
-          ))}
-        </div>
+        {/* Toggle vista — solo para roles con productor asignado */}
+        {!esOperario && (
+          <div className="flex gap-1 mt-3 bg-muted p-1 rounded-lg">
+            {(["rancho", "productor"] as Vista[]).map((v) => (
+              <button
+                key={v}
+                onClick={() => handleVistaChange(v)}
+                className={`flex-1 h-8 rounded-md text-sm transition-all ${
+                  vista === v
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground"
+                }`}
+                style={{ fontWeight: 600 }}
+              >
+                {v === "rancho" ? `Por ${terminosSitio.singular.toLowerCase()}` : "Por productor"}
+              </button>
+            ))}
+          </div>
+        )}
       </header>
 
       <div className="p-4 space-y-4">

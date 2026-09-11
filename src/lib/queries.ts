@@ -280,11 +280,10 @@ export async function actualizarNombreCompleto(
 
 // ── Inventario ────────────────────────────────────────────────────────────────
 
-export async function getSaldosRancho(productorId: string): Promise<InventarioSaldoRancho[]> {
+export async function getSaldosRancho(): Promise<InventarioSaldoRancho[]> {
   const { data, error } = await supabase
     .from('v_inventario_saldo_rancho')
     .select('*')
-    .eq('productor_id', productorId)
     .order('nombre_comercial')
   if (error) throw error
   return (data ?? []) as InventarioSaldoRancho[]

@@ -17,13 +17,12 @@ export function useInventario(productorId: string | null): UseInventarioResult {
   const [error, setError] = useState<string | null>(null)
 
   const fetch = useCallback(async () => {
-    if (!productorId) return
     setLoading(true)
     setError(null)
     try {
       const [rancho, productor] = await Promise.all([
-        getSaldosRancho(productorId),
-        getSaldosProductor(productorId),
+        getSaldosRancho(),
+        productorId ? getSaldosProductor(productorId) : Promise.resolve([]),
       ])
       setSaldosRancho(rancho)
       setSaldosProductor(productor)
