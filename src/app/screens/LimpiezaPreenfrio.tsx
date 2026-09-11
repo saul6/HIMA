@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { ConsolidadoSheetLimpieza } from '@/app/components/ConsolidadoSheetLimpieza'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { codigoFormato } from '@/lib/codigoFormato'
@@ -1298,59 +1299,22 @@ export function LimpiezaPreenfrio() {
       </BottomSheet>
 
       {/* ═══ SHEET: CONSOLIDADO ══════════════════════════════════════════════════ */}
-      <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="85%">
-        <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
-        <div className="px-4 pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
-            <button type="button" onClick={() => setSheetConsolidado(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
-          </div>
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{termino} *</label>
-              <select
-                value={cRanchoId}
-                onChange={(e) => { setCRanchoId(e.target.value); setCErrRancho(false) }}
-                className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
-                style={{ borderColor: cErrRancho ? 'var(--agro-red)' : undefined }}
-              >
-                <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}</option>
-                {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-              {cErrRancho && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>}
-            </div>
-            <div className="flex gap-3">
-              <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Desde</label>
-                <input
-                  type="month"
-                  value={cDesde}
-                  onChange={(e) => setCDesde(e.target.value)}
-                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
-                />
-              </div>
-              <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Hasta</label>
-                <input
-                  type="month"
-                  value={cHasta}
-                  onChange={(e) => setCHasta(e.target.value)}
-                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
-                />
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={handleConsolidado}
-              disabled={cGenerando}
-              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-            >
-              {cGenerando ? <><Loader2 className="w-4 h-4 animate-spin" />Generando…</> : 'Descargar PDF'}
-            </button>
-          </div>
-        </div>
-      </BottomSheet>
+      <ConsolidadoSheetLimpieza
+        open={sheetConsolidado}
+        onClose={() => setSheetConsolidado(false)}
+        termino={termino}
+        terminoGenero={terminosSitio.genero}
+        ranchoOptions={ranchoOptions}
+        ranchoId={cRanchoId}
+        onRanchoChange={(id) => { setCRanchoId(id); setCErrRancho(false) }}
+        errRancho={cErrRancho}
+        desde={cDesde}
+        onDesdeChange={setCDesde}
+        hasta={cHasta}
+        onHastaChange={setCHasta}
+        onGenerar={handleConsolidado}
+        generando={cGenerando}
+      />
 
     </div>
   )

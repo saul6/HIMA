@@ -159,6 +159,7 @@ export function RegistroPersonal() {
   }
 
   function abrirNuevo() {
+    setGuardando(false)
     setEditingId(null)
     setForm({ ...FORM_VACIO, fecha: hoyMX() })
     setChecklistValues({})

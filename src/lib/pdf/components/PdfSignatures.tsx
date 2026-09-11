@@ -16,23 +16,26 @@ export function PdfSignatures({ signatures }: PdfSignaturesProps) {
     <View style={{ flexDirection: 'row', marginTop: 24 }}>
       {signatures.map((sig, i) => (
         <View
-          key={sig.label}
+          key={i}
           style={{
             flex: 1,
             marginRight: i < signatures.length - 1 ? 16 : 0,
           }}
         >
-          <Text style={{ fontSize: 7, color: PC.textSub }}>{sig.label}</Text>
-          <Text
-            style={{
-              fontSize: 9,
-              fontFamily: 'Helvetica-Bold',
-              color: PC.fieldValue,
-              marginTop: 2,
-            }}
-          >
-            {sig.nombre}
-          </Text>
+          {/* Contenedor de altura fija para que la línea de firma quede siempre alineada */}
+          <View style={{ height: 32 }}>
+            <Text style={{ fontSize: 7, color: PC.textSub }}>{sig.label}</Text>
+            <Text
+              style={{
+                fontSize: 9,
+                fontFamily: 'Helvetica-Bold',
+                color: PC.fieldValue,
+                marginTop: 2,
+              }}
+            >
+              {sig.nombre}
+            </Text>
+          </View>
           <View
             style={{
               borderTopWidth: 1,
