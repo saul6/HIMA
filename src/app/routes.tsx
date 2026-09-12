@@ -107,7 +107,11 @@ import { NfcEstacion } from "./screens/NfcEstacion";
 import AuditoriasPrimusGFS from "./screens/AuditoriasPrimusGFS";
 import { NuevaAuditoriaPGFS } from "./screens/NuevaAuditoriaPGFS";
 import { CapturaAuditoriaPGFS } from "./screens/CapturaAuditoriaPGFS";
-import { RestablecerContrasena } from "./screens/RestablecerContrasena";
+import { RestablecerContrasena } from "./screens/RestablecerContrasena"
+import { CalibracionBombas } from "./screens/CalibracionBombas"
+import { CalibracionEquipos } from "./screens/CalibracionEquipos"
+import { CalibracionBasculas } from "./screens/CalibracionBasculas"
+import { CalibracionVolumetricos } from "./screens/CalibracionVolumetricos";
 
 export const router = createBrowserRouter([
   {
@@ -206,6 +210,10 @@ export const router = createBrowserRouter([
                   { path: "rondines-vigilancia", Component: RondinesVigilancia },
                   { path: "registro-personal", Component: RegistroPersonal },
                   { path: "trazabilidad", Component: TrazabilidadProducto },
+                  { path: "calibracion-bombas", Component: CalibracionBombas },
+                  { path: "calibracion-equipos", Component: CalibracionEquipos },
+                  { path: "calibracion-basculas", Component: CalibracionBasculas },
+                  { path: "calibracion-volumetricos", Component: CalibracionVolumetricos },
                 ],
               },
             ],
