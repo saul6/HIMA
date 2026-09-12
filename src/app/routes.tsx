@@ -115,6 +115,9 @@ import { CalibracionVolumetricos } from "./screens/CalibracionVolumetricos";
 import { ConsumoEnergia } from "./screens/ConsumoEnergia"
 import { GestionResiduos } from "./screens/GestionResiduos"
 import { FuentesAgua } from "./screens/FuentesAgua"
+import { MipPreventivo } from "./screens/MipPreventivo"
+import { MipObservacion } from "./screens/MipObservacion"
+import { MipIntervencion } from "./screens/MipIntervencion"
 
 export const router = createBrowserRouter([
   {
@@ -220,6 +223,9 @@ export const router = createBrowserRouter([
                   { path: "consumo-energia", Component: ConsumoEnergia },
                   { path: "gestion-residuos", Component: GestionResiduos },
                   { path: "fuentes-agua", Component: FuentesAgua },
+                  { path: "mip-preventivo", Component: MipPreventivo },
+                  { path: "mip-observacion", Component: MipObservacion },
+                  { path: "mip-intervencion", Component: MipIntervencion },
                 ],
               },
             ],
