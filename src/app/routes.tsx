@@ -124,6 +124,8 @@ import { UsoEpp } from "./screens/UsoEpp"
 import { ControlHerramientas } from "./screens/ControlHerramientas"
 import { SanitizacionCosecha } from "./screens/SanitizacionCosecha"
 import { ProductosAutorizados } from "./screens/ProductosAutorizados"
+import { Tensiometros } from "./screens/Tensiometros"
+import { PlanSuelo } from "./screens/PlanSuelo"
 
 export const router = createBrowserRouter([
   {
@@ -238,6 +240,8 @@ export const router = createBrowserRouter([
                   { path: "control-herramientas", Component: ControlHerramientas },
                   { path: "sanitizacion-cosecha", Component: SanitizacionCosecha },
                   { path: "productos-autorizados", Component: ProductosAutorizados },
+                  { path: "tensiometros", Component: Tensiometros },
+                  { path: "plan-suelo", Component: PlanSuelo },
                 ],
               },
             ],
