@@ -112,6 +112,9 @@ import { CalibracionBombas } from "./screens/CalibracionBombas"
 import { CalibracionEquipos } from "./screens/CalibracionEquipos"
 import { CalibracionBasculas } from "./screens/CalibracionBasculas"
 import { CalibracionVolumetricos } from "./screens/CalibracionVolumetricos";
+import { ConsumoEnergia } from "./screens/ConsumoEnergia"
+import { GestionResiduos } from "./screens/GestionResiduos"
+import { FuentesAgua } from "./screens/FuentesAgua"
 
 export const router = createBrowserRouter([
   {
@@ -214,6 +217,9 @@ export const router = createBrowserRouter([
                   { path: "calibracion-equipos", Component: CalibracionEquipos },
                   { path: "calibracion-basculas", Component: CalibracionBasculas },
                   { path: "calibracion-volumetricos", Component: CalibracionVolumetricos },
+                  { path: "consumo-energia", Component: ConsumoEnergia },
+                  { path: "gestion-residuos", Component: GestionResiduos },
+                  { path: "fuentes-agua", Component: FuentesAgua },
                 ],
               },
             ],
