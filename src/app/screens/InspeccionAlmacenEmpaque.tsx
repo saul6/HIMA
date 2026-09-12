@@ -742,7 +742,7 @@ export function InspeccionAlmacenEmpaque() {
             abrirSheetDia()
           }
         }}
-        className="fixed bottom-[calc(72px+16px)] right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-40"
+        className="fixed bottom-safe-fab right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-40"
         style={{ backgroundColor: 'var(--primary)' }}
         aria-label="Agregar"
       >

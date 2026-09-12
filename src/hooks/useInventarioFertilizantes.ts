@@ -22,12 +22,13 @@ export function useInventarioFertilizantes() {
   const cargar = useCallback(async () => {
     if (!profile?.org_id) { setLoading(false); return }
     setLoading(true)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('v_inventario_fertilizantes_saldo')
       .select('rancho_id, rancho_nombre, fertilizante_id, nombre_comercial, ingrediente_activo, unidad, saldo')
       .eq('org_id', profile.org_id)
       .order('nombre_comercial')
       .order('rancho_nombre')
+    if (error) console.error('[M8 inv saldos]', error)
     setSaldos(data ?? [])
     setLoading(false)
   }, [profile?.org_id])

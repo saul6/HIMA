@@ -4,15 +4,21 @@ import { X, CheckCircle, Loader2, FileDown, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { getAplicacionRicaById } from "@/lib/queries";
 import { generarExcelHistorial } from "@/lib/excel/generarExcelHistorial";
+import { generarAplicacionPDF } from "@/lib/pdf/generarPDF";
 import { formatFenologia } from "@/lib/fenologia";
+import { useAuthContext } from "@/context/AuthContext";
+import { useModulosContext } from "@/context/ModulosContext";
 import type { AplicacionRica } from "@/types/database.types";
 
 export function DetalleAplicacion() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const { profile, user, codigoClave } = useAuthContext();
+  const { terminosSitio } = useModulosContext();
   const [app, setApp] = useState<AplicacionRica | null>(null);
   const [loading, setLoading] = useState(true);
   const [exportandoExcel, setExportandoExcel] = useState(false);
+  const [exportandoPDF, setExportandoPDF] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -35,6 +41,28 @@ export function DetalleAplicacion() {
       console.error(err);
     } finally {
       setExportandoExcel(false);
+    }
+  };
+
+  const handleGenerarPDF = async () => {
+    if (!app || !profile) return;
+    setExportandoPDF(true);
+    try {
+      await generarAplicacionPDF({
+        aplicacion: app as any,
+        productos: app.aplicacion_productos as any,
+        rancho: app.ranchos as any,
+        asesor: (app as any).asesor ?? null,
+        responsable: (app as any).responsable ?? null,
+        operario: profile as any,
+        operarioEmail: user?.email,
+        codigoClave: codigoClave ?? undefined,
+        terminoSitio: terminosSitio?.singular,
+      });
+    } catch {
+      toast.error("No se pudo generar el PDF");
+    } finally {
+      setExportandoPDF(false);
     }
   };
 
@@ -64,7 +92,7 @@ export function DetalleAplicacion() {
   const a = app;
 
   return (
-    <div className="min-h-full bg-white pb-[calc(72px+34px+64px)]">
+    <div className="min-h-full bg-white pb-[calc(72px+env(safe-area-inset-bottom,0px)+64px)]">
       {/* Header */}
       <header className="sticky top-0 bg-white border-b border-black/10 px-4 py-4 z-20">
         <div className="flex items-center justify-between mb-3">
@@ -198,7 +226,7 @@ export function DetalleAplicacion() {
       </div>
 
       {/* Sticky Footer */}
-      <div className="fixed bottom-[calc(72px+34px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-white border-t border-black/10 p-4 flex gap-3">
+      <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-white border-t border-black/10 p-4 flex gap-3">
         <button
           onClick={handleExportExcel}
           disabled={exportandoExcel}
@@ -211,8 +239,13 @@ export function DetalleAplicacion() {
           }
           Excel
         </button>
-        <button className="flex-1 h-12 bg-[#2B7AB5] text-white rounded-xl hover:bg-[#1E88C7] transition-colors flex items-center justify-center gap-2" style={{ fontWeight: 600 }}>
-          <FileText className="w-4 h-4" />
+        <button
+          onClick={handleGenerarPDF}
+          disabled={exportandoPDF}
+          className="flex-1 h-12 bg-[#2B7AB5] text-white rounded-xl hover:bg-[#1E88C7] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+          style={{ fontWeight: 600 }}
+        >
+          {exportandoPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
           PDF
         </button>
       </div>

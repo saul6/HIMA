@@ -111,7 +111,7 @@ export function RegistroMuestrasLaboratorio() {
       toast.success('Muestra registrada')
 
       try {
-        await generarMuestrasLaboratorioPDF(data.id, orgId)
+        await generarMuestrasLaboratorioPDF(data.id, orgId, codigoClave ?? '')
       } catch (e) {
         toast.error('PDF no generado')
         console.error(e)
@@ -132,7 +132,7 @@ export function RegistroMuestrasLaboratorio() {
     if (!orgId) return
     setPdfLoading(id)
     try {
-      await generarMuestrasLaboratorioPDF(id, orgId)
+      await generarMuestrasLaboratorioPDF(id, orgId, codigoClave ?? '')
     } catch (e) {
       toast.error('Error al generar PDF')
     } finally {

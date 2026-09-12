@@ -127,7 +127,8 @@ export function FuentesAgua() {
 
       try {
         await generarFuentesAguaPDF(registroId, orgId, codigoClave)
-      } catch {
+      } catch (e) {
+        console.error(e)
         toast.error('PDF no generado')
       }
     } catch (e: any) {
