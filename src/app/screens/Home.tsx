@@ -1023,7 +1023,7 @@ export function Home() {
       {tieneAplicaciones && (
         <Link
           to="/nueva-aplicacion"
-          className="lg:hidden fixed bottom-safe-fab right-4 w-14 h-14 rounded-full flex items-center justify-center z-10 bg-primary hover:opacity-90 transition-opacity"
+          className="lg:hidden fixed bottom-safe-fab right-4 w-14 h-14 rounded-full flex items-center justify-center z-40 bg-primary hover:opacity-90 transition-opacity"
           aria-label="Nueva aplicación"
         >
           <Plus className="w-6 h-6" style={{ color: 'var(--primary-foreground)' }} />

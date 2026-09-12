@@ -341,7 +341,7 @@ export function RegistroFertilizacion() {
   const { ranchos } = useRanchos()
   const { registros, loading, refetch: refetchRegistros } = useM8Fertilizacion()
   const { fertilizantes: catalogo, refetch: refetchCatalogo } = useFertilizantesOrg()
-  const { saldos, refetch: refetchSaldos } = useInventarioFertilizantes()
+  const { saldos, loading: saldosLoading, refetch: refetchSaldos } = useInventarioFertilizantes()
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
 
@@ -956,7 +956,11 @@ export function RegistroFertilizacion() {
       {/* ── TAB: Inventario ─────────────────────────────────────────────────── */}
       {tab === 'inventario' && (
         <div className="p-4 space-y-3">
-          {saldos.length === 0 ? (
+          {saldosLoading ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          ) : saldos.length === 0 ? (
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <Package className="w-10 h-10 mx-auto mb-2" style={{ color: 'var(--muted-foreground)' }} />
               <p className="text-sm text-muted-foreground">Sin saldos registrados</p>

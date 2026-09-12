@@ -86,34 +86,31 @@ function buildHistorialSheet(ws: ExcelJS.Worksheet, apps: AplicacionRica[]) {
 
   // Filas de datos
   apps.forEach((app, idx) => {
-    const a = app.aplicacion ?? app  // compatible si viene el objeto completo
-    const ap = app as AplicacionRica
-
-    const nombresProductos = ap.aplicacion_productos
+    const nombresProductos = app.aplicacion_productos
       .map(p => p.catalogo_productos.nombre_comercial)
       .join(', ')
 
-    const epp = ap.aplicacion.epp_traje
-      && ap.aplicacion.epp_guantes
-      && ap.aplicacion.epp_googles
-      && ap.aplicacion.epp_botas
-      && ap.aplicacion.epp_mascarillas
+    const epp = app.epp_traje
+      && app.epp_guantes
+      && app.epp_googles
+      && app.epp_botas
+      && app.epp_mascarillas
 
     const row = ws.addRow({
-      fecha:      ap.aplicacion.fecha_aplicacion,
-      productor:  ap.productores?.profiles?.nombre_completo ?? '—',
-      rancho:     ap.ranchos?.nombre ?? '—',
-      cultivo:    ap.ranchos?.cultivo ?? '—',
-      variedad:   ap.aplicacion.variedad ?? '—',
-      sector:     ap.aplicacion.sector ?? '—',
-      superficie: ap.aplicacion.superficie_ha ?? '—',
-      fenologia:  formatFenologia(ap.aplicacion.fenologia ?? undefined),
-      tipo:       ap.aplicacion.tipo_aplicacion,
+      fecha:      app.fecha_aplicacion,
+      productor:  app.productores?.profiles?.nombre_completo ?? '—',
+      rancho:     app.ranchos?.nombre ?? '—',
+      cultivo:    app.ranchos?.cultivo ?? '—',
+      variedad:   app.variedad ?? '—',
+      sector:     app.sector ?? '—',
+      superficie: app.superficie_ha ?? '—',
+      fenologia:  formatFenologia(app.fenologia ?? undefined),
+      tipo:       app.tipo_aplicacion,
       productos:  nombresProductos || '—',
-      agua:       ap.aplicacion.total_agua_l ?? '—',
+      agua:       app.total_agua_l ?? '—',
       epp:        epp ? 'Sí' : 'No',
-      asesor:     ap.asesor?.nombre_completo ?? '—',
-      estado:     ap.aplicacion.status,
+      asesor:     app.asesor?.nombre_completo ?? '—',
+      estado:     app.status,
     })
 
     row.height = 16

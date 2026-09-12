@@ -21,6 +21,7 @@ import type { M11ItemCatalogo } from '@/types/database.types'
 import { generarPreoperacionalPDF } from '@/lib/pdf/m11/generarPreoperacionalPDF'
 import { generarPreoperacionalConsolidadoPDF } from '@/lib/pdf/m11/generarPreoperacionalConsolidadoPDF'
 import { useModulosContext } from '@/context/ModulosContext'
+import { hoyMX } from '@/lib/fecha'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -362,7 +363,7 @@ export function InspeccionPreoperacionalCosecha() {
 
   useEffect(() => {
     if (!sheetDia) return
-    setDFecha(registroActivo ? registroActivo.mes.slice(0, 7) + '-01' : '')
+    setDFecha(hoyMX())
     setDErrFecha(false)
     setDYaExiste(false)
   }, [sheetDia, registroActivo])
@@ -434,6 +435,8 @@ export function InspeccionPreoperacionalCosecha() {
       const msg = e instanceof Error ? e.message : 'Error al guardar día'
       if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
         toast.warning('Ya existe una inspección para esa fecha')
+      } else if (msg.includes('FECHA_SOLO_HOY')) {
+        toast.warning('Solo puedes registrar la inspección del día de hoy')
       } else {
         toast.error(msg)
       }
@@ -823,9 +826,9 @@ export function InspeccionPreoperacionalCosecha() {
                 <input
                   type="date"
                   value={dFecha}
-                  min={registroActivo?.mes}
-                  max={registroActivo ? ultimoDiaMes(registroActivo.mes) : undefined}
-                  onChange={(e) => { setDFecha(e.target.value); setDErrFecha(false) }}
+                  min={profile?.rol === 'super_admin' ? registroActivo?.mes : hoyMX()}
+                  max={profile?.rol === 'super_admin' ? (registroActivo ? ultimoDiaMes(registroActivo.mes) : undefined) : hoyMX()}
+                  onChange={(e) => { if (profile?.rol === 'super_admin') { setDFecha(e.target.value); setDErrFecha(false) } }}
                   className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                   style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
                 />

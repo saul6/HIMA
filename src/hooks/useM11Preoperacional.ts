@@ -47,7 +47,7 @@ export function useM11Preoperacional() {
         rancho_id: r.rancho_id,
         rancho_nombre: r.ranchos?.nombre ?? '—',
         rancho_codigo: r.ranchos?.codigo ?? '—',
-        mes: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
+        mes: r.mes,
         realizado_por_nombre: r.realizado_por_nombre ?? null,
         responsable_id: r.responsable_id ?? null,
         observaciones: r.observaciones ?? null,
