@@ -54,10 +54,13 @@ import { generarBlobFuentesAgua } from './m62/generarFuentesAguaPDF'
 import { generarBlobMipPreventivo } from './m53/generarMipPreventivoPDF'
 import { generarBlobMipObservacion } from './m54/generarMipObservacionPDF'
 import { generarBlobMipIntervencion } from './m55/generarMipIntervencionPDF'
+import { generarBlobUsoEpp } from './m63/generarUsoEppPDF'
+import { generarBlobControlHerramientas } from './m64/generarControlHerramientasPDF'
+import { generarBlobSanitizacionCosecha } from './m65/generarSanitizacionCosechaPDF'
 
 // ── Tipos públicos ────────────────────────────────────────────────────────────
 
-export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18' | 'M19' | 'M20' | 'M21' | 'M22' | 'M23' | 'M24' | 'M25' | 'M26' | 'M27' | 'M28' | 'M29' | 'M30' | 'M31' | 'M32' | 'M33' | 'M34' | 'M35' | 'M36' | 'M37' | 'M38' | 'M39' | 'M40' | 'M41' | 'M42' | 'M43' | 'M44' | 'M45' | 'M46' | 'M53' | 'M54' | 'M55' | 'M60' | 'M61' | 'M62'
+export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18' | 'M19' | 'M20' | 'M21' | 'M22' | 'M23' | 'M24' | 'M25' | 'M26' | 'M27' | 'M28' | 'M29' | 'M30' | 'M31' | 'M32' | 'M33' | 'M34' | 'M35' | 'M36' | 'M37' | 'M38' | 'M39' | 'M40' | 'M41' | 'M42' | 'M43' | 'M44' | 'M45' | 'M46' | 'M53' | 'M54' | 'M55' | 'M60' | 'M61' | 'M62' | 'M63' | 'M64' | 'M65'
 
 export type PDFRef =
   | { tipo: 'M1'; id: string }
@@ -99,6 +102,9 @@ export type PDFRef =
   | { tipo: 'M60'; id: string }
   | { tipo: 'M61'; id: string }
   | { tipo: 'M62'; id: string }
+  | { tipo: 'M63'; id: string }
+  | { tipo: 'M64'; id: string }
+  | { tipo: 'M65'; id: string }
 
 export interface RegistroHistorial {
   key: string
@@ -391,6 +397,9 @@ export async function generarBlobParaRef(ref: PDFRef, orgId: string, codigoClave
     case 'M60': return generarBlobConsumoEnergia(ref.id, orgId, codigoClave)
     case 'M61': return generarBlobGestionResiduos(ref.id, orgId, codigoClave)
     case 'M62': return generarBlobFuentesAgua(ref.id, orgId, codigoClave)
+    case 'M63': return generarBlobUsoEpp(ref.id, orgId, codigoClave)
+    case 'M64': return generarBlobControlHerramientas(ref.id, orgId, codigoClave)
+    case 'M65': return generarBlobSanitizacionCosecha(ref.id, orgId, codigoClave)
   }
 }
 

@@ -120,6 +120,10 @@ import { MipObservacion } from "./screens/MipObservacion"
 import { MipIntervencion } from "./screens/MipIntervencion"
 import { FrecuenciaCapacitacion } from "./screens/FrecuenciaCapacitacion"
 import { CronogramaCapacitacion } from "./screens/CronogramaCapacitacion"
+import { UsoEpp } from "./screens/UsoEpp"
+import { ControlHerramientas } from "./screens/ControlHerramientas"
+import { SanitizacionCosecha } from "./screens/SanitizacionCosecha"
+import { ProductosAutorizados } from "./screens/ProductosAutorizados"
 
 export const router = createBrowserRouter([
   {
@@ -230,6 +234,10 @@ export const router = createBrowserRouter([
                   { path: "mip-intervencion", Component: MipIntervencion },
                   { path: "frecuencia-capacitacion", Component: FrecuenciaCapacitacion },
                   { path: "cronograma-capacitacion", Component: CronogramaCapacitacion },
+                  { path: "uso-epp", Component: UsoEpp },
+                  { path: "control-herramientas", Component: ControlHerramientas },
+                  { path: "sanitizacion-cosecha", Component: SanitizacionCosecha },
+                  { path: "productos-autorizados", Component: ProductosAutorizados },
                 ],
               },
             ],
