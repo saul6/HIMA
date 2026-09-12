@@ -118,6 +118,8 @@ import { FuentesAgua } from "./screens/FuentesAgua"
 import { MipPreventivo } from "./screens/MipPreventivo"
 import { MipObservacion } from "./screens/MipObservacion"
 import { MipIntervencion } from "./screens/MipIntervencion"
+import { FrecuenciaCapacitacion } from "./screens/FrecuenciaCapacitacion"
+import { CronogramaCapacitacion } from "./screens/CronogramaCapacitacion"
 
 export const router = createBrowserRouter([
   {
@@ -226,6 +228,8 @@ export const router = createBrowserRouter([
                   { path: "mip-preventivo", Component: MipPreventivo },
                   { path: "mip-observacion", Component: MipObservacion },
                   { path: "mip-intervencion", Component: MipIntervencion },
+                  { path: "frecuencia-capacitacion", Component: FrecuenciaCapacitacion },
+                  { path: "cronograma-capacitacion", Component: CronogramaCapacitacion },
                 ],
               },
             ],
