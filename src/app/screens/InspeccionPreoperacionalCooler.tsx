@@ -756,6 +756,19 @@ export function InspeccionPreoperacionalCooler() {
       {/* ── DETALLE ────────────────────────────────────────────────────── */}
       {vista === 'detalle' && registroActivo && (
         <div className="p-4 space-y-4">
+          {/* Aviso candado mes anterior */}
+          {!puedeEditarFecha && registroActivo.mes.slice(0, 7) !== mesActual() && (
+            <div
+              className="flex items-start gap-2 rounded-xl p-3"
+              style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}
+            >
+              <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+              <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                No puedes agregar días de inspección a meses pasados (candado de fecha).
+              </p>
+            </div>
+          )}
+
           <div className="flex gap-2 flex-wrap">
             <span
               className="text-xs px-2 py-1 rounded"
@@ -840,6 +853,10 @@ export function InspeccionPreoperacionalCooler() {
               setNErrRancho(false); setNYaExiste(false)
               setSheetNuevo(true)
             } else {
+              if (!puedeEditarFecha && registroActivo && registroActivo.mes.slice(0, 7) !== mesActual()) {
+                toast.warning('No puedes agregar días a meses anteriores (candado de fecha)')
+                return
+              }
               setDFecha(''); setDErrFecha(false); setDYaExiste(false)
               setSheetDia(true)
             }
@@ -976,6 +993,9 @@ export function InspeccionPreoperacionalCooler() {
                   className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                   style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
                 />
+                {!puedeEditarFecha && (
+                  <p className="text-xs text-muted-foreground">Se registra con la fecha de hoy</p>
+                )}
                 {dErrFecha && (
                   <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Fecha requerida</p>
                 )}

@@ -9,6 +9,7 @@ import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import { codigoFormato } from '@/lib/codigoFormato'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -28,7 +29,7 @@ export interface InventarioQuimicosProps {
   consolidado?: boolean
   desde?: string
   hasta?: string
-  codigoClave: string
+  codigoClave?: string
   terminoSitio?: string
 }
 
@@ -95,7 +96,7 @@ export function InventarioQuimicosPagina({
   consolidado, desde, hasta, codigoClave, terminoSitio = 'Instalación',
 }: InventarioQuimicosProps) {
   const emision = new Date().toLocaleDateString('es-MX')
-  const codigoFmt = codigoClave ? `${codigoClave}-F-SC-SIG` : 'F-SC-SIG'
+  const codigoFmt = codigoFormato('F-FRUS-SAN-02', codigoClave ?? '')
 
   const filas = calcSaldo(movimientos)
   const periodo = consolidado && desde && hasta

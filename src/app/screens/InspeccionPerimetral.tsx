@@ -156,6 +156,7 @@ type Vista = 'lista' | 'detalle'
 
 export function InspeccionPerimetral() {
   const { profile, user } = useAuthContext()
+  const esSuperAdmin = profile?.rol === 'super_admin'
   const { ranchos } = useRanchos()
   const { registros, loading, error, refetch } = useM9Perimetral()
   const { terminosSitio } = useModulosContext()
@@ -364,7 +365,10 @@ export function InspeccionPerimetral() {
     const init: Record<string, boolean> = {}
     itemsVisibles.forEach((i) => { init[i.id] = i.default_valor })
     setDValores(init)
-    setDFecha(registroActivo ? registroActivo.mes.slice(0, 7) + '-01' : hoy())
+    setDFecha(esSuperAdmin
+      ? (registroActivo ? registroActivo.mes.slice(0, 7) + '-01' : hoy())
+      : hoy()
+    )
     setDErrFecha(false)
     setDYaExiste(false)
   }, [sheetDia, itemsVisibles, registroActivo])
@@ -423,7 +427,9 @@ export function InspeccionPerimetral() {
       cargarDias(registroActivo.id)
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Error al guardar día'
-      if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
+      if (msg.includes('FECHA_SOLO_HOY')) {
+        toast.warning('Solo puedes registrar la inspección del día de hoy')
+      } else if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
         toast.warning('Ya existe una inspección para esa fecha')
       } else {
         toast.error(msg)
@@ -625,6 +631,19 @@ export function InspeccionPerimetral() {
       {vista === 'detalle' && registroActivo && (
         <div className="p-4 space-y-4">
 
+          {/* Aviso candado mes anterior */}
+          {!esSuperAdmin && registroActivo.mes.slice(0, 7) !== mesActual() && (
+            <div
+              className="flex items-start gap-2 rounded-xl p-3"
+              style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}
+            >
+              <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+              <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                No puedes agregar días de inspección a meses pasados (candado de fecha).
+              </p>
+            </div>
+          )}
+
           {/* Chips de meta */}
           <div className="flex gap-2 flex-wrap">
             <span
@@ -727,6 +746,10 @@ export function InspeccionPerimetral() {
               setNErrRancho(false); setNYaExiste(false)
               setSheetNuevo(true)
             } else {
+              if (!esSuperAdmin && registroActivo && registroActivo.mes.slice(0, 7) !== mesActual()) {
+                toast.warning('No puedes agregar días a meses anteriores (candado de fecha)')
+                return
+              }
               setDFecha(''); setDErrFecha(false); setDYaExiste(false)
               setSheetDia(true)
             }
@@ -864,12 +887,15 @@ export function InspeccionPerimetral() {
                 <input
                   type="date"
                   value={dFecha}
-                  min={registroActivo?.mes}
-                  max={registroActivo ? ultimoDiaMes(registroActivo.mes) : undefined}
-                  onChange={(e) => { setDFecha(e.target.value); setDErrFecha(false) }}
+                  min={esSuperAdmin && registroActivo ? registroActivo.mes : hoy()}
+                  max={esSuperAdmin && registroActivo ? ultimoDiaMes(registroActivo.mes) : hoy()}
+                  onChange={(e) => { if (esSuperAdmin) { setDFecha(e.target.value); setDErrFecha(false) } }}
                   className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                   style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
                 />
+                {!esSuperAdmin && (
+                  <p className="text-xs text-muted-foreground">Se registra con la fecha de hoy</p>
+                )}
                 {dErrFecha && (
                   <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Fecha requerida</p>
                 )}

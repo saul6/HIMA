@@ -22,7 +22,7 @@ export function PdfHeader({ titulo, subtitulo, codigoFormato, folio, fecha }: Pd
         }}
       >
         {/* Izq — Logotipo oficial (imagen, incluye marca + wordmark + eslogan) */}
-        <View style={{ flex: 2 }}>
+        <View style={{ flex: 3 }}>
           <Image
             src={LOGO_MADY_PDF}
             style={{ height: 44, width: 123 }}
@@ -30,7 +30,7 @@ export function PdfHeader({ titulo, subtitulo, codigoFormato, folio, fecha }: Pd
         </View>
 
         {/* Centro — título */}
-        <View style={{ flex: 6, alignItems: 'center' }}>
+        <View style={{ flex: 5, alignItems: 'center' }}>
           <Text
             style={{
               fontFamily: 'Helvetica-Bold',
