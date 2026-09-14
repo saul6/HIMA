@@ -12,19 +12,30 @@ export async function generarInspeccionAlmacenEmpaqueConsolidadoPDF(
   codigoClave: string,
 ): Promise<void> {
   const tbl = supabase as any
+  const desdeAnio = parseInt(desde.slice(0, 4))
+  const hastaAnio = parseInt(hasta.slice(0, 4))
+
   const { data, error } = await tbl
     .from('m43_registro_mensual')
-    .select('id, mes')
+    .select('id, anio, mes')
     .eq('org_id', orgId)
     .eq('rancho_id', ranchoId)
-    .gte('mes', desde + '-01')
-    .lte('mes', hasta + '-01')
-    .order('mes', { ascending: true })
+    .gte('anio', desdeAnio)
+    .lte('anio', hastaAnio)
+    .order('anio', { ascending: true })
+    .order('mes',  { ascending: true })
   if (error) throw error
-  if (!data?.length) throw new Error('Sin registros en el rango seleccionado')
+
+  const desdeVal = desdeAnio * 12 + parseInt(desde.slice(5, 7))
+  const hastaVal = hastaAnio * 12 + parseInt(hasta.slice(5, 7))
+  const filtrados = ((data ?? []) as any[]).filter((r: any) => {
+    const v = (r.anio as number) * 12 + (r.mes as number)
+    return v >= desdeVal && v <= hastaVal
+  })
+  if (!filtrados.length) throw new Error('Sin registros en el rango seleccionado')
 
   const paginas = await Promise.all(
-    (data as any[]).map((r: any) => construirDatosPaginaM43(r.id, orgId, codigoClave))
+    filtrados.map((r: any) => construirDatosPaginaM43(r.id, orgId, codigoClave))
   )
 
   const blob = await pdf(

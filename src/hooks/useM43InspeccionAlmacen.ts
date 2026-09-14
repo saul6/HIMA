@@ -26,7 +26,8 @@ export interface M43RegistroMensual {
   rancho_id: string
   rancho_nombre: string
   rancho_codigo: string
-  mes: string
+  anio: number
+  mes: number
   realizado_por: string | null
   verifica: string | null
   autoriza: string | null
@@ -49,12 +50,13 @@ export function useM43InspeccionAlmacen() {
       const { data, error: err } = await tbl
         .from('m43_registro_mensual')
         .select(`
-          id, org_id, rancho_id, mes, realizado_por, verifica, autoriza, observaciones,
+          id, org_id, rancho_id, anio, mes, realizado_por, verifica, autoriza, observaciones,
           ranchos(nombre, codigo),
           m43_dias(id, dia, acciones_tomadas),
           m43_resultados(id, punto_id, dia, valor, incidencia_id)
         `)
         .eq('org_id', profile.org_id)
+        .order('anio', { ascending: false })
         .order('mes', { ascending: false })
       if (err) throw err
 
@@ -90,7 +92,8 @@ export function useM43InspeccionAlmacen() {
           rancho_id:     r.rancho_id,
           rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
           rancho_codigo: (r.ranchos as any)?.codigo ?? '—',
-          mes:           `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
+          anio:          r.anio as number,
+          mes:           r.mes as number,
           realizado_por: r.realizado_por ?? null,
           verifica:      r.verifica ?? null,
           autoriza:      r.autoriza ?? null,

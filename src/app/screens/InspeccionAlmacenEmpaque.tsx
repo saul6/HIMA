@@ -25,10 +25,8 @@ function hoyMX() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 }
 
-function formatMesLabel(mes: string): string {
-  try {
-    return new Date(mes + 'T12:00:00').toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
-  } catch { return mes }
+function formatMesLabel(anio: number, mes: number): string {
+  return new Date(anio, mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
 }
 
 function siguienteValor(v: ValorM43): ValorM43 {
@@ -45,8 +43,8 @@ function valorLabel(v: ValorM43): string {
 
 // ── DiaCard ───────────────────────────────────────────────────────────────────
 
-function DiaCard({ dia, registroMes, onClick }: { dia: M43DiaSummary; registroMes: string; onClick: () => void }) {
-  const mesStr = new Date(registroMes + 'T12:00:00').toLocaleDateString('es-MX', { month: 'short' })
+function DiaCard({ dia, anio, mes, onClick }: { dia: M43DiaSummary; anio: number; mes: number; onClick: () => void }) {
+  const mesStr = new Date(anio, mes - 1, 1).toLocaleDateString('es-MX', { month: 'short' })
   return (
     <button
       onClick={onClick}
@@ -514,7 +512,7 @@ export function InspeccionAlmacenEmpaque() {
             ) : (
               <>
                 <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
-                  {registroActivo ? formatMesLabel(registroActivo.mes) : '—'}
+                  {registroActivo ? formatMesLabel(registroActivo.anio, registroActivo.mes) : '—'}
                 </h1>
                 <div className="text-xs text-muted-foreground truncate">
                   {registroActivo?.rancho_nombre ?? '—'}
@@ -596,7 +594,7 @@ export function InspeccionAlmacenEmpaque() {
                             fontWeight: 600,
                           }}
                         >
-                          {formatMesLabel(reg.mes)}
+                          {formatMesLabel(reg.anio, reg.mes)}
                         </span>
                         <span className="text-xs text-muted-foreground">
                           {reg.dias.length} día{reg.dias.length !== 1 ? 's' : ''}
@@ -628,7 +626,7 @@ export function InspeccionAlmacenEmpaque() {
               className="text-xs px-2 py-1 rounded"
               style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
             >
-              {formatMesLabel(registroActivo.mes)}
+              {formatMesLabel(registroActivo.anio, registroActivo.mes)}
             </span>
             <span
               className="text-xs px-2 py-1 rounded"
@@ -724,7 +722,7 @@ export function InspeccionAlmacenEmpaque() {
             ) : (
               <div className="space-y-2">
                 {dias.map((dia) => (
-                  <DiaCard key={dia.id} dia={dia} registroMes={registroActivo.mes} onClick={() => {/* readonly — días ya guardados */}} />
+                  <DiaCard key={dia.id} dia={dia} anio={registroActivo.anio} mes={registroActivo.mes} onClick={() => {/* readonly — días ya guardados */}} />
                 ))}
               </div>
             )}

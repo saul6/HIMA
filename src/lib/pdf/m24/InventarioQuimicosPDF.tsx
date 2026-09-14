@@ -95,7 +95,7 @@ export function InventarioQuimicosPagina({
   consolidado, desde, hasta, codigoClave, terminoSitio = 'Instalación',
 }: InventarioQuimicosProps) {
   const emision = new Date().toLocaleDateString('es-MX')
-  const codigoFmt = `${codigoClave}-F-SC-SIG`
+  const codigoFmt = codigoClave ? `${codigoClave}-F-SC-SIG` : 'F-SC-SIG'
 
   const filas = calcSaldo(movimientos)
   const periodo = consolidado && desde && hasta
