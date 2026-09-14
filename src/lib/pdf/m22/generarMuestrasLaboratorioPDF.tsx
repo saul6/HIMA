@@ -52,7 +52,7 @@ export async function generarMuestrasLaboratorioPDF(id: string, orgId: string, c
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = nombrePdf('Muestras_Laboratorio', datos.fecha, datos.instalacion)
+  a.download = nombrePdf('Muestras_Laboratorio', datos.fecha)
   a.click()
   URL.revokeObjectURL(url)
 }

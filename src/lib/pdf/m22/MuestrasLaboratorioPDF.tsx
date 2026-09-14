@@ -54,9 +54,26 @@ const NUM_W = 20
 const FECHA_W = 44
 const HORA_W = 28
 const DESC_W = 90
-const MICRO_W = 22
+const MICRO_W = 28
 const LAB_W = 60
 const SOL_W = 56
+
+const LABEL_MAP: Record<string, string> = {
+  m_aerobias: 'M. aerobias',
+  levaduras: 'Levaduras',
+  hongos: 'Hongos',
+  ct: 'C.T.',
+  cf: 'C.F.',
+  e_coli: 'E. coli',
+  s_aureus: 'S. aureus',
+  salmonella: 'Salmonella',
+  shigella: 'Shigella',
+  l_mono: 'L. mono',
+  v_cholerae: 'V. cholerae',
+  ecoli_o157: 'Ec O157:H7',
+  stec: 'STEC',
+  listeria: 'Listeria',
+}
 
 const thStyle = {
   padding: 3,
@@ -121,7 +138,9 @@ function ColumnHeaderRow({ indicadores, patogenos }: { indicadores: Microorganis
       </View>
       {[...indicadores, ...patogenos].map((m) => (
         <View key={m.codigo} style={[thStyle, { width: MICRO_W, backgroundColor: HDR_BG }]}>
-          <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.fieldValue }}>{m.codigo}</Text>
+          <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.fieldValue, textAlign: 'center' }}>
+            {LABEL_MAP[m.codigo] ?? m.label ?? m.codigo}
+          </Text>
         </View>
       ))}
       <View style={[thStyle, { width: LAB_W, backgroundColor: HDR_BG, alignItems: 'flex-start' }]}>
