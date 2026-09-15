@@ -43,7 +43,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
 
       {/* Leftover Toggle */}
       <div>
-        <label className="text-xs text-gray-600 mb-2 block" style={{ fontWeight: 600 }}>
+        <label className="text-xs text-muted-foreground mb-2 block" style={{ fontWeight: 600 }}>
           ¿Hubo caldos sobrantes?
         </label>
         <div className="flex gap-3">
@@ -90,7 +90,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
           </div>
 
           <div>
-            <label className="text-xs text-gray-600 mb-2 block" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground mb-2 block" style={{ fontWeight: 600 }}>
               ¿Se eliminó en área designada?
             </label>
             <div className="flex gap-3">
@@ -98,8 +98,8 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
                 onClick={() => updateFormData({ eliminatedDesignatedArea: true })}
                 className={`flex-1 h-12 rounded-full transition-all ${
                   formData.eliminatedDesignatedArea
-                    ? "bg-[#2B7AB5] text-white"
-                    : "bg-white border border-gray-300 text-gray-700"
+                    ? "bg-primary text-white"
+                    : "bg-card border border-border text-foreground"
                 }`}
                 style={{ fontWeight: 600 }}
               >
@@ -109,8 +109,8 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
                 onClick={() => updateFormData({ eliminatedDesignatedArea: false })}
                 className={`flex-1 h-12 rounded-full transition-all ${
                   !formData.eliminatedDesignatedArea
-                    ? "bg-[#2B7AB5] text-white"
-                    : "bg-white border border-gray-300 text-gray-700"
+                    ? "bg-primary text-white"
+                    : "bg-card border border-border text-foreground"
                 }`}
                 style={{ fontWeight: 600 }}
               >
@@ -161,35 +161,35 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
           value={formData.observations}
           onChange={(e) => updateFormData({ observations: e.target.value })}
           placeholder="Observaciones adicionales..."
-          className="w-full min-h-[100px] px-4 py-3 rounded-lg border border-black/10 bg-white
+          className="w-full min-h-[100px] px-4 py-3 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground
             focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
         />
       </div>
 
       {/* Summary Card */}
-      <div className="bg-white border border-black/10 rounded-xl overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
         <button
           onClick={() => setShowSummary(!showSummary)}
-          className="w-full px-4 py-3 flex items-center justify-between"
+          className="w-full px-4 py-3 flex items-center justify-between text-foreground"
         >
           <span style={{ fontWeight: 600 }}>Resumen de aplicación</span>
           {showSummary ? (
-            <ChevronUp className="w-5 h-5 text-gray-600" />
+            <ChevronUp className="w-5 h-5 text-muted-foreground" />
           ) : (
-            <ChevronDown className="w-5 h-5 text-gray-600" />
+            <ChevronDown className="w-5 h-5 text-muted-foreground" />
           )}
         </button>
 
         {showSummary && (
-          <div className="px-4 pb-4 space-y-3 text-sm border-t border-black/10 pt-3">
+          <div className="px-4 pb-4 space-y-3 text-sm border-t border-border pt-3">
             <div className="grid grid-cols-2 gap-2">
-              <div className="text-gray-600">Huerto:</div>
+              <div className="text-muted-foreground">Huerto:</div>
               <div style={{ fontWeight: 600 }}>{formData.huerto || "—"}</div>
-              <div className="text-gray-600">Superficie:</div>
+              <div className="text-muted-foreground">Superficie:</div>
               <div style={{ fontWeight: 600 }}>{formData.surface} ha</div>
-              <div className="text-gray-600">Productos:</div>
+              <div className="text-muted-foreground">Productos:</div>
               <div style={{ fontWeight: 600 }}>{formData.products.length}</div>
-              <div className="text-gray-600">Tipo:</div>
+              <div className="text-muted-foreground">Tipo:</div>
               <div style={{ fontWeight: 600 }}>{formData.applicationType}</div>
             </div>
           </div>
@@ -200,7 +200,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
       <div className="flex gap-3 pt-4">
         <button
           onClick={onBack}
-          className="flex-1 h-14 border border-gray-300 text-gray-700 rounded-3xl"
+          className="flex-1 h-14 border border-border text-foreground rounded-3xl"
           style={{ fontWeight: 600 }}
         >
           Atrás
