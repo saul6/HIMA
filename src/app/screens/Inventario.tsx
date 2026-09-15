@@ -6,6 +6,7 @@ import {
   ChevronUp,
   X,
   ExternalLink,
+  FileText,
 } from "lucide-react"
 import { toast } from "sonner"
 import { useAuthContext } from "@/context/AuthContext"
@@ -17,10 +18,11 @@ import {
   registrarMovimiento,
   type MovimientoConRancho,
 } from "@/lib/queries"
+import { generarInventarioReg01PDF } from "@/lib/pdf/m2/generarInventarioReg01PDF"
 import { ProductoCombobox } from "@/app/components/nueva-aplicacion/ProductoCombobox"
 import { FormField } from "@/app/components/FormField"
 import { FormSelect } from "@/app/components/FormSelect"
-import type { TipoMovimiento, InventarioSaldoRancho, InventarioSaldoProductor } from "@/types/database.types"
+import type { TipoMovimiento, InventarioSaldoRancho, InventarioSaldoProductor, Rancho } from "@/types/database.types"
 import { useModulosContext } from '@/context/ModulosContext'
 
 const LOW_STOCK = 5
@@ -322,6 +324,101 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
   )
 }
 
+// ── Bottom sheet REG-01 ───────────────────────────────────────────────────────
+
+interface ExportSheetProps {
+  onClose: () => void
+  ranchoOptions: { value: string; label: string }[]
+  ranchos: Rancho[]
+  orgId: string
+}
+
+function ExportarReg01Sheet({ onClose, ranchoOptions, ranchos, orgId }: ExportSheetProps) {
+  const [ranchoId, setRanchoId] = useState("")
+  const [desde, setDesde] = useState("")
+  const [hasta, setHasta] = useState("")
+  const [generando, setGenerando] = useState(false)
+
+  const handleGenerar = async () => {
+    if (!ranchoId) { toast.error("Selecciona un rancho"); return }
+    const rancho = ranchos.find((r) => r.id === ranchoId)
+    if (!rancho) return
+    setGenerando(true)
+    try {
+      await generarInventarioReg01PDF({
+        orgId,
+        ranchoId,
+        ranchoNombre: rancho.nombre,
+        cultivo: rancho.cultivo,
+        desde: desde || undefined,
+        hasta: hasta || undefined,
+      })
+      onClose()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al generar PDF")
+    } finally {
+      setGenerando(false)
+    }
+  }
+
+  return (
+    <>
+      <div className="fixed inset-0 bg-black/40 z-30" onClick={onClose} />
+      <div
+        className="fixed bottom-0 left-0 right-0 z-40 bg-card overflow-y-auto"
+        style={{
+          height: "70%",
+          borderRadius: "0.625rem 0.625rem 0 0",
+          maxWidth: 390,
+          margin: "0 auto",
+        }}
+      >
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 rounded-full bg-border" />
+        </div>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+            Exportar REG-01
+          </h2>
+          <button onClick={onClose} className="p-1">
+            <X className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </div>
+        <div className="p-4 space-y-4 pb-8">
+          <FormSelect
+            label="Rancho"
+            value={ranchoId}
+            onChange={setRanchoId}
+            options={ranchoOptions}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <FormField
+              label="Desde (opcional)"
+              type="date"
+              value={desde}
+              onChange={setDesde}
+            />
+            <FormField
+              label="Hasta (opcional)"
+              type="date"
+              value={hasta}
+              onChange={setHasta}
+            />
+          </div>
+          <button
+            onClick={handleGenerar}
+            disabled={generando}
+            className="w-full h-14 bg-primary text-white rounded-xl disabled:opacity-50 hover:bg-agro-blue transition-colors"
+            style={{ fontWeight: 600 }}
+          >
+            {generando ? "Generando…" : "Generar PDF"}
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}
+
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export function Inventario() {
@@ -334,6 +431,7 @@ export function Inventario() {
   )
 
   const esOperario = profile?.rol === 'operario'
+  const esCampo = terminosSitio.singular === 'Rancho'
   const [vista, setVista] = useState<Vista>("rancho")
   const [searchQuery, setSearchQuery] = useState("")
   const [activeFilter, setActiveFilter] = useState("Todos")
@@ -341,6 +439,7 @@ export function Inventario() {
   const [historialCache, setHistorialCache] = useState<Record<string, MovimientoConRancho[]>>({})
   const [loadingHistorial, setLoadingHistorial] = useState<string | null>(null)
   const [showSheet, setShowSheet] = useState(false)
+  const [showExportSheet, setShowExportSheet] = useState(false)
 
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }))
 
@@ -403,9 +502,21 @@ export function Inventario() {
   return (
     <div className="min-h-full pb-safe-nav">
       <header className="bg-card border-b border-border px-4 py-4">
-        <h1 className="text-foreground" style={{ fontWeight: 600 }}>
-          Inventario de Plaguicidas
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-foreground" style={{ fontWeight: 600 }}>
+            Inventario de Plaguicidas
+          </h1>
+          {esCampo && (
+            <button
+              onClick={() => setShowExportSheet(true)}
+              className="flex items-center gap-1.5 px-3 h-8 rounded-full bg-card border border-border text-foreground hover:bg-muted transition-colors text-xs"
+              style={{ fontWeight: 600 }}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              REG-01
+            </button>
+          )}
+        </div>
 
         {/* Toggle vista — solo para roles con productor asignado */}
         {!esOperario && (
@@ -596,6 +707,15 @@ export function Inventario() {
           orgId={profile.org_id}
           ranchoOptions={ranchoOptions}
           productos={productos}
+        />
+      )}
+
+      {showExportSheet && profile?.org_id && (
+        <ExportarReg01Sheet
+          onClose={() => setShowExportSheet(false)}
+          ranchoOptions={ranchoOptions}
+          ranchos={ranchos}
+          orgId={profile.org_id}
         />
       )}
     </div>

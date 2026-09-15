@@ -318,6 +318,31 @@ export async function getMovimientosProducto(
   return (data ?? []) as MovimientoConRancho[]
 }
 
+export type MovimientoREG01 = InventarioMovimiento & {
+  catalogo_productos: { nombre_comercial: string; unidad: string | null }
+}
+
+export async function getMovimientosRanchoReg01(
+  ranchoId: string,
+  desde?: string,
+  hasta?: string,
+): Promise<MovimientoREG01[]> {
+  let q = supabase
+    .from('inventario_movimientos')
+    .select('*, catalogo_productos(nombre_comercial, unidad)')
+    .eq('rancho_id', ranchoId)
+    .order('producto_id')
+    .order('fecha', { ascending: true })
+    .order('created_at', { ascending: true }) as any
+
+  if (desde) q = q.gte('fecha', desde)
+  if (hasta) q = q.lte('fecha', hasta)
+
+  const { data, error } = await q
+  if (error) throw error
+  return (data ?? []) as MovimientoREG01[]
+}
+
 export async function getSaldoActual(ranchoId: string, productoId: string): Promise<number> {
   const { data, error } = await supabase.rpc('saldo_inventario', {
     p_rancho_id: ranchoId,
