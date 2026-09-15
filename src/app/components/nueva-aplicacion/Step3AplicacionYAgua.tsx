@@ -6,6 +6,7 @@ interface Props {
   updateFormData: (data: any) => void;
   onNext: () => void;
   onBack: () => void;
+  esCampo?: boolean;
 }
 
 // cloro_ml = 5 × (total_agua_l / 200)  — se almacena en ml, limitado a 4 decimales
@@ -39,7 +40,9 @@ const ppeItems = [
   "Mascarillas",
 ];
 
-export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack }: Props) {
+const metodoGgItems = ["Aspersión", "Espolvoreo", "Cloro", "Riego"];
+
+export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack, esCampo }: Props) {
   const cloroMl = calcularCloroMl(formData.totalWater)
 
   const togglePPE = (item: string) => {
@@ -56,35 +59,61 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack 
       {/* Section Header */}
       <div className="bg-agro-success-fill -mx-4 px-4 py-2">
         <h3 className="text-[13px] text-agro-success-text" style={{ fontWeight: 600 }}>
-          TIPO DE APLICACIÓN
+          {esCampo ? "MÉTODO DE APLICACIÓN (GlobalG.A.P.)" : "TIPO DE APLICACIÓN"}
         </h3>
       </div>
 
-      {/* Application Type Toggle */}
-      <div className="flex gap-3">
-        <button
-          onClick={() => updateFormData({ applicationType: "Foliar" })}
-          className={`flex-1 h-12 rounded-full transition-all ${
-            formData.applicationType === "Foliar"
-              ? "bg-primary text-white"
-              : "bg-card border border-border text-foreground"
-          }`}
-          style={{ fontWeight: 600 }}
-        >
-          Foliar
-        </button>
-        <button
-          onClick={() => updateFormData({ applicationType: "Drench" })}
-          className={`flex-1 h-12 rounded-full transition-all ${
-            formData.applicationType === "Drench"
-              ? "bg-primary text-white"
-              : "bg-card border border-border text-foreground"
-          }`}
-          style={{ fontWeight: 600 }}
-        >
-          Drench
-        </button>
-      </div>
+      {esCampo ? (
+        /* GlobalG.A.P.: 4 chips de método */
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {metodoGgItems.map((metodo) => (
+            <button
+              key={metodo}
+              onClick={() => {
+                const esCloro = metodo === "Cloro";
+                updateFormData({
+                  metodoAplicacionGg: metodo,
+                  chlorination: esCloro,
+                });
+              }}
+              className={`flex-shrink-0 px-5 h-12 rounded-full transition-all whitespace-nowrap ${
+                formData.metodoAplicacionGg === metodo
+                  ? "bg-primary text-white"
+                  : "bg-card border border-border text-foreground"
+              }`}
+              style={{ fontWeight: 600 }}
+            >
+              {metodo}
+            </button>
+          ))}
+        </div>
+      ) : (
+        /* Sector no-Campo: toggle Foliar/Drench original */
+        <div className="flex gap-3">
+          <button
+            onClick={() => updateFormData({ applicationType: "Foliar" })}
+            className={`flex-1 h-12 rounded-full transition-all ${
+              formData.applicationType === "Foliar"
+                ? "bg-primary text-white"
+                : "bg-card border border-border text-foreground"
+            }`}
+            style={{ fontWeight: 600 }}
+          >
+            Foliar
+          </button>
+          <button
+            onClick={() => updateFormData({ applicationType: "Drench" })}
+            className={`flex-1 h-12 rounded-full transition-all ${
+              formData.applicationType === "Drench"
+                ? "bg-primary text-white"
+                : "bg-card border border-border text-foreground"
+            }`}
+            style={{ fontWeight: 600 }}
+          >
+            Drench
+          </button>
+        </div>
+      )}
 
       <FormSelect
         label="Equipo utilizado"
@@ -188,23 +217,86 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack 
         </h3>
       </div>
 
-      {/* PPE Grid */}
-      <div className="grid grid-cols-2 gap-3">
-        {ppeItems.map((item) => (
+      {esCampo ? (
+        /* Campo: 4 items GlobalG.A.P. */
+        <div className="grid grid-cols-2 gap-3">
+          {/* Traje */}
           <button
-            key={item}
-            onClick={() => togglePPE(item)}
+            onClick={() => togglePPE("Traje protector")}
             className={`h-12 rounded-full transition-all ${
-              formData.ppe[item]
-                ? "bg-[#2B7AB5] text-white"
-                : "bg-white border border-gray-300 text-gray-700"
+              formData.ppe["Traje protector"]
+                ? "bg-primary text-white"
+                : "bg-card border border-border text-foreground"
             }`}
             style={{ fontWeight: 600 }}
           >
-            {item}
+            Traje
           </button>
-        ))}
-      </div>
+          {/* Mascarilla */}
+          <button
+            onClick={() => togglePPE("Mascarillas")}
+            className={`h-12 rounded-full transition-all ${
+              formData.ppe["Mascarillas"]
+                ? "bg-primary text-white"
+                : "bg-card border border-border text-foreground"
+            }`}
+            style={{ fontWeight: 600 }}
+          >
+            Mascarilla
+          </button>
+          {/* Botas / Lentes — toggle ambos simultáneamente */}
+          <button
+            onClick={() => {
+              const nuevo = !formData.ppe["Botas"];
+              updateFormData({
+                ppe: {
+                  ...formData.ppe,
+                  "Botas": nuevo,
+                  "Googles": nuevo,
+                },
+              });
+            }}
+            className={`h-12 rounded-full transition-all ${
+              formData.ppe["Botas"]
+                ? "bg-primary text-white"
+                : "bg-card border border-border text-foreground"
+            }`}
+            style={{ fontWeight: 600 }}
+          >
+            Botas / Lentes
+          </button>
+          {/* Guantes de nitrilo */}
+          <button
+            onClick={() => togglePPE("Guantes")}
+            className={`h-12 rounded-full transition-all ${
+              formData.ppe["Guantes"]
+                ? "bg-primary text-white"
+                : "bg-card border border-border text-foreground"
+            }`}
+            style={{ fontWeight: 600 }}
+          >
+            Guantes de nitrilo
+          </button>
+        </div>
+      ) : (
+        /* No-Campo: 5 items originales */
+        <div className="grid grid-cols-2 gap-3">
+          {ppeItems.map((item) => (
+            <button
+              key={item}
+              onClick={() => togglePPE(item)}
+              className={`h-12 rounded-full transition-all ${
+                formData.ppe[item]
+                  ? "bg-[#2B7AB5] text-white"
+                  : "bg-white border border-gray-300 text-gray-700"
+              }`}
+              style={{ fontWeight: 600 }}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Navigation Buttons */}
       <div className="flex gap-3 pt-4">

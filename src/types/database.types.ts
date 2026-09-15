@@ -242,6 +242,8 @@ export type Database = {
           asesor_id: string | null
           responsable_inocuidad_id: string | null
           observaciones: string | null
+          proxima_cosecha: string | null
+          metodo_aplicacion_gg: string | null
           status: StatusAplicacion
           org_id: string
           created_at: string
@@ -284,6 +286,8 @@ export type Database = {
           asesor_id?: string | null
           responsable_inocuidad_id?: string | null
           observaciones?: string | null
+          proxima_cosecha?: string | null
+          metodo_aplicacion_gg?: string | null
           status?: StatusAplicacion
           org_id: string
           created_at?: string
@@ -321,6 +325,8 @@ export type Database = {
           asesor_id?: string | null
           responsable_inocuidad_id?: string | null
           observaciones?: string | null
+          proxima_cosecha?: string | null
+          metodo_aplicacion_gg?: string | null
           status?: StatusAplicacion
           org_id?: string
           created_at?: string

@@ -3,6 +3,7 @@ import { ChevronLeft, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useAuthContext } from "@/context/AuthContext";
+import { useModulosContext } from "@/context/ModulosContext";
 import { useRanchos } from "@/hooks/useRanchos";
 import { crearAplicacion, insertarProductosAplicacion, registrarSalidasAplicacion } from "@/lib/queries";
 import { supabase } from "@/lib/supabase";
@@ -30,6 +31,8 @@ export function NuevaAplicacion() {
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
   const { profile, productor, asesorProfile, responsableProfile, user } = useAuthContext();
+  const { terminosSitio } = useModulosContext();
+  const esCampo = terminosSitio.singular === 'Rancho';
   const { ranchos } = useRanchos();
   const [productosEnInventario, setProductosEnInventario] = useState<string[]>([])
 
@@ -74,6 +77,9 @@ export function NuevaAplicacion() {
     technicalAdvisor: asesorProfile?.nombre_completo ?? "",
     inocuidadResponsible: responsableProfile?.nombre_completo ?? "",
     observations: "",
+    // GlobalG.A.P. (solo sector Campo)
+    proximaCosecha: "",
+    metodoAplicacionGg: "",
   });
 
   // Sincroniza los datos del perfil si el contexto de auth termina de cargar
@@ -156,11 +162,12 @@ export function NuevaAplicacion() {
         tipo_aplicacion: formData.applicationType as "Foliar" | "Drench",
         equipo: (formData.equipment || null) as TipoEquipo | null,
         total_agua_l: formData.totalWater ? parseFloat(formData.totalWater) : null,
-        cloracion: formData.chlorination,
+        cloracion: esCampo && formData.metodoAplicacionGg === 'Cloro' ? true : formData.chlorination,
         // cloro_cantidad_l almacena el valor en ml: 5 × (total_agua_l / 200), 4 decimales
         cloro_cantidad_l: (() => {
           const agua = formData.totalWater ? parseFloat(formData.totalWater) : 0
-          return formData.chlorination && agua > 0 ? r4(5 * (agua / 200)) : null
+          const cloracionEfectiva = esCampo && formData.metodoAplicacionGg === 'Cloro' ? true : formData.chlorination
+          return cloracionEfectiva && agua > 0 ? r4(5 * (agua / 200)) : null
         })(),
         cloro_ph: formData.pH ? parseFloat(formData.pH) : null,
         condicion_meteorologica: (formData.weather || null) as CondicionMeteorologica | null,
@@ -177,6 +184,8 @@ export function NuevaAplicacion() {
         asesor_id: productor?.asesor_id ?? null,
         responsable_inocuidad_id: productor?.responsable_inocuidad_id ?? null,
         observaciones: formData.observations || null,
+        proxima_cosecha: esCampo && formData.proximaCosecha ? formData.proximaCosecha : null,
+        metodo_aplicacion_gg: esCampo ? (formData.metodoAplicacionGg || null) : null,
         status: "completado",
         org_id: profile!.org_id!,
       };
@@ -284,6 +293,7 @@ export function NuevaAplicacion() {
             responsable: responsableProfile,
             operario: profile,
             operarioEmail: user?.email,
+            esCampo,
           })
         } catch {
           toast.warning("Registro guardado. No se pudo generar el PDF — descárgalo desde el historial.")
@@ -349,6 +359,7 @@ export function NuevaAplicacion() {
             formData={formData}
             updateFormData={updateFormData}
             onNext={nextStep}
+            esCampo={esCampo}
           />
         )}
         {currentStep === 2 && (
@@ -366,6 +377,7 @@ export function NuevaAplicacion() {
             updateFormData={updateFormData}
             onNext={nextStep}
             onBack={prevStep}
+            esCampo={esCampo}
           />
         )}
         {currentStep === 4 && (

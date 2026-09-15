@@ -6,6 +6,7 @@ interface Props {
   formData: any;
   updateFormData: (data: any) => void;
   onNext: () => void;
+  esCampo?: boolean;
 }
 
 const phenologyOptions = [
@@ -17,7 +18,7 @@ const phenologyOptions = [
   { value: "cosecha", label: "Cosecha" },
 ];
 
-export function Step1ParcelaYCultivo({ formData, updateFormData, onNext }: Props) {
+export function Step1ParcelaYCultivo({ formData, updateFormData, onNext, esCampo }: Props) {
   const { ranchos, loading: loadingRanchos } = useRanchos();
 
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }));
@@ -137,6 +138,16 @@ export function Step1ParcelaYCultivo({ formData, updateFormData, onNext }: Props
           onChange={(value) => updateFormData({ endTime: value })}
         />
       </div>
+
+      {/* Campo GlobalG.A.P.: próxima cosecha (solo sector Campo) */}
+      {esCampo && (
+        <FormField
+          label="Próxima cosecha"
+          type="date"
+          value={formData.proximaCosecha}
+          onChange={(value) => updateFormData({ proximaCosecha: value })}
+        />
+      )}
 
       {/* Botón Continuar */}
       <button
