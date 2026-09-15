@@ -13,3 +13,9 @@ dist/
 .claude/skills/
 .agents/
 skills-lock.json
+
+#MCP
+.mcp.json
+.claude.json
+.env
+.env.*

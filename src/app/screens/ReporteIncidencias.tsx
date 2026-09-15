@@ -6,7 +6,7 @@ import {
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
-import imageCompression from 'browser-image-compression'
+import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -64,21 +64,6 @@ function formatFecha(iso: string): string {
   } catch { return iso }
 }
 
-async function comprimirFoto(file: File): Promise<File> {
-  const comprimir = imageCompression(file, {
-    maxSizeMB: 0.5,
-    maxWidthOrHeight: 1600,
-    useWebWorker: false,
-    fileType: 'image/jpeg',
-    initialQuality: 0.7,
-  })
-  return Promise.race([
-    comprimir,
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('COMPRESSION_TIMEOUT')), 10_000)
-    ),
-  ])
-}
 
 function nuevaIncidencia(): IncidenciaLocal {
   return { uid: crypto.randomUUID(), descripcion: '', fotos: [] }
@@ -573,15 +558,8 @@ export function ReporteIncidencias() {
 
           for (let intento = 0; intento < MAX_REINTENTOS_FOTO; intento++) {
             try {
-              // Comprimir con fallback: si la compresión falla o supera el timeout, usar el original
               let archivoASubir: File
-              try {
-                const comprimida = await comprimirFoto(fotoLocal.file)
-                archivoASubir = comprimida.size <= MAX_FOTO_BYTES ? comprimida : fotoLocal.file
-              } catch (compErr) {
-                console.warn(`M13 foto ${j + 1}/${inc.fotos.length}: compresión fallida, usando original`, compErr)
-                archivoASubir = fotoLocal.file
-              }
+              archivoASubir = await comprimirImagen(fotoLocal.file, 5.5)
               if (archivoASubir.size > MAX_FOTO_BYTES) {
                 throw new Error(
                   `La foto ${j + 1} de la incidencia ${i + 1} es demasiado grande (${(archivoASubir.size / 1024 / 1024).toFixed(1)} MB). Usa una foto con menor resolución.`

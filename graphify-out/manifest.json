@@ -470,13 +470,13 @@
     "semantic_hash": ""
   },
   "src/app/screens/InspeccionPerimetral.tsx": {
-    "mtime": 1789149703.145366,
-    "ast_hash": "70faca6796af8b6604255b056f0997f5",
+    "mtime": 1789410407.93867,
+    "ast_hash": "b2221c4fea957f29374423528e08aeb0",
     "semantic_hash": ""
   },
   "src/app/screens/InspeccionPreoperacionalCooler.tsx": {
-    "mtime": 1789150630.7369611,
-    "ast_hash": "96ce80ef619b805c25299a416e0d94be",
+    "mtime": 1789410439.5961132,
+    "ast_hash": "c5e53ecd4e85409175c26d4ab4a45f69",
     "semantic_hash": ""
   },
   "src/app/screens/InspeccionPreoperacionalCosecha.tsx": {
@@ -525,8 +525,8 @@
     "semantic_hash": "385d72d56935bbfb31cecd45ad896d79"
   },
   "src/app/screens/RegistroAccidentesLaborales.tsx": {
-    "mtime": 1788897457.7266705,
-    "ast_hash": "de51a7e9045609d8e0ebdcee184eb90a",
+    "mtime": 1789439631.499164,
+    "ast_hash": "acf343ac881c2fd3558c84618e22cd34",
     "semantic_hash": ""
   },
   "src/app/screens/RegistroCosechaLiberacion.tsx": {
@@ -550,13 +550,13 @@
     "semantic_hash": ""
   },
   "src/app/screens/ReporteIncidencias.tsx": {
-    "mtime": 1788894124.6001189,
-    "ast_hash": "10c501ff683a7d47218c40c46728090c",
+    "mtime": 1789439627.01873,
+    "ast_hash": "2d283c8e17f870970c18f3a414ff83a6",
     "semantic_hash": ""
   },
   "src/app/screens/VerificacionInsumos.tsx": {
-    "mtime": 1788897571.735352,
-    "ast_hash": "bf2262644c85141bf302ed4b475e47f7",
+    "mtime": 1789408517.704098,
+    "ast_hash": "89c779eeabac0ee5c7dc1fee98f11552",
     "semantic_hash": ""
   },
   "src/context/AuthContext.tsx": {
@@ -675,8 +675,8 @@
     "semantic_hash": "94c5dbc9ec3dc4a7f83a5bd1b817583d"
   },
   "src/hooks/useM23VerificacionInsumos.ts": {
-    "mtime": 1786809789.0174303,
-    "ast_hash": "70b11929e6f54810c1f2c42139c2bf83",
+    "mtime": 1789408448.8375847,
+    "ast_hash": "dac1347b2bd2ccc54a4ff126e2ce5914",
     "semantic_hash": ""
   },
   "src/hooks/useM7MaterialesRancho.ts": {
@@ -690,8 +690,8 @@
     "semantic_hash": "921322bfdbcec4d5caa32977f6b5e442"
   },
   "src/hooks/useM9Perimetral.ts": {
-    "mtime": 1789145223.909274,
-    "ast_hash": "9a10723fd7f59f940088840fd62482b4",
+    "mtime": 1789408446.9564373,
+    "ast_hash": "7c06633c620fa02d9b4bc6240ba0eef3",
     "semantic_hash": ""
   },
   "src/hooks/useMisModulos.ts": {
@@ -1035,8 +1035,8 @@
     "semantic_hash": "88e6805f39dc326e1b06a950a14cc642"
   },
   "src/lib/pdf/m24/InventarioQuimicosPDF.tsx": {
-    "mtime": 1788388957.64318,
-    "ast_hash": "37db5b4cbecd33fc4abd281d496ff10a",
+    "mtime": 1789410470.2591078,
+    "ast_hash": "d4ee8aa714660e1414c7e51392194250",
     "semantic_hash": ""
   },
   "src/lib/pdf/m24/generarInventarioQuimicosConsolidadoPDF.tsx": {
@@ -1045,9 +1045,9 @@
     "semantic_hash": "0c0878b7dc6ebcb9d0b40a737d045ff5"
   },
   "src/lib/pdf/m24/generarInventarioQuimicosPDF.tsx": {
-    "mtime": 1786694106.329381,
-    "ast_hash": "1277fe0270cf4080f602b20428c8b097",
-    "semantic_hash": "1277fe0270cf4080f602b20428c8b097"
+    "mtime": 1789410484.8073559,
+    "ast_hash": "c7ac74808130f2d2454c57feff28d36a",
+    "semantic_hash": ""
   },
   "src/lib/pdf/m25/ResumenNoConformidadesPDF.tsx": {
     "mtime": 1788389002.542635,
@@ -1080,8 +1080,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/AccionesCorrectivas.tsx": {
-    "mtime": 1788894169.020634,
-    "ast_hash": "178ba9e948adf723973a3a84bffd62b4",
+    "mtime": 1789439640.7856975,
+    "ast_hash": "1095cc945c196e5c9cc93ca832990701",
     "semantic_hash": ""
   },
   "src/hooks/useAccionesCorrectivas.ts": {
@@ -1530,8 +1530,8 @@
     "semantic_hash": "79c441bd5a21910ebd47bf4d0d603dec"
   },
   "src/app/screens/InspeccionAlmacenEmpaque.tsx": {
-    "mtime": 1789240169.8422883,
-    "ast_hash": "7421f5878ddae6f7364135afef0dc625",
+    "mtime": 1789408655.5092688,
+    "ast_hash": "f85cbaa40afeed8a1323cdac414f806f",
     "semantic_hash": ""
   },
   "src/app/screens/MantenimientoPreventivo.tsx": {
@@ -1550,8 +1550,8 @@
     "semantic_hash": "66e7f110f6b50a838794ef890ce77761"
   },
   "src/hooks/useM43InspeccionAlmacen.ts": {
-    "mtime": 1786809789.5820725,
-    "ast_hash": "259f71cc0d3765dbffcc197df93999e5",
+    "mtime": 1789408477.5407553,
+    "ast_hash": "238e5bb5a1b91c292a80b07cb2f80657",
     "semantic_hash": ""
   },
   "src/hooks/useM44OrdenesMantenimiento.ts": {
@@ -1570,9 +1570,9 @@
     "semantic_hash": ""
   },
   "src/lib/pdf/m43/generarInspeccionAlmacenEmpaqueConsolidadoPDF.tsx": {
-    "mtime": 1786694112.252494,
-    "ast_hash": "a16562f1178d07f00cb794deba6d3803",
-    "semantic_hash": "a16562f1178d07f00cb794deba6d3803"
+    "mtime": 1789408543.320848,
+    "ast_hash": "eb501013f20cf81e66ae81dbd75201cb",
+    "semantic_hash": ""
   },
   "src/lib/pdf/m43/generarInspeccionAlmacenEmpaquePDF.tsx": {
     "mtime": 1786694112.3951092,
@@ -1705,8 +1705,8 @@
     "semantic_hash": ""
   },
   "src/lib/pdf/components/PdfHeader.tsx": {
-    "mtime": 1788383953.6536608,
-    "ast_hash": "23513b4ece570bc0fb10b42ad116e84e",
+    "mtime": 1789410447.2047896,
+    "ast_hash": "3f87fad0668172cf25fc32f26520ef5b",
     "semantic_hash": ""
   },
   "src/lib/pdf/components/PdfPage.tsx": {
@@ -2187,6 +2187,11 @@
   "src/lib/pdf/m59/generarPlanSueloPDF.tsx": {
     "mtime": 1789238697.0621746,
     "ast_hash": "af1e3c8a0d2737132e8c77c7dd74eb4f",
+    "semantic_hash": ""
+  },
+  "src/lib/fotos/comprimirImagen.ts": {
+    "mtime": 1789439589.67395,
+    "ast_hash": "e70e33fc91ac3691377cb2c41905c0f8",
     "semantic_hash": ""
   }
 }

@@ -6,7 +6,7 @@ import {
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
-import imageCompression from 'browser-image-compression'
+import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
@@ -39,15 +39,6 @@ function formatFecha(iso: string | null | undefined): string {
   } catch { return iso }
 }
 
-async function comprimirFoto(file: File): Promise<File> {
-  return imageCompression(file, {
-    maxSizeMB: 0.5,
-    maxWidthOrHeight: 1600,
-    useWebWorker: true,
-    fileType: 'image/jpeg',
-    initialQuality: 0.7,
-  })
-}
 
 // ── Tipos internos ────────────────────────────────────────────────────────────
 
@@ -276,8 +267,7 @@ export function AccionesCorrectivas() {
       for (const fp of fotosPendientes) {
         const errImg = validarImagen(fp.file)
         if (errImg) throw new Error(errImg)
-        const ext = fp.file.name.split('.').pop() ?? 'jpg'
-        const path = `${profile.org_id}/${accionId}/${crypto.randomUUID()}.${ext}`
+        const path = `${profile.org_id}/${accionId}/${crypto.randomUUID()}.jpg`
         await subirFotoAccion(path, fp.file)
         await agregarFoto(accionId, path, fp.tipo, fp.leyenda.trim() || null)
       }
@@ -305,8 +295,10 @@ export function AccionesCorrectivas() {
   async function handlePickFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    const toastId = toast.loading('Optimizando foto...')
     try {
-      const compressed = await comprimirFoto(file)
+      const compressed = await comprimirImagen(file, 9)
+      toast.dismiss(toastId)
       const preview = URL.createObjectURL(compressed)
       setFotosPendientes((prev) => [
         ...prev,
@@ -320,6 +312,7 @@ export function AccionesCorrectivas() {
       ])
       setLeyendaFotoNueva('')
     } catch {
+      toast.dismiss(toastId)
       toast.error('Error al procesar la imagen')
     }
     e.target.value = ''

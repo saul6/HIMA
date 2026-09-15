@@ -291,13 +291,15 @@
   "289": "useM55MipIntervencion.ts",
   "290": "input-otp.tsx",
   "291": "useM65SanitizacionCosecha.ts",
+  "292": "FrecuenciaCapacitacion.tsx",
+  "293": "CronogramaCapacitacion.tsx",
   "294": "useM56FrecuenciaCapacitacion.ts",
   "295": "useM57CronogramaCapacitacion.ts",
   "296": "Tensiometros.tsx",
   "297": "useM66ProductosAutorizados.ts",
-  "298": "browser-image-compression",
+  "298": "canvas-confetti",
   "299": "useM59PlanSuelo.ts",
-  "300": "Perfil.tsx",
+  "300": "App.tsx",
   "301": "useM58Tensiometros.ts",
   "302": "class-variance-authority",
   "303": "@marsidev/react-turnstile",
@@ -311,5 +313,6 @@
   "311": "@radix-ui/react-tooltip",
   "312": "react-dnd-html5-backend",
   "313": "react-responsive-masonry",
-  "314": "react-slick"
+  "314": "react-slick",
+  "315": "comprimirImagen.ts"
 }

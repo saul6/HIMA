@@ -1,0 +1,2192 @@
+{
+  ".claude/settings.json": {
+    "mtime": 1785541321.1559336,
+    "ast_hash": "26ef2fab6716c8b4f8096095439001b4",
+    "semantic_hash": "26ef2fab6716c8b4f8096095439001b4"
+  },
+  "aneberries_frambuesa.json": {
+    "mtime": 1780544269.6136117,
+    "ast_hash": "dd18ba4e52890aa6f89e52877db6ea77",
+    "semantic_hash": "dd18ba4e52890aa6f89e52877db6ea77"
+  },
+  "aneberries_fresa.json": {
+    "mtime": 1780544281.021685,
+    "ast_hash": "2f9ea61fd6b76d526c88d7f7ed2a0f7d",
+    "semantic_hash": "2f9ea61fd6b76d526c88d7f7ed2a0f7d"
+  },
+  "aneberries_moraazul.json": {
+    "mtime": 1780544288.8473032,
+    "ast_hash": "f0219d28f67b36302c32a21228f15488",
+    "semantic_hash": "f0219d28f67b36302c32a21228f15488"
+  },
+  "aneberries_zarzamora.json": {
+    "mtime": 1780452829.122772,
+    "ast_hash": "4633103b5a30aac813e19013545b4ade",
+    "semantic_hash": "4633103b5a30aac813e19013545b4ade"
+  },
+  "extract_aneberries.py": {
+    "mtime": 1780544228.4355123,
+    "ast_hash": "2a26617ebc0907702166f1d418c8c020",
+    "semantic_hash": "2a26617ebc0907702166f1d418c8c020"
+  },
+  "package.json": {
+    "mtime": 1786768488.575421,
+    "ast_hash": "cc33c416e4da537927ec2cdc9e8e8d7b",
+    "semantic_hash": "cc33c416e4da537927ec2cdc9e8e8d7b"
+  },
+  "postcss.config.mjs": {
+    "mtime": 1775189618.826869,
+    "ast_hash": "512ddfe3175b0d294ec1e4789f27885f",
+    "semantic_hash": "512ddfe3175b0d294ec1e4789f27885f"
+  },
+  "scripts/seed-aneberries-todos.ts": {
+    "mtime": 1780589110.7781148,
+    "ast_hash": "203b40426ee447e7472b41889b74e85f",
+    "semantic_hash": "203b40426ee447e7472b41889b74e85f"
+  },
+  "scripts/seed-aneberries-zarzamora.ts": {
+    "mtime": 1780453146.9153986,
+    "ast_hash": "d98b73e427a5e1726b9115f17b59536c",
+    "semantic_hash": "d98b73e427a5e1726b9115f17b59536c"
+  },
+  "src/app/App.tsx": {
+    "mtime": 1786339580.1947331,
+    "ast_hash": "8b1e718a1874f9c860bd6bb1cbe59272",
+    "semantic_hash": "8b1e718a1874f9c860bd6bb1cbe59272"
+  },
+  "src/app/components/AuthBackground.tsx": {
+    "mtime": 1781756203.4181786,
+    "ast_hash": "b38a9653ae7c573b9d1b2aa456ec7ab4",
+    "semantic_hash": "b38a9653ae7c573b9d1b2aa456ec7ab4"
+  },
+  "src/app/components/FormField.tsx": {
+    "mtime": 1779042846.9626212,
+    "ast_hash": "b014f47ad07d135f987175089a827ee0",
+    "semantic_hash": "b014f47ad07d135f987175089a827ee0"
+  },
+  "src/app/components/FormSelect.tsx": {
+    "mtime": 1779043025.5733202,
+    "ast_hash": "cbc2fdc63ca75d32099199bff2bbc313",
+    "semantic_hash": "cbc2fdc63ca75d32099199bff2bbc313"
+  },
+  "src/app/components/Layout.tsx": {
+    "mtime": 1788810813.8457432,
+    "ast_hash": "7bf4eb244839ca7fea33756c2cd03d26",
+    "semantic_hash": ""
+  },
+  "src/app/components/MadyLogo.tsx": {
+    "mtime": 1785374807.8678865,
+    "ast_hash": "6732b4065f8dae3a75dda3b8af094936",
+    "semantic_hash": "6732b4065f8dae3a75dda3b8af094936"
+  },
+  "src/app/components/RequireAuth.tsx": {
+    "mtime": 1788558246.1668591,
+    "ast_hash": "7f70ffa944b03864f8986d6f63048daa",
+    "semantic_hash": ""
+  },
+  "src/app/components/RequireModulo.tsx": {
+    "mtime": 1788295084.1712291,
+    "ast_hash": "9355954cd558279f1eef67a7e1b0df58",
+    "semantic_hash": ""
+  },
+  "src/app/components/RequireOrg.tsx": {
+    "mtime": 1780961114.3771605,
+    "ast_hash": "7194e137d42c410002409fa7aee84a11",
+    "semantic_hash": "7194e137d42c410002409fa7aee84a11"
+  },
+  "src/app/components/auditoria/AuditoriaScreen.tsx": {
+    "mtime": 1789155991.342664,
+    "ast_hash": "5e7652f2cd82e8a10f6d77e5b579085c",
+    "semantic_hash": ""
+  },
+  "src/app/components/auditoria/PortadaBPMForm.tsx": {
+    "mtime": 1785272682.5533583,
+    "ast_hash": "06f410dac8020b127cc11cc2189b6e2d",
+    "semantic_hash": "06f410dac8020b127cc11cc2189b6e2d"
+  },
+  "src/app/components/auditoria/PortadaCosechaForm.tsx": {
+    "mtime": 1784489390.7150383,
+    "ast_hash": "7ad5381f9a079a736793af3e49807791",
+    "semantic_hash": "7ad5381f9a079a736793af3e49807791"
+  },
+  "src/app/components/auditoria/PortadaGranjaForm.tsx": {
+    "mtime": 1784489363.3373885,
+    "ast_hash": "2c122862250b77bd28cefb9a6ff811d9",
+    "semantic_hash": "2c122862250b77bd28cefb9a6ff811d9"
+  },
+  "src/app/components/auditoria/PreguntaItem.tsx": {
+    "mtime": 1788461316.6086435,
+    "ast_hash": "daae6b6daf4a90d3a21fe499263fa8ea",
+    "semantic_hash": ""
+  },
+  "src/app/components/auditoria/ResumenPuntaje.tsx": {
+    "mtime": 1788461316.7738671,
+    "ast_hash": "67dfba02de70262089aa5f7b819d7337",
+    "semantic_hash": ""
+  },
+  "src/app/components/auditoria/SeccionAccordion.tsx": {
+    "mtime": 1788461316.6924086,
+    "ast_hash": "d01b1d3f36bcf9f346a0cc7174f101c2",
+    "semantic_hash": ""
+  },
+  "src/app/components/figma/ImageWithFallback.tsx": {
+    "mtime": 1775189618.1849816,
+    "ast_hash": "cf265545a904ec8dfc50a4dd25209a79",
+    "semantic_hash": "cf265545a904ec8dfc50a4dd25209a79"
+  },
+  "src/app/components/iconos-modulos.ts": {
+    "mtime": 1786337718.9122398,
+    "ast_hash": "476e4f659d70cffaf95e9140df3b5bfa",
+    "semantic_hash": "476e4f659d70cffaf95e9140df3b5bfa"
+  },
+  "src/app/components/nueva-aplicacion/ProductoCombobox.tsx": {
+    "mtime": 1780591511.2841575,
+    "ast_hash": "f4289f0bf4a07b03009387669190538a",
+    "semantic_hash": "f4289f0bf4a07b03009387669190538a"
+  },
+  "src/app/components/nueva-aplicacion/Step1ParcelaYCultivo.tsx": {
+    "mtime": 1789160107.6916416,
+    "ast_hash": "0168f2ecbb64f64a446a132dbf0afdec",
+    "semantic_hash": ""
+  },
+  "src/app/components/nueva-aplicacion/Step2Productos.tsx": {
+    "mtime": 1782684108.582775,
+    "ast_hash": "d72255881eb7ebe300ebdab0db7db07f",
+    "semantic_hash": "d72255881eb7ebe300ebdab0db7db07f"
+  },
+  "src/app/components/nueva-aplicacion/Step3AplicacionYAgua.tsx": {
+    "mtime": 1782684753.280973,
+    "ast_hash": "eb06389c2a5602f8bc6f26aa3db082f5",
+    "semantic_hash": "eb06389c2a5602f8bc6f26aa3db082f5"
+  },
+  "src/app/components/nueva-aplicacion/Step4CierreYObservaciones.tsx": {
+    "mtime": 1779042161.535144,
+    "ast_hash": "c40447283928d9553ae155549d369715",
+    "semantic_hash": "c40447283928d9553ae155549d369715"
+  },
+  "src/app/components/ui/accordion.tsx": {
+    "mtime": 1775189617.240162,
+    "ast_hash": "b70c6a9ebee8874bb4e5880da21a4f44",
+    "semantic_hash": "b70c6a9ebee8874bb4e5880da21a4f44"
+  },
+  "src/app/components/ui/alert-dialog.tsx": {
+    "mtime": 1775189617.25707,
+    "ast_hash": "fffdba13911be5058cb47ae712dd00b6",
+    "semantic_hash": "fffdba13911be5058cb47ae712dd00b6"
+  },
+  "src/app/components/ui/alert.tsx": {
+    "mtime": 1775189617.2833984,
+    "ast_hash": "162e5c706a1cd900d863fd5a19a56507",
+    "semantic_hash": "162e5c706a1cd900d863fd5a19a56507"
+  },
+  "src/app/components/ui/aspect-ratio.tsx": {
+    "mtime": 1775189617.3058188,
+    "ast_hash": "2c1c30af12401d88f8df52c3c235ed67",
+    "semantic_hash": "2c1c30af12401d88f8df52c3c235ed67"
+  },
+  "src/app/components/ui/avatar.tsx": {
+    "mtime": 1775189617.3192296,
+    "ast_hash": "c8fcbe36f44f9d68c45ce38546bdda9c",
+    "semantic_hash": "c8fcbe36f44f9d68c45ce38546bdda9c"
+  },
+  "src/app/components/ui/badge.tsx": {
+    "mtime": 1775189617.3307436,
+    "ast_hash": "027ca1b168b5a31ec381898dd0fad1d8",
+    "semantic_hash": "027ca1b168b5a31ec381898dd0fad1d8"
+  },
+  "src/app/components/ui/breadcrumb.tsx": {
+    "mtime": 1775189617.3538456,
+    "ast_hash": "ffaa516f002d988d1a3d2cffb2a5f175",
+    "semantic_hash": "ffaa516f002d988d1a3d2cffb2a5f175"
+  },
+  "src/app/components/ui/button.tsx": {
+    "mtime": 1775189617.3796346,
+    "ast_hash": "2a2ce95de39f4f4849f70bb615492ab7",
+    "semantic_hash": "2a2ce95de39f4f4849f70bb615492ab7"
+  },
+  "src/app/components/ui/calendar.tsx": {
+    "mtime": 1775189617.4059377,
+    "ast_hash": "f5fd009223e3652640773e98dcc5e59f",
+    "semantic_hash": "f5fd009223e3652640773e98dcc5e59f"
+  },
+  "src/app/components/ui/card.tsx": {
+    "mtime": 1775189617.4369051,
+    "ast_hash": "1c1ec988ee2908e66b010798309baa58",
+    "semantic_hash": "1c1ec988ee2908e66b010798309baa58"
+  },
+  "src/app/components/ui/carousel.tsx": {
+    "mtime": 1775189617.4596686,
+    "ast_hash": "c89d7f94c3d16dcf2d4e34f0b8034084",
+    "semantic_hash": "c89d7f94c3d16dcf2d4e34f0b8034084"
+  },
+  "src/app/components/ui/chart.tsx": {
+    "mtime": 1775189617.4841783,
+    "ast_hash": "42ef994d83724dcaacbdddeaddf7b18b",
+    "semantic_hash": "42ef994d83724dcaacbdddeaddf7b18b"
+  },
+  "src/app/components/ui/checkbox.tsx": {
+    "mtime": 1775189617.5096815,
+    "ast_hash": "513285928084159260a7f0f6735f77c8",
+    "semantic_hash": "513285928084159260a7f0f6735f77c8"
+  },
+  "src/app/components/ui/collapsible.tsx": {
+    "mtime": 1775189617.5289893,
+    "ast_hash": "fb83308ef990f33e60b56b22c6adb007",
+    "semantic_hash": "fb83308ef990f33e60b56b22c6adb007"
+  },
+  "src/app/components/ui/command.tsx": {
+    "mtime": 1775189617.554297,
+    "ast_hash": "41e1d0c759f0327b879dfec678cfe781",
+    "semantic_hash": "41e1d0c759f0327b879dfec678cfe781"
+  },
+  "src/app/components/ui/context-menu.tsx": {
+    "mtime": 1775189617.5759525,
+    "ast_hash": "d613a68dc16ac28500406d3ed7d1cc44",
+    "semantic_hash": "d613a68dc16ac28500406d3ed7d1cc44"
+  },
+  "src/app/components/ui/dialog.tsx": {
+    "mtime": 1775189617.5956333,
+    "ast_hash": "d908f64f8ea05b532d292ff2cfc0f9d0",
+    "semantic_hash": "d908f64f8ea05b532d292ff2cfc0f9d0"
+  },
+  "src/app/components/ui/drawer.tsx": {
+    "mtime": 1775189617.6126306,
+    "ast_hash": "eb7f3850284135ed58adeeb2205e739c",
+    "semantic_hash": "eb7f3850284135ed58adeeb2205e739c"
+  },
+  "src/app/components/ui/dropdown-menu.tsx": {
+    "mtime": 1775189617.6302738,
+    "ast_hash": "88eba49303246bd059776e95106373e5",
+    "semantic_hash": "88eba49303246bd059776e95106373e5"
+  },
+  "src/app/components/ui/form.tsx": {
+    "mtime": 1775189617.6428168,
+    "ast_hash": "7bd150b19048c2af09b63dd0a260b179",
+    "semantic_hash": "7bd150b19048c2af09b63dd0a260b179"
+  },
+  "src/app/components/ui/hover-card.tsx": {
+    "mtime": 1775189617.654875,
+    "ast_hash": "2225b5b5db78c8dde5f0aff6aa08458c",
+    "semantic_hash": "2225b5b5db78c8dde5f0aff6aa08458c"
+  },
+  "src/app/components/ui/input-otp.tsx": {
+    "mtime": 1775189617.6750112,
+    "ast_hash": "a74758e038db3ef3301c58bd0ac01753",
+    "semantic_hash": "a74758e038db3ef3301c58bd0ac01753"
+  },
+  "src/app/components/ui/input.tsx": {
+    "mtime": 1775189617.6885269,
+    "ast_hash": "3a32dac1fb72ab6a6893f806aac049e0",
+    "semantic_hash": "3a32dac1fb72ab6a6893f806aac049e0"
+  },
+  "src/app/components/ui/label.tsx": {
+    "mtime": 1775189617.7066753,
+    "ast_hash": "06608274383a01446d19b9a7ed8148c3",
+    "semantic_hash": "06608274383a01446d19b9a7ed8148c3"
+  },
+  "src/app/components/ui/menubar.tsx": {
+    "mtime": 1775189617.7206552,
+    "ast_hash": "c955592a9b680c223a6aa7ba5eca19af",
+    "semantic_hash": "c955592a9b680c223a6aa7ba5eca19af"
+  },
+  "src/app/components/ui/navigation-menu.tsx": {
+    "mtime": 1775189617.7352872,
+    "ast_hash": "c6ecd95499ba6e8fe4d8fdd16be18d24",
+    "semantic_hash": "c6ecd95499ba6e8fe4d8fdd16be18d24"
+  },
+  "src/app/components/ui/pagination.tsx": {
+    "mtime": 1775189617.7548227,
+    "ast_hash": "7531a02a3c7a33d56e2f668ffd7a0d35",
+    "semantic_hash": "7531a02a3c7a33d56e2f668ffd7a0d35"
+  },
+  "src/app/components/ui/popover.tsx": {
+    "mtime": 1775189617.7659872,
+    "ast_hash": "3db5181d3777cead79949d25c31872aa",
+    "semantic_hash": "3db5181d3777cead79949d25c31872aa"
+  },
+  "src/app/components/ui/progress.tsx": {
+    "mtime": 1775189617.7782838,
+    "ast_hash": "a21bc28c146d6e943b3204b095f17a74",
+    "semantic_hash": "a21bc28c146d6e943b3204b095f17a74"
+  },
+  "src/app/components/ui/radio-group.tsx": {
+    "mtime": 1775189617.789026,
+    "ast_hash": "25f34d829563805260a4b1234bfcac3f",
+    "semantic_hash": "25f34d829563805260a4b1234bfcac3f"
+  },
+  "src/app/components/ui/resizable.tsx": {
+    "mtime": 1775189617.8028016,
+    "ast_hash": "dbedce80325c20ea43ce386433e87415",
+    "semantic_hash": "dbedce80325c20ea43ce386433e87415"
+  },
+  "src/app/components/ui/scroll-area.tsx": {
+    "mtime": 1775189617.8211696,
+    "ast_hash": "ceed8816f5ac36bda5c970e49fed5347",
+    "semantic_hash": "ceed8816f5ac36bda5c970e49fed5347"
+  },
+  "src/app/components/ui/select.tsx": {
+    "mtime": 1775189617.8369884,
+    "ast_hash": "7efb1603282cbfbd4bb752fc6aa16465",
+    "semantic_hash": "7efb1603282cbfbd4bb752fc6aa16465"
+  },
+  "src/app/components/ui/separator.tsx": {
+    "mtime": 1775189617.8539524,
+    "ast_hash": "8011cea02bdcd4a2e666dacb82cf43d6",
+    "semantic_hash": "8011cea02bdcd4a2e666dacb82cf43d6"
+  },
+  "src/app/components/ui/sheet.tsx": {
+    "mtime": 1775189617.8674285,
+    "ast_hash": "14f866a1ec7bd747f499b606f8e40cb3",
+    "semantic_hash": "14f866a1ec7bd747f499b606f8e40cb3"
+  },
+  "src/app/components/ui/sidebar.tsx": {
+    "mtime": 1775189617.8868794,
+    "ast_hash": "6f2411b67de8153c8890d9688b636cb0",
+    "semantic_hash": "6f2411b67de8153c8890d9688b636cb0"
+  },
+  "src/app/components/ui/skeleton.tsx": {
+    "mtime": 1775189617.9338427,
+    "ast_hash": "a71aca7b1a33fbf0e5ecd93015c7804f",
+    "semantic_hash": "a71aca7b1a33fbf0e5ecd93015c7804f"
+  },
+  "src/app/components/ui/slider.tsx": {
+    "mtime": 1775189617.9625235,
+    "ast_hash": "276b72ee040e75c35385b068e6c279d2",
+    "semantic_hash": "276b72ee040e75c35385b068e6c279d2"
+  },
+  "src/app/components/ui/sonner.tsx": {
+    "mtime": 1775189617.9894917,
+    "ast_hash": "ace3a6465858e1f9a441724008f2d921",
+    "semantic_hash": "ace3a6465858e1f9a441724008f2d921"
+  },
+  "src/app/components/ui/switch.tsx": {
+    "mtime": 1775189618.0098298,
+    "ast_hash": "24628008ea7aeeecdd193ca7de846552",
+    "semantic_hash": "24628008ea7aeeecdd193ca7de846552"
+  },
+  "src/app/components/ui/table.tsx": {
+    "mtime": 1775189618.0340254,
+    "ast_hash": "2066531279772875cba1f2c269fe23b4",
+    "semantic_hash": "2066531279772875cba1f2c269fe23b4"
+  },
+  "src/app/components/ui/tabs.tsx": {
+    "mtime": 1775189618.0516531,
+    "ast_hash": "e85ffdace1c1d8b2e4c748c2877b9fe2",
+    "semantic_hash": "e85ffdace1c1d8b2e4c748c2877b9fe2"
+  },
+  "src/app/components/ui/textarea.tsx": {
+    "mtime": 1775189618.067424,
+    "ast_hash": "9aa996cfdc9b59dd5e9cce00e5fb8280",
+    "semantic_hash": "9aa996cfdc9b59dd5e9cce00e5fb8280"
+  },
+  "src/app/components/ui/toggle-group.tsx": {
+    "mtime": 1775189618.0837753,
+    "ast_hash": "4bc07765706ef9a2e74f97de0fc0ecc0",
+    "semantic_hash": "4bc07765706ef9a2e74f97de0fc0ecc0"
+  },
+  "src/app/components/ui/toggle.tsx": {
+    "mtime": 1775189618.1041203,
+    "ast_hash": "4c8cf865ef8acde9a3558cb8c21ecdc4",
+    "semantic_hash": "4c8cf865ef8acde9a3558cb8c21ecdc4"
+  },
+  "src/app/components/ui/tooltip.tsx": {
+    "mtime": 1775189618.1208143,
+    "ast_hash": "7e731b948edb6f93cf7d1841d056e5bb",
+    "semantic_hash": "7e731b948edb6f93cf7d1841d056e5bb"
+  },
+  "src/app/components/ui/use-mobile.ts": {
+    "mtime": 1775189618.1431766,
+    "ast_hash": "21f0293b823c5298aa735fc013840cff",
+    "semantic_hash": "21f0293b823c5298aa735fc013840cff"
+  },
+  "src/app/components/ui/utils.ts": {
+    "mtime": 1775189618.167194,
+    "ast_hash": "d9837f38cc05303254571985e3164050",
+    "semantic_hash": "d9837f38cc05303254571985e3164050"
+  },
+  "src/app/routes.tsx": {
+    "mtime": 1789238798.1477482,
+    "ast_hash": "6f5b6ba796bf957ee4a1227de0eff18f",
+    "semantic_hash": ""
+  },
+  "src/app/screens/ActividadEquipo.tsx": {
+    "mtime": 1786342041.1587195,
+    "ast_hash": "01c6253630d1ac4f98397e1a49e286e1",
+    "semantic_hash": "01c6253630d1ac4f98397e1a49e286e1"
+  },
+  "src/app/screens/AuditoriaBPM.tsx": {
+    "mtime": 1785272690.097444,
+    "ast_hash": "85d8c8fa4ede088fbb3618cc64f84ede",
+    "semantic_hash": "85d8c8fa4ede088fbb3618cc64f84ede"
+  },
+  "src/app/screens/AuditoriaCosecha.tsx": {
+    "mtime": 1784489493.6275032,
+    "ast_hash": "3260d81908974e62c156ec0d6087f333",
+    "semantic_hash": "3260d81908974e62c156ec0d6087f333"
+  },
+  "src/app/screens/AuditoriaGranja.tsx": {
+    "mtime": 1784489487.8048956,
+    "ast_hash": "13e96842f9686f5a0b156f2bdf93d9ad",
+    "semantic_hash": "13e96842f9686f5a0b156f2bdf93d9ad"
+  },
+  "src/app/screens/AuditoriaHACCP.tsx": {
+    "mtime": 1785287979.1244473,
+    "ast_hash": "9b65655879819cbe8ad296cd06673174",
+    "semantic_hash": "9b65655879819cbe8ad296cd06673174"
+  },
+  "src/app/screens/AuditoriaSaia.tsx": {
+    "mtime": 1784489481.2392876,
+    "ast_hash": "9d4089571d31e214548fefb08a0bcbb1",
+    "semantic_hash": "9d4089571d31e214548fefb08a0bcbb1"
+  },
+  "src/app/screens/BibliotecaHistorial.tsx": {
+    "mtime": 1786694100.330132,
+    "ast_hash": "d29abbabb184eccaea25507641c12355",
+    "semantic_hash": "d29abbabb184eccaea25507641c12355"
+  },
+  "src/app/screens/BotiquinPrimerosAuxilios.tsx": {
+    "mtime": 1786342041.1967177,
+    "ast_hash": "53bfa59f51d957a82882bdbb1e548327",
+    "semantic_hash": "53bfa59f51d957a82882bdbb1e548327"
+  },
+  "src/app/screens/CompletarOrganizacion.tsx": {
+    "mtime": 1782156411.2000344,
+    "ast_hash": "df25ffde6a3b359b06e769ce7bfe699a",
+    "semantic_hash": "df25ffde6a3b359b06e769ce7bfe699a"
+  },
+  "src/app/screens/DetalleAplicacion.tsx": {
+    "mtime": 1785370248.0060964,
+    "ast_hash": "dfdf0795b7a66b50fae10a6d019bebcd",
+    "semantic_hash": "dfdf0795b7a66b50fae10a6d019bebcd"
+  },
+  "src/app/screens/Historial.tsx": {
+    "mtime": 1786342041.2352777,
+    "ast_hash": "fd5bbae2442e74395e79232b439857d5",
+    "semantic_hash": "fd5bbae2442e74395e79232b439857d5"
+  },
+  "src/app/screens/Home.tsx": {
+    "mtime": 1789183871.8334322,
+    "ast_hash": "99b93d347f53a62f562e264082caf062",
+    "semantic_hash": ""
+  },
+  "src/app/screens/InspeccionPerimetral.tsx": {
+    "mtime": 1789149703.145366,
+    "ast_hash": "70faca6796af8b6604255b056f0997f5",
+    "semantic_hash": ""
+  },
+  "src/app/screens/InspeccionPreoperacionalCooler.tsx": {
+    "mtime": 1789150630.7369611,
+    "ast_hash": "96ce80ef619b805c25299a416e0d94be",
+    "semantic_hash": ""
+  },
+  "src/app/screens/InspeccionPreoperacionalCosecha.tsx": {
+    "mtime": 1789149704.571801,
+    "ast_hash": "3c32bc9c8cdd1c0fabc758aceb0d1913",
+    "semantic_hash": ""
+  },
+  "src/app/screens/InspeccionVidrioPlastico.tsx": {
+    "mtime": 1786771661.6378474,
+    "ast_hash": "44a045fbe0e9025a1064cef0839d74e2",
+    "semantic_hash": "44a045fbe0e9025a1064cef0839d74e2"
+  },
+  "src/app/screens/Inventario.tsx": {
+    "mtime": 1789147688.2644045,
+    "ast_hash": "fdf2de5702146deef75eb4dd7f32d968",
+    "semantic_hash": ""
+  },
+  "src/app/screens/Login.tsx": {
+    "mtime": 1788897182.7627056,
+    "ast_hash": "7765ebdf031b1a841f21e84353040b9e",
+    "semantic_hash": ""
+  },
+  "src/app/screens/MiOrganizacion.tsx": {
+    "mtime": 1788884902.2180657,
+    "ast_hash": "cc2c4db558af0bc925eda3353e22e610",
+    "semantic_hash": ""
+  },
+  "src/app/screens/MonitoreoEstacionesPlagas.tsx": {
+    "mtime": 1789155988.2463212,
+    "ast_hash": "43deda81a274b1efc4be6ce4b7d99058",
+    "semantic_hash": ""
+  },
+  "src/app/screens/NuevaAplicacion.tsx": {
+    "mtime": 1789160121.5297568,
+    "ast_hash": "b63edc7de3ca9542b0fef6cdbd57099b",
+    "semantic_hash": ""
+  },
+  "src/app/screens/Perfil.tsx": {
+    "mtime": 1788294767.0706246,
+    "ast_hash": "05b636753f849853b2a6e3e2db23236a",
+    "semantic_hash": ""
+  },
+  "src/app/screens/Registro.tsx": {
+    "mtime": 1782450001.8123598,
+    "ast_hash": "385d72d56935bbfb31cecd45ad896d79",
+    "semantic_hash": "385d72d56935bbfb31cecd45ad896d79"
+  },
+  "src/app/screens/RegistroAccidentesLaborales.tsx": {
+    "mtime": 1788897457.7266705,
+    "ast_hash": "de51a7e9045609d8e0ebdcee184eb90a",
+    "semantic_hash": ""
+  },
+  "src/app/screens/RegistroCosechaLiberacion.tsx": {
+    "mtime": 1786771689.7954283,
+    "ast_hash": "0c6d6b7c3ac3537dbb97fc8943184cee",
+    "semantic_hash": "0c6d6b7c3ac3537dbb97fc8943184cee"
+  },
+  "src/app/screens/RegistroFertilizacion.tsx": {
+    "mtime": 1789145609.5391772,
+    "ast_hash": "97f064f28036bc0dae6cb596dd75a184",
+    "semantic_hash": ""
+  },
+  "src/app/screens/RegistroLimpiezaBanos.tsx": {
+    "mtime": 1786771693.182381,
+    "ast_hash": "f33ade3304628b6195f2b097b1ca3bd0",
+    "semantic_hash": "f33ade3304628b6195f2b097b1ca3bd0"
+  },
+  "src/app/screens/RegistroMuestrasLaboratorio.tsx": {
+    "mtime": 1788897440.8501563,
+    "ast_hash": "d6d92e0b1ba1ebd6ddcafe4a824c070d",
+    "semantic_hash": ""
+  },
+  "src/app/screens/ReporteIncidencias.tsx": {
+    "mtime": 1788894124.6001189,
+    "ast_hash": "10c501ff683a7d47218c40c46728090c",
+    "semantic_hash": ""
+  },
+  "src/app/screens/VerificacionInsumos.tsx": {
+    "mtime": 1788897571.735352,
+    "ast_hash": "bf2262644c85141bf302ed4b475e47f7",
+    "semantic_hash": ""
+  },
+  "src/context/AuthContext.tsx": {
+    "mtime": 1788897110.430998,
+    "ast_hash": "1de57c2ef3ce54628896e4589c747881",
+    "semantic_hash": ""
+  },
+  "src/context/ModulosContext.tsx": {
+    "mtime": 1785365514.6898668,
+    "ast_hash": "757fd76f5ac968a231235c28ecc98227",
+    "semantic_hash": "757fd76f5ac968a231235c28ecc98227"
+  },
+  "src/data/mock.ts": {
+    "mtime": 1775192134.130403,
+    "ast_hash": "ba8e5df3a7f483bd88ccd45a9fec9ac3",
+    "semantic_hash": "ba8e5df3a7f483bd88ccd45a9fec9ac3"
+  },
+  "src/hooks/useActividadEquipo.ts": {
+    "mtime": 1783991440.635681,
+    "ast_hash": "c75e869c85e072899e2d4da94446c02d",
+    "semantic_hash": "c75e869c85e072899e2d4da94446c02d"
+  },
+  "src/hooks/useAuditoria.ts": {
+    "mtime": 1785287917.4967499,
+    "ast_hash": "0d43e7408979c3e584958cc45896cacf",
+    "semantic_hash": "0d43e7408979c3e584958cc45896cacf"
+  },
+  "src/hooks/useAuth.ts": {
+    "mtime": 1789145208.5007906,
+    "ast_hash": "1788067e29f1070c193c2dacf9fa29b5",
+    "semantic_hash": ""
+  },
+  "src/hooks/useBotiquin.ts": {
+    "mtime": 1783991424.581177,
+    "ast_hash": "fef0f703e61e4428b5d6a7f4828e9aac",
+    "semantic_hash": "fef0f703e61e4428b5d6a7f4828e9aac"
+  },
+  "src/hooks/useCatalogoProductos.ts": {
+    "mtime": 1779043738.5062666,
+    "ast_hash": "8981727151669fe678531eebf2ed3ba9",
+    "semantic_hash": "8981727151669fe678531eebf2ed3ba9"
+  },
+  "src/hooks/useCorreccionesPendientes.ts": {
+    "mtime": 1783991451.733295,
+    "ast_hash": "c7f80e2ed2660beaff2efb2f7c0aa806",
+    "semantic_hash": "c7f80e2ed2660beaff2efb2f7c0aa806"
+  },
+  "src/hooks/useDashboardResumen.ts": {
+    "mtime": 1785540392.9819112,
+    "ast_hash": "a1802cabf4f543df98a580d90b3385f3",
+    "semantic_hash": "a1802cabf4f543df98a580d90b3385f3"
+  },
+  "src/hooks/useFertilizantesOrg.ts": {
+    "mtime": 1781420705.5308127,
+    "ast_hash": "f964612f326bed08b56f0b40575baf4b",
+    "semantic_hash": "f964612f326bed08b56f0b40575baf4b"
+  },
+  "src/hooks/useHomeDashboard.ts": {
+    "mtime": 1782669085.9341135,
+    "ast_hash": "e30ae0884e7e16f30542f6d810b29477",
+    "semantic_hash": "e30ae0884e7e16f30542f6d810b29477"
+  },
+  "src/hooks/useInventario.ts": {
+    "mtime": 1789147677.2950191,
+    "ast_hash": "4df5c5bf56805c44714204741965d75a",
+    "semantic_hash": ""
+  },
+  "src/hooks/useInventarioFertilizantes.ts": {
+    "mtime": 1781420716.5059426,
+    "ast_hash": "9bbd7139aedba2cf4ba06e30fd568c76",
+    "semantic_hash": "9bbd7139aedba2cf4ba06e30fd568c76"
+  },
+  "src/hooks/useM10CosechaLiberacion.ts": {
+    "mtime": 1781737372.8773317,
+    "ast_hash": "f33cafc8580be3c87faa117d1103f195",
+    "semantic_hash": "f33cafc8580be3c87faa117d1103f195"
+  },
+  "src/hooks/useM11Preoperacional.ts": {
+    "mtime": 1786809786.237722,
+    "ast_hash": "57e3a2a20c8b758031e5091b31013ef0",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM12LimpiezaBanos.ts": {
+    "mtime": 1781584068.6214364,
+    "ast_hash": "9c09fe687c96c4602cc4d8e80e15454c",
+    "semantic_hash": "9c09fe687c96c4602cc4d8e80e15454c"
+  },
+  "src/hooks/useM13Incidencias.ts": {
+    "mtime": 1784432587.0374105,
+    "ast_hash": "c92024474054c284fcb117b3ecadb4b4",
+    "semantic_hash": "c92024474054c284fcb117b3ecadb4b4"
+  },
+  "src/hooks/useM19InspeccionPreoperacional.ts": {
+    "mtime": 1789150614.5957034,
+    "ast_hash": "49c328f36729f10905baf65e8a74621a",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM20Accidentes.ts": {
+    "mtime": 1785385056.645653,
+    "ast_hash": "1314391a9fa6ee510cdfa9454dc33736",
+    "semantic_hash": "1314391a9fa6ee510cdfa9454dc33736"
+  },
+  "src/hooks/useM21EstacionesRancho.ts": {
+    "mtime": 1787186743.1103241,
+    "ast_hash": "d4624827e2aba2b6c43e33bb5c0ce13d",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM21MonitoreoEstaciones.ts": {
+    "mtime": 1785454348.0803154,
+    "ast_hash": "e8d956e902a8a3444ce359ca35ab9587",
+    "semantic_hash": "e8d956e902a8a3444ce359ca35ab9587"
+  },
+  "src/hooks/useM22Muestras.ts": {
+    "mtime": 1785455764.7367759,
+    "ast_hash": "94c5dbc9ec3dc4a7f83a5bd1b817583d",
+    "semantic_hash": "94c5dbc9ec3dc4a7f83a5bd1b817583d"
+  },
+  "src/hooks/useM23VerificacionInsumos.ts": {
+    "mtime": 1786809789.0174303,
+    "ast_hash": "70b11929e6f54810c1f2c42139c2bf83",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM7MaterialesRancho.ts": {
+    "mtime": 1781378951.0235684,
+    "ast_hash": "fce16394c45c7eef4df06a1e499aa1fc",
+    "semantic_hash": "fce16394c45c7eef4df06a1e499aa1fc"
+  },
+  "src/hooks/useM8Fertilizacion.ts": {
+    "mtime": 1781420699.2125995,
+    "ast_hash": "921322bfdbcec4d5caa32977f6b5e442",
+    "semantic_hash": "921322bfdbcec4d5caa32977f6b5e442"
+  },
+  "src/hooks/useM9Perimetral.ts": {
+    "mtime": 1789145223.909274,
+    "ast_hash": "9a10723fd7f59f940088840fd62482b4",
+    "semantic_hash": ""
+  },
+  "src/hooks/useMisModulos.ts": {
+    "mtime": 1787883724.9314227,
+    "ast_hash": "c71f3a832e14e397d35947aca15a0949",
+    "semantic_hash": ""
+  },
+  "src/hooks/useOrganizacion.ts": {
+    "mtime": 1785525787.4171739,
+    "ast_hash": "d8a4b1efc8df5968223abd5d4dd5aaf4",
+    "semantic_hash": "d8a4b1efc8df5968223abd5d4dd5aaf4"
+  },
+  "src/hooks/useRanchos.ts": {
+    "mtime": 1788884767.9287877,
+    "ast_hash": "7decea7a3c15ebd92b79b17d384d4a70",
+    "semantic_hash": ""
+  },
+  "src/hooks/useTerminoSitio.ts": {
+    "mtime": 1785386796.7696157,
+    "ast_hash": "9f42ca346499deccde432c7fb9923a63",
+    "semantic_hash": "9f42ca346499deccde432c7fb9923a63"
+  },
+  "src/hooks/useVidrioPlastico.ts": {
+    "mtime": 1781377134.6918159,
+    "ast_hash": "8d23d713a9db5230b02658138019ac28",
+    "semantic_hash": "8d23d713a9db5230b02658138019ac28"
+  },
+  "src/lib/excel/generarExcelHistorial.ts": {
+    "mtime": 1788294770.506593,
+    "ast_hash": "e1ba464e23cc3e66b0d71a66996a723a",
+    "semantic_hash": ""
+  },
+  "src/lib/fenologia.ts": {
+    "mtime": 1780457594.4201846,
+    "ast_hash": "0fa43e6477dd84f28e23747fd8654c58",
+    "semantic_hash": "0fa43e6477dd84f28e23747fd8654c58"
+  },
+  "src/lib/pdf/AplicacionPDF.tsx": {
+    "mtime": 1788378272.8710334,
+    "ast_hash": "3cbf5ad5482ef5c0920a5b2d47314d45",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/MadyLogoPDF.tsx": {
+    "mtime": 1782158914.2746904,
+    "ast_hash": "47db1deb56f96d50c15d78b89733b579",
+    "semantic_hash": "47db1deb56f96d50c15d78b89733b579"
+  },
+  "src/lib/pdf/auditoria/AuditoriaPDF.tsx": {
+    "mtime": 1788459871.077004,
+    "ast_hash": "e4928eee2e0e0e0c5bac12a529e65775",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/auditoria/generarAuditoriaPDF.tsx": {
+    "mtime": 1788460565.0779288,
+    "ast_hash": "71420703fae7a08f54b9e76bdc0d6c3b",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/auditoria/portadaConfig.ts": {
+    "mtime": 1785272608.1381855,
+    "ast_hash": "96b975ebc963a5c87e9867cd532b4fab",
+    "semantic_hash": "96b975ebc963a5c87e9867cd532b4fab"
+  },
+  "src/lib/pdf/generarBlobHistorial.tsx": {
+    "mtime": 1789188870.493116,
+    "ast_hash": "53619d9aba60f88874a16d3605f68f01",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/generarPDF.tsx": {
+    "mtime": 1785818425.8536646,
+    "ast_hash": "a4ed0a60d88a4ba830ccbdbef83e641b",
+    "semantic_hash": "a4ed0a60d88a4ba830ccbdbef83e641b"
+  },
+  "src/lib/pdf/m10/CosechaLiberacionPDF.tsx": {
+    "mtime": 1788386445.8688917,
+    "ast_hash": "48d2adccea66fa59281fa3a60cbb4dbb",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m10/generarCosechaLiberacionConsolidadoPDF.tsx": {
+    "mtime": 1785524368.1643505,
+    "ast_hash": "c0945b720d0e32eb092e7c10969ed63b",
+    "semantic_hash": "c0945b720d0e32eb092e7c10969ed63b"
+  },
+  "src/lib/pdf/m10/generarCosechaLiberacionPDF.tsx": {
+    "mtime": 1785818462.393894,
+    "ast_hash": "52d54c77ab1b6709fe962c9f97a72898",
+    "semantic_hash": "52d54c77ab1b6709fe962c9f97a72898"
+  },
+  "src/lib/pdf/m11/PreoperacionalPDF.tsx": {
+    "mtime": 1788386471.417092,
+    "ast_hash": "3d298921740b9c774449940d52a5b593",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m11/generarPreoperacionalConsolidadoPDF.tsx": {
+    "mtime": 1785524379.4693365,
+    "ast_hash": "86a41eb95db752695ea5745053d86b91",
+    "semantic_hash": "86a41eb95db752695ea5745053d86b91"
+  },
+  "src/lib/pdf/m11/generarPreoperacionalPDF.tsx": {
+    "mtime": 1785818473.8204203,
+    "ast_hash": "326640571a28508e96eccb655a456378",
+    "semantic_hash": "326640571a28508e96eccb655a456378"
+  },
+  "src/lib/pdf/m12/LimpiezaBanosPDF.tsx": {
+    "mtime": 1788451847.3363419,
+    "ast_hash": "06d4c9f49059ca6fcef603ff433b7b85",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m12/generarLimpiezaBanosConsolidadoPDF.tsx": {
+    "mtime": 1785524383.387112,
+    "ast_hash": "4b8f857f8e4568bc9fbe29cf4e19d5af",
+    "semantic_hash": "4b8f857f8e4568bc9fbe29cf4e19d5af"
+  },
+  "src/lib/pdf/m12/generarLimpiezaBanosPDF.tsx": {
+    "mtime": 1785818478.8230295,
+    "ast_hash": "e22f6cc80ae7dd508993c8bd41d6294c",
+    "semantic_hash": "e22f6cc80ae7dd508993c8bd41d6294c"
+  },
+  "src/lib/pdf/m13/ReporteIncidenciasPDF.tsx": {
+    "mtime": 1788387910.5688057,
+    "ast_hash": "e9d4d33e20cfd4347d97432617c3d241",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m13/generarReporteIncidenciasConsolidadoPDF.tsx": {
+    "mtime": 1785524486.0018973,
+    "ast_hash": "6838565c298c0a629eded6c2cfe26135",
+    "semantic_hash": "6838565c298c0a629eded6c2cfe26135"
+  },
+  "src/lib/pdf/m13/generarReporteIncidenciasPDF.tsx": {
+    "mtime": 1785818491.9788678,
+    "ast_hash": "d2eb20cd0d9ca8ff64e7ad831df8da81",
+    "semantic_hash": "d2eb20cd0d9ca8ff64e7ad831df8da81"
+  },
+  "src/lib/pdf/m13/incidenciasPdfImagenes.ts": {
+    "mtime": 1784433411.3773625,
+    "ast_hash": "e065b7b612073315e681c7ec9faaf639",
+    "semantic_hash": "e065b7b612073315e681c7ec9faaf639"
+  },
+  "src/lib/pdf/m19/InspeccionPreoperacionalCoolerPDF.tsx": {
+    "mtime": 1788388853.7664855,
+    "ast_hash": "76bf29b33d5ab2cc2bca4cf8adec9a79",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m19/generarInspeccionPreoperacionalCoolerConsolidadoPDF.tsx": {
+    "mtime": 1786694104.3069327,
+    "ast_hash": "04723d5d11b80dbac24e472bf1a4212d",
+    "semantic_hash": "04723d5d11b80dbac24e472bf1a4212d"
+  },
+  "src/lib/pdf/m19/generarInspeccionPreoperacionalCoolerPDF.tsx": {
+    "mtime": 1786694104.4591012,
+    "ast_hash": "6a2b3163bd9a1d8f4c77ce154181dd9e",
+    "semantic_hash": "6a2b3163bd9a1d8f4c77ce154181dd9e"
+  },
+  "src/lib/pdf/m20/AccidenteLaboralPDF.tsx": {
+    "mtime": 1788451898.3652558,
+    "ast_hash": "7fdfcecf5a1bfe9d293170d4b2b4f9d0",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m20/generarAccidenteLaboralConsolidadoPDF.tsx": {
+    "mtime": 1786694104.6623027,
+    "ast_hash": "a5f2a333d0c617a926da5d6ceddb87c3",
+    "semantic_hash": "a5f2a333d0c617a926da5d6ceddb87c3"
+  },
+  "src/lib/pdf/m20/generarAccidenteLaboralPDF.tsx": {
+    "mtime": 1786694104.7924018,
+    "ast_hash": "1658ba737ee510bbdd105f7ce8ae9609",
+    "semantic_hash": "1658ba737ee510bbdd105f7ce8ae9609"
+  },
+  "src/lib/pdf/m21/MonitoreoEstacionesPDF.tsx": {
+    "mtime": 1788389167.8543565,
+    "ast_hash": "56e35844f4c720e24b520e6615db7456",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m21/generarMonitoreoEstacionesConsolidadoPDF.tsx": {
+    "mtime": 1786694105.0302925,
+    "ast_hash": "e846206a981b61aed2755838e40bcd26",
+    "semantic_hash": "e846206a981b61aed2755838e40bcd26"
+  },
+  "src/lib/pdf/m21/generarMonitoreoEstacionesPDF.tsx": {
+    "mtime": 1787186758.4495983,
+    "ast_hash": "0d21a74a3035f564b4245f44f85e244b",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m22/MuestrasLaboratorioPDF.tsx": {
+    "mtime": 1788451892.1297314,
+    "ast_hash": "02c2d1739fa984548717b7f0df0e06b7",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m22/generarMuestrasLaboratorioConsolidadoPDF.tsx": {
+    "mtime": 1786694105.3994913,
+    "ast_hash": "6d77525191d1c974ba60c406fb66e806",
+    "semantic_hash": "6d77525191d1c974ba60c406fb66e806"
+  },
+  "src/lib/pdf/m22/generarMuestrasLaboratorioPDF.tsx": {
+    "mtime": 1786694105.5335045,
+    "ast_hash": "ef77272c0736f36e7605a84cc5b65856",
+    "semantic_hash": "ef77272c0736f36e7605a84cc5b65856"
+  },
+  "src/lib/pdf/m23/VerificacionInsumosPDF.tsx": {
+    "mtime": 1788388876.8646467,
+    "ast_hash": "2ac861f4a15f50d947e395d0a73a5c34",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m23/generarVerificacionInsumosConsolidadoPDF.tsx": {
+    "mtime": 1786694105.806175,
+    "ast_hash": "c781a0acafbbd7798eb022467aeae807",
+    "semantic_hash": "c781a0acafbbd7798eb022467aeae807"
+  },
+  "src/lib/pdf/m23/generarVerificacionInsumosPDF.tsx": {
+    "mtime": 1786694105.932046,
+    "ast_hash": "3b08a3f0ee382c59178ac505d5e96dda",
+    "semantic_hash": "3b08a3f0ee382c59178ac505d5e96dda"
+  },
+  "src/lib/pdf/m6/BotiquinPDF.tsx": {
+    "mtime": 1788385068.9616342,
+    "ast_hash": "8390d418f2c7f912bd171787272c5282",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m6/generarBotiquinConsolidadoPDF.tsx": {
+    "mtime": 1785524319.6432662,
+    "ast_hash": "4890944450edcb133b89d6159ed01c3f",
+    "semantic_hash": "4890944450edcb133b89d6159ed01c3f"
+  },
+  "src/lib/pdf/m6/generarBotiquinPDF.tsx": {
+    "mtime": 1785818432.1528854,
+    "ast_hash": "4cf82176a39eba7b13617f71b23f66fd",
+    "semantic_hash": "4cf82176a39eba7b13617f71b23f66fd"
+  },
+  "src/lib/pdf/m7/VidrioPlasticoPDF.tsx": {
+    "mtime": 1788385103.893491,
+    "ast_hash": "240efe87ab35135b5d434dca51d34b61",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m7/generarVidrioPlasticoConsolidadoPDF.tsx": {
+    "mtime": 1785524348.5003211,
+    "ast_hash": "5018b447c0fbe1da0a9def6cb7633e04",
+    "semantic_hash": "5018b447c0fbe1da0a9def6cb7633e04"
+  },
+  "src/lib/pdf/m7/generarVidrioPlasticoPDF.tsx": {
+    "mtime": 1785818438.3920674,
+    "ast_hash": "5c8fe9c09c9d479d4d0d4ab136fc2f6b",
+    "semantic_hash": "5c8fe9c09c9d479d4d0d4ab136fc2f6b"
+  },
+  "src/lib/pdf/m8/FertilizacionPDF.tsx": {
+    "mtime": 1788385138.1129093,
+    "ast_hash": "b8699c53cda680678aad1050d8bcbbb1",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m8/generarFertilizacionConsolidadoPDF.tsx": {
+    "mtime": 1785524352.957795,
+    "ast_hash": "213de2c9b18c8fb6ee58bd81ee2fcf50",
+    "semantic_hash": "213de2c9b18c8fb6ee58bd81ee2fcf50"
+  },
+  "src/lib/pdf/m8/generarFertilizacionPDF.tsx": {
+    "mtime": 1785818444.1558316,
+    "ast_hash": "99d79a2a562501effb9568075fc5b0aa",
+    "semantic_hash": "99d79a2a562501effb9568075fc5b0aa"
+  },
+  "src/lib/pdf/m9/PerimetralPDF.tsx": {
+    "mtime": 1788386402.272583,
+    "ast_hash": "80f842023b164333bb10fff60a51d047",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m9/generarPerimetralConsolidadoPDF.tsx": {
+    "mtime": 1785524363.3951457,
+    "ast_hash": "d928bbe81c218c31f7c162e3c72fa51e",
+    "semantic_hash": "d928bbe81c218c31f7c162e3c72fa51e"
+  },
+  "src/lib/pdf/m9/generarPerimetralPDF.tsx": {
+    "mtime": 1785818456.9558287,
+    "ast_hash": "9f753d0543e780061a506bcc08bc26d2",
+    "semantic_hash": "9f753d0543e780061a506bcc08bc26d2"
+  },
+  "src/lib/queries.ts": {
+    "mtime": 1789147672.4639137,
+    "ast_hash": "1fd769aef08142502e0fa0504a4b0f6b",
+    "semantic_hash": ""
+  },
+  "src/lib/storage/incidenciasStorage.ts": {
+    "mtime": 1784432574.402569,
+    "ast_hash": "ce88d214f328ccad0f1cfa1d48068176",
+    "semantic_hash": "ce88d214f328ccad0f1cfa1d48068176"
+  },
+  "src/lib/supabase.ts": {
+    "mtime": 1788558194.3637104,
+    "ast_hash": "4a201abff44552d1d21bc948723bf14e",
+    "semantic_hash": ""
+  },
+  "src/main.tsx": {
+    "mtime": 1786590324.1515386,
+    "ast_hash": "c2e7067a2ecefda668391e07718e4690",
+    "semantic_hash": "c2e7067a2ecefda668391e07718e4690"
+  },
+  "src/types/database.types.ts": {
+    "mtime": 1788810612.4095778,
+    "ast_hash": "ac360c5fdb9d2c79889fe85a3de2856c",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/001_initial_schema.sql": {
+    "mtime": 1788294773.7628188,
+    "ast_hash": "f8bad890c275c1578807d1493659ba92",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/002_catalogo_v2_autorizaciones.sql": {
+    "mtime": 1788294773.79422,
+    "ast_hash": "aa065546e26a19d7928df24a3fff381e",
+    "semantic_hash": ""
+  },
+  "vercel.json": {
+    "mtime": 1786769631.7066305,
+    "ast_hash": "fc08aa1ae2d59e1a4fc821ad2aeb7b72",
+    "semantic_hash": "fc08aa1ae2d59e1a4fc821ad2aeb7b72"
+  },
+  "vite.config.ts": {
+    "mtime": 1786768531.012795,
+    "ast_hash": "ff2750b80eb90186bd3f7adc1259a6f4",
+    "semantic_hash": "ff2750b80eb90186bd3f7adc1259a6f4"
+  },
+  "src/app/components/BottomSheet.tsx": {
+    "mtime": 1786040691.3477883,
+    "ast_hash": "84c90e4a4e4e61bf35233b03709dd586",
+    "semantic_hash": "84c90e4a4e4e61bf35233b03709dd586"
+  },
+  "src/app/screens/ControlInventarioQuimicos.tsx": {
+    "mtime": 1788897444.9985516,
+    "ast_hash": "69f2c2b55e4e221dda06e5a10bad0aa1",
+    "semantic_hash": ""
+  },
+  "src/app/screens/ResumenNoConformidades.tsx": {
+    "mtime": 1786771706.9387474,
+    "ast_hash": "4e39b68ee1402004953a5e2fceafface",
+    "semantic_hash": "4e39b68ee1402004953a5e2fceafface"
+  },
+  "src/hooks/useAuditoriaVisitas.ts": {
+    "mtime": 1785792862.714859,
+    "ast_hash": "30353338f0f71cb17621de9129e7cc8f",
+    "semantic_hash": "30353338f0f71cb17621de9129e7cc8f"
+  },
+  "src/hooks/useM24QuimicosInventario.ts": {
+    "mtime": 1785545060.1621642,
+    "ast_hash": "88e6805f39dc326e1b06a950a14cc642",
+    "semantic_hash": "88e6805f39dc326e1b06a950a14cc642"
+  },
+  "src/lib/pdf/m24/InventarioQuimicosPDF.tsx": {
+    "mtime": 1788388957.64318,
+    "ast_hash": "37db5b4cbecd33fc4abd281d496ff10a",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m24/generarInventarioQuimicosConsolidadoPDF.tsx": {
+    "mtime": 1786694106.2058742,
+    "ast_hash": "0c0878b7dc6ebcb9d0b40a737d045ff5",
+    "semantic_hash": "0c0878b7dc6ebcb9d0b40a737d045ff5"
+  },
+  "src/lib/pdf/m24/generarInventarioQuimicosPDF.tsx": {
+    "mtime": 1786694106.329381,
+    "ast_hash": "1277fe0270cf4080f602b20428c8b097",
+    "semantic_hash": "1277fe0270cf4080f602b20428c8b097"
+  },
+  "src/lib/pdf/m25/ResumenNoConformidadesPDF.tsx": {
+    "mtime": 1788389002.542635,
+    "ast_hash": "3f16a5919ea4331df9e68ea8776c79c1",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m25/generarResumenNoConformidadesPDF.tsx": {
+    "mtime": 1785818579.011086,
+    "ast_hash": "70c85d1aad1126aec9413222be29ebab",
+    "semantic_hash": "70c85d1aad1126aec9413222be29ebab"
+  },
+  "extraccion_reporte.txt": {
+    "mtime": 1780544288.8482876,
+    "ast_hash": "258b86b4fea53d074da1d98c377a1903",
+    "semantic_hash": ""
+  },
+  "index.html": {
+    "mtime": 1788465821.8872874,
+    "ast_hash": "863919fd6f9e2f065d79e6f9f56e8622",
+    "semantic_hash": ""
+  },
+  "pnpm-workspace.yaml": {
+    "mtime": 1778446004.3568995,
+    "ast_hash": "fbe08807e3b3acd91b2c5a6dbb09fd5e",
+    "semantic_hash": ""
+  },
+  "public/images/MADY.png": {
+    "mtime": 1785372729.3141897,
+    "ast_hash": "bb682fe5525414dcd6b89d14e60dbfe7",
+    "semantic_hash": ""
+  },
+  "src/app/screens/AccionesCorrectivas.tsx": {
+    "mtime": 1788894169.020634,
+    "ast_hash": "178ba9e948adf723973a3a84bffd62b4",
+    "semantic_hash": ""
+  },
+  "src/hooks/useAccionesCorrectivas.ts": {
+    "mtime": 1785816706.983611,
+    "ast_hash": "f7f8a7547c8bcc4cc8d21e56ff984e2d",
+    "semantic_hash": "f7f8a7547c8bcc4cc8d21e56ff984e2d"
+  },
+  "src/lib/pdf/m26/AccionesCorrectivasPDF.tsx": {
+    "mtime": 1788390572.6231928,
+    "ast_hash": "b68c329fef4974f3cf310312430e63cb",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m26/generarAccionesCorrectivasPDF.tsx": {
+    "mtime": 1785818606.0175512,
+    "ast_hash": "834e4100c8d9d31d118f6d36955aa8d0",
+    "semantic_hash": "834e4100c8d9d31d118f6d36955aa8d0"
+  },
+  "src/lib/storage/accionesCorrectivasStorage.ts": {
+    "mtime": 1785812411.7885969,
+    "ast_hash": "3e969741e8ce1820b8b4bb12f9de04b0",
+    "semantic_hash": "3e969741e8ce1820b8b4bb12f9de04b0"
+  },
+  "src/app/screens/PreparacionCloro.tsx": {
+    "mtime": 1786771678.403309,
+    "ast_hash": "61656c1c4617b3deb4bd0e5e41898020",
+    "semantic_hash": "61656c1c4617b3deb4bd0e5e41898020"
+  },
+  "src/hooks/useM27PreparacionCloro.ts": {
+    "mtime": 1785875291.3776705,
+    "ast_hash": "1abea10977378d98c50e0fc201783986",
+    "semantic_hash": "1abea10977378d98c50e0fc201783986"
+  },
+  "src/lib/fecha.ts": {
+    "mtime": 1785814420.8848097,
+    "ast_hash": "aa97c8f85ea235a9f233972cab078d8c",
+    "semantic_hash": "aa97c8f85ea235a9f233972cab078d8c"
+  },
+  "src/lib/pdf/m27/PreparacionCloroPDF.tsx": {
+    "mtime": 1788390601.5379615,
+    "ast_hash": "76d7d2bb9466336daf0b9845902e282c",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m27/generarPreparacionCloroConsolidadoPDF.tsx": {
+    "mtime": 1786694106.589262,
+    "ast_hash": "9b17c7acf6a26206813506503615032d",
+    "semantic_hash": "9b17c7acf6a26206813506503615032d"
+  },
+  "src/lib/pdf/m27/generarPreparacionCloroPDF.tsx": {
+    "mtime": 1786694106.6650946,
+    "ast_hash": "5ab29b729ba7e4646394c9eca41257ec",
+    "semantic_hash": "5ab29b729ba7e4646394c9eca41257ec"
+  },
+  "src/lib/pdf/nombrePdf.ts": {
+    "mtime": 1785818374.572968,
+    "ast_hash": "c939bdb0668e9eba4d2d30d1b8babdec",
+    "semantic_hash": "c939bdb0668e9eba4d2d30d1b8babdec"
+  },
+  "src/app/screens/LimpiezaBanosQuimicos.tsx": {
+    "mtime": 1789152087.5271416,
+    "ast_hash": "03de7cf3be063634bac09fb1c42ab3a3",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM28LimpiezaBanosQuimicos.ts": {
+    "mtime": 1785877614.7151878,
+    "ast_hash": "0eeac9931f9d6bd0c00eeef877c35ba1",
+    "semantic_hash": "0eeac9931f9d6bd0c00eeef877c35ba1"
+  },
+  "src/lib/pdf/m28/LimpiezaBanosQuimicosPDF.tsx": {
+    "mtime": 1788390648.7161844,
+    "ast_hash": "3a0d400f2c3268bafb1ed2ab08e2bed6",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m28/generarLimpiezaBanosQuimicosConsolidadoPDF.tsx": {
+    "mtime": 1786694106.8875694,
+    "ast_hash": "43226aaa630c6045f51c941a16c1b77a",
+    "semantic_hash": "43226aaa630c6045f51c941a16c1b77a"
+  },
+  "src/lib/pdf/m28/generarLimpiezaBanosQuimicosPDF.tsx": {
+    "mtime": 1786694107.0300357,
+    "ast_hash": "186caf2e53c453a28cdbfa69b090f2a7",
+    "semantic_hash": "186caf2e53c453a28cdbfa69b090f2a7"
+  },
+  "replacements.txt": {
+    "mtime": 1785902511.4407897,
+    "ast_hash": "500bcfeec69f5a75d28bcd977a3478e7",
+    "semantic_hash": ""
+  },
+  "src/lib/log.ts": {
+    "mtime": 1785905828.8734999,
+    "ast_hash": "b5c99d60b00ba0abdbe7d3c96f6042b2",
+    "semantic_hash": "b5c99d60b00ba0abdbe7d3c96f6042b2"
+  },
+  "src/lib/validarImagen.ts": {
+    "mtime": 1785905831.0741556,
+    "ast_hash": "82a16845d83a6e3a127286b618fbd09c",
+    "semantic_hash": "82a16845d83a6e3a127286b618fbd09c"
+  },
+  "src/app/screens/LimpiezaAduana.tsx": {
+    "mtime": 1789152079.7282052,
+    "ast_hash": "d0a5c20349a831627a7d645cdf2677ce",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM29LimpiezaAduana.ts": {
+    "mtime": 1785908891.7095032,
+    "ast_hash": "6780778bace0f9ec7384a8840edd259d",
+    "semantic_hash": "6780778bace0f9ec7384a8840edd259d"
+  },
+  "src/lib/pdf/m29/LimpiezaAduanaPDF.tsx": {
+    "mtime": 1788451949.131626,
+    "ast_hash": "b1112b7695c646ad415cbc21b2fcfef9",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m29/generarLimpiezaAduanaConsolidadoPDF.tsx": {
+    "mtime": 1786694107.2702744,
+    "ast_hash": "e1bb2aff7d171288e95b770370165eee",
+    "semantic_hash": "e1bb2aff7d171288e95b770370165eee"
+  },
+  "src/lib/pdf/m29/generarLimpiezaAduanaPDF.tsx": {
+    "mtime": 1786694107.3826096,
+    "ast_hash": "47ffcb23456b5204f5ad663f6be71fcd",
+    "semantic_hash": "47ffcb23456b5204f5ad663f6be71fcd"
+  },
+  "src/app/screens/LimpiezaComedor.tsx": {
+    "mtime": 1789152106.6973453,
+    "ast_hash": "76412f3ac4eab7ea92f20ebcce364e24",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM30LimpiezaComedor.ts": {
+    "mtime": 1785909665.2633827,
+    "ast_hash": "aaf06b9eec510bb5b7c46821e7b5a31d",
+    "semantic_hash": "aaf06b9eec510bb5b7c46821e7b5a31d"
+  },
+  "src/lib/pdf/m30/LimpiezaComedorPDF.tsx": {
+    "mtime": 1788390701.5166583,
+    "ast_hash": "a642d0fc611f89d724b43b30e34f3ad2",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m30/generarLimpiezaComedorConsolidadoPDF.tsx": {
+    "mtime": 1786694107.6410286,
+    "ast_hash": "8227354e175dc5912f111d4d90e8148d",
+    "semantic_hash": "8227354e175dc5912f111d4d90e8148d"
+  },
+  "src/lib/pdf/m30/generarLimpiezaComedorPDF.tsx": {
+    "mtime": 1786694107.761371,
+    "ast_hash": "b5fb44aaa7e56fe91eb1c33a98231e2c",
+    "semantic_hash": "b5fb44aaa7e56fe91eb1c33a98231e2c"
+  },
+  "src/app/screens/LimpiezaOficinas.tsx": {
+    "mtime": 1789152114.4263086,
+    "ast_hash": "746ca95df95a8994e68159e6ac6fdaa3",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM31LimpiezaOficinas.ts": {
+    "mtime": 1785966385.673023,
+    "ast_hash": "ef38779f507011649712a05c490c058b",
+    "semantic_hash": "ef38779f507011649712a05c490c058b"
+  },
+  "src/lib/pdf/m31/LimpiezaOficinasPDF.tsx": {
+    "mtime": 1788451997.479475,
+    "ast_hash": "9b39381336a3c333bacf334867afb25a",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m31/generarLimpiezaOficinasConsolidadoPDF.tsx": {
+    "mtime": 1786694108.0390196,
+    "ast_hash": "1c877077ee63ba8f32031c021d642a4a",
+    "semantic_hash": "1c877077ee63ba8f32031c021d642a4a"
+  },
+  "src/lib/pdf/m31/generarLimpiezaOficinasPDF.tsx": {
+    "mtime": 1786694108.1580138,
+    "ast_hash": "3a2f687f3bde26d556efdd9fe939f206",
+    "semantic_hash": "3a2f687f3bde26d556efdd9fe939f206"
+  },
+  "src/app/screens/LimpiezaPatiosAzoteas.tsx": {
+    "mtime": 1789152122.3234608,
+    "ast_hash": "621a627f40ee9c95095dc2914760ee7f",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM32LimpiezaPatiosAzoteas.ts": {
+    "mtime": 1785967385.8374884,
+    "ast_hash": "058bee603fed387776a215e09c007e6f",
+    "semantic_hash": "058bee603fed387776a215e09c007e6f"
+  },
+  "src/lib/pdf/m32/LimpiezaPatiosAzoteasPDF.tsx": {
+    "mtime": 1788390730.891137,
+    "ast_hash": "1ed90c114456918675da8003d42e6f7e",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m32/generarLimpiezaPatiosAzoteasConsolidadoPDF.tsx": {
+    "mtime": 1786694108.352382,
+    "ast_hash": "b8e350301eeb2fd32d3a204e3b94cd5b",
+    "semantic_hash": "b8e350301eeb2fd32d3a204e3b94cd5b"
+  },
+  "src/lib/pdf/m32/generarLimpiezaPatiosAzoteasPDF.tsx": {
+    "mtime": 1786694108.4613218,
+    "ast_hash": "d62b17c32c3aae87223e9cb410fbe1e7",
+    "semantic_hash": "d62b17c32c3aae87223e9cb410fbe1e7"
+  },
+  "src/app/screens/LimpiezaRecepcion.tsx": {
+    "mtime": 1789152130.082012,
+    "ast_hash": "e438b0f22e70fe0a4ff1864b42203462",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM33LimpiezaRecepcion.ts": {
+    "mtime": 1785987195.7966368,
+    "ast_hash": "c60a237aee4fb6ad3282a13ed1107207",
+    "semantic_hash": "c60a237aee4fb6ad3282a13ed1107207"
+  },
+  "src/lib/pdf/m33/LimpiezaRecepcionPDF.tsx": {
+    "mtime": 1788390764.8930244,
+    "ast_hash": "138fea702e0436cb40b1bf9976e8d6c3",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m33/generarLimpiezaRecepcionConsolidadoPDF.tsx": {
+    "mtime": 1786694108.6785798,
+    "ast_hash": "03bf89e8307ac54e9db784fab9602bcb",
+    "semantic_hash": "03bf89e8307ac54e9db784fab9602bcb"
+  },
+  "src/lib/pdf/m33/generarLimpiezaRecepcionPDF.tsx": {
+    "mtime": 1786694108.7776356,
+    "ast_hash": "e88452cf25bf6b2100f78634df4dfc38",
+    "semantic_hash": "e88452cf25bf6b2100f78634df4dfc38"
+  },
+  "src/app/screens/LimpiezaPreenfrio.tsx": {
+    "mtime": 1789152137.7500556,
+    "ast_hash": "f035b507472a1d64d7402dec1096fdd4",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM34LimpiezaPreenfrio.ts": {
+    "mtime": 1785988296.9575255,
+    "ast_hash": "7d45d81ff4d752db93d10591741fdf3d",
+    "semantic_hash": "7d45d81ff4d752db93d10591741fdf3d"
+  },
+  "src/lib/pdf/m34/LimpiezaPreenfrioPDF.tsx": {
+    "mtime": 1788452054.1746304,
+    "ast_hash": "1b367394ea2a64f6b1c1d5c3c70b8333",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m34/generarLimpiezaPreenfrioConsolidadoPDF.tsx": {
+    "mtime": 1786694109.0034118,
+    "ast_hash": "80f951d2f32535e40a650f2725d3954b",
+    "semantic_hash": "80f951d2f32535e40a650f2725d3954b"
+  },
+  "src/lib/pdf/m34/generarLimpiezaPreenfrioPDF.tsx": {
+    "mtime": 1786694109.112556,
+    "ast_hash": "f23c60e76b225ddbba6e74ed3c253598",
+    "semantic_hash": "f23c60e76b225ddbba6e74ed3c253598"
+  },
+  "src/app/screens/LimpiezaAlmacenEmpaque.tsx": {
+    "mtime": 1789152145.676749,
+    "ast_hash": "8f6278451efeaa887e0d65abdca2654b",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM35LimpiezaAlmacenEmpaque.ts": {
+    "mtime": 1785989681.266546,
+    "ast_hash": "64eb5f41ef9c98c9379e0cd5827151e1",
+    "semantic_hash": "64eb5f41ef9c98c9379e0cd5827151e1"
+  },
+  "src/lib/pdf/m35/LimpiezaAlmacenEmpaquePDF.tsx": {
+    "mtime": 1788390797.4758615,
+    "ast_hash": "dd098d0f8cb236e6666d395b57b28403",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m35/generarLimpiezaAlmacenEmpaqueConsolidadoPDF.tsx": {
+    "mtime": 1786694109.3122487,
+    "ast_hash": "956fe998193279728dc0fdec1dbbd1d2",
+    "semantic_hash": "956fe998193279728dc0fdec1dbbd1d2"
+  },
+  "src/lib/pdf/m35/generarLimpiezaAlmacenEmpaquePDF.tsx": {
+    "mtime": 1786694109.42257,
+    "ast_hash": "5da7dffd076904d5f40c7ef9637b0479",
+    "semantic_hash": "5da7dffd076904d5f40c7ef9637b0479"
+  },
+  "src/app/screens/MonitoreoGermicida.tsx": {
+    "mtime": 1788897439.0257277,
+    "ast_hash": "e7ac64e7c87ff6db7711a7640ccb4ed0",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM36Monitoreos.ts": {
+    "mtime": 1786044744.6041732,
+    "ast_hash": "0e16af557d551e63b4ebac09e388f318",
+    "semantic_hash": "0e16af557d551e63b4ebac09e388f318"
+  },
+  "src/lib/pdf/m36/MonitoreoGermicidaPDF.tsx": {
+    "mtime": 1788451918.0780709,
+    "ast_hash": "2bf857c052529c39070765b980f5243f",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m36/generarMonitoreoGermicidaConsolidadoPDF.tsx": {
+    "mtime": 1786694109.635287,
+    "ast_hash": "0e58723e34a6ccbd99061cdb2a268920",
+    "semantic_hash": "0e58723e34a6ccbd99061cdb2a268920"
+  },
+  "src/lib/pdf/m36/generarMonitoreoGermicidaPDF.tsx": {
+    "mtime": 1786694109.7540429,
+    "ast_hash": "06f8ada8d779b352d4f7e0f39ef39600",
+    "semantic_hash": "06f8ada8d779b352d4f7e0f39ef39600"
+  },
+  "src/app/screens/LimpiezaCisterna.tsx": {
+    "mtime": 1789152153.4125538,
+    "ast_hash": "2ea2d46f70902204a245aa834a53c055",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM37LimpiezaCisterna.ts": {
+    "mtime": 1786045659.7019398,
+    "ast_hash": "15720466c80b9ebed8a7db1ab6339af7",
+    "semantic_hash": "15720466c80b9ebed8a7db1ab6339af7"
+  },
+  "src/lib/pdf/m37/LimpiezaCisternaPDF.tsx": {
+    "mtime": 1788452110.5568707,
+    "ast_hash": "6bd069ce489a414e1902ba0b528235cb",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m37/generarLimpiezaCisternaConsolidadoPDF.tsx": {
+    "mtime": 1786694109.9875436,
+    "ast_hash": "6bcdd2b2bc3703de2b4004bf2f0900e1",
+    "semantic_hash": "6bcdd2b2bc3703de2b4004bf2f0900e1"
+  },
+  "src/lib/pdf/m37/generarLimpiezaCisternaPDF.tsx": {
+    "mtime": 1786694110.1121068,
+    "ast_hash": "5cc55fb58ee548405d18c98417b5f71b",
+    "semantic_hash": "5cc55fb58ee548405d18c98417b5f71b"
+  },
+  "src/app/screens/ManifiestoEmbarque.tsx": {
+    "mtime": 1788897437.3313317,
+    "ast_hash": "783d91ee1ec3fc801c709bdd7a2217a7",
+    "semantic_hash": ""
+  },
+  "src/app/screens/RecepcionFruta.tsx": {
+    "mtime": 1788897357.2351334,
+    "ast_hash": "2c1655f4a70c6000be3cb35702a4b5a7",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM38Manifiestos.ts": {
+    "mtime": 1786062738.143715,
+    "ast_hash": "13f256eb0f554dfc147d60bc0fe6ea06",
+    "semantic_hash": "13f256eb0f554dfc147d60bc0fe6ea06"
+  },
+  "src/hooks/useM39Recepciones.ts": {
+    "mtime": 1786733897.4739938,
+    "ast_hash": "41873d64aa011d3eda1ebbda4f82fe65",
+    "semantic_hash": "41873d64aa011d3eda1ebbda4f82fe65"
+  },
+  "src/lib/pdf/m38/ManifiestoEmbarquePDF.tsx": {
+    "mtime": 1788451973.9003913,
+    "ast_hash": "6179529a517382a77e53e25748bed6a2",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m38/generarManifiestoEmbarqueConsolidadoPDF.tsx": {
+    "mtime": 1786694110.3416283,
+    "ast_hash": "3ffe2645fa039bc6e9fe7baa8f18d615",
+    "semantic_hash": "3ffe2645fa039bc6e9fe7baa8f18d615"
+  },
+  "src/lib/pdf/m38/generarManifiestoEmbarquePDF.tsx": {
+    "mtime": 1786694110.474332,
+    "ast_hash": "e02a70bffcdb4304c99a7190ad349985",
+    "semantic_hash": "e02a70bffcdb4304c99a7190ad349985"
+  },
+  "src/lib/pdf/m39/RecepcionFrutaPDF.tsx": {
+    "mtime": 1788294772.261571,
+    "ast_hash": "c1a4d9de647b7f84432e644db20a1a21",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m39/generarRecepcionFrutaConsolidadoPDF.tsx": {
+    "mtime": 1786694110.7626162,
+    "ast_hash": "e1ac82b36c3b06fdeab87fa56cbedaeb",
+    "semantic_hash": "e1ac82b36c3b06fdeab87fa56cbedaeb"
+  },
+  "src/lib/pdf/m39/generarRecepcionFrutaPDF.tsx": {
+    "mtime": 1786733886.3309305,
+    "ast_hash": "e8a626421010dd0db69bebadb05872a4",
+    "semantic_hash": "e8a626421010dd0db69bebadb05872a4"
+  },
+  "src/app/screens/EntradasSalidasPreFrio.tsx": {
+    "mtime": 1788897435.4592533,
+    "ast_hash": "e6c83f850699833ae2215eae2e0bb84b",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM40RegistrosPrefrio.ts": {
+    "mtime": 1786064504.1251864,
+    "ast_hash": "c654dcf0bacf0b7b47a1806b46569b04",
+    "semantic_hash": "c654dcf0bacf0b7b47a1806b46569b04"
+  },
+  "src/lib/pdf/m40/EntradasSalidasPreFrioPDF.tsx": {
+    "mtime": 1788452002.7059054,
+    "ast_hash": "7b05cea0fee8b0ae91c7844d089b6bf1",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m40/generarEntradasSalidasPreFrioConsolidadoPDF.tsx": {
+    "mtime": 1786694111.1349733,
+    "ast_hash": "6e201dbc1f38e6a00dd4b5db530a193f",
+    "semantic_hash": "6e201dbc1f38e6a00dd4b5db530a193f"
+  },
+  "src/lib/pdf/m40/generarEntradasSalidasPreFrioPDF.tsx": {
+    "mtime": 1786694111.2544658,
+    "ast_hash": "823279830faf79fa9b5e0d82ad36fbc7",
+    "semantic_hash": "823279830faf79fa9b5e0d82ad36fbc7"
+  },
+  "src/app/screens/TemperaturasConservador.tsx": {
+    "mtime": 1788897312.7483504,
+    "ast_hash": "df7cf11b417e0170362418648ec7a670",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM41TemperaturaConservador.ts": {
+    "mtime": 1786065521.3576012,
+    "ast_hash": "3f050867ac300dd96ab641366434292a",
+    "semantic_hash": "3f050867ac300dd96ab641366434292a"
+  },
+  "src/lib/pdf/m41/TemperaturaConservadorPDF.tsx": {
+    "mtime": 1788451945.4629023,
+    "ast_hash": "bdcabc22cce0037e97cacff89fe8cf75",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m41/generarTemperaturaConservadorConsolidadoPDF.tsx": {
+    "mtime": 1786694111.5148225,
+    "ast_hash": "d4afd1ee5712dcc6ef44e64a8711a044",
+    "semantic_hash": "d4afd1ee5712dcc6ef44e64a8711a044"
+  },
+  "src/lib/pdf/m41/generarTemperaturaConservadorPDF.tsx": {
+    "mtime": 1786694111.6363847,
+    "ast_hash": "43818938772ad8db330c30dc7012e77a",
+    "semantic_hash": "43818938772ad8db330c30dc7012e77a"
+  },
+  "src/app/screens/MaterialEmpaqueMovimientos.tsx": {
+    "mtime": 1788897350.8000207,
+    "ast_hash": "3e1fbf6029c2fe7c2c02365302bfe2b0",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM42Movimientos.ts": {
+    "mtime": 1786076229.4473467,
+    "ast_hash": "36d8c8b5d266e501c76d56a42f9d4b40",
+    "semantic_hash": "36d8c8b5d266e501c76d56a42f9d4b40"
+  },
+  "src/lib/pdf/m42/MaterialEmpaquePDF.tsx": {
+    "mtime": 1788452034.0258372,
+    "ast_hash": "2cf5f6cdfd1cd5ad740cd8816d500977",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m42/generarMaterialEmpaqueConsolidadoPDF.tsx": {
+    "mtime": 1786694111.9013467,
+    "ast_hash": "ce22d4f67f696a6879b4719fe8c48305",
+    "semantic_hash": "ce22d4f67f696a6879b4719fe8c48305"
+  },
+  "src/lib/pdf/m42/generarMaterialEmpaquePDF.tsx": {
+    "mtime": 1786694112.035891,
+    "ast_hash": "79c441bd5a21910ebd47bf4d0d603dec",
+    "semantic_hash": "79c441bd5a21910ebd47bf4d0d603dec"
+  },
+  "src/app/screens/InspeccionAlmacenEmpaque.tsx": {
+    "mtime": 1789156044.7451184,
+    "ast_hash": "c8d2acf354d76a6cdc3b9ec3a5ee0b0e",
+    "semantic_hash": ""
+  },
+  "src/app/screens/MantenimientoPreventivo.tsx": {
+    "mtime": 1786694102.4116118,
+    "ast_hash": "2b1a2315c6a99a027e2ac54879bac032",
+    "semantic_hash": "2b1a2315c6a99a027e2ac54879bac032"
+  },
+  "src/app/screens/OrdenMantenimiento.tsx": {
+    "mtime": 1786771677.0141928,
+    "ast_hash": "bae2eb6962052d989022f902bd25cb15",
+    "semantic_hash": "bae2eb6962052d989022f902bd25cb15"
+  },
+  "src/context/HomeSearchContext.tsx": {
+    "mtime": 1786264445.8028548,
+    "ast_hash": "66e7f110f6b50a838794ef890ce77761",
+    "semantic_hash": "66e7f110f6b50a838794ef890ce77761"
+  },
+  "src/hooks/useM43InspeccionAlmacen.ts": {
+    "mtime": 1786809789.5820725,
+    "ast_hash": "259f71cc0d3765dbffcc197df93999e5",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM44OrdenesMantenimiento.ts": {
+    "mtime": 1786078448.1258748,
+    "ast_hash": "eb3452fd3d578a16e1b3722eff5a0fa4",
+    "semantic_hash": "eb3452fd3d578a16e1b3722eff5a0fa4"
+  },
+  "src/hooks/useM45MttoPreventivo.ts": {
+    "mtime": 1786080239.080361,
+    "ast_hash": "7ba87aff71e7a7f719f5f73e0de628c4",
+    "semantic_hash": "7ba87aff71e7a7f719f5f73e0de628c4"
+  },
+  "src/lib/pdf/m43/InspeccionAlmacenEmpaquePDF.tsx": {
+    "mtime": 1788452014.4298983,
+    "ast_hash": "d9db9dd584154f24691efd9e74b8150d",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m43/generarInspeccionAlmacenEmpaqueConsolidadoPDF.tsx": {
+    "mtime": 1786694112.252494,
+    "ast_hash": "a16562f1178d07f00cb794deba6d3803",
+    "semantic_hash": "a16562f1178d07f00cb794deba6d3803"
+  },
+  "src/lib/pdf/m43/generarInspeccionAlmacenEmpaquePDF.tsx": {
+    "mtime": 1786694112.3951092,
+    "ast_hash": "b1f8eb207827e5e70c7459239717f5d5",
+    "semantic_hash": "b1f8eb207827e5e70c7459239717f5d5"
+  },
+  "src/lib/pdf/m44/OrdenMantenimientoPDF.tsx": {
+    "mtime": 1788451935.061668,
+    "ast_hash": "2d6f227d470626db150fa0e21eb5f1ec",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m44/generarOrdenMantenimientoPDF.tsx": {
+    "mtime": 1786694112.6213303,
+    "ast_hash": "0a1e11d384700a8f089dd1e8600a8728",
+    "semantic_hash": "0a1e11d384700a8f089dd1e8600a8728"
+  },
+  "src/lib/pdf/m45/MttoPreventivoPDF.tsx": {
+    "mtime": 1788394412.0421064,
+    "ast_hash": "be956e279936df3844501fcbaadeafcd",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m45/generarMttoPreventivoPDF.tsx": {
+    "mtime": 1786694112.92264,
+    "ast_hash": "333a409a7977a785363a3a7033224b90",
+    "semantic_hash": "333a409a7977a785363a3a7033224b90"
+  },
+  "src/context/ThemeContext.tsx": {
+    "mtime": 1786341406.1941783,
+    "ast_hash": "c68704ce376f3496192c80c662fc5789",
+    "semantic_hash": "c68704ce376f3496192c80c662fc5789"
+  },
+  "src/lib/codigoFormato.ts": {
+    "mtime": 1786694113.0136158,
+    "ast_hash": "65d08178dcd4811612cc42ea58173aad",
+    "semantic_hash": "65d08178dcd4811612cc42ea58173aad"
+  },
+  "src/app/screens/RondinesVigilancia.tsx": {
+    "mtime": 1788897570.9714406,
+    "ast_hash": "7ab4269ed4455d2f0d029e4b51040492",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM46RondinesVigilancia.ts": {
+    "mtime": 1786732648.72953,
+    "ast_hash": "5b8eb40e5ae9c6cdfe3bf8b99614f781",
+    "semantic_hash": "5b8eb40e5ae9c6cdfe3bf8b99614f781"
+  },
+  "src/lib/pdf/m46/RondinesVigilanciaPDF.tsx": {
+    "mtime": 1788452055.0715432,
+    "ast_hash": "29b0931038f019e69b1560f50eef5672",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m46/generarRondinesVigilanciaPDF.tsx": {
+    "mtime": 1786732711.3617759,
+    "ast_hash": "be2c3e5ad92bad20d89f37b92b8cc41d",
+    "semantic_hash": "be2c3e5ad92bad20d89f37b92b8cc41d"
+  },
+  "src/lib/pdf/m39/RecepcionFrutaAlmacenPDF.tsx": {
+    "mtime": 1788394349.3954513,
+    "ast_hash": "608098a2f37052a49d8bc3961368db3c",
+    "semantic_hash": ""
+  },
+  "src/app/screens/RegistroPersonal.tsx": {
+    "mtime": 1789152032.3096948,
+    "ast_hash": "6e762a94811f42bad95b30f6a27a5c1a",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM47RegistroPersonal.ts": {
+    "mtime": 1786750997.7809086,
+    "ast_hash": "8a49744a85a817af621b9f32321e76a8",
+    "semantic_hash": "8a49744a85a817af621b9f32321e76a8"
+  },
+  "src/lib/pdf/m47/RegistroPersonalPDF.tsx": {
+    "mtime": 1788452116.5378518,
+    "ast_hash": "0c52668875ee1b43310067fb203a1fe3",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m47/generarRegistroPersonalPDF.tsx": {
+    "mtime": 1786751058.3864975,
+    "ast_hash": "82a93183aaca3e3d92c73c09d4a967d8",
+    "semantic_hash": "82a93183aaca3e3d92c73c09d4a967d8"
+  },
+  "src/app/screens/TrazabilidadProducto.tsx": {
+    "mtime": 1786769629.0083103,
+    "ast_hash": "6a49611c6bde473ec1e4d0aceb274eca",
+    "semantic_hash": "6a49611c6bde473ec1e4d0aceb274eca"
+  },
+  "src/hooks/useM48Trazabilidad.ts": {
+    "mtime": 1786755001.164084,
+    "ast_hash": "80d3d2ec93c6d6325206379d8079f2df",
+    "semantic_hash": "80d3d2ec93c6d6325206379d8079f2df"
+  },
+  "src/lib/pdf/m48/EtiquetaLPTPDF.tsx": {
+    "mtime": 1786764097.1166477,
+    "ast_hash": "f708afe341c2dc60aa15bcd0657e024b",
+    "semantic_hash": "f708afe341c2dc60aa15bcd0657e024b"
+  },
+  "src/lib/pdf/m48/generarM48PDF.tsx": {
+    "mtime": 1786769441.8676667,
+    "ast_hash": "ed89b7dbf6ea7afa88ae59cf473f64e3",
+    "semantic_hash": "ed89b7dbf6ea7afa88ae59cf473f64e3"
+  },
+  "src/lib/permisos.ts": {
+    "mtime": 1786771357.353208,
+    "ast_hash": "60d3a45813054525c38fb227e35e13b5",
+    "semantic_hash": "60d3a45813054525c38fb227e35e13b5"
+  },
+  "public/theme-init.js": {
+    "mtime": 1786772287.5666773,
+    "ast_hash": "3eeaa257ff60d7bcb018ff0ce2bfe890",
+    "semantic_hash": "3eeaa257ff60d7bcb018ff0ce2bfe890"
+  },
+  "src/app/screens/NfcEstacion.tsx": {
+    "mtime": 1787182499.6038952,
+    "ast_hash": "bae41e9791b5d8356937e24179197ae0",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/assets/logoMadyPdf.ts": {
+    "mtime": 1788383942.9874053,
+    "ast_hash": "2be3e4e45d0feeb0bc8eec460fd6a11c",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/components/PdfChecklist.tsx": {
+    "mtime": 1788378211.6913736,
+    "ast_hash": "b4366282639b5b6195cee8579a5e5034",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/components/PdfFieldGrid.tsx": {
+    "mtime": 1788378192.4111383,
+    "ast_hash": "cab05dc555c06a3e000a91dfbb59a972",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/components/PdfHeader.tsx": {
+    "mtime": 1788383953.6536608,
+    "ast_hash": "23513b4ece570bc0fb10b42ad116e84e",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/components/PdfPage.tsx": {
+    "mtime": 1788385856.4206722,
+    "ast_hash": "83722dee9d866f1dea593df04f1928f5",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/components/PdfSectionBanner.tsx": {
+    "mtime": 1788378182.5105057,
+    "ast_hash": "cfc3521daefab0e9a75b4e4a8f0cce27",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/components/PdfSignatures.tsx": {
+    "mtime": 1789152028.2875054,
+    "ast_hash": "72b8a4d7668fa89b87592d4976773730",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/components/PdfTable.tsx": {
+    "mtime": 1788378203.5970402,
+    "ast_hash": "11643eb5268d9cb6d92b9a6f1ae1a31f",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/components/tokens.ts": {
+    "mtime": 1788378151.2975261,
+    "ast_hash": "6fab96f3405034a02dc8e0e929b6f497",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/components/PdfMonthlyMatrix.tsx": {
+    "mtime": 1788386367.7943902,
+    "ast_hash": "65c2aa2707cde7ef395670721cf8e7d2",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/components/PdfLegend.tsx": {
+    "mtime": 1788388820.0297086,
+    "ast_hash": "33e53d84241844e30f8d0779d21b70c9",
+    "semantic_hash": ""
+  },
+  "src/hooks/useAuditoriaV2.ts": {
+    "mtime": 1788460550.5679228,
+    "ast_hash": "243ee5f9041770a1751d395af14dfa7e",
+    "semantic_hash": ""
+  },
+  "src/app/screens/AuditoriasPrimusGFS.tsx": {
+    "mtime": 1788810674.2056868,
+    "ast_hash": "480ca13d61ff21cda67b397a2e0d69f4",
+    "semantic_hash": ""
+  },
+  "src/app/screens/RestablecerContrasena.tsx": {
+    "mtime": 1788558284.7437418,
+    "ast_hash": "fef6ff9feda3645ed7837945f570ca37",
+    "semantic_hash": ""
+  },
+  "public/apple-touch-icon.png": {
+    "mtime": 1788465804.5969775,
+    "ast_hash": "a499027cc8b326c953ee945c6a0d48aa",
+    "semantic_hash": ""
+  },
+  "public/favicon-16x16.png": {
+    "mtime": 1788465804.388089,
+    "ast_hash": "c0728a972db37cd988e29e6a8413f0a6",
+    "semantic_hash": ""
+  },
+  "public/favicon-32x32.png": {
+    "mtime": 1788465804.4650238,
+    "ast_hash": "fbdea3b5f34485301bb1cfa6f0ea9643",
+    "semantic_hash": ""
+  },
+  "public/favicon-48x48.png": {
+    "mtime": 1788465804.5412576,
+    "ast_hash": "ba70d5410522b36e7c22b39f597f0248",
+    "semantic_hash": ""
+  },
+  "public/icon-192.png": {
+    "mtime": 1788465804.7033246,
+    "ast_hash": "8d0dffd5c6cdc7bc8b54f67de54c56c2",
+    "semantic_hash": ""
+  },
+  "public/icon-512.png": {
+    "mtime": 1788465804.799128,
+    "ast_hash": "ab78bb95bedfc6628a3e6e03452382d2",
+    "semantic_hash": ""
+  },
+  "public/mask-icon-512.png": {
+    "mtime": 1788465804.879686,
+    "ast_hash": "2b5357eab17bd63d33129f1d3e1702e9",
+    "semantic_hash": ""
+  },
+  "src/lib/idb/m13DraftStore.ts": {
+    "mtime": 1788801074.54132,
+    "ast_hash": "9e390404fdb6afe09c0052aa933c0783",
+    "semantic_hash": ""
+  },
+  "src/app/screens/CapturaAuditoriaPGFS.tsx": {
+    "mtime": 1788811031.151332,
+    "ast_hash": "007f5a52a31a45a202e588131f7886d8",
+    "semantic_hash": ""
+  },
+  "src/app/screens/NuevaAuditoriaPGFS.tsx": {
+    "mtime": 1788810697.1106472,
+    "ast_hash": "a36fa0b03dd73307cb7275ec3878062c",
+    "semantic_hash": ""
+  },
+  "src/hooks/useAuditoriasPGFS.ts": {
+    "mtime": 1788810647.4473577,
+    "ast_hash": "8bc8b0d58d7302e254cad29afcabefed",
+    "semantic_hash": ""
+  },
+  "src/hooks/useRanchosOrg.ts": {
+    "mtime": 1788810653.0860069,
+    "ast_hash": "41b38304f444b4494f80a4a7b1a02fa7",
+    "semantic_hash": ""
+  },
+  "src/lib/auditoriasPGFS.ts": {
+    "mtime": 1788810678.4766128,
+    "ast_hash": "0e0cfcbb161dde6f3e55eced311ea0b4",
+    "semantic_hash": ""
+  },
+  "src/app/components/ConsolidadoSheetLimpieza.tsx": {
+    "mtime": 1789152020.0629604,
+    "ast_hash": "086839950db48ed17cb1255b4ffec711",
+    "semantic_hash": ""
+  },
+  "src/app/screens/CalibracionBasculas.tsx": {
+    "mtime": 1789182601.4283972,
+    "ast_hash": "af77f50c4846a92c93a74eb364879850",
+    "semantic_hash": ""
+  },
+  "src/app/screens/CalibracionBombas.tsx": {
+    "mtime": 1789182712.5233145,
+    "ast_hash": "de6b06ce65785dc3f575e24a9a9bcbda",
+    "semantic_hash": ""
+  },
+  "src/app/screens/CalibracionEquipos.tsx": {
+    "mtime": 1789182535.2554464,
+    "ast_hash": "744da85c5c8238860ed37bbc256f3d29",
+    "semantic_hash": ""
+  },
+  "src/app/screens/CalibracionVolumetricos.tsx": {
+    "mtime": 1789182667.7393074,
+    "ast_hash": "29997bf23b30cb5cfd3fa8aa71d7d910",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM49CalibracionBombas.ts": {
+    "mtime": 1789182091.984439,
+    "ast_hash": "e1afb162bc5cd88dd2d4806ed1e26adb",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM50CalibracionEquipos.ts": {
+    "mtime": 1789182100.7052746,
+    "ast_hash": "0b72eaf640625bf8d407b762f9a3f5ad",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM51CalibracionBasculas.ts": {
+    "mtime": 1789182109.345793,
+    "ast_hash": "b375612da3c754f586fbbc12556d9748",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM52CalibracionVolumetricos.ts": {
+    "mtime": 1789182117.7995336,
+    "ast_hash": "68ebda8f0d482d7f5b861e9856b929c3",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m49/CalibracionBombasPDF.tsx": {
+    "mtime": 1789182154.4493659,
+    "ast_hash": "63304e2780fa4026b351fb635e1e6f6f",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m49/generarCalibracionBombasPDF.tsx": {
+    "mtime": 1789182320.6112485,
+    "ast_hash": "57c1240bcd97418228349d0951f3f135",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m50/CalibracionEquiposPDF.tsx": {
+    "mtime": 1789182184.8737917,
+    "ast_hash": "e7685a7ec07ca726751aa5e4d81cf890",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m50/generarCalibracionEquiposPDF.tsx": {
+    "mtime": 1789182334.2102673,
+    "ast_hash": "dfed5ce4dfe9aa5d8f5fb13ad2a41a01",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m51/CalibracionBasculasPDF.tsx": {
+    "mtime": 1789182245.5686488,
+    "ast_hash": "fdca4018ba4164fcd459603f067cc9de",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m51/generarCalibracionBasculasPDF.tsx": {
+    "mtime": 1789182350.8082347,
+    "ast_hash": "30d9f2a1d4fa9e74d0d13f1584dd3003",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m52/CalibracionVolumetricosPDF.tsx": {
+    "mtime": 1789182280.0109224,
+    "ast_hash": "09e09d59f5f621260da132898bc15edb",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m52/generarCalibracionVolumetricosPDF.tsx": {
+    "mtime": 1789182363.9723175,
+    "ast_hash": "3b6a24b33adeb71a3144e7a227afc9e4",
+    "semantic_hash": ""
+  },
+  "src/app/screens/ConsumoEnergia.tsx": {
+    "mtime": 1789184909.68015,
+    "ast_hash": "cf58f517b52838280330375f55fd4c11",
+    "semantic_hash": ""
+  },
+  "src/app/screens/FuentesAgua.tsx": {
+    "mtime": 1789184988.116115,
+    "ast_hash": "e3cc5f56518c81d894b935db09992177",
+    "semantic_hash": ""
+  },
+  "src/app/screens/GestionResiduos.tsx": {
+    "mtime": 1789184946.541813,
+    "ast_hash": "439dd5f08cfe139b5c2b5f32c17aa7b3",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM60ConsumoEnergia.ts": {
+    "mtime": 1789184712.5302792,
+    "ast_hash": "73f2f52e82adfcc0453b8ccae1892ae7",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM61GestionResiduos.ts": {
+    "mtime": 1789184716.4994617,
+    "ast_hash": "acbab39b1f8d40eb97b8fc09252bf9f8",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM62FuentesAgua.ts": {
+    "mtime": 1789184721.4684947,
+    "ast_hash": "74579445b8d55b3beee58c43a77981dc",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m60/ConsumoEnergiaPDF.tsx": {
+    "mtime": 1789184756.146009,
+    "ast_hash": "0c1b893220a9fc8749d8140940da2f88",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m60/generarConsumoEnergiaPDF.tsx": {
+    "mtime": 1789184799.139075,
+    "ast_hash": "be33881db52618a5a893656bbf9551b4",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m61/GestionResiduosPDF.tsx": {
+    "mtime": 1789184771.4449804,
+    "ast_hash": "1ec0f0c0cbb193ab9cc7af43c64db25b",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m61/generarGestionResiduosPDF.tsx": {
+    "mtime": 1789184806.4630835,
+    "ast_hash": "378a5b805c5cbc9a36e4fb26fe5869bb",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m62/FuentesAguaPDF.tsx": {
+    "mtime": 1789184840.6448104,
+    "ast_hash": "b9d3ce2a7bc2294c669b95b0f23412db",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m62/generarFuentesAguaPDF.tsx": {
+    "mtime": 1789184854.0332007,
+    "ast_hash": "17cdacf97f9a568ab53e6be04e66dbee",
+    "semantic_hash": ""
+  },
+  "src/app/screens/MipIntervencion.tsx": {
+    "mtime": 1789186543.233232,
+    "ast_hash": "6728e7e55da7348a2dd94499c0fa415e",
+    "semantic_hash": ""
+  },
+  "src/app/screens/MipObservacion.tsx": {
+    "mtime": 1789186541.6369388,
+    "ast_hash": "a16237eb092abbc8e51b020ed31b1016",
+    "semantic_hash": ""
+  },
+  "src/app/screens/MipPreventivo.tsx": {
+    "mtime": 1789186539.8789313,
+    "ast_hash": "a72be1468e2e107e7062d6e00ddf7b92",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM53MipPreventivo.ts": {
+    "mtime": 1789186101.6309159,
+    "ast_hash": "980b203324af8703db248003b52c81f8",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM54MipObservacion.ts": {
+    "mtime": 1789186107.6770995,
+    "ast_hash": "6b8d01c52d9b25a352dc03e73c935ce2",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM55MipIntervencion.ts": {
+    "mtime": 1789186113.500391,
+    "ast_hash": "9b31e0578b92917e2f7db9c027ebdb2e",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m53/MipPreventivoPDF.tsx": {
+    "mtime": 1789186146.6602564,
+    "ast_hash": "bc0c542457255166f453a984c390d701",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m53/generarMipPreventivoPDF.tsx": {
+    "mtime": 1789186219.1711524,
+    "ast_hash": "c74fea09ab0338f235392ac58eee5bc2",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m54/MipObservacionPDF.tsx": {
+    "mtime": 1789186167.1400192,
+    "ast_hash": "737a85de5de7027238ef222e9f3678a5",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m54/generarMipObservacionPDF.tsx": {
+    "mtime": 1789186238.2027464,
+    "ast_hash": "8b2ae6a75141ce4a21ea21d720a49021",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m55/MipIntervencionPDF.tsx": {
+    "mtime": 1789186187.2436764,
+    "ast_hash": "eb5c031df7c3b7cfbb72f5441a628630",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m55/generarMipIntervencionPDF.tsx": {
+    "mtime": 1789186256.9721246,
+    "ast_hash": "3bab3448cadf8a34bc11e89148a1cabf",
+    "semantic_hash": ""
+  },
+  "src/app/screens/CronogramaCapacitacion.tsx": {
+    "mtime": 1789187602.2238183,
+    "ast_hash": "d2ac05566307a162cd9755983d0cb2ed",
+    "semantic_hash": ""
+  },
+  "src/app/screens/FrecuenciaCapacitacion.tsx": {
+    "mtime": 1789187556.3087275,
+    "ast_hash": "1da72833ee38e660eda675d6c1ff5d95",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM56FrecuenciaCapacitacion.ts": {
+    "mtime": 1789187429.7111385,
+    "ast_hash": "d4c39944e6801d326948fcb9d9b598b1",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM57CronogramaCapacitacion.ts": {
+    "mtime": 1789187435.8569038,
+    "ast_hash": "da14331b2f4180a0e5923e8636153c22",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m56/FrecuenciaCapacitacionPDF.tsx": {
+    "mtime": 1789187460.5136337,
+    "ast_hash": "a682da157216a24f7ba40de4ff4d44e3",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m56/generarFrecuenciaCapacitacionPDF.tsx": {
+    "mtime": 1789187469.9944358,
+    "ast_hash": "2c05711eebe4dd1625ce327ec6b47adc",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m57/CronogramaCapacitacionPDF.tsx": {
+    "mtime": 1789187490.4721274,
+    "ast_hash": "397a613932d8c4164d62d96ebbad7983",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m57/generarCronogramaCapacitacionPDF.tsx": {
+    "mtime": 1789187503.7430239,
+    "ast_hash": "9093eb3e0d89e9dd48ec40c7dc1e7029",
+    "semantic_hash": ""
+  },
+  "src/app/screens/ControlHerramientas.tsx": {
+    "mtime": 1789188713.5650096,
+    "ast_hash": "9309b42f88ec3c185436fd8bc3b3054c",
+    "semantic_hash": ""
+  },
+  "src/app/screens/ProductosAutorizados.tsx": {
+    "mtime": 1789188828.9699833,
+    "ast_hash": "56c90a0492bf794ddbc2a009db2f5d60",
+    "semantic_hash": ""
+  },
+  "src/app/screens/SanitizacionCosecha.tsx": {
+    "mtime": 1789188768.9981096,
+    "ast_hash": "70a3a39c8e73c2952d6520e8e47cae69",
+    "semantic_hash": ""
+  },
+  "src/app/screens/UsoEpp.tsx": {
+    "mtime": 1789188661.6530437,
+    "ast_hash": "26d9bcae5233f825bec64dbfec934329",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM63UsoEpp.ts": {
+    "mtime": 1789188414.9198859,
+    "ast_hash": "23725c5759566921c5e8f73b3e2ded71",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM64ControlHerramientas.ts": {
+    "mtime": 1789188419.9302402,
+    "ast_hash": "26f876a85d58cdb77f7b42cc5de3f549",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM65SanitizacionCosecha.ts": {
+    "mtime": 1789188425.6272697,
+    "ast_hash": "7cda469cb7f2d1d2a7a9dd0454a029cf",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM66ProductosAutorizados.ts": {
+    "mtime": 1789188430.8048701,
+    "ast_hash": "71f526eebd52c536abedd334259213ec",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m63/UsoEppPDF.tsx": {
+    "mtime": 1789188473.0155728,
+    "ast_hash": "e95adc18a61c8113a0d42070e16cdfe4",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m63/generarUsoEppPDF.tsx": {
+    "mtime": 1789188564.5914268,
+    "ast_hash": "a7d3f4a6d464f06ce50759d4806eca0a",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m64/ControlHerramientasPDF.tsx": {
+    "mtime": 1789188496.0389693,
+    "ast_hash": "55d390434c0d6ae02e5b3783f17e1daa",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m64/generarControlHerramientasPDF.tsx": {
+    "mtime": 1789188574.3990083,
+    "ast_hash": "9a6acfb9eb2db54a3839d61d6f7f6181",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m65/SanitizacionCosechaPDF.tsx": {
+    "mtime": 1789188520.927405,
+    "ast_hash": "82b1f7248d55303d2687860e67562ba9",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m65/generarSanitizacionCosechaPDF.tsx": {
+    "mtime": 1789188585.055917,
+    "ast_hash": "3f917c7cf4ab2db5a9ce92eaabb4e619",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m66/ProductosAutorizadosPDF.tsx": {
+    "mtime": 1789188546.304273,
+    "ast_hash": "539dde015f29ffa8448977bbf2a2bcf3",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m66/generarProductosAutorizadosPDF.tsx": {
+    "mtime": 1789188593.3958256,
+    "ast_hash": "e2949bda6e8ef1cd90608714cf069002",
+    "semantic_hash": ""
+  },
+  "src/app/screens/PlanSuelo.tsx": {
+    "mtime": 1789238787.5424092,
+    "ast_hash": "b43174994b34485dbf557bc7a6f1c834",
+    "semantic_hash": ""
+  },
+  "src/app/screens/Tensiometros.tsx": {
+    "mtime": 1789238748.6819763,
+    "ast_hash": "7ef03d15f6651cd8814ccaa96931521a",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM58Tensiometros.ts": {
+    "mtime": 1789238624.9942443,
+    "ast_hash": "500fa2bc9186024ec70189a2e1a31d68",
+    "semantic_hash": ""
+  },
+  "src/hooks/useM59PlanSuelo.ts": {
+    "mtime": 1789238626.0689342,
+    "ast_hash": "1496fb1410f55f0aa70b1df6eb8663ed",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m58/TensiometrosPDF.tsx": {
+    "mtime": 1789238657.8504,
+    "ast_hash": "3276794e563bc2b5b4b34e94db34d17b",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m58/generarTensiometrosPDF.tsx": {
+    "mtime": 1789238684.8328938,
+    "ast_hash": "0b344a50d8a5c3b590dbcf6c9fe740eb",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m59/PlanSueloPDF.tsx": {
+    "mtime": 1789238670.8193338,
+    "ast_hash": "a49c9934f3eab47249d8d007738077e6",
+    "semantic_hash": ""
+  },
+  "src/lib/pdf/m59/generarPlanSueloPDF.tsx": {
+    "mtime": 1789238697.0621746,
+    "ast_hash": "af1e3c8a0d2737132e8c77c7dd74eb4f",
+    "semantic_hash": ""
+  }
+}

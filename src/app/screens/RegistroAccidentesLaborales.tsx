@@ -6,7 +6,7 @@ import {
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
-import imageCompression from 'browser-image-compression'
+import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { codigoFormato } from '@/lib/codigoFormato'
@@ -83,15 +83,6 @@ function formatFecha(iso: string): string {
   } catch { return iso }
 }
 
-async function comprimirFoto(file: File): Promise<File> {
-  return imageCompression(file, {
-    maxSizeMB: 0.5,
-    maxWidthOrHeight: 1600,
-    useWebWorker: true,
-    fileType: 'image/jpeg',
-    initialQuality: 0.7,
-  })
-}
 
 // ── Sub-componente: galería de fotos guardadas ────────────────────────────────
 
@@ -302,15 +293,18 @@ export function RegistroAccidentesLaborales() {
     const files = Array.from(e.target.files ?? [])
     e.target.value = ''
     for (const raw of files) {
-      if (raw.size > MAX_FOTO_BYTES) {
-        toast.error(`La foto ${raw.name} supera 5.5 MB`)
-        continue
-      }
+      const toastId = toast.loading('Optimizando foto...')
       try {
-        const compressed = await comprimirFoto(raw)
+        const compressed = await comprimirImagen(raw, 5.5)
+        if (compressed.size > MAX_FOTO_BYTES) {
+          toast.error('La foto es muy grande, intenta con una de menor resolución', { id: toastId })
+          continue
+        }
+        toast.dismiss(toastId)
         const preview = URL.createObjectURL(compressed)
         setFotosLocal((prev) => [...prev, { uid: crypto.randomUUID(), file: compressed, preview }])
       } catch {
+        toast.dismiss(toastId)
         toast.error('Error al procesar la foto')
       }
     }
