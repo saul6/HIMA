@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { Outlet, useLocation, Link } from "react-router";
-import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck } from "lucide-react";
+import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck, X } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
 import { useHomeSearch } from "@/context/HomeSearchContext";
 import { useTheme } from "@/context/ThemeContext";
 import { MadyLogo } from "@/app/components/MadyLogo";
+import { BottomSheet } from "@/app/components/BottomSheet";
 
 const PATH_TITLES: Record<string, string> = {
   '/': 'Inicio',
@@ -44,6 +46,7 @@ export function Layout() {
   const { busqueda, setBusqueda } = useHomeSearch();
   const { theme, resolvedTheme, cycleTheme } = useTheme();
   const isHome = location.pathname === '/';
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
   const esAdmin = profile?.rol === 'admin_org';
   const initials = profile?.nombre_completo ? getInitials(profile.nombre_completo) : '—';
@@ -63,7 +66,20 @@ export function Layout() {
     { path: "/historial",      icon: History,        label: "Historial"       },
     ...(mostrarActividadEquipo ? [{ path: "/equipo/actividad",                    icon: Users,          label: "Actividad"        }] : []),
     ...(mostrarAuditorias      ? [{ path: "/inocuidad/auditorias-primusgfs",      icon: ClipboardCheck, label: "Auditorías"        }] : []),
-    //{ path: "/perfil",         icon: User,           label: "Perfil"          },
+  ];
+
+  // Accesos rápidos del footer móvil: Inicio + principales + Historial
+  const quickNavItems = [
+    { path: "/",             icon: Home,      label: "Inicio"    },
+    ...(mostrarAplicaciones ? [{ path: "/nueva-aplicacion", icon: PlusCircle, label: "Nueva App"  }] : []),
+    ...(mostrarInventario   ? [{ path: "/inventario",        icon: Package,    label: "Inventario" }] : []),
+    { path: "/historial",   icon: History,   label: "Historial" },
+  ];
+
+  // Todas las opciones para el menú del isotipo (navItems completos + Perfil)
+  const menuItems = [
+    ...navItems,
+    { path: "/perfil", icon: User, label: "Perfil" },
   ];
 
   const pageTitle = getPageTitle(location.pathname);
@@ -242,7 +258,7 @@ export function Layout() {
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div className="flex items-center justify-around h-[72px]">
-          {navItems.map(({ path, icon: Icon, label }) => {
+          {quickNavItems.map(({ path, icon: Icon, label }) => {
             const active = isActive(path);
             return (
               <Link
@@ -266,8 +282,105 @@ export function Layout() {
               </Link>
             );
           })}
+
+          {/* Botón isotipo → abre menú completo */}
+          <button
+            onClick={() => setMenuAbierto(true)}
+            className="flex flex-col items-center gap-1 flex-1"
+            aria-label="Abrir menú"
+          >
+            <img
+              src="/images/MADYy.png"
+              alt="M.A.D.Y"
+              className="w-6 h-6 object-contain"
+            />
+            <span className="text-[10px] text-muted-foreground">Menú</span>
+          </button>
         </div>
       </nav>
+
+      {/* ── Mobile Menu Sheet ─────────────────────────────────────────────── */}
+      <BottomSheet open={menuAbierto} onClose={() => setMenuAbierto(false)}>
+        {/* Handle bar */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+          <div className="flex items-center gap-2">
+            <img src="/images/MADYy.png" alt="M.A.D.Y" className="h-6 w-auto object-contain" />
+            <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>M.A.D.Y</span>
+          </div>
+          <button
+            onClick={() => setMenuAbierto(false)}
+            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted transition-colors"
+            aria-label="Cerrar menú"
+          >
+            <X className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
+          </button>
+        </div>
+
+        {/* Usuario */}
+        <div className="px-4 py-3 border-b border-border">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold"
+              style={{ backgroundColor: 'var(--accent)', color: 'var(--primary)' }}
+            >
+              {initials}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm truncate font-semibold" style={{ color: 'var(--foreground)' }}>
+                {profile?.nombre_completo ?? '—'}
+              </p>
+              <p className="text-xs truncate text-muted-foreground">
+                {ROL_LABELS[profile?.rol ?? ''] ?? profile?.rol ?? '—'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Opciones de navegación */}
+        <div className="flex-1 overflow-y-auto py-1">
+          {menuItems.map(({ path, icon: Icon, label }) => {
+            const active = isActive(path);
+            return (
+              <Link
+                key={path}
+                to={path}
+                onClick={() => setMenuAbierto(false)}
+                className="flex items-center gap-4 px-4 py-3 transition-colors"
+                style={{
+                  backgroundColor: active ? 'var(--accent)' : undefined,
+                  color: active ? 'var(--accent-foreground)' : 'var(--foreground)',
+                }}
+              >
+                <Icon
+                  className="w-5 h-5 flex-shrink-0"
+                  style={{ color: active ? 'var(--primary)' : 'var(--muted-foreground)' }}
+                  strokeWidth={active ? 2 : 1.5}
+                />
+                <span className="text-sm" style={{ fontWeight: active ? 600 : 400 }}>
+                  {label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Switch de tema */}
+        <div className="px-4 py-3 border-t border-border">
+          <button
+            onClick={e => { cycleTheme(e.currentTarget as HTMLElement); }}
+            className="w-full flex items-center gap-4 py-2 rounded-lg hover:bg-muted transition-colors"
+            aria-label={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
+          >
+            <ThemeIcon className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+            <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{themeLabel}</span>
+          </button>
+        </div>
+      </BottomSheet>
     </div>
   );
 }
