@@ -128,6 +128,10 @@ import { Tensiometros } from "./screens/Tensiometros"
 import { PlanSuelo } from "./screens/PlanSuelo"
 import { FertilizacionGG } from "./screens/FertilizacionGG"
 import { MonitoreoRoedores } from "./screens/MonitoreoRoedores"
+import { VerificacionCosecha } from "./screens/VerificacionCosecha"
+import { LimpiezaCampo } from "./screens/LimpiezaCampo"
+import { VerificacionRoedores } from "./screens/VerificacionRoedores"
+import { MonitoreoPlaguasEnfermedades } from "./screens/MonitoreoPlaguasEnfermedades"
 
 export const router = createBrowserRouter([
   {
@@ -246,6 +250,10 @@ export const router = createBrowserRouter([
                   { path: "plan-suelo", Component: PlanSuelo },
                   { path: "fertilizacion-gg", Component: FertilizacionGG },
                   { path: "monitoreo-roedores", Component: MonitoreoRoedores },
+                  { path: "verificacion-cosecha", Component: VerificacionCosecha },
+                  { path: "limpieza-campo", Component: LimpiezaCampo },
+                  { path: "verificacion-roedores", Component: VerificacionRoedores },
+                  { path: "monitoreo-plagas-enfermedades", Component: MonitoreoPlaguasEnfermedades },
                 ],
               },
             ],
