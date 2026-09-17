@@ -252,7 +252,7 @@ export function Layout() {
         <div className="flex items-center justify-center h-[72px]">
           <button
             onClick={() => setMenuAbierto(true)}
-            className="flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] px-6"
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] px-6"
             aria-label="Abrir menú"
           >
             <img
@@ -260,7 +260,6 @@ export function Layout() {
               alt="M.A.D.Y"
               className="w-8 h-8 object-contain"
             />
-            <span className="text-[10px] text-muted-foreground">Menú</span>
           </button>
         </div>
       </nav>
