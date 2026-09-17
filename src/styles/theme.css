@@ -182,7 +182,7 @@
   padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
 }
 .bottom-safe-fab {
-  bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 16px);
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
 }
 
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }

@@ -244,26 +244,20 @@ export function Layout() {
         </div>
       </div>
 
-      {/* ── Mobile Bottom Navigation ──────────────────────────────────────── */}
-      <nav
-        className="md:hidden fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-card border-t border-border z-30"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      {/* ── Mobile FAB isotipo ───────────────────────────────────────────── */}
+      <button
+        onClick={() => setMenuAbierto(true)}
+        className="md:hidden fixed bottom-safe-fab left-4 w-14 h-14 rounded-full flex items-center justify-center z-40 bg-card border border-border active:scale-95 transition-transform"
+        style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
+        aria-label="Abrir menú"
       >
-        <div className="flex items-center justify-center h-[72px]">
-          <button
-            onClick={() => setMenuAbierto(true)}
-            className="flex items-center justify-center min-w-[44px] min-h-[44px] px-6"
-            aria-label="Abrir menú"
-          >
-            <svg width="28" height="28" viewBox="0 0 100 100" aria-hidden="true">
-              <rect x="6"  y="6"  width="40" height="40" rx="12" fill="#81BEE5" />
-              <rect x="54" y="6"  width="40" height="40" rx="12" fill="#173251" />
-              <rect x="6"  y="54" width="40" height="40" rx="12" fill="#173251" />
-              <rect x="54" y="54" width="40" height="40" rx="12" fill="#2AAD95" />
-            </svg>
-          </button>
-        </div>
-      </nav>
+        <svg width="28" height="28" viewBox="0 0 100 100" aria-hidden="true">
+          <rect x="6"  y="6"  width="40" height="40" rx="12" fill="#81BEE5" />
+          <rect x="54" y="6"  width="40" height="40" rx="12" fill="#173251" />
+          <rect x="6"  y="54" width="40" height="40" rx="12" fill="#173251" />
+          <rect x="54" y="54" width="40" height="40" rx="12" fill="#2AAD95" />
+        </svg>
+      </button>
 
       {/* ── Mobile Menu Sheet ─────────────────────────────────────────────── */}
       <BottomSheet open={menuAbierto} onClose={() => setMenuAbierto(false)}>
