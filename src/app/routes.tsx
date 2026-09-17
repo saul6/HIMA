@@ -127,6 +127,7 @@ import { ProductosAutorizados } from "./screens/ProductosAutorizados"
 import { Tensiometros } from "./screens/Tensiometros"
 import { PlanSuelo } from "./screens/PlanSuelo"
 import { FertilizacionGG } from "./screens/FertilizacionGG"
+import { MonitoreoRoedores } from "./screens/MonitoreoRoedores"
 
 export const router = createBrowserRouter([
   {
@@ -244,6 +245,7 @@ export const router = createBrowserRouter([
                   { path: "tensiometros", Component: Tensiometros },
                   { path: "plan-suelo", Component: PlanSuelo },
                   { path: "fertilizacion-gg", Component: FertilizacionGG },
+                  { path: "monitoreo-roedores", Component: MonitoreoRoedores },
                 ],
               },
             ],
