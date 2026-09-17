@@ -63,7 +63,7 @@ export function Layout() {
     { path: "/historial",      icon: History,        label: "Historial"       },
     ...(mostrarActividadEquipo ? [{ path: "/equipo/actividad",                    icon: Users,          label: "Actividad"        }] : []),
     ...(mostrarAuditorias      ? [{ path: "/inocuidad/auditorias-primusgfs",      icon: ClipboardCheck, label: "Auditorías"        }] : []),
-    { path: "/perfil",         icon: User,           label: "Perfil"          },
+    //{ path: "/perfil",         icon: User,           label: "Perfil"          },
   ];
 
   const pageTitle = getPageTitle(location.pathname);
@@ -143,9 +143,16 @@ export function Layout() {
           </button>
         </div>
 
-        {/* User block */}
-        <div className="px-2 lg:px-4 py-4 border-t border-border">
-          <div className="flex items-center justify-center lg:justify-start gap-0 lg:gap-3">
+        {/* User block → Perfil */}
+        <div className="px-1 lg:px-3 py-2 border-t border-border">
+          <Link
+            to="/perfil"
+            aria-label="Ir a perfil"
+            className="flex items-center justify-center lg:justify-start gap-0 lg:gap-3 px-1 lg:px-2 py-2 rounded-lg transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
+            style={{
+              backgroundColor: isActive('/perfil') ? 'var(--accent)' : undefined,
+            }}
+          >
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-xs"
               style={{ backgroundColor: 'var(--accent)', color: 'var(--primary)', fontWeight: 700 }}
@@ -160,7 +167,7 @@ export function Layout() {
                 {ROL_LABELS[profile?.rol ?? ''] ?? profile?.rol ?? '—'}
               </p>
             </div>
-          </div>
+          </Link>
         </div>
       </aside>
 

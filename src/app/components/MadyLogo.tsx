@@ -11,7 +11,7 @@ export function MadyLogo({
 }) {
   // Selecciona la imagen de public/images según el tema
   const logoSrc = theme === 'dark' 
-    ? '/images/MADY.png'  // Cambia por el nombre exacto de tu archivo
+    ? '/images/MADYOscuro.png'  // Cambia por el nombre exacto de tu archivo
     : '/images/MADY.png' // o '/images/logo.png' si solo tienes uno
 
   return (

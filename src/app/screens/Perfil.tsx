@@ -3,6 +3,7 @@ import { LogOut, Pencil, Check, X, ChevronRight, Building2 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
+import { useTheme } from '@/context/ThemeContext'
 import { actualizarNombreCompleto } from '@/lib/queries'
 import { MadyLogo } from '@/app/components/MadyLogo'
 
@@ -25,6 +26,7 @@ function inicialesDe(nombre: string): string {
 export function Perfil() {
   const navigate = useNavigate()
   const { user, profile, signOut, refreshProfile } = useAuthContext()
+  const { resolvedTheme } = useTheme()
 
   const [editando, setEditando] = useState(false)
   const [nuevoNombre, setNuevoNombre] = useState(profile?.nombre_completo ?? '')
@@ -141,7 +143,7 @@ export function Perfil() {
         {/* Info de la app */}
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="text-center">
-            <div className="text-sm mb-1" style={{ fontWeight: 600 }}><MadyLogo theme="light" /></div>
+            <div className="text-sm mb-1" style={{ fontWeight: 600 }}><MadyLogo theme={resolvedTheme} className="h-80 mx-auto" /></div>
             <div className="text-xs text-muted-foreground mb-1">Versión 2.1.0</div>
             <div className="text-xs text-muted-foreground">
               © 2026 M.A.D.Y
