@@ -14,7 +14,6 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { useM13Incidencias, type M13ReporteConRancho } from '@/hooks/useM13Incidencias'
 import { supabase } from '@/lib/supabase'
 import { getSignedUrls, borrarFotos, subirFoto } from '@/lib/storage/incidenciasStorage'
-import { validarImagen } from '@/lib/validarImagen'
 import { generarReporteIncidenciasPDF } from '@/lib/pdf/m13/generarReporteIncidenciasPDF'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { generarReporteIncidenciasConsolidadoPDF } from '@/lib/pdf/m13/generarReporteIncidenciasConsolidadoPDF'
@@ -140,7 +139,7 @@ function IncidenciaForm({
     return () => { inc.fotos.forEach((f) => URL.revokeObjectURL(f.preview)) }
   }, [])
 
-  function handleFiles(files: FileList | null) {
+  async function handleFiles(files: FileList | null) {
     if (!files) return
 
     const slotsRestantes = MAX_FOTOS_REPORTE - totalFotosReporte
@@ -166,12 +165,20 @@ function IncidenciaForm({
       )
     }
 
-    const nuevas: FotoLocal[] = aAgregar.map((file) => ({
-      uid: crypto.randomUUID(),
-      file,
-      preview: URL.createObjectURL(file),
-    }))
-    if (nuevas.length === 0) return
+    if (aAgregar.length === 0) return
+
+    const toastId = toast.loading('Optimizando foto...')
+    const nuevas: FotoLocal[] = await Promise.all(
+      aAgregar.map(async (file) => {
+        const comprimido = await comprimirImagen(file)
+        return {
+          uid: crypto.randomUUID(),
+          file: comprimido,
+          preview: URL.createObjectURL(comprimido),
+        }
+      })
+    )
+    toast.dismiss(toastId)
 
     const totalEnEstaInc = inc.fotos.length + nuevas.length
     if (totalEnEstaInc > MAX_FOTOS_AVISO && !atLimit) {
@@ -490,13 +497,6 @@ export function ReporteIncidencias() {
   async function handleGuardar() {
     if (!validarFormulario()) return
     const orgId = profile!.org_id!
-
-    for (const inc of incidencias) {
-      for (const fotoLocal of inc.fotos) {
-        const errImg = validarImagen(fotoLocal.file)
-        if (errImg) { toast.error(errImg); return }
-      }
-    }
 
     setGuardando(true)
     const totalFotosASubir = incidencias.reduce((sum, inc) => sum + inc.fotos.length, 0)
