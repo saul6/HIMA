@@ -68,14 +68,6 @@ export function Layout() {
     ...(mostrarAuditorias      ? [{ path: "/inocuidad/auditorias-primusgfs",      icon: ClipboardCheck, label: "Auditorías"        }] : []),
   ];
 
-  // Accesos rápidos del footer móvil: Inicio + principales + Historial
-  const quickNavItems = [
-    { path: "/",             icon: Home,      label: "Inicio"    },
-    ...(mostrarAplicaciones ? [{ path: "/nueva-aplicacion", icon: PlusCircle, label: "Nueva App"  }] : []),
-    ...(mostrarInventario   ? [{ path: "/inventario",        icon: Package,    label: "Inventario" }] : []),
-    { path: "/historial",   icon: History,   label: "Historial" },
-  ];
-
   // Todas las opciones para el menú del isotipo (navItems completos + Perfil)
   const menuItems = [
     ...navItems,
@@ -257,42 +249,16 @@ export function Layout() {
         className="md:hidden fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-card border-t border-border z-30"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        <div className="flex items-center justify-around h-[72px]">
-          {quickNavItems.map(({ path, icon: Icon, label }) => {
-            const active = isActive(path);
-            return (
-              <Link
-                key={path}
-                to={path}
-                className="flex flex-col items-center gap-1 flex-1 relative"
-              >
-                <Icon
-                  className={`w-6 h-6 ${active ? "fill-primary text-primary" : "text-muted-foreground"}`}
-                  strokeWidth={active ? 0 : 2}
-                />
-                <span
-                  className={`text-[10px] ${active ? "text-primary" : "text-muted-foreground"}`}
-                  style={{ fontWeight: active ? 600 : 400 }}
-                >
-                  {label}
-                </span>
-                {active && (
-                  <div className="absolute -bottom-2 w-1 h-1 rounded-full bg-primary" />
-                )}
-              </Link>
-            );
-          })}
-
-          {/* Botón isotipo → abre menú completo */}
+        <div className="flex items-center justify-center h-[72px]">
           <button
             onClick={() => setMenuAbierto(true)}
-            className="flex flex-col items-center gap-1 flex-1"
+            className="flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] px-6"
             aria-label="Abrir menú"
           >
             <img
               src="/images/MADYy.png"
               alt="M.A.D.Y"
-              className="w-6 h-6 object-contain"
+              className="w-8 h-8 object-contain"
             />
             <span className="text-[10px] text-muted-foreground">Menú</span>
           </button>
