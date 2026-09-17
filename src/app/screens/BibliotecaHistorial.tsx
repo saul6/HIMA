@@ -1008,7 +1008,7 @@ export function BibliotecaHistorial() {
       <div className="max-w-[390px] mx-auto">
 
         {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-black/10">
+        <div className="flex items-center gap-3 px-4 py-3 bg-card border-b border-border">
           <FileText className="w-5 h-5" style={{ color: 'var(--primary)' }} />
           <h1 className="text-[17px] flex-1" style={{ fontWeight: 600 }}>Historial de Registros</h1>
         </div>
@@ -1016,7 +1016,7 @@ export function BibliotecaHistorial() {
         <div className="p-4 space-y-4 pb-28">
 
           {/* Rango de fechas */}
-          <div className="bg-white rounded-xl border border-black/8 p-4 space-y-3">
+          <div className="bg-card rounded-xl border border-border p-4 space-y-3">
             <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
               Periodo
             </p>
@@ -1053,7 +1053,7 @@ export function BibliotecaHistorial() {
           </div>
 
           {/* Filtros */}
-          <div className="bg-white rounded-xl border border-black/8 p-4 space-y-3">
+          <div className="bg-card rounded-xl border border-border p-4 space-y-3">
             <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
               Filtros
             </p>
@@ -1140,7 +1140,7 @@ export function BibliotecaHistorial() {
               {filtrados.map((reg) => (
                 <div
                   key={reg.key}
-                  className="bg-white rounded-xl border border-black/8 p-3.5 flex items-start gap-3"
+                  className="bg-card rounded-xl border border-border p-3.5 flex items-start gap-3"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1.5">
@@ -1187,7 +1187,7 @@ export function BibliotecaHistorial() {
       {/* Overlay de progreso */}
       {generandoPaquete && (
         <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.55)' }}>
-          <div className="bg-white rounded-2xl p-6 mx-4 w-full max-w-xs text-center space-y-4">
+          <div className="bg-card rounded-2xl p-6 mx-4 w-full max-w-xs text-center space-y-4">
             <Loader2 className="w-8 h-8 animate-spin mx-auto" style={{ color: 'var(--primary)' }} />
             <div>
               <p className="text-[15px]" style={{ fontWeight: 600 }}>Generando paquete PDF</p>
