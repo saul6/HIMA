@@ -255,11 +255,12 @@ export function Layout() {
             className="flex items-center justify-center min-w-[44px] min-h-[44px] px-6"
             aria-label="Abrir menú"
           >
-            <img
-              src="/images/MADYy.png"
-              alt="M.A.D.Y"
-              className="w-8 h-8 object-contain"
-            />
+            <svg width="28" height="28" viewBox="0 0 100 100" aria-hidden="true">
+              <rect x="6"  y="6"  width="40" height="40" rx="12" fill="#81BEE5" />
+              <rect x="54" y="6"  width="40" height="40" rx="12" fill="#173251" />
+              <rect x="6"  y="54" width="40" height="40" rx="12" fill="#173251" />
+              <rect x="54" y="54" width="40" height="40" rx="12" fill="#2AAD95" />
+            </svg>
           </button>
         </div>
       </nav>
