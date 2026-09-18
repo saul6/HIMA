@@ -103,7 +103,7 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
 
       const [blRes, prRes] = await Promise.all([
         tbl('aud_bloques').select('*').in('modulo_norma_id', moduloIds).order('orden'),
-        tbl('aud_preguntas').select('*').in('modulo_norma_id', moduloIds).order('orden', { nullsFirst: false }).order('codigo'),
+        tbl('aud_preguntas').select('*').in('modulo_norma_id', moduloIds).order('orden', { nullsFirst: false }).order('question_id'),
       ])
       if (blRes.error) throw blRes.error
       if (prRes.error) throw prRes.error

@@ -151,7 +151,7 @@ async function construirDatosAuditoriaV2(
 
   // Fetch bloques for this modulo_norma_id
   let bloquesData: { id: string; codigo: string; nombre: string; orden: number }[] = []
-  let preguntasData: { id: string; bloque_id: string; codigo: string; texto: string; max_puntos: number; orden: number }[] = []
+  let preguntasData: { id: string; bloque_id: string; question_id: string; texto: string; max_puntos: number; orden: number }[] = []
 
   if (moduloNormaId) {
     const { data: blRaw, error: blErr } = await tbl('aud_bloques')
@@ -160,7 +160,7 @@ async function construirDatosAuditoriaV2(
     bloquesData = blRaw ?? []
 
     const { data: preRaw, error: preErr } = await tbl('aud_preguntas')
-      .select('id, bloque_id, codigo, texto, max_puntos, orden')
+      .select('id, bloque_id, question_id, texto, max_puntos, orden')
       .eq('modulo_norma_id', moduloNormaId).order('orden')
     if (preErr) throw preErr
     preguntasData = preRaw ?? []
@@ -209,7 +209,7 @@ async function construirDatosAuditoriaV2(
     preguntas: preguntasData.map((p) => ({
       id: p.id,
       seccion_id: p.bloque_id,
-      codigo: p.codigo,
+      codigo: p.question_id,
       texto: p.texto,
       puntos: p.max_puntos,
       orden_seccion: p.orden,

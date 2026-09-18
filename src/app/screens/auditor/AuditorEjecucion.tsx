@@ -131,7 +131,7 @@ function PreguntaCard({
           className="text-[10px] font-mono flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
           style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
         >
-          {pregunta.codigo}
+          {pregunta.question_id}
         </span>
         {pregunta.tipo === 'informativa' && (
           <span

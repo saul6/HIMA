@@ -1831,7 +1831,7 @@ export interface AudPregunta {
   modulo_norma_id: string
   bloque_id: string
   familia_id: string | null
-  codigo: string
+  question_id: string
   texto: string
   tipo: 'evaluable' | 'informativa' | 'compuesta'
   max_puntos: number
