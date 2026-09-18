@@ -145,8 +145,8 @@ export function useAuditoriasPGFS() {
     let eqData: AudComentarioEsquema[] = []
     if (pregIds.length > 0) {
       const { data: eqRaw, error: eqErr } = await tbl('aud_comentario_esquema')
-        .select('*').in('pregunta_id', pregIds).order('orden')
-      if (eqErr) throw eqErr
+        .select('*').in('pregunta_id', pregIds).order('orden_render')
+      if (eqErr) console.error('[useAuditoriasPGFS] aud_comentario_esquema', eqErr)
       eqData = eqRaw ?? []
     }
     return { bloques: blRes.data ?? [], preguntas: preRes.data ?? [], esquemas: eqData }
