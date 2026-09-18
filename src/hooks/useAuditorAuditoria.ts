@@ -137,13 +137,11 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
       })
       setModulosData(mdata)
 
-      const [instRes, obsRes] = await Promise.all([
-        tbl('aud_instancia_pregunta').select('id, pregunta_id, respuesta').eq('auditoria_id', auditoriaId),
-        tbl('aud_observaciones').select('pregunta_id, texto').eq('auditoria_id', auditoriaId),
-      ])
-      if (instRes.error) throw instRes.error
+      const { data: instRaw, error: instLoadErr } = await tbl('aud_instancia_pregunta')
+        .select('id, pregunta_id, respuesta').eq('auditoria_id', auditoriaId)
+      if (instLoadErr) throw instLoadErr
 
-      const instancias = (instRes.data ?? []) as { id: string; pregunta_id: string; respuesta: string }[]
+      const instancias = (instRaw ?? []) as { id: string; pregunta_id: string; respuesta: string }[]
       const rm = new Map<string, AudRespuesta>()
       const instIdToPreg = new Map<string, string>()
       for (const inst of instancias) {
@@ -153,27 +151,33 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
       setRespuestasMap(rm)
 
       const vm = new Map<string, Map<string, string>>()
+      const om = new Map<string, string>()
       const instIds = instancias.map(i => i.id)
       if (instIds.length > 0) {
-        const { data: valData, error: valErr } = await tbl('aud_instancia_valores')
-          .select('instancia_id, esquema_id, valor_texto, valor_opciones')
-          .in('instancia_id', instIds)
-        if (valErr) throw valErr
+        const [valRes, obsRes] = await Promise.all([
+          tbl('aud_instancia_valores')
+            .select('instancia_id, esquema_id, valor_texto, valor_opciones')
+            .in('instancia_id', instIds),
+          tbl('aud_observaciones')
+            .select('instancia_id, observacion')
+            .in('instancia_id', instIds),
+        ])
+        if (valRes.error) throw valRes.error
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        for (const val of (valData ?? []) as any[]) {
+        for (const val of (valRes.data ?? []) as any[]) {
           const pregId = instIdToPreg.get(val.instancia_id)
           if (!pregId) continue
           if (!vm.has(pregId)) vm.set(pregId, new Map())
           const texto = val.valor_texto ?? (Array.isArray(val.valor_opciones) ? val.valor_opciones.join(', ') : '')
           vm.get(pregId)!.set(val.esquema_id, texto)
         }
+        if (obsRes.error) console.error('[useAuditorAuditoria] aud_observaciones', obsRes.error)
+        for (const obs of (obsRes.data ?? []) as { instancia_id: string; observacion: string | null }[]) {
+          const pregId = instIdToPreg.get(obs.instancia_id)
+          if (pregId && obs.observacion) om.set(pregId, obs.observacion)
+        }
       }
       setValoresMap(vm)
-
-      const om = new Map<string, string>()
-      for (const obs of (obsRes.data ?? []) as { pregunta_id: string; texto: string | null }[]) {
-        if (obs.texto) om.set(obs.pregunta_id, obs.texto)
-      }
       setObservacionesMap(om)
 
     } catch (e: unknown) {
@@ -193,15 +197,16 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
     trigger: AudTriggerFalla
     valoresMap: Map<string, string>
     observacion?: string
-    orgId: string
   }): Promise<void> {
     if (!auditoriaId) throw new Error('Sin auditoría activa')
+    const orgId = auditoria?.org_id
+    if (!orgId) throw new Error('No se pudo identificar la empresa auditada, recarga la auditoría')
     const falla = calcularFallaAutomatica(params.trigger, params.respuesta)
 
     const { data: instData, error: instErr } = await tbl('aud_instancia_pregunta')
       .upsert(
         {
-          org_id: params.orgId,
+          org_id: orgId,
           auditoria_id: auditoriaId,
           pregunta_id: params.preguntaId,
           respuesta: params.respuesta,
@@ -236,14 +241,13 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
         const { error: obsErr } = await tbl('aud_observaciones')
           .upsert(
             {
-              auditoria_id: auditoriaId,
-              pregunta_id: params.preguntaId,
-              org_id: params.orgId,
-              texto,
+              instancia_id: instanciaId,
+              org_id: orgId,
+              observacion: texto,
               modo_confirmacion: 'visual',
               capturado_por: profile?.id,
             },
-            { onConflict: 'auditoria_id,pregunta_id' },
+            { onConflict: 'instancia_id' },
           )
         if (obsErr) throw obsErr
       }

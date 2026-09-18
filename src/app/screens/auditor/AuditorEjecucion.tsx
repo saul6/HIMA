@@ -101,7 +101,7 @@ function CampoEsquema({
 
 function PreguntaCard({
   pregunta, esquemas, respuesta, valores, observacion,
-  saveStatus, onRespuesta, onValor, onObservacion, onBlur, cerrada,
+  saveStatus, saveMessage, onRespuesta, onValor, onObservacion, onBlur, onRetry, cerrada,
 }: {
   pregunta: AudPregunta
   esquemas: AudComentarioEsquema[]
@@ -109,10 +109,12 @@ function PreguntaCard({
   valores: Map<string, string>
   observacion: string
   saveStatus: SaveStatus
+  saveMessage?: string
   onRespuesta: (r: AudRespuesta) => void
   onValor: (esquemaId: string, v: string) => void
   onObservacion: (v: string) => void
   onBlur: () => void
+  onRetry: () => void
   cerrada: boolean
 }) {
   const falla =
@@ -200,6 +202,15 @@ function PreguntaCard({
         </div>
       )}
 
+      {respuesta === 'no_conformidad' && !observacion && (
+        <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
+          <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+          <p className="text-[11px] font-medium" style={{ color: 'var(--agro-warning-text)' }}>
+            Una no conformidad requiere observación del auditor.
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col gap-1">
         <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
           Observación del auditor
@@ -222,7 +233,7 @@ function PreguntaCard({
         />
       </div>
 
-      <div className="flex justify-end h-4">
+      <div className="flex items-center justify-end gap-2 min-h-4">
         {saveStatus === 'saving' && (
           <span className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
             <Loader size={11} className="animate-spin" /> Guardando…
@@ -234,9 +245,19 @@ function PreguntaCard({
           </span>
         )}
         {saveStatus === 'error' && (
-          <span className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--agro-danger-text)' }}>
-            <XCircle size={11} /> Error
-          </span>
+          <div className="flex items-center gap-2 w-full">
+            <span className="flex items-center gap-1 text-[10px] flex-1 min-w-0" style={{ color: 'var(--agro-danger-text)' }}>
+              <XCircle size={11} className="flex-shrink-0" />
+              <span className="line-clamp-2">{saveMessage ?? 'Error al guardar'}</span>
+            </span>
+            <button
+              onClick={onRetry}
+              className="text-[10px] font-semibold px-2 py-0.5 rounded flex-shrink-0"
+              style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', border: '1px solid var(--agro-red)' }}
+            >
+              Reintentar
+            </button>
+          </div>
         )}
       </div>
     </div>
@@ -341,6 +362,7 @@ export function AuditorEjecucion() {
   } = hook
 
   const [savingMap, setSavingMap] = useState<Record<string, SaveStatus>>({})
+  const [saveErrMap, setSaveErrMap] = useState<Record<string, string>>({})
   const [cambiando, setCambiando] = useState(false)
 
   const respuestasRef   = useRef(respuestasMap)
@@ -358,32 +380,44 @@ export function AuditorEjecucion() {
 
   const cerrada = auditoria?.estado === 'cerrada' || auditoria?.estado === 'completada'
 
-  const efectivoOrgId = auditoria?.org_id ?? orgId ?? ''
+  function traducirError(err: unknown): string {
+    const e = err as { message?: string; code?: string; details?: string; hint?: string }
+    const msg = e?.message ?? String(err)
+    if (e?.code === '42501' || msg.toLowerCase().includes('row-level security') || msg.toLowerCase().includes('policy')) {
+      return 'No tienes permiso para guardar en esta empresa (revisa que la auditoría pertenezca a una empresa asignada).'
+    }
+    if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('offline')) {
+      return 'Sin conexión; no se guardó. Reintenta.'
+    }
+    return `No se pudo guardar: ${msg}${e?.details ? ` — ${e.details}` : ''}${e?.hint ? ` (${e.hint})` : ''}`
+  }
 
   function dispatchSave(pregId: string, forceResp?: AudRespuesta) {
     const resp = forceResp ?? respuestasRef.current.get(pregId)
-    if (!resp || !auditoriaId || !efectivoOrgId) return
+    if (!resp || !auditoriaId) return
     const allPregs = modulosData.flatMap(m => m.preguntas)
     const preg = allPregs.find(p => p.id === pregId)
     const vals  = valoresRef.current.get(pregId) ?? new Map<string, string>()
     const obs   = observacionesRef.current.get(pregId)
 
     setSavingMap(prev => ({ ...prev, [pregId]: 'saving' }))
+    setSaveErrMap(prev => { const n = { ...prev }; delete n[pregId]; return n })
     guardarRespuesta({
       preguntaId: pregId,
       respuesta: resp,
       trigger: preg?.trigger_falla_automatica ?? 'ninguno',
       valoresMap: vals,
       observacion: obs,
-      orgId: efectivoOrgId,
     })
       .then(() => {
         setSavingMap(prev => ({ ...prev, [pregId]: 'saved' }))
+        setSaveErrMap(prev => { const n = { ...prev }; delete n[pregId]; return n })
         setTimeout(() => setSavingMap(prev => ({ ...prev, [pregId]: 'idle' })), 2500)
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         console.error('[AuditorEjecucion] guardarRespuesta:', err)
         setSavingMap(prev => ({ ...prev, [pregId]: 'error' }))
+        setSaveErrMap(prev => ({ ...prev, [pregId]: traducirError(err) }))
       })
   }
 
@@ -539,10 +573,12 @@ export function AuditorEjecucion() {
                             valores={valoresMap.get(preg.id) ?? new Map()}
                             observacion={observacionesMap.get(preg.id) ?? ''}
                             saveStatus={savingMap[preg.id] ?? 'idle'}
+                            saveMessage={saveErrMap[preg.id]}
                             onRespuesta={r => handleRespuesta(preg.id, r)}
                             onValor={(eid, v) => handleValor(preg.id, eid, v)}
                             onObservacion={v => handleObservacion(preg.id, v)}
                             onBlur={() => handleBlur(preg.id)}
+                            onRetry={() => dispatchSave(preg.id)}
                             cerrada={!!cerrada}
                           />
                         ))}
