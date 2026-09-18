@@ -17,6 +17,7 @@ export interface AuditorAuditoriaDetalle {
   org_id: string
   rancho_id: string
   rancho_nombre: string
+  productor_nombre: string
   fecha: string
   auditor_nombre: string | null
   estado: EstadoAuditoria
@@ -56,7 +57,8 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
         .select(`
           id, org_id, rancho_id, fecha, auditor_nombre, estado,
           tipo_operacion, producto, periodo,
-          ranchos(nombre)
+          ranchos(nombre),
+          productor:organizaciones!aud_auditorias_org_id_fkey(nombre)
         `)
         .eq('id', auditoriaId)
         .single()
@@ -77,6 +79,8 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
         rancho_id: audData.rancho_id,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rancho_nombre: (audData as any).ranchos?.nombre ?? '—',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        productor_nombre: (audData as any).productor?.nombre ?? '—',
         fecha: audData.fecha,
         auditor_nombre: audData.auditor_nombre ?? null,
         estado: audData.estado as EstadoAuditoria,
@@ -173,7 +177,9 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
       setObservacionesMap(om)
 
     } catch (e: unknown) {
-      setErrorMsg(e instanceof Error ? e.message : 'Error al cargar auditoría')
+      console.error('[useAuditorAuditoria]', e)
+      const msg = (e as { message?: string })?.message ?? 'Error al cargar auditoría'
+      setErrorMsg(msg)
     } finally {
       setCargando(false)
     }

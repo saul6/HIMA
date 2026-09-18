@@ -444,7 +444,7 @@ export function AuditorEjecucion() {
           </p>
           {auditoria && (
             <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-              {auditoria.rancho_nombre} · {formatFecha(auditoria.fecha)}
+              {auditoria.productor_nombre} · {auditoria.rancho_nombre} · {formatFecha(auditoria.fecha)}
             </p>
           )}
         </div>
