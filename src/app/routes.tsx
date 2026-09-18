@@ -132,6 +132,12 @@ import { VerificacionCosecha } from "./screens/VerificacionCosecha"
 import { LimpiezaCampo } from "./screens/LimpiezaCampo"
 import { VerificacionRoedores } from "./screens/VerificacionRoedores"
 import { MonitoreoPlaguasEnfermedades } from "./screens/MonitoreoPlaguasEnfermedades"
+import { BotiquinGG } from "./screens/BotiquinGG"
+import { GermicidaGG } from "./screens/GermicidaGG"
+import { AlmacenEmpaqueGG } from "./screens/AlmacenEmpaqueGG"
+import { MantenimientoEquiposGG } from "./screens/MantenimientoEquiposGG"
+import { EmpleadosGG } from "./screens/EmpleadosGG"
+import { TrazabilidadGG } from "./screens/TrazabilidadGG"
 
 export const router = createBrowserRouter([
   {
@@ -254,6 +260,12 @@ export const router = createBrowserRouter([
                   { path: "limpieza-campo", Component: LimpiezaCampo },
                   { path: "verificacion-roedores", Component: VerificacionRoedores },
                   { path: "monitoreo-plagas-enfermedades", Component: MonitoreoPlaguasEnfermedades },
+                  { path: "botiquin-gg", Component: BotiquinGG },
+                  { path: "germicida-gg", Component: GermicidaGG },
+                  { path: "almacen-empaque-gg", Component: AlmacenEmpaqueGG },
+                  { path: "mantenimiento-equipos-gg", Component: MantenimientoEquiposGG },
+                  { path: "empleados-gg", Component: EmpleadosGG },
+                  { path: "trazabilidad-gg", Component: TrazabilidadGG },
                 ],
               },
             ],
