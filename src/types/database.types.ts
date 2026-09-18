@@ -1839,6 +1839,7 @@ export interface AudPregunta {
   orden: number
   prompt_component_id: number
   trigger_falla_automatica: AudTriggerFalla
+  info_minima: string | null
 }
 
 export interface AudComentarioEsquema {

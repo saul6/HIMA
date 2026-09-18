@@ -5,7 +5,6 @@ import type {
   AudBloque, AudPregunta, AudComentarioEsquema,
   AudModuloNorma, AudRespuesta, AudEstado,
 } from '@/types/database.types'
-import { calcularFallaAutomatica } from '@/hooks/useAuditoriaV2'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -241,15 +240,12 @@ export function useAuditoriasPGFS() {
     auditoriaId: string
     preguntaId: string
     respuesta: AudRespuesta
-    trigger: string
     valoresMap: Map<string, string>
     observacion?: string
     orgId: string
   }): Promise<void> {
     if (!params.orgId) throw new Error('Sin organización de empresa auditada')
-    // calcularFallaAutomatica acepta string como primer param
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const falla = calcularFallaAutomatica(params.trigger as any, params.respuesta)
+    const observacionLlena = !!params.observacion?.trim()
 
     const { data: instData, error: instErr } = await tbl('aud_instancia_pregunta')
       .upsert(
@@ -260,8 +256,7 @@ export function useAuditoriasPGFS() {
           respuesta: params.respuesta,
           estado_aplicabilidad: params.respuesta === 'na' ? 'na_manual' : 'aplicable',
           origen_na: params.respuesta === 'na' ? 'manual' : null,
-          estado_falla_automatica: falla,
-          fuente: 'capturado',
+          estado_comentario: observacionLlena ? 'completo' : 'incompleto',
         },
         { onConflict: 'auditoria_id,pregunta_id' },
       )

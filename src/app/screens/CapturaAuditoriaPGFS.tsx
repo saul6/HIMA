@@ -32,6 +32,18 @@ const RESP_TOOLTIPS: Record<AudRespuesta, string> = {
   na:                 'No aplica',
 }
 
+function mensajeErrorSeguro(err: unknown): string {
+  if (!err || typeof err !== 'object') return 'No se pudo guardar. Reintenta.'
+  const e = err as { code?: string; message?: string }
+  if (e.code === '42501' || e.message?.includes('permission') || e.message?.includes('RLS')) {
+    return 'No tienes permiso para guardar en esta empresa.'
+  }
+  if (e.message?.includes('fetch') || e.message?.includes('network') || e.message?.toLowerCase().includes('timeout')) {
+    return 'Sin conexión; no se guardó. Reintenta.'
+  }
+  return 'No se pudo guardar. Reintenta.'
+}
+
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 // ── Campo de comentario (esquema) ────────────────────────────────────────────
@@ -86,7 +98,7 @@ function CampoEsquema({
 
 function PreguntaCard({
   pregunta, esquemas, respuesta, valores, observacion,
-  saveStatus, onRespuesta, onValor, onObservacion, onBlur, cerrada,
+  saveStatus, saveErrorMsg, onRespuesta, onValor, onObservacion, onBlur, onRetry, cerrada,
 }: {
   pregunta: AudPregunta
   esquemas: AudComentarioEsquema[]
@@ -94,10 +106,12 @@ function PreguntaCard({
   valores: Map<string, string>
   observacion: string
   saveStatus: SaveStatus
+  saveErrorMsg?: string
   onRespuesta: (r: AudRespuesta) => void
   onValor: (esquemaId: string, v: string) => void
   onObservacion: (v: string) => void
   onBlur: () => void
+  onRetry: () => void
   cerrada: boolean
 }) {
   const falla =
@@ -105,6 +119,12 @@ function PreguntaCard({
     respuesta !== 'na' &&
     ((pregunta.trigger_falla_automatica === 'cualquier_descuento' && respuesta !== 'cumplimiento_total') ||
       (pregunta.trigger_falla_automatica === 'solo_cero' && respuesta === 'no_conformidad'))
+
+  const incompleta =
+    !!respuesta &&
+    respuesta !== 'cumplimiento_total' &&
+    respuesta !== 'na' &&
+    !observacion.trim()
 
   return (
     <div
@@ -140,6 +160,18 @@ function PreguntaCard({
         </p>
       </div>
 
+      {/* Información mínima para validar */}
+      {pregunta.info_minima && (
+        <div className="rounded-lg px-3 py-2 flex flex-col gap-0.5" style={{ backgroundColor: 'var(--agro-success-fill)' }}>
+          <p className="text-[10px] font-semibold" style={{ color: 'var(--agro-success-text)' }}>
+            Para validar, registra:
+          </p>
+          <p className="text-[11px] leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--agro-success-text)' }}>
+            {pregunta.info_minima}
+          </p>
+        </div>
+      )}
+
       {/* Respuesta */}
       <div className="flex gap-1.5">
         {RESP_OPTIONS.map((opt) => {
@@ -170,6 +202,23 @@ function PreguntaCard({
           <p className="text-[11px] font-medium" style={{ color: 'var(--agro-warning-text)' }}>
             Alerta interna: esta pregunta activa un control de falla automática. Revisar con el auditor certificado.
           </p>
+        </div>
+      )}
+
+      {/* Alerta incompleta */}
+      {incompleta && !cerrada && (
+        <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
+          <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+          <div className="flex flex-col gap-0.5">
+            <p className="text-[11px] font-semibold" style={{ color: 'var(--agro-warning-text)' }}>
+              Incompleta — registra la observación para validar esta respuesta
+            </p>
+            {pregunta.info_minima && (
+              <p className="text-[11px] whitespace-pre-wrap" style={{ color: 'var(--agro-warning-text)' }}>
+                {pregunta.info_minima}
+              </p>
+            )}
+          </div>
         </div>
       )}
 
@@ -213,7 +262,7 @@ function PreguntaCard({
       </div>
 
       {/* Save status */}
-      <div className="flex justify-end h-4">
+      <div className="flex justify-end items-center gap-2 min-h-[1rem]">
         {saveStatus === 'saving' && (
           <span className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
             <Loader size={11} className="animate-spin" /> Guardando…
@@ -225,9 +274,18 @@ function PreguntaCard({
           </span>
         )}
         {saveStatus === 'error' && (
-          <span className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--agro-danger-text)' }}>
-            <XCircle size={11} /> Error al guardar
-          </span>
+          <>
+            <span className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--agro-danger-text)' }}>
+              <XCircle size={11} /> {saveErrorMsg ?? 'No se pudo guardar. Reintenta.'}
+            </span>
+            <button
+              onClick={onRetry}
+              className="text-[10px] underline flex-shrink-0"
+              style={{ color: 'var(--agro-danger-text)' }}
+            >
+              Reintentar
+            </button>
+          </>
         )}
       </div>
     </div>
@@ -267,16 +325,15 @@ export function CapturaAuditoriaPGFS() {
   const [valoresMap, setValoresMap]             = useState<Map<string, Map<string, string>>>(new Map())
   const [observacionesMap, setObservacionesMap] = useState<Map<string, string>>(new Map())
   const [savingMap, setSavingMap]               = useState<Record<string, SaveStatus>>({})
+  const [saveErrorMap, setSaveErrorMap]         = useState<Record<string, string>>({})
 
   // Refs para capturar el estado actual en callbacks diferidos sin closures rancias
   const respuestasRef   = useRef(respuestasMap)
   const valoresRef      = useRef(valoresMap)
   const observacionesRef = useRef(observacionesMap)
-  const preguntasRef    = useRef(preguntas)
   useEffect(() => { respuestasRef.current   = respuestasMap }, [respuestasMap])
   useEffect(() => { valoresRef.current      = valoresMap    }, [valoresMap])
   useEffect(() => { observacionesRef.current = observacionesMap }, [observacionesMap])
-  useEffect(() => { preguntasRef.current    = preguntas     }, [preguntas])
 
   const [cargando, setCargando] = useState(true)
   const [cerrando, setCerrando] = useState(false)
@@ -316,7 +373,8 @@ export function CapturaAuditoriaPGFS() {
         setValoresMap(vm)
         setObservacionesMap(om)
       } catch (e: unknown) {
-        if (!cancelado) setErrorMsg(e instanceof Error ? e.message : 'Error al cargar')
+        console.error('[CapturaAuditoriaPGFS] cargar:', e)
+        if (!cancelado) setErrorMsg('No se pudo cargar la auditoría. Verifica tu conexión y recarga.')
       } finally {
         if (!cancelado) setCargando(false)
       }
@@ -332,7 +390,6 @@ export function CapturaAuditoriaPGFS() {
   function dispatchSave(pregId: string, forceResp?: AudRespuesta) {
     const resp = forceResp ?? respuestasRef.current.get(pregId)
     if (!resp || !auditoriaId || !auditoria) return
-    const preg = preguntasRef.current.find((p) => p.id === pregId)
     const vals = valoresRef.current.get(pregId) ?? new Map<string, string>()
     const obs  = observacionesRef.current.get(pregId)
 
@@ -341,7 +398,6 @@ export function CapturaAuditoriaPGFS() {
       auditoriaId,
       preguntaId: pregId,
       respuesta: resp,
-      trigger: preg?.trigger_falla_automatica ?? 'ninguno',
       valoresMap: vals,
       observacion: obs,
       orgId: auditoria.org_id,
@@ -353,6 +409,7 @@ export function CapturaAuditoriaPGFS() {
       .catch((err) => {
         console.error('[CapturaAuditoriaPGFS] guardarRespuesta:', err)
         setSavingMap((prev) => ({ ...prev, [pregId]: 'error' }))
+        setSaveErrorMap((prev) => ({ ...prev, [pregId]: mensajeErrorSeguro(err) }))
       })
   }
 
@@ -391,7 +448,8 @@ export function CapturaAuditoriaPGFS() {
       toast.success('Auditoría cerrada')
       setAuditoria((prev) => prev ? { ...prev, estado: 'cerrada' } : prev)
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Error al cerrar auditoría')
+      console.error('[CapturaAuditoriaPGFS] completarAuditoria:', e)
+      toast.error('No se pudo cerrar la auditoría. Reintenta.')
     } finally {
       setCerrando(false)
     }
@@ -487,10 +545,12 @@ export function CapturaAuditoriaPGFS() {
                       valores={valoresMap.get(preg.id) ?? new Map()}
                       observacion={observacionesMap.get(preg.id) ?? ''}
                       saveStatus={savingMap[preg.id] ?? 'idle'}
+                      saveErrorMsg={saveErrorMap[preg.id]}
                       onRespuesta={(r) => handleRespuesta(preg.id, r)}
                       onValor={(eid, v) => handleValor(preg.id, eid, v)}
                       onObservacion={(v) => handleObservacion(preg.id, v)}
                       onBlur={() => handleBlur(preg.id)}
+                      onRetry={() => dispatchSave(preg.id)}
                       cerrada={cerrada}
                     />
                   ))}
