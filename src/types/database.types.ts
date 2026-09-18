@@ -1830,10 +1830,12 @@ export interface AudPregunta {
   id: string
   modulo_norma_id: string
   bloque_id: string
+  familia_id: string | null
   codigo: string
-  prompt_texto: string
+  texto: string
   tipo: 'evaluable' | 'informativa' | 'compuesta'
   max_puntos: number
+  permite_na: boolean
   orden: number
   prompt_component_id: number
   trigger_falla_automatica: AudTriggerFalla

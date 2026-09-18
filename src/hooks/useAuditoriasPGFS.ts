@@ -105,7 +105,7 @@ export function useAuditoriasPGFS() {
   async function cargarAuditoria(auditoriaId: string): Promise<AuditoriaDetalle> {
     const { data, error: err } = await tbl('aud_auditorias')
       .select(`
-        id, rancho_id, fecha, auditor_nombre, estado,
+        id, org_id, rancho_id, fecha, auditor_nombre, estado,
         ranchos(nombre),
         aud_auditoria_modulos!inner(modulo_norma_id, aud_modulos_norma(nombre))
       `)
@@ -118,7 +118,8 @@ export function useAuditoriasPGFS() {
       : (data as any).aud_auditoria_modulos
     return {
       id: data.id,
-      org_id: profile?.org_id ?? '',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      org_id: (data as any).org_id ?? '',
       rancho_id: data.rancho_id,
       rancho_nombre: (data as any).ranchos?.nombre ?? '—',
       fecha: data.fecha,
@@ -136,7 +137,7 @@ export function useAuditoriasPGFS() {
   }> {
     const [blRes, preRes] = await Promise.all([
       tbl('aud_bloques').select('*').eq('modulo_norma_id', moduloNormaId).order('orden'),
-      tbl('aud_preguntas').select('*').eq('modulo_norma_id', moduloNormaId).order('orden'),
+      tbl('aud_preguntas').select('*').eq('modulo_norma_id', moduloNormaId).order('orden', { nullsFirst: false }).order('codigo'),
     ])
     if (blRes.error) throw blRes.error
     if (preRes.error) throw preRes.error
@@ -243,8 +244,9 @@ export function useAuditoriasPGFS() {
     trigger: string
     valoresMap: Map<string, string>
     observacion?: string
+    orgId: string
   }): Promise<void> {
-    if (!profile?.org_id) throw new Error('Sin organización activa')
+    if (!params.orgId) throw new Error('Sin organización de empresa auditada')
     // calcularFallaAutomatica acepta string como primer param
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const falla = calcularFallaAutomatica(params.trigger as any, params.respuesta)
@@ -252,9 +254,12 @@ export function useAuditoriasPGFS() {
     const { data: instData, error: instErr } = await tbl('aud_instancia_pregunta')
       .upsert(
         {
+          org_id: params.orgId,
           auditoria_id: params.auditoriaId,
           pregunta_id: params.preguntaId,
           respuesta: params.respuesta,
+          estado_aplicabilidad: params.respuesta === 'na' ? 'na_manual' : 'aplicable',
+          origen_na: params.respuesta === 'na' ? 'manual' : null,
           estado_falla_automatica: falla,
           fuente: 'capturado',
         },
@@ -286,7 +291,7 @@ export function useAuditoriasPGFS() {
             {
               auditoria_id: params.auditoriaId,
               pregunta_id: params.preguntaId,
-              org_id: profile.org_id,
+              org_id: params.orgId,
               texto,
             },
             { onConflict: 'auditoria_id,pregunta_id' },

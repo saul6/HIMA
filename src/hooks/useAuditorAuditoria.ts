@@ -103,7 +103,7 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
 
       const [blRes, prRes] = await Promise.all([
         tbl('aud_bloques').select('*').in('modulo_norma_id', moduloIds).order('orden'),
-        tbl('aud_preguntas').select('*').in('modulo_norma_id', moduloIds).order('orden'),
+        tbl('aud_preguntas').select('*').in('modulo_norma_id', moduloIds).order('orden', { nullsFirst: false }).order('codigo'),
       ])
       if (blRes.error) throw blRes.error
       if (prRes.error) throw prRes.error
@@ -201,6 +201,7 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
     const { data: instData, error: instErr } = await tbl('aud_instancia_pregunta')
       .upsert(
         {
+          org_id: params.orgId,
           auditoria_id: auditoriaId,
           pregunta_id: params.preguntaId,
           respuesta: params.respuesta,

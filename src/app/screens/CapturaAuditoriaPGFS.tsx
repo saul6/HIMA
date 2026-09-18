@@ -127,8 +127,16 @@ function PreguntaCard({
             Informativa
           </span>
         )}
+        {pregunta.trigger_falla_automatica !== 'ninguno' && (
+          <span
+            className="text-[10px] font-semibold flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
+            style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+          >
+            Falla automática
+          </span>
+        )}
         <p className="text-sm flex-1" style={{ color: 'var(--foreground)', lineHeight: '1.45' }}>
-          {pregunta.prompt_texto}
+          {pregunta.texto}
         </p>
       </div>
 
@@ -323,7 +331,7 @@ export function CapturaAuditoriaPGFS() {
   // Guarda una pregunta usando los refs (siempre tiene el estado más reciente)
   function dispatchSave(pregId: string, forceResp?: AudRespuesta) {
     const resp = forceResp ?? respuestasRef.current.get(pregId)
-    if (!resp || !auditoriaId) return
+    if (!resp || !auditoriaId || !auditoria) return
     const preg = preguntasRef.current.find((p) => p.id === pregId)
     const vals = valoresRef.current.get(pregId) ?? new Map<string, string>()
     const obs  = observacionesRef.current.get(pregId)
@@ -336,12 +344,16 @@ export function CapturaAuditoriaPGFS() {
       trigger: preg?.trigger_falla_automatica ?? 'ninguno',
       valoresMap: vals,
       observacion: obs,
+      orgId: auditoria.org_id,
     })
       .then(() => {
         setSavingMap((prev) => ({ ...prev, [pregId]: 'saved' }))
         setTimeout(() => setSavingMap((prev) => ({ ...prev, [pregId]: 'idle' })), 2500)
       })
-      .catch(() => setSavingMap((prev) => ({ ...prev, [pregId]: 'error' })))
+      .catch((err) => {
+        console.error('[CapturaAuditoriaPGFS] guardarRespuesta:', err)
+        setSavingMap((prev) => ({ ...prev, [pregId]: 'error' }))
+      })
   }
 
   function handleRespuesta(pregId: string, resp: AudRespuesta) {

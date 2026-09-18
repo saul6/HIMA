@@ -141,8 +141,16 @@ function PreguntaCard({
             Informativa
           </span>
         )}
+        {pregunta.trigger_falla_automatica !== 'ninguno' && (
+          <span
+            className="text-[10px] font-semibold flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
+            style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+          >
+            Falla automática
+          </span>
+        )}
         <p className="text-sm flex-1" style={{ color: 'var(--foreground)', lineHeight: '1.45' }}>
-          {pregunta.prompt_texto}
+          {pregunta.texto}
         </p>
       </div>
 
@@ -373,7 +381,10 @@ export function AuditorEjecucion() {
         setSavingMap(prev => ({ ...prev, [pregId]: 'saved' }))
         setTimeout(() => setSavingMap(prev => ({ ...prev, [pregId]: 'idle' })), 2500)
       })
-      .catch(() => setSavingMap(prev => ({ ...prev, [pregId]: 'error' })))
+      .catch((err) => {
+        console.error('[AuditorEjecucion] guardarRespuesta:', err)
+        setSavingMap(prev => ({ ...prev, [pregId]: 'error' }))
+      })
   }
 
   function handleRespuesta(pregId: string, resp: AudRespuesta) {
