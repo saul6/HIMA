@@ -1,6 +1,6 @@
 ﻿import { useState, useMemo, useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
-import { Link } from 'react-router'
+import { Link, Navigate } from 'react-router'
 import {
   Plus, Loader2, TriangleAlert, Clock3,
   Users, AlertTriangle, ChevronRight, ClipboardList, BarChart2,
@@ -418,6 +418,10 @@ export function Home() {
   // Categoría abierta en popup
   const [categoriaAbierta, setCategoriaAbierta] = useState<string | null>(null)
   const btnRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
+
+  if (profile !== null && profile.rol === 'auditor') {
+    return <Navigate to="/auditor" replace />
+  }
 
   const esAdmin = profile?.rol === 'admin_org'
   const tieneAplicaciones = modulos.some(m => m.clave === 'aplicaciones')

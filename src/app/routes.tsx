@@ -138,6 +138,10 @@ import { AlmacenEmpaqueGG } from "./screens/AlmacenEmpaqueGG"
 import { MantenimientoEquiposGG } from "./screens/MantenimientoEquiposGG"
 import { EmpleadosGG } from "./screens/EmpleadosGG"
 import { TrazabilidadGG } from "./screens/TrazabilidadGG"
+import { AuditorHome } from "./screens/auditor/AuditorHome"
+import { AuditorOrgDetalle } from "./screens/auditor/AuditorOrgDetalle"
+import { AuditorNuevaAuditoria } from "./screens/auditor/AuditorNuevaAuditoria"
+import { AuditorEjecucion } from "./screens/auditor/AuditorEjecucion"
 
 export const router = createBrowserRouter([
   {
@@ -178,6 +182,10 @@ export const router = createBrowserRouter([
             Component: Layout,
             children: [
               { index: true, Component: Home },
+              { path: "auditor", Component: AuditorHome },
+              { path: "auditor/org/:orgId", Component: AuditorOrgDetalle },
+              { path: "auditor/org/:orgId/nueva", Component: AuditorNuevaAuditoria },
+              { path: "auditor/auditoria/:auditoriaId", Component: AuditorEjecucion },
               { path: "nueva-aplicacion", Component: NuevaAplicacion },
               { path: "inventario", Component: Inventario },
               { path: "historial", Component: BibliotecaHistorial },

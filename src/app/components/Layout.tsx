@@ -25,6 +25,10 @@ function getPageTitle(pathname: string): string {
     const seg = pathname.replace('/inocuidad/', '').replace(/-/g, ' ')
     return seg.charAt(0).toUpperCase() + seg.slice(1)
   }
+  if (pathname === '/auditor') return 'Mis organizaciones'
+  if (pathname.match(/^\/auditor\/auditoria\//)) return 'Ejecución'
+  if (pathname.match(/^\/auditor\/org\/[^/]+\/nueva/)) return 'Nueva auditoría'
+  if (pathname.match(/^\/auditor\/org\//)) return 'Empresa auditada'
   return 'M.A.D.Y'
 }
 
@@ -48,24 +52,29 @@ export function Layout() {
   const isHome = location.pathname === '/';
   const [menuAbierto, setMenuAbierto] = useState(false);
 
-  const esAdmin = profile?.rol === 'admin_org';
-  const initials = profile?.nombre_completo ? getInitials(profile.nombre_completo) : '—';
+  const esAuditor = profile?.rol === 'auditor';
+  const esAdmin   = profile?.rol === 'admin_org';
+  const initials  = profile?.nombre_completo ? getInitials(profile.nombre_completo) : '—';
   const fechaHoy = new Date().toLocaleDateString('es-MX', {
     weekday: 'long', day: 'numeric', month: 'long',
   });
 
-  const mostrarAplicaciones    = loadingModulos || modulos.some(m => m.clave === "aplicaciones");
-  const mostrarInventario      = loadingModulos || modulos.some(m => m.clave === "inventario");
-  const mostrarActividadEquipo = loadingModulos || (esAdmin && terminosSitio.singular !== 'Rancho');
-  const mostrarAuditorias      = ['auditor', 'admin_org', 'super_admin'].includes(profile?.rol ?? '');
+  const mostrarAplicaciones    = !esAuditor && (loadingModulos || modulos.some(m => m.clave === "aplicaciones"));
+  const mostrarInventario      = !esAuditor && (loadingModulos || modulos.some(m => m.clave === "inventario"));
+  const mostrarActividadEquipo = !esAuditor && (loadingModulos || (esAdmin && terminosSitio.singular !== 'Rancho'));
+  const mostrarAuditorias      = !esAuditor && ['admin_org', 'super_admin'].includes(profile?.rol ?? '');
+
+  const homeItem = esAuditor
+    ? { path: "/auditor",  icon: Home, label: "Inicio" }
+    : { path: "/",         icon: Home, label: "Inicio" }
 
   const navItems = [
-    { path: "/",               icon: Home,           label: "Inicio"          },
-    ...(mostrarAplicaciones    ? [{ path: "/nueva-aplicacion",                   icon: PlusCircle,     label: "Nueva Aplicación" }] : []),
-    ...(mostrarInventario      ? [{ path: "/inventario",                          icon: Package,        label: "Inventario"       }] : []),
-    { path: "/historial",      icon: History,        label: "Historial"       },
-    ...(mostrarActividadEquipo ? [{ path: "/equipo/actividad",                    icon: Users,          label: "Actividad"        }] : []),
-    ...(mostrarAuditorias      ? [{ path: "/inocuidad/auditorias-primusgfs",      icon: ClipboardCheck, label: "Auditorías"        }] : []),
+    homeItem,
+    ...(mostrarAplicaciones    ? [{ path: "/nueva-aplicacion",              icon: PlusCircle,     label: "Nueva Aplicación" }] : []),
+    ...(mostrarInventario      ? [{ path: "/inventario",                    icon: Package,        label: "Inventario"       }] : []),
+    ...(esAuditor              ? [] : [{ path: "/historial",                icon: History,        label: "Historial"        }]),
+    ...(mostrarActividadEquipo ? [{ path: "/equipo/actividad",              icon: Users,          label: "Actividad"        }] : []),
+    ...(mostrarAuditorias      ? [{ path: "/inocuidad/auditorias-primusgfs", icon: ClipboardCheck, label: "Auditorías"       }] : []),
   ];
 
   // Todas las opciones para el menú del isotipo (navItems completos + Perfil)
@@ -79,6 +88,9 @@ export function Layout() {
   const themeLabel = theme === 'dark' ? 'Oscuro' : 'Claro';
 
   function isActive(path: string) {
+    if (path === "/auditor") {
+      return location.pathname === '/auditor' || location.pathname.startsWith('/auditor/')
+    }
     if (path === "/") {
       return (
         location.pathname === "/" ||
