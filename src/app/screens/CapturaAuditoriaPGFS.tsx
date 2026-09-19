@@ -46,6 +46,25 @@ function mensajeErrorSeguro(err: unknown): string {
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
+// ── Diccionario de etiquetas legibles por campo_clave ───────────────────────
+
+const ETIQUETA_CAMPO: Record<string, string> = {
+  document_name_code:   'Nombre y/o código del documento',
+  responsible_person:   'Responsable / firma',
+  date_latest:          'Fecha (más reciente)',
+  frequency:            'Frecuencia',
+  location:             'Ubicación',
+  quantity_count:       'Cantidad / número',
+  parameter_range:      'Parámetro / rango',
+  test_result:          'Resultado',
+  method:               'Método',
+  scope:                'Alcance',
+  corrective_action:    'Acción correctiva',
+  sample_example:       'Ejemplo verificable',
+  na_justification:     'Justificación de N/A',
+  confirmacion_general: 'Información requerida',
+}
+
 // ── Campo de comentario (esquema) ────────────────────────────────────────────
 
 function CampoEsquema({
@@ -57,6 +76,7 @@ function CampoEsquema({
   onBlur: () => void
   disabled: boolean
 }) {
+  const etiqueta = ETIQUETA_CAMPO[esquema.campo_clave] ?? esquema.campo_clave
   const base: React.CSSProperties = {
     width: '100%',
     borderRadius: 'var(--radius)',
@@ -70,25 +90,22 @@ function CampoEsquema({
   return (
     <div className="flex flex-col gap-1">
       <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
-        {esquema.etiqueta}
+        {etiqueta}
         {esquema.requerido && <span style={{ color: 'var(--agro-red)' }}> *</span>}
       </label>
-      {esquema.tipo === 'seleccion' && esquema.opciones ? (
-        <select value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} disabled={disabled}
-          style={{ ...base, height: '2.25rem' }}>
-          <option value="">Seleccionar…</option>
-          {esquema.opciones.map((op) => <option key={op} value={op}>{op}</option>)}
-        </select>
-      ) : (
-        <input
-          type={esquema.tipo === 'fecha' ? 'date' : esquema.tipo === 'numero' ? 'number' : 'text'}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onBlur={onBlur}
-          disabled={disabled}
-          placeholder={esquema.info_minima ?? undefined}
-          style={{ ...base, height: '2.25rem' }}
-        />
+      <input
+        type={esquema.tipo_campo}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
+        disabled={disabled}
+        placeholder={esquema.regla_validacion ?? undefined}
+        style={{ ...base, height: '2.25rem' }}
+      />
+      {esquema.regla_validacion && (
+        <p className="text-[10px] leading-snug" style={{ color: 'var(--muted-foreground)' }}>
+          {esquema.regla_validacion}
+        </p>
       )}
     </div>
   )

@@ -1845,13 +1845,11 @@ export interface AudPregunta {
 export interface AudComentarioEsquema {
   id: string
   pregunta_id: string
-  campo: string
-  etiqueta: string
-  tipo: 'texto' | 'seleccion' | 'fecha' | 'numero'
+  campo_clave: string
+  tipo_campo: 'text' | 'date' | 'number'
   requerido: boolean
-  opciones: string[] | null
-  info_minima: string | null
-  orden: number
+  orden_render: number
+  regla_validacion: string | null
 }
 
 export interface AudModuloNorma {
