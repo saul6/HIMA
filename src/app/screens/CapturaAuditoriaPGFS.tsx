@@ -89,7 +89,7 @@ function CampoEsquema({
   }
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
+      <label className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
         {etiqueta}
         {esquema.requerido && <span style={{ color: 'var(--agro-red)' }}> *</span>}
       </label>
