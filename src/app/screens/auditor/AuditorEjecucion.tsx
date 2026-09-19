@@ -389,7 +389,8 @@ export function AuditorEjecucion() {
     if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('timeout') || msg.toLowerCase().includes('offline')) {
       return 'Sin conexión; no se guardó. Reintenta.'
     }
-    return `No se pudo guardar: ${msg}${e?.details ? ` — ${e.details}` : ''}${e?.hint ? ` (${e.hint})` : ''}`
+    console.error('[traducirError]', err)
+    return 'No se pudo guardar. Reintenta.'
   }
 
   function dispatchSave(pregId: string, forceResp?: AudRespuesta) {
@@ -457,7 +458,8 @@ export function AuditorEjecucion() {
       await cambiarEstado(nuevoEstado)
       toast.success(`Auditoría ${label === 'cerrar' ? 'cerrada' : 'marcada como preliminar'}`)
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : `Error al ${label}`)
+      console.error('[handleCambiarEstado]', e)
+      toast.error(`No se pudo ${label}. Reintenta.`)
     } finally {
       setCambiando(false)
     }
