@@ -4,15 +4,16 @@ import { Lock, Eye, EyeOff, CheckCircle2, ArrowRight, AlertCircle } from 'lucide
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { MadyLogo } from '@/app/components/MadyLogo'
+import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
 
 function getInputStyle(focused: boolean): React.CSSProperties {
   return {
-    background: 'var(--input-background)',
-    borderColor: focused ? 'var(--primary)' : 'var(--border)',
+    background: 'var(--auth-input-bg)',
+    borderColor: focused ? 'var(--secondary)' : 'var(--auth-input-border)',
     boxShadow: focused
-      ? '0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent)'
+      ? '0 0 0 3px color-mix(in srgb, var(--secondary) 18%, transparent)'
       : 'none',
-    color: 'var(--foreground)',
+    color: 'var(--auth-input-text)',
     borderRadius: 10,
   }
 }
@@ -74,6 +75,7 @@ export function RestablecerContrasena() {
   }
 
   const iconCls = 'absolute left-3 top-1/2 -translate-y-1/2 w-[17px] h-[17px] pointer-events-none'
+  const ctaCls = 'w-full h-12 text-white font-semibold flex items-center justify-center gap-2 transition-[opacity,background-color,transform] duration-150 hover:opacity-90 active:opacity-80 lg:hover:opacity-100 lg:hover:bg-[var(--mint-hover)] lg:active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100'
 
   if (loading) {
     return (
@@ -86,196 +88,396 @@ export function RestablecerContrasena() {
   // Estado: éxito
   if (success) {
     return (
-      <div
-        className="min-h-screen flex flex-col items-center justify-center p-6"
-        style={{ background: 'var(--background)' }}
-      >
-        <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
-          <div
-            className="w-16 h-16 rounded-full flex items-center justify-center"
-            style={{ background: 'var(--agro-success-fill)' }}
-          >
-            <CheckCircle2 className="w-8 h-8" style={{ color: 'var(--agro-success-text)' }} />
+      <>
+        <div
+          className="lg:hidden min-h-screen flex flex-col items-center justify-center p-6"
+          style={{ background: 'var(--background)' }}
+        >
+          <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center"
+              style={{ background: 'var(--agro-success-fill)' }}
+            >
+              <CheckCircle2 className="w-8 h-8" style={{ color: 'var(--agro-success-text)' }} />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-[22px] font-semibold" style={{ color: 'var(--primary)' }}>
+                ¡Contraseña actualizada!
+              </h1>
+              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                Tu contraseña se actualizó correctamente. Inicia sesión con tu nueva contraseña.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/login', { replace: true })}
+              className="w-full h-12 text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:opacity-80 transition-opacity"
+              style={{ background: 'var(--primary)', borderRadius: 10 }}
+            >
+              Ir al inicio de sesión
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
-          <div className="space-y-2">
-            <h1 className="text-[22px] font-semibold" style={{ color: 'var(--primary)' }}>
-              ¡Contraseña actualizada!
-            </h1>
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-              Tu contraseña se actualizó correctamente. Inicia sesión con tu nueva contraseña.
-            </p>
-          </div>
-          <button
-            onClick={() => navigate('/login', { replace: true })}
-            className="w-full h-12 text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:opacity-80 transition-opacity"
-            style={{ background: 'var(--primary)', borderRadius: 10 }}
-          >
-            Ir al inicio de sesión
-            <ArrowRight className="w-4 h-4" />
-          </button>
         </div>
-      </div>
+
+        <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
+          <AuthCarouselPanel className="flex lg:w-2/3" />
+          <div
+            className="auth-panel flex-1 lg:w-1/3 flex flex-col items-center justify-center p-12 min-h-screen"
+            style={{ background: 'var(--auth-panel-bg)' }}
+          >
+            <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center"
+                style={{ background: 'var(--auth-success-fill)' }}
+              >
+                <CheckCircle2 className="w-8 h-8" style={{ color: 'var(--auth-success-text)' }} />
+              </div>
+              <div className="space-y-2">
+                <h1 className="text-[28px] font-semibold [letter-spacing:-0.01em]" style={{ color: 'var(--auth-heading-color)' }}>
+                  ¡Contraseña actualizada!
+                </h1>
+                <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
+                  Tu contraseña se actualizó correctamente. Inicia sesión con tu nueva contraseña.
+                </p>
+              </div>
+              <button
+                onClick={() => navigate('/login', { replace: true })}
+                className={ctaCls}
+                style={{ background: 'var(--auth-cta-bg)', borderRadius: 10 }}
+              >
+                Ir al inicio de sesión
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
     )
   }
 
   // Estado: token vencido o inválido
   if (tokenExpirado) {
     return (
-      <div
-        className="min-h-screen flex flex-col items-center justify-center p-6"
-        style={{ background: 'var(--background)' }}
-      >
-        <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
-          <div
-            className="w-16 h-16 rounded-full flex items-center justify-center"
-            style={{ background: 'var(--agro-warning-fill)' }}
-          >
-            <AlertCircle className="w-8 h-8" style={{ color: 'var(--agro-warning-text)' }} />
+      <>
+        <div
+          className="lg:hidden min-h-screen flex flex-col items-center justify-center p-6"
+          style={{ background: 'var(--background)' }}
+        >
+          <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center"
+              style={{ background: 'var(--agro-warning-fill)' }}
+            >
+              <AlertCircle className="w-8 h-8" style={{ color: 'var(--agro-warning-text)' }} />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-[20px] font-semibold" style={{ color: 'var(--foreground)' }}>
+                El enlace ha vencido
+              </h1>
+              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                El enlace de recuperación ya no es válido. Solicita uno nuevo desde el inicio de sesión.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/login', { replace: true })}
+              className="w-full h-12 text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:opacity-80 transition-opacity"
+              style={{ background: 'var(--primary)', borderRadius: 10 }}
+            >
+              Volver al inicio de sesión
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
-          <div className="space-y-2">
-            <h1 className="text-[20px] font-semibold" style={{ color: 'var(--foreground)' }}>
-              El enlace ha vencido
-            </h1>
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-              El enlace de recuperación ya no es válido. Solicita uno nuevo desde el inicio de sesión.
-            </p>
-          </div>
-          <button
-            onClick={() => navigate('/login', { replace: true })}
-            className="w-full h-12 text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:opacity-80 transition-opacity"
-            style={{ background: 'var(--primary)', borderRadius: 10 }}
-          >
-            Volver al inicio de sesión
-            <ArrowRight className="w-4 h-4" />
-          </button>
         </div>
-      </div>
+
+        <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
+          <AuthCarouselPanel className="flex lg:w-2/3" />
+          <div
+            className="auth-panel flex-1 lg:w-1/3 flex flex-col items-center justify-center p-12 min-h-screen"
+            style={{ background: 'var(--auth-panel-bg)' }}
+          >
+            <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center"
+                style={{ background: 'var(--auth-warning-fill)' }}
+              >
+                <AlertCircle className="w-8 h-8" style={{ color: 'var(--auth-warning-text)' }} />
+              </div>
+              <div className="space-y-2">
+                <h1 className="text-[26px] font-semibold [letter-spacing:-0.01em]" style={{ color: 'var(--auth-heading-color)' }}>
+                  El enlace ha vencido
+                </h1>
+                <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
+                  El enlace de recuperación ya no es válido. Solicita uno nuevo desde el inicio de sesión.
+                </p>
+              </div>
+              <button
+                onClick={() => navigate('/login', { replace: true })}
+                className={ctaCls}
+                style={{ background: 'var(--auth-cta-bg)', borderRadius: 10 }}
+              >
+                Volver al inicio de sesión
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
     )
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center p-6 lg:p-14"
-      style={{ background: 'var(--background)' }}
-    >
-      <div className="w-full max-w-[380px] space-y-7">
+    <>
+      {/* Móvil — sin cambios */}
+      <div
+        className="lg:hidden min-h-screen flex flex-col items-center justify-center p-6"
+        style={{ background: 'var(--background)' }}
+      >
+        <div className="w-full max-w-[380px] space-y-7">
 
-        <div className="space-y-[3px]">
-          <MadyLogo theme="light" style={{ height: 36, width: 'auto' }} />
-          <p
-            className="text-[10px] tracking-widest uppercase"
-            style={{ color: 'var(--muted-foreground)', letterSpacing: '0.1em' }}
-          >
-            Inocuidad Inteligente
-          </p>
-        </div>
-
-        <div className="space-y-1">
-          <h1
-            className="text-[22px] leading-tight"
-            style={{ fontWeight: 600, color: 'var(--primary)' }}
-          >
-            Nueva contraseña
-          </h1>
-          <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-            Elige una contraseña segura para tu cuenta.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-
-          {/* Nueva contraseña */}
-          <div className="space-y-[6px]">
-            <label className="text-xs font-semibold block" style={{ color: 'var(--primary)' }}>
-              Nueva contraseña
-            </label>
-            <div className="relative">
-              <Lock className={iconCls} style={{ color: 'var(--muted-foreground)' }} />
-              <input
-                type={showNueva ? 'text' : 'password'}
-                value={nueva}
-                onChange={(e) => setNueva(e.target.value)}
-                onFocus={() => setFocusedField('nueva')}
-                onBlur={() => setFocusedField(null)}
-                placeholder="Mínimo 8 caracteres"
-                required
-                autoComplete="new-password"
-                className="w-full h-12 border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--muted-foreground)]"
-                style={getInputStyle(focusedField === 'nueva')}
-              />
-              <button
-                type="button"
-                onClick={() => setShowNueva(v => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded"
-                style={{ color: 'var(--muted-foreground)' }}
-                aria-label={showNueva ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-              >
-                {showNueva
-                  ? <EyeOff className="w-[17px] h-[17px]" />
-                  : <Eye className="w-[17px] h-[17px]" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Confirmar contraseña */}
-          <div className="space-y-[6px]">
-            <label className="text-xs font-semibold block" style={{ color: 'var(--primary)' }}>
-              Confirmar contraseña
-            </label>
-            <div className="relative">
-              <Lock className={iconCls} style={{ color: 'var(--muted-foreground)' }} />
-              <input
-                type={showConfirmar ? 'text' : 'password'}
-                value={confirmar}
-                onChange={(e) => setConfirmar(e.target.value)}
-                onFocus={() => setFocusedField('confirmar')}
-                onBlur={() => setFocusedField(null)}
-                placeholder="Repite tu nueva contraseña"
-                required
-                autoComplete="new-password"
-                className="w-full h-12 border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--muted-foreground)]"
-                style={getInputStyle(focusedField === 'confirmar')}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmar(v => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded"
-                style={{ color: 'var(--muted-foreground)' }}
-                aria-label={showConfirmar ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-              >
-                {showConfirmar
-                  ? <EyeOff className="w-[17px] h-[17px]" />
-                  : <Eye className="w-[17px] h-[17px]" />}
-              </button>
-            </div>
-          </div>
-
-          {error && (
-            <div
-              className="p-3 rounded-lg text-sm"
-              style={{ background: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+          <div className="space-y-[3px]">
+            <MadyLogo theme="light" style={{ height: 36, width: 'auto' }} />
+            <p
+              className="text-[10px] tracking-widest uppercase"
+              style={{ color: 'var(--muted-foreground)', letterSpacing: '0.1em' }}
             >
-              {error}
-            </div>
-          )}
+              Inocuidad Inteligente
+            </p>
+          </div>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full h-12 text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ background: 'var(--primary)', borderRadius: 10 }}
-          >
-            {submitting ? (
-              'Guardando...'
-            ) : (
-              <>
-                Guardar nueva contraseña
-                <ArrowRight className="w-4 h-4" />
-              </>
+          <div className="space-y-1">
+            <h1
+              className="text-[22px] leading-tight"
+              style={{ fontWeight: 600, color: 'var(--primary)' }}
+            >
+              Nueva contraseña
+            </h1>
+            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+              Elige una contraseña segura para tu cuenta.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+
+            <div className="space-y-[6px]">
+              <label className="text-xs font-semibold block" style={{ color: 'var(--primary)' }}>
+                Nueva contraseña
+              </label>
+              <div className="relative">
+                <Lock className={iconCls} style={{ color: 'var(--muted-foreground)' }} />
+                <input
+                  type={showNueva ? 'text' : 'password'}
+                  value={nueva}
+                  onChange={(e) => setNueva(e.target.value)}
+                  onFocus={() => setFocusedField('nueva')}
+                  onBlur={() => setFocusedField(null)}
+                  placeholder="Mínimo 8 caracteres"
+                  required
+                  autoComplete="new-password"
+                  className="w-full h-12 border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--muted-foreground)]"
+                  style={{
+                    background: 'var(--input-background)',
+                    borderColor: focusedField === 'nueva' ? 'var(--primary)' : 'var(--border)',
+                    boxShadow: focusedField === 'nueva' ? '0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent)' : 'none',
+                    color: 'var(--foreground)',
+                    borderRadius: 10,
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNueva(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded"
+                  style={{ color: 'var(--muted-foreground)' }}
+                  aria-label={showNueva ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showNueva
+                    ? <EyeOff className="w-[17px] h-[17px]" />
+                    : <Eye className="w-[17px] h-[17px]" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-[6px]">
+              <label className="text-xs font-semibold block" style={{ color: 'var(--primary)' }}>
+                Confirmar contraseña
+              </label>
+              <div className="relative">
+                <Lock className={iconCls} style={{ color: 'var(--muted-foreground)' }} />
+                <input
+                  type={showConfirmar ? 'text' : 'password'}
+                  value={confirmar}
+                  onChange={(e) => setConfirmar(e.target.value)}
+                  onFocus={() => setFocusedField('confirmar')}
+                  onBlur={() => setFocusedField(null)}
+                  placeholder="Repite tu nueva contraseña"
+                  required
+                  autoComplete="new-password"
+                  className="w-full h-12 border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--muted-foreground)]"
+                  style={{
+                    background: 'var(--input-background)',
+                    borderColor: focusedField === 'confirmar' ? 'var(--primary)' : 'var(--border)',
+                    boxShadow: focusedField === 'confirmar' ? '0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent)' : 'none',
+                    color: 'var(--foreground)',
+                    borderRadius: 10,
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmar(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded"
+                  style={{ color: 'var(--muted-foreground)' }}
+                  aria-label={showConfirmar ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showConfirmar
+                    ? <EyeOff className="w-[17px] h-[17px]" />
+                    : <Eye className="w-[17px] h-[17px]" />}
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <div
+                className="p-3 rounded-lg text-sm"
+                style={{ background: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+              >
+                {error}
+              </div>
             )}
-          </button>
-        </form>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full h-12 text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: 'var(--primary)', borderRadius: 10 }}
+            >
+              {submitting ? (
+                'Guardando...'
+              ) : (
+                <>
+                  Guardar nueva contraseña
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
+
+      {/* Escritorio — carrusel 2/3 + panel oscuro con paleta M.A.D.Y 1/3 */}
+      <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
+        <AuthCarouselPanel className="flex lg:w-2/3" />
+
+        <div
+          className="auth-panel flex-1 lg:w-1/3 flex flex-col items-center justify-center p-12 min-h-screen transition-colors duration-150"
+          style={{ background: 'var(--auth-panel-bg)' }}
+        >
+          <div className="w-full max-w-[380px] space-y-7">
+
+            <div className="space-y-1">
+              <h1
+                className="text-[30px] leading-tight [letter-spacing:-0.01em]"
+                style={{ fontWeight: 600, color: 'var(--auth-heading-color)' }}
+              >
+                Nueva contraseña
+              </h1>
+              <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
+                Elige una contraseña segura para tu cuenta.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+
+              <div className="space-y-[6px]">
+                <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
+                  Nueva contraseña
+                </label>
+                <div className="relative">
+                  <Lock className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
+                  <input
+                    type={showNueva ? 'text' : 'password'}
+                    value={nueva}
+                    onChange={(e) => setNueva(e.target.value)}
+                    onFocus={() => setFocusedField('nueva-d')}
+                    onBlur={() => setFocusedField(null)}
+                    placeholder="Mínimo 8 caracteres"
+                    required
+                    autoComplete="new-password"
+                    className="w-full h-12 border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                    style={getInputStyle(focusedField === 'nueva-d')}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNueva(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded"
+                    style={{ color: 'var(--auth-icon-color)' }}
+                    aria-label={showNueva ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  >
+                    {showNueva
+                      ? <EyeOff className="w-[17px] h-[17px]" />
+                      : <Eye className="w-[17px] h-[17px]" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-[6px]">
+                <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
+                  Confirmar contraseña
+                </label>
+                <div className="relative">
+                  <Lock className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
+                  <input
+                    type={showConfirmar ? 'text' : 'password'}
+                    value={confirmar}
+                    onChange={(e) => setConfirmar(e.target.value)}
+                    onFocus={() => setFocusedField('confirmar-d')}
+                    onBlur={() => setFocusedField(null)}
+                    placeholder="Repite tu nueva contraseña"
+                    required
+                    autoComplete="new-password"
+                    className="w-full h-12 border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                    style={getInputStyle(focusedField === 'confirmar-d')}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmar(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded"
+                    style={{ color: 'var(--auth-icon-color)' }}
+                    aria-label={showConfirmar ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  >
+                    {showConfirmar
+                      ? <EyeOff className="w-[17px] h-[17px]" />
+                      : <Eye className="w-[17px] h-[17px]" />}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <div
+                  className="p-3 rounded-lg text-sm"
+                  style={{ background: 'var(--auth-danger-fill)', color: 'var(--auth-danger-text)' }}
+                >
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className={ctaCls}
+                style={{ background: 'var(--auth-cta-bg)', borderRadius: 10 }}
+              >
+                {submitting ? (
+                  'Guardando...'
+                ) : (
+                  <>
+                    Guardar nueva contraseña
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </>
   )
 }

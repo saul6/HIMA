@@ -1,32 +1,21 @@
-﻿import { useState, useRef, useEffect, type FormEvent } from 'react'
+import { useState, useRef, useEffect, type FormEvent } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { MadyLogo } from '@/app/components/MadyLogo'
+import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
 
 const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
 
-// Para usar imágenes locales: agrega archivos en public/images/ y pon la ruta aquí, ej. '/images/campo.jpg'
-const SLIDES = [
-  {
-    src: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1400&q=80',
-    caption: 'Inocuidad Inteligente, lista para auditoría PrimusGFS',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1400&q=80',
-    caption: 'Trazabilidad completa del campo a la empacadora',
-  },
-]
-
 function getInputStyle(focused: boolean): React.CSSProperties {
   return {
-    background: 'var(--input-background)',
-    borderColor: focused ? 'var(--secondary)' : 'var(--border)',
+    background: 'var(--auth-input-bg)',
+    borderColor: focused ? 'var(--secondary)' : 'var(--auth-input-border)',
     boxShadow: focused
       ? '0 0 0 3px color-mix(in srgb, var(--secondary) 18%, transparent)'
       : 'none',
-    color: 'var(--foreground)',
+    color: 'var(--auth-input-text)',
     borderRadius: 10,
   }
 }
@@ -44,9 +33,6 @@ export function Login() {
   const [submitting, setSubmitting] = useState(false)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const turnstileRef = useRef<TurnstileInstance>(null)
-  const [active, setActive] = useState(0)
-  const [reducedMotion, setReducedMotion] = useState(false)
-  const [erroredSlides, setErroredSlides] = useState<Set<number>>(new Set())
 
   const [modoRecup, setModoRecup] = useState(false)
   const [recupEmail, setRecupEmail] = useState('')
@@ -57,35 +43,6 @@ export function Login() {
   useEffect(() => {
     if (!loading && user) navigate(returnTo, { replace: true })
   }, [user, loading, navigate])
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReducedMotion(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-
-  useEffect(() => {
-    SLIDES.forEach(({ src }, idx) => {
-      const img = new Image()
-      img.src = src
-      img.onerror = () => setErroredSlides(prev => new Set([...prev, idx]))
-    })
-  }, [])
-
-  useEffect(() => {
-    if (reducedMotion) return
-    const valid = SLIDES.map((_, i) => i).filter(i => !erroredSlides.has(i))
-    if (valid.length <= 1) return
-    const t = setInterval(() => {
-      setActive(prev => {
-        const pos = valid.indexOf(prev)
-        return valid[(pos + 1) % valid.length]
-      })
-    }, 3500)
-    return () => clearInterval(t)
-  }, [reducedMotion, erroredSlides])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -128,96 +85,23 @@ export function Login() {
   }
 
   const iconCls = 'absolute left-3 top-1/2 -translate-y-1/2 w-[17px] h-[17px] pointer-events-none'
+  const ctaCls = 'w-full h-12 text-white font-semibold flex items-center justify-center gap-2 transition-[opacity,background-color,transform] duration-150 hover:opacity-90 active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed lg:hover:opacity-100 lg:hover:bg-[var(--mint-hover)] lg:active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100'
 
   return (
     <div className="flex min-h-screen" style={{ background: 'var(--background)' }}>
 
-      {/* ── PANEL IZQUIERDO: carrusel de fotos (solo lg+) ── */}
+      {/* ── PANEL IZQUIERDO: carrusel de fotos (solo lg+, 2/3) ── */}
+      <AuthCarouselPanel className="hidden lg:flex lg:w-2/3" />
+
+      {/* ── PANEL DERECHO: formulario (1/3 en escritorio, oscuro con paleta M.A.D.Y) ── */}
       <div
-        className="hidden lg:flex lg:w-[55%] relative flex-col overflow-hidden"
-        style={{ background: 'var(--primary)' }}
-      >
-        {SLIDES.map((slide, i) => (
-          <div
-            key={slide.src}
-            aria-hidden="true"
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${slide.src})`,
-              opacity: i === active && !erroredSlides.has(i) ? 1 : 0,
-              transition: reducedMotion ? 'none' : 'opacity 1s ease-in-out',
-            }}
-          />
-        ))}
-
-        <div
-          aria-hidden="true"
-          className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.12) 45%, rgba(0,0,0,0.68) 100%)',
-          }}
-        />
-
-        <div className="relative flex flex-col justify-between h-full p-10 z-10">
-          <div>
-            <MadyLogo theme="dark" style={{ height: 38, width: 'auto' }} />
-            <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.72)', fontWeight: 400 }}>
-              Inocuidad Inteligente
-            </p>
-          </div>
-
-          <div className="pb-2">
-            <div className="relative" style={{ minHeight: '5.5rem' }}>
-              {SLIDES.map((slide, i) => (
-                <p
-                  key={i}
-                  className="absolute inset-x-0 top-0 text-white text-xl font-semibold leading-snug"
-                  style={{
-                    opacity: i === active ? 1 : 0,
-                    transition: reducedMotion ? 'none' : 'opacity 0.6s ease-in-out',
-                    maxWidth: 440,
-                    pointerEvents: i === active ? 'auto' : 'none',
-                  }}
-                >
-                  {slide.caption}
-                </p>
-              ))}
-            </div>
-
-            {/* Dots discretos — círculos uniformes, sin pill ni verde */}
-            <div className="flex items-center gap-[6px] mt-4">
-              {SLIDES.map((_, i) => (
-                <button
-                  key={i}
-                  aria-label={`Slide ${i + 1}`}
-                  onClick={() => setActive(i)}
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    background: i === active ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.35)',
-                    border: 'none',
-                    padding: 0,
-                    cursor: 'pointer',
-                    flexShrink: 0,
-                    transition: reducedMotion ? 'none' : 'background 0.3s ease',
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── PANEL DERECHO: formulario (surface claro) ── */}
-      <div
-        className="flex-1 flex flex-col items-center justify-center p-6 lg:p-14 min-h-screen"
-        style={{ background: 'var(--background)' }}
+        className="auth-panel flex-1 lg:w-1/3 flex flex-col items-center justify-center p-6 lg:p-12 min-h-screen transition-colors duration-150"
+        style={{ background: 'var(--auth-panel-bg)' }}
       >
         <div className="w-full max-w-[380px] space-y-7">
 
-          {/* Logo M.A.D.Y + tagline */}
-          <div className="space-y-[3px]">
+          {/* Logo M.A.D.Y + tagline — solo móvil, en escritorio ya está en el carrusel */}
+          <div className="space-y-[3px] lg:hidden">
             <MadyLogo theme="light" style={{ height: 36, width: 'auto' }} />
             <p
               className="text-[10px] tracking-widest uppercase"
@@ -228,14 +112,14 @@ export function Login() {
           </div>
 
           {/* Título + subtítulo */}
-          <div className="space-y-1">
+          <div className="space-y-1 lg:-mt-1">
             <h1
-              className="text-[22px] leading-tight"
-              style={{ fontWeight: 600, color: 'var(--primary)' }}
+              className="text-[22px] leading-tight lg:text-[30px] lg:[letter-spacing:-0.01em]"
+              style={{ fontWeight: 600, color: 'var(--auth-heading-color)' }}
             >
               Bienvenido de nuevo
             </h1>
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+            <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
               Accede a tu cuenta para continuar
             </p>
           </div>
@@ -247,7 +131,7 @@ export function Login() {
                 <div className="space-y-4">
                   <div
                     className="p-4 rounded-xl text-sm space-y-1"
-                    style={{ background: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                    style={{ background: 'var(--auth-success-fill)', color: 'var(--auth-success-text)' }}
                   >
                     <p style={{ fontWeight: 600 }}>Correo enviado</p>
                     <p>
@@ -258,7 +142,7 @@ export function Login() {
                     type="button"
                     onClick={() => { setModoRecup(false); setRecupEnviado(false); setRecupEmail('') }}
                     className="w-full text-sm"
-                    style={{ color: 'var(--primary)', fontWeight: 600 }}
+                    style={{ color: 'var(--auth-link-color)', fontWeight: 600 }}
                   >
                     ← Volver al inicio de sesión
                   </button>
@@ -266,16 +150,16 @@ export function Login() {
               ) : (
                 <form onSubmit={handleRecuperar} className="space-y-4">
                   <div className="space-y-1">
-                    <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                    <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
                       Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
                     </p>
                   </div>
                   <div className="space-y-[6px]">
-                    <label className="text-xs font-semibold block" style={{ color: 'var(--primary)' }}>
+                    <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
                       Correo electrónico
                     </label>
                     <div className="relative">
-                      <Mail className={iconCls} style={{ color: 'var(--muted-foreground)' }} />
+                      <Mail className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
                       <input
                         type="email"
                         value={recupEmail}
@@ -285,7 +169,7 @@ export function Login() {
                         placeholder="correo@ejemplo.com"
                         required
                         autoComplete="email"
-                        className="w-full h-12 border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--muted-foreground)]"
+                        className="w-full h-12 border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
                         style={getInputStyle(focusedField === 'recupEmail')}
                       />
                     </div>
@@ -293,7 +177,7 @@ export function Login() {
                   {recupError && (
                     <div
                       className="p-3 rounded-lg text-sm"
-                      style={{ background: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+                      style={{ background: 'var(--auth-danger-fill)', color: 'var(--auth-danger-text)' }}
                     >
                       {recupError}
                     </div>
@@ -301,8 +185,8 @@ export function Login() {
                   <button
                     type="submit"
                     disabled={recupCargando || !recupEmail}
-                    className="w-full h-12 text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-                    style={{ background: 'var(--primary)', borderRadius: 10 }}
+                    className={ctaCls}
+                    style={{ background: 'var(--auth-cta-bg)', borderRadius: 10 }}
                   >
                     {recupCargando ? 'Enviando…' : 'Enviar enlace de recuperación'}
                   </button>
@@ -310,7 +194,7 @@ export function Login() {
                     type="button"
                     onClick={() => { setModoRecup(false); setRecupError(null) }}
                     className="w-full text-sm"
-                    style={{ color: 'var(--muted-foreground)' }}
+                    style={{ color: 'var(--auth-subtext-color)' }}
                   >
                     ← Volver al inicio de sesión
                   </button>
@@ -324,11 +208,11 @@ export function Login() {
 
             {/* Correo */}
             <div className="space-y-[6px]">
-              <label className="text-xs font-semibold block" style={{ color: 'var(--primary)' }}>
+              <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
                 Correo electrónico
               </label>
               <div className="relative">
-                <Mail className={iconCls} style={{ color: 'var(--muted-foreground)' }} />
+                <Mail className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
                 <input
                   type="email"
                   value={email}
@@ -338,7 +222,7 @@ export function Login() {
                   placeholder="correo@ejemplo.com"
                   required
                   autoComplete="email"
-                  className="w-full h-12 border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--muted-foreground)]"
+                  className="w-full h-12 border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
                   style={getInputStyle(focusedField === 'email')}
                 />
               </div>
@@ -346,11 +230,11 @@ export function Login() {
 
             {/* Contraseña */}
             <div className="space-y-[6px]">
-              <label className="text-xs font-semibold block" style={{ color: 'var(--primary)' }}>
+              <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
                 Contraseña
               </label>
               <div className="relative">
-                <Lock className={iconCls} style={{ color: 'var(--muted-foreground)' }} />
+                <Lock className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -360,14 +244,14 @@ export function Login() {
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
-                  className="w-full h-12 border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--muted-foreground)]"
+                  className="w-full h-12 border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
                   style={getInputStyle(focusedField === 'password')}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(v => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded"
-                  style={{ color: 'var(--muted-foreground)' }}
+                  style={{ color: 'var(--auth-icon-color)' }}
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
                   {showPassword
@@ -380,7 +264,7 @@ export function Login() {
                   type="button"
                   onClick={() => { setModoRecup(true); setRecupEmail(email); setRecupError(null) }}
                   className="text-xs"
-                  style={{ color: 'var(--primary)', fontWeight: 500 }}
+                  style={{ color: 'var(--auth-link-color)', fontWeight: 500 }}
                 >
                   ¿Olvidaste tu contraseña?
                 </button>
@@ -389,12 +273,15 @@ export function Login() {
 
             {/* Turnstile con icono de verificación */}
             {SITE_KEY && (
-              <div className="flex items-center gap-3">
+              <div
+                className="flex items-center gap-3 lg:justify-center lg:p-3 lg:rounded-[10px] lg:border"
+                style={{ borderColor: 'var(--auth-input-border)' }}
+              >
                 <ShieldCheck className="w-5 h-5 shrink-0" style={{ color: 'var(--secondary)' }} />
                 <Turnstile
                   ref={turnstileRef}
                   siteKey={SITE_KEY}
-                  options={{ theme: 'light', size: 'normal' }}
+                  options={{ theme: 'auto', size: 'normal' }}
                   onSuccess={(token) => setCaptchaToken(token)}
                   onExpire={() => setCaptchaToken(null)}
                   onError={() => {
@@ -408,21 +295,18 @@ export function Login() {
             {error && (
               <div
                 className="p-3 rounded-lg text-sm"
-                style={{ background: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+                style={{ background: 'var(--auth-danger-fill)', color: 'var(--auth-danger-text)' }}
               >
                 {error}
               </div>
             )}
 
-            {/* Botón navy con flecha */}
+            {/* Botón CTA — navy en móvil, mint en escritorio */}
             <button
               type="submit"
               disabled={submitting || (!!SITE_KEY && !captchaToken)}
-              className="w-full h-12 text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{
-                background: 'var(--primary)',
-                borderRadius: 10,
-              }}
+              className={ctaCls}
+              style={{ background: 'var(--auth-cta-bg)', borderRadius: 10 }}
             >
               {submitting ? (
                 'Iniciando sesión...'
@@ -436,7 +320,7 @@ export function Login() {
           </form>}
 
           {!modoRecup && (
-            <p className="text-sm text-center" style={{ color: 'var(--muted-foreground)' }}>
+            <p className="text-sm text-center" style={{ color: 'var(--auth-subtext-color)' }}>
               ¿No tienes cuenta?{' '}
               <Link
                 to="/registro"
