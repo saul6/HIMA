@@ -123,9 +123,9 @@ export function Registro() {
 
         {/* Escritorio — panel oscuro con paleta M.A.D.Y */}
         <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
-          <AuthCarouselPanel className="flex lg:w-[60%]" />
+          <AuthCarouselPanel className="flex lg:w-[65%]" />
           <div
-            className="auth-panel flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12 min-h-screen"
+            className="auth-panel flex-1 lg:w-[35%] flex flex-col items-center justify-center p-12 min-h-screen"
             style={{ background: 'var(--auth-panel-bg)' }}
           >
             <div className="w-full max-w-[380px] space-y-6 text-center">
@@ -309,10 +309,10 @@ export function Registro() {
 
       {/* Escritorio — carrusel 2/3 + panel oscuro con paleta M.A.D.Y 1/3 */}
       <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
-        <AuthCarouselPanel className="flex lg:w-[60%]" />
+        <AuthCarouselPanel className="flex lg:w-[65%]" />
 
         <div
-          className="auth-panel flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12 min-h-screen transition-colors duration-150"
+          className="auth-panel flex-1 lg:w-[35%] flex flex-col items-center justify-center p-12 min-h-screen transition-colors duration-150"
           style={{ background: 'var(--auth-panel-bg)' }}
         >
           <div className="w-full max-w-[380px] space-y-6">

@@ -91,11 +91,11 @@ export function Login() {
     <div className="flex min-h-screen" style={{ background: 'var(--background)' }}>
 
       {/* ── PANEL IZQUIERDO: carrusel de fotos (solo lg+, 60%) ── */}
-      <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
+      <AuthCarouselPanel className="hidden lg:flex lg:w-[65%]" />
 
       {/* ── PANEL DERECHO: formulario (40% en escritorio, verde oscuro derivado del mint) ── */}
       <div
-        className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-6 lg:p-12 min-h-screen transition-colors duration-150"
+        className="auth-panel relative flex-1 lg:w-[35%] flex flex-col items-center justify-center p-6 lg:p-12 min-h-screen transition-colors duration-150"
         style={{ background: 'var(--auth-panel-bg)' }}
       >
         {/* Nav superior — solo escritorio */}
@@ -122,7 +122,7 @@ export function Login() {
           {/* Título + subtítulo */}
           <div className="space-y-1 lg:-mt-1">
             <h1
-              className="text-[22px] leading-tight font-semibold lg:text-[44px] lg:font-bold lg:[letter-spacing:-0.01em]"
+              className="text-[22px] leading-tight font-semibold lg:text-[34px] lg:font-bold lg:whitespace-nowrap lg:[letter-spacing:-0.01em]"
               style={{ color: 'var(--auth-heading-color)' }}
             >
               <span>Bienvenido </span>
@@ -328,7 +328,7 @@ export function Login() {
             </button>
 
             {/* Línea de confianza — solo escritorio (arriba ya está el nav de Regístrate) */}
-            <p className="hidden lg:flex items-center justify-center gap-1.5 text-xs pt-1" style={{ color: 'var(--auth-subtext-color)' }}>
+            <p className="hidden lg:flex items-center justify-center gap-1.5 text-xs pt-1" style={{ color: 'var(--auth-link-color)' }}>
               <Lock className="w-3 h-3" />
               Tu información está protegida
             </p>

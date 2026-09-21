@@ -72,13 +72,23 @@
   --mady-green-dark: #0E2A20;
   --mady-green-darker: #081912;
   --auth-panel-dark: var(--mady-green-dark);
-  --auth-input-dark: rgba(255, 255, 255, 0.07);
+  /* Fondo de input: el verde del panel, apenas aclarado — no blanco-alpha. */
+  --auth-input-dark: color-mix(in srgb, var(--mady-green-dark) 90%, white 10%);
   --auth-border-dark: rgba(255, 255, 255, 0.14);
-  --auth-text-secondary-dark: #81BEE5;
-  /* Capa sobre las fotos del carrusel: sobria/neutra (negro translúcido), más
-     fuerte en la esquina inferior-izquierda (donde va el caption), se desvanece
-     hacia el resto. Token único — nunca inline en el componente. */
-  --auth-carousel-overlay: radial-gradient(150% 150% at 0% 100%, rgba(0,0,0,0.68) 0%, rgba(0,0,0,0.42) 30%, rgba(0,0,0,0.22) 60%, rgba(0,0,0,0.3) 100%);
+  /* Gris claro derivado de --muted-foreground (NO azul/sky) — para que el texto
+     secundario no compita con el título, igual que la referencia de diseño. */
+  --auth-text-secondary-dark: color-mix(in srgb, var(--muted-foreground) 55%, white 45%);
+  /* Línea divisoria entre panel de imágenes y formulario: casi imperceptible. */
+  --auth-divider: color-mix(in srgb, var(--secondary) 22%, transparent);
+  /* Capa sobre las fotos del carrusel: derivada del verde de marca (no negro puro,
+     "toque verde súper ligero"), más fuerte en la esquina inferior-izquierda
+     (donde va el bloque de texto), se desvanece hacia el resto. Token único —
+     nunca inline en el componente. */
+  --auth-carousel-overlay: radial-gradient(150% 150% at 0% 100%,
+    color-mix(in srgb, var(--mady-green-darker) 74%, transparent) 0%,
+    color-mix(in srgb, var(--mady-green-darker) 48%, transparent) 30%,
+    color-mix(in srgb, var(--mady-green-darker) 26%, transparent) 60%,
+    color-mix(in srgb, var(--mady-green-darker) 32%, transparent) 100%);
 
   /* Indirección responsive del panel de formulario (Login/Registro/Restablecer).
      Por defecto = look móvil actual, byte a byte. Solo se sobreescriben dentro
