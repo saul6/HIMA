@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { supabase } from '@/lib/supabase'
+import { Switch } from '@/app/components/ui/switch'
 import {
   getOrganizacion,
   getRanchos,
@@ -244,13 +245,18 @@ export function MiOrganizacion() {
   }
 
   async function handleToggleAdminEdita(valor: boolean) {
-    if (!profile?.org_id) return
+    if (!profile?.org_id || actualizandoToggle) return
+    const valorAnterior = organizacion?.admin_edita_ajenos ?? false
+    // Actualización optimista: refleja el cambio de inmediato en el switch.
+    setOrganizacion((prev) => prev ? { ...prev, admin_edita_ajenos: valor } : prev)
     setActualizandoToggle(true)
     try {
       await actualizarAdminEditaAjenos(profile.org_id, valor)
-      setOrganizacion((prev) => prev ? { ...prev, admin_edita_ajenos: valor } : prev)
       toast.success(valor ? 'El administrador puede editar registros de empleados' : 'El administrador solo puede ver y marcar correcciones')
-    } catch {
+    } catch (err) {
+      // Falló la escritura (o RLS la bloqueó en silencio) — revertir al valor previo.
+      setOrganizacion((prev) => prev ? { ...prev, admin_edita_ajenos: valorAnterior } : prev)
+      console.error('[MiOrganizacion] actualizarAdminEditaAjenos', err)
       toast.error('No se pudo actualizar la configuración')
     } finally {
       setActualizandoToggle(false)
@@ -346,7 +352,7 @@ export function MiOrganizacion() {
                 <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
                   GESTIÓN DEL EQUIPO
                 </p>
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>
                       Editar registros de empleados
@@ -357,20 +363,13 @@ export function MiOrganizacion() {
                         : 'Desactivado: solo puedes ver los registros de tus empleados y marcarlos para corrección.'}
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleToggleAdminEdita(!organizacion.admin_edita_ajenos)}
+                  <Switch
+                    checked={organizacion.admin_edita_ajenos}
+                    onCheckedChange={handleToggleAdminEdita}
                     disabled={actualizandoToggle}
-                    className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0 disabled:opacity-50"
-                    style={{
-                      backgroundColor: organizacion.admin_edita_ajenos ? 'var(--primary)' : 'var(--switch-background)',
-                    }}
-                    aria-label="Toggle edición de ajenos"
-                  >
-                    <span
-                      className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
-                      style={{ transform: organizacion.admin_edita_ajenos ? 'translateX(22px)' : 'translateX(2px)' }}
-                    />
-                  </button>
+                    aria-label="Editar registros de empleados"
+                    className="flex-shrink-0"
+                  />
                 </div>
               </div>
             )}

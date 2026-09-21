@@ -49,11 +49,18 @@ export async function actualizarAdminEditaAjenos(
   orgId: string,
   valor: boolean,
 ): Promise<void> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('organizaciones')
     .update({ admin_edita_ajenos: valor })
     .eq('id', orgId)
+    .select('id')
   if (error) throw error
+  // Un UPDATE bloqueado por RLS no siempre trae `error` — simplemente no afecta
+  // filas. Sin este chequeo, una escritura silenciosamente denegada se reporta
+  // como éxito.
+  if (!data || data.length === 0) {
+    throw new Error('No se actualizó ningún registro (permiso denegado o registro no encontrado)')
+  }
 }
 
 // ── Ranchos ──────────────────────────────────────────────────────────────────
