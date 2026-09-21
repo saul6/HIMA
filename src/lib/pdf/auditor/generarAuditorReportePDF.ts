@@ -1,7 +1,7 @@
 import { pdf } from '@react-pdf/renderer'
 import { createElement } from 'react'
 import { AuditorReportePDF } from './AuditorReportePDF'
-import type { AuditorReportePDFProps } from './AuditorReportePDF'
+import type { AuditorReportePDFProps, ReviewIssueReporte } from './AuditorReportePDF'
 import type { AuditorAuditoriaDetalle, ModuloConPreguntas } from '@/hooks/useAuditorAuditoria'
 import type { AudComentarioEsquema, AudRespuesta } from '@/types/database.types'
 
@@ -12,10 +12,11 @@ interface GenerarParams {
   respuestasMap: Map<string, AudRespuesta>
   valoresMap: Map<string, Map<string, string>>
   observacionesMap: Map<string, string>
+  reviewIssues?: ReviewIssueReporte[]
 }
 
 export async function generarAuditorReportePDF(params: GenerarParams): Promise<void> {
-  const { auditoria, modulosData, esquemaMap, respuestasMap, valoresMap, observacionesMap } = params
+  const { auditoria, modulosData, esquemaMap, respuestasMap, valoresMap, observacionesMap, reviewIssues } = params
 
   const modulosReporte: AuditorReportePDFProps['modulos'] = modulosData.map(mod => ({
     nombre: mod.modulo_nombre,
@@ -60,6 +61,7 @@ export async function generarAuditorReportePDF(params: GenerarParams): Promise<v
     productorNombre: auditoria.productor_nombre,
     ranchoNombre: auditoria.rancho_nombre,
     modulos: modulosReporte,
+    reviewIssues,
   }
 
   const blob = await pdf(createElement(AuditorReportePDF, props)).toBlob()

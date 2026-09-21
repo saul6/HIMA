@@ -759,6 +759,7 @@ export function AuditorEjecucion() {
         respuestasMap,
         valoresMap,
         observacionesMap,
+        reviewIssues: reviewIssues.filter(i => i.estado === 'OPEN'),
       })
     } catch (e: unknown) {
       console.error('[AuditorEjecucion] generarAuditorReportePDF:', e)
@@ -890,8 +891,8 @@ export function AuditorEjecucion() {
               </div>
             )}
 
-            {/* Botón descargar reporte PDF — visible en preliminar y cerrada */}
-            {(auditoria?.estado === 'preliminar' || cerrada) && allPreguntas.length > 0 && (
+            {/* Botón descargar reporte PDF */}
+            {auditoria && allPreguntas.length > 0 && (
               <button
                 onClick={handleDescargarPDF}
                 disabled={descargando}

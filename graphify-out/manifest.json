@@ -2255,8 +2255,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorEjecucion.tsx": {
-    "mtime": 1790030572.000017,
-    "ast_hash": "b257bac6234b8bca53e9d1878830c176",
+    "mtime": 1790033460.5954452,
+    "ast_hash": "c796ddba0260aa118665b192f33c0491",
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorHome.tsx": {
@@ -2430,13 +2430,13 @@
     "semantic_hash": ""
   },
   "src/lib/pdf/auditor/AuditorReportePDF.tsx": {
-    "mtime": 1790021681.763674,
-    "ast_hash": "e807eafb0de037688cd87d64679148e3",
+    "mtime": 1790033416.4052458,
+    "ast_hash": "3b446e62be540a28f019c96bbd6ae982",
     "semantic_hash": ""
   },
   "src/lib/pdf/auditor/generarAuditorReportePDF.ts": {
-    "mtime": 1790021681.765669,
-    "ast_hash": "3e29bf1c952147296e1cf6d069525575",
+    "mtime": 1790033439.0093968,
+    "ast_hash": "025e086b1c983964e1b18733ba576d34",
     "semantic_hash": ""
   },
   "src/app/components/AuthCarouselPanel.tsx": {

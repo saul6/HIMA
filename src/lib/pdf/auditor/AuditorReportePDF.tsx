@@ -1,9 +1,15 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
 import { PdfPageFrame, PdfFooter } from '@/lib/pdf/components/PdfPage'
+import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
+
+export interface ReviewIssueReporte {
+  severidad: 'BLOCKER' | 'REQUIRED' | 'WARNING' | 'INFO'
+  mensaje: string
+}
 
 export interface PreguntaReporte {
   id: string
@@ -39,6 +45,7 @@ export interface AuditorReportePDFProps {
   productorNombre: string | null
   ranchoNombre: string | null
   modulos: ModuloReporte[]
+  reviewIssues?: ReviewIssueReporte[]
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -49,11 +56,24 @@ function formatFechaPDF(f: string): string {
 }
 
 const RESP_LABELS: Record<string, string> = {
-  cumplimiento_total: 'CT',
-  deficiencia_menor:  'D-',
-  deficiencia_mayor:  'D+',
-  no_conformidad:     'NC',
-  na:                 'N/A',
+  cumplimiento_total: 'Cumplimiento total',
+  deficiencia_menor:  'Deficiencia menor',
+  deficiencia_mayor:  'Deficiencia mayor',
+  no_conformidad:     'No conformidad',
+  na:                 'No aplica',
+}
+
+const SEV_COLORS: Record<string, string> = {
+  BLOCKER:  '#993C1D',
+  REQUIRED: '#854F0B',
+  WARNING:  '#854F0B',
+  INFO:     '#0D5A8F',
+}
+const SEV_BG: Record<string, string> = {
+  BLOCKER:  '#FAECE7',
+  REQUIRED: '#FAEEDA',
+  WARNING:  '#FAEEDA',
+  INFO:     '#E3F2FD',
 }
 
 const RESP_COLOR: Record<string, string> = {
@@ -176,8 +196,8 @@ const S = StyleSheet.create({
   },
   respChip: {
     borderRadius: 4,
-    padding: '2 6',
-    fontSize: 8,
+    padding: '2 5',
+    fontSize: 7,
     fontFamily: 'Helvetica-Bold',
     flexShrink: 0,
     alignSelf: 'flex-start',
@@ -246,6 +266,54 @@ const S = StyleSheet.create({
     borderBottomColor: PC.border,
     marginVertical: 8,
   },
+  // Sección de issues de validación
+  issuesSection: {
+    borderWidth: 1,
+    borderColor: '#F5A623',
+    borderRadius: 6,
+    padding: '6 10',
+    marginBottom: 10,
+  },
+  issuesSectionTitle: {
+    fontSize: 8,
+    fontFamily: 'Helvetica-Bold',
+    color: '#854F0B',
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  issueRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    marginBottom: 3,
+  },
+  issueSevChip: {
+    fontSize: 6.5,
+    fontFamily: 'Helvetica-Bold',
+    borderRadius: 3,
+    padding: '1 4',
+    flexShrink: 0,
+  },
+  issueMsg: {
+    fontSize: 7.5,
+    color: PC.fieldValue,
+    flex: 1,
+    lineHeight: 1.35,
+  },
+  // Disclaimer institucional
+  disclaimer: {
+    borderTopWidth: 1,
+    borderTopColor: PC.border,
+    marginTop: 16,
+    paddingTop: 8,
+    paddingHorizontal: 2,
+  },
+  disclaimerText: {
+    fontSize: 7,
+    color: PC.footerGray,
+    lineHeight: 1.45,
+    textAlign: 'center',
+  },
 })
 
 // ── Sub-componentes ───────────────────────────────────────────────────────────
@@ -308,6 +376,7 @@ export function AuditorReportePDF({
   productorNombre,
   ranchoNombre,
   modulos,
+  reviewIssues,
 }: AuditorReportePDFProps) {
   const esEfimera = !!instalacionNombre
   const nombrePrincipal = esEfimera ? (instalacionNombre ?? '—') : (productorNombre ?? '—')
@@ -373,6 +442,10 @@ export function AuditorReportePDF({
                   <Text style={S.fichaValue}>{periodo}</Text>
                 </View>
               )}
+              <View style={S.fichaItem}>
+                <Text style={S.fichaLabel}>Norma</Text>
+                <Text style={S.fichaValue}>PrimusGFS v3.2</Text>
+              </View>
             </View>
 
             <View style={S.divider} />
@@ -400,6 +473,38 @@ export function AuditorReportePDF({
                 ))}
               </View>
             ))}
+
+            {/* Observaciones de validación pendientes (opcional) */}
+            {reviewIssues && reviewIssues.length > 0 && (
+              <View style={S.issuesSection}>
+                <Text style={S.issuesSectionTitle}>Observaciones de validacion pendientes</Text>
+                {reviewIssues.map((iss, i) => (
+                  <View key={i} style={S.issueRow}>
+                    <Text style={[S.issueSevChip, {
+                      backgroundColor: SEV_BG[iss.severidad] ?? '#ececf0',
+                      color: SEV_COLORS[iss.severidad] ?? PC.textSub,
+                    }]}>
+                      {iss.severidad}
+                    </Text>
+                    <Text style={S.issueMsg}>{iss.mensaje}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Firma del auditor */}
+            <PdfSignatures signatures={[{
+              label: 'Auditor externo autorizado',
+              nombre: '',
+              caption: 'Firma y sello',
+            }]} />
+
+            {/* Leyenda institucional */}
+            <View style={S.disclaimer}>
+              <Text style={S.disclaimerText}>
+                M.A.D.Y organiza, valida y da seguimiento. No sustituye a PrimusGFS, a Azzule Systems, al auditor autorizado ni al organismo de certificación. La decisión oficial corresponde al proceso externo.
+              </Text>
+            </View>
           </View>
         </PdfPageFrame>
 

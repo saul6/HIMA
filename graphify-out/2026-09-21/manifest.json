@@ -495,8 +495,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/Login.tsx": {
-    "mtime": 1788897182.7627056,
-    "ast_hash": "7765ebdf031b1a841f21e84353040b9e",
+    "mtime": 1790030333.058376,
+    "ast_hash": "09bb0c71876e076f93a495fa86079c57",
     "semantic_hash": ""
   },
   "src/app/screens/MiOrganizacion.tsx": {
@@ -520,8 +520,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/Registro.tsx": {
-    "mtime": 1782450001.8123598,
-    "ast_hash": "385d72d56935bbfb31cecd45ad896d79",
+    "mtime": 1790030333.0593648,
+    "ast_hash": "4fab9f1112a8843070f875665aee7783",
     "semantic_hash": ""
   },
   "src/app/screens/RegistroAccidentesLaborales.tsx": {
@@ -1755,8 +1755,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/RestablecerContrasena.tsx": {
-    "mtime": 1788558284.7437418,
-    "ast_hash": "fef6ff9feda3645ed7837945f570ca37",
+    "mtime": 1790030333.0613725,
+    "ast_hash": "8ca6a551a1580570893945aae3ac42ad",
     "semantic_hash": ""
   },
   "public/apple-touch-icon.png": {
@@ -2255,8 +2255,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorEjecucion.tsx": {
-    "mtime": 1790021681.7473686,
-    "ast_hash": "78526b0811b92bedad8f88647f990915",
+    "mtime": 1790030572.000017,
+    "ast_hash": "b257bac6234b8bca53e9d1878830c176",
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorHome.tsx": {
@@ -2437,6 +2437,11 @@
   "src/lib/pdf/auditor/generarAuditorReportePDF.ts": {
     "mtime": 1790021681.765669,
     "ast_hash": "3e29bf1c952147296e1cf6d069525575",
+    "semantic_hash": ""
+  },
+  "src/app/components/AuthCarouselPanel.tsx": {
+    "mtime": 1790030333.0573635,
+    "ast_hash": "fcad601474cbb10de6e34acfa0a79bb7",
     "semantic_hash": ""
   }
 }
