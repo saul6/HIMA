@@ -47,6 +47,14 @@ export function Perfil() {
     }
   }
 
+  async function handleCerrarSesion() {
+    try {
+      await signOut()
+    } finally {
+      window.location.replace('/login')
+    }
+  }
+
   function handleCancelarEdicion() {
     setNuevoNombre(profile?.nombre_completo ?? '')
     setEditando(false)
@@ -153,7 +161,7 @@ export function Perfil() {
 
         {/* Cerrar sesión */}
         <button
-          onClick={() => signOut()}
+          onClick={handleCerrarSesion}
           className="w-full h-14 bg-card border border-agro-red text-agro-red rounded-xl flex items-center justify-center gap-2 hover:bg-agro-danger-fill transition-colors"
           style={{ fontWeight: 600 }}
         >
