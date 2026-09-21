@@ -6,8 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/leoya/AppData/Local/Programs/Python/Python312/Scripts/graphify.EXE hook-guard search",
-            "timeout": 10
+            "command": "C:/Users/vongo/.local/bin/graphify.EXE hook-guard search"
           }
         ]
       },
@@ -16,8 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/leoya/AppData/Local/Programs/Python/Python312/Scripts/graphify.EXE hook-guard read",
-            "timeout": 10
+            "command": "C:/Users/vongo/.local/bin/graphify.EXE hook-guard read"
           }
         ]
       }

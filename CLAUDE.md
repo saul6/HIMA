@@ -1,6 +1,10 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # CLAUDE.md — M.A.D.Y
 
-Guía técnica para Claude Code. Léela antes de tocar cualquier archivo. Verificada contra el código real en septiembre 2026.
+Guía técnica para Claude Code. Léela antes de tocar cualquier archivo. Verificada contra el código real en septiembre 2026 (re-verificada 2026-09-21: ver notas de "rol auditor" en §10/§13 y comandos en §2 — el motor `aud_*` ya no está en pausa, tiene un portal activo).
 
 ---
 
@@ -29,7 +33,7 @@ Guía técnica para Claude Code. Léela antes de tocar cualquier archivo. Verifi
 
 ## 2. STACK Y HERRAMIENTAS
 
-### App principal (`C:\Users\vongo\Documents\HIMA\hima`)
+### App principal (ruta local varía por máquina/desarrollador — no asumir `C:\Users\vongo\...`; usar el cwd actual)
 
 ```
 React            18.3.1 (peerDependency)
@@ -37,8 +41,8 @@ TypeScript       ~5 (devDependency, vía tsx y @vitejs/plugin-react)
 Vite             6.3.5
 Tailwind CSS     4.1.12  (@tailwindcss/vite — sin tailwind.config.ts, usa CSS custom properties)
 shadcn/ui        40+ componentes (Radix UI primitivos + class-variance-authority)
-React Router     7.13.0  (importar SIEMPRE de 'react-router', NUNCA de 'react-router-dom')
-Supabase JS      2.105.4
+React Router     7.18.2  (importar SIEMPRE de 'react-router', NUNCA de 'react-router-dom')
+Supabase JS      2.106.2
 @react-pdf/renderer 4.5.1   (PDFs individuales — componentes React)
 pdf-lib          1.17.1      (merge/concatenación de múltiples PDFs en BibliotecaHistorial)
 exceljs          4.4.0       (Excel client-side)
@@ -52,17 +56,19 @@ cmdk             1.1.1
 motion           12.23.24
 ```
 
-**Gestor de paquetes: `pnpm` SIEMPRE. Nunca `npm` ni `yarn`. Regla dura.**
+**Gestor de paquetes: `pnpm` SIEMPRE. Nunca `npm` ni `yarn`. Regla dura.** (Si aparece un `package-lock.json` en el repo, es un artefacto accidental de `npm install` — ignorarlo, no usarlo como fuente de verdad, y no lo regeneres.)
 
 **Comandos:**
 ```bash
 pnpm install
 pnpm run dev                      # localhost:5173
-pnpm run build                    # dist/
+pnpm run build                    # dist/ (vite build — NO corre `tsc`, ver nota abajo)
 pnpm run preview                  # verificar build antes de subir
 pnpm run seed:aneberries          # seed zarzamora
 pnpm run seed:aneberries:todos    # seed todos los cultivos
 ```
+
+**No hay lint, typecheck ni test configurados como script.** No existe `tsconfig.json` en la raíz ni script `lint`/`test`/`typecheck` en `package.json`. TypeScript se transpila (esbuild vía `@vitejs/plugin-react`) pero no se chequea de tipos en el build — `pnpm run build` puede pasar con errores de tipos. No hay comando de "single test" porque no hay suite de pruebas (ver §17, pendiente técnico).
 
 **Path alias:** `@` → `./src` (configurado en vite.config.ts)
 
@@ -361,18 +367,15 @@ src/lib/pdf/m<N>/
 
 ---
 
-## 10. MOTOR DE AUDITORÍAS PRIMUSGFS — EN PAUSA
+## 10. MOTOR DE AUDITORÍAS PRIMUSGFS
 
-**Situación actual:**
+**Actualización 2026-09-21: el motor unificado `aud_*` ya NO está en pausa — tiene un portal propio activo y es el foco de desarrollo reciente** (ver commits `adf8971`, `46f71ef`, `3c62c92`, `7f94684`, `8c01a03`). Sigue habiendo **tres sistemas de auditoría separados y no deben mezclarse entre sí sin indicación expresa de Saúl:**
 
-En Supabase existen las tablas del motor unificado (`aud_*`) con el catálogo de preguntas cargado. **PERO** las auditorías M14–M18 **siguen usando sus propias tablas** (`m14_auditorias`, `m14_respuestas`, ..., `m18_auditorias`, `m18_respuestas`) y **así deben quedar por ahora**.
+1. **M14–M18 (legacy, org self-audit)** — siguen usando sus propias tablas (`m14_auditorias`, `m14_respuestas`, ..., `m18_auditorias`, `m18_respuestas`) vía `useAuditoria(modulo)`. `AuditoriaScreen` / `AuditoriaPDF` / `generarAuditoriaPDF` son el motor compartido actual. **No** reemplazar M14–M18 por el motor `aud_*` sin indicación expresa de Saúl — ya ocurrió una vez, se ocultaron auditorías históricas y hubo que hacer un revert completo (`031e2bc`).
+2. **`/inocuidad/auditorias-primusgfs` (org self-service sobre `aud_*`)** — `AuditoriasPrimusGFS.tsx`, `NuevaAuditoriaPGFS.tsx`, `CapturaAuditoriaPGFS.tsx`, hook `useAuditoriasPGFS`. Verificar con graphify antes de modificar.
+3. **`/auditor` (portal para el rol `auditor` externo, sobre `aud_*`) — NUEVO, en desarrollo activo.** Rutas fuera de `/inocuidad`: `auditor`, `auditor/org/:orgId`, `auditor/org/:orgId/nueva`, `auditor/auditoria/:auditoriaId` → pantallas en `src/app/screens/auditor/` (`AuditorHome`, `AuditorOrgDetalle`, `AuditorNuevaAuditoria`, `AuditorEjecucion`). Hooks: `useAuditorAsignaciones`, `useAuditorOrg`, `useAuditorAuditoria`, `useAuditoriaV2`, `useAuditoriaVisitas`. Consultan tablas `aud_auditorias`, `aud_auditoria_modulos`, `aud_modulos_norma`, `aud_bloques`, `aud_preguntas`, `aud_comentario_esquema`, `aud_instancia_pregunta`, `aud_instancia_valores`, `aud_observaciones`. `AuditorHome` redirige fuera de `/auditor` si `profile.rol !== 'auditor'` (ver rol nuevo en §13).
 
-**Regla crítica:** El motor `aud_*` está **EN PAUSA / separado**. No está conectado a M14–M18. **No** reemplazar M14–M18 por el motor unificado sin indicación expresa de Saúl. Ya ocurrió una vez — se ocultaron auditorías históricas y hubo que hacer un revert. El antecedente está en el historial de git (`031e2bc`).
-
-**Estado en código:**
-- M14–M18 usan `useAuditoria(modulo)` → consulta `mXX_auditorias` / `mXX_respuestas`
-- `AuditoriaScreen` / `AuditoriaPDF` / `generarAuditoriaPDF` son el motor compartido actual (correcto, no tocar)
-- `AuditoriasPrimusGFS.tsx` (`/inocuidad/auditorias-primusgfs`) es una pantalla nueva — verificar con graphify antes de modificar
+**Regla al tocar cualquiera de los tres:** confirmar primero con graphify (`graphify query`) cuál sistema estás tocando — el nombre de archivo/hook no siempre lo deja obvio (`useAuditoria` = legacy M14–M18, `useAuditoriaV2`/`useAuditorAuditoria` = motor `aud_*` del portal `/auditor`, `useAuditoriasPGFS` = motor `aud_*` del self-service org). No portar cambios de un sistema a otro por analogía sin verificar que comparten tabla.
 
 ---
 
@@ -592,7 +595,7 @@ dosis_200l = r4((dosis_ha / (total_agua_l / 200)) * superficie_ha)
 
 ### M24+ — Módulos adicionales
 
-Los módulos M24 en adelante están implementados y en producción. Se documentarán en detalle conforme se estabilicen. Lista de rutas activas en `routes.tsx`:
+Los módulos M24 en adelante están implementados y en producción. La lista sigue creciendo activamente — a 2026-09-21 `routes.tsx` tiene ~94 rutas y llega hasta M65+, incluyendo un grupo con sufijo `-gg` (`fertilizacion-gg`, `botiquin-gg`, `germicida-gg`, `almacen-empaque-gg`, `mantenimiento-equipos-gg`, `empleados-gg`, `trazabilidad-gg`, etc., sector Grandes Cultivos/campo) que **no** está en la tabla de abajo. **No confíes en esta tabla como lista exhaustiva — corre `grep -n "path:" src/app/routes.tsx` o `graphify query` para la lista real y actual.** Tabla de referencia (M24–M48, verificada previamente, puede estar incompleta para M49+):
 
 | Ruta | Pantalla | M# PDF |
 |------|----------|--------|
@@ -694,7 +697,9 @@ super_admin     → M.A.D.Y (acceso cross-tenant)
 admin_org       → Admin de su organización
 asesor_tecnico  → Supervisión y recomendaciones
 operario        → Solo sus propios registros
+auditor         → Auditor externo — portal propio en /auditor (ver §10), acceso solo a orgs asignadas vía aud_*
 ```
+Tipo fuente de verdad: `export type Rol` en `src/types/database.types.ts`.
 
 ### Planes de organización
 | Plan | Límite ranchos |
@@ -736,13 +741,15 @@ src/
 ├── main.tsx
 ├── app/
 │   ├── App.tsx                             # AuthProvider → ModulosProvider → RouterProvider
-│   ├── routes.tsx                          # createBrowserRouter
-│   ├── screens/                            # 50+ pantallas page-level (y creciendo)
+│   ├── routes.tsx                          # createBrowserRouter (~94 rutas a 2026-09-21)
+│   ├── screens/                            # 90+ pantallas page-level (y creciendo)
+│   │   └── auditor/                       # AuditorHome, AuditorOrgDetalle, AuditorNuevaAuditoria, AuditorEjecucion (ver §10)
 │   └── components/
 │       ├── Layout.tsx
 │       ├── RequireAuth.tsx / RequireOrg.tsx / RequireModulo.tsx
 │       ├── iconos-modulos.ts
 │       ├── MadyLogo.tsx
+│       ├── auditoria/                     # SeccionAccordion, ResumenPuntaje, AuditoriaScreen
 │       └── ui/                            # 40+ componentes shadcn/ui
 ├── context/
 │   ├── AuthContext.tsx                    # signIn, signOut, signUp, isRecovery, clearRecovery
@@ -750,12 +757,19 @@ src/
 ├── hooks/
 │   ├── useAuth.ts / useMisModulos.ts / useTerminoSitio.ts
 │   ├── useRanchos.ts / useCatalogoProductos.ts
+│   ├── useAuditor{Asignaciones,Org,Auditoria}.ts / useAuditoriaV2.ts / useAuditoriaVisitas.ts  # motor aud_*, ver §10
 │   └── use<ModuloXX>.ts (por cada módulo)
 ├── lib/
 │   ├── supabase.ts                         # createClient, storageKey: 'agrocampo-auth'
 │   ├── queries.ts                          # 20+ funciones CRUD
 │   ├── fecha.ts                            # hoyMX(): string (zona America/Mexico_City)
 │   ├── codigoFormato.ts                    # codigoFormato(clave, codigoClave)
+│   ├── permisos.ts                         # helpers de permisos por rol
+│   ├── log.ts                              # logging de errores
+│   ├── auditoriasPGFS.ts                   # lógica compartida del motor aud_* (self-service)
+│   ├── fenologia.ts                        # cálculos de cultivo/fenología (M1)
+│   ├── idb/                                # IndexedDB (borradores/offline parcial)
+│   ├── fotos/ , storage/                   # helpers de subida/compresión de imágenes a Supabase Storage
 │   ├── pdf/
 │   │   ├── components/                     # Componentes PDF compartidos (ver sección 9)
 │   │   ├── assets/                         # logoMadyPdf.ts (base64)
@@ -763,11 +777,12 @@ src/
 │   │   ├── generarBlobHistorial.tsx        # Blobs por módulo + mergePDFBlobs
 │   │   ├── AplicacionPDF.tsx / MadyLogoPDF.tsx
 │   │   ├── auditoria/                      # Motor compartido M14–M18
-│   │   └── m6/ ... m48/                    # PDFs por módulo
+│   │   └── m2/ , m6/ ... m65+/             # PDFs por módulo (rango crece, ver §11)
 │   └── excel/
 │       └── generarExcelHistorial.ts
 ├── types/
-│   └── database.types.ts                  # Tipos TypeScript completos — fuente de verdad
+│   └── database.types.ts                  # Tipos TypeScript completos — fuente de verdad (incluye `Rol`)
+├── data/                                   # datos estáticos/catálogos embebidos
 ├── styles/
 │   ├── theme.css                           # CSS custom properties + @theme inline (Tailwind v4)
 │   ├── tailwind.css
@@ -786,6 +801,10 @@ src/
 | `/nfc/:token` | NfcEstacion (fuera de auth — NO proteger) |
 | `/completar-organizacion` | CompletarOrganizacion |
 | `/` | Home |
+| `/auditor` | AuditorHome (solo rol `auditor`, ver §10) |
+| `/auditor/org/:orgId` | AuditorOrgDetalle |
+| `/auditor/org/:orgId/nueva` | AuditorNuevaAuditoria |
+| `/auditor/auditoria/:auditoriaId` | AuditorEjecucion |
 | `/nueva-aplicacion` | M1 |
 | `/inventario` | M2 |
 | `/historial` | BibliotecaHistorial (M3) |
@@ -929,8 +948,8 @@ Usarlas con `/skill-name` cuando se requiera trabajo de diseño.
 ## 20. RUTAS Y RECURSOS
 
 ### Repositorios locales
-- **App:** `C:\Users\vongo\Documents\HIMA\hima` (rama `main`)
-- **Landing:** `C:\Users\vongo\Documents\HIMA\agrocampo-landing`
+- **App:** ruta local varía por desarrollador (rama `main`) — no asumir una ruta fija, cada clon vive en su propia máquina
+- **Landing:** repo separado `agrocampo-landing`, ruta local propia también varía por máquina
 
 ### Supabase
 - **Proyecto activo:** `glrjesvtsspilkacooln`
@@ -958,7 +977,3 @@ Rules:
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
-
----
-
-*Última actualización: septiembre 2026 — M.A.D.Y · Inocuidad Inteligente*
