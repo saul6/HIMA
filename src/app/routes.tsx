@@ -142,6 +142,9 @@ import { AuditorHome } from "./screens/auditor/AuditorHome"
 import { AuditorOrgDetalle } from "./screens/auditor/AuditorOrgDetalle"
 import { AuditorNuevaAuditoria } from "./screens/auditor/AuditorNuevaAuditoria"
 import { AuditorEjecucion } from "./screens/auditor/AuditorEjecucion"
+import { AuditorNuevaInstalacion } from "./screens/auditor/AuditorNuevaInstalacion"
+import { AuditorInstalacionDetalle } from "./screens/auditor/AuditorInstalacionDetalle"
+import { AuditorNuevaAuditoriaEfimera } from "./screens/auditor/AuditorNuevaAuditoriaEfimera"
 
 export const router = createBrowserRouter([
   {
@@ -186,6 +189,9 @@ export const router = createBrowserRouter([
               { path: "auditor/org/:orgId", Component: AuditorOrgDetalle },
               { path: "auditor/org/:orgId/nueva", Component: AuditorNuevaAuditoria },
               { path: "auditor/auditoria/:auditoriaId", Component: AuditorEjecucion },
+              { path: "auditor/instalacion/nueva", Component: AuditorNuevaInstalacion },
+              { path: "auditor/instalacion/:instalacionId", Component: AuditorInstalacionDetalle },
+              { path: "auditor/instalacion/:instalacionId/nueva", Component: AuditorNuevaAuditoriaEfimera },
               { path: "nueva-aplicacion", Component: NuevaAplicacion },
               { path: "inventario", Component: Inventario },
               { path: "historial", Component: BibliotecaHistorial },

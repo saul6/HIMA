@@ -2,12 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
 import {
   ChevronLeft, AlertTriangle, CheckCircle, Loader,
-  XCircle, AlertCircle, ChevronDown, ChevronUp,
+  XCircle, AlertCircle, ChevronDown, ChevronUp, Download, Clock,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorAuditoria } from '@/hooks/useAuditorAuditoria'
 import type { AudComentarioEsquema, AudPregunta, AudRespuesta } from '@/types/database.types'
+import { generarAuditorReportePDF } from '@/lib/pdf/auditor/generarAuditorReportePDF'
 
 const RESP_OPTIONS: {
   value: AudRespuesta
@@ -348,8 +349,10 @@ export function AuditorEjecucion() {
   const location = useLocation()
   const { profile } = useAuthContext()
 
-  const orgNombre: string = (location.state as { orgNombre?: string } | null)?.orgNombre ?? ''
-  const orgId: string | undefined = (location.state as { orgId?: string } | null)?.orgId
+  const orgNombre: string       = (location.state as { orgNombre?: string }       | null)?.orgNombre       ?? ''
+  const orgId: string | undefined  = (location.state as { orgId?: string }              | null)?.orgId
+  const instalacionId: string | undefined  = (location.state as { instalacionId?: string }  | null)?.instalacionId
+  const instalacionNombreNav: string = (location.state as { instalacionNombre?: string } | null)?.instalacionNombre ?? ''
 
   const hook = useAuditorAuditoria(auditoriaId)
   const {
@@ -364,6 +367,7 @@ export function AuditorEjecucion() {
   const [savingMap, setSavingMap] = useState<Record<string, SaveStatus>>({})
   const [saveErrMap, setSaveErrMap] = useState<Record<string, string>>({})
   const [cambiando, setCambiando] = useState(false)
+  const [descargando, setDescargando] = useState(false)
 
   const respuestasRef   = useRef(respuestasMap)
   const valoresRef      = useRef(valoresMap)
@@ -450,7 +454,7 @@ export function AuditorEjecucion() {
   async function handleCambiarEstado(nuevoEstado: 'preliminar' | 'cerrada') {
     const label = nuevoEstado === 'cerrada' ? 'cerrar' : 'marcar como preliminar'
     const msg = nuevoEstado === 'cerrada'
-      ? '¿Cerrar esta auditoría? No podrás editar las respuestas después.'
+      ? '¿Cerrar esta auditoría?\n\nNo podrás editar las respuestas después.\n\nImportante: los datos se eliminan automáticamente 15 días después del cierre. Descarga el reporte PDF antes de esa fecha.'
       : '¿Marcar esta auditoría como preliminar?'
     if (!window.confirm(msg)) return
     setCambiando(true)
@@ -474,13 +478,47 @@ export function AuditorEjecucion() {
 
   const estadoStyle = ESTADO_STYLE[auditoria?.estado ?? ''] ?? ESTADO_STYLE.cerrada
 
-  const backTarget = orgId ? `/auditor/org/${orgId}` : '/auditor'
+  const backTarget = instalacionId
+    ? `/auditor/instalacion/${instalacionId}`
+    : orgId
+      ? `/auditor/org/${orgId}`
+      : '/auditor'
+  const backState = instalacionId
+    ? { instalacionNombre: instalacionNombreNav }
+    : { orgNombre }
+
+  // Fecha de expiración (15 días desde el cierre, la BD la fija en expires_at)
+  const expiresAt = auditoria?.expires_at ?? null
+  function formatExpira(iso: string): string {
+    const d = new Date(iso)
+    return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })
+  }
+
+  async function handleDescargarPDF() {
+    if (!auditoria) return
+    setDescargando(true)
+    try {
+      await generarAuditorReportePDF({
+        auditoria,
+        modulosData,
+        esquemaMap,
+        respuestasMap,
+        valoresMap,
+        observacionesMap,
+      })
+    } catch (e: unknown) {
+      console.error('[AuditorEjecucion] generarAuditorReportePDF:', e)
+      toast.error('No se pudo generar el PDF. Reintenta.')
+    } finally {
+      setDescargando(false)
+    }
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background pb-8">
       <header className="sticky top-0 z-10 bg-card border-b border-border flex items-center gap-3 px-4 py-3">
         <button
-          onClick={() => navigate(backTarget, { state: { orgNombre } })}
+          onClick={() => navigate(backTarget, { state: backState })}
           className="text-muted-foreground flex-shrink-0"
         >
           <ChevronLeft size={24} />
@@ -491,7 +529,10 @@ export function AuditorEjecucion() {
           </p>
           {auditoria && (
             <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-              {auditoria.productor_nombre} · {auditoria.rancho_nombre} · {formatFecha(auditoria.fecha)}
+              {auditoria.instalacion_id
+                ? `${auditoria.instalacion_nombre ?? 'Instalación'} · ${formatFecha(auditoria.fecha)}`
+                : `${auditoria.productor_nombre} · ${auditoria.rancho_nombre} · ${formatFecha(auditoria.fecha)}`
+              }
             </p>
           )}
         </div>
@@ -516,6 +557,39 @@ export function AuditorEjecucion() {
           </p>
         ) : (
           <>
+            {/* Aviso: auditoría se borra en 15 días */}
+            {cerrada && expiresAt && (
+              <div
+                className="rounded-xl px-4 py-3 flex items-start gap-3"
+                style={{ backgroundColor: 'var(--agro-warning-fill)', borderLeft: '3px solid var(--agro-amber)' }}
+              >
+                <Clock size={16} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold" style={{ color: 'var(--agro-warning-text)' }}>
+                    Esta auditoría se elimina el {formatExpira(expiresAt)}.
+                  </p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--agro-warning-text)' }}>
+                    Descarga el reporte PDF antes de esa fecha — no podrás recuperar los datos después.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Botón descargar reporte PDF — visible en preliminar y cerrada */}
+            {(auditoria?.estado === 'preliminar' || cerrada) && allPreguntas.length > 0 && (
+              <button
+                onClick={handleDescargarPDF}
+                disabled={descargando}
+                className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+                style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+              >
+                {descargando
+                  ? <><Loader size={15} className="animate-spin" /> Generando PDF…</>
+                  : <><Download size={15} /> Descargar reporte PDF</>
+                }
+              </button>
+            )}
+
             {/* Puntaje preliminar */}
             {!cerrada && respondidas.length > 0 && (
               <PanelPreliminar

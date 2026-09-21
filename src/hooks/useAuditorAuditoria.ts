@@ -15,9 +15,13 @@ export type EstadoAuditoria = AudEstado | 'preliminar'
 export interface AuditorAuditoriaDetalle {
   id: string
   org_id: string
-  rancho_id: string
+  rancho_id: string | null
   rancho_nombre: string
   productor_nombre: string
+  instalacion_id: string | null
+  instalacion_nombre: string | null
+  instalacion_ubicacion: string | null
+  expires_at: string | null
   fecha: string
   auditor_nombre: string | null
   estado: EstadoAuditoria
@@ -55,10 +59,11 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
     try {
       const { data: audData, error: audErr } = await tbl('aud_auditorias')
         .select(`
-          id, org_id, rancho_id, fecha, auditor_nombre, estado,
+          id, org_id, rancho_id, instalacion_id, fecha, auditor_nombre, estado, expires_at,
           tipo_operacion, producto, periodo,
           ranchos(nombre),
-          productor:organizaciones!aud_auditorias_org_id_fkey(nombre)
+          productor:organizaciones!aud_auditorias_org_id_fkey(nombre),
+          aud_instalaciones(nombre, ubicacion)
         `)
         .eq('id', auditoriaId)
         .single()
@@ -76,11 +81,17 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
       const aud: AuditorAuditoriaDetalle = {
         id: audData.id,
         org_id: audData.org_id,
-        rancho_id: audData.rancho_id,
+        rancho_id: audData.rancho_id ?? null,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         rancho_nombre: (audData as any).ranchos?.nombre ?? '—',
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         productor_nombre: (audData as any).productor?.nombre ?? '—',
+        instalacion_id: audData.instalacion_id ?? null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        instalacion_nombre: (audData as any).aud_instalaciones?.nombre ?? null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        instalacion_ubicacion: (audData as any).aud_instalaciones?.ubicacion ?? null,
+        expires_at: audData.expires_at ?? null,
         fecha: audData.fecha,
         auditor_nombre: audData.auditor_nombre ?? null,
         estado: audData.estado as EstadoAuditoria,
