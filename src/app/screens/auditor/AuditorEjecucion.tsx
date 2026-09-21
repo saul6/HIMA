@@ -2,13 +2,14 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
 import {
   ChevronLeft, AlertTriangle, CheckCircle, Loader,
-  XCircle, AlertCircle, ChevronDown, ChevronUp, Download, Clock,
+  XCircle, AlertCircle, ChevronDown, ChevronUp, Download, Clock, ShieldCheck,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorAuditoria } from '@/hooks/useAuditorAuditoria'
 import type { AudComentarioEsquema, AudPregunta, AudRespuesta } from '@/types/database.types'
 import { generarAuditorReportePDF } from '@/lib/pdf/auditor/generarAuditorReportePDF'
+import { supabase } from '@/lib/supabase'
 
 const RESP_OPTIONS: {
   value: AudRespuesta
@@ -31,6 +32,27 @@ const RESP_TOOLTIPS: Record<AudRespuesta, string> = {
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+
+interface ReviewIssue {
+  id: string
+  codigo: string
+  severidad: 'BLOCKER' | 'REQUIRED' | 'WARNING' | 'INFO'
+  mensaje: string
+  pregunta_id: string | null
+  instancia_id: string | null
+  estado: 'OPEN' | 'RESOLVED' | 'DISMISSED'
+  rule_id: string | null
+  campo_path: string | null
+}
+
+type Severidad = 'BLOCKER' | 'REQUIRED' | 'WARNING' | 'INFO'
+const SEV_ORDER: Severidad[] = ['BLOCKER', 'REQUIRED', 'WARNING', 'INFO']
+const SEV_CONFIG: Record<Severidad, { label: string; bg: string; color: string }> = {
+  BLOCKER:  { label: 'Bloqueante', bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  },
+  REQUIRED: { label: 'Requerido',  bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
+  WARNING:  { label: 'Aviso',      bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
+  INFO:     { label: 'Info',       bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
+}
 
 const ESTADO_LABELS: Record<string, string> = {
   en_proceso:  'En proceso',
@@ -126,6 +148,7 @@ function PreguntaCard({
 
   return (
     <div
+      id={`preg-${pregunta.id}`}
       className="rounded-xl border border-border bg-card px-4 py-4 flex flex-col gap-3"
       style={falla ? { borderColor: 'var(--agro-red)', borderWidth: '1.5px' } : undefined}
     >
@@ -265,6 +288,204 @@ function PreguntaCard({
   )
 }
 
+// ── Panel de validación determinística ──────────────────────────────────────
+
+function PanelValidacion({
+  issues,
+  validando,
+  descartandoId,
+  motivoDescarte,
+  onDescartarClick,
+  onCancelarDescarte,
+  onConfirmarDescarte,
+  onMotivoChange,
+}: {
+  issues: ReviewIssue[]
+  validando: boolean
+  descartandoId: string | null
+  motivoDescarte: string
+  onDescartarClick: (id: string) => void
+  onCancelarDescarte: () => void
+  onConfirmarDescarte: () => void
+  onMotivoChange: (v: string) => void
+}) {
+  const [abierto, setAbierto] = useState(true)
+  const tieneBlockers = issues.some(i => i.severidad === 'BLOCKER')
+
+  function scrollToPreg(pregId: string) {
+    const el = document.getElementById(`preg-${pregId}`)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+
+  return (
+    <div
+      className="rounded-xl border overflow-hidden"
+      style={{
+        backgroundColor: tieneBlockers ? 'var(--agro-danger-fill)' : 'var(--card)',
+        borderColor: tieneBlockers ? 'var(--agro-red)' : 'var(--border)',
+        borderWidth: tieneBlockers ? '1.5px' : '1px',
+      }}
+    >
+      {/* Header colapsable */}
+      <button
+        onClick={() => setAbierto(v => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left"
+      >
+        <div className="flex items-center gap-2 min-w-0 flex-wrap">
+          {validando ? (
+            <Loader size={14} className="animate-spin flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+          ) : (
+            <ShieldCheck
+              size={15}
+              className="flex-shrink-0"
+              style={{ color: tieneBlockers ? 'var(--agro-danger-text)' : issues.length === 0 ? 'var(--agro-success-text)' : 'var(--agro-warning-text)' }}
+            />
+          )}
+          <span
+            className="text-xs font-semibold"
+            style={{ color: tieneBlockers ? 'var(--agro-danger-text)' : 'var(--foreground)' }}
+          >
+            {validando
+              ? 'Analizando respuestas…'
+              : issues.length === 0
+                ? 'Sin observaciones de validación'
+                : `${issues.length} observación${issues.length !== 1 ? 'es' : ''} encontrada${issues.length !== 1 ? 's' : ''}`
+            }
+          </span>
+          {!validando && issues.length > 0 && (
+            <div className="flex gap-1">
+              {SEV_ORDER.map(sev => {
+                const count = issues.filter(i => i.severidad === sev).length
+                if (!count) return null
+                const cfg = SEV_CONFIG[sev]
+                return (
+                  <span
+                    key={sev}
+                    className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{ backgroundColor: cfg.bg, color: cfg.color }}
+                  >
+                    {count} {cfg.label.slice(0, 3)}
+                  </span>
+                )
+              })}
+            </div>
+          )}
+        </div>
+        {abierto
+          ? <ChevronUp size={14} style={{ color: 'var(--muted-foreground)' }} />
+          : <ChevronDown size={14} style={{ color: 'var(--muted-foreground)' }} />
+        }
+      </button>
+
+      {/* Cuerpo */}
+      {abierto && (
+        <div className="border-t border-border">
+          {validando ? (
+            <div className="flex items-center justify-center gap-2 py-6">
+              <Loader size={14} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+              <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Analizando respuestas…</span>
+            </div>
+          ) : issues.length === 0 ? (
+            <div className="flex items-center gap-2 px-4 py-4">
+              <CheckCircle size={15} style={{ color: 'var(--agro-success-text)' }} />
+              <span className="text-xs" style={{ color: 'var(--agro-success-text)' }}>
+                Todas las validaciones pasaron correctamente.
+              </span>
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              {SEV_ORDER.map(sev => {
+                const grupo = issues.filter(i => i.severidad === sev)
+                if (!grupo.length) return null
+                const cfg = SEV_CONFIG[sev]
+                return (
+                  <div key={sev}>
+                    <div
+                      className="px-4 py-1.5"
+                      style={{ backgroundColor: cfg.bg }}
+                    >
+                      <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: cfg.color }}>
+                        {cfg.label} · {grupo.length}
+                      </span>
+                    </div>
+                    {grupo.map(issue => (
+                      <div
+                        key={issue.id}
+                        className="px-4 py-3 border-b border-border last:border-b-0 flex flex-col gap-2"
+                        style={{ backgroundColor: 'var(--card)' }}
+                      >
+                        <p className="text-xs leading-relaxed" style={{ color: 'var(--foreground)' }}>
+                          {issue.mensaje}
+                        </p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {issue.pregunta_id && (
+                            <button
+                              onClick={() => scrollToPreg(issue.pregunta_id!)}
+                              className="text-[10px] font-semibold px-2 py-1 rounded-lg transition-colors hover:opacity-80"
+                              style={{ backgroundColor: 'var(--accent)', color: 'var(--primary)' }}
+                            >
+                              → Ir a pregunta
+                            </button>
+                          )}
+                          {descartandoId !== issue.id && (
+                            <button
+                              onClick={() => onDescartarClick(issue.id)}
+                              className="text-[10px] px-2 py-1 rounded-lg transition-colors hover:bg-muted"
+                              style={{ color: 'var(--muted-foreground)', border: '1px solid var(--border)' }}
+                            >
+                              Descartar
+                            </button>
+                          )}
+                        </div>
+                        {descartandoId === issue.id && (
+                          <div className="flex flex-col gap-1.5 mt-0.5">
+                            <input
+                              type="text"
+                              value={motivoDescarte}
+                              onChange={e => onMotivoChange(e.target.value)}
+                              placeholder="Motivo del descarte (opcional)"
+                              autoFocus
+                              className="text-xs outline-none"
+                              style={{
+                                width: '100%', height: '2rem',
+                                borderRadius: 'var(--radius)',
+                                border: '1px solid var(--border)',
+                                backgroundColor: 'var(--input-background)',
+                                color: 'var(--foreground)',
+                                padding: '0 0.625rem',
+                              }}
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                onClick={onConfirmarDescarte}
+                                className="flex-1 h-7 rounded-lg text-[10px] font-semibold transition-colors hover:opacity-80"
+                                style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                              >
+                                Confirmar descarte
+                              </button>
+                              <button
+                                onClick={onCancelarDescarte}
+                                className="h-7 px-3 rounded-lg text-[10px] transition-colors hover:bg-muted"
+                                style={{ color: 'var(--muted-foreground)' }}
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Panel de puntaje preliminar ───────────────────────────────────────────────
 
 function PanelPreliminar({
@@ -369,6 +590,12 @@ export function AuditorEjecucion() {
   const [cambiando, setCambiando] = useState(false)
   const [descargando, setDescargando] = useState(false)
 
+  const [reviewIssues, setReviewIssues] = useState<ReviewIssue[]>([])
+  const [validando, setValidando] = useState(false)
+  const [panelValidacionVisible, setPanelValidacionVisible] = useState(false)
+  const [descartandoId, setDescartandoId] = useState<string | null>(null)
+  const [motivoDescarte, setMotivoDescarte] = useState('')
+
   const respuestasRef   = useRef(respuestasMap)
   const valoresRef      = useRef(valoresMap)
   const observacionesRef = useRef(observacionesMap)
@@ -452,7 +679,34 @@ export function AuditorEjecucion() {
   }
 
   async function handleCambiarEstado(nuevoEstado: 'preliminar' | 'cerrada') {
-    const label = nuevoEstado === 'cerrada' ? 'cerrar' : 'marcar como preliminar'
+    if (!auditoria?.id) return
+    const accion = nuevoEstado === 'cerrada' ? 'cerrar' : 'marcar como preliminar'
+
+    // Validar primero — bloquear si hay BLOCKERs
+    setValidando(true)
+    setPanelValidacionVisible(true)
+    let issues: ReviewIssue[] = []
+    try {
+      const { error: revErr } = await supabase.rpc('aud_run_review', { p_auditoria_id: auditoria.id })
+      if (revErr) {
+        console.error('[handleCambiarEstado] aud_run_review', revErr)
+        toast.error('No se pudo validar la auditoría. Reintenta.')
+        return
+      }
+      issues = await loadReviewIssues()
+      setReviewIssues(issues)
+    } finally {
+      setValidando(false)
+    }
+
+    const blockers = issues.filter(i => i.severidad === 'BLOCKER')
+    if (blockers.length > 0) {
+      toast.warning(
+        `Resuelve ${blockers.length} bloqueo${blockers.length !== 1 ? 's' : ''} antes de ${accion}`
+      )
+      return
+    }
+
     const msg = nuevoEstado === 'cerrada'
       ? '¿Cerrar esta auditoría?\n\nNo podrás editar las respuestas después.\n\nImportante: los datos se eliminan automáticamente 15 días después del cierre. Descarga el reporte PDF antes de esa fecha.'
       : '¿Marcar esta auditoría como preliminar?'
@@ -460,10 +714,10 @@ export function AuditorEjecucion() {
     setCambiando(true)
     try {
       await cambiarEstado(nuevoEstado)
-      toast.success(`Auditoría ${label === 'cerrar' ? 'cerrada' : 'marcada como preliminar'}`)
+      toast.success(`Auditoría ${accion === 'cerrar' ? 'cerrada' : 'marcada como preliminar'}`)
     } catch (e: unknown) {
       console.error('[handleCambiarEstado]', e)
-      toast.error(`No se pudo ${label}. Reintenta.`)
+      toast.error(`No se pudo ${accion}. Reintenta.`)
     } finally {
       setCambiando(false)
     }
@@ -512,6 +766,67 @@ export function AuditorEjecucion() {
     } finally {
       setDescargando(false)
     }
+  }
+
+  async function loadReviewIssues(): Promise<ReviewIssue[]> {
+    if (!auditoriaId) return []
+    const { data, error } = await supabase
+      .from('aud_review_issues')
+      .select('*')
+      .eq('auditoria_id', auditoriaId)
+      .eq('estado', 'OPEN')
+      .order('severidad')
+    if (error) {
+      console.error('[loadReviewIssues]', error)
+      return []
+    }
+    return (data ?? []) as ReviewIssue[]
+  }
+
+  async function handleValidar() {
+    if (!auditoria?.id) return
+    setValidando(true)
+    setPanelValidacionVisible(true)
+    try {
+      const { error } = await supabase.rpc('aud_run_review', { p_auditoria_id: auditoria.id })
+      if (error) {
+        console.error('[handleValidar] aud_run_review', error)
+        toast.error('No se pudo ejecutar la validación. Reintenta.')
+        return
+      }
+      const issues = await loadReviewIssues()
+      setReviewIssues(issues)
+      if (issues.length === 0) {
+        toast.success('Sin observaciones — la auditoría pasó todas las validaciones')
+      } else {
+        const nBlock = issues.filter(i => i.severidad === 'BLOCKER').length
+        if (nBlock > 0) {
+          toast.warning(`${nBlock} bloqueo${nBlock !== 1 ? 's' : ''} encontrado${nBlock !== 1 ? 's' : ''}`)
+        } else {
+          toast.info(`${issues.length} observación${issues.length !== 1 ? 'es' : ''} de validación`)
+        }
+      }
+    } finally {
+      setValidando(false)
+    }
+  }
+
+  async function handleDescartar() {
+    if (!descartandoId) return
+    try {
+      const { error } = await supabase
+        .from('aud_review_issues')
+        .update({ estado: 'DISMISSED', resolution_note: motivoDescarte.trim() || null })
+        .eq('id', descartandoId)
+      if (error) throw error
+      setReviewIssues(prev => prev.filter(i => i.id !== descartandoId))
+    } catch (e: unknown) {
+      console.error('[handleDescartar]', e)
+      toast.error('No se pudo descartar el hallazgo. Reintenta.')
+      return
+    }
+    setDescartandoId(null)
+    setMotivoDescarte('')
   }
 
   return (
@@ -601,6 +916,20 @@ export function AuditorEjecucion() {
               />
             )}
 
+            {/* Panel de validación */}
+            {panelValidacionVisible && !cerrada && (
+              <PanelValidacion
+                issues={reviewIssues}
+                validando={validando}
+                descartandoId={descartandoId}
+                motivoDescarte={motivoDescarte}
+                onDescartarClick={id => { setDescartandoId(id); setMotivoDescarte('') }}
+                onCancelarDescarte={() => { setDescartandoId(null); setMotivoDescarte('') }}
+                onConfirmarDescarte={handleDescartar}
+                onMotivoChange={setMotivoDescarte}
+              />
+            )}
+
             {/* Módulos → Bloques → Preguntas */}
             {modulosData.map(modulo => (
               <div key={modulo.modulo_id}>
@@ -668,10 +997,23 @@ export function AuditorEjecucion() {
             {/* Acciones de estado */}
             {!cerrada && !cargando && allPreguntas.length > 0 && (
               <div className="flex flex-col gap-2.5 mt-2">
+                {/* Botón Validar */}
+                <button
+                  onClick={handleValidar}
+                  disabled={validando || cambiando}
+                  className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+                  style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                >
+                  {validando
+                    ? <><Loader size={15} className="animate-spin" />Validando…</>
+                    : <><ShieldCheck size={15} />Validar</>
+                  }
+                </button>
+
                 {auditoria?.estado !== 'preliminar' && (
                   <button
                     onClick={() => handleCambiarEstado('preliminar')}
-                    disabled={cambiando}
+                    disabled={cambiando || validando}
                     className="w-full h-11 rounded-xl text-sm font-semibold disabled:opacity-50"
                     style={{ backgroundColor: 'var(--card)', color: 'var(--primary)', border: '1.5px solid var(--primary)' }}
                   >
@@ -680,7 +1022,7 @@ export function AuditorEjecucion() {
                 )}
                 <button
                   onClick={() => handleCambiarEstado('cerrada')}
-                  disabled={cambiando}
+                  disabled={cambiando || validando}
                   className="w-full h-11 rounded-xl text-sm font-semibold disabled:opacity-50"
                   style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
                 >
