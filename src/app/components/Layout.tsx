@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Outlet, useLocation, Link } from "react-router";
-import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck, X } from "lucide-react";
+import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck, X, Calendar } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
 import { useHomeSearch } from "@/context/HomeSearchContext";
 import { useTheme } from "@/context/ThemeContext";
 import { MadyLogo } from "@/app/components/MadyLogo";
 import { BottomSheet } from "@/app/components/BottomSheet";
+import { AuditorCampana } from "@/app/screens/auditor/AuditorCampana";
 
 const PATH_TITLES: Record<string, string> = {
   '/': 'Inicio',
@@ -26,6 +27,7 @@ function getPageTitle(pathname: string): string {
     return seg.charAt(0).toUpperCase() + seg.slice(1)
   }
   if (pathname === '/auditor') return 'Mis organizaciones'
+  if (pathname === '/auditor/agenda') return 'Agenda'
   if (pathname.match(/^\/auditor\/auditoria\//)) return 'Ejecución'
   if (pathname.match(/^\/auditor\/org\/[^/]+\/nueva/)) return 'Nueva auditoría'
   if (pathname.match(/^\/auditor\/org\//)) return 'Empresa auditada'
@@ -70,6 +72,7 @@ export function Layout() {
 
   const navItems = [
     homeItem,
+    ...(esAuditor              ? [{ path: "/auditor/agenda",                icon: Calendar,       label: "Agenda"           }] : []),
     ...(mostrarAplicaciones    ? [{ path: "/nueva-aplicacion",              icon: PlusCircle,     label: "Nueva Aplicación" }] : []),
     ...(mostrarInventario      ? [{ path: "/inventario",                    icon: Package,        label: "Inventario"       }] : []),
     ...(esAuditor              ? [] : [{ path: "/historial",                icon: History,        label: "Historial"        }]),
@@ -89,7 +92,13 @@ export function Layout() {
 
   function isActive(path: string) {
     if (path === "/auditor") {
-      return location.pathname === '/auditor' || location.pathname.startsWith('/auditor/')
+      return (
+        location.pathname === '/auditor' ||
+        (location.pathname.startsWith('/auditor/') && location.pathname !== '/auditor/agenda')
+      )
+    }
+    if (path === "/auditor/agenda") {
+      return location.pathname === '/auditor/agenda'
     }
     if (path === "/") {
       return (
@@ -232,8 +241,9 @@ export function Layout() {
             )}
           </div>
 
-          {/* Right: theme toggle + date */}
+          {/* Right: campana (auditor) + theme toggle + date */}
           <div className="flex items-center gap-3">
+            {esAuditor && <AuditorCampana />}
             <button
               onClick={e => cycleTheme(e.currentTarget as HTMLElement)}
               className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
@@ -340,6 +350,14 @@ export function Layout() {
             );
           })}
         </div>
+
+        {/* Campana (auditor) */}
+        {esAuditor && (
+          <div className="px-4 py-3 border-t border-border flex items-center gap-4">
+            <AuditorCampana />
+            <span className="text-sm" style={{ color: 'var(--foreground)' }}>Notificaciones</span>
+          </div>
+        )}
 
         {/* Switch de tema */}
         <div className="px-4 py-3 border-t border-border">

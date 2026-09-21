@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Navigate } from 'react-router'
-import { Building2, ChevronRight, ClipboardCheck, Plus, Warehouse } from 'lucide-react'
+import { Building2, ChevronRight, Plus, Warehouse } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorAsignaciones } from '@/hooks/useAuditorAsignaciones'
 import type { OrgAsignada } from '@/hooks/useAuditorAsignaciones'
 import { supabase } from '@/lib/supabase'
 import { AuditorNuevaAuditoriaSheet } from './AuditorNuevaAuditoriaSheet'
+import { AuditorCampana } from './AuditorCampana'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -88,7 +89,7 @@ export function AuditorHome() {
             Hola, {profile?.nombre_completo?.split(' ')[0] ?? '—'} · Auditor
           </p>
         </div>
-        <ClipboardCheck size={20} style={{ color: 'var(--muted-foreground)' }} />
+        <AuditorCampana />
       </header>
 
       <main className="flex-1 px-4 py-4 flex flex-col gap-6">

@@ -31,6 +31,7 @@ const inputSt: React.CSSProperties = {
 export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
   const { profile } = useAuthContext()
   const navigate = useNavigate()
+  const hoy = hoyMX()
 
   const [paso, setPaso] = useState<1 | 2>(1)
 
@@ -40,6 +41,8 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
   const [cultivoProducto, setCultivoProducto] = useState('')
   const [tipoOperacion, setTipoOperacion] = useState('')
   const [contacto, setContacto] = useState('')
+  const [fechaInicio, setFechaInicio] = useState(hoy)
+  const [fechaFin, setFechaFin] = useState(hoy)
 
   // Paso 2 — módulos
   const [modulos, setModulos] = useState<ModuloItem[]>([])
@@ -50,6 +53,9 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
 
   async function handleSiguiente() {
     if (!nombre.trim()) { toast.warning('Escribe el nombre de la instalación'); return }
+    if (!fechaInicio || !fechaFin) { toast.warning('Indica la(s) fecha(s) de visita'); return }
+    if (fechaFin < fechaInicio) { toast.warning('La fecha de fin debe ser igual o posterior al inicio'); return }
+
     if (modulos.length === 0 && !cargandoModulos) {
       setCargandoModulos(true)
       try {
@@ -131,6 +137,18 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
       }))
       const { error: e3 } = await tbl('aud_auditoria_modulos').insert(filas)
       if (e3) throw e3
+
+      // 4) evento de agenda — rango de visita
+      const { error: e4 } = await tbl('aud_agenda').insert({
+        auditor_profile_id: profile.id,
+        instalacion_id: instId,
+        auditoria_id: auditoriaId,
+        tipo: 'visita',
+        titulo: nombre.trim(),
+        fecha_inicio: fechaInicio,
+        fecha_fin: fechaFin,
+      })
+      if (e4) console.error('[AuditorNuevaAuditoriaSheet] aud_agenda', e4)
 
       onCreated()
       navigate(`/auditor/auditoria/${auditoriaId}`, {
@@ -239,6 +257,40 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
                   placeholder="Granja · Invernadero · Empaque · Cuarto Frío…"
                   style={inputSt}
                 />
+              </div>
+
+              {/* Rango de visita */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+                  Fecha de visita *
+                </label>
+                <div className="flex gap-2">
+                  <div className="flex-1 flex flex-col gap-1">
+                    <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>Inicio</span>
+                    <input
+                      type="date"
+                      value={fechaInicio}
+                      onChange={e => {
+                        setFechaInicio(e.target.value)
+                        if (fechaFin < e.target.value) setFechaFin(e.target.value)
+                      }}
+                      style={inputSt}
+                    />
+                  </div>
+                  <div className="flex-1 flex flex-col gap-1">
+                    <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>Fin</span>
+                    <input
+                      type="date"
+                      value={fechaFin}
+                      min={fechaInicio}
+                      onChange={e => setFechaFin(e.target.value)}
+                      style={inputSt}
+                    />
+                  </div>
+                </div>
+                <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                  Si la visita es de un solo día, deja inicio y fin iguales.
+                </p>
               </div>
 
               <div className="flex flex-col gap-1.5">
