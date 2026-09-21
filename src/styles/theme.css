@@ -66,16 +66,26 @@
   --auth-border: #E3E9EF;
   --auth-text: #33404D;
   --auth-bg-page: #F6F9FB;
-  --auth-panel-dark: #12283F;
+  /* Verde oscuro DERIVADO del mint #2AAD95 (mismo tono, luminosidad muy baja) —
+     usado como superficie del panel de formulario en escritorio, nunca como hex
+     suelto en componentes. -darker es un segundo escalón para degradados. */
+  --mady-green-dark: #0E2A20;
+  --mady-green-darker: #081912;
+  --auth-panel-dark: var(--mady-green-dark);
   --auth-input-dark: rgba(255, 255, 255, 0.07);
   --auth-border-dark: rgba(255, 255, 255, 0.14);
   --auth-text-secondary-dark: #81BEE5;
+  /* Capa sobre las fotos del carrusel: sobria/neutra (negro translúcido), más
+     fuerte en la esquina inferior-izquierda (donde va el caption), se desvanece
+     hacia el resto. Token único — nunca inline en el componente. */
+  --auth-carousel-overlay: radial-gradient(150% 150% at 0% 100%, rgba(0,0,0,0.68) 0%, rgba(0,0,0,0.42) 30%, rgba(0,0,0,0.22) 60%, rgba(0,0,0,0.3) 100%);
 
   /* Indirección responsive del panel de formulario (Login/Registro/Restablecer).
      Por defecto = look móvil actual, byte a byte. Solo se sobreescriben dentro
      de .auth-panel en el media query de escritorio de abajo — móvil nunca cambia. */
   --auth-panel-bg: var(--background);
   --auth-heading-color: var(--primary);
+  --auth-heading-accent-color: var(--primary);
   --auth-subtext-color: var(--muted-foreground);
   --auth-label-color: var(--primary);
   --auth-icon-color: var(--muted-foreground);
@@ -95,8 +105,9 @@
 
 @media (min-width: 1024px) {
   .auth-panel {
-    --auth-panel-bg: var(--auth-panel-dark);
+    --auth-panel-bg: linear-gradient(165deg, var(--mady-green-dark) 0%, var(--mady-green-darker) 100%);
     --auth-heading-color: #FFFFFF;
+    --auth-heading-accent-color: var(--secondary);
     --auth-subtext-color: var(--auth-text-secondary-dark);
     --auth-label-color: #FFFFFF;
     --auth-icon-color: rgba(255, 255, 255, 0.55);
@@ -105,7 +116,7 @@
     --auth-input-text: #FFFFFF;
     --auth-input-placeholder: rgba(255, 255, 255, 0.4);
     --auth-link-color: var(--secondary);
-    --auth-cta-bg: var(--secondary);
+    --auth-cta-bg: linear-gradient(135deg, var(--secondary) 0%, var(--mint-hover) 100%);
     --auth-danger-fill: rgba(224, 90, 90, 0.16);
     --auth-danger-text: #FFD9D3;
     --auth-success-fill: rgba(42, 173, 149, 0.18);
@@ -229,6 +240,8 @@
   --color-auth-input-dark: var(--auth-input-dark);
   --color-auth-border-dark: var(--auth-border-dark);
   --color-auth-text-secondary-dark: var(--auth-text-secondary-dark);
+  --color-mady-green-dark: var(--mady-green-dark);
+  --color-mady-green-darker: var(--mady-green-darker);
 }
 
 @keyframes slideUpFade {
@@ -241,6 +254,31 @@
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
+}
+
+/* CTA de login/registro/restablecer — clase real (no inline style) porque un
+   inline `background` gana siempre sobre cualquier regla de hoja de estilo,
+   :hover incluido; con clase, la cascada normal sí puede sobreescribirlo. */
+.auth-cta {
+  background: var(--auth-cta-bg);
+  transition: opacity 150ms ease, background 150ms ease, transform 150ms ease;
+}
+.auth-cta:hover { opacity: 0.9; }
+.auth-cta:active { opacity: 0.8; }
+.auth-cta:disabled { opacity: 0.4; cursor: not-allowed; }
+
+@media (min-width: 1024px) {
+  .auth-panel .auth-cta:hover:not(:disabled) {
+    opacity: 1;
+    background: var(--mint-hover);
+  }
+  .auth-panel .auth-cta:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-cta { transition: none; }
+  .auth-panel .auth-cta:active:not(:disabled) { transform: none; }
 }
 
 /* Mobile nav safe-area offsets — used by screens and fixed elements */

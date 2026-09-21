@@ -75,7 +75,7 @@ export function RestablecerContrasena() {
   }
 
   const iconCls = 'absolute left-3 top-1/2 -translate-y-1/2 w-[17px] h-[17px] pointer-events-none'
-  const ctaCls = 'w-full h-12 text-white font-semibold flex items-center justify-center gap-2 transition-[opacity,background-color,transform] duration-150 hover:opacity-90 active:opacity-80 lg:hover:opacity-100 lg:hover:bg-[var(--mint-hover)] lg:active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100'
+  const ctaCls = 'auth-cta w-full h-12 text-white font-semibold flex items-center justify-center gap-2'
 
   if (loading) {
     return (
@@ -120,9 +120,9 @@ export function RestablecerContrasena() {
         </div>
 
         <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
-          <AuthCarouselPanel className="flex lg:w-2/3" />
+          <AuthCarouselPanel className="flex lg:w-[60%]" />
           <div
-            className="auth-panel flex-1 lg:w-1/3 flex flex-col items-center justify-center p-12 min-h-screen"
+            className="auth-panel flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12 min-h-screen"
             style={{ background: 'var(--auth-panel-bg)' }}
           >
             <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
@@ -133,7 +133,7 @@ export function RestablecerContrasena() {
                 <CheckCircle2 className="w-8 h-8" style={{ color: 'var(--auth-success-text)' }} />
               </div>
               <div className="space-y-2">
-                <h1 className="text-[28px] font-semibold [letter-spacing:-0.01em]" style={{ color: 'var(--auth-heading-color)' }}>
+                <h1 className="text-[32px] font-bold [letter-spacing:-0.01em]" style={{ color: 'var(--auth-heading-color)' }}>
                   ¡Contraseña actualizada!
                 </h1>
                 <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
@@ -143,7 +143,7 @@ export function RestablecerContrasena() {
               <button
                 onClick={() => navigate('/login', { replace: true })}
                 className={ctaCls}
-                style={{ background: 'var(--auth-cta-bg)', borderRadius: 10 }}
+                style={{ borderRadius: 10 }}
               >
                 Ir al inicio de sesión
                 <ArrowRight className="w-4 h-4" />
@@ -190,9 +190,9 @@ export function RestablecerContrasena() {
         </div>
 
         <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
-          <AuthCarouselPanel className="flex lg:w-2/3" />
+          <AuthCarouselPanel className="flex lg:w-[60%]" />
           <div
-            className="auth-panel flex-1 lg:w-1/3 flex flex-col items-center justify-center p-12 min-h-screen"
+            className="auth-panel flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12 min-h-screen"
             style={{ background: 'var(--auth-panel-bg)' }}
           >
             <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
@@ -203,7 +203,7 @@ export function RestablecerContrasena() {
                 <AlertCircle className="w-8 h-8" style={{ color: 'var(--auth-warning-text)' }} />
               </div>
               <div className="space-y-2">
-                <h1 className="text-[26px] font-semibold [letter-spacing:-0.01em]" style={{ color: 'var(--auth-heading-color)' }}>
+                <h1 className="text-[30px] font-bold [letter-spacing:-0.01em]" style={{ color: 'var(--auth-heading-color)' }}>
                   El enlace ha vencido
                 </h1>
                 <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
@@ -213,7 +213,7 @@ export function RestablecerContrasena() {
               <button
                 onClick={() => navigate('/login', { replace: true })}
                 className={ctaCls}
-                style={{ background: 'var(--auth-cta-bg)', borderRadius: 10 }}
+                style={{ borderRadius: 10 }}
               >
                 Volver al inicio de sesión
                 <ArrowRight className="w-4 h-4" />
@@ -364,18 +364,18 @@ export function RestablecerContrasena() {
 
       {/* Escritorio — carrusel 2/3 + panel oscuro con paleta M.A.D.Y 1/3 */}
       <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
-        <AuthCarouselPanel className="flex lg:w-2/3" />
+        <AuthCarouselPanel className="flex lg:w-[60%]" />
 
         <div
-          className="auth-panel flex-1 lg:w-1/3 flex flex-col items-center justify-center p-12 min-h-screen transition-colors duration-150"
+          className="auth-panel flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12 min-h-screen transition-colors duration-150"
           style={{ background: 'var(--auth-panel-bg)' }}
         >
           <div className="w-full max-w-[380px] space-y-7">
 
             <div className="space-y-1">
               <h1
-                className="text-[30px] leading-tight [letter-spacing:-0.01em]"
-                style={{ fontWeight: 600, color: 'var(--auth-heading-color)' }}
+                className="text-[38px] font-bold leading-tight [letter-spacing:-0.01em]"
+                style={{ color: 'var(--auth-heading-color)' }}
               >
                 Nueva contraseña
               </h1>
@@ -463,7 +463,7 @@ export function RestablecerContrasena() {
                 type="submit"
                 disabled={submitting}
                 className={ctaCls}
-                style={{ background: 'var(--auth-cta-bg)', borderRadius: 10 }}
+                style={{ borderRadius: 10 }}
               >
                 {submitting ? (
                   'Guardando...'

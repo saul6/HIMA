@@ -70,21 +70,18 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
         />
       ))}
 
-      {/* Capa navy semitransparente — resalta logo y texto blanco */}
+      {/* Capa sobria/neutra (negro translúcido) — más fuerte en la esquina
+          inferior-izquierda para legibilidad del caption, se desvanece hacia
+          el resto. No tiñe de verde para no alterar el color de las fotos. */}
       <div
         aria-hidden="true"
         className="absolute inset-0"
-        style={{
-          background: 'linear-gradient(to bottom, rgba(18,40,63,0.4) 0%, rgba(18,40,63,0.35) 45%, rgba(18,40,63,0.45) 100%)',
-        }}
+        style={{ background: 'var(--auth-carousel-overlay)' }}
       />
 
       <div className="relative flex flex-col justify-between h-full p-10 z-10">
         <div>
-          <MadyLogo theme="dark" style={{ height: 44, width: 'auto' }} />
-          <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.72)', fontWeight: 400 }}>
-            Inocuidad Inteligente
-          </p>
+          <MadyLogo theme="dark" style={{ height: 48, width: 'auto' }} />
         </div>
 
         <div className="pb-2">

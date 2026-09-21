@@ -77,7 +77,7 @@ export function Registro() {
   }
 
   const iconCls = 'absolute left-3 top-1/2 -translate-y-1/2 w-[17px] h-[17px] pointer-events-none'
-  const ctaCls = 'w-full h-12 rounded-xl text-white font-semibold flex items-center justify-center gap-2 transition-[opacity,background-color,transform] duration-150 disabled:opacity-50 disabled:cursor-not-allowed lg:hover:bg-[var(--mint-hover)] lg:active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100'
+  const ctaCls = 'auth-cta w-full h-12 rounded-xl text-white font-semibold flex items-center justify-center gap-2 disabled:cursor-not-allowed'
 
   // ── Confirmación pendiente ────────────────────────────────────────────────
 
@@ -123,13 +123,13 @@ export function Registro() {
 
         {/* Escritorio — panel oscuro con paleta M.A.D.Y */}
         <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
-          <AuthCarouselPanel className="flex lg:w-2/3" />
+          <AuthCarouselPanel className="flex lg:w-[60%]" />
           <div
-            className="auth-panel flex-1 lg:w-1/3 flex flex-col items-center justify-center p-12 min-h-screen"
+            className="auth-panel flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12 min-h-screen"
             style={{ background: 'var(--auth-panel-bg)' }}
           >
             <div className="w-full max-w-[380px] space-y-6 text-center">
-              <h1 className="text-[30px] leading-tight" style={{ fontWeight: 600, color: 'var(--auth-heading-color)', letterSpacing: '-0.01em' }}>
+              <h1 className="text-[34px] font-bold leading-tight [letter-spacing:-0.01em]" style={{ color: 'var(--auth-heading-color)' }}>
                 Revisa tu correo
               </h1>
               <div
@@ -309,17 +309,17 @@ export function Registro() {
 
       {/* Escritorio — carrusel 2/3 + panel oscuro con paleta M.A.D.Y 1/3 */}
       <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
-        <AuthCarouselPanel className="flex lg:w-2/3" />
+        <AuthCarouselPanel className="flex lg:w-[60%]" />
 
         <div
-          className="auth-panel flex-1 lg:w-1/3 flex flex-col items-center justify-center p-12 min-h-screen transition-colors duration-150"
+          className="auth-panel flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12 min-h-screen transition-colors duration-150"
           style={{ background: 'var(--auth-panel-bg)' }}
         >
           <div className="w-full max-w-[380px] space-y-6">
             <div className="space-y-1">
               <h1
-                className="text-[30px] leading-tight [letter-spacing:-0.01em]"
-                style={{ fontWeight: 600, color: 'var(--auth-heading-color)' }}
+                className="text-[38px] font-bold leading-tight [letter-spacing:-0.01em]"
+                style={{ color: 'var(--auth-heading-color)' }}
               >
                 Crear cuenta
               </h1>
@@ -459,7 +459,7 @@ export function Registro() {
                 type="submit"
                 disabled={submitting || (!!SITE_KEY && !captchaToken)}
                 className={ctaCls}
-                style={{ background: 'var(--auth-cta-bg)', marginTop: '4px' }}
+                style={{ marginTop: '4px' }}
               >
                 {submitting ? 'Creando cuenta…' : (<>Crear cuenta<ArrowRight className="w-4 h-4" /></>)}
               </button>

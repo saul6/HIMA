@@ -85,19 +85,27 @@ export function Login() {
   }
 
   const iconCls = 'absolute left-3 top-1/2 -translate-y-1/2 w-[17px] h-[17px] pointer-events-none'
-  const ctaCls = 'w-full h-12 text-white font-semibold flex items-center justify-center gap-2 transition-[opacity,background-color,transform] duration-150 hover:opacity-90 active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed lg:hover:opacity-100 lg:hover:bg-[var(--mint-hover)] lg:active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100'
+  const ctaCls = 'auth-cta w-full h-12 text-white font-semibold flex items-center justify-center gap-2 disabled:cursor-not-allowed'
 
   return (
     <div className="flex min-h-screen" style={{ background: 'var(--background)' }}>
 
-      {/* ── PANEL IZQUIERDO: carrusel de fotos (solo lg+, 2/3) ── */}
-      <AuthCarouselPanel className="hidden lg:flex lg:w-2/3" />
+      {/* ── PANEL IZQUIERDO: carrusel de fotos (solo lg+, 60%) ── */}
+      <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
 
-      {/* ── PANEL DERECHO: formulario (1/3 en escritorio, oscuro con paleta M.A.D.Y) ── */}
+      {/* ── PANEL DERECHO: formulario (40% en escritorio, verde oscuro derivado del mint) ── */}
       <div
-        className="auth-panel flex-1 lg:w-1/3 flex flex-col items-center justify-center p-6 lg:p-12 min-h-screen transition-colors duration-150"
+        className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-6 lg:p-12 min-h-screen transition-colors duration-150"
         style={{ background: 'var(--auth-panel-bg)' }}
       >
+        {/* Nav superior — solo escritorio */}
+        <div className="hidden lg:block absolute top-8 right-10 text-sm">
+          <span style={{ color: 'var(--auth-subtext-color)' }}>¿Eres nuevo aquí? </span>
+          <Link to="/registro" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
+            Regístrate
+          </Link>
+        </div>
+
         <div className="w-full max-w-[380px] space-y-7">
 
           {/* Logo M.A.D.Y + tagline — solo móvil, en escritorio ya está en el carrusel */}
@@ -114,10 +122,11 @@ export function Login() {
           {/* Título + subtítulo */}
           <div className="space-y-1 lg:-mt-1">
             <h1
-              className="text-[22px] leading-tight lg:text-[30px] lg:[letter-spacing:-0.01em]"
-              style={{ fontWeight: 600, color: 'var(--auth-heading-color)' }}
+              className="text-[22px] leading-tight font-semibold lg:text-[44px] lg:font-bold lg:[letter-spacing:-0.01em]"
+              style={{ color: 'var(--auth-heading-color)' }}
             >
-              Bienvenido de nuevo
+              <span>Bienvenido </span>
+              <span style={{ color: 'var(--auth-heading-accent-color)' }}>de nuevo</span>
             </h1>
             <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
               Accede a tu cuenta para continuar
@@ -186,7 +195,7 @@ export function Login() {
                     type="submit"
                     disabled={recupCargando || !recupEmail}
                     className={ctaCls}
-                    style={{ background: 'var(--auth-cta-bg)', borderRadius: 10 }}
+                    style={{ borderRadius: 10 }}
                   >
                     {recupCargando ? 'Enviando…' : 'Enviar enlace de recuperación'}
                   </button>
@@ -306,7 +315,7 @@ export function Login() {
               type="submit"
               disabled={submitting || (!!SITE_KEY && !captchaToken)}
               className={ctaCls}
-              style={{ background: 'var(--auth-cta-bg)', borderRadius: 10 }}
+              style={{ borderRadius: 10 }}
             >
               {submitting ? (
                 'Iniciando sesión...'
@@ -317,10 +326,16 @@ export function Login() {
                 </>
               )}
             </button>
+
+            {/* Línea de confianza — solo escritorio (arriba ya está el nav de Regístrate) */}
+            <p className="hidden lg:flex items-center justify-center gap-1.5 text-xs pt-1" style={{ color: 'var(--auth-subtext-color)' }}>
+              <Lock className="w-3 h-3" />
+              Tu información está protegida
+            </p>
           </form>}
 
           {!modoRecup && (
-            <p className="text-sm text-center" style={{ color: 'var(--auth-subtext-color)' }}>
+            <p className="text-sm text-center lg:hidden" style={{ color: 'var(--auth-subtext-color)' }}>
               ¿No tienes cuenta?{' '}
               <Link
                 to="/registro"
