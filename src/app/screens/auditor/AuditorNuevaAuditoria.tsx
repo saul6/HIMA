@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { hoyMX } from '@/lib/fecha'
+import { ModulosSelectorStep } from './ModulosSelectorStep'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -128,7 +129,8 @@ export function AuditorNuevaAuditoria() {
       toast.success('Auditoría creada')
       navigate(`/auditor/auditoria/${auditoriaId}`, { replace: true, state: { orgId, orgNombre } })
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Error al crear auditoría')
+      console.error('[AuditorNuevaAuditoria]', e)
+      toast.error('No se pudo crear la auditoría. Reintenta.')
     } finally {
       setGuardando(false)
     }
@@ -237,43 +239,11 @@ export function AuditorNuevaAuditoria() {
               <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                 Módulos PrimusGFS a evaluar *
               </label>
-              {modulos.length === 0 ? (
-                <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
-                  No se encontraron módulos en el catálogo.
-                </p>
-              ) : (
-                <div className="flex flex-col gap-1.5">
-                  {modulos.map(m => {
-                    const sel = modulosSel.has(m.id)
-                    return (
-                      <button
-                        key={m.id}
-                        type="button"
-                        onClick={() => toggleModulo(m.id)}
-                        className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border transition-all"
-                        style={{
-                          backgroundColor: sel ? 'var(--accent)' : 'var(--card)',
-                          borderColor: sel ? 'var(--primary)' : 'var(--border)',
-                        }}
-                      >
-                        <div
-                          className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border text-[10px] font-bold transition-all"
-                          style={{
-                            backgroundColor: sel ? 'var(--primary)' : 'transparent',
-                            borderColor: sel ? 'var(--primary)' : 'var(--muted-foreground)',
-                            color: '#fff',
-                          }}
-                        >
-                          {sel ? '✓' : ''}
-                        </div>
-                        <p className="text-sm flex-1" style={{ color: 'var(--foreground)', fontWeight: sel ? 600 : 400 }}>
-                          {m.nombre}
-                        </p>
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
+              <ModulosSelectorStep
+                modulos={modulos}
+                seleccionados={modulosSel}
+                onToggle={toggleModulo}
+              />
             </div>
 
             <button

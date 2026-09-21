@@ -5,6 +5,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorAsignaciones } from '@/hooks/useAuditorAsignaciones'
 import type { OrgAsignada } from '@/hooks/useAuditorAsignaciones'
 import { supabase } from '@/lib/supabase'
+import { AuditorNuevaAuditoriaSheet } from './AuditorNuevaAuditoriaSheet'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -49,30 +50,30 @@ export function AuditorHome() {
 
   const [instalaciones, setInstalaciones] = useState<InstalacionCard[]>([])
   const [loadingInst, setLoadingInst] = useState(true)
+  const [showSheet, setShowSheet] = useState(false)
 
   if (profile !== null && profile.rol !== 'auditor') {
     return <Navigate to="/" replace />
   }
 
+  async function cargarInstalaciones() {
+    setLoadingInst(true)
+    try {
+      const { data, error } = await tbl('aud_instalaciones')
+        .select('id, nombre, ubicacion, tipo_operacion')
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      setInstalaciones(data ?? [])
+    } catch (e) {
+      console.error('[AuditorHome] aud_instalaciones', e)
+    } finally {
+      setLoadingInst(false)
+    }
+  }
+
   useEffect(() => {
     if (!profile?.id) return
-    let cancelado = false
-    async function cargarInstalaciones() {
-      setLoadingInst(true)
-      try {
-        const { data, error } = await tbl('aud_instalaciones')
-          .select('id, nombre, ubicacion, tipo_operacion')
-          .order('created_at', { ascending: false })
-        if (error) throw error
-        if (!cancelado) setInstalaciones(data ?? [])
-      } catch (e) {
-        console.error('[AuditorHome] aud_instalaciones', e)
-      } finally {
-        if (!cancelado) setLoadingInst(false)
-      }
-    }
     cargarInstalaciones()
-    return () => { cancelado = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id])
 
@@ -99,12 +100,12 @@ export function AuditorHome() {
               Mis instalaciones
             </p>
             <button
-              onClick={() => navigate('/auditor/instalacion/nueva')}
+              onClick={() => setShowSheet(true)}
               className="flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-lg"
               style={{ backgroundColor: 'var(--accent)', color: 'var(--primary)' }}
             >
               <Plus size={13} />
-              Nueva instalación
+              Nueva auditoría
             </button>
           </div>
 
@@ -119,14 +120,14 @@ export function AuditorHome() {
             >
               <Warehouse size={28} style={{ color: 'var(--muted-foreground)', opacity: 0.4 }} />
               <p className="text-xs text-center" style={{ color: 'var(--muted-foreground)' }}>
-                Ninguna instalación creada aún.
+                Ninguna auditoría creada aún.
               </p>
               <button
-                onClick={() => navigate('/auditor/instalacion/nueva')}
+                onClick={() => setShowSheet(true)}
                 className="text-xs font-semibold px-4 py-1.5 rounded-lg"
                 style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
               >
-                + Nueva instalación
+                + Nueva auditoría
               </button>
             </div>
           ) : (
@@ -195,6 +196,13 @@ export function AuditorHome() {
         </section>
 
       </main>
+
+      {showSheet && (
+        <AuditorNuevaAuditoriaSheet
+          onClose={() => setShowSheet(false)}
+          onCreated={() => { setShowSheet(false); cargarInstalaciones() }}
+        />
+      )}
     </div>
   )
 }
