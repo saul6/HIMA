@@ -71,7 +71,7 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
           style={{
             backgroundImage: `url(${slide.src})`,
             opacity: i === active && !erroredSlides.has(i) ? 1 : 0,
-            transform: reducedMotion ? 'none' : (i === active ? 'scale(1.08)' : 'scale(1)'),
+            transform: reducedMotion ? 'none' : (i === active ? 'scale(1.035)' : 'scale(1)'),
             transition: reducedMotion
               ? 'none'
               : 'opacity 1.4s ease-in-out, transform 4.5s ease-out',

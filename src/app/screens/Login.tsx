@@ -97,7 +97,7 @@ export function Login() {
 
       {/* ── PANEL DERECHO: formulario (40% en escritorio, verde oscuro derivado del mint) ── */}
       <div
-        className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-6 lg:p-12 min-h-screen transition-colors duration-150"
+        className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center lg:justify-start p-6 lg:pt-28 lg:pb-12 lg:px-12 min-h-screen transition-colors duration-150"
         style={{ background: 'var(--auth-panel-bg)' }}
       >
         <AuthLeavesDecor className="hidden lg:block" />
@@ -182,7 +182,7 @@ export function Login() {
                         placeholder="correo@ejemplo.com"
                         required
                         autoComplete="email"
-                        className="w-full h-12 border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                        className="w-full h-12 lg:h-[42px] auth-input border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
                         style={getInputStyle(focusedField === 'recupEmail')}
                       />
                     </div>
@@ -235,7 +235,7 @@ export function Login() {
                   placeholder="correo@ejemplo.com"
                   required
                   autoComplete="email"
-                  className="w-full h-12 border pl-10 pr-4 lg:pr-9 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                  className="w-full h-12 lg:h-[42px] auth-input border pl-10 pr-4 lg:pr-9 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
                   style={getInputStyle(focusedField === 'email')}
                 />
                 {EMAIL_RE.test(email) && (
@@ -263,7 +263,7 @@ export function Login() {
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
-                  className="w-full h-12 border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                  className="w-full h-12 lg:h-[42px] auth-input border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
                   style={getInputStyle(focusedField === 'password')}
                 />
                 <button

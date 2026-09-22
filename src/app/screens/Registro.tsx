@@ -315,14 +315,23 @@ export function Registro() {
         <AuthCarouselPanel className="flex lg:w-[60%]" />
 
         <div
-          className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12 min-h-screen transition-colors duration-150"
+          className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-start pt-16 pb-10 px-12 min-h-screen transition-colors duration-150"
           style={{ background: 'var(--auth-panel-bg)' }}
         >
           <AuthLeavesDecor className="hidden lg:block" />
-          <div className="w-full max-w-[380px] space-y-7">
+
+          {/* Nav superior — misma posición que en Login */}
+          <div className="absolute top-8 right-10 text-sm">
+            <span style={{ color: 'var(--auth-subtext-color)' }}>¿Ya tienes cuenta? </span>
+            <Link to="/login" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
+              Inicia sesión
+            </Link>
+          </div>
+
+          <div className="w-full max-w-[380px] space-y-6">
             <div className="space-y-1">
               <h1
-                className="text-[38px] font-bold leading-tight [letter-spacing:-0.01em]"
+                className="text-[34px] font-bold leading-tight [letter-spacing:-0.01em]"
                 style={{ color: 'var(--auth-heading-color)' }}
               >
                 Crear cuenta
@@ -332,7 +341,7 @@ export function Registro() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5" style={{ marginTop: 'var(--auth-form-gap-top)' }}>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-[6px]">
                 <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
                   Nombre completo
@@ -348,7 +357,7 @@ export function Registro() {
                     placeholder="Juan Pérez García"
                     required
                     autoComplete="name"
-                    className="w-full h-12 border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                    className="w-full h-[42px] auth-input border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
                     style={getInputStyle(focusedField === 'nombre')}
                   />
                 </div>
@@ -369,7 +378,7 @@ export function Registro() {
                     placeholder="correo@ejemplo.com"
                     required
                     autoComplete="email"
-                    className="w-full h-12 border pl-10 pr-9 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                    className="w-full h-[42px] auth-input border pl-10 pr-9 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
                     style={getInputStyle(focusedField === 'email')}
                   />
                   {EMAIL_RE.test(email) && (
@@ -396,7 +405,7 @@ export function Registro() {
                     placeholder="Mínimo 8 caracteres"
                     required
                     autoComplete="new-password"
-                    className="w-full h-12 border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                    className="w-full h-[42px] auth-input border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
                     style={getInputStyle(focusedField === 'password')}
                   />
                   <button
@@ -428,7 +437,7 @@ export function Registro() {
                     placeholder="Ej: Rancho El Solar o tu nombre"
                     required
                     autoComplete="organization"
-                    className="w-full h-12 border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                    className="w-full h-[42px] auth-input border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
                     style={getInputStyle(focusedField === 'nombreOrg')}
                   />
                 </div>
@@ -487,13 +496,6 @@ export function Registro() {
                 {submitting ? 'Creando cuenta…' : (<>Crear cuenta<ArrowRight className="w-4 h-4" /></>)}
               </button>
             </form>
-
-            <p className="text-sm text-center" style={{ color: 'var(--auth-subtext-color)' }}>
-              ¿Ya tienes cuenta?{' '}
-              <Link to="/login" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
-                Iniciar sesión
-              </Link>
-            </p>
           </div>
         </div>
       </div>

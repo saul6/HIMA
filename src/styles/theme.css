@@ -308,6 +308,25 @@
   .auth-panel .auth-cta:active:not(:disabled) { transform: none; }
 }
 
+/* Fix de autofill de Chrome — el navegador pinta su propio fondo (blanco/
+   amarillo pálido) vía :-webkit-autofill y lo protege con su propio
+   mecanismo interno, así que solo el truco del box-shadow inset gigante +
+   -webkit-text-fill-color (con !important) logra ganarle de forma confiable.
+   Referencia los mismos tokens que el input normal (auth-input-bg/text), así
+   que el autocompletado se ve idéntico al estado normal en cualquier
+   breakpoint, sin duplicar valores. Scoped a .auth-input — no toca el
+   componente Input global. */
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus,
+.auth-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--auth-input-bg) inset !important;
+  box-shadow: 0 0 0 1000px var(--auth-input-bg) inset !important;
+  -webkit-text-fill-color: var(--auth-input-text) !important;
+  caret-color: var(--auth-input-text);
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 /* Mobile nav safe-area offsets — used by screens and fixed elements */
 .pb-safe-nav {
   padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));

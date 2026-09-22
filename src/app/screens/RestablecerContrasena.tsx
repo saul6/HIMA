@@ -370,7 +370,7 @@ export function RestablecerContrasena() {
         <AuthCarouselPanel className="flex lg:w-[60%]" />
 
         <div
-          className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12 min-h-screen transition-colors duration-150"
+          className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-start pt-28 pb-12 px-12 min-h-screen transition-colors duration-150"
           style={{ background: 'var(--auth-panel-bg)' }}
         >
           <AuthLeavesDecor className="hidden lg:block" />
@@ -405,7 +405,7 @@ export function RestablecerContrasena() {
                     placeholder="Mínimo 8 caracteres"
                     required
                     autoComplete="new-password"
-                    className="w-full h-12 border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                    className="w-full h-[42px] auth-input border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
                     style={getInputStyle(focusedField === 'nueva-d')}
                   />
                   <button
@@ -437,7 +437,7 @@ export function RestablecerContrasena() {
                     placeholder="Repite tu nueva contraseña"
                     required
                     autoComplete="new-password"
-                    className="w-full h-12 border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                    className="w-full h-[42px] auth-input border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
                     style={getInputStyle(focusedField === 'confirmar-d')}
                   />
                   <button
