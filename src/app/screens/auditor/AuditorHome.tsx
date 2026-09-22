@@ -11,6 +11,7 @@ import { hoyMX } from '@/lib/fecha'
 import { useLastWorkspace } from '@/hooks/useContinuarTrabajo'
 import { AuditorNuevaAuditoriaSheet } from './AuditorNuevaAuditoriaSheet'
 import { AuditorCampana } from './AuditorCampana'
+import { AuditorBusqueda } from './AuditorBusqueda'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -228,6 +229,7 @@ export function AuditorHome() {
             {profile?.nombre_completo?.split(' ')[0] ?? '—'} · Auditor
           </p>
         </div>
+        <AuditorBusqueda />
         <button
           onClick={() => setShowSheet(true)}
           className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg"
