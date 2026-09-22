@@ -2059,3 +2059,65 @@ export interface AudExternalWorkflow {
   source_note: string | null
   created_at: string
 }
+
+// ── aud_evidencia (§8.septies) ─────────────────────────────────────────────
+
+export type AudEvidenciaTipo =
+  | 'documento_procedimiento' | 'registro_operativo' | 'foto'
+  | 'certificado' | 'contrato' | 'plan_haccp' | 'etiqueta' | 'otro'
+
+export type AudEvidenciaEstado = 'vigente' | 'vencido' | 'obsoleto'
+
+export type AudEvidenciaEntityType =
+  | 'INSTANCIA' | 'AUDITORIA' | 'HALLAZGO' | 'ACCION'
+  | 'CRITERIO' | 'REVISION' | 'REGISTRO_OPERATIVO'
+
+export type AudEvidenciaRelationType = 'SUPPORTS' | 'REFERENCES' | 'SUPERSEDES'
+
+export interface AudEvidencia {
+  id: string
+  org_id: string
+  evidencia_tipo: AudEvidenciaTipo | null
+  documento_codigo: string | null
+  revision: string | null
+  fecha_emision: string | null
+  fecha_vencimiento: string | null
+  alcance_nivel: string | null
+  estado: AudEvidenciaEstado | null
+  storage_path: string | null
+  hash_sha256: string | null
+  creado_por: string | null
+  created_at: string
+}
+
+export interface AudEvidenciaSnapshot {
+  id: string
+  org_id: string
+  snapshot_json: Record<string, unknown>
+  snapshot_hash: string
+  source_module_code: string | null
+  source_record_id: string | null
+  source_updated_at: string | null
+  source_record_revision: number | null
+  auditoria_id: string | null
+  instancia_id: string | null
+  hallazgo_id: string | null
+  accion_id: string | null
+  criterion_code: string | null
+  evidence_asset_ids: string[] | null
+  created_at: string
+}
+
+export interface AudEvidenciaUso {
+  id: string
+  org_id: string
+  evidencia_id: string | null
+  snapshot_id: string | null
+  entity_type: AudEvidenciaEntityType
+  entity_id: string
+  relation_type: AudEvidenciaRelationType
+  campos_precargados: Record<string, unknown> | null
+  created_at: string
+  aud_evidencia?: AudEvidencia | null
+  aud_evidencia_snapshot?: AudEvidenciaSnapshot | null
+}

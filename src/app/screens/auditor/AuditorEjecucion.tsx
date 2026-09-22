@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
 import {
   ChevronLeft, AlertTriangle, CheckCircle, Loader,
   XCircle, AlertCircle, ChevronDown, ChevronUp, Download, Clock, ShieldCheck,
-  Flag, Plus, History, ClipboardList, Copy,
+  Flag, Plus, History, ClipboardList, Copy, Paperclip,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -13,6 +13,7 @@ import { generarAuditorReportePDF } from '@/lib/pdf/auditor/generarAuditorReport
 import { supabase } from '@/lib/supabase'
 import { useHallazgos } from '@/hooks/useHallazgos'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { EvidenciaPanel } from './EvidenciaPanel'
 
 const RESP_OPTIONS: {
   value: AudRespuesta
@@ -647,12 +648,13 @@ function PanelPreliminar({
 // ── Panel de lista de hallazgos ──────────────────────────────────────────────
 
 function PanelHallazgos({
-  hallazgos, preguntas, onVerAccion, onEstadoChange, cargando,
+  hallazgos, preguntas, onVerAccion, onEstadoChange, onVerEvidencias, cargando,
 }: {
   hallazgos: AudHallazgo[]
   preguntas: AudPregunta[]
   onVerAccion: (h: AudHallazgo) => void
   onEstadoChange: (id: string, estado: AudHallazgoEstado) => void
+  onVerEvidencias: (h: AudHallazgo) => void
   cargando: boolean
 }) {
   const [abierto, setAbierto] = useState(true)
@@ -739,6 +741,14 @@ function PanelHallazgos({
                         <ClipboardList size={11} />
                         Acción correctiva
                       </button>
+                      <button
+                        onClick={() => onVerEvidencias(h)}
+                        className="flex items-center gap-1 text-[10px] font-semibold h-7 px-2 rounded-lg"
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                      >
+                        <Paperclip size={11} />
+                        Evidencias
+                      </button>
                     </div>
                   </div>
                 )
@@ -812,6 +822,9 @@ export function AuditorEjecucion() {
   // Sheet: historial de versiones
   const [sheetHistorial, setSheetHistorial] = useState<AudAcVersion[] | null>(null)
   const [cargandoHistorial, setCargandoHistorial] = useState(false)
+
+  // Sheet: evidencias de hallazgo
+  const [sheetEvidenciaHallazgo, setSheetEvidenciaHallazgo] = useState<{ hallazgoId: string; descripcion: string } | null>(null)
 
   // — Azzule —
   const [validandoAzzule, setValidandoAzzule] = useState(false)
@@ -1334,6 +1347,7 @@ export function AuditorEjecucion() {
                 hallazgos={hallazgos}
                 preguntas={allPreguntas}
                 onVerAccion={handleAbrirAccion}
+                onVerEvidencias={h => setSheetEvidenciaHallazgo({ hallazgoId: h.id, descripcion: h.descripcion })}
                 onEstadoChange={(id, estado) => {
                   actualizarEstadoHallazgo(id, estado).catch(e => {
                     console.error('[AuditorEjecucion] actualizarEstadoHallazgo', e)
@@ -1645,6 +1659,19 @@ export function AuditorEjecucion() {
                 </button>
               )}
 
+              {/* Evidencias de la acción */}
+              {accionActual && auditoria && (
+                <EvidenciaPanel
+                  entityType="ACCION"
+                  entityId={accionActual.id}
+                  orgId={auditoria.org_id}
+                  auditoriaId={auditoria.id}
+                  cerrada={!!cerrada}
+                  hallazgoId={sheetAccion?.hallazgoId ?? null}
+                  accionId={accionActual.id}
+                />
+              )}
+
               {/* ── Sección Azzule ─────────────────────────────────────────── */}
               {accionActual && (
                 <div className="flex flex-col gap-3">
@@ -1910,6 +1937,37 @@ export function AuditorEjecucion() {
                   })}
                 </div>
               ))
+            )}
+          </div>
+        </div>
+      </BottomSheet>
+
+      {/* Sheet: Evidencias del hallazgo */}
+      <BottomSheet open={!!sheetEvidenciaHallazgo} onClose={() => setSheetEvidenciaHallazgo(null)} height="85%">
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Evidencias del hallazgo</h2>
+              {sheetEvidenciaHallazgo && (
+                <p className="text-[10px] mt-0.5 line-clamp-1" style={{ color: 'var(--muted-foreground)' }}>
+                  {sheetEvidenciaHallazgo.descripcion}
+                </p>
+              )}
+            </div>
+            <button onClick={() => setSheetEvidenciaHallazgo(null)} className="text-muted-foreground ml-2 flex-shrink-0">
+              <XCircle size={20} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto px-4 py-4">
+            {sheetEvidenciaHallazgo && auditoria && (
+              <EvidenciaPanel
+                entityType="HALLAZGO"
+                entityId={sheetEvidenciaHallazgo.hallazgoId}
+                orgId={auditoria.org_id}
+                auditoriaId={auditoria.id}
+                cerrada={!!cerrada}
+                hallazgoId={sheetEvidenciaHallazgo.hallazgoId}
+              />
             )}
           </div>
         </div>
