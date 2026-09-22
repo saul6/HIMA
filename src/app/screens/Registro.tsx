@@ -315,7 +315,7 @@ export function Registro() {
         <AuthCarouselPanel className="flex lg:w-[60%]" />
 
         <div
-          className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-start pt-16 pb-10 px-12 transition-colors duration-150"
+          className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-start pt-12 pb-10 px-12 transition-colors duration-150"
           style={{ background: 'var(--auth-panel-bg)' }}
         >
           <AuthLeavesDecor className="hidden lg:block" />

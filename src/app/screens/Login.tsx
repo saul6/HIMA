@@ -97,18 +97,20 @@ export function Login() {
 
       {/* ── PANEL DERECHO: formulario (40% en escritorio, verde oscuro derivado del mint) ── */}
       <div
-        className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center lg:justify-start p-6 lg:pt-28 lg:pb-12 lg:px-12 transition-colors duration-150"
+        className={`auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-6 lg:pb-12 lg:px-12 transition-colors duration-150 ${modoRecup ? '' : 'lg:justify-start lg:pt-20'}`}
         style={{ background: 'var(--auth-panel-bg)' }}
       >
         <AuthLeavesDecor className="hidden lg:block" />
 
-        {/* Nav superior — solo escritorio */}
-        <div className="hidden lg:block absolute top-8 right-10 text-sm">
-          <span style={{ color: 'var(--auth-subtext-color)' }}>¿Eres nuevo aquí? </span>
-          <Link to="/registro" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
-            Regístrate
-          </Link>
-        </div>
+        {/* Nav superior — solo escritorio, solo en login (no aplica al recuperar acceso) */}
+        {!modoRecup && (
+          <div className="hidden lg:block absolute top-8 right-10 text-sm">
+            <span style={{ color: 'var(--auth-subtext-color)' }}>¿Eres nuevo aquí? </span>
+            <Link to="/registro" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
+              Regístrate
+            </Link>
+          </div>
+        )}
 
         <div className="w-full max-w-[380px] space-y-7">
 
@@ -123,23 +125,39 @@ export function Login() {
             </p>
           </div>
 
-          {/* Título + subtítulo */}
+          {/* Título + subtítulo — cambia según login / recuperar acceso */}
           <div className="space-y-1">
-            <h1
-              className="text-[22px] leading-tight font-semibold lg:text-[34px] lg:font-bold lg:whitespace-nowrap lg:[letter-spacing:-0.01em]"
-              style={{ color: 'var(--auth-heading-color)' }}
-            >
-              <span>Bienvenido </span>
-              <span style={{ color: 'var(--auth-heading-accent-color)' }}>de nuevo</span>
-            </h1>
-            <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
-              Accede a tu cuenta para continuar
-            </p>
+            {modoRecup ? (
+              <>
+                <h1
+                  className="text-[22px] leading-tight font-semibold lg:text-[34px] lg:font-bold lg:whitespace-nowrap lg:[letter-spacing:-0.01em]"
+                  style={{ color: 'var(--auth-heading-color)' }}
+                >
+                  Recupera tu acceso
+                </h1>
+                <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
+                  Ingresa tu correo y te enviaremos un enlace para restablecerla.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1
+                  className="text-[22px] leading-tight font-semibold lg:text-[34px] lg:font-bold lg:whitespace-nowrap lg:[letter-spacing:-0.01em]"
+                  style={{ color: 'var(--auth-heading-color)' }}
+                >
+                  <span>Bienvenido </span>
+                  <span style={{ color: 'var(--auth-heading-accent-color)' }}>de nuevo</span>
+                </h1>
+                <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
+                  Accede a tu cuenta para continuar
+                </p>
+              </>
+            )}
           </div>
 
           {/* ── Recuperación de contraseña ── */}
           {modoRecup && (
-            <div className="space-y-4" style={{ marginTop: 'var(--auth-form-gap-top)' }}>
+            <div className="space-y-4">
               {recupEnviado ? (
                 <div className="space-y-4">
                   <div
@@ -157,16 +175,11 @@ export function Login() {
                     className="w-full text-sm"
                     style={{ color: 'var(--auth-link-color)', fontWeight: 600 }}
                   >
-                    ← Volver al inicio de sesión
+                    ← Volver a iniciar sesión
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleRecuperar} className="space-y-4">
-                  <div className="space-y-1">
-                    <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
-                      Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
-                    </p>
-                  </div>
                   <div className="space-y-[6px]">
                     <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
                       Correo electrónico
@@ -209,7 +222,7 @@ export function Login() {
                     className="w-full text-sm"
                     style={{ color: 'var(--auth-subtext-color)' }}
                   >
-                    ← Volver al inicio de sesión
+                    ← Volver a iniciar sesión
                   </button>
                 </form>
               )}

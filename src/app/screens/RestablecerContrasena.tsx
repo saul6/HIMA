@@ -370,7 +370,7 @@ export function RestablecerContrasena() {
         <AuthCarouselPanel className="flex lg:w-[60%]" />
 
         <div
-          className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-start pt-28 pb-12 px-12 transition-colors duration-150"
+          className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-start pt-20 pb-12 px-12 transition-colors duration-150"
           style={{ background: 'var(--auth-panel-bg)' }}
         >
           <AuthLeavesDecor className="hidden lg:block" />
