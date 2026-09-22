@@ -1,12 +1,11 @@
-import { useState, useRef, type FormEvent } from 'react'
+import { useState, useRef, useEffect, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { Mail, Lock, User, Building2, Eye, EyeOff, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
-import { AuthBackground } from '@/app/components/AuthBackground'
 import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
+import { AuthMobileBanner } from '@/app/components/AuthMobileBanner'
 import { AuthLeavesDecor } from '@/app/components/AuthLeavesDecor'
-import { MadyLogo } from '@/app/components/MadyLogo'
 
 const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -38,6 +37,17 @@ export function Registro() {
   const [confirmacionPendiente, setConfirmacionPendiente] = useState(false)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const turnstileRef = useRef<TurnstileInstance>(null)
+
+  // Turnstile 'compact' en móvil (cabe en pantallas angostas), 'normal'
+  // (acostado) en escritorio — una sola instancia, decidido por matchMedia.
+  const [isDesktop, setIsDesktop] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    setIsDesktop(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -85,192 +95,206 @@ export function Registro() {
 
   if (confirmacionPendiente) {
     return (
-      <>
-        {/* Móvil — sin cambios */}
+      <div className="flex flex-col lg:flex-row min-h-screen" style={{ background: 'var(--background)' }}>
         <div className="lg:hidden">
-          <AuthBackground>
-            <div
-              className="w-full max-w-[360px] bg-white rounded-2xl p-7 space-y-6 text-center"
-              style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.18)' }}
-            >
-              <div className="flex flex-col items-center gap-2">
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                  style={{ background: 'var(--primary)' }}
-                >
-                  <span className="text-white text-xl" style={{ fontWeight: 700, letterSpacing: '-0.5px' }}>AC</span>
-                </div>
-                <h1 className="text-[19px]" style={{ fontWeight: 700 }}><MadyLogo theme="light" /></h1>
-              </div>
-              <div
-                className="p-4 rounded-xl space-y-2"
-                style={{ background: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
-              >
-                <p style={{ fontWeight: 600 }}>Revisa tu correo</p>
-                <p className="text-sm">
-                  Enviamos un enlace de confirmación a <strong>{email}</strong>.
-                  Haz clic en el enlace y después inicia sesión para completar tu registro.
-                </p>
-              </div>
-              <Link
-                to="/login"
-                className="block text-sm text-center"
-                style={{ color: 'var(--primary)', fontWeight: 600 }}
-              >
-                Ir a iniciar sesión
-              </Link>
-            </div>
-          </AuthBackground>
+          <AuthMobileBanner />
         </div>
-
-        {/* Escritorio — panel oscuro con paleta M.A.D.Y */}
-        <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
-          <AuthCarouselPanel className="flex lg:w-[60%]" />
-          <div
-            className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12"
-            style={{ background: 'var(--auth-panel-bg)' }}
-          >
-            <AuthLeavesDecor className="hidden lg:block" />
-            <div className="w-full max-w-[380px] space-y-6 text-center">
-              <h1 className="text-[34px] font-bold leading-tight [letter-spacing:-0.01em]" style={{ color: 'var(--auth-heading-color)' }}>
-                Revisa tu correo
-              </h1>
-              <div
-                className="p-4 rounded-xl space-y-2 text-left"
-                style={{ background: 'var(--auth-success-fill)', color: 'var(--auth-success-text)' }}
-              >
-                <p style={{ fontWeight: 600 }}>Correo de confirmación enviado</p>
-                <p className="text-sm">
-                  Enviamos un enlace a <strong>{email}</strong>. Haz clic en el enlace y después inicia sesión para completar tu registro.
-                </p>
-              </div>
-              <Link
-                to="/login"
-                className="block text-sm text-center font-semibold"
-                style={{ color: 'var(--secondary)' }}
-              >
-                Ir a iniciar sesión
-              </Link>
+        <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
+        <div
+          className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-6 lg:p-12"
+          style={{ background: 'var(--auth-panel-bg)' }}
+        >
+          <AuthLeavesDecor />
+          <div className="w-full max-w-[380px] space-y-6 text-center">
+            <h1 className="text-[28px] lg:text-[34px] font-bold leading-tight [letter-spacing:-0.01em]" style={{ color: 'var(--auth-heading-color)' }}>
+              Revisa tu correo
+            </h1>
+            <div
+              className="p-4 rounded-xl space-y-2 text-left"
+              style={{ background: 'var(--auth-success-fill)', color: 'var(--auth-success-text)' }}
+            >
+              <p style={{ fontWeight: 600 }}>Correo de confirmación enviado</p>
+              <p className="text-sm">
+                Enviamos un enlace a <strong>{email}</strong>. Haz clic en el enlace y después inicia sesión para completar tu registro.
+              </p>
             </div>
+            <Link
+              to="/login"
+              className="block text-sm text-center font-semibold"
+              style={{ color: 'var(--secondary)' }}
+            >
+              Ir a iniciar sesión
+            </Link>
           </div>
         </div>
-      </>
+      </div>
     )
   }
 
   // ── Formulario de registro ────────────────────────────────────────────────
 
   return (
-    <>
-      {/* Móvil — sin cambios */}
-      <div className="lg:hidden">
-        <AuthBackground>
-          <div
-            className="w-full max-w-[360px] bg-white rounded-2xl p-7 space-y-6"
-            style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.18)' }}
-          >
-            {/* Logo */}
-            <div className="flex flex-col items-center gap-2 pb-1">
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                style={{ background: 'var(--primary)' }}
-              >
-                <span className="text-white text-xl" style={{ fontWeight: 700, letterSpacing: '-0.5px' }}>AC</span>
-              </div>
-              <h1 className="text-[19px]" style={{ fontWeight: 700 }}>Crear cuenta</h1>
-              <p className="text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
-                <MadyLogo theme="light" /> · Inocuidad Alimentaria
-              </p>
-            </div>
+    <div className="flex flex-col lg:flex-row min-h-screen" style={{ background: 'var(--background)' }}>
 
-            {/* Formulario */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs block" style={{ fontWeight: 600, color: 'var(--muted-foreground)' }}>
-                  Nombre completo
-                </label>
+      {/* ── Banner móvil (Opción B), solo <lg ── */}
+      <div className="lg:hidden">
+        <AuthMobileBanner paused={!!focusedField} />
+      </div>
+
+      {/* ── PANEL IZQUIERDO: carrusel de fotos (solo lg+, 60%) ── */}
+      <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
+
+      {/* ── PANEL: formulario (100% en móvil, 40% en escritorio) ── */}
+      <div
+        className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-6 lg:items-center lg:justify-start lg:pt-12 lg:pb-10 lg:px-12 transition-colors duration-150"
+        style={{ background: 'var(--auth-panel-bg)' }}
+      >
+        <AuthLeavesDecor />
+
+        {/* Nav superior — misma posición que en Login */}
+        <div className="absolute top-6 right-6 lg:top-8 lg:right-10 text-sm">
+          <span style={{ color: 'var(--auth-subtext-color)' }}>¿Ya tienes cuenta? </span>
+          <Link to="/login" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
+            Inicia sesión
+          </Link>
+        </div>
+
+        <div className="w-full max-w-[380px] space-y-6">
+          <div className="space-y-1 mt-8 lg:mt-0">
+            <h1
+              className="text-[26px] lg:text-[34px] font-bold leading-tight [letter-spacing:-0.01em]"
+              style={{ color: 'var(--auth-heading-color)' }}
+            >
+              Crear cuenta
+            </h1>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-[6px]">
+              <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
+                Nombre completo
+              </label>
+              <div className="relative">
+                <User className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
                 <input
                   type="text"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
+                  onFocus={() => setFocusedField('nombre')}
+                  onBlur={() => setFocusedField(null)}
                   placeholder="Juan Pérez García"
                   required
                   autoComplete="name"
-                  className="w-full h-12 px-4 rounded-lg border focus:outline-none focus:ring-1"
-                  style={{
-                    borderColor: 'var(--border)',
-                    background: 'var(--input-background)',
-                  }}
+                  className="w-full h-[42px] auth-input border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                  style={getInputStyle(focusedField === 'nombre')}
                 />
               </div>
+            </div>
 
-              <div className="space-y-1">
-                <label className="text-xs block" style={{ fontWeight: 600, color: 'var(--muted-foreground)' }}>
-                  Correo electrónico
-                </label>
+            <div className="space-y-[6px]">
+              <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
+                Correo electrónico
+              </label>
+              <div className="relative">
+                <Mail className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => setFocusedField('email')}
+                  onBlur={() => setFocusedField(null)}
                   placeholder="correo@ejemplo.com"
                   required
                   autoComplete="email"
-                  className="w-full h-12 px-4 rounded-lg border focus:outline-none focus:ring-1"
-                  style={{
-                    borderColor: 'var(--border)',
-                    background: 'var(--input-background)',
-                  }}
+                  className="w-full h-[42px] auth-input border pl-10 pr-9 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                  style={getInputStyle(focusedField === 'email')}
                 />
+                {EMAIL_RE.test(email) && (
+                  <CheckCircle2
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4"
+                    style={{ color: 'var(--secondary)' }}
+                  />
+                )}
               </div>
+            </div>
 
-              <div className="space-y-1">
-                <label className="text-xs block" style={{ fontWeight: 600, color: 'var(--muted-foreground)' }}>
-                  Contraseña
-                </label>
+            <div className="space-y-[6px]">
+              <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
+                Contraseña
+              </label>
+              <div className="relative">
+                <Lock className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setFocusedField('password')}
+                  onBlur={() => setFocusedField(null)}
                   placeholder="Mínimo 8 caracteres"
                   required
                   autoComplete="new-password"
-                  className="w-full h-12 px-4 rounded-lg border focus:outline-none focus:ring-1"
-                  style={{
-                    borderColor: 'var(--border)',
-                    background: 'var(--input-background)',
-                  }}
+                  className="w-full h-[42px] auth-input border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                  style={getInputStyle(focusedField === 'password')}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded"
+                  style={{ color: 'var(--auth-icon-color)' }}
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showPassword
+                    ? <EyeOff className="w-[17px] h-[17px]" />
+                    : <Eye className="w-[17px] h-[17px]" />}
+                </button>
               </div>
+            </div>
 
-              <div className="space-y-1">
-                <label className="text-xs block" style={{ fontWeight: 600, color: 'var(--muted-foreground)' }}>
-                  Nombre de tu organización
-                </label>
+            <div className="space-y-[6px]">
+              <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
+                Nombre de tu organización
+              </label>
+              <div className="relative">
+                <Building2 className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
                 <input
                   type="text"
                   value={nombreOrg}
                   onChange={(e) => setNombreOrg(e.target.value)}
+                  onFocus={() => setFocusedField('nombreOrg')}
+                  onBlur={() => setFocusedField(null)}
                   placeholder="Ej: Rancho El Solar o tu nombre"
                   required
                   autoComplete="organization"
-                  className="w-full h-12 px-4 rounded-lg border focus:outline-none focus:ring-1"
-                  style={{
-                    borderColor: 'var(--border)',
-                    background: 'var(--input-background)',
-                  }}
+                  className="w-full h-[42px] auth-input border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                  style={getInputStyle(focusedField === 'nombreOrg')}
                 />
-                <p className="text-xs pt-1" style={{ color: 'var(--muted-foreground)' }}>
-                  Nombre de tu empresa, o tu nombre si trabajas por tu cuenta.
-                </p>
               </div>
+              <p className="text-xs pt-1" style={{ color: 'var(--auth-subtext-color)' }}>
+                (O tu nombre si eres independiente).
+              </p>
+            </div>
 
-              {/* Turnstile CAPTCHA */}
-              {SITE_KEY && (
+            {SITE_KEY && (
+              <div
+                className="flex flex-col items-stretch gap-2 p-3 rounded-[10px] border"
+                style={{ borderColor: 'var(--auth-input-border)', background: 'var(--auth-input-bg)' }}
+              >
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: 'var(--secondary)' }} />
+                  <div>
+                    <p className="text-xs font-semibold" style={{ color: 'var(--auth-label-color)' }}>
+                      Verificación de seguridad
+                    </p>
+                    <p className="text-[11px]" style={{ color: 'var(--auth-subtext-color)' }}>
+                      Completa el captcha para continuar
+                    </p>
+                  </div>
+                </div>
                 <div className="flex justify-center">
                   <Turnstile
                     ref={turnstileRef}
                     siteKey={SITE_KEY}
-                    options={{ theme: 'light', size: 'normal' }}
+                    options={{ theme: 'auto', size: isDesktop ? 'normal' : 'compact' }}
                     onSuccess={(token) => setCaptchaToken(token)}
                     onExpire={() => setCaptchaToken(null)}
                     onError={() => {
@@ -279,223 +303,29 @@ export function Registro() {
                     }}
                   />
                 </div>
-              )}
+              </div>
+            )}
 
-              {error && (
-                <div
-                  className="p-3 rounded-lg text-sm"
-                  style={{ background: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
-                >
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={submitting || (!!SITE_KEY && !captchaToken)}
-                className="w-full h-12 rounded-xl text-white transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ background: 'var(--primary)', fontWeight: 600, marginTop: '4px' }}
+            {error && (
+              <div
+                className="p-3 rounded-lg text-sm"
+                style={{ background: 'var(--auth-danger-fill)', color: 'var(--auth-danger-text)' }}
               >
-                {submitting ? 'Creando cuenta…' : 'Crear cuenta'}
-              </button>
-            </form>
-
-            <p className="text-sm text-center" style={{ color: 'var(--muted-foreground)' }}>
-              ¿Ya tienes cuenta?{' '}
-              <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 600 }}>
-                Iniciar sesión
-              </Link>
-            </p>
-          </div>
-        </AuthBackground>
-      </div>
-
-      {/* Escritorio — carrusel 2/3 + panel oscuro con paleta M.A.D.Y 1/3 */}
-      <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
-        <AuthCarouselPanel className="flex lg:w-[60%]" />
-
-        <div
-          className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-start pt-12 pb-10 px-12 transition-colors duration-150"
-          style={{ background: 'var(--auth-panel-bg)' }}
-        >
-          <AuthLeavesDecor className="hidden lg:block" />
-
-          {/* Nav superior — misma posición que en Login */}
-          <div className="absolute top-8 right-10 text-sm">
-            <span style={{ color: 'var(--auth-subtext-color)' }}>¿Ya tienes cuenta? </span>
-            <Link to="/login" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
-              Inicia sesión
-            </Link>
-          </div>
-
-          <div className="w-full max-w-[380px] space-y-6">
-            <div className="space-y-1">
-              <h1
-                className="text-[34px] font-bold leading-tight [letter-spacing:-0.01em]"
-                style={{ color: 'var(--auth-heading-color)' }}
-              >
-                Crear cuenta
-              </h1>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-[6px]">
-                <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
-                  Nombre completo
-                </label>
-                <div className="relative">
-                  <User className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
-                  <input
-                    type="text"
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                    onFocus={() => setFocusedField('nombre')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="Juan Pérez García"
-                    required
-                    autoComplete="name"
-                    className="w-full h-[42px] auth-input border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
-                    style={getInputStyle(focusedField === 'nombre')}
-                  />
-                </div>
+                {error}
               </div>
+            )}
 
-              <div className="space-y-[6px]">
-                <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
-                  Correo electrónico
-                </label>
-                <div className="relative">
-                  <Mail className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onFocus={() => setFocusedField('email')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="correo@ejemplo.com"
-                    required
-                    autoComplete="email"
-                    className="w-full h-[42px] auth-input border pl-10 pr-9 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
-                    style={getInputStyle(focusedField === 'email')}
-                  />
-                  {EMAIL_RE.test(email) && (
-                    <CheckCircle2
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4"
-                      style={{ color: 'var(--secondary)' }}
-                    />
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-[6px]">
-                <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
-                  Contraseña
-                </label>
-                <div className="relative">
-                  <Lock className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onFocus={() => setFocusedField('password')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="Mínimo 8 caracteres"
-                    required
-                    autoComplete="new-password"
-                    className="w-full h-[42px] auth-input border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
-                    style={getInputStyle(focusedField === 'password')}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded"
-                    style={{ color: 'var(--auth-icon-color)' }}
-                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                  >
-                    {showPassword
-                      ? <EyeOff className="w-[17px] h-[17px]" />
-                      : <Eye className="w-[17px] h-[17px]" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-[6px]">
-                <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
-                  Nombre de tu organización
-                </label>
-                <div className="relative">
-                  <Building2 className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
-                  <input
-                    type="text"
-                    value={nombreOrg}
-                    onChange={(e) => setNombreOrg(e.target.value)}
-                    onFocus={() => setFocusedField('nombreOrg')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="Ej: Rancho El Solar o tu nombre"
-                    required
-                    autoComplete="organization"
-                    className="w-full h-[42px] auth-input border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
-                    style={getInputStyle(focusedField === 'nombreOrg')}
-                  />
-                </div>
-                <p className="text-xs pt-1" style={{ color: 'var(--auth-subtext-color)' }}>
-                  (O tu nombre si eres independiente).
-                </p>
-              </div>
-
-              {SITE_KEY && (
-                <div
-                  className="flex flex-col items-stretch gap-2 p-3 rounded-[10px] border"
-                  style={{ borderColor: 'var(--auth-input-border)', background: 'var(--auth-input-bg)' }}
-                >
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: 'var(--secondary)' }} />
-                    <div>
-                      <p className="text-xs font-semibold" style={{ color: 'var(--auth-label-color)' }}>
-                        Verificación de seguridad
-                      </p>
-                      <p className="text-[11px]" style={{ color: 'var(--auth-subtext-color)' }}>
-                        Completa el captcha para continuar
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex justify-center">
-                    <Turnstile
-                      ref={turnstileRef}
-                      siteKey={SITE_KEY}
-                      options={{ theme: 'auto', size: 'normal' }}
-                      onSuccess={(token) => setCaptchaToken(token)}
-                      onExpire={() => setCaptchaToken(null)}
-                      onError={() => {
-                        setCaptchaToken(null)
-                        setError('Verificación fallida, intenta de nuevo')
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {error && (
-                <div
-                  className="p-3 rounded-lg text-sm"
-                  style={{ background: 'var(--auth-danger-fill)', color: 'var(--auth-danger-text)' }}
-                >
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={submitting || (!!SITE_KEY && !captchaToken)}
-                className={ctaCls}
-                style={{ marginTop: '4px' }}
-              >
-                {submitting ? 'Creando cuenta…' : (<>Crear cuenta<ArrowRight className="w-4 h-4" /></>)}
-              </button>
-            </form>
-          </div>
+            <button
+              type="submit"
+              disabled={submitting || (!!SITE_KEY && !captchaToken)}
+              className={ctaCls}
+              style={{ marginTop: '4px' }}
+            >
+              {submitting ? 'Creando cuenta…' : (<>Crear cuenta<ArrowRight className="w-4 h-4" /></>)}
+            </button>
+          </form>
         </div>
       </div>
-    </>
+    </div>
   )
 }

@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams, Link } from 'react-router'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
-import { MadyLogo } from '@/app/components/MadyLogo'
 import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
+import { AuthMobileBanner } from '@/app/components/AuthMobileBanner'
 import { AuthLeavesDecor } from '@/app/components/AuthLeavesDecor'
 
 const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
@@ -35,6 +35,19 @@ export function Login() {
   const [submitting, setSubmitting] = useState(false)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const turnstileRef = useRef<TurnstileInstance>(null)
+
+  // Turnstile 'compact' (150x140) cabe cómodo en móviles angostos; 'normal'
+  // (300x65) es la forma acostada que se ve mejor en el panel ancho de
+  // escritorio. Una sola instancia del widget — se decide por matchMedia,
+  // nunca duplicando el montaje.
+  const [isDesktop, setIsDesktop] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    setIsDesktop(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
   const [modoRecup, setModoRecup] = useState(false)
   const [recupEmail, setRecupEmail] = useState('')
@@ -90,19 +103,24 @@ export function Login() {
   const ctaCls = 'auth-cta w-full h-12 text-white font-semibold flex items-center justify-center gap-2 disabled:cursor-not-allowed'
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--background)' }}>
+    <div className="flex flex-col lg:flex-row min-h-screen" style={{ background: 'var(--background)' }}>
+
+      {/* ── Banner móvil (Opción B): foto + logo + título, solo <lg ── */}
+      <div className="lg:hidden">
+        <AuthMobileBanner paused={!!focusedField} />
+      </div>
 
       {/* ── PANEL IZQUIERDO: carrusel de fotos (solo lg+, 60%) ── */}
       <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
 
-      {/* ── PANEL DERECHO: formulario (40% en escritorio, verde oscuro derivado del mint) ── */}
+      {/* ── PANEL: formulario (100% en móvil, 40% en escritorio) — verde oscuro derivado del mint en cualquier tamaño ── */}
       <div
         className={`auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-6 lg:pb-12 lg:px-12 transition-colors duration-150 ${modoRecup ? '' : 'lg:justify-start lg:pt-20'}`}
         style={{ background: 'var(--auth-panel-bg)' }}
       >
-        <AuthLeavesDecor className="hidden lg:block" />
+        <AuthLeavesDecor />
 
-        {/* Nav superior — solo escritorio, solo en login (no aplica al recuperar acceso) */}
+        {/* Nav superior — solo escritorio, solo en login (no aplica al recuperar acceso; en móvil el enlace equivalente va abajo) */}
         {!modoRecup && (
           <div className="hidden lg:block absolute top-8 right-10 text-sm">
             <span style={{ color: 'var(--auth-subtext-color)' }}>¿Eres nuevo aquí? </span>
@@ -113,17 +131,6 @@ export function Login() {
         )}
 
         <div className="w-full max-w-[380px] space-y-7">
-
-          {/* Logo M.A.D.Y + tagline — solo móvil, en escritorio ya está en el carrusel */}
-          <div className="space-y-[3px] lg:hidden">
-            <MadyLogo theme="light" style={{ height: 36, width: 'auto' }} />
-            <p
-              className="text-[10px] tracking-widest uppercase"
-              style={{ color: 'var(--muted-foreground)', letterSpacing: '0.1em' }}
-            >
-              Inocuidad Inteligente
-            </p>
-          </div>
 
           {/* Título + subtítulo — cambia según login / recuperar acceso */}
           <div className="space-y-1">
@@ -248,12 +255,12 @@ export function Login() {
                   placeholder="correo@ejemplo.com"
                   required
                   autoComplete="email"
-                  className="w-full h-12 lg:h-[42px] auth-input border pl-10 pr-4 lg:pr-9 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                  className="w-full h-12 lg:h-[42px] auth-input border pl-10 pr-9 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
                   style={getInputStyle(focusedField === 'email')}
                 />
                 {EMAIL_RE.test(email) && (
                   <CheckCircle2
-                    className="hidden lg:block absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4"
                     style={{ color: 'var(--secondary)' }}
                   />
                 )}
@@ -306,12 +313,12 @@ export function Login() {
             {/* Turnstile — fila simple en móvil, tarjeta con encabezado en escritorio */}
             {SITE_KEY && (
               <div
-                className="flex items-center gap-3 lg:flex-col lg:items-stretch lg:gap-2 lg:p-3 lg:rounded-[10px] lg:border lg:bg-[var(--auth-input-bg)]"
+                className="flex flex-col items-stretch gap-2 p-3 rounded-[10px] border bg-[var(--auth-input-bg)]"
                 style={{ borderColor: 'var(--auth-input-border)' }}
               >
-                <div className="flex items-center gap-3 lg:gap-2">
-                  <ShieldCheck className="w-5 h-5 lg:w-4 lg:h-4 shrink-0" style={{ color: 'var(--secondary)' }} />
-                  <div className="hidden lg:block">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: 'var(--secondary)' }} />
+                  <div>
                     <p className="text-xs font-semibold" style={{ color: 'var(--auth-label-color)' }}>
                       Verificación de seguridad
                     </p>
@@ -320,11 +327,11 @@ export function Login() {
                     </p>
                   </div>
                 </div>
-                <div className="lg:flex lg:justify-center">
+                <div className="flex justify-center">
                   <Turnstile
                     ref={turnstileRef}
                     siteKey={SITE_KEY}
-                    options={{ theme: 'auto', size: 'normal' }}
+                    options={{ theme: 'auto', size: isDesktop ? 'normal' : 'compact' }}
                     onSuccess={(token) => setCaptchaToken(token)}
                     onExpire={() => setCaptchaToken(null)}
                     onError={() => {

@@ -100,57 +100,44 @@
   /* Motivo decorativo de hojas detrás del formulario — trazo mint a opacidad
      mínima, puramente ornamental (ver AuthLeavesDecor.tsx). */
   --auth-leaf-stroke: color-mix(in srgb, var(--secondary) 100%, transparent);
+  /* Banner móvil (Opción B): capa que funde la foto del carrusel con el verde
+     sólido del panel de abajo — transparente arriba, sólida (mismo tono que
+     --auth-panel-bg) en la base del banner. */
+  --auth-mobile-banner-fade: linear-gradient(to bottom,
+    color-mix(in srgb, var(--mady-green-darker) 30%, transparent) 0%,
+    color-mix(in srgb, var(--mady-green-darker) 55%, transparent) 55%,
+    var(--mady-green-dark) 100%);
 
-  /* Indirección responsive del panel de formulario (Login/Registro/Restablecer).
-     Por defecto = look móvil actual, byte a byte. Solo se sobreescriben dentro
-     de .auth-panel en el media query de escritorio de abajo — móvil nunca cambia. */
-  --auth-panel-bg: var(--background);
-  --auth-heading-color: var(--primary);
-  --auth-heading-accent-color: var(--primary);
-  --auth-subtext-color: var(--muted-foreground);
-  --auth-label-color: var(--primary);
-  --auth-icon-color: var(--muted-foreground);
-  --auth-input-bg: var(--input-background);
-  --auth-input-border: var(--border);
-  --auth-input-text: var(--foreground);
-  --auth-input-placeholder: var(--muted-foreground);
-  --auth-link-color: var(--primary);
-  --auth-cta-bg: var(--primary);
-  /* Espacio extra antes del bloque de inputs, además del space-y del contenedor
-     — 0 en móvil. Se aplica por inline style (margin-top), no por clase, porque
-     un utility de margen no puede ganarle en especificidad al selector que
-     genera space-y-*. */
-  --auth-form-gap-top: 0px;
-  --auth-danger-fill: var(--agro-danger-fill);
-  --auth-danger-text: var(--agro-danger-text);
-  --auth-success-fill: var(--agro-success-fill);
-  --auth-success-text: var(--agro-success-text);
-  --auth-warning-fill: var(--agro-warning-fill);
-  --auth-warning-text: var(--agro-warning-text);
-}
-
-@media (min-width: 1024px) {
-  .auth-panel {
-    --auth-panel-bg: linear-gradient(165deg, color-mix(in srgb, var(--mady-green-dark) 88%, black) 0%, color-mix(in srgb, var(--mady-green-darker) 88%, black) 100%);
-    --auth-heading-color: #FFFFFF;
-    --auth-heading-accent-color: var(--secondary);
-    --auth-subtext-color: var(--auth-text-secondary-dark);
-    --auth-label-color: #FFFFFF;
-    --auth-icon-color: rgba(255, 255, 255, 0.55);
-    --auth-input-bg: var(--auth-input-dark);
-    --auth-input-border: var(--auth-border-dark);
-    --auth-input-text: #FFFFFF;
-    --auth-input-placeholder: rgba(255, 255, 255, 0.4);
-    --auth-link-color: var(--secondary);
-    --auth-cta-bg: linear-gradient(135deg, var(--secondary) 0%, var(--mint-hover) 100%);
-    --auth-form-gap-top: 2.5rem;
-    --auth-danger-fill: rgba(224, 90, 90, 0.16);
-    --auth-danger-text: #FFD9D3;
-    --auth-success-fill: rgba(42, 173, 149, 0.18);
-    --auth-success-text: #B9F0E1;
-    --auth-warning-fill: rgba(129, 190, 229, 0.16);
-    --auth-warning-text: #D6ECFA;
-  }
+  /* Panel de formulario de auth (Login/Registro/Restablecer) — verde oscuro
+     SIEMPRE, en cualquier breakpoint. Hasta la iteración anterior estos tokens
+     tenían un valor "claro" por defecto que solo se oscurecía dentro de
+     .auth-panel a partir de 1024px (móvil se veía claro/azulado a propósito,
+     por pedido explícito). Ahora móvil debe verse igual que escritorio, así
+     que el valor oscuro pasa a ser el único valor — sin media query, sin
+     indirección — y automáticamente todo lo que ya referencia estas
+     variables (las tres pantallas) queda oscuro en cualquier tamaño. */
+  --auth-panel-bg: linear-gradient(165deg, color-mix(in srgb, var(--mady-green-dark) 88%, black) 0%, color-mix(in srgb, var(--mady-green-darker) 88%, black) 100%);
+  --auth-heading-color: #FFFFFF;
+  --auth-heading-accent-color: var(--secondary);
+  --auth-subtext-color: var(--auth-text-secondary-dark);
+  --auth-label-color: #FFFFFF;
+  --auth-icon-color: rgba(255, 255, 255, 0.55);
+  --auth-input-bg: var(--auth-input-dark);
+  --auth-input-border: var(--auth-border-dark);
+  --auth-input-text: #FFFFFF;
+  --auth-input-placeholder: rgba(255, 255, 255, 0.4);
+  --auth-link-color: var(--secondary);
+  --auth-cta-bg: linear-gradient(135deg, var(--secondary) 0%, var(--mint-hover) 100%);
+  /* Espacio extra antes del bloque de inputs, además del space-y del
+     contenedor. Sigue por inline style porque un utility de margen no puede
+     ganarle en especificidad al selector que genera space-y-*. */
+  --auth-form-gap-top: 2.5rem;
+  --auth-danger-fill: rgba(224, 90, 90, 0.16);
+  --auth-danger-text: #FFD9D3;
+  --auth-success-fill: rgba(42, 173, 149, 0.18);
+  --auth-success-text: #B9F0E1;
+  --auth-warning-fill: rgba(129, 190, 229, 0.16);
+  --auth-warning-text: #D6ECFA;
 }
 
 .dark {
@@ -293,15 +280,12 @@
 .auth-cta:hover { opacity: 0.9; }
 .auth-cta:active { opacity: 0.8; }
 .auth-cta:disabled { opacity: 0.4; cursor: not-allowed; }
-
-@media (min-width: 1024px) {
-  .auth-panel .auth-cta:hover:not(:disabled) {
-    opacity: 1;
-    background: var(--mint-hover);
-  }
-  .auth-panel .auth-cta:active:not(:disabled) {
-    transform: scale(0.97);
-  }
+.auth-panel .auth-cta:hover:not(:disabled) {
+  opacity: 1;
+  background: var(--mint-hover);
+}
+.auth-panel .auth-cta:active:not(:disabled) {
+  transform: scale(0.97);
 }
 @media (prefers-reduced-motion: reduce) {
   .auth-cta { transition: none; }

@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router'
 import { Lock, Eye, EyeOff, CheckCircle2, ArrowRight, AlertCircle } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { MadyLogo } from '@/app/components/MadyLogo'
 import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
+import { AuthMobileBanner } from '@/app/components/AuthMobileBanner'
 import { AuthLeavesDecor } from '@/app/components/AuthLeavesDecor'
 
 function getInputStyle(focused: boolean): React.CSSProperties {
@@ -17,6 +17,57 @@ function getInputStyle(focused: boolean): React.CSSProperties {
     color: 'var(--auth-input-text)',
     borderRadius: 10,
   }
+}
+
+interface StatusPanelProps {
+  iconBg: string
+  icon: React.ReactNode
+  title: string
+  titleSizeLg: string
+  message: string
+  ctaLabel: string
+  onCta: () => void
+}
+
+function StatusPanel({ iconBg, icon, title, titleSizeLg, message, ctaLabel, onCta }: StatusPanelProps) {
+  return (
+    <div className="flex flex-col lg:flex-row min-h-screen" style={{ background: 'var(--background)' }}>
+      <div className="lg:hidden">
+        <AuthMobileBanner />
+      </div>
+      <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
+      <div
+        className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-6 lg:p-12"
+        style={{ background: 'var(--auth-panel-bg)' }}
+      >
+        <AuthLeavesDecor />
+        <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center"
+            style={{ background: iconBg }}
+          >
+            {icon}
+          </div>
+          <div className="space-y-2">
+            <h1 className={`text-[26px] ${titleSizeLg} font-bold [letter-spacing:-0.01em]`} style={{ color: 'var(--auth-heading-color)' }}>
+              {title}
+            </h1>
+            <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
+              {message}
+            </p>
+          </div>
+          <button
+            onClick={onCta}
+            className="auth-cta w-full h-12 text-white font-semibold flex items-center justify-center gap-2"
+            style={{ borderRadius: 10 }}
+          >
+            {ctaLabel}
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export function RestablecerContrasena() {
@@ -86,187 +137,71 @@ export function RestablecerContrasena() {
     )
   }
 
-  // Estado: éxito
   if (success) {
     return (
-      <>
-        <div
-          className="lg:hidden min-h-screen flex flex-col items-center justify-center p-6"
-          style={{ background: 'var(--background)' }}
-        >
-          <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center"
-              style={{ background: 'var(--agro-success-fill)' }}
-            >
-              <CheckCircle2 className="w-8 h-8" style={{ color: 'var(--agro-success-text)' }} />
-            </div>
-            <div className="space-y-2">
-              <h1 className="text-[22px] font-semibold" style={{ color: 'var(--primary)' }}>
-                ¡Contraseña actualizada!
-              </h1>
-              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                Tu contraseña se actualizó correctamente. Inicia sesión con tu nueva contraseña.
-              </p>
-            </div>
-            <button
-              onClick={() => navigate('/login', { replace: true })}
-              className="w-full h-12 text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:opacity-80 transition-opacity"
-              style={{ background: 'var(--primary)', borderRadius: 10 }}
-            >
-              Ir al inicio de sesión
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
-          <AuthCarouselPanel className="flex lg:w-[60%]" />
-          <div
-            className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12"
-            style={{ background: 'var(--auth-panel-bg)' }}
-          >
-            <AuthLeavesDecor className="hidden lg:block" />
-            <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center"
-                style={{ background: 'var(--auth-success-fill)' }}
-              >
-                <CheckCircle2 className="w-8 h-8" style={{ color: 'var(--auth-success-text)' }} />
-              </div>
-              <div className="space-y-2">
-                <h1 className="text-[32px] font-bold [letter-spacing:-0.01em]" style={{ color: 'var(--auth-heading-color)' }}>
-                  ¡Contraseña actualizada!
-                </h1>
-                <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
-                  Tu contraseña se actualizó correctamente. Inicia sesión con tu nueva contraseña.
-                </p>
-              </div>
-              <button
-                onClick={() => navigate('/login', { replace: true })}
-                className={ctaCls}
-                style={{ borderRadius: 10 }}
-              >
-                Ir al inicio de sesión
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </>
+      <StatusPanel
+        iconBg="var(--auth-success-fill)"
+        icon={<CheckCircle2 className="w-8 h-8" style={{ color: 'var(--auth-success-text)' }} />}
+        title="¡Contraseña actualizada!"
+        titleSizeLg="lg:text-[32px]"
+        message="Tu contraseña se actualizó correctamente. Inicia sesión con tu nueva contraseña."
+        ctaLabel="Ir al inicio de sesión"
+        onCta={() => navigate('/login', { replace: true })}
+      />
     )
   }
 
-  // Estado: token vencido o inválido
   if (tokenExpirado) {
     return (
-      <>
-        <div
-          className="lg:hidden min-h-screen flex flex-col items-center justify-center p-6"
-          style={{ background: 'var(--background)' }}
-        >
-          <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center"
-              style={{ background: 'var(--agro-warning-fill)' }}
-            >
-              <AlertCircle className="w-8 h-8" style={{ color: 'var(--agro-warning-text)' }} />
-            </div>
-            <div className="space-y-2">
-              <h1 className="text-[20px] font-semibold" style={{ color: 'var(--foreground)' }}>
-                El enlace ha vencido
-              </h1>
-              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                El enlace de recuperación ya no es válido. Solicita uno nuevo desde el inicio de sesión.
-              </p>
-            </div>
-            <button
-              onClick={() => navigate('/login', { replace: true })}
-              className="w-full h-12 text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:opacity-80 transition-opacity"
-              style={{ background: 'var(--primary)', borderRadius: 10 }}
-            >
-              Volver al inicio de sesión
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
-          <AuthCarouselPanel className="flex lg:w-[60%]" />
-          <div
-            className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12"
-            style={{ background: 'var(--auth-panel-bg)' }}
-          >
-            <AuthLeavesDecor className="hidden lg:block" />
-            <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center"
-                style={{ background: 'var(--auth-warning-fill)' }}
-              >
-                <AlertCircle className="w-8 h-8" style={{ color: 'var(--auth-warning-text)' }} />
-              </div>
-              <div className="space-y-2">
-                <h1 className="text-[30px] font-bold [letter-spacing:-0.01em]" style={{ color: 'var(--auth-heading-color)' }}>
-                  El enlace ha vencido
-                </h1>
-                <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
-                  El enlace de recuperación ya no es válido. Solicita uno nuevo desde el inicio de sesión.
-                </p>
-              </div>
-              <button
-                onClick={() => navigate('/login', { replace: true })}
-                className={ctaCls}
-                style={{ borderRadius: 10 }}
-              >
-                Volver al inicio de sesión
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </>
+      <StatusPanel
+        iconBg="var(--auth-warning-fill)"
+        icon={<AlertCircle className="w-8 h-8" style={{ color: 'var(--auth-warning-text)' }} />}
+        title="El enlace ha vencido"
+        titleSizeLg="lg:text-[30px]"
+        message="El enlace de recuperación ya no es válido. Solicita uno nuevo desde el inicio de sesión."
+        ctaLabel="Volver al inicio de sesión"
+        onCta={() => navigate('/login', { replace: true })}
+      />
     )
   }
 
   return (
-    <>
-      {/* Móvil — sin cambios */}
-      <div
-        className="lg:hidden min-h-screen flex flex-col items-center justify-center p-6"
-        style={{ background: 'var(--background)' }}
-      >
-        <div className="w-full max-w-[380px] space-y-7">
+    <div className="flex flex-col lg:flex-row min-h-screen" style={{ background: 'var(--background)' }}>
 
-          <div className="space-y-[3px]">
-            <MadyLogo theme="light" style={{ height: 36, width: 'auto' }} />
-            <p
-              className="text-[10px] tracking-widest uppercase"
-              style={{ color: 'var(--muted-foreground)', letterSpacing: '0.1em' }}
-            >
-              Inocuidad Inteligente
-            </p>
-          </div>
+      {/* ── Banner móvil (Opción B), solo <lg ── */}
+      <div className="lg:hidden">
+        <AuthMobileBanner paused={!!focusedField} />
+      </div>
+
+      <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
+
+      <div
+        className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-6 lg:justify-start lg:pt-20 lg:pb-12 lg:px-12 transition-colors duration-150"
+        style={{ background: 'var(--auth-panel-bg)' }}
+      >
+        <AuthLeavesDecor />
+        <div className="w-full max-w-[380px] space-y-7 lg:space-y-8">
 
           <div className="space-y-1">
             <h1
-              className="text-[22px] leading-tight"
-              style={{ fontWeight: 600, color: 'var(--primary)' }}
+              className="text-[26px] lg:text-[38px] font-bold leading-tight [letter-spacing:-0.01em]"
+              style={{ color: 'var(--auth-heading-color)' }}
             >
               Nueva contraseña
             </h1>
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+            <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
               Elige una contraseña segura para tu cuenta.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-5" style={{ marginTop: 'var(--auth-form-gap-top)' }}>
 
             <div className="space-y-[6px]">
-              <label className="text-xs font-semibold block" style={{ color: 'var(--primary)' }}>
+              <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
                 Nueva contraseña
               </label>
               <div className="relative">
-                <Lock className={iconCls} style={{ color: 'var(--muted-foreground)' }} />
+                <Lock className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
                 <input
                   type={showNueva ? 'text' : 'password'}
                   value={nueva}
@@ -276,20 +211,14 @@ export function RestablecerContrasena() {
                   placeholder="Mínimo 8 caracteres"
                   required
                   autoComplete="new-password"
-                  className="w-full h-12 border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--muted-foreground)]"
-                  style={{
-                    background: 'var(--input-background)',
-                    borderColor: focusedField === 'nueva' ? 'var(--primary)' : 'var(--border)',
-                    boxShadow: focusedField === 'nueva' ? '0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent)' : 'none',
-                    color: 'var(--foreground)',
-                    borderRadius: 10,
-                  }}
+                  className="w-full h-12 lg:h-[42px] auth-input border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                  style={getInputStyle(focusedField === 'nueva')}
                 />
                 <button
                   type="button"
                   onClick={() => setShowNueva(v => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded"
-                  style={{ color: 'var(--muted-foreground)' }}
+                  style={{ color: 'var(--auth-icon-color)' }}
                   aria-label={showNueva ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
                   {showNueva
@@ -300,11 +229,11 @@ export function RestablecerContrasena() {
             </div>
 
             <div className="space-y-[6px]">
-              <label className="text-xs font-semibold block" style={{ color: 'var(--primary)' }}>
+              <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
                 Confirmar contraseña
               </label>
               <div className="relative">
-                <Lock className={iconCls} style={{ color: 'var(--muted-foreground)' }} />
+                <Lock className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
                 <input
                   type={showConfirmar ? 'text' : 'password'}
                   value={confirmar}
@@ -314,20 +243,14 @@ export function RestablecerContrasena() {
                   placeholder="Repite tu nueva contraseña"
                   required
                   autoComplete="new-password"
-                  className="w-full h-12 border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--muted-foreground)]"
-                  style={{
-                    background: 'var(--input-background)',
-                    borderColor: focusedField === 'confirmar' ? 'var(--primary)' : 'var(--border)',
-                    boxShadow: focusedField === 'confirmar' ? '0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent)' : 'none',
-                    color: 'var(--foreground)',
-                    borderRadius: 10,
-                  }}
+                  className="w-full h-12 lg:h-[42px] auth-input border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                  style={getInputStyle(focusedField === 'confirmar')}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmar(v => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded"
-                  style={{ color: 'var(--muted-foreground)' }}
+                  style={{ color: 'var(--auth-icon-color)' }}
                   aria-label={showConfirmar ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
                   {showConfirmar
@@ -340,7 +263,7 @@ export function RestablecerContrasena() {
             {error && (
               <div
                 className="p-3 rounded-lg text-sm"
-                style={{ background: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+                style={{ background: 'var(--auth-danger-fill)', color: 'var(--auth-danger-text)' }}
               >
                 {error}
               </div>
@@ -349,8 +272,8 @@ export function RestablecerContrasena() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full h-12 text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ background: 'var(--primary)', borderRadius: 10 }}
+              className={ctaCls}
+              style={{ borderRadius: 10 }}
             >
               {submitting ? (
                 'Guardando...'
@@ -364,124 +287,6 @@ export function RestablecerContrasena() {
           </form>
         </div>
       </div>
-
-      {/* Escritorio — carrusel 2/3 + panel oscuro con paleta M.A.D.Y 1/3 */}
-      <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
-        <AuthCarouselPanel className="flex lg:w-[60%]" />
-
-        <div
-          className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-start pt-20 pb-12 px-12 transition-colors duration-150"
-          style={{ background: 'var(--auth-panel-bg)' }}
-        >
-          <AuthLeavesDecor className="hidden lg:block" />
-          <div className="w-full max-w-[380px] space-y-8">
-
-            <div className="space-y-1">
-              <h1
-                className="text-[38px] font-bold leading-tight [letter-spacing:-0.01em]"
-                style={{ color: 'var(--auth-heading-color)' }}
-              >
-                Nueva contraseña
-              </h1>
-              <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
-                Elige una contraseña segura para tu cuenta.
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-5" style={{ marginTop: 'var(--auth-form-gap-top)' }}>
-
-              <div className="space-y-[6px]">
-                <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
-                  Nueva contraseña
-                </label>
-                <div className="relative">
-                  <Lock className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
-                  <input
-                    type={showNueva ? 'text' : 'password'}
-                    value={nueva}
-                    onChange={(e) => setNueva(e.target.value)}
-                    onFocus={() => setFocusedField('nueva-d')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="Mínimo 8 caracteres"
-                    required
-                    autoComplete="new-password"
-                    className="w-full h-[42px] auth-input border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
-                    style={getInputStyle(focusedField === 'nueva-d')}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNueva(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded"
-                    style={{ color: 'var(--auth-icon-color)' }}
-                    aria-label={showNueva ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                  >
-                    {showNueva
-                      ? <EyeOff className="w-[17px] h-[17px]" />
-                      : <Eye className="w-[17px] h-[17px]" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-[6px]">
-                <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
-                  Confirmar contraseña
-                </label>
-                <div className="relative">
-                  <Lock className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
-                  <input
-                    type={showConfirmar ? 'text' : 'password'}
-                    value={confirmar}
-                    onChange={(e) => setConfirmar(e.target.value)}
-                    onFocus={() => setFocusedField('confirmar-d')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="Repite tu nueva contraseña"
-                    required
-                    autoComplete="new-password"
-                    className="w-full h-[42px] auth-input border pl-10 pr-10 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
-                    style={getInputStyle(focusedField === 'confirmar-d')}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmar(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded"
-                    style={{ color: 'var(--auth-icon-color)' }}
-                    aria-label={showConfirmar ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                  >
-                    {showConfirmar
-                      ? <EyeOff className="w-[17px] h-[17px]" />
-                      : <Eye className="w-[17px] h-[17px]" />}
-                  </button>
-                </div>
-              </div>
-
-              {error && (
-                <div
-                  className="p-3 rounded-lg text-sm"
-                  style={{ background: 'var(--auth-danger-fill)', color: 'var(--auth-danger-text)' }}
-                >
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className={ctaCls}
-                style={{ borderRadius: 10 }}
-              >
-                {submitting ? (
-                  'Guardando...'
-                ) : (
-                  <>
-                    Guardar nueva contraseña
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </>
+    </div>
   )
 }
