@@ -4,7 +4,7 @@ import { guardarLastWorkspace } from '@/hooks/useContinuarTrabajo'
 import {
   ChevronLeft, AlertTriangle, CheckCircle, Loader,
   XCircle, AlertCircle, ChevronDown, ChevronUp, Download, Clock, ShieldCheck,
-  Flag, Plus, History, ClipboardList, Copy, Paperclip,
+  Flag, Plus, History, ClipboardList, Copy, Paperclip, Link2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -48,6 +48,24 @@ interface ReviewIssue {
   estado: 'OPEN' | 'RESOLVED' | 'DISMISSED'
   rule_id: string | null
   campo_path: string | null
+}
+
+interface IncidenciaBusqueda {
+  incidencia_id: string
+  reporte_id: string
+  rancho_id: string | null
+  fecha: string
+  descripcion: string
+  created_at: string
+}
+
+interface IncidenciaVinculada {
+  id: string
+  incidencia_id: string
+  reporte_id: string
+  relation_type: 'ANTECEDENTE' | 'EVIDENCIA'
+  m13_incidencias: { descripcion: string } | null
+  m13_reportes: { fecha: string; rancho_id: string | null } | null
 }
 
 type Severidad = 'BLOCKER' | 'REQUIRED' | 'WARNING' | 'INFO'
@@ -649,13 +667,14 @@ function PanelPreliminar({
 // ── Panel de lista de hallazgos ──────────────────────────────────────────────
 
 function PanelHallazgos({
-  hallazgos, preguntas, onVerAccion, onEstadoChange, onVerEvidencias, cargando,
+  hallazgos, preguntas, onVerAccion, onEstadoChange, onVerEvidencias, onVerIncidencias, cargando,
 }: {
   hallazgos: AudHallazgo[]
   preguntas: AudPregunta[]
   onVerAccion: (h: AudHallazgo) => void
   onEstadoChange: (id: string, estado: AudHallazgoEstado) => void
   onVerEvidencias: (h: AudHallazgo) => void
+  onVerIncidencias: (h: AudHallazgo) => void
   cargando: boolean
 }) {
   const [abierto, setAbierto] = useState(true)
@@ -750,6 +769,14 @@ function PanelHallazgos({
                         <Paperclip size={11} />
                         Evidencias
                       </button>
+                      <button
+                        onClick={() => onVerIncidencias(h)}
+                        className="flex items-center gap-1 text-[10px] font-semibold h-7 px-2 rounded-lg"
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                      >
+                        <Link2 size={11} />
+                        Antecedentes M13
+                      </button>
                     </div>
                   </div>
                 )
@@ -840,6 +867,18 @@ export function AuditorEjecucion() {
 
   // Sheet: evidencias de hallazgo
   const [sheetEvidenciaHallazgo, setSheetEvidenciaHallazgo] = useState<{ hallazgoId: string; descripcion: string } | null>(null)
+
+  // Sheet: incidencias M13 como antecedentes del hallazgo
+  const [sheetIncidenciasHallazgo, setSheetIncidenciasHallazgo] = useState<{ hallazgoId: string; descripcion: string } | null>(null)
+  const [incVinculadas, setIncVinculadas] = useState<IncidenciaVinculada[]>([])
+  const [cargandoIncVinc, setCargandoIncVinc] = useState(false)
+  const [incQuitandoId, setIncQuitandoId] = useState<string | null>(null)
+  const [incDesde, setIncDesde] = useState('')
+  const [incHasta, setIncHasta] = useState('')
+  const [incSearch, setIncSearch] = useState('')
+  const [incResultados, setIncResultados] = useState<IncidenciaBusqueda[]>([])
+  const [incBuscando, setIncBuscando] = useState(false)
+  const [incRelacionandoId, setIncRelacionandoId] = useState<string | null>(null)
 
   // — Azzule —
   const [validandoAzzule, setValidandoAzzule] = useState(false)
@@ -1196,6 +1235,103 @@ export function AuditorEjecucion() {
     }
   }
 
+  async function cargarIncVinculadas(hallazgoId: string) {
+    setCargandoIncVinc(true)
+    try {
+      const { data, error } = await (supabase as any)
+        .from('aud_nc_incidencia')
+        .select('id, incidencia_id, reporte_id, relation_type, m13_incidencias(descripcion), m13_reportes(fecha, rancho_id)')
+        .eq('hallazgo_id', hallazgoId)
+      if (error) throw error
+      setIncVinculadas(data ?? [])
+    } catch (e) {
+      console.error('[AuditorEjecucion] cargarIncVinculadas', e)
+      toast.error('No se pudieron cargar los antecedentes. Reintenta.')
+    } finally {
+      setCargandoIncVinc(false)
+    }
+  }
+
+  async function handleBuscarIncidencias() {
+    if (!auditoria?.org_id) return
+    setIncBuscando(true)
+    setIncResultados([])
+    try {
+      const { data, error } = await (supabase as any).rpc('aud_buscar_incidencias', {
+        p_org_id: auditoria.org_id,
+        p_rancho_id: auditoria.rancho_id ?? null,
+        p_date_from: incDesde || null,
+        p_date_to: incHasta || null,
+        p_search: incSearch.trim() || null,
+      })
+      if (error) throw error
+      setIncResultados(data ?? [])
+    } catch (e) {
+      console.error('[AuditorEjecucion] buscarIncidencias', e)
+      toast.error('No se pudieron buscar las incidencias. Reintenta.')
+    } finally {
+      setIncBuscando(false)
+    }
+  }
+
+  async function handleRelacionarIncidencia(inc: IncidenciaBusqueda) {
+    if (!sheetIncidenciasHallazgo || !auditoria?.org_id) return
+    setIncRelacionandoId(inc.incidencia_id)
+    try {
+      const { error } = await (supabase as any).from('aud_nc_incidencia').insert({
+        org_id: auditoria.org_id,
+        hallazgo_id: sheetIncidenciasHallazgo.hallazgoId,
+        incidencia_id: inc.incidencia_id,
+        reporte_id: inc.reporte_id,
+        relation_type: 'ANTECEDENTE',
+      })
+      if (error) {
+        if (error.code === '23505') {
+          toast.info('Esta incidencia ya está relacionada con el hallazgo.')
+        } else {
+          throw error
+        }
+      } else {
+        toast.success('Incidencia relacionada como antecedente')
+        await cargarIncVinculadas(sheetIncidenciasHallazgo.hallazgoId)
+      }
+    } catch (e) {
+      console.error('[AuditorEjecucion] relacionarIncidencia', e)
+      toast.error('No se pudo relacionar la incidencia. Reintenta.')
+    } finally {
+      setIncRelacionandoId(null)
+    }
+  }
+
+  async function handleQuitarIncidencia(vinculoId: string) {
+    if (!sheetIncidenciasHallazgo) return
+    setIncQuitandoId(vinculoId)
+    try {
+      const { error } = await (supabase as any)
+        .from('aud_nc_incidencia')
+        .delete()
+        .eq('id', vinculoId)
+      if (error) throw error
+      toast.success('Vínculo eliminado')
+      setIncVinculadas(prev => prev.filter(v => v.id !== vinculoId))
+    } catch (e) {
+      console.error('[AuditorEjecucion] quitarIncidencia', e)
+      toast.error('No se pudo eliminar el vínculo. Reintenta.')
+    } finally {
+      setIncQuitandoId(null)
+    }
+  }
+
+  function handleAbrirIncidencias(h: AudHallazgo) {
+    setSheetIncidenciasHallazgo({ hallazgoId: h.id, descripcion: h.descripcion })
+    setIncVinculadas([])
+    setIncDesde('')
+    setIncHasta('')
+    setIncSearch('')
+    setIncResultados([])
+    cargarIncVinculadas(h.id)
+  }
+
   async function handleValidarAzzule() {
     if (!accionActual?.id) return
     setValidandoAzzule(true)
@@ -1363,6 +1499,7 @@ export function AuditorEjecucion() {
                 preguntas={allPreguntas}
                 onVerAccion={handleAbrirAccion}
                 onVerEvidencias={h => setSheetEvidenciaHallazgo({ hallazgoId: h.id, descripcion: h.descripcion })}
+                onVerIncidencias={handleAbrirIncidencias}
                 onEstadoChange={(id, estado) => {
                   actualizarEstadoHallazgo(id, estado).catch(e => {
                     console.error('[AuditorEjecucion] actualizarEstadoHallazgo', e)
@@ -1953,6 +2090,191 @@ export function AuditorEjecucion() {
                 </div>
               ))
             )}
+          </div>
+        </div>
+      </BottomSheet>
+
+      {/* Sheet: Incidencias M13 como antecedentes del hallazgo */}
+      <BottomSheet open={!!sheetIncidenciasHallazgo} onClose={() => setSheetIncidenciasHallazgo(null)} height="85%">
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Antecedentes — Incidencias M13</h2>
+              {sheetIncidenciasHallazgo && (
+                <p className="text-[10px] mt-0.5 line-clamp-1" style={{ color: 'var(--muted-foreground)' }}>
+                  {sheetIncidenciasHallazgo.descripcion}
+                </p>
+              )}
+            </div>
+            <button onClick={() => setSheetIncidenciasHallazgo(null)} className="text-muted-foreground ml-2 flex-shrink-0">
+              <XCircle size={20} />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+            {/* Incidencias vinculadas */}
+            <div className="flex flex-col gap-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
+                Vinculadas ({incVinculadas.length})
+              </p>
+              {cargandoIncVinc ? (
+                <div className="flex items-center gap-2 py-2">
+                  <Loader size={13} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+                  <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Cargando…</span>
+                </div>
+              ) : incVinculadas.length === 0 ? (
+                <p className="text-xs py-1" style={{ color: 'var(--muted-foreground)' }}>Sin antecedentes vinculados.</p>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {incVinculadas.map(v => {
+                    const fecha = v.m13_reportes?.fecha ?? null
+                    const desc = v.m13_incidencias?.descripcion ?? '—'
+                    return (
+                      <div
+                        key={v.id}
+                        className="rounded-xl p-3 flex flex-col gap-1.5"
+                        style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
+                      >
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
+                            style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                          >
+                            {v.relation_type === 'ANTECEDENTE' ? 'Antecedente' : 'Evidencia'}
+                          </span>
+                          {fecha && (
+                            <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                              {new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[0.8125rem] leading-snug" style={{ color: 'var(--foreground)' }}>{desc}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <a
+                            href="/inocuidad/incidencias"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-[10px] h-6 px-2 rounded"
+                            style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
+                          >
+                            <AlertTriangle size={10} />
+                            Ver en M13
+                          </a>
+                          <button
+                            onClick={() => handleQuitarIncidencia(v.id)}
+                            disabled={incQuitandoId === v.id}
+                            className="flex items-center gap-1 text-[10px] h-6 px-2 rounded disabled:opacity-50 ml-auto"
+                            style={{ color: 'var(--agro-danger-text)' }}
+                          >
+                            {incQuitandoId === v.id
+                              ? <Loader size={10} className="animate-spin" />
+                              : <XCircle size={10} />
+                            }
+                            Quitar
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Buscador de incidencias */}
+            <div className="flex flex-col gap-3 rounded-xl p-3" style={{ backgroundColor: 'var(--muted)' }}>
+              <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
+                Buscar incidencia existente
+              </p>
+
+              <div className="flex gap-2">
+                <div className="flex flex-col gap-1 flex-1">
+                  <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Desde</label>
+                  <input
+                    type="date"
+                    value={incDesde}
+                    onChange={e => setIncDesde(e.target.value)}
+                    className="h-9 rounded-lg px-2 text-xs outline-none"
+                    style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                  />
+                </div>
+                <div className="flex flex-col gap-1 flex-1">
+                  <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Hasta</label>
+                  <input
+                    type="date"
+                    value={incHasta}
+                    onChange={e => setIncHasta(e.target.value)}
+                    className="h-9 rounded-lg px-2 text-xs outline-none"
+                    style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={incSearch}
+                  onChange={e => setIncSearch(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleBuscarIncidencias() }}
+                  placeholder="Buscar por descripción…"
+                  className="h-9 rounded-lg px-3 text-xs outline-none flex-1"
+                  style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                />
+                <button
+                  onClick={handleBuscarIncidencias}
+                  disabled={incBuscando}
+                  className="h-9 px-3 rounded-lg text-[11px] font-semibold flex items-center gap-1 disabled:opacity-50 flex-shrink-0"
+                  style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                >
+                  {incBuscando ? <Loader size={12} className="animate-spin" /> : 'Buscar'}
+                </button>
+              </div>
+
+              {incBuscando ? (
+                <div className="flex items-center gap-2 py-1">
+                  <Loader size={12} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+                  <span className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Buscando incidencias…</span>
+                </div>
+              ) : incResultados.length === 0 ? (
+                <p className="text-[11px] text-center py-1" style={{ color: 'var(--muted-foreground)' }}>
+                  Usa los filtros y presiona Buscar.
+                </p>
+              ) : (
+                <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
+                  {incResultados.map(inc => (
+                    <div
+                      key={inc.incidencia_id}
+                      className="rounded-lg p-3 flex flex-col gap-1.5"
+                      style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
+                    >
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span
+                          className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
+                          style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                        >
+                          M13
+                        </span>
+                        <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                          {new Date(inc.fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </span>
+                      </div>
+                      <p className="text-[11px] leading-snug" style={{ color: 'var(--foreground)' }}>{inc.descripcion}</p>
+                      <button
+                        onClick={() => handleRelacionarIncidencia(inc)}
+                        disabled={!!incRelacionandoId}
+                        className="self-end flex items-center gap-1 text-[10px] font-semibold h-6 px-2 rounded disabled:opacity-50"
+                        style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                      >
+                        {incRelacionandoId === inc.incidencia_id
+                          ? <Loader size={10} className="animate-spin" />
+                          : <Link2 size={10} />
+                        }
+                        Relacionar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </BottomSheet>

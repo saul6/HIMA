@@ -2250,8 +2250,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorEjecucion.tsx": {
-    "mtime": 1790112500.76992,
-    "ast_hash": "8e058aa3caedb354021b8025015db890",
+    "mtime": 1790113135.8587458,
+    "ast_hash": "0eee6db99e15d47dbbfce9ab778493c0",
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorHome.tsx": {
