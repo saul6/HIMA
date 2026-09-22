@@ -116,6 +116,11 @@
   --auth-input-placeholder: var(--muted-foreground);
   --auth-link-color: var(--primary);
   --auth-cta-bg: var(--primary);
+  /* Espacio extra antes del bloque de inputs, además del space-y del contenedor
+     — 0 en móvil. Se aplica por inline style (margin-top), no por clase, porque
+     un utility de margen no puede ganarle en especificidad al selector que
+     genera space-y-*. */
+  --auth-form-gap-top: 0px;
   --auth-danger-fill: var(--agro-danger-fill);
   --auth-danger-text: var(--agro-danger-text);
   --auth-success-fill: var(--agro-success-fill);
@@ -138,6 +143,7 @@
     --auth-input-placeholder: rgba(255, 255, 255, 0.4);
     --auth-link-color: var(--secondary);
     --auth-cta-bg: linear-gradient(135deg, var(--secondary) 0%, var(--mint-hover) 100%);
+    --auth-form-gap-top: 2.5rem;
     --auth-danger-fill: rgba(224, 90, 90, 0.16);
     --auth-danger-text: #FFD9D3;
     --auth-success-fill: rgba(42, 173, 149, 0.18);

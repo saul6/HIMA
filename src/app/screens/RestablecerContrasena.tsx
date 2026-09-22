@@ -388,7 +388,7 @@ export function RestablecerContrasena() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5" style={{ marginTop: 'var(--auth-form-gap-top)' }}>
 
               <div className="space-y-[6px]">
                 <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>

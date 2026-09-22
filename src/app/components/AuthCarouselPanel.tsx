@@ -54,8 +54,6 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
     return () => clearInterval(t)
   }, [reducedMotion, erroredSlides])
 
-  const currentArea = SLIDES[active]?.area ?? ''
-
   return (
     <div
       className={`relative flex-col overflow-hidden ${className}`}
@@ -87,35 +85,40 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
       <div aria-hidden="true" className="absolute inset-0" style={{ background: 'var(--auth-logo-scrim)' }} />
 
       <div className="relative flex flex-col h-full p-10 xl:p-12 z-10">
-        <div>
-          <MadyLogo theme="dark" style={{ height: 61, width: 'auto' }} />
+        <div style={{ marginTop: -6, marginLeft: -4 }}>
+          <MadyLogo theme="dark" style={{ height: 58, width: 'auto' }} />
         </div>
 
         {/* Bloque fijo — título + un subtítulo, no cambia entre fotos. */}
-        <div className="mt-20 xl:mt-24" style={{ maxWidth: 420 }}>
-          <h2 className="text-white text-[36px] xl:text-[40px] font-bold leading-tight [letter-spacing:-0.01em]">
-            <span className="block">Inocuidad</span>
-            <span className="block" style={{ color: 'var(--secondary)' }}>Inteligente</span>
+        <div className="mt-24 xl:mt-28" style={{ maxWidth: 440 }}>
+          <h2 className="text-white text-[38px] xl:text-[42px] font-bold leading-[1.08] [letter-spacing:0.02em]">
+            <span className="block uppercase">INOCUIDAD</span>
+            <span className="block uppercase" style={{ color: 'var(--secondary)' }}>INTELIGENTE</span>
           </h2>
-          <p className="mt-2 text-sm" style={{ color: 'rgba(255,255,255,0.75)' }}>
+          <p className="mt-3 text-sm" style={{ color: 'rgba(255,255,255,0.75)' }}>
             Tecnología para una operación agrícola más segura.
           </p>
         </div>
 
         <div className="flex-1" />
 
-        {/* Caption discreto del área + dots — abajo, cambia por foto */}
+        {/* Caption discreto del área + dots — abajo, crossfade real al cambiar de foto */}
         <div className="pb-1">
-          <p
-            key={currentArea}
-            className="text-xs mb-3"
-            style={{
-              color: 'rgba(255,255,255,0.7)',
-              transition: reducedMotion ? 'none' : 'opacity 0.5s ease-in-out',
-            }}
-          >
-            {currentArea}
-          </p>
+          <div className="relative mb-3" style={{ height: '1.1rem' }}>
+            {SLIDES.map((slide, i) => (
+              <p
+                key={slide.area}
+                className="absolute inset-x-0 top-0 text-xs"
+                style={{
+                  color: 'rgba(255,255,255,0.7)',
+                  opacity: i === active ? 1 : 0,
+                  transition: reducedMotion ? 'none' : 'opacity 0.6s ease-in-out',
+                }}
+              >
+                {slide.area}
+              </p>
+            ))}
+          </div>
           <div className="flex items-center gap-[6px]">
             {SLIDES.map((_, i) => (
               <button

@@ -42,18 +42,6 @@ export function Login() {
   const [recupCargando, setRecupCargando] = useState(false)
   const [recupError, setRecupError] = useState<string | null>(null)
 
-  // El widget de Turnstile es una sola instancia compartida entre móvil y
-  // escritorio (no se duplica el montaje) — el tamaño 'compact' solo debe
-  // aplicar en escritorio, así que se decide por matchMedia, no por CSS.
-  const [isDesktop, setIsDesktop] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)')
-    setIsDesktop(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-
   useEffect(() => {
     if (!loading && user) navigate(returnTo, { replace: true })
   }, [user, loading, navigate])
@@ -122,7 +110,7 @@ export function Login() {
           </Link>
         </div>
 
-        <div className="w-full max-w-[380px] space-y-7 lg:space-y-8">
+        <div className="w-full max-w-[380px] space-y-7">
 
           {/* Logo M.A.D.Y + tagline — solo móvil, en escritorio ya está en el carrusel */}
           <div className="space-y-[3px] lg:hidden">
@@ -136,7 +124,7 @@ export function Login() {
           </div>
 
           {/* Título + subtítulo */}
-          <div className="space-y-1 lg:-mt-1">
+          <div className="space-y-1">
             <h1
               className="text-[22px] leading-tight font-semibold lg:text-[34px] lg:font-bold lg:whitespace-nowrap lg:[letter-spacing:-0.01em]"
               style={{ color: 'var(--auth-heading-color)' }}
@@ -151,7 +139,7 @@ export function Login() {
 
           {/* ── Recuperación de contraseña ── */}
           {modoRecup && (
-            <div className="space-y-4">
+            <div className="space-y-4" style={{ marginTop: 'var(--auth-form-gap-top)' }}>
               {recupEnviado ? (
                 <div className="space-y-4">
                   <div
@@ -229,7 +217,7 @@ export function Login() {
           )}
 
           {/* Formulario de login */}
-          {!modoRecup && <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-5">
+          {!modoRecup && <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-5" style={{ marginTop: 'var(--auth-form-gap-top)' }}>
 
             {/* Correo */}
             <div className="space-y-[6px]">
@@ -323,7 +311,7 @@ export function Login() {
                   <Turnstile
                     ref={turnstileRef}
                     siteKey={SITE_KEY}
-                    options={{ theme: 'auto', size: isDesktop ? 'compact' : 'normal' }}
+                    options={{ theme: 'auto', size: 'normal' }}
                     onSuccess={(token) => setCaptchaToken(token)}
                     onExpire={() => setCaptchaToken(null)}
                     onError={() => {
@@ -362,7 +350,7 @@ export function Login() {
             </button>
 
             {/* Línea de confianza — solo escritorio (arriba ya está el nav de Regístrate) */}
-            <p className="hidden lg:flex items-center justify-center gap-1.5 text-xs pt-1 lg:pt-4" style={{ color: 'var(--auth-link-color)' }}>
+            <p className="hidden lg:flex items-center justify-center gap-1.5 text-xs pt-1 lg:pt-6" style={{ color: 'var(--auth-link-color)' }}>
               <Lock className="w-3 h-3" />
               Tu información está protegida
             </p>

@@ -332,7 +332,7 @@ export function Registro() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5" style={{ marginTop: 'var(--auth-form-gap-top)' }}>
               <div className="space-y-[6px]">
                 <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
                   Nombre completo
@@ -457,7 +457,7 @@ export function Registro() {
                     <Turnstile
                       ref={turnstileRef}
                       siteKey={SITE_KEY}
-                      options={{ theme: 'auto', size: 'compact' }}
+                      options={{ theme: 'auto', size: 'normal' }}
                       onSuccess={(token) => setCaptchaToken(token)}
                       onExpire={() => setCaptchaToken(null)}
                       onError={() => {
