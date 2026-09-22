@@ -38,6 +38,22 @@ const RESP_TOOLTIPS: Record<AudRespuesta, string> = {
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
+interface ReincidenciaResult {
+  reincidente: boolean
+  mensaje: string
+  n_hallazgos_total: number
+  ultima_fecha: string | null
+}
+
+interface HistorialCriterio {
+  criterion_code: string
+  n_hallazgos: number
+  primer_detectado: string | null
+  ultimo_detectado: string | null
+  ultimo_hallazgo_id: string | null
+  ultimo_estado: string | null
+}
+
 interface ReviewIssue {
   id: string
   codigo: string
@@ -196,6 +212,7 @@ function PreguntaCard({
   pregunta, esquemas, respuesta, valores, observacion,
   saveStatus, saveMessage, onRespuesta, onValor, onObservacion, onBlur, onRetry, cerrada,
   hallazgosCount, instanciaDisponible, onRegistrarHallazgo, onVerHallazgos,
+  reincidencia,
 }: {
   pregunta: AudPregunta
   esquemas: AudComentarioEsquema[]
@@ -214,6 +231,7 @@ function PreguntaCard({
   instanciaDisponible?: boolean
   onRegistrarHallazgo?: () => void
   onVerHallazgos?: () => void
+  reincidencia?: ReincidenciaResult
 }) {
   const falla =
     respuesta &&
@@ -250,6 +268,15 @@ function PreguntaCard({
             Falla automática
           </span>
         )}
+        {reincidencia?.reincidente && (
+          <span
+            className="text-[10px] font-semibold flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
+            title={reincidencia.mensaje}
+            style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+          >
+            Reincidente
+          </span>
+        )}
         <p className="text-sm flex-1" style={{ color: 'var(--foreground)', lineHeight: '1.45' }}>
           {pregunta.texto}
         </p>
@@ -276,6 +303,15 @@ function PreguntaCard({
           )
         })}
       </div>
+
+      {reincidencia?.reincidente && (
+        <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
+          <History size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+          <p className="text-[11px]" style={{ color: 'var(--agro-warning-text)' }}>
+            {reincidencia.mensaje}
+          </p>
+        </div>
+      )}
 
       {falla && (
         <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
@@ -824,6 +860,12 @@ export function AuditorEjecucion() {
   const [descartandoId, setDescartandoId] = useState<string | null>(null)
   const [motivoDescarte, setMotivoDescarte] = useState('')
 
+  // — Reincidencia e historial por criterio —
+  const [reincidenciaMap, setReincidenciaMap] = useState<Map<string, ReincidenciaResult>>(new Map())
+  const [historialCriterios, setHistorialCriterios] = useState<HistorialCriterio[]>([])
+  const [panelAntecedentesAbierto, setPanelAntecedentesAbierto] = useState(false)
+  const loadedReincidenciaRef = useRef<Set<string>>(new Set())
+
   // — Hallazgos y CAPA —
   const hallazgosHook = useHallazgos(auditoriaId, auditoria?.org_id)
   const { hallazgos, cargar: cargarHallazgos, crearHallazgo, actualizarEstado: actualizarEstadoHallazgo, cargarAccion, crearAccion, actualizarAccion, cargarVersiones } = hallazgosHook
@@ -845,6 +887,67 @@ export function AuditorEjecucion() {
       titulo: nombre,
     })
   }, [auditoria?.id, profile?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Cargar historial de criterios con NC al sitio auditado
+  useEffect(() => {
+    if (!auditoria?.org_id) return
+    let cancelado = false
+    async function cargarHistorial() {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let q: any = (supabase as any)
+          .from('aud_criterion_history')
+          .select('criterion_code, n_hallazgos, primer_detectado, ultimo_detectado, ultimo_hallazgo_id, ultimo_estado')
+          .eq('org_id', auditoria!.org_id)
+          .order('n_hallazgos', { ascending: false })
+          .limit(20)
+        if (auditoria!.rancho_id) q = q.eq('rancho_id', auditoria!.rancho_id)
+        const { data, error } = await q
+        if (error) { console.error('[AuditorEjecucion] aud_criterion_history', error); return }
+        if (!cancelado) setHistorialCriterios(data ?? [])
+      } catch (e) {
+        console.error('[AuditorEjecucion] cargarHistorialCriterios', e)
+      }
+    }
+    cargarHistorial()
+    return () => { cancelado = true }
+  }, [auditoria?.org_id, auditoria?.rancho_id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Cargar reincidencia para preguntas con NC/deficiencia al cargar el catálogo
+  useEffect(() => {
+    if (!auditoria?.org_id || modulosData.length === 0) return
+    const allPregs = modulosData.flatMap(m => m.preguntas)
+    for (const preg of allPregs) {
+      const resp = respuestasMap.get(preg.id)
+      if (resp === 'no_conformidad' || resp === 'deficiencia_menor' || resp === 'deficiencia_mayor') {
+        cargarReincidenciaForPreg(preg.id, String(preg.prompt_component_id))
+      }
+    }
+  }, [auditoria?.org_id, modulosData.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function cargarReincidenciaForPreg(pregId: string, criterionCode: string | null) {
+    if (!auditoria?.org_id || !criterionCode) return
+    if (loadedReincidenciaRef.current.has(pregId)) return
+    loadedReincidenciaRef.current.add(pregId)
+    ;(async () => {
+      try {
+        const { data, error } = await (supabase as any).rpc('aud_reincidencia_criterio', {
+          p_org_id: auditoria!.org_id,
+          p_criterion_code: criterionCode,
+          p_rancho_id: auditoria!.rancho_id ?? null,
+        })
+        if (error) {
+          console.error('[AuditorEjecucion] aud_reincidencia_criterio', error)
+          loadedReincidenciaRef.current.delete(pregId)
+          return
+        }
+        if (data) setReincidenciaMap(prev => new Map(prev).set(pregId, data as ReincidenciaResult))
+      } catch (e) {
+        console.error('[AuditorEjecucion] aud_reincidencia_criterio', e)
+        loadedReincidenciaRef.current.delete(pregId)
+      }
+    })()
+  }
 
   const panelHallazgosRef = useRef<HTMLDivElement>(null)
 
@@ -960,6 +1063,10 @@ export function AuditorEjecucion() {
     setRespuestasMap(prev => new Map(prev).set(pregId, resp))
     clearTimeout(debounceTimers.current[pregId])
     debounceTimers.current[pregId] = setTimeout(() => dispatchSave(pregId, resp), 50)
+    if (resp === 'no_conformidad' || resp === 'deficiencia_menor' || resp === 'deficiencia_mayor') {
+      const preg = modulosData.flatMap(m => m.preguntas).find(p => p.id === pregId)
+      if (preg) cargarReincidenciaForPreg(preg.id, String(preg.prompt_component_id))
+    }
   }
 
   function handleValor(pregId: string, esquemaId: string, v: string) {
@@ -1510,6 +1617,69 @@ export function AuditorEjecucion() {
               />
             </div>
 
+            {/* Panel de antecedentes (historial de NC por criterio en el sitio) */}
+            {historialCriterios.length > 0 && (
+              <div className="rounded-xl border border-border overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
+                <button
+                  onClick={() => setPanelAntecedentesAbierto(v => !v)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-left"
+                >
+                  <div className="flex items-center gap-2">
+                    <History size={15} className="flex-shrink-0" style={{ color: 'var(--agro-warning-text)' }} />
+                    <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
+                      Antecedentes ({historialCriterios.length} criterio{historialCriterios.length !== 1 ? 's' : ''} con NC)
+                    </span>
+                  </div>
+                  {panelAntecedentesAbierto
+                    ? <ChevronUp size={14} style={{ color: 'var(--muted-foreground)' }} />
+                    : <ChevronDown size={14} style={{ color: 'var(--muted-foreground)' }} />
+                  }
+                </button>
+                {panelAntecedentesAbierto && (
+                  <div className="border-t border-border">
+                    <p className="text-[11px] px-4 pt-3 pb-1" style={{ color: 'var(--muted-foreground)' }}>
+                      Criterios con historial de NC en este sitio. Informativo — no determina cumplimiento.
+                    </p>
+                    {historialCriterios.map(h => {
+                      const pregMatch = allPreguntas.find(p => String(p.prompt_component_id) === String(h.criterion_code))
+                      return (
+                        <div key={h.criterion_code} className="px-4 py-3 flex flex-col gap-1.5 border-t border-border">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span
+                              className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+                              style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                            >
+                              {h.criterion_code}
+                            </span>
+                            <span
+                              className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                              style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+                            >
+                              {h.n_hallazgos} NC
+                            </span>
+                            {h.ultimo_detectado && (
+                              <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                                último: {formatFecha(h.ultimo_detectado)}{h.ultimo_estado ? ` (${h.ultimo_estado})` : ''}
+                              </span>
+                            )}
+                          </div>
+                          {pregMatch && (
+                            <button
+                              onClick={() => document.getElementById(`preg-${pregMatch.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                              className="self-start text-[10px] font-medium px-2 py-0.5 rounded"
+                              style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)' }}
+                            >
+                              → Ir a criterio {pregMatch.question_id}
+                            </button>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Módulos → Bloques → Preguntas */}
             {modulosData.map(modulo => (
               <div key={modulo.modulo_id}>
@@ -1570,6 +1740,7 @@ export function AuditorEjecucion() {
                               (savingMap[preg.id] ?? 'idle') !== 'saving'
                             }
                             hallazgosCount={hallazgos.filter(h => h.pregunta_id === preg.id).length}
+                            reincidencia={reincidenciaMap.get(preg.id)}
                             onRegistrarHallazgo={() => {
                               const instId = instanciasMap.get(preg.id)
                               if (!instId) {

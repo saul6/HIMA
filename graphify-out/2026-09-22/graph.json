@@ -736,7 +736,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "package_dependencies_radix_ui_react_dialog",
-      "community": 351,
+      "community": 368,
       "community_name": "@radix-ui/react-dialog",
       "norm_label": "@radix-ui/react-dialog"
     },
@@ -747,7 +747,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "radix_ui_react_dialog",
-      "community": 351,
+      "community": 368,
       "community_name": "@radix-ui/react-dialog",
       "norm_label": "@radix-ui/react-dialog"
     },
@@ -1220,8 +1220,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "package_dependencies_browser_image_compression",
-      "community": 326,
-      "community_name": "browser-image-compression",
+      "community": 5,
+      "community_name": "dependencies",
       "norm_label": "browser-image-compression"
     },
     {
@@ -1231,8 +1231,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "browser_image_compression",
-      "community": 326,
-      "community_name": "browser-image-compression",
+      "community": 5,
+      "community_name": "dependencies",
       "norm_label": "browser-image-compression"
     },
     {
@@ -1264,8 +1264,8 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "package_dependencies_canvas_confetti",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 351,
+      "community_name": "canvas-confetti",
       "norm_label": "canvas-confetti"
     },
     {
@@ -1275,8 +1275,8 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "canvas_confetti",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 351,
+      "community_name": "canvas-confetti",
       "norm_label": "canvas-confetti"
     },
     {
@@ -8150,7 +8150,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_screens_calibracionbombas",
-      "community": 106,
+      "community": 319,
       "community_name": "CalibracionBombas.tsx",
       "norm_label": "calibracionbombas.tsx"
     },
@@ -8161,7 +8161,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "src_app_screens_calibracionbombas_formatfecha",
-      "community": 106,
+      "community": 319,
       "community_name": "CalibracionBombas.tsx",
       "norm_label": "formatfecha()"
     },
@@ -8172,7 +8172,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "src_app_screens_calibracionbombas_formstate",
-      "community": 106,
+      "community": 319,
       "community_name": "CalibracionBombas.tsx",
       "norm_label": "formstate"
     },
@@ -8183,7 +8183,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "src_app_screens_calibracionbombas_form_vacio",
-      "community": 106,
+      "community": 319,
       "community_name": "CalibracionBombas.tsx",
       "norm_label": "form_vacio"
     },
@@ -8194,7 +8194,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "src_app_screens_calibracionbombas_calibracionbombas",
-      "community": 106,
+      "community": 319,
       "community_name": "CalibracionBombas.tsx",
       "norm_label": "calibracionbombas()"
     },
@@ -8205,8 +8205,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_screens_calibracionequipos",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 106,
+      "community_name": "CalibracionEquipos.tsx",
       "norm_label": "calibracionequipos.tsx"
     },
     {
@@ -8216,8 +8216,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "src_app_screens_calibracionequipos_formatfecha",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 106,
+      "community_name": "CalibracionEquipos.tsx",
       "norm_label": "formatfecha()"
     },
     {
@@ -8227,8 +8227,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "src_app_screens_calibracionequipos_formstate",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 106,
+      "community_name": "CalibracionEquipos.tsx",
       "norm_label": "formstate"
     },
     {
@@ -8238,8 +8238,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "src_app_screens_calibracionequipos_form_vacio",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 106,
+      "community_name": "CalibracionEquipos.tsx",
       "norm_label": "form_vacio"
     },
     {
@@ -8249,8 +8249,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "src_app_screens_calibracionequipos_calibracionequipos",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 106,
+      "community_name": "CalibracionEquipos.tsx",
       "norm_label": "calibracionequipos()"
     },
     {
@@ -8722,7 +8722,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_screens_cronogramacapacitacion",
-      "community": 312,
+      "community": 326,
       "community_name": "CronogramaCapacitacion.tsx",
       "norm_label": "cronogramacapacitacion.tsx"
     },
@@ -8733,7 +8733,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "src_app_screens_cronogramacapacitacion_periodicidades",
-      "community": 312,
+      "community": 326,
       "community_name": "CronogramaCapacitacion.tsx",
       "norm_label": "periodicidades"
     },
@@ -8744,7 +8744,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "src_app_screens_cronogramacapacitacion_formstate",
-      "community": 312,
+      "community": 326,
       "community_name": "CronogramaCapacitacion.tsx",
       "norm_label": "formstate"
     },
@@ -8755,7 +8755,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "src_app_screens_cronogramacapacitacion_form_vacio",
-      "community": 312,
+      "community": 326,
       "community_name": "CronogramaCapacitacion.tsx",
       "norm_label": "form_vacio"
     },
@@ -8766,7 +8766,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "src_app_screens_cronogramacapacitacion_cronogramacapacitacion",
-      "community": 312,
+      "community": 326,
       "community_name": "CronogramaCapacitacion.tsx",
       "norm_label": "cronogramacapacitacion()"
     },
@@ -13056,7 +13056,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_screens_nfcestacion",
-      "community": 319,
+      "community": 312,
       "community_name": "NfcEstacion.tsx",
       "norm_label": "nfcestacion.tsx"
     },
@@ -13067,7 +13067,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "src_app_screens_nfcestacion_nfcmotivo",
-      "community": 319,
+      "community": 312,
       "community_name": "NfcEstacion.tsx",
       "norm_label": "nfcmotivo"
     },
@@ -13078,7 +13078,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "src_app_screens_nfcestacion_nfcrespuesta",
-      "community": 319,
+      "community": 312,
       "community_name": "NfcEstacion.tsx",
       "norm_label": "nfcrespuesta"
     },
@@ -13089,7 +13089,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "src_app_screens_nfcestacion_mensajes",
-      "community": 319,
+      "community": 312,
       "community_name": "NfcEstacion.tsx",
       "norm_label": "mensajes"
     },
@@ -13100,7 +13100,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "src_app_screens_nfcestacion_iconos",
-      "community": 319,
+      "community": 312,
       "community_name": "NfcEstacion.tsx",
       "norm_label": "iconos"
     },
@@ -13111,7 +13111,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "src_app_screens_nfcestacion_estado",
-      "community": 319,
+      "community": 312,
       "community_name": "NfcEstacion.tsx",
       "norm_label": "estado"
     },
@@ -13122,7 +13122,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "src_app_screens_nfcestacion_nfcestacion",
-      "community": 319,
+      "community": 312,
       "community_name": "NfcEstacion.tsx",
       "norm_label": "nfcestacion()"
     },
@@ -14552,8 +14552,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_screens_resumennoconformidades",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 346,
+      "community_name": "ResumenNoConformidades.tsx",
       "norm_label": "resumennoconformidades.tsx"
     },
     {
@@ -14563,8 +14563,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "src_app_screens_resumennoconformidades_hoy",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 346,
+      "community_name": "ResumenNoConformidades.tsx",
       "norm_label": "hoy()"
     },
     {
@@ -14574,8 +14574,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "src_app_screens_resumennoconformidades_formatfecha",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 346,
+      "community_name": "ResumenNoConformidades.tsx",
       "norm_label": "formatfecha()"
     },
     {
@@ -14585,8 +14585,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "src_app_screens_resumennoconformidades_resumennoconformidades",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 346,
+      "community_name": "ResumenNoConformidades.tsx",
       "norm_label": "resumennoconformidades()"
     },
     {
@@ -16331,7 +16331,7 @@
       "label": "tbl()",
       "file_type": "code",
       "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
-      "source_location": "L8",
+      "source_location": "L11",
       "_origin": "ast",
       "id": "src_app_screens_auditor_auditorinstalaciondetalle_tbl",
       "community": 189,
@@ -16342,7 +16342,7 @@
       "label": "InstalacionInfo",
       "file_type": "code",
       "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
-      "source_location": "L10",
+      "source_location": "L13",
       "_origin": "ast",
       "id": "src_app_screens_auditor_auditorinstalaciondetalle_instalacioninfo",
       "community": 189,
@@ -16353,7 +16353,7 @@
       "label": "AuditoriaItem",
       "file_type": "code",
       "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
-      "source_location": "L19",
+      "source_location": "L25",
       "_origin": "ast",
       "id": "src_app_screens_auditor_auditorinstalaciondetalle_auditoriaitem",
       "community": 189,
@@ -16361,10 +16361,21 @@
       "norm_label": "auditoriaitem"
     },
     {
+      "label": "ProfileItem",
+      "file_type": "code",
+      "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "src_app_screens_auditor_auditorinstalaciondetalle_profileitem",
+      "community": 189,
+      "community_name": "AuditorInstalacionDetalle.tsx",
+      "norm_label": "profileitem"
+    },
+    {
       "label": "ESTADO_LABELS",
       "file_type": "code",
       "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
-      "source_location": "L26",
+      "source_location": "L37",
       "_origin": "ast",
       "id": "src_app_screens_auditor_auditorinstalaciondetalle_estado_labels",
       "community": 189,
@@ -16375,7 +16386,7 @@
       "label": "ESTADO_STYLE",
       "file_type": "code",
       "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
-      "source_location": "L31",
+      "source_location": "L42",
       "_origin": "ast",
       "id": "src_app_screens_auditor_auditorinstalaciondetalle_estado_style",
       "community": 189,
@@ -16383,10 +16394,21 @@
       "norm_label": "estado_style"
     },
     {
+      "label": "inputSt",
+      "file_type": "code",
+      "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
+      "source_location": "L48",
+      "_origin": "ast",
+      "id": "src_app_screens_auditor_auditorinstalaciondetalle_inputst",
+      "community": 189,
+      "community_name": "AuditorInstalacionDetalle.tsx",
+      "norm_label": "inputst"
+    },
+    {
       "label": "formatFecha()",
       "file_type": "code",
       "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
-      "source_location": "L37",
+      "source_location": "L60",
       "_origin": "ast",
       "id": "src_app_screens_auditor_auditorinstalaciondetalle_formatfecha",
       "community": 189,
@@ -16397,7 +16419,7 @@
       "label": "AuditorInstalacionDetalle()",
       "file_type": "code",
       "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
-      "source_location": "L42",
+      "source_location": "L65",
       "_origin": "ast",
       "id": "src_app_screens_auditor_auditorinstalaciondetalle_auditorinstalaciondetalle",
       "community": 189,
@@ -16779,21 +16801,32 @@
       "norm_label": "tipo_labels"
     },
     {
-      "label": "CAPABILITIES",
+      "label": "CAPABILITY_LABELS",
       "file_type": "code",
       "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
       "source_location": "L22",
       "_origin": "ast",
-      "id": "src_app_screens_auditor_evidenciapanel_capabilities",
+      "id": "src_app_screens_auditor_evidenciapanel_capability_labels",
       "community": 98,
       "community_name": "AuditorEjecucion.tsx",
-      "norm_label": "capabilities"
+      "norm_label": "capability_labels"
+    },
+    {
+      "label": "FALLBACK_CAPABILITIES",
+      "file_type": "code",
+      "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
+      "source_location": "L33",
+      "_origin": "ast",
+      "id": "src_app_screens_auditor_evidenciapanel_fallback_capabilities",
+      "community": 98,
+      "community_name": "AuditorEjecucion.tsx",
+      "norm_label": "fallback_capabilities"
     },
     {
       "label": "GwRegistro",
       "file_type": "code",
       "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
-      "source_location": "L28",
+      "source_location": "L39",
       "_origin": "ast",
       "id": "src_app_screens_auditor_evidenciapanel_gwregistro",
       "community": 98,
@@ -16804,7 +16837,7 @@
       "label": "Props",
       "file_type": "code",
       "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
-      "source_location": "L41",
+      "source_location": "L52",
       "_origin": "ast",
       "id": "src_app_screens_auditor_evidenciapanel_props",
       "community": 98,
@@ -16815,7 +16848,7 @@
       "label": "EvidenciaPanel()",
       "file_type": "code",
       "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
-      "source_location": "L52",
+      "source_location": "L63",
       "_origin": "ast",
       "id": "src_app_screens_auditor_evidenciapanel_evidenciapanel",
       "community": 98,
@@ -23198,8 +23231,8 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "src_lib_pdf_auditoria_generarauditoriapdf_generarblobauditoria",
-      "community": 69,
-      "community_name": "AuditoriaPDF.tsx",
+      "community": 30,
+      "community_name": "generarBlobHistorial.tsx",
       "norm_label": "generarblobauditoria()"
     },
     {
@@ -31162,8 +31195,8 @@
       "source_location": "L115",
       "_origin": "ast",
       "id": "src_lib_pdf_m45_generarmttopreventivopdf_generarblobmttopreventivo",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 30,
+      "community_name": "generarBlobHistorial.tsx",
       "norm_label": "generarblobmttopreventivo()"
     },
     {
@@ -32856,8 +32889,8 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "src_lib_pdf_m55_generarmipintervencionpdf_generarblobmipintervencion",
-      "community": 59,
-      "community_name": "generarMipIntervencionPDF.tsx",
+      "community": 30,
+      "community_name": "generarBlobHistorial.tsx",
       "norm_label": "generarblobmipintervencion()"
     },
     {
@@ -63260,7 +63293,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
-      "source_location": "L19",
+      "source_location": "L25",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_auditorinstalaciondetalle",
@@ -63271,7 +63304,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
-      "source_location": "L42",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_auditorinstalaciondetalle",
@@ -63282,7 +63315,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
-      "source_location": "L26",
+      "source_location": "L37",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_auditorinstalaciondetalle",
@@ -63293,7 +63326,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
-      "source_location": "L31",
+      "source_location": "L42",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_auditorinstalaciondetalle",
@@ -63304,7 +63337,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
-      "source_location": "L37",
+      "source_location": "L60",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_auditorinstalaciondetalle",
@@ -63315,7 +63348,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
-      "source_location": "L10",
+      "source_location": "L48",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_app_screens_auditor_auditorinstalaciondetalle",
+      "target": "src_app_screens_auditor_auditorinstalaciondetalle_inputst",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_auditorinstalaciondetalle",
@@ -63326,7 +63370,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
-      "source_location": "L8",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_app_screens_auditor_auditorinstalaciondetalle",
+      "target": "src_app_screens_auditor_auditorinstalaciondetalle_profileitem",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
+      "source_location": "L11",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_auditorinstalaciondetalle",
@@ -63338,7 +63393,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/app/screens/auditor/AuditorInstalacionDetalle.tsx",
-      "source_location": "L180",
+      "source_location": "L367",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_auditorinstalaciondetalle_auditorinstalaciondetalle",
@@ -63735,14 +63790,14 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_evidenciapanel",
-      "target": "src_app_screens_auditor_evidenciapanel_capabilities",
+      "target": "src_app_screens_auditor_evidenciapanel_capability_labels",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
-      "source_location": "L52",
+      "source_location": "L63",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_evidenciapanel",
@@ -63753,7 +63808,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
-      "source_location": "L28",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_app_screens_auditor_evidenciapanel",
+      "target": "src_app_screens_auditor_evidenciapanel_fallback_capabilities",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
+      "source_location": "L39",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_evidenciapanel",
@@ -63764,7 +63830,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
-      "source_location": "L41",
+      "source_location": "L52",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_evidenciapanel",
@@ -95393,5 +95459,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "de7a2d7be6c2a7a7d0f2a5d77b1a8c67bc296475"
+  "built_at_commit": "f5df7de75a16c2e84b7382e8f009aa84aebcab4b"
 }

@@ -2250,8 +2250,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorEjecucion.tsx": {
-    "mtime": 1790113135.8587458,
-    "ast_hash": "0eee6db99e15d47dbbfce9ab778493c0",
+    "mtime": 1790115210.3106515,
+    "ast_hash": "ff09d64c0c0d1fd33bbe608adbfad16a",
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorHome.tsx": {
@@ -2450,8 +2450,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/auditor/EvidenciaPanel.tsx": {
-    "mtime": 1790108175.2691512,
-    "ast_hash": "71c6a489b2dafc5090d1bd596489feee",
+    "mtime": 1790114449.8464773,
+    "ast_hash": "fd9192e56d4a3244987d101be0115fe8",
     "semantic_hash": ""
   },
   "src/hooks/useEvidencia.ts": {
