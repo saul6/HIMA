@@ -38,8 +38,9 @@ export function Registro() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const turnstileRef = useRef<TurnstileInstance>(null)
 
-  // Turnstile 'compact' en móvil (cabe en pantallas angostas), 'normal'
-  // (acostado) en escritorio — una sola instancia, decidido por matchMedia.
+  // Turnstile 'flexible' (100% ancho, min 300x65) mantiene la forma acostada
+  // también en móvil — 'compact' se ve casi cuadrado. 'normal' (acostado,
+  // ancho fijo) en escritorio — una sola instancia, decidido por matchMedia.
   const [isDesktop, setIsDesktop] = useState(false)
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)')
@@ -101,7 +102,7 @@ export function Registro() {
         </div>
         <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
         <div
-          className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[440px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-6 lg:p-12"
+          className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-5 lg:p-12"
           style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
         >
           <AuthLeavesDecor />
@@ -146,7 +147,7 @@ export function Registro() {
 
       {/* ── PANEL: tarjeta glass flotante en móvil, panel sólido de 40% en escritorio ── */}
       <div
-        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[440px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-6 lg:items-center lg:justify-start lg:pt-12 lg:pb-10 lg:px-12 transition-colors duration-150"
+        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-5 lg:items-center lg:justify-start lg:pt-12 lg:pb-10 lg:px-12 transition-colors duration-150"
         style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
         <AuthLeavesDecor />
@@ -276,7 +277,7 @@ export function Registro() {
 
             {SITE_KEY && (
               <div
-                className="flex flex-col items-stretch gap-2 p-3 rounded-[10px] border"
+                className="flex flex-col items-stretch gap-2 p-2 lg:p-3 rounded-[10px] border"
                 style={{ borderColor: 'var(--auth-input-border)', background: 'var(--auth-input-bg)' }}
               >
                 <div className="flex items-center gap-2">
@@ -294,7 +295,7 @@ export function Registro() {
                   <Turnstile
                     ref={turnstileRef}
                     siteKey={SITE_KEY}
-                    options={{ theme: 'auto', size: isDesktop ? 'normal' : 'compact' }}
+                    options={{ theme: 'auto', size: isDesktop ? 'normal' : 'flexible' }}
                     onSuccess={(token) => setCaptchaToken(token)}
                     onExpire={() => setCaptchaToken(null)}
                     onError={() => {

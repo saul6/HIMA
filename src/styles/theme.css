@@ -100,22 +100,24 @@
   /* Motivo decorativo de hojas detrás del formulario — trazo mint a opacidad
      mínima, puramente ornamental (ver AuthLeavesDecor.tsx). */
   --auth-leaf-stroke: color-mix(in srgb, var(--secondary) 100%, transparent);
-  /* Fondo móvil v2: carrusel a pantalla completa (ver AuthMobileBackdrop.tsx)
-     detrás de una tarjeta "glass" flotante. Capa pareja que oscurece la foto
-     lo suficiente para que el logo (arriba-izquierda, directo sobre la foto)
-     se lea incluso en fotos claras (almacén, campo) — más densa arriba/abajo,
-     más ligera al centro para que la foto se asome detrás de la tarjeta. */
+  /* Fondo móvil v3: carrusel a pantalla completa (ver AuthMobileBackdrop.tsx)
+     detrás de una tarjeta "glass" flotante. Capa más densa que la v2 en todo
+     el alto (el carrusel debe leerse como fondo, no competir con la tarjeta)
+     para que el logo y la tarjeta resalten incluso en fotos claras (almacén,
+     campo) — sigue algo más ligera al centro que en los extremos. */
   --auth-mobile-bg-overlay: linear-gradient(180deg,
-    color-mix(in srgb, var(--mady-green-darker) 58%, transparent) 0%,
-    color-mix(in srgb, var(--mady-green-darker) 32%, transparent) 42%,
-    color-mix(in srgb, var(--mady-green-darker) 40%, transparent) 65%,
-    color-mix(in srgb, var(--mady-green-darker) 62%, transparent) 100%);
+    color-mix(in srgb, var(--mady-green-darker) 70%, transparent) 0%,
+    color-mix(in srgb, var(--mady-green-darker) 48%, transparent) 42%,
+    color-mix(in srgb, var(--mady-green-darker) 56%, transparent) 65%,
+    color-mix(in srgb, var(--mady-green-darker) 74%, transparent) 100%);
   /* Tarjeta glass del formulario en móvil: verde oscuro semitransparente +
      backdrop-blur (ver clase .auth-panel en cada screen) — deja intuir la
-     foto de fondo sin sacrificar legibilidad. Escritorio ignora este valor:
-     .auth-panel lo sobreescribe por el gradiente sólido de siempre a partir
-     de 1024px (ver bloque @media abajo). */
-  --auth-glass-bg: color-mix(in srgb, var(--mady-green-dark) 80%, transparent);
+     foto de fondo sin sacrificar legibilidad. v3: un poco más translúcida
+     que la v2 (80% → 70%) para acentuar el efecto glass, apoyada en el scrim
+     más denso de arriba para seguir leyéndose oscura. Escritorio ignora este
+     valor: .auth-panel lo sobreescribe por el gradiente sólido de siempre a
+     partir de 1024px (ver bloque @media abajo). */
+  --auth-glass-bg: color-mix(in srgb, var(--mady-green-dark) 70%, transparent);
 
   /* Panel de formulario de auth (Login/Registro/Restablecer). En móvil usa la
      tarjeta glass semitransparente (flota sobre AuthMobileBackdrop); desde

@@ -36,9 +36,10 @@ export function Login() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const turnstileRef = useRef<TurnstileInstance>(null)
 
-  // Turnstile 'compact' (150x140) cabe cómodo en móviles angostos; 'normal'
-  // (300x65) es la forma acostada que se ve mejor en el panel ancho de
-  // escritorio. Una sola instancia del widget — se decide por matchMedia,
+  // Turnstile 'flexible' (100% ancho, min 300x65) mantiene la forma acostada
+  // también en móvil — 'compact' (150x140) se ve casi cuadrado, lo cual no
+  // queremos. 'normal' (300x65) es fijo y es lo que se usa en el panel ancho
+  // de escritorio. Una sola instancia del widget — se decide por matchMedia,
   // nunca duplicando el montaje.
   const [isDesktop, setIsDesktop] = useState(false)
   useEffect(() => {
@@ -115,7 +116,7 @@ export function Login() {
 
       {/* ── PANEL: tarjeta glass flotante en móvil, panel sólido de 40% en escritorio ── */}
       <div
-        className={`auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[440px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-6 lg:pb-12 lg:px-12 transition-colors duration-150 ${modoRecup ? '' : 'lg:justify-start lg:pt-20'}`}
+        className={`auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-5 lg:p-6 lg:pb-12 lg:px-12 transition-colors duration-150 ${modoRecup ? '' : 'lg:justify-start lg:pt-20'}`}
         style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
         <AuthLeavesDecor />
@@ -313,7 +314,7 @@ export function Login() {
             {/* Turnstile — fila simple en móvil, tarjeta con encabezado en escritorio */}
             {SITE_KEY && (
               <div
-                className="flex flex-col items-stretch gap-2 p-3 rounded-[10px] border bg-[var(--auth-input-bg)]"
+                className="flex flex-col items-stretch gap-2 p-2 lg:p-3 rounded-[10px] border bg-[var(--auth-input-bg)]"
                 style={{ borderColor: 'var(--auth-input-border)' }}
               >
                 <div className="flex items-center gap-2">
@@ -331,7 +332,7 @@ export function Login() {
                   <Turnstile
                     ref={turnstileRef}
                     siteKey={SITE_KEY}
-                    options={{ theme: 'auto', size: isDesktop ? 'normal' : 'compact' }}
+                    options={{ theme: 'auto', size: isDesktop ? 'normal' : 'flexible' }}
                     onSuccess={(token) => setCaptchaToken(token)}
                     onExpire={() => setCaptchaToken(null)}
                     onError={() => {
@@ -375,19 +376,6 @@ export function Login() {
               Tu información está protegida
             </p>
           </form>}
-
-          {!modoRecup && (
-            <p className="text-sm text-center lg:hidden" style={{ color: 'var(--auth-subtext-color)' }}>
-              ¿No tienes cuenta?{' '}
-              <Link
-                to="/registro"
-                className="font-semibold"
-                style={{ color: 'var(--secondary)' }}
-              >
-                Regístrate
-              </Link>
-            </p>
-          )}
         </div>
       </div>
     </div>

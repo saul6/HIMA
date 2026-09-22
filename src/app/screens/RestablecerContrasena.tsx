@@ -37,7 +37,7 @@ function StatusPanel({ iconBg, icon, title, titleSizeLg, message, ctaLabel, onCt
       </div>
       <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
       <div
-        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[440px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-6 lg:p-12"
+        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-5 lg:p-12"
         style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
         <AuthLeavesDecor />
@@ -176,7 +176,7 @@ export function RestablecerContrasena() {
       <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
 
       <div
-        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[440px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-6 lg:justify-start lg:pt-20 lg:pb-12 lg:px-12 transition-colors duration-150"
+        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-5 lg:justify-start lg:pt-20 lg:pb-12 lg:px-12 transition-colors duration-150"
         style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
         <AuthLeavesDecor />
