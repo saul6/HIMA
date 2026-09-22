@@ -1,13 +1,15 @@
 import { useState, useRef, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
-import { Mail, Lock, User, Building2, Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { Mail, Lock, User, Building2, Eye, EyeOff, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { AuthBackground } from '@/app/components/AuthBackground'
 import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
+import { AuthLeavesDecor } from '@/app/components/AuthLeavesDecor'
 import { MadyLogo } from '@/app/components/MadyLogo'
 
 const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function getInputStyle(focused: boolean): React.CSSProperties {
   return {
@@ -125,9 +127,10 @@ export function Registro() {
         <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
           <AuthCarouselPanel className="flex lg:w-[65%]" />
           <div
-            className="auth-panel flex-1 lg:w-[35%] flex flex-col items-center justify-center p-12 min-h-screen"
+            className="auth-panel relative flex-1 lg:w-[35%] flex flex-col items-center justify-center p-12 min-h-screen"
             style={{ background: 'var(--auth-panel-bg)' }}
           >
+            <AuthLeavesDecor className="hidden lg:block" />
             <div className="w-full max-w-[380px] space-y-6 text-center">
               <h1 className="text-[34px] font-bold leading-tight [letter-spacing:-0.01em]" style={{ color: 'var(--auth-heading-color)' }}>
                 Revisa tu correo
@@ -312,9 +315,10 @@ export function Registro() {
         <AuthCarouselPanel className="flex lg:w-[65%]" />
 
         <div
-          className="auth-panel flex-1 lg:w-[35%] flex flex-col items-center justify-center p-12 min-h-screen transition-colors duration-150"
+          className="auth-panel relative flex-1 lg:w-[35%] flex flex-col items-center justify-center p-12 min-h-screen transition-colors duration-150"
           style={{ background: 'var(--auth-panel-bg)' }}
         >
+          <AuthLeavesDecor className="hidden lg:block" />
           <div className="w-full max-w-[380px] space-y-6">
             <div className="space-y-1">
               <h1
@@ -365,9 +369,15 @@ export function Registro() {
                     placeholder="correo@ejemplo.com"
                     required
                     autoComplete="email"
-                    className="w-full h-12 border pl-10 pr-4 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
+                    className="w-full h-12 border pl-10 pr-9 text-sm focus:outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-[var(--auth-input-placeholder)]"
                     style={getInputStyle(focusedField === 'email')}
                   />
+                  {EMAIL_RE.test(email) && (
+                    <CheckCircle2
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4"
+                      style={{ color: 'var(--secondary)' }}
+                    />
+                  )}
                 </div>
               </div>
 
@@ -429,20 +439,33 @@ export function Registro() {
 
               {SITE_KEY && (
                 <div
-                  className="flex items-center justify-center p-3 rounded-[10px] border"
-                  style={{ borderColor: 'var(--auth-input-border)' }}
+                  className="flex flex-col items-stretch gap-3 p-4 rounded-[10px] border"
+                  style={{ borderColor: 'var(--auth-input-border)', background: 'var(--auth-input-bg)' }}
                 >
-                  <Turnstile
-                    ref={turnstileRef}
-                    siteKey={SITE_KEY}
-                    options={{ theme: 'auto', size: 'normal' }}
-                    onSuccess={(token) => setCaptchaToken(token)}
-                    onExpire={() => setCaptchaToken(null)}
-                    onError={() => {
-                      setCaptchaToken(null)
-                      setError('Verificación fallida, intenta de nuevo')
-                    }}
-                  />
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: 'var(--secondary)' }} />
+                    <div>
+                      <p className="text-xs font-semibold" style={{ color: 'var(--auth-label-color)' }}>
+                        Verificación de seguridad
+                      </p>
+                      <p className="text-[11px]" style={{ color: 'var(--auth-subtext-color)' }}>
+                        Completa el captcha para continuar
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex justify-center">
+                    <Turnstile
+                      ref={turnstileRef}
+                      siteKey={SITE_KEY}
+                      options={{ theme: 'auto', size: 'normal' }}
+                      onSuccess={(token) => setCaptchaToken(token)}
+                      onExpire={() => setCaptchaToken(null)}
+                      onError={() => {
+                        setCaptchaToken(null)
+                        setError('Verificación fallida, intenta de nuevo')
+                      }}
+                    />
+                  </div>
                 </div>
               )}
 

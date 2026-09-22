@@ -5,6 +5,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { MadyLogo } from '@/app/components/MadyLogo'
 import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
+import { AuthLeavesDecor } from '@/app/components/AuthLeavesDecor'
 
 function getInputStyle(focused: boolean): React.CSSProperties {
   return {
@@ -122,9 +123,10 @@ export function RestablecerContrasena() {
         <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
           <AuthCarouselPanel className="flex lg:w-[65%]" />
           <div
-            className="auth-panel flex-1 lg:w-[35%] flex flex-col items-center justify-center p-12 min-h-screen"
+            className="auth-panel relative flex-1 lg:w-[35%] flex flex-col items-center justify-center p-12 min-h-screen"
             style={{ background: 'var(--auth-panel-bg)' }}
           >
+            <AuthLeavesDecor className="hidden lg:block" />
             <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center"
@@ -192,9 +194,10 @@ export function RestablecerContrasena() {
         <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
           <AuthCarouselPanel className="flex lg:w-[65%]" />
           <div
-            className="auth-panel flex-1 lg:w-[35%] flex flex-col items-center justify-center p-12 min-h-screen"
+            className="auth-panel relative flex-1 lg:w-[35%] flex flex-col items-center justify-center p-12 min-h-screen"
             style={{ background: 'var(--auth-panel-bg)' }}
           >
+            <AuthLeavesDecor className="hidden lg:block" />
             <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center"
@@ -367,9 +370,10 @@ export function RestablecerContrasena() {
         <AuthCarouselPanel className="flex lg:w-[65%]" />
 
         <div
-          className="auth-panel flex-1 lg:w-[35%] flex flex-col items-center justify-center p-12 min-h-screen transition-colors duration-150"
+          className="auth-panel relative flex-1 lg:w-[35%] flex flex-col items-center justify-center p-12 min-h-screen transition-colors duration-150"
           style={{ background: 'var(--auth-panel-bg)' }}
         >
+          <AuthLeavesDecor className="hidden lg:block" />
           <div className="w-full max-w-[380px] space-y-7">
 
             <div className="space-y-1">

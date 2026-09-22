@@ -78,17 +78,27 @@
   /* Gris claro derivado de --muted-foreground (NO azul/sky) — para que el texto
      secundario no compita con el título, igual que la referencia de diseño. */
   --auth-text-secondary-dark: color-mix(in srgb, var(--muted-foreground) 55%, white 45%);
-  /* Línea divisoria entre panel de imágenes y formulario: casi imperceptible. */
-  --auth-divider: color-mix(in srgb, var(--secondary) 22%, transparent);
+  /* Línea divisoria: fina + glow mint suave (no barra sólida). */
+  --auth-divider: color-mix(in srgb, var(--secondary) 38%, transparent);
+  --auth-divider-glow: 0 0 12px 0 color-mix(in srgb, var(--secondary) 45%, transparent);
   /* Capa sobre las fotos del carrusel: derivada del verde de marca (no negro puro,
      "toque verde súper ligero"), más fuerte en la esquina inferior-izquierda
      (donde va el bloque de texto), se desvanece hacia el resto. Token único —
-     nunca inline en el componente. */
+     nunca inline en el componente. Un poco más densa que la iteración anterior. */
   --auth-carousel-overlay: radial-gradient(150% 150% at 0% 100%,
-    color-mix(in srgb, var(--mady-green-darker) 74%, transparent) 0%,
-    color-mix(in srgb, var(--mady-green-darker) 48%, transparent) 30%,
-    color-mix(in srgb, var(--mady-green-darker) 26%, transparent) 60%,
-    color-mix(in srgb, var(--mady-green-darker) 32%, transparent) 100%);
+    color-mix(in srgb, var(--mady-green-darker) 80%, transparent) 0%,
+    color-mix(in srgb, var(--mady-green-darker) 55%, transparent) 30%,
+    color-mix(in srgb, var(--mady-green-darker) 34%, transparent) 60%,
+    color-mix(in srgb, var(--mady-green-darker) 40%, transparent) 100%);
+  /* Scrim detrás del logo (esquina superior-izquierda): muy difuminado, se funde
+     con la capa general — nunca un "parche" de borde duro. */
+  --auth-logo-scrim: radial-gradient(60% 55% at 12% 10%,
+    color-mix(in srgb, var(--mady-green-darker) 55%, transparent) 0%,
+    color-mix(in srgb, var(--mady-green-darker) 25%, transparent) 55%,
+    transparent 100%);
+  /* Motivo decorativo de hojas detrás del formulario — trazo mint a opacidad
+     mínima, puramente ornamental (ver AuthLeavesDecor.tsx). */
+  --auth-leaf-stroke: color-mix(in srgb, var(--secondary) 100%, transparent);
 
   /* Indirección responsive del panel de formulario (Login/Registro/Restablecer).
      Por defecto = look móvil actual, byte a byte. Solo se sobreescriben dentro
@@ -115,7 +125,7 @@
 
 @media (min-width: 1024px) {
   .auth-panel {
-    --auth-panel-bg: linear-gradient(165deg, var(--mady-green-dark) 0%, var(--mady-green-darker) 100%);
+    --auth-panel-bg: linear-gradient(165deg, color-mix(in srgb, var(--mady-green-dark) 88%, black) 0%, color-mix(in srgb, var(--mady-green-darker) 88%, black) 100%);
     --auth-heading-color: #FFFFFF;
     --auth-heading-accent-color: var(--secondary);
     --auth-subtext-color: var(--auth-text-secondary-dark);
