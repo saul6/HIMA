@@ -985,8 +985,8 @@
     "semantic_hash": ""
   },
   "src/types/database.types.ts": {
-    "mtime": 1790105180.642931,
-    "ast_hash": "201f285d3a8bd0bd0064e6b8b4faa5b0",
+    "mtime": 1790106439.9508991,
+    "ast_hash": "9dedc7677cface15faaac74031c68970",
     "semantic_hash": ""
   },
   "supabase/migrations/001_initial_schema.sql": {
@@ -2255,8 +2255,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorEjecucion.tsx": {
-    "mtime": 1790039651.4106474,
-    "ast_hash": "33416a52d12bc70f1098f50900f971f4",
+    "mtime": 1790106576.645787,
+    "ast_hash": "665b7997361f3715146bc712474f2237",
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorHome.tsx": {
@@ -2452,6 +2452,21 @@
   "src/app/screens/auditor/AuditorModoAzzule.tsx": {
     "mtime": 1790039710.2247143,
     "ast_hash": "a6aa6a179911e65b3eaab1edfc94ae7d",
+    "semantic_hash": ""
+  },
+  "src/app/screens/auditor/EvidenciaPanel.tsx": {
+    "mtime": 1790106511.5453837,
+    "ast_hash": "c294927e5c8880ca532626b4efbac4e5",
+    "semantic_hash": ""
+  },
+  "src/hooks/useEvidencia.ts": {
+    "mtime": 1790106457.7659159,
+    "ast_hash": "45879ebaf18364117427ff74fc81dc4b",
+    "semantic_hash": ""
+  },
+  "src/lib/storage/audEvidenciaStorage.ts": {
+    "mtime": 1790106444.2013056,
+    "ast_hash": "2e20f3ccb69061b3d4a95e0ce5b68a9e",
     "semantic_hash": ""
   }
 }
