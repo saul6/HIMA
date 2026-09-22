@@ -68,10 +68,14 @@
   --auth-border: #E3E9EF;
   --auth-text: #33404D;
   --auth-bg-page: #F6F9FB;
-  /* Navy del panel de formulario: mismo tono que --primary. -darker es un
-     segundo escalón (derivado por color-mix, nunca hex suelto) para degradados. */
-  --auth-navy-dark: var(--primary);
-  --auth-navy-darker: color-mix(in srgb, var(--primary) 78%, black 22%);
+  /* Navy del panel de formulario: mismo tono que --primary en modo claro,
+     pero FIJO (literal, no var(--primary)) — las pantallas de auth siempre
+     son navy oscuro sin importar el tema claro/oscuro global de la app
+     (.dark redefine --primary a sky #81BEE5, lo que filtraba sky como
+     "superficie" del panel/scrim en vez de accent). -darker es un segundo
+     escalón (derivado por color-mix, nunca hex suelto) para degradados. */
+  --auth-navy-dark: #173251;
+  --auth-navy-darker: color-mix(in srgb, #173251 78%, black 22%);
   --auth-panel-dark: var(--auth-navy-dark);
   /* Fondo de input: el navy del panel, apenas aclarado — no blanco-alpha. */
   --auth-input-dark: color-mix(in srgb, var(--auth-navy-dark) 90%, white 10%);
