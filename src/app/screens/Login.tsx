@@ -4,7 +4,7 @@ import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
-import { AuthMobileBanner } from '@/app/components/AuthMobileBanner'
+import { AuthMobileBackdrop } from '@/app/components/AuthMobileBackdrop'
 import { AuthLeavesDecor } from '@/app/components/AuthLeavesDecor'
 
 const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
@@ -103,20 +103,20 @@ export function Login() {
   const ctaCls = 'auth-cta w-full h-12 text-white font-semibold flex items-center justify-center gap-2 disabled:cursor-not-allowed'
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen" style={{ background: 'var(--background)' }}>
+    <div className="flex flex-col lg:flex-row min-h-screen justify-center lg:justify-normal" style={{ background: 'var(--background)' }}>
 
-      {/* ── Banner móvil (Opción B): foto + logo + título, solo <lg ── */}
+      {/* ── Fondo móvil v2: carrusel a pantalla completa + logo arriba-izquierda, solo <lg ── */}
       <div className="lg:hidden">
-        <AuthMobileBanner paused={!!focusedField} />
+        <AuthMobileBackdrop paused={!!focusedField} />
       </div>
 
       {/* ── PANEL IZQUIERDO: carrusel de fotos (solo lg+, 60%) ── */}
       <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
 
-      {/* ── PANEL: formulario (100% en móvil, 40% en escritorio) — verde oscuro derivado del mint en cualquier tamaño ── */}
+      {/* ── PANEL: tarjeta glass flotante en móvil, panel sólido de 40% en escritorio ── */}
       <div
-        className={`auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-6 lg:pb-12 lg:px-12 transition-colors duration-150 ${modoRecup ? '' : 'lg:justify-start lg:pt-20'}`}
-        style={{ background: 'var(--auth-panel-bg)' }}
+        className={`auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[440px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-6 lg:pb-12 lg:px-12 transition-colors duration-150 ${modoRecup ? '' : 'lg:justify-start lg:pt-20'}`}
+        style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
         <AuthLeavesDecor />
 

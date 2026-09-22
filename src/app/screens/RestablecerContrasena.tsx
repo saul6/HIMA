@@ -4,7 +4,7 @@ import { Lock, Eye, EyeOff, CheckCircle2, ArrowRight, AlertCircle } from 'lucide
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
-import { AuthMobileBanner } from '@/app/components/AuthMobileBanner'
+import { AuthMobileBackdrop } from '@/app/components/AuthMobileBackdrop'
 import { AuthLeavesDecor } from '@/app/components/AuthLeavesDecor'
 
 function getInputStyle(focused: boolean): React.CSSProperties {
@@ -31,14 +31,14 @@ interface StatusPanelProps {
 
 function StatusPanel({ iconBg, icon, title, titleSizeLg, message, ctaLabel, onCta }: StatusPanelProps) {
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen" style={{ background: 'var(--background)' }}>
+    <div className="flex flex-col lg:flex-row min-h-screen justify-center lg:justify-normal" style={{ background: 'var(--background)' }}>
       <div className="lg:hidden">
-        <AuthMobileBanner />
+        <AuthMobileBackdrop />
       </div>
       <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
       <div
-        className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-6 lg:p-12"
-        style={{ background: 'var(--auth-panel-bg)' }}
+        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[440px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-6 lg:p-12"
+        style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
         <AuthLeavesDecor />
         <div className="w-full max-w-[380px] flex flex-col items-center gap-6 text-center">
@@ -166,18 +166,18 @@ export function RestablecerContrasena() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen" style={{ background: 'var(--background)' }}>
+    <div className="flex flex-col lg:flex-row min-h-screen justify-center lg:justify-normal" style={{ background: 'var(--background)' }}>
 
-      {/* ── Banner móvil (Opción B), solo <lg ── */}
+      {/* ── Fondo móvil v2: carrusel a pantalla completa + logo arriba-izquierda, solo <lg ── */}
       <div className="lg:hidden">
-        <AuthMobileBanner paused={!!focusedField} />
+        <AuthMobileBackdrop paused={!!focusedField} />
       </div>
 
       <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
 
       <div
-        className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-6 lg:justify-start lg:pt-20 lg:pb-12 lg:px-12 transition-colors duration-150"
-        style={{ background: 'var(--auth-panel-bg)' }}
+        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[440px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-6 lg:justify-start lg:pt-20 lg:pb-12 lg:px-12 transition-colors duration-150"
+        style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
         <AuthLeavesDecor />
         <div className="w-full max-w-[380px] space-y-7 lg:space-y-8">

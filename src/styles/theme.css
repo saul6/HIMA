@@ -100,23 +100,30 @@
   /* Motivo decorativo de hojas detrás del formulario — trazo mint a opacidad
      mínima, puramente ornamental (ver AuthLeavesDecor.tsx). */
   --auth-leaf-stroke: color-mix(in srgb, var(--secondary) 100%, transparent);
-  /* Banner móvil (Opción B): capa que funde la foto del carrusel con el verde
-     sólido del panel de abajo — transparente arriba, sólida (mismo tono que
-     --auth-panel-bg) en la base del banner. */
-  --auth-mobile-banner-fade: linear-gradient(to bottom,
-    color-mix(in srgb, var(--mady-green-darker) 30%, transparent) 0%,
-    color-mix(in srgb, var(--mady-green-darker) 55%, transparent) 55%,
-    var(--mady-green-dark) 100%);
+  /* Fondo móvil v2: carrusel a pantalla completa (ver AuthMobileBackdrop.tsx)
+     detrás de una tarjeta "glass" flotante. Capa pareja que oscurece la foto
+     lo suficiente para que el logo (arriba-izquierda, directo sobre la foto)
+     se lea incluso en fotos claras (almacén, campo) — más densa arriba/abajo,
+     más ligera al centro para que la foto se asome detrás de la tarjeta. */
+  --auth-mobile-bg-overlay: linear-gradient(180deg,
+    color-mix(in srgb, var(--mady-green-darker) 58%, transparent) 0%,
+    color-mix(in srgb, var(--mady-green-darker) 32%, transparent) 42%,
+    color-mix(in srgb, var(--mady-green-darker) 40%, transparent) 65%,
+    color-mix(in srgb, var(--mady-green-darker) 62%, transparent) 100%);
+  /* Tarjeta glass del formulario en móvil: verde oscuro semitransparente +
+     backdrop-blur (ver clase .auth-panel en cada screen) — deja intuir la
+     foto de fondo sin sacrificar legibilidad. Escritorio ignora este valor:
+     .auth-panel lo sobreescribe por el gradiente sólido de siempre a partir
+     de 1024px (ver bloque @media abajo). */
+  --auth-glass-bg: color-mix(in srgb, var(--mady-green-dark) 80%, transparent);
 
-  /* Panel de formulario de auth (Login/Registro/Restablecer) — verde oscuro
-     SIEMPRE, en cualquier breakpoint. Hasta la iteración anterior estos tokens
-     tenían un valor "claro" por defecto que solo se oscurecía dentro de
-     .auth-panel a partir de 1024px (móvil se veía claro/azulado a propósito,
-     por pedido explícito). Ahora móvil debe verse igual que escritorio, así
-     que el valor oscuro pasa a ser el único valor — sin media query, sin
-     indirección — y automáticamente todo lo que ya referencia estas
-     variables (las tres pantallas) queda oscuro en cualquier tamaño. */
-  --auth-panel-bg: linear-gradient(165deg, color-mix(in srgb, var(--mady-green-dark) 88%, black) 0%, color-mix(in srgb, var(--mady-green-darker) 88%, black) 100%);
+  /* Panel de formulario de auth (Login/Registro/Restablecer). En móvil usa la
+     tarjeta glass semitransparente (flota sobre AuthMobileBackdrop); desde
+     1024px cambia al gradiente sólido de siempre — mismo valor exacto que
+     escritorio ya tenía, solo que ahora vive detrás de un media query en vez
+     de ser el único valor, así móvil puede diferir sin tocar el resultado en
+     escritorio. */
+  --auth-panel-bg: var(--auth-glass-bg);
   --auth-heading-color: #FFFFFF;
   --auth-heading-accent-color: var(--secondary);
   --auth-subtext-color: var(--auth-text-secondary-dark);
@@ -290,6 +297,15 @@
 @media (prefers-reduced-motion: reduce) {
   .auth-cta { transition: none; }
   .auth-panel .auth-cta:active:not(:disabled) { transform: none; }
+}
+
+/* Desde escritorio, el panel de auth vuelve al gradiente sólido de siempre
+   (no glass) — valor idéntico al que --auth-panel-bg tenía como único valor
+   antes de la v2 móvil. */
+@media (min-width: 1024px) {
+  .auth-panel {
+    --auth-panel-bg: linear-gradient(165deg, color-mix(in srgb, var(--mady-green-dark) 88%, black) 0%, color-mix(in srgb, var(--mady-green-darker) 88%, black) 100%);
+  }
 }
 
 /* Fix de autofill de Chrome — el navegador pinta su propio fondo (blanco/
