@@ -103,7 +103,7 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
         <div className="flex-1" />
 
         {/* Caption discreto del área + dots — abajo, crossfade real al cambiar de foto */}
-        <div className="pb-1">
+        <div className="pb-5">
           <div className="relative mb-3" style={{ height: '1.1rem' }}>
             {SLIDES.map((slide, i) => (
               <p

@@ -127,7 +127,7 @@ export function Registro() {
         <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
           <AuthCarouselPanel className="flex lg:w-[60%]" />
           <div
-            className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12 min-h-screen"
+            className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12"
             style={{ background: 'var(--auth-panel-bg)' }}
           >
             <AuthLeavesDecor className="hidden lg:block" />
@@ -315,7 +315,7 @@ export function Registro() {
         <AuthCarouselPanel className="flex lg:w-[60%]" />
 
         <div
-          className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-start pt-16 pb-10 px-12 min-h-screen transition-colors duration-150"
+          className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-start pt-16 pb-10 px-12 transition-colors duration-150"
           style={{ background: 'var(--auth-panel-bg)' }}
         >
           <AuthLeavesDecor className="hidden lg:block" />
@@ -336,9 +336,6 @@ export function Registro() {
               >
                 Crear cuenta
               </h1>
-              <p className="text-sm" style={{ color: 'var(--auth-subtext-color)' }}>
-                Regístrate para empezar a usar M.A.D.Y
-              </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -442,7 +439,7 @@ export function Registro() {
                   />
                 </div>
                 <p className="text-xs pt-1" style={{ color: 'var(--auth-subtext-color)' }}>
-                  Nombre de tu empresa, o tu nombre si trabajas por tu cuenta.
+                  (O tu nombre si eres independiente).
                 </p>
               </div>
 

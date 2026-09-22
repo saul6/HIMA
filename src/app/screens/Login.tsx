@@ -97,7 +97,7 @@ export function Login() {
 
       {/* ── PANEL DERECHO: formulario (40% en escritorio, verde oscuro derivado del mint) ── */}
       <div
-        className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center lg:justify-start p-6 lg:pt-28 lg:pb-12 lg:px-12 min-h-screen transition-colors duration-150"
+        className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center lg:justify-start p-6 lg:pt-28 lg:pb-12 lg:px-12 transition-colors duration-150"
         style={{ background: 'var(--auth-panel-bg)' }}
       >
         <AuthLeavesDecor className="hidden lg:block" />

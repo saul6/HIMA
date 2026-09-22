@@ -1,6 +1,8 @@
-// Motivo decorativo de hojas — trazo lineal, opacidad mínima, puramente
-// ornamental detrás del formulario en el panel oscuro de auth. No estorba la
-// lectura. Color por token (--auth-leaf-stroke, derivado de --secondary).
+// Motivo decorativo de hojas — trazo lineal, opacidad mínima y variada,
+// puramente ornamental detrás del formulario en el panel oscuro de auth.
+// No estorba la lectura. Color por token (--auth-leaf-stroke, derivado de
+// --secondary). Varias ramas en distintas esquinas/tamaños/opacidades para
+// que se sienta orgánico y no repetitivo.
 
 interface AuthLeavesDecorProps {
   className?: string
@@ -17,31 +19,32 @@ function LeafSprig() {
   )
 }
 
+const SPRIGS = [
+  { pos: 'absolute -top-4 -right-6', size: 180, rotate: 35, opacity: 0.06 },
+  { pos: 'absolute -bottom-8 -left-10', size: 220, rotate: -150, opacity: 0.07 },
+  { pos: 'absolute -top-10 -left-8', size: 130, rotate: -20, opacity: 0.04 },
+  { pos: 'absolute -bottom-6 -right-4', size: 150, rotate: 165, opacity: 0.045 },
+  { pos: 'absolute top-[38%] -right-10', size: 100, rotate: 60, opacity: 0.03 },
+]
+
 export function AuthLeavesDecor({ className = '' }: AuthLeavesDecorProps) {
   return (
     <div
       aria-hidden="true"
       className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}
-      style={{ opacity: 0.06 }}
     >
-      <svg
-        className="absolute -top-4 -right-6"
-        width="180"
-        height="180"
-        viewBox="0 0 60 120"
-        style={{ transform: 'rotate(35deg)' }}
-      >
-        <LeafSprig />
-      </svg>
-      <svg
-        className="absolute -bottom-8 -left-10"
-        width="220"
-        height="220"
-        viewBox="0 0 60 120"
-        style={{ transform: 'rotate(-150deg)' }}
-      >
-        <LeafSprig />
-      </svg>
+      {SPRIGS.map((sprig, i) => (
+        <svg
+          key={i}
+          className={sprig.pos}
+          width={sprig.size}
+          height={sprig.size}
+          viewBox="0 0 60 120"
+          style={{ transform: `rotate(${sprig.rotate}deg)`, opacity: sprig.opacity }}
+        >
+          <LeafSprig />
+        </svg>
+      ))}
     </div>
   )
 }
