@@ -2400,8 +2400,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorInstalacionDetalle.tsx": {
-    "mtime": 1790021681.7539673,
-    "ast_hash": "76d396556edd271c175d0db950115854",
+    "mtime": 1790113868.9459534,
+    "ast_hash": "0ae450dcf41ce8f57a7e87c879c3989f",
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorNuevaAuditoriaEfimera.tsx": {
