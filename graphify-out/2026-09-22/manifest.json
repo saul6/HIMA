@@ -2250,13 +2250,13 @@
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorEjecucion.tsx": {
-    "mtime": 1790113135.8587458,
-    "ast_hash": "0eee6db99e15d47dbbfce9ab778493c0",
+    "mtime": 1790115210.3106515,
+    "ast_hash": "ff09d64c0c0d1fd33bbe608adbfad16a",
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorHome.tsx": {
-    "mtime": 1790112487.626912,
-    "ast_hash": "f22c9ddbdb11947615c0e69a4d755bed",
+    "mtime": 1790115796.1539829,
+    "ast_hash": "c536c65087b3d13f297cd6cc3915caaa",
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorNuevaAuditoria.tsx": {
@@ -2507,6 +2507,11 @@
   "src/hooks/useContinuarTrabajo.ts": {
     "mtime": 1790112469.2090466,
     "ast_hash": "f1a6656745426a5e6a78ea06eee2c2bc",
+    "semantic_hash": ""
+  },
+  "src/app/screens/auditor/AuditorBusqueda.tsx": {
+    "mtime": 1790115788.4945266,
+    "ast_hash": "bca6f1e3fc070915e133d09174722b41",
     "semantic_hash": ""
   }
 }

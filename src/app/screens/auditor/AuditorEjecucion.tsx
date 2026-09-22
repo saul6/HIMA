@@ -1254,11 +1254,14 @@ export function AuditorEjecucion() {
     if (!sheetHallazgo || !formHallazgoDesc.trim()) return
     setGuardandoHallazgo(true)
     try {
+      const pregHallazgo = allPreguntas.find(p => p.id === sheetHallazgo.preguntaId)
       await crearHallazgo({
         instanciaId: sheetHallazgo.instanciaId,
         preguntaId: sheetHallazgo.preguntaId,
         descripcion: formHallazgoDesc.trim(),
         clasificacion: formHallazgoClas,
+        criterionCode: pregHallazgo ? String(pregHallazgo.prompt_component_id) : null,
+        ranchoId: auditoria?.rancho_id ?? null,
       })
       setSheetHallazgo(null)
       setFormHallazgoDesc('')

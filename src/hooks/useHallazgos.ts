@@ -36,6 +36,8 @@ export function useHallazgos(auditoriaId: string | undefined, orgId: string | un
     preguntaId: string
     descripcion: string
     clasificacion: AudHallazgoClasificacion
+    criterionCode?: string | null
+    ranchoId?: string | null
   }): Promise<void> {
     if (!auditoriaId || !orgId) throw new Error('Sin contexto de auditoría')
     const { error } = await tbl('aud_hallazgos').insert({
@@ -45,6 +47,8 @@ export function useHallazgos(auditoriaId: string | undefined, orgId: string | un
       pregunta_id: params.preguntaId,
       descripcion: params.descripcion,
       clasificacion: params.clasificacion,
+      criterion_code: params.criterionCode ?? null,
+      rancho_id: params.ranchoId ?? null,
       creado_por: profile?.id,
     })
     if (error) throw error

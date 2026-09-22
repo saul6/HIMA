@@ -91,7 +91,7 @@
   "89": "UsoEpp.tsx",
   "90": "toggle-group.tsx",
   "91": "carousel.tsx",
-  "92": "ConsumoEnergia.tsx",
+  "92": "Login.tsx",
   "93": "generarControlHerramientasPDF.tsx",
   "94": "OrdenMantenimiento.tsx",
   "95": "generarTensiometrosPDF.tsx",
@@ -125,7 +125,7 @@
   "123": "AuditorModoAzzule.tsx",
   "124": "LimpiezaBanosPDF.tsx",
   "125": "generarMonitoreoRoedoresPDF.tsx",
-  "126": "FrecuenciaCapacitacion.tsx",
+  "126": "ConsumoEnergia.tsx",
   "127": "Inventario.tsx",
   "128": "FertilizacionPDF.tsx",
   "129": "InspeccionPerimetral.tsx",
@@ -325,7 +325,7 @@
   "323": "audEvidenciaStorage.ts",
   "324": "@radix-ui/react-collapsible",
   "325": "@radix-ui/react-context-menu",
-  "326": "CronogramaCapacitacion.tsx",
+  "326": "browser-image-compression",
   "327": "@radix-ui/react-dropdown-menu",
   "328": "react-router",
   "329": "@radix-ui/react-menubar",
@@ -367,6 +367,5 @@
   "365": "logoMadyPdf.ts",
   "366": "MadyLogoPDF.tsx",
   "367": "permisos.ts",
-  "368": "@radix-ui/react-dialog",
   "370": "cmdk"
 }
