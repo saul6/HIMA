@@ -1220,8 +1220,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "package_dependencies_browser_image_compression",
-      "community": 302,
-      "community_name": "browser-image-compression",
+      "community": 5,
+      "community_name": "dependencies",
       "norm_label": "browser-image-compression"
     },
     {
@@ -1231,8 +1231,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "browser_image_compression",
-      "community": 302,
-      "community_name": "browser-image-compression",
+      "community": 5,
+      "community_name": "dependencies",
       "norm_label": "browser-image-compression"
     },
     {
@@ -1286,8 +1286,8 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "package_dependencies_class_variance_authority",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 369,
+      "community_name": "class-variance-authority",
       "norm_label": "class-variance-authority"
     },
     {
@@ -1297,8 +1297,8 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "class_variance_authority",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 369,
+      "community_name": "class-variance-authority",
       "norm_label": "class-variance-authority"
     },
     {
@@ -8172,8 +8172,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_screens_calibracionequipos",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 368,
+      "community_name": "CalibracionEquipos.tsx",
       "norm_label": "calibracionequipos.tsx"
     },
     {
@@ -8183,8 +8183,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "src_app_screens_calibracionequipos_formatfecha",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 368,
+      "community_name": "CalibracionEquipos.tsx",
       "norm_label": "formatfecha()"
     },
     {
@@ -8194,8 +8194,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "src_app_screens_calibracionequipos_formstate",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 368,
+      "community_name": "CalibracionEquipos.tsx",
       "norm_label": "formstate"
     },
     {
@@ -8205,8 +8205,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "src_app_screens_calibracionequipos_form_vacio",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 368,
+      "community_name": "CalibracionEquipos.tsx",
       "norm_label": "form_vacio"
     },
     {
@@ -8216,8 +8216,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "src_app_screens_calibracionequipos_calibracionequipos",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 368,
+      "community_name": "CalibracionEquipos.tsx",
       "norm_label": "calibracionequipos()"
     },
     {
@@ -9041,8 +9041,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_screens_frecuenciacapacitacion",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 302,
+      "community_name": "FrecuenciaCapacitacion.tsx",
       "norm_label": "frecuenciacapacitacion.tsx"
     },
     {
@@ -9052,8 +9052,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "src_app_screens_frecuenciacapacitacion_meses",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 302,
+      "community_name": "FrecuenciaCapacitacion.tsx",
       "norm_label": "meses"
     },
     {
@@ -9063,8 +9063,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "src_app_screens_frecuenciacapacitacion_anio_actual",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 302,
+      "community_name": "FrecuenciaCapacitacion.tsx",
       "norm_label": "anio_actual"
     },
     {
@@ -9074,8 +9074,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "src_app_screens_frecuenciacapacitacion_formstate",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 302,
+      "community_name": "FrecuenciaCapacitacion.tsx",
       "norm_label": "formstate"
     },
     {
@@ -9085,8 +9085,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "src_app_screens_frecuenciacapacitacion_form_vacio",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 302,
+      "community_name": "FrecuenciaCapacitacion.tsx",
       "norm_label": "form_vacio"
     },
     {
@@ -9096,8 +9096,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "src_app_screens_frecuenciacapacitacion_frecuenciacapacitacion",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 302,
+      "community_name": "FrecuenciaCapacitacion.tsx",
       "norm_label": "frecuenciacapacitacion()"
     },
     {
@@ -13287,8 +13287,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_screens_perfil",
-      "community": 244,
-      "community_name": "Perfil.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "perfil.tsx"
     },
     {
@@ -13298,8 +13298,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "src_app_screens_perfil_rol_label",
-      "community": 244,
-      "community_name": "Perfil.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "rol_label"
     },
     {
@@ -13309,8 +13309,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "src_app_screens_perfil_inicialesde",
-      "community": 244,
-      "community_name": "Perfil.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "inicialesde()"
     },
     {
@@ -13320,8 +13320,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "src_app_screens_perfil_perfil",
-      "community": 244,
-      "community_name": "Perfil.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "perfil()"
     },
     {
@@ -13683,8 +13683,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_screens_registro",
-      "community": 246,
-      "community_name": "Registro.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "registro.tsx"
     },
     {
@@ -13694,8 +13694,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "src_app_screens_registro_site_key",
-      "community": 246,
-      "community_name": "Registro.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "site_key"
     },
     {
@@ -13705,8 +13705,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "src_app_screens_registro_getinputstyle",
-      "community": 246,
-      "community_name": "Registro.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "getinputstyle()"
     },
     {
@@ -13716,8 +13716,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "src_app_screens_registro_registro",
-      "community": 246,
-      "community_name": "Registro.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "registro()"
     },
     {
@@ -22312,10 +22312,21 @@
       "norm_label": "auditorreportepdf.tsx"
     },
     {
+      "label": "ReviewIssueReporte",
+      "file_type": "code",
+      "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "src_lib_pdf_auditor_auditorreportepdf_reviewissuereporte",
+      "community": 66,
+      "community_name": "AuditorReportePDF.tsx",
+      "norm_label": "reviewissuereporte"
+    },
+    {
       "label": "PreguntaReporte",
       "file_type": "code",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L8",
+      "source_location": "L14",
       "_origin": "ast",
       "id": "src_lib_pdf_auditor_auditorreportepdf_preguntareporte",
       "community": 66,
@@ -22326,7 +22337,7 @@
       "label": "BloqueReporte",
       "file_type": "code",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L18",
+      "source_location": "L24",
       "_origin": "ast",
       "id": "src_lib_pdf_auditor_auditorreportepdf_bloquereporte",
       "community": 66,
@@ -22337,7 +22348,7 @@
       "label": "ModuloReporte",
       "file_type": "code",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L25",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "src_lib_pdf_auditor_auditorreportepdf_moduloreporte",
       "community": 66,
@@ -22348,7 +22359,7 @@
       "label": "AuditorReportePDFProps",
       "file_type": "code",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L30",
+      "source_location": "L36",
       "_origin": "ast",
       "id": "src_lib_pdf_auditor_auditorreportepdf_auditorreportepdfprops",
       "community": 66,
@@ -22359,7 +22370,7 @@
       "label": "formatFechaPDF()",
       "file_type": "code",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L46",
+      "source_location": "L53",
       "_origin": "ast",
       "id": "src_lib_pdf_auditor_auditorreportepdf_formatfechapdf",
       "community": 66,
@@ -22370,7 +22381,7 @@
       "label": "RESP_LABELS",
       "file_type": "code",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L51",
+      "source_location": "L58",
       "_origin": "ast",
       "id": "src_lib_pdf_auditor_auditorreportepdf_resp_labels",
       "community": 66,
@@ -22378,10 +22389,32 @@
       "norm_label": "resp_labels"
     },
     {
+      "label": "SEV_COLORS",
+      "file_type": "code",
+      "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
+      "source_location": "L66",
+      "_origin": "ast",
+      "id": "src_lib_pdf_auditor_auditorreportepdf_sev_colors",
+      "community": 66,
+      "community_name": "AuditorReportePDF.tsx",
+      "norm_label": "sev_colors"
+    },
+    {
+      "label": "SEV_BG",
+      "file_type": "code",
+      "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
+      "source_location": "L72",
+      "_origin": "ast",
+      "id": "src_lib_pdf_auditor_auditorreportepdf_sev_bg",
+      "community": 66,
+      "community_name": "AuditorReportePDF.tsx",
+      "norm_label": "sev_bg"
+    },
+    {
       "label": "RESP_COLOR",
       "file_type": "code",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L59",
+      "source_location": "L79",
       "_origin": "ast",
       "id": "src_lib_pdf_auditor_auditorreportepdf_resp_color",
       "community": 66,
@@ -22392,7 +22425,7 @@
       "label": "RESP_BG",
       "file_type": "code",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L67",
+      "source_location": "L87",
       "_origin": "ast",
       "id": "src_lib_pdf_auditor_auditorreportepdf_resp_bg",
       "community": 66,
@@ -22403,7 +22436,7 @@
       "label": "S",
       "file_type": "code",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L77",
+      "source_location": "L97",
       "_origin": "ast",
       "id": "src_lib_pdf_auditor_auditorreportepdf_s",
       "community": 66,
@@ -22414,7 +22447,7 @@
       "label": "PreguntaRow()",
       "file_type": "code",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L253",
+      "source_location": "L321",
       "_origin": "ast",
       "id": "src_lib_pdf_auditor_auditorreportepdf_preguntarow",
       "community": 66,
@@ -22425,7 +22458,7 @@
       "label": "AuditorReportePDF()",
       "file_type": "code",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L299",
+      "source_location": "L367",
       "_origin": "ast",
       "id": "src_lib_pdf_auditor_auditorreportepdf_auditorreportepdf",
       "community": 66,
@@ -22458,7 +22491,7 @@
       "label": "generarAuditorReportePDF()",
       "file_type": "code",
       "source_file": "src/lib/pdf/auditor/generarAuditorReportePDF.ts",
-      "source_location": "L17",
+      "source_location": "L18",
       "_origin": "ast",
       "id": "src_lib_pdf_auditor_generarauditorreportepdf_generarauditorreportepdf",
       "community": 66,
@@ -22659,8 +22692,8 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "src_lib_pdf_auditoria_generarauditoriapdf_generarblobauditoria",
-      "community": 30,
-      "community_name": "generarBlobHistorial.tsx",
+      "community": 69,
+      "community_name": "AuditoriaPDF.tsx",
       "norm_label": "generarblobauditoria()"
     },
     {
@@ -26003,8 +26036,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_lib_pdf_m27_preparacioncloropdf",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 246,
+      "community_name": "generarPreparacionCloroPDF.tsx",
       "norm_label": "preparacioncloropdf.tsx"
     },
     {
@@ -26014,8 +26047,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "src_lib_pdf_m27_preparacioncloropdf_preparacionpdfrow",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 246,
+      "community_name": "generarPreparacionCloroPDF.tsx",
       "norm_label": "preparacionpdfrow"
     },
     {
@@ -26025,8 +26058,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "src_lib_pdf_m27_preparacioncloropdf_preparacioncloropaginaprops",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 246,
+      "community_name": "generarPreparacionCloroPDF.tsx",
       "norm_label": "preparacioncloropaginaprops"
     },
     {
@@ -26036,8 +26069,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "src_lib_pdf_m27_preparacioncloropdf_fmt",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 246,
+      "community_name": "generarPreparacionCloroPDF.tsx",
       "norm_label": "fmt()"
     },
     {
@@ -26047,8 +26080,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "src_lib_pdf_m27_preparacioncloropdf_preparacioncloropagina",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 246,
+      "community_name": "generarPreparacionCloroPDF.tsx",
       "norm_label": "preparacioncloropagina()"
     },
     {
@@ -26058,8 +26091,8 @@
       "source_location": "L155",
       "_origin": "ast",
       "id": "src_lib_pdf_m27_preparacioncloropdf_preparacioncloropdf",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 246,
+      "community_name": "generarPreparacionCloroPDF.tsx",
       "norm_label": "preparacioncloropdf()"
     },
     {
@@ -26069,8 +26102,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_lib_pdf_m27_generarpreparacioncloroconsolidadopdf",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 246,
+      "community_name": "generarPreparacionCloroPDF.tsx",
       "norm_label": "generarpreparacioncloroconsolidadopdf.tsx"
     },
     {
@@ -26080,8 +26113,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_lib_pdf_m27_generarpreparacioncloroconsolidadopdf_generarpreparacioncloroconsolidadopdf",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 246,
+      "community_name": "generarPreparacionCloroPDF.tsx",
       "norm_label": "generarpreparacioncloroconsolidadopdf()"
     },
     {
@@ -26091,8 +26124,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_lib_pdf_m27_generarpreparacioncloropdf",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 246,
+      "community_name": "generarPreparacionCloroPDF.tsx",
       "norm_label": "generarpreparacioncloropdf.tsx"
     },
     {
@@ -26102,8 +26135,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_lib_pdf_m27_generarpreparacioncloropdf_generarprops",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 246,
+      "community_name": "generarPreparacionCloroPDF.tsx",
       "norm_label": "generarprops"
     },
     {
@@ -26113,8 +26146,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "src_lib_pdf_m27_generarpreparacioncloropdf_descargar",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 246,
+      "community_name": "generarPreparacionCloroPDF.tsx",
       "norm_label": "descargar()"
     },
     {
@@ -26124,8 +26157,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "src_lib_pdf_m27_generarpreparacioncloropdf_generarpreparacioncloropdf",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 246,
+      "community_name": "generarPreparacionCloroPDF.tsx",
       "norm_label": "generarpreparacioncloropdf()"
     },
     {
@@ -29424,8 +29457,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_entradassalidasprefriopdf",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "entradassalidasprefriopdf.tsx"
     },
     {
@@ -29435,8 +29468,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_entradassalidasprefriopdf_m40lineapdf",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "m40lineapdf"
     },
     {
@@ -29446,8 +29479,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_entradassalidasprefriopdf_m40registrodatapdf",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "m40registrodatapdf"
     },
     {
@@ -29457,8 +29490,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_entradassalidasprefriopdf_fmtfecha",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "fmtfecha()"
     },
     {
@@ -29468,8 +29501,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_entradassalidasprefriopdf_t",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "t()"
     },
     {
@@ -29479,8 +29512,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_entradassalidasprefriopdf_n",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "n()"
     },
     {
@@ -29490,8 +29523,8 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_entradassalidasprefriopdf_thstyle",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "thstyle"
     },
     {
@@ -29501,8 +29534,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_entradassalidasprefriopdf_tdstyle",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "tdstyle"
     },
     {
@@ -29512,8 +29545,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_entradassalidasprefriopdf_w",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "w"
     },
     {
@@ -29523,8 +29556,8 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_entradassalidasprefriopdf_entradassalidasprefriopdf",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "entradassalidasprefriopdf()"
     },
     {
@@ -29534,8 +29567,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_generarentradassalidasprefrioconsolidadopdf",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "generarentradassalidasprefrioconsolidadopdf.tsx"
     },
     {
@@ -29545,8 +29578,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_generarentradassalidasprefrioconsolidadopdf_descargar",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "descargar()"
     },
     {
@@ -29556,8 +29589,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_generarentradassalidasprefrioconsolidadopdf_generarentradassalidasprefrioconsolidadopdf",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "generarentradassalidasprefrioconsolidadopdf()"
     },
     {
@@ -29567,8 +29600,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_generarentradassalidasprefriopdf",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "generarentradassalidasprefriopdf.tsx"
     },
     {
@@ -29578,8 +29611,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_generarentradassalidasprefriopdf_descargar",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "descargar()"
     },
     {
@@ -29589,8 +29622,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_generarentradassalidasprefriopdf_cargardatos",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "cargardatos()"
     },
     {
@@ -29600,8 +29633,8 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_generarentradassalidasprefriopdf_generarentradassalidasprefriopdf",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "generarentradassalidasprefriopdf()"
     },
     {
@@ -29611,8 +29644,8 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "src_lib_pdf_m40_generarentradassalidasprefriopdf_generarblobentradassalidasprefrio",
-      "community": 76,
-      "community_name": "MttoPreventivoPDF.tsx",
+      "community": 244,
+      "community_name": "EntradasSalidasPreFrioPDF.tsx",
       "norm_label": "generarblobentradassalidasprefrio()"
     },
     {
@@ -62107,7 +62140,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/app/screens/auditor/AuditorEjecucion.tsx",
-      "source_location": "L848",
+      "source_location": "L849",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_auditorejecucion_auditorejecucion",
@@ -68360,7 +68393,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L299",
+      "source_location": "L367",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_pdf_auditor_auditorreportepdf",
@@ -68371,7 +68404,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L30",
+      "source_location": "L36",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_pdf_auditor_auditorreportepdf",
@@ -68382,7 +68415,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L18",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_pdf_auditor_auditorreportepdf",
@@ -68393,7 +68426,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L46",
+      "source_location": "L53",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_pdf_auditor_auditorreportepdf",
@@ -68404,7 +68437,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L25",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_pdf_auditor_auditorreportepdf",
@@ -68415,7 +68448,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L8",
+      "source_location": "L14",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_pdf_auditor_auditorreportepdf",
@@ -68426,7 +68459,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L253",
+      "source_location": "L321",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_pdf_auditor_auditorreportepdf",
@@ -68437,7 +68470,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L67",
+      "source_location": "L87",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_pdf_auditor_auditorreportepdf",
@@ -68448,7 +68481,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L59",
+      "source_location": "L79",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_pdf_auditor_auditorreportepdf",
@@ -68459,7 +68492,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L51",
+      "source_location": "L58",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_pdf_auditor_auditorreportepdf",
@@ -68470,11 +68503,44 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L77",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_lib_pdf_auditor_auditorreportepdf",
+      "target": "src_lib_pdf_auditor_auditorreportepdf_reviewissuereporte",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
+      "source_location": "L97",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_pdf_auditor_auditorreportepdf",
       "target": "src_lib_pdf_auditor_auditorreportepdf_s",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
+      "source_location": "L72",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_lib_pdf_auditor_auditorreportepdf",
+      "target": "src_lib_pdf_auditor_auditorreportepdf_sev_bg",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
+      "source_location": "L66",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_lib_pdf_auditor_auditorreportepdf",
+      "target": "src_lib_pdf_auditor_auditorreportepdf_sev_colors",
       "confidence_score": 1.0
     },
     {
@@ -68498,6 +68564,30 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_pdf_auditor_generarauditorreportepdf",
+      "target": "src_lib_pdf_auditor_auditorreportepdf_reviewissuereporte",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "field",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/pdf/auditor/generarAuditorReportePDF.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_lib_pdf_auditor_generarauditorreportepdf_generarparams",
+      "target": "src_lib_pdf_auditor_auditorreportepdf_reviewissuereporte",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/pdf/auditor/generarAuditorReportePDF.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_lib_pdf_auditor_generarauditorreportepdf",
       "target": "src_lib_pdf_auditor_auditorreportepdf_auditorreportepdfprops",
       "confidence_score": 1.0
     },
@@ -68506,7 +68596,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/pdf/auditor/AuditorReportePDF.tsx",
-      "source_location": "L327",
+      "source_location": "L396",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_pdf_auditor_auditorreportepdf_auditorreportepdf",
@@ -68531,7 +68621,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "src/lib/pdf/auditor/generarAuditorReportePDF.ts",
-      "source_location": "L65",
+      "source_location": "L67",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_pdf_auditor_generarauditorreportepdf_generarauditorreportepdf",
@@ -68541,7 +68631,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/pdf/auditor/generarAuditorReportePDF.ts",
-      "source_location": "L17",
+      "source_location": "L18",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_pdf_auditor_generarauditorreportepdf",
@@ -93668,5 +93758,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "ebbf15f5f3ed460cd2ea0ca3c525aadb1fa4514a"
+  "built_at_commit": "21434721ade2ef7de995f585776da0c3ec218ad9"
 }

@@ -48,6 +48,7 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
   const [respuestasMap, setRespuestasMap] = useState<Map<string, AudRespuesta>>(new Map())
   const [valoresMap, setValoresMap] = useState<Map<string, Map<string, string>>>(new Map())
   const [observacionesMap, setObservacionesMap] = useState<Map<string, string>>(new Map())
+  const [instanciasMap, setInstanciasMap] = useState<Map<string, string>>(new Map())
 
   const [cargando, setCargando] = useState(true)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -155,11 +156,14 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
       const instancias = (instRaw ?? []) as { id: string; pregunta_id: string; respuesta: string }[]
       const rm = new Map<string, AudRespuesta>()
       const instIdToPreg = new Map<string, string>()
+      const pregIdToInstId = new Map<string, string>()
       for (const inst of instancias) {
         rm.set(inst.pregunta_id, inst.respuesta as AudRespuesta)
         instIdToPreg.set(inst.id, inst.pregunta_id)
+        pregIdToInstId.set(inst.pregunta_id, inst.id)
       }
       setRespuestasMap(rm)
+      setInstanciasMap(pregIdToInstId)
 
       const vm = new Map<string, Map<string, string>>()
       const om = new Map<string, string>()
@@ -232,6 +236,7 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
       .single()
     if (instErr) throw instErr
     const instanciaId = (instData as { id: string }).id
+    setInstanciasMap(prev => new Map(prev).set(params.preguntaId, instanciaId))
 
     if (params.valoresMap.size > 0) {
       const valores = Array.from(params.valoresMap.entries()).map(([esquemaId, valor]) => ({
@@ -289,6 +294,7 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
     setValoresMap,
     observacionesMap,
     setObservacionesMap,
+    instanciasMap,
     cargando,
     errorMsg,
     guardarRespuesta,

@@ -1944,3 +1944,83 @@ export interface AccionCorrectivaFoto {
   leyenda: string | null
   created_at: string
 }
+
+// ── aud_* Hallazgos y Acciones Correctivas (§8.quinquies) ─────────────────────
+
+export type AudHallazgoEstado = 'OPEN' | 'PLAN_ACCEPTED' | 'IMPLEMENTED' | 'EFFECTIVENESS_PENDING' | 'CLOSED' | 'REOPENED'
+export type AudHallazgoClasificacion = 'menor' | 'mayor' | 'critico' | 'observacion'
+
+export type AudInternalStatus =
+  | 'REGISTERED'
+  | 'PREPARING'
+  | 'WAITING_EVIDENCE'
+  | 'INTERNAL_REVIEW'
+  | 'NEEDS_WORK'
+  | 'READY_FOR_AZZULE'
+  | 'COMPLETE_INTERNAL'
+  | 'ARCHIVED'
+
+export type AudExternalStatus =
+  | 'NOT_TRACKED'
+  | 'PENDING_UPLOAD'
+  | 'SUBMITTED'
+  | 'UNDER_REVIEW'
+  | 'NEEDS_CORRECTION'
+  | 'ACCEPTED'
+  | 'REVIEWED'
+  | 'CLOSED'
+
+export interface AudHallazgo {
+  id: string
+  org_id: string
+  auditoria_id: string
+  instancia_id: string | null
+  pregunta_id: string | null
+  clasificacion: AudHallazgoClasificacion
+  descripcion: string
+  estado: AudHallazgoEstado
+  referencia_externa: string | null
+  detectado_en: string | null
+  creado_por: string | null
+  created_at: string
+}
+
+export interface AudAccionCorrectivaCAPA {
+  id: string
+  org_id: string
+  hallazgo_id: string
+  owner_user_id: string | null
+  owner_external_party: string | null
+  internal_status: AudInternalStatus
+  external_status: AudExternalStatus
+  condicion_inicial: string | null
+  correccion_inmediata: string | null
+  causa_raiz: string | null
+  cambio_sistemico: string | null
+  prevencion: string | null
+  verificacion_eficacia: string | null
+  respuesta_organizacion: string | null
+  comentario_accion: string | null
+  due_at: string | null
+  ready_for_external_at: string | null
+  submitted_external_at: string | null
+  closed_at: string | null
+  current_version: number
+  creado_por: string | null
+  created_at: string
+}
+
+export interface AudAcVersion {
+  id: string
+  accion_id: string
+  version: number
+  respuesta_organizacion: string | null
+  comentario_accion: string | null
+  correccion_inmediata: string | null
+  causa_raiz: string | null
+  cambio_sistemico: string | null
+  prevencion: string | null
+  verificacion_eficacia: string | null
+  creado_por: string | null
+  created_at: string
+}

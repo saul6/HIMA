@@ -3,13 +3,16 @@ import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
 import {
   ChevronLeft, AlertTriangle, CheckCircle, Loader,
   XCircle, AlertCircle, ChevronDown, ChevronUp, Download, Clock, ShieldCheck,
+  Flag, Plus, History, ClipboardList,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorAuditoria } from '@/hooks/useAuditorAuditoria'
-import type { AudComentarioEsquema, AudPregunta, AudRespuesta } from '@/types/database.types'
+import type { AudComentarioEsquema, AudPregunta, AudRespuesta, AudHallazgo, AudHallazgoClasificacion, AudHallazgoEstado, AudAccionCorrectivaCAPA, AudAcVersion, AudInternalStatus, AudExternalStatus } from '@/types/database.types'
 import { generarAuditorReportePDF } from '@/lib/pdf/auditor/generarAuditorReportePDF'
 import { supabase } from '@/lib/supabase'
+import { useHallazgos } from '@/hooks/useHallazgos'
+import { BottomSheet } from '@/app/components/BottomSheet'
 
 const RESP_OPTIONS: {
   value: AudRespuesta
@@ -52,6 +55,44 @@ const SEV_CONFIG: Record<Severidad, { label: string; bg: string; color: string }
   REQUIRED: { label: 'Requerido',  bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
   WARNING:  { label: 'Aviso',      bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
   INFO:     { label: 'Info',       bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
+}
+
+const CLASIFICACION_CONFIG: Record<AudHallazgoClasificacion, { label: string; bg: string; color: string }> = {
+  menor:       { label: 'Menor',       bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
+  mayor:       { label: 'Mayor',       bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  },
+  critico:     { label: 'Crítico',     bg: 'var(--agro-red)',          color: '#fff'                     },
+  observacion: { label: 'Observación', bg: 'var(--muted)',             color: 'var(--muted-foreground)'  },
+}
+
+const HALL_ESTADO_CONFIG: Record<AudHallazgoEstado, { label: string; bg: string; color: string }> = {
+  OPEN:                   { label: 'Abierto',        bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  },
+  PLAN_ACCEPTED:          { label: 'Plan aceptado',  bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
+  IMPLEMENTED:            { label: 'Implementado',   bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
+  EFFECTIVENESS_PENDING:  { label: 'Eficacia pend.', bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
+  CLOSED:                 { label: 'Cerrado',        bg: 'var(--muted)',             color: 'var(--muted-foreground)'  },
+  REOPENED:               { label: 'Reabierto',      bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  },
+}
+
+const INTERNAL_STATUS_LABELS: Record<AudInternalStatus, string> = {
+  REGISTERED:        'Registrado',
+  PREPARING:         'Preparando respuesta',
+  WAITING_EVIDENCE:  'Esperando evidencia',
+  INTERNAL_REVIEW:   'Revisión interna',
+  NEEDS_WORK:        'Requiere trabajo',
+  READY_FOR_AZZULE:  'Listo para Azzule',
+  COMPLETE_INTERNAL: 'Completo internamente',
+  ARCHIVED:          'Archivado',
+}
+
+const EXTERNAL_STATUS_LABELS: Record<AudExternalStatus, string> = {
+  NOT_TRACKED:      'Sin seguimiento externo',
+  PENDING_UPLOAD:   'Pendiente de envío',
+  SUBMITTED:        'Enviado',
+  UNDER_REVIEW:     'En revisión',
+  NEEDS_CORRECTION: 'Requiere corrección',
+  ACCEPTED:         'Aceptado',
+  REVIEWED:         'Revisado',
+  CLOSED:           'Cerrado',
 }
 
 const ESTADO_LABELS: Record<string, string> = {
@@ -125,6 +166,7 @@ function CampoEsquema({
 function PreguntaCard({
   pregunta, esquemas, respuesta, valores, observacion,
   saveStatus, saveMessage, onRespuesta, onValor, onObservacion, onBlur, onRetry, cerrada,
+  hallazgosCount, instanciaDisponible, onRegistrarHallazgo, onVerHallazgos,
 }: {
   pregunta: AudPregunta
   esquemas: AudComentarioEsquema[]
@@ -139,6 +181,10 @@ function PreguntaCard({
   onBlur: () => void
   onRetry: () => void
   cerrada: boolean
+  hallazgosCount?: number
+  instanciaDisponible?: boolean
+  onRegistrarHallazgo?: () => void
+  onVerHallazgos?: () => void
 }) {
   const falla =
     respuesta &&
@@ -284,6 +330,33 @@ function PreguntaCard({
           </div>
         )}
       </div>
+
+      {/* Hallazgos de esta pregunta */}
+      {(respuesta === 'deficiencia_menor' || respuesta === 'deficiencia_mayor' || respuesta === 'no_conformidad') && (
+        <div className="flex items-center gap-2 pt-0.5">
+          {(hallazgosCount ?? 0) > 0 && (
+            <button
+              onClick={onVerHallazgos}
+              className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg"
+              style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+            >
+              <Flag size={10} />
+              {hallazgosCount} hallazgo{(hallazgosCount ?? 0) !== 1 ? 's' : ''}
+            </button>
+          )}
+          {!cerrada && (
+            <button
+              onClick={onRegistrarHallazgo}
+              disabled={!instanciaDisponible}
+              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg disabled:opacity-40"
+              style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+            >
+              <Plus size={10} />
+              {!instanciaDisponible ? 'Guardando…' : 'Registrar hallazgo'}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -562,6 +635,113 @@ function PanelPreliminar({
   )
 }
 
+// ── Panel de lista de hallazgos ──────────────────────────────────────────────
+
+function PanelHallazgos({
+  hallazgos, preguntas, onVerAccion, onEstadoChange, cargando,
+}: {
+  hallazgos: AudHallazgo[]
+  preguntas: AudPregunta[]
+  onVerAccion: (h: AudHallazgo) => void
+  onEstadoChange: (id: string, estado: AudHallazgoEstado) => void
+  cargando: boolean
+}) {
+  const [abierto, setAbierto] = useState(true)
+
+  function scrollToPreg(pregId: string) {
+    const el = document.getElementById(`preg-${pregId}`)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+
+  return (
+    <div className="rounded-xl border border-border overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
+      <button
+        onClick={() => setAbierto(v => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left"
+      >
+        <div className="flex items-center gap-2">
+          <Flag size={15} className="flex-shrink-0" style={{ color: hallazgos.length > 0 ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }} />
+          <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
+            {cargando ? 'Cargando hallazgos…' : `${hallazgos.length} hallazgo${hallazgos.length !== 1 ? 's' : ''}`}
+          </span>
+        </div>
+        {abierto
+          ? <ChevronUp size={14} style={{ color: 'var(--muted-foreground)' }} />
+          : <ChevronDown size={14} style={{ color: 'var(--muted-foreground)' }} />
+        }
+      </button>
+
+      {abierto && (
+        <div className="border-t border-border">
+          {hallazgos.length === 0 ? (
+            <p className="text-xs px-4 py-4" style={{ color: 'var(--muted-foreground)' }}>
+              {cargando ? 'Cargando…' : 'Sin hallazgos registrados.'}
+            </p>
+          ) : (
+            <div className="flex flex-col divide-y" style={{ borderColor: 'var(--border)' }}>
+              {hallazgos.map(h => {
+                const clasConfig = CLASIFICACION_CONFIG[h.clasificacion]
+                const estConfig = HALL_ESTADO_CONFIG[h.estado]
+                const preg = preguntas.find(p => p.id === h.pregunta_id)
+                return (
+                  <div key={h.id} className="px-4 py-3 flex flex-col gap-2">
+                    <div className="flex items-start gap-2 flex-wrap">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0"
+                            style={{ backgroundColor: clasConfig.bg, color: clasConfig.color }}>
+                        {clasConfig.label}
+                      </span>
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded flex-shrink-0"
+                            style={{ backgroundColor: estConfig.bg, color: estConfig.color }}>
+                        {estConfig.label}
+                      </span>
+                    </div>
+                    <p className="text-[0.8125rem] leading-snug" style={{ color: 'var(--foreground)' }}>
+                      {h.descripcion}
+                    </p>
+                    {preg && (
+                      <button
+                        onClick={() => scrollToPreg(preg.id)}
+                        className="self-start text-[10px] font-medium px-2 py-0.5 rounded"
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)' }}
+                      >
+                        → {preg.question_id}
+                      </button>
+                    )}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <select
+                        value={h.estado}
+                        onChange={e => onEstadoChange(h.id, e.target.value as AudHallazgoEstado)}
+                        className="text-[10px] h-7 rounded-lg px-2 outline-none"
+                        style={{
+                          border: '1px solid var(--border)',
+                          backgroundColor: 'var(--input-background)',
+                          color: 'var(--foreground)',
+                        }}
+                      >
+                        {(Object.keys(HALL_ESTADO_CONFIG) as AudHallazgoEstado[]).map(est => (
+                          <option key={est} value={est}>{HALL_ESTADO_CONFIG[est].label}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => onVerAccion(h)}
+                        className="flex items-center gap-1 text-[10px] font-semibold h-7 px-2 rounded-lg"
+                        style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                      >
+                        <ClipboardList size={11} />
+                        Acción correctiva
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Pantalla principal ────────────────────────────────────────────────────────
 
 export function AuditorEjecucion() {
@@ -581,6 +761,7 @@ export function AuditorEjecucion() {
     respuestasMap, setRespuestasMap,
     valoresMap, setValoresMap,
     observacionesMap, setObservacionesMap,
+    instanciasMap,
     cargando, errorMsg,
     guardarRespuesta, cambiarEstado,
   } = hook
@@ -595,6 +776,33 @@ export function AuditorEjecucion() {
   const [panelValidacionVisible, setPanelValidacionVisible] = useState(false)
   const [descartandoId, setDescartandoId] = useState<string | null>(null)
   const [motivoDescarte, setMotivoDescarte] = useState('')
+
+  // — Hallazgos y CAPA —
+  const hallazgosHook = useHallazgos(auditoriaId, auditoria?.org_id)
+  const { hallazgos, cargar: cargarHallazgos, crearHallazgo, actualizarEstado: actualizarEstadoHallazgo, cargarAccion, crearAccion, actualizarAccion, cargarVersiones } = hallazgosHook
+
+  useEffect(() => {
+    if (auditoria?.id) cargarHallazgos()
+  }, [auditoria?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const panelHallazgosRef = useRef<HTMLDivElement>(null)
+
+  // Sheet: crear hallazgo
+  const [sheetHallazgo, setSheetHallazgo] = useState<{ preguntaId: string; instanciaId: string } | null>(null)
+  const [formHallazgoDesc, setFormHallazgoDesc] = useState('')
+  const [formHallazgoClas, setFormHallazgoClas] = useState<AudHallazgoClasificacion>('menor')
+  const [guardandoHallazgo, setGuardandoHallazgo] = useState(false)
+
+  // Sheet: acción correctiva
+  const [sheetAccion, setSheetAccion] = useState<{ hallazgoId: string; descripcion: string } | null>(null)
+  const [accionActual, setAccionActual] = useState<AudAccionCorrectivaCAPA | null>(null)
+  const [cargandoAccion, setCargandoAccion] = useState(false)
+  const [guardandoAccion, setGuardandoAccion] = useState(false)
+  const [formAccion, setFormAccion] = useState<Partial<AudAccionCorrectivaCAPA>>({})
+
+  // Sheet: historial de versiones
+  const [sheetHistorial, setSheetHistorial] = useState<AudAcVersion[] | null>(null)
+  const [cargandoHistorial, setCargandoHistorial] = useState(false)
 
   const respuestasRef   = useRef(respuestasMap)
   const valoresRef      = useRef(valoresMap)
@@ -812,6 +1020,81 @@ export function AuditorEjecucion() {
     }
   }
 
+  async function handleAbrirAccion(h: AudHallazgo) {
+    setSheetAccion({ hallazgoId: h.id, descripcion: h.descripcion })
+    setAccionActual(null)
+    setFormAccion({})
+    setCargandoAccion(true)
+    try {
+      const ac = await cargarAccion(h.id)
+      setAccionActual(ac)
+      if (ac) setFormAccion(ac)
+      else setFormAccion({ internal_status: 'REGISTERED', external_status: 'NOT_TRACKED' })
+    } catch (e) {
+      console.error('[AuditorEjecucion] cargarAccion', e)
+      toast.error('No se pudo cargar la acción correctiva. Reintenta.')
+    } finally {
+      setCargandoAccion(false)
+    }
+  }
+
+  async function handleGuardarHallazgo() {
+    if (!sheetHallazgo || !formHallazgoDesc.trim()) return
+    setGuardandoHallazgo(true)
+    try {
+      await crearHallazgo({
+        instanciaId: sheetHallazgo.instanciaId,
+        preguntaId: sheetHallazgo.preguntaId,
+        descripcion: formHallazgoDesc.trim(),
+        clasificacion: formHallazgoClas,
+      })
+      setSheetHallazgo(null)
+      setFormHallazgoDesc('')
+      setFormHallazgoClas('menor')
+      toast.success('Hallazgo registrado')
+    } catch (e) {
+      console.error('[AuditorEjecucion] crearHallazgo', e)
+      toast.error('No se pudo registrar el hallazgo. Reintenta.')
+    } finally {
+      setGuardandoHallazgo(false)
+    }
+  }
+
+  async function handleGuardarAccion() {
+    if (!sheetAccion) return
+    setGuardandoAccion(true)
+    try {
+      if (accionActual) {
+        await actualizarAccion(accionActual.id, formAccion)
+      } else {
+        await crearAccion(sheetAccion.hallazgoId, formAccion)
+      }
+      toast.success(accionActual ? 'Acción actualizada' : 'Acción creada')
+      setSheetAccion(null)
+      setAccionActual(null)
+      setFormAccion({})
+    } catch (e) {
+      console.error('[AuditorEjecucion] guardarAccion', e)
+      toast.error('No se pudo guardar la acción. Reintenta.')
+    } finally {
+      setGuardandoAccion(false)
+    }
+  }
+
+  async function handleVerHistorial() {
+    if (!accionActual) return
+    setCargandoHistorial(true)
+    try {
+      const vs = await cargarVersiones(accionActual.id)
+      setSheetHistorial(vs)
+    } catch (e) {
+      console.error('[AuditorEjecucion] cargarVersiones', e)
+      toast.error('No se pudo cargar el historial. Reintenta.')
+    } finally {
+      setCargandoHistorial(false)
+    }
+  }
+
   async function handleDescartar() {
     if (!descartandoId) return
     try {
@@ -931,6 +1214,22 @@ export function AuditorEjecucion() {
               />
             )}
 
+            {/* Panel de hallazgos */}
+            <div ref={panelHallazgosRef}>
+              <PanelHallazgos
+                hallazgos={hallazgos}
+                preguntas={allPreguntas}
+                onVerAccion={handleAbrirAccion}
+                onEstadoChange={(id, estado) => {
+                  actualizarEstadoHallazgo(id, estado).catch(e => {
+                    console.error('[AuditorEjecucion] actualizarEstadoHallazgo', e)
+                    toast.error('No se pudo actualizar el estado. Reintenta.')
+                  })
+                }}
+                cargando={hallazgosHook.cargando}
+              />
+            </div>
+
             {/* Módulos → Bloques → Preguntas */}
             {modulosData.map(modulo => (
               <div key={modulo.modulo_id}>
@@ -986,6 +1285,24 @@ export function AuditorEjecucion() {
                             onBlur={() => handleBlur(preg.id)}
                             onRetry={() => dispatchSave(preg.id)}
                             cerrada={!!cerrada}
+                            instanciaDisponible={
+                              !!instanciasMap.get(preg.id) &&
+                              (savingMap[preg.id] ?? 'idle') !== 'saving'
+                            }
+                            hallazgosCount={hallazgos.filter(h => h.pregunta_id === preg.id).length}
+                            onRegistrarHallazgo={() => {
+                              const instId = instanciasMap.get(preg.id)
+                              if (!instId) {
+                                toast.info('Espera a que se guarde la respuesta')
+                                return
+                              }
+                              setFormHallazgoDesc('')
+                              setFormHallazgoClas('menor')
+                              setSheetHallazgo({ preguntaId: preg.id, instanciaId: instId })
+                            }}
+                            onVerHallazgos={() => {
+                              panelHallazgosRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                            }}
                           />
                         ))}
                       </div>
@@ -1042,6 +1359,240 @@ export function AuditorEjecucion() {
           </>
         )}
       </main>
+
+      {/* Sheet: Crear hallazgo */}
+      <BottomSheet open={!!sheetHallazgo} onClose={() => setSheetHallazgo(null)}>
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Registrar hallazgo</h2>
+            <button onClick={() => setSheetHallazgo(null)} className="text-muted-foreground">
+              <XCircle size={20} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
+                Clasificación
+              </label>
+              <select
+                value={formHallazgoClas}
+                onChange={e => setFormHallazgoClas(e.target.value as AudHallazgoClasificacion)}
+                className="h-10 rounded-xl px-3 outline-none text-sm"
+                style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+              >
+                <option value="menor">Menor</option>
+                <option value="mayor">Mayor</option>
+                <option value="critico">Crítico</option>
+                <option value="observacion">Observación</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
+                Descripción <span style={{ color: 'var(--agro-red)' }}>*</span>
+              </label>
+              <textarea
+                value={formHallazgoDesc}
+                onChange={e => setFormHallazgoDesc(e.target.value)}
+                rows={4}
+                placeholder="Describe el hallazgo encontrado…"
+                className="resize-none text-sm outline-none"
+                style={{
+                  borderRadius: 'var(--radius)',
+                  border: '1px solid var(--border)',
+                  backgroundColor: 'var(--input-background)',
+                  color: 'var(--foreground)',
+                  padding: '0.5rem 0.75rem',
+                }}
+              />
+            </div>
+          </div>
+          <div className="px-4 pb-6 pt-3 flex-shrink-0 border-t border-border">
+            <button
+              onClick={handleGuardarHallazgo}
+              disabled={guardandoHallazgo || !formHallazgoDesc.trim()}
+              className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+              style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+            >
+              {guardandoHallazgo ? <><Loader size={15} className="animate-spin" /> Guardando…</> : 'Registrar hallazgo'}
+            </button>
+          </div>
+        </div>
+      </BottomSheet>
+
+      {/* Sheet: Acción correctiva */}
+      <BottomSheet open={!!sheetAccion} onClose={() => { setSheetAccion(null); setAccionActual(null); setFormAccion({}) }} height="85%">
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Acción correctiva</h2>
+              {sheetAccion && (
+                <p className="text-[10px] mt-0.5 line-clamp-1" style={{ color: 'var(--muted-foreground)' }}>
+                  {sheetAccion.descripcion}
+                </p>
+              )}
+            </div>
+            <button onClick={() => { setSheetAccion(null); setAccionActual(null); setFormAccion({}) }} className="text-muted-foreground ml-2 flex-shrink-0">
+              <XCircle size={20} />
+            </button>
+          </div>
+
+          {cargandoAccion ? (
+            <div className="flex-1 flex items-center justify-center gap-2">
+              <Loader size={16} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+              <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Cargando…</span>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+              {/* Estado interno M.A.D.Y */}
+              <div className="rounded-xl p-3 flex flex-col gap-2" style={{ backgroundColor: 'var(--muted)' }}>
+                <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>Estado interno — M.A.D.Y</p>
+                <select
+                  value={formAccion.internal_status ?? 'REGISTERED'}
+                  onChange={e => setFormAccion(prev => ({ ...prev, internal_status: e.target.value as AudInternalStatus }))}
+                  className="h-10 rounded-xl px-3 outline-none text-sm w-full"
+                  style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                >
+                  {(Object.keys(INTERNAL_STATUS_LABELS) as AudInternalStatus[]).map(k => (
+                    <option key={k} value={k}>{INTERNAL_STATUS_LABELS[k]}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Estado externo Azzule / organismo */}
+              <div className="rounded-xl p-3 flex flex-col gap-2" style={{ border: '1.5px solid var(--border)' }}>
+                <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>Estado externo — Azzule / organismo</p>
+                <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>Registra manualmente lo que ocurrió fuera del sistema.</p>
+                <select
+                  value={formAccion.external_status ?? 'NOT_TRACKED'}
+                  onChange={e => setFormAccion(prev => ({ ...prev, external_status: e.target.value as AudExternalStatus }))}
+                  className="h-10 rounded-xl px-3 outline-none text-sm w-full"
+                  style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                >
+                  {(Object.keys(EXTERNAL_STATUS_LABELS) as AudExternalStatus[]).map(k => (
+                    <option key={k} value={k}>{EXTERNAL_STATUS_LABELS[k]}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Contraparte externa */}
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Contraparte externa (sin usuario MADY)</label>
+                <input
+                  type="text"
+                  value={formAccion.owner_external_party ?? ''}
+                  onChange={e => setFormAccion(prev => ({ ...prev, owner_external_party: e.target.value || null }))}
+                  placeholder="Nombre de la persona u organismo responsable"
+                  className="h-10 rounded-xl px-3 outline-none text-sm"
+                  style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                />
+              </div>
+
+              {/* Campos narrativos */}
+              {([
+                ['condicion_inicial',      'Condición inicial'],
+                ['correccion_inmediata',   'Corrección inmediata'],
+                ['causa_raiz',             'Causa raíz'],
+                ['cambio_sistemico',       'Cambio sistémico'],
+                ['prevencion',             'Prevención'],
+                ['verificacion_eficacia',  'Verificación de eficacia'],
+                ['respuesta_organizacion', 'Respuesta de la organización'],
+                ['comentario_accion',      'Comentario de la acción'],
+              ] as [keyof AudAccionCorrectivaCAPA, string][]).map(([campo, etiqueta]) => (
+                <div key={campo} className="flex flex-col gap-1">
+                  <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>{etiqueta}</label>
+                  <textarea
+                    value={(formAccion[campo] as string) ?? ''}
+                    onChange={e => setFormAccion(prev => ({ ...prev, [campo]: e.target.value || null }))}
+                    rows={2}
+                    className="resize-none text-sm outline-none"
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      border: '1px solid var(--border)',
+                      backgroundColor: 'var(--input-background)',
+                      color: 'var(--foreground)',
+                      padding: '0.5rem 0.75rem',
+                    }}
+                  />
+                </div>
+              ))}
+
+              {/* Ver historial */}
+              {accionActual && (
+                <button
+                  onClick={handleVerHistorial}
+                  disabled={cargandoHistorial}
+                  className="flex items-center justify-center gap-2 w-full h-10 rounded-xl text-sm font-medium disabled:opacity-50"
+                  style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                >
+                  {cargandoHistorial
+                    ? <><Loader size={14} className="animate-spin" /> Cargando historial…</>
+                    : <><History size={14} /> Ver historial de versiones ({accionActual.current_version})</>
+                  }
+                </button>
+              )}
+            </div>
+          )}
+
+          {!cargandoAccion && (
+            <div className="px-4 pb-6 pt-3 flex-shrink-0 border-t border-border">
+              <button
+                onClick={handleGuardarAccion}
+                disabled={guardandoAccion}
+                className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+                style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+              >
+                {guardandoAccion ? <><Loader size={15} className="animate-spin" /> Guardando…</> : (accionActual ? 'Actualizar acción' : 'Crear acción correctiva')}
+              </button>
+            </div>
+          )}
+        </div>
+      </BottomSheet>
+
+      {/* Sheet: Historial de versiones */}
+      <BottomSheet open={sheetHistorial !== null} onClose={() => setSheetHistorial(null)} height="85%">
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Historial de versiones</h2>
+            <button onClick={() => setSheetHistorial(null)} className="text-muted-foreground">
+              <XCircle size={20} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
+            {(sheetHistorial ?? []).length === 0 ? (
+              <p className="text-sm text-center py-8" style={{ color: 'var(--muted-foreground)' }}>Sin versiones guardadas aún.</p>
+            ) : (
+              (sheetHistorial ?? []).map(v => (
+                <div key={v.id} className="rounded-xl border border-border p-3 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold" style={{ color: 'var(--foreground)' }}>Versión {v.version}</span>
+                    <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                      {new Date(v.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  {([
+                    ['causa_raiz',             'Causa raíz'],
+                    ['correccion_inmediata',   'Corrección inmediata'],
+                    ['cambio_sistemico',       'Cambio sistémico'],
+                    ['prevencion',             'Prevención'],
+                    ['verificacion_eficacia',  'Verificación de eficacia'],
+                    ['respuesta_organizacion', 'Respuesta de la organización'],
+                    ['comentario_accion',      'Comentario'],
+                  ] as [keyof AudAcVersion, string][]).map(([campo, etiqueta]) => {
+                    const val = v[campo] as string | null
+                    if (!val) return null
+                    return (
+                      <div key={campo}>
+                        <p className="text-[10px] font-medium" style={{ color: 'var(--muted-foreground)' }}>{etiqueta}</p>
+                        <p className="text-xs" style={{ color: 'var(--foreground)' }}>{val}</p>
+                      </div>
+                    )
+                  })}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </BottomSheet>
     </div>
   )
 }

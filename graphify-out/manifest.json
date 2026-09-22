@@ -985,8 +985,8 @@
     "semantic_hash": ""
   },
   "src/types/database.types.ts": {
-    "mtime": 1789847074.5389745,
-    "ast_hash": "eec32e9417573ab4def9df44ff701dd9",
+    "mtime": 1790035323.4127967,
+    "ast_hash": "ed5ee34d72ccce6466f5270072852793",
     "semantic_hash": ""
   },
   "supabase/migrations/001_initial_schema.sql": {
@@ -2255,8 +2255,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorEjecucion.tsx": {
-    "mtime": 1790033460.5954452,
-    "ast_hash": "c796ddba0260aa118665b192f33c0491",
+    "mtime": 1790035508.2135408,
+    "ast_hash": "5b3b5ea4e36c92ee47014a432e097a31",
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorHome.tsx": {
@@ -2280,8 +2280,8 @@
     "semantic_hash": ""
   },
   "src/hooks/useAuditorAuditoria.ts": {
-    "mtime": 1790021681.7603939,
-    "ast_hash": "f1f7926a1c97cc205f9229ccd94b35fa",
+    "mtime": 1790035343.9869773,
+    "ast_hash": "c554aa7de5f719e06369b7197a112f6d",
     "semantic_hash": ""
   },
   "src/hooks/useAuditorOrg.ts": {
@@ -2442,6 +2442,11 @@
   "src/app/components/AuthCarouselPanel.tsx": {
     "mtime": 1790030333.0573635,
     "ast_hash": "fcad601474cbb10de6e34acfa0a79bb7",
+    "semantic_hash": ""
+  },
+  "src/hooks/useHallazgos.ts": {
+    "mtime": 1790035357.358264,
+    "ast_hash": "2015743af10921f5cc94bb9743ffa570",
     "semantic_hash": ""
   }
 }

@@ -243,9 +243,9 @@
   "241": "incidenciasStorage.ts",
   "242": "AuthBackground.tsx",
   "243": "collapsible.tsx",
-  "244": "Perfil.tsx",
+  "244": "EntradasSalidasPreFrioPDF.tsx",
   "245": "useAuditorAsignaciones.ts",
-  "246": "Registro.tsx",
+  "246": "generarPreparacionCloroPDF.tsx",
   "247": "ResumenNoConformidades.tsx",
   "248": "useM10CosechaLiberacion.ts",
   "249": "useM11Preoperacional.ts",
@@ -301,7 +301,7 @@
   "299": "fenologia.ts",
   "300": "supabase.ts",
   "301": "validarImagen.ts",
-  "302": "browser-image-compression",
+  "302": "FrecuenciaCapacitacion.tsx",
   "303": "canvas-confetti",
   "304": "clsx",
   "305": "cmdk",
@@ -366,5 +366,7 @@
   "364": "log.ts",
   "365": "logoMadyPdf.ts",
   "366": "MadyLogoPDF.tsx",
-  "367": "permisos.ts"
+  "367": "permisos.ts",
+  "368": "CalibracionEquipos.tsx",
+  "369": "class-variance-authority"
 }

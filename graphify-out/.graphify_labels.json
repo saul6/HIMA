@@ -122,7 +122,7 @@
   "120": "LimpiezaPatiosAzoteas.tsx",
   "121": "LimpiezaRecepcion.tsx",
   "122": "generarOrdenMantenimientoPDF.tsx",
-  "123": "generarAccionesCorrectivasPDF.tsx",
+  "123": "Perfil.tsx",
   "124": "LimpiezaBanosPDF.tsx",
   "125": "generarMonitoreoRoedoresPDF.tsx",
   "126": "AuditorOrgDetalle.tsx",
@@ -138,7 +138,7 @@
   "136": "InventarioReg01PDF.tsx",
   "137": "EntradasSalidasPreFrio.tsx",
   "138": "useM50CalibracionEquipos.ts",
-  "139": "CronogramaCapacitacion.tsx",
+  "139": "useHallazgos.ts",
   "140": "FrecuenciaCapacitacionPDF.tsx",
   "141": "CronogramaCapacitacionPDF.tsx",
   "142": "ProductosAutorizadosPDF.tsx",
@@ -191,7 +191,7 @@
   "189": "AuditorInstalacionDetalle.tsx",
   "190": "BotiquinGG.tsx",
   "191": "AuditorAgenda.tsx",
-  "192": "NfcEstacion.tsx",
+  "192": "browser-image-compression",
   "193": "RegistroPersonal.tsx",
   "194": "RondinesVigilancia.tsx",
   "195": "useM23VerificacionInsumos.ts",
@@ -367,6 +367,5 @@
   "365": "logoMadyPdf.ts",
   "366": "MadyLogoPDF.tsx",
   "367": "permisos.ts",
-  "368": "CalibracionEquipos.tsx",
-  "369": "class-variance-authority"
+  "368": "CalibracionEquipos.tsx"
 }
