@@ -19,10 +19,21 @@ const TIPO_LABELS: Record<AudEvidenciaTipo, string> = {
   otro:                    'Otro',
 }
 
-const CAPABILITIES = [
-  { value: 'TEMPERATURE_RECORD',      label: 'Temperaturas (M41)' },
-  { value: 'INCIDENT_RECORD',         label: 'Incidencias (M13)' },
-  { value: 'PEST_MONITORING_RECORD',  label: 'Plagas (M21)' },
+const CAPABILITY_LABELS: Record<string, string> = {
+  TEMPERATURE_RECORD:     'Temperaturas',
+  INCIDENT_RECORD:        'Incidencias',
+  PEST_MONITORING_RECORD: 'Plagas / Roedores',
+  CHEMICAL_INVENTORY:     'Químicos / Insumos',
+  WATER_RECORD:           'Agua',
+  MAINTENANCE_RECORD:     'Mantenimiento',
+  AUTHORIZED_PRODUCT:     'Productos autorizados',
+  TRACEABILITY_RECORD:    'Trazabilidad',
+}
+
+const FALLBACK_CAPABILITIES = [
+  { value: 'TEMPERATURE_RECORD',      label: 'Temperaturas' },
+  { value: 'INCIDENT_RECORD',         label: 'Incidencias' },
+  { value: 'PEST_MONITORING_RECORD',  label: 'Plagas / Roedores' },
 ]
 
 interface GwRegistro {
@@ -67,7 +78,8 @@ export function EvidenciaPanel({
   const [subiendo, setSubiendo] = useState(false)
 
   // Gateway state
-  const [gwCapacidad, setGwCapacidad] = useState(CAPABILITIES[0].value)
+  const [gwCapacidades, setGwCapacidades] = useState(FALLBACK_CAPABILITIES)
+  const [gwCapacidad, setGwCapacidad] = useState(FALLBACK_CAPABILITIES[0].value)
   const [gwDesde, setGwDesde] = useState('')
   const [gwHasta, setGwHasta] = useState('')
   const [gwSearch, setGwSearch] = useState('')
@@ -88,6 +100,26 @@ export function EvidenciaPanel({
     if (showGateway) handleBuscar()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showGateway])
+
+  useEffect(() => {
+    async function cargarCapacidades() {
+      try {
+        const { data, error } = await supabase
+          .from('module_capability')
+          .select('capabilities')
+          .eq('tiene_adaptador', true)
+        if (error) throw error
+        const rows = (data ?? []) as { capabilities: string[] }[]
+        const values = Array.from(new Set(rows.flatMap(r => r.capabilities ?? []))).sort()
+        if (values.length === 0) return
+        setGwCapacidades(values.map(v => ({ value: v, label: CAPABILITY_LABELS[v] ?? v })))
+        setGwCapacidad(prev => values.includes(prev) ? prev : values[0])
+      } catch (e) {
+        console.error('[EvidenciaPanel] cargarCapacidades', e)
+      }
+    }
+    cargarCapacidades()
+  }, [])
 
   async function handleBuscar(capOverride?: string) {
     const cap = capOverride ?? gwCapacidad
@@ -416,7 +448,7 @@ export function EvidenciaPanel({
                   onChange={e => { setGwCapacidad(e.target.value); handleBuscar(e.target.value) }}
                   style={{ ...inputBase, height: '2.25rem' }}
                 >
-                  {CAPABILITIES.map(c => (
+                  {gwCapacidades.map(c => (
                     <option key={c.value} value={c.value}>{c.label}</option>
                   ))}
                 </select>
