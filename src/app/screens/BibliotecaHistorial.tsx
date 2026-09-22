@@ -173,9 +173,11 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       .select('id, rancho_id, fecha, auditor_nombre, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
       .order('fecha', { ascending: false }).limit(200),
-    tbl('acciones_correctivas')
-      .select('id, codigo_pregunta, no_conformidad, fecha_deteccion, estado, auditoria_visitas!visita_id(rancho_id, ranchos!rancho_id(nombre))')
-      .eq('org_id', orgId).gte('created_at', desde + 'T00:00:00').lte('created_at', hasta + 'T23:59:59')
+    tbl('aud_acciones_correctivas')
+      .select('id, created_at, aud_hallazgos!hallazgo_id(descripcion, criterion_code, detectado_en, source_module_code)')
+      .eq('org_id', orgId)
+      .eq('aud_hallazgos.origin_type', 'SELF_AUDIT')
+      .gte('created_at', desde + 'T00:00:00').lte('created_at', hasta + 'T23:59:59')
       .order('created_at', { ascending: false }).limit(500),
     tbl('m27_preparaciones')
       .select('id, rancho_id, fecha, area, litros_agua, ml_cloro, ranchos(nombre)')
@@ -608,16 +610,16 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
     })
   }
 
-  // M26 — una fila = una accion correctiva
+  // M26 — una fila = una CAPA canónica (aud_acciones_correctivas + aud_hallazgos)
   for (const r of (r26 as any)?.data ?? []) {
-    const visita = (r.auditoria_visitas as any)
+    const h = (r.aud_hallazgos as any) ?? {}
     todos.push({
       key: `M26-${r.id}`,
       modulo: 'M26',
-      rancho_id: visita?.rancho_id ?? null,
-      rancho_nombre: visita?.ranchos?.nombre ?? '—',
-      fecha: r.fecha_deteccion ?? r.created_at?.split('T')[0] ?? '',
-      resumen: `${r.codigo_pregunta}: ${(r.no_conformidad as string | null)?.slice(0, 80) ?? '—'}`,
+      rancho_id: null,
+      rancho_nombre: '—',
+      fecha: h.detectado_en ?? r.created_at?.split('T')[0] ?? '',
+      resumen: `${h.criterion_code ?? '—'}: ${(h.descripcion as string | null)?.slice(0, 80) ?? '—'}`,
       pdfRef: { tipo: 'M26', id: r.id },
     })
   }

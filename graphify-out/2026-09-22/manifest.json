@@ -405,8 +405,8 @@
     "semantic_hash": ""
   },
   "src/app/routes.tsx": {
-    "mtime": 1790039720.6425457,
-    "ast_hash": "afb5ef67c37339aef7c7c931eb9fc481",
+    "mtime": 1790025346.1869397,
+    "ast_hash": "9815d558ac71282ba22230443059a7f1",
     "semantic_hash": ""
   },
   "src/app/screens/ActividadEquipo.tsx": {
@@ -440,8 +440,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/BibliotecaHistorial.tsx": {
-    "mtime": 1790105357.4730587,
-    "ast_hash": "3d459b849297f43c973a39633b86fb84",
+    "mtime": 1789666428.8256483,
+    "ast_hash": "6af5583cec8fb69375debba837bffc6c",
     "semantic_hash": ""
   },
   "src/app/screens/BotiquinPrimerosAuxilios.tsx": {
@@ -985,8 +985,8 @@
     "semantic_hash": ""
   },
   "src/types/database.types.ts": {
-    "mtime": 1790105180.642931,
-    "ast_hash": "201f285d3a8bd0bd0064e6b8b4faa5b0",
+    "mtime": 1790035323.4127967,
+    "ast_hash": "ed5ee34d72ccce6466f5270072852793",
     "semantic_hash": ""
   },
   "supabase/migrations/001_initial_schema.sql": {
@@ -1080,13 +1080,13 @@
     "semantic_hash": ""
   },
   "src/app/screens/AccionesCorrectivas.tsx": {
-    "mtime": 1790105311.6031296,
-    "ast_hash": "4f087402be60c20120dcc8a7217a3962",
+    "mtime": 1789439640.7856975,
+    "ast_hash": "1095cc945c196e5c9cc93ca832990701",
     "semantic_hash": ""
   },
   "src/hooks/useAccionesCorrectivas.ts": {
-    "mtime": 1790105226.5061133,
-    "ast_hash": "ce4155c65a17f7a2e4607c100f0220bd",
+    "mtime": 1785816706.983611,
+    "ast_hash": "f7f8a7547c8bcc4cc8d21e56ff984e2d",
     "semantic_hash": ""
   },
   "src/lib/pdf/m26/AccionesCorrectivasPDF.tsx": {
@@ -1095,8 +1095,8 @@
     "semantic_hash": ""
   },
   "src/lib/pdf/m26/generarAccionesCorrectivasPDF.tsx": {
-    "mtime": 1790105342.3872616,
-    "ast_hash": "25debe255332a484893d7573196e145b",
+    "mtime": 1785818606.0175512,
+    "ast_hash": "834e4100c8d9d31d118f6d36955aa8d0",
     "semantic_hash": ""
   },
   "src/lib/storage/accionesCorrectivasStorage.ts": {
@@ -2255,8 +2255,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorEjecucion.tsx": {
-    "mtime": 1790039651.4106474,
-    "ast_hash": "33416a52d12bc70f1098f50900f971f4",
+    "mtime": 1790035508.2135408,
+    "ast_hash": "5b3b5ea4e36c92ee47014a432e097a31",
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorHome.tsx": {
@@ -2447,11 +2447,6 @@
   "src/hooks/useHallazgos.ts": {
     "mtime": 1790035357.358264,
     "ast_hash": "2015743af10921f5cc94bb9743ffa570",
-    "semantic_hash": ""
-  },
-  "src/app/screens/auditor/AuditorModoAzzule.tsx": {
-    "mtime": 1790039710.2247143,
-    "ast_hash": "a6aa6a179911e65b3eaab1edfc94ae7d",
     "semantic_hash": ""
   }
 }

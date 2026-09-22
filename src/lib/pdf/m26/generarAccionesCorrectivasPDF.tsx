@@ -23,113 +23,167 @@ interface DatosAccionPDF {
   acciones: AccionPDFFila[]
 }
 
-async function cargarDatosAccion(accionId: string, orgId: string): Promise<DatosAccionPDF> {
-  const { data, error } = await tbl('acciones_correctivas')
-    .select('*, accion_correctiva_fotos(id, tipo, storage_path, leyenda), auditoria_visitas!visita_id(rancho_id, ranchos!rancho_id(nombre))')
-    .eq('id', accionId)
-    .eq('org_id', orgId)
-    .single()
-  if (error) throw error
+function parseComentario(raw: string | null): { realizo: string | null; verifico: string | null } {
+  if (!raw) return { realizo: null, verifico: null }
+  const rm = raw.match(/Realiz[oó]:\s*([^·]+)/)
+  const vm = raw.match(/Verific[oó]:\s*(.+)/)
+  return { realizo: rm?.[1]?.trim() || null, verifico: vm?.[1]?.trim() || null }
+}
 
-  const { data: orgData } = await tbl('organizaciones').select('nombre').eq('id', orgId).single()
-  const orgNombre: string = (orgData as any)?.nombre ?? '—'
+async function lookupRanchoFromRespuesta(
+  modulo: string,
+  sourceRecordId: string,
+  orgId: string,
+): Promise<string> {
+  try {
+    const { data } = await tbl(`${modulo}_respuestas`)
+      .select(`${modulo}_auditorias!auditoria_id(ranchos!rancho_id(nombre))`)
+      .eq('id', sourceRecordId)
+      .eq('org_id', orgId)
+      .single()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (data as any)?.[`${modulo}_auditorias`]?.ranchos?.nombre ?? '—'
+  } catch {
+    return '—'
+  }
+}
 
-  const a = data as any
-  const visita = a.auditoria_visitas ?? {}
-  const ranchoNombre: string = visita.ranchos?.nombre ?? '—'
-  const fechaTitulo: string = a.fecha_deteccion ?? a.created_at?.split('T')[0] ?? '—'
-
-  const fotos = (a.accion_correctiva_fotos ?? []) as any[]
-  const allPaths = fotos.map((f: any) => f.storage_path as string)
-  const uris = await fotosAccionADataUris(allPaths)
-
-  const accionFila: AccionPDFFila = {
-    codigo_pregunta: a.codigo_pregunta ?? '—',
-    modulo_label: (a.modulo as string).toUpperCase(),
-    no_conformidad: a.no_conformidad,
-    causa: a.causa,
-    accion_correctiva: a.accion_correctiva,
-    accion_preventiva: a.accion_preventiva,
-    fecha_deteccion: a.fecha_deteccion,
-    fecha_cumplimiento: a.fecha_cumplimiento,
-    realizo: a.realizo,
-    verifico: a.verifico,
-    ishikawa: (a.ishikawa as Record<string, string> | null) ?? null,
-    fotos: fotos.map((f: any) => ({
+async function capaToFila(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  c: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  fotosMap: Map<string, any[]>,
+  uris: Record<string, string>,
+): Promise<AccionPDFFila> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const h = (c.aud_hallazgos as any) ?? {}
+  const { realizo, verifico } = parseComentario(c.comentario_accion)
+  const fotos = fotosMap.get(c.id) ?? []
+  return {
+    codigo_pregunta: h.criterion_code ?? '—',
+    modulo_label: (h.source_module_code ?? '').toUpperCase(),
+    no_conformidad: h.descripcion ?? null,
+    causa: c.causa_raiz ?? null,
+    accion_correctiva: c.correccion_inmediata ?? null,
+    accion_preventiva: c.accion_preventiva ?? null,
+    fecha_deteccion: h.detectado_en ?? null,
+    fecha_cumplimiento: c.due_at ?? null,
+    realizo,
+    verifico,
+    ishikawa: null,
+    fotos: fotos.map((f: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
       tipo: f.tipo as 'no_conformidad' | 'evidencia_correccion',
       leyenda: f.leyenda ?? null,
       dataUri: uris[f.storage_path] ?? '',
     })),
   }
+}
 
-  return { orgNombre, ranchoNombre, fechaTitulo, acciones: [accionFila] }
+async function cargarDatosAccion(
+  capaId: string,
+  orgId: string,
+  ranchoNombreHint?: string,
+): Promise<DatosAccionPDF> {
+  const [capaResult, orgResult, fotosResult] = await Promise.all([
+    tbl('aud_acciones_correctivas')
+      .select('*, aud_hallazgos!hallazgo_id(descripcion, criterion_code, source_module_code, source_record_id, detectado_en)')
+      .eq('id', capaId)
+      .eq('org_id', orgId)
+      .single(),
+    tbl('organizaciones').select('nombre').eq('id', orgId).single(),
+    tbl('accion_correctiva_fotos')
+      .select('id, tipo, storage_path, leyenda')
+      .eq('capa_id', capaId)
+      .eq('org_id', orgId),
+  ])
+  if (capaResult.error) throw capaResult.error
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const c = capaResult.data as any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const h = (c.aud_hallazgos as any) ?? {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const orgNombre: string = (orgResult.data as any)?.nombre ?? '—'
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fotasList = (fotosResult.data ?? []) as any[]
+  const fotosMap = new Map([[capaId, fotasList]])
+  const allPaths = fotasList.map((f: any) => f.storage_path as string) // eslint-disable-line @typescript-eslint/no-explicit-any
+  const uris = await fotosAccionADataUris(allPaths)
+
+  let ranchoNombre = ranchoNombreHint ?? '—'
+  if (ranchoNombre === '—' && h.source_module_code && h.source_record_id) {
+    ranchoNombre = await lookupRanchoFromRespuesta(h.source_module_code, h.source_record_id, orgId)
+  }
+
+  const fechaTitulo: string = h.detectado_en ?? c.created_at?.split('T')[0] ?? '—'
+  const accion = await capaToFila(c, fotosMap, uris)
+
+  return { orgNombre, ranchoNombre, fechaTitulo, acciones: [accion] }
 }
 
 async function cargarDatosMultiples(
-  accionIds: string[],
+  capaIds: string[],
   orgId: string,
   orgNombre: string,
   ranchoNombre: string,
   fechaTitulo: string,
 ): Promise<DatosAccionPDF> {
-  const { data, error } = await tbl('acciones_correctivas')
-    .select('*, accion_correctiva_fotos(id, tipo, storage_path, leyenda)')
-    .in('id', accionIds)
-    .eq('org_id', orgId)
-    .order('created_at', { ascending: true })
-  if (error) throw error
+  const [capasResult, fotosResult] = await Promise.all([
+    tbl('aud_acciones_correctivas')
+      .select('*, aud_hallazgos!hallazgo_id(descripcion, criterion_code, source_module_code, source_record_id, detectado_en)')
+      .in('id', capaIds)
+      .eq('org_id', orgId)
+      .order('created_at', { ascending: true }),
+    tbl('accion_correctiva_fotos')
+      .select('id, tipo, storage_path, leyenda, capa_id')
+      .in('capa_id', capaIds)
+      .eq('org_id', orgId),
+  ])
+  if (capasResult.error) throw capasResult.error
 
-  const rows = (data ?? []) as any[]
-  const allPaths = rows.flatMap((a: any) =>
-    ((a.accion_correctiva_fotos ?? []) as any[]).map((f: any) => f.storage_path as string)
-  )
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rows = (capasResult.data ?? []) as any[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fotosMap = new Map<string, any[]>()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const f of (fotosResult.data ?? []) as any[]) {
+    const cId = f.capa_id as string
+    if (!fotosMap.has(cId)) fotosMap.set(cId, [])
+    fotosMap.get(cId)!.push(f)
+  }
+  const allPaths = (fotosResult.data ?? []).map((f: any) => f.storage_path as string) // eslint-disable-line @typescript-eslint/no-explicit-any
   const uris = await fotosAccionADataUris(allPaths)
 
-  const acciones: AccionPDFFila[] = rows.map((a: any) => ({
-    codigo_pregunta: a.codigo_pregunta ?? '—',
-    modulo_label: (a.modulo as string).toUpperCase(),
-    no_conformidad: a.no_conformidad,
-    causa: a.causa,
-    accion_correctiva: a.accion_correctiva,
-    accion_preventiva: a.accion_preventiva,
-    fecha_deteccion: a.fecha_deteccion,
-    fecha_cumplimiento: a.fecha_cumplimiento,
-    realizo: a.realizo,
-    verifico: a.verifico,
-    ishikawa: (a.ishikawa as Record<string, string> | null) ?? null,
-    fotos: ((a.accion_correctiva_fotos ?? []) as any[]).map((f: any) => ({
-      tipo: f.tipo as 'no_conformidad' | 'evidencia_correccion',
-      leyenda: f.leyenda ?? null,
-      dataUri: uris[f.storage_path] ?? '',
-    })),
-  }))
+  const acciones = await Promise.all(rows.map((c) => capaToFila(c, fotosMap, uris)))
 
   return { orgNombre, ranchoNombre, fechaTitulo, acciones }
 }
 
 export async function generarAccionCorrectivaIndividualPDF(
-  accionId: string,
+  capaId: string,
   orgId: string,
   fecha: string,
+  ranchoNombre?: string,
 ): Promise<void> {
-  const datos = await cargarDatosAccion(accionId, orgId)
+  const datos = await cargarDatosAccion(capaId, orgId, ranchoNombre)
   const blob = await pdf(<AccionesCorrectivasPDF {...datos} />).toBlob()
   descargarBlob(blob, nombrePdf('Acciones_Correctivas', fecha, datos.ranchoNombre))
 }
 
 export async function generarAccionesCorrectivasPDF(
-  accionIds: string[],
+  capaIds: string[],
   orgId: string,
   orgNombre: string,
   ranchoNombre: string,
   fechaTitulo: string,
 ): Promise<void> {
-  const datos = await cargarDatosMultiples(accionIds, orgId, orgNombre, ranchoNombre, fechaTitulo)
+  const datos = await cargarDatosMultiples(capaIds, orgId, orgNombre, ranchoNombre, fechaTitulo)
   const blob = await pdf(<AccionesCorrectivasPDF {...datos} />).toBlob()
   descargarBlob(blob, nombrePdf('Acciones_Correctivas', fechaTitulo, ranchoNombre))
 }
 
-export async function generarBlobAccionCorrectiva(accionId: string, orgId: string): Promise<Blob> {
-  const datos = await cargarDatosAccion(accionId, orgId)
+export async function generarBlobAccionCorrectiva(capaId: string, orgId: string): Promise<Blob> {
+  const datos = await cargarDatosAccion(capaId, orgId)
   return pdf(<AccionesCorrectivasPDF {...datos} />).toBlob()
 }

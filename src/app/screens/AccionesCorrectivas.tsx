@@ -1,7 +1,7 @@
-﻿import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   ChevronLeft, Loader2, FileDown, Camera, Image, Trash2,
-  AlertTriangle, ClipboardCheck,
+  AlertTriangle, ClipboardCheck, CheckCircle,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -24,11 +24,10 @@ import {
   generarAccionCorrectivaIndividualPDF,
   generarAccionesCorrectivasPDF,
 } from '@/lib/pdf/m26/generarAccionesCorrectivasPDF'
+import { hoyMX } from '@/lib/fecha'
 import type { AccionCorrectivaFoto } from '@/types/database.types'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
 function formatFecha(iso: string | null | undefined): string {
   if (!iso) return '—'
@@ -38,7 +37,6 @@ function formatFecha(iso: string | null | undefined): string {
     })
   } catch { return iso }
 }
-
 
 // ── Tipos internos ────────────────────────────────────────────────────────────
 
@@ -154,17 +152,13 @@ export function AccionesCorrectivas() {
   const { profile } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
-  const { items, loading, error, refetch, upsertAccion, agregarFoto, eliminarFotoDb } =
+  const { items, loading, error, refetch, guardarCapa, cerrarCapa, agregarFoto, eliminarFotoDb } =
     useAccionesCorrectivas()
 
-  // Filtro
   const [filtro, setFiltro] = useState<FiltroEstado>('pendientes')
-
-  // Sheet
   const [sheetAbierto, setSheetAbierto] = useState(false)
   const [selectedItem, setSelectedItem] = useState<NcBandejaItem | null>(null)
 
-  // Campos del formulario
   const [fFechaDeteccion, setFFechaDeteccion] = useState('')
   const [fNoConformidad, setFNoConformidad] = useState('')
   const [fCausa, setFCausa] = useState('')
@@ -174,19 +168,6 @@ export function AccionesCorrectivas() {
   const [fRealizo, setFRealizo] = useState('')
   const [fverifico, setFverifico] = useState('')
 
-  // Ishikawa (opcional)
-  const ISH_KEYS: Array<[string, string]> = [
-    ['medio_ambiente', 'Medio ambiente'],
-    ['metodo', 'Método'],
-    ['mano_de_obra', 'Mano de obra'],
-    ['materiales', 'Materiales'],
-    ['herramientas', 'Herramientas'],
-    ['medicion', 'Medición'],
-  ]
-  const ISH_EMPTY = Object.fromEntries(ISH_KEYS.map(([k]) => [k, '']))
-  const [ishikawa, setIshikawa] = useState<Record<string, string>>(ISH_EMPTY)
-
-  // Fotos
   const [fotosGuardadas, setFotosGuardadas] = useState<AccionCorrectivaFoto[]>([])
   const [fotosPendientes, setFotosPendientes] = useState<FotoLocal[]>([])
   const fotoCamaraRef = useRef<HTMLInputElement>(null)
@@ -196,11 +177,9 @@ export function AccionesCorrectivas() {
   )
   const [leyendaFotoNueva, setLeyendaFotoNueva] = useState('')
 
-  // Estado de operaciones
   const [guardando, setGuardando] = useState(false)
   const [generandoPDF, setGenerandoPDF] = useState(false)
 
-  // Filtrado
   const itemsFiltrados = items.filter((item) => {
     if (filtro === 'pendientes') return item.estado === 'sin_capturar' || item.estado === 'abierta'
     if (filtro === 'cerradas') return item.estado === 'cerrada'
@@ -227,8 +206,6 @@ export function AccionesCorrectivas() {
     setFotosPendientes([])
     setTipoFotoNueva('evidencia_correccion')
     setLeyendaFotoNueva('')
-    const rawIsh = (a?.ishikawa ?? {}) as Record<string, string>
-    setIshikawa(Object.fromEntries(ISH_KEYS.map(([k]) => [k, rawIsh[k] ?? ''])))
     setSheetAbierto(true)
   }
 
@@ -236,19 +213,15 @@ export function AccionesCorrectivas() {
     setSheetAbierto(false)
     setSelectedItem(null)
     setFotosPendientes([])
-    setIshikawa(ISH_EMPTY)
   }
 
-  async function handleGuardar() {
+  async function handleGuardar(cerrar = false) {
     if (!selectedItem || !profile?.org_id) return
     setGuardando(true)
     try {
-      const ishikawaPayload: Record<string, string> = {}
-      for (const [k, v] of Object.entries(ishikawa)) {
-        if (v.trim()) ishikawaPayload[k] = v.trim()
-      }
-
-      const accionId = await upsertAccion({
+      const { hallazgoId, capaId } = await guardarCapa({
+        hallazgoId: selectedItem.accion?.hallazgoId ?? null,
+        capaId: selectedItem.accion?.id ?? null,
         respuesta_id: selectedItem.respuesta_id,
         modulo: selectedItem.modulo,
         codigo_pregunta: selectedItem.codigo_pregunta,
@@ -260,21 +233,23 @@ export function AccionesCorrectivas() {
         fecha_cumplimiento: fFechaCumplimiento || null,
         realizo: fRealizo.trim() || null,
         verifico: fverifico.trim() || null,
-        visita_id: selectedItem.visita_id ?? null,
-        ishikawa: Object.keys(ishikawaPayload).length > 0 ? ishikawaPayload : null,
       })
 
       for (const fp of fotosPendientes) {
         const errImg = validarImagen(fp.file)
         if (errImg) throw new Error(errImg)
-        const path = `${profile.org_id}/${accionId}/${crypto.randomUUID()}.jpg`
+        const path = `${profile.org_id}/${capaId}/${crypto.randomUUID()}.jpg`
         await subirFotoAccion(path, fp.file)
-        await agregarFoto(accionId, path, fp.tipo, fp.leyenda.trim() || null)
+        await agregarFoto(capaId, path, fp.tipo, fp.leyenda.trim() || null)
+      }
+
+      if (cerrar) {
+        await cerrarCapa(hallazgoId, capaId)
       }
 
       await refetch()
       cerrarSheet()
-      toast.success('Acción correctiva guardada')
+      toast.success(cerrar ? 'No conformidad cerrada' : 'Acción correctiva guardada')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar')
     } finally {
@@ -331,7 +306,7 @@ export function AccionesCorrectivas() {
         profile?.org_id ?? '',
         orgNombre ?? '—',
         terminosSitio.plural,
-        hoy(),
+        hoyMX(),
       )
     } catch {
       toast.error('Error al generar PDF')
@@ -347,6 +322,7 @@ export function AccionesCorrectivas() {
         item.accion.id,
         profile.org_id,
         item.fecha_auditoria,
+        item.rancho_nombre,
       )
     } catch {
       toast.error('Error al generar PDF')
@@ -592,27 +568,6 @@ export function AccionesCorrectivas() {
             />
           </div>
 
-          {/* Ishikawa — opcional */}
-          <div className="space-y-3">
-            <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
-              ANÁLISIS DE CAUSA — ISHIKAWA (opcional)
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              {ISH_KEYS.map(([key, label]) => (
-                <div key={key} className="space-y-1">
-                  <label className="text-xs text-muted-foreground">{label}</label>
-                  <input
-                    type="text"
-                    value={ishikawa[key]}
-                    onChange={(e) => setIshikawa((prev) => ({ ...prev, [key]: e.target.value }))}
-                    placeholder={`Causa: ${label}...`}
-                    className="w-full h-9 px-3 rounded-lg border border-border bg-input-background text-sm"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Fecha cumplimiento */}
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
@@ -773,9 +728,20 @@ export function AccionesCorrectivas() {
         </div>
 
         {/* Footer */}
-        <div className="px-4 pb-4 pt-3 border-t border-border flex-shrink-0">
+        <div className="px-4 pb-4 pt-3 border-t border-border flex-shrink-0 space-y-2">
+          {selectedItem?.accion?.hallazgoId && selectedItem.accion.estado !== 'cerrada' && (
+            <button
+              onClick={() => handleGuardar(true)}
+              disabled={guardando}
+              className="w-full h-11 rounded-3xl text-sm disabled:opacity-60 flex items-center justify-center gap-2 border-2"
+              style={{ borderColor: 'var(--agro-success-text)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+            >
+              {guardando ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+              Guardar y cerrar NC
+            </button>
+          )}
           <button
-            onClick={handleGuardar}
+            onClick={() => handleGuardar(false)}
             disabled={guardando}
             className="w-full h-12 rounded-3xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
             style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}

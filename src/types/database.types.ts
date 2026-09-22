@@ -1938,7 +1938,8 @@ export interface AccionCorrectiva {
 export interface AccionCorrectivaFoto {
   id: string
   org_id: string
-  accion_id: string
+  accion_id: string | null
+  capa_id: string | null
   tipo: 'no_conformidad' | 'evidencia_correccion'
   storage_path: string
   leyenda: string | null
@@ -1973,16 +1974,20 @@ export type AudExternalStatus =
 export interface AudHallazgo {
   id: string
   org_id: string
-  auditoria_id: string
+  auditoria_id: string | null
   instancia_id: string | null
   pregunta_id: string | null
-  clasificacion: AudHallazgoClasificacion
+  clasificacion: AudHallazgoClasificacion | null
   descripcion: string
   estado: AudHallazgoEstado
   referencia_externa: string | null
   detectado_en: string | null
   creado_por: string | null
   created_at: string
+  origin_type: 'AUDITOR' | 'SELF_AUDIT' | null
+  source_module_code: string | null
+  source_record_id: string | null
+  criterion_code: string | null
 }
 
 export interface AudAccionCorrectivaCAPA {
@@ -1995,6 +2000,7 @@ export interface AudAccionCorrectivaCAPA {
   external_status: AudExternalStatus
   condicion_inicial: string | null
   correccion_inmediata: string | null
+  accion_preventiva: string | null
   causa_raiz: string | null
   cambio_sistemico: string | null
   prevencion: string | null
