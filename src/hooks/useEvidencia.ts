@@ -103,11 +103,34 @@ export function useEvidencia(
     await cargar()
   }
 
+  async function snapshotDesdeRegistro(params: {
+    orgId: string
+    sourceModuleCode: string
+    sourceRecordId: string
+    hallazgoId: string | null
+    accionId: string | null
+    criterionCode: string | null
+  }): Promise<void> {
+    const { data: snapshotId, error } = await (supabase as any).rpc('aud_snapshot_desde_registro', {
+      p_org_id: params.orgId,
+      p_source_module_code: params.sourceModuleCode,
+      p_source_record_id: params.sourceRecordId,
+      p_hallazgo_id: params.hallazgoId,
+      p_accion_id: params.accionId,
+      p_criterion_code: params.criterionCode,
+      p_link_entity_type: entityType,
+      p_link_entity_id: entityId,
+    })
+    if (error) throw error
+    void snapshotId
+    await cargar()
+  }
+
   async function quitar(usoId: string): Promise<void> {
     const { error } = await tbl('aud_evidencia_uso').delete().eq('id', usoId)
     if (error) throw error
     setUsos(prev => prev.filter(u => u.id !== usoId))
   }
 
-  return { usos, cargando, cargar, subirExterno, crearSnapshot, quitar }
+  return { usos, cargando, cargar, subirExterno, crearSnapshot, snapshotDesdeRegistro, quitar }
 }

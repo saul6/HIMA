@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Paperclip, Upload, Database, ExternalLink, Trash2, ChevronDown, ChevronUp, Loader, X } from 'lucide-react'
+import { Paperclip, Upload, Database, ExternalLink, Trash2, ChevronDown, ChevronUp, Loader, X, Link2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 import { useEvidencia } from '@/hooks/useEvidencia'
 import { getSignedUrlEvidencia } from '@/lib/storage/audEvidenciaStorage'
 import type {
@@ -18,6 +19,25 @@ const TIPO_LABELS: Record<AudEvidenciaTipo, string> = {
   otro:                    'Otro',
 }
 
+const CAPABILITIES = [
+  { value: 'TEMPERATURE_RECORD',      label: 'Temperaturas (M41)' },
+  { value: 'INCIDENT_RECORD',         label: 'Incidencias (M13)' },
+  { value: 'PEST_MONITORING_RECORD',  label: 'Plagas (M21)' },
+]
+
+interface GwRegistro {
+  source_module_code: string
+  source_record_id: string
+  capability: string
+  record_type: string
+  title: string
+  record_date: string
+  human_summary: string | null
+  responsible_name: string | null
+  source_route: string | null
+  updated_at: string | null
+}
+
 interface Props {
   entityType: AudEvidenciaEntityType
   entityId: string
@@ -31,13 +51,13 @@ interface Props {
 
 export function EvidenciaPanel({
   entityType, entityId, orgId, auditoriaId, cerrada,
-  hallazgoId, instanciaId, accionId,
+  hallazgoId, instanciaId: _instanciaId, accionId,
 }: Props) {
   const hook = useEvidencia(entityType, entityId)
 
   const [abierto, setAbierto] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
-  const [showSnapshot, setShowSnapshot] = useState(false)
+  const [showGateway, setShowGateway] = useState(false)
   const [viewSnap, setViewSnap] = useState<AudEvidenciaSnapshot | null>(null)
 
   // Upload form
@@ -46,12 +66,14 @@ export function EvidenciaPanel({
   const [uploadCodigo, setUploadCodigo] = useState('')
   const [subiendo, setSubiendo] = useState(false)
 
-  // Snapshot form
-  const [snapModule, setSnapModule] = useState('')
-  const [snapRecordId, setSnapRecordId] = useState('')
-  const [snapJsonStr, setSnapJsonStr] = useState('')
-  const [snapUpdatedAt, setSnapUpdatedAt] = useState('')
-  const [creandoSnap, setCreandoSnap] = useState(false)
+  // Gateway state
+  const [gwCapacidad, setGwCapacidad] = useState(CAPABILITIES[0].value)
+  const [gwDesde, setGwDesde] = useState('')
+  const [gwHasta, setGwHasta] = useState('')
+  const [gwSearch, setGwSearch] = useState('')
+  const [gwRegistros, setGwRegistros] = useState<GwRegistro[]>([])
+  const [gwCargando, setGwCargando] = useState(false)
+  const [gwRelacionandoId, setGwRelacionandoId] = useState<string | null>(null)
 
   // Quitar
   const [quitandoId, setQuitandoId] = useState<string | null>(null)
@@ -61,6 +83,54 @@ export function EvidenciaPanel({
       hook.cargar()
     }
   }, [abierto]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (showGateway) handleBuscar()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showGateway])
+
+  async function handleBuscar(capOverride?: string) {
+    const cap = capOverride ?? gwCapacidad
+    setGwCargando(true)
+    setGwRegistros([])
+    try {
+      const { data, error } = await (supabase as any).rpc('aud_listar_registros_auditables', {
+        p_org_id: orgId,
+        p_capability: cap || null,
+        p_date_from: gwDesde || null,
+        p_date_to: gwHasta || null,
+        p_search: gwSearch.trim() || null,
+      })
+      if (error) throw error
+      setGwRegistros((data ?? []) as GwRegistro[])
+    } catch (e) {
+      console.error('[EvidenciaPanel] buscarRegistros', e)
+      toast.error('No se pudieron cargar los registros. Reintenta.')
+    } finally {
+      setGwCargando(false)
+    }
+  }
+
+  async function handleRelacionar(reg: GwRegistro) {
+    setGwRelacionandoId(reg.source_record_id)
+    try {
+      await hook.snapshotDesdeRegistro({
+        orgId,
+        sourceModuleCode: reg.source_module_code,
+        sourceRecordId: reg.source_record_id,
+        hallazgoId: hallazgoId ?? null,
+        accionId: accionId ?? null,
+        criterionCode: null,
+      })
+      toast.success('Registro vinculado como evidencia')
+      setShowGateway(false)
+    } catch (e) {
+      console.error('[EvidenciaPanel] relacionar', e)
+      toast.error('No se pudo relacionar el registro. Reintenta.')
+    } finally {
+      setGwRelacionandoId(null)
+    }
+  }
 
   async function handleSubirExterno() {
     if (!uploadFile) return
@@ -82,42 +152,6 @@ export function EvidenciaPanel({
       toast.error('No se pudo subir la evidencia. Reintenta.')
     } finally {
       setSubiendo(false)
-    }
-  }
-
-  async function handleCrearSnapshot() {
-    if (!snapModule.trim() || !snapRecordId.trim() || !snapJsonStr.trim()) return
-    let json: Record<string, unknown>
-    try {
-      json = JSON.parse(snapJsonStr)
-    } catch {
-      toast.error('El JSON no es válido. Revísalo y vuelve a intentar.')
-      return
-    }
-    setCreandoSnap(true)
-    try {
-      await hook.crearSnapshot({
-        orgId,
-        snapshotJson: json,
-        sourceModuleCode: snapModule.trim().toLowerCase(),
-        sourceRecordId: snapRecordId.trim(),
-        sourceUpdatedAt: snapUpdatedAt || null,
-        auditoriaId,
-        hallazgoId: hallazgoId ?? null,
-        accionId: accionId ?? null,
-        instanciaId: instanciaId ?? null,
-      })
-      setSnapModule('')
-      setSnapRecordId('')
-      setSnapJsonStr('')
-      setSnapUpdatedAt('')
-      setShowSnapshot(false)
-      toast.success('Snapshot creado y vinculado')
-    } catch (e) {
-      console.error('[EvidenciaPanel] crearSnapshot', e)
-      toast.error('No se pudo crear el snapshot. Reintenta.')
-    } finally {
-      setCreandoSnap(false)
     }
   }
 
@@ -195,7 +229,6 @@ export function EvidenciaPanel({
                 const asset = uso.aud_evidencia
                 return (
                   <div key={uso.id} className="px-4 py-3 flex flex-col gap-1.5">
-                    {/* Origen badge */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
                         className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
@@ -219,7 +252,6 @@ export function EvidenciaPanel({
                       )}
                     </div>
 
-                    {/* Snapshot info */}
                     {snap && (
                       <p className="text-[10px] font-mono break-all" style={{ color: 'var(--muted-foreground)' }}>
                         SHA: {snap.snapshot_hash.slice(0, 16)}…
@@ -231,7 +263,6 @@ export function EvidenciaPanel({
                       </p>
                     )}
 
-                    {/* Acciones */}
                     <div className="flex items-center gap-2">
                       {esAsset && asset?.storage_path && (
                         <button
@@ -269,7 +300,6 @@ export function EvidenciaPanel({
                       )}
                     </div>
 
-                    {/* JSON viewer inline */}
                     {viewSnap?.id === snap?.id && snap && (
                       <pre
                         className="text-[9px] p-2 rounded overflow-x-auto max-h-40"
@@ -294,7 +324,7 @@ export function EvidenciaPanel({
           {!cerrada && (
             <div className="px-4 py-3 flex gap-2 flex-wrap border-t border-border">
               <button
-                onClick={() => { setShowUpload(v => !v); setShowSnapshot(false) }}
+                onClick={() => { setShowUpload(v => !v); setShowGateway(false) }}
                 className="flex items-center gap-1 text-[10px] font-semibold h-7 px-3 rounded-lg"
                 style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
               >
@@ -302,12 +332,12 @@ export function EvidenciaPanel({
                 Añadir evidencia externa
               </button>
               <button
-                onClick={() => { setShowSnapshot(v => !v); setShowUpload(false) }}
+                onClick={() => { setShowGateway(v => !v); setShowUpload(false) }}
                 className="flex items-center gap-1 text-[10px] font-semibold h-7 px-3 rounded-lg"
                 style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
               >
                 <Database size={10} />
-                Relacionar registro M.A.D.Y.
+                Registros M.A.D.Y.
               </button>
             </div>
           )}
@@ -369,76 +399,142 @@ export function EvidenciaPanel({
             </div>
           )}
 
-          {/* Formulario: snapshot de registro M.A.D.Y. */}
-          {showSnapshot && (
+          {/* Gateway: Evidencia sugerida en M.A.D.Y. */}
+          {showGateway && (
             <div className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="flex items-center justify-between pt-3">
-                <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>Snapshot de registro M.A.D.Y.</p>
-                <button onClick={() => setShowSnapshot(false)}><X size={14} style={{ color: 'var(--muted-foreground)' }} /></button>
+                <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>Evidencia sugerida en M.A.D.Y.</p>
+                <button onClick={() => setShowGateway(false)}>
+                  <X size={14} style={{ color: 'var(--muted-foreground)' }} />
+                </button>
               </div>
-              <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
-                Congela el estado actual de un registro operativo. El hash se calcula en el servidor. Pega el JSON del registro tal cual aparece en la tabla de BD.
-              </p>
+
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
-                  Módulo <span style={{ color: 'var(--agro-red)' }}>*</span>
-                </label>
+                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Tipo de registro</label>
+                <select
+                  value={gwCapacidad}
+                  onChange={e => { setGwCapacidad(e.target.value); handleBuscar(e.target.value) }}
+                  style={{ ...inputBase, height: '2.25rem' }}
+                >
+                  {CAPABILITIES.map(c => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex gap-2">
+                <div className="flex flex-col gap-1 flex-1">
+                  <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Desde</label>
+                  <input
+                    type="date"
+                    value={gwDesde}
+                    onChange={e => setGwDesde(e.target.value)}
+                    style={{ ...inputBase, height: '2.25rem' }}
+                  />
+                </div>
+                <div className="flex flex-col gap-1 flex-1">
+                  <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Hasta</label>
+                  <input
+                    type="date"
+                    value={gwHasta}
+                    onChange={e => setGwHasta(e.target.value)}
+                    style={{ ...inputBase, height: '2.25rem' }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2">
                 <input
                   type="text"
-                  value={snapModule}
-                  onChange={e => setSnapModule(e.target.value)}
-                  placeholder="Ej. m41, m22, m13…"
-                  style={{ ...inputBase, height: '2.25rem' }}
+                  value={gwSearch}
+                  onChange={e => setGwSearch(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleBuscar() }}
+                  placeholder="Buscar por texto…"
+                  style={{ ...inputBase, height: '2.25rem', flex: 1, width: 'auto' }}
                 />
+                <button
+                  onClick={() => handleBuscar()}
+                  disabled={gwCargando}
+                  className="h-9 px-3 rounded-lg text-[11px] font-semibold flex items-center gap-1 disabled:opacity-50 flex-shrink-0"
+                  style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                >
+                  {gwCargando
+                    ? <Loader size={12} className="animate-spin" />
+                    : 'Buscar'
+                  }
+                </button>
               </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
-                  ID del registro (UUID) <span style={{ color: 'var(--agro-red)' }}>*</span>
-                </label>
-                <input
-                  type="text"
-                  value={snapRecordId}
-                  onChange={e => setSnapRecordId(e.target.value)}
-                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                  style={{ ...inputBase, height: '2.25rem' }}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Fecha de actualización del registro (opcional)</label>
-                <input
-                  type="datetime-local"
-                  value={snapUpdatedAt}
-                  onChange={e => setSnapUpdatedAt(e.target.value)}
-                  style={{ ...inputBase, height: '2.25rem' }}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
-                  JSON del registro <span style={{ color: 'var(--agro-red)' }}>*</span>
-                </label>
-                <textarea
-                  value={snapJsonStr}
-                  onChange={e => setSnapJsonStr(e.target.value)}
-                  rows={5}
-                  placeholder={'{\n  "id": "...",\n  "fecha": "...",\n  ...\n}'}
-                  className="resize-none text-[11px] font-mono outline-none"
-                  style={{
-                    borderRadius: 'var(--radius)',
-                    border: '1px solid var(--border)',
-                    backgroundColor: 'var(--input-background)',
-                    color: 'var(--foreground)',
-                    padding: '0.375rem 0.625rem',
-                  }}
-                />
-              </div>
-              <button
-                onClick={handleCrearSnapshot}
-                disabled={creandoSnap || !snapModule.trim() || !snapRecordId.trim() || !snapJsonStr.trim()}
-                className="w-full h-9 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-                style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-              >
-                {creandoSnap ? <><Loader size={12} className="animate-spin" />Creando snapshot…</> : 'Crear snapshot y vincular'}
-              </button>
+
+              {/* Resultados */}
+              {gwCargando ? (
+                <div className="flex items-center gap-2 py-2">
+                  <Loader size={12} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+                  <span className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Buscando registros…</span>
+                </div>
+              ) : gwRegistros.length === 0 ? (
+                <p className="text-[11px] py-2 text-center" style={{ color: 'var(--muted-foreground)' }}>
+                  Sin registros disponibles para esta capacidad.
+                </p>
+              ) : (
+                <div className="flex flex-col gap-2 max-h-72 overflow-y-auto">
+                  {gwRegistros.map(reg => (
+                    <div
+                      key={reg.source_record_id}
+                      className="rounded-lg p-3 flex flex-col gap-1.5"
+                      style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
+                    >
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span
+                          className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
+                          style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                        >
+                          Origen: M.A.D.Y · {reg.source_module_code.toUpperCase()}
+                        </span>
+                        <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                          {new Date(reg.record_date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </span>
+                        {reg.responsible_name && (
+                          <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                            · {reg.responsible_name}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] font-semibold leading-tight" style={{ color: 'var(--foreground)' }}>
+                        {reg.title}
+                      </p>
+                      {reg.human_summary && (
+                        <p className="text-[10px] leading-snug" style={{ color: 'var(--muted-foreground)' }}>
+                          {reg.human_summary}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {reg.source_route && (
+                          <button
+                            onClick={() => window.open(reg.source_route!, '_blank')}
+                            className="flex items-center gap-1 text-[10px] h-6 px-2 rounded"
+                            style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
+                          >
+                            <ExternalLink size={10} />
+                            Ver en módulo
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleRelacionar(reg)}
+                          disabled={!!gwRelacionandoId}
+                          className="flex items-center gap-1 text-[10px] font-semibold h-6 px-2 rounded ml-auto disabled:opacity-50"
+                          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                        >
+                          {gwRelacionandoId === reg.source_record_id
+                            ? <Loader size={10} className="animate-spin" />
+                            : <Link2 size={10} />
+                          }
+                          Relacionar
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
