@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Navigate } from 'react-router'
 import {
   Building2, ChevronRight, Plus,
-  AlertCircle, Calendar, CheckCircle2, RefreshCw,
+  AlertCircle, Calendar, CheckCircle2, RefreshCw, PlayCircle,
 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorAsignaciones } from '@/hooks/useAuditorAsignaciones'
 import { supabase } from '@/lib/supabase'
 import { hoyMX } from '@/lib/fecha'
+import { useLastWorkspace } from '@/hooks/useContinuarTrabajo'
 import { AuditorNuevaAuditoriaSheet } from './AuditorNuevaAuditoriaSheet'
 import { AuditorCampana } from './AuditorCampana'
 
@@ -148,6 +149,7 @@ export function AuditorHome() {
   const { profile } = useAuthContext()
   const navigate = useNavigate()
   const { orgs, loading: loadingOrgs } = useAuditorAsignaciones()
+  const { workspace } = useLastWorkspace()
 
   const [cola, setCola] = useState<WorkQueueItem[]>([])
   const [resumen, setResumen] = useState<DashboardResumen | null>(null)
@@ -238,6 +240,33 @@ export function AuditorHome() {
       </header>
 
       <main className="flex-1 px-4 py-4 flex flex-col gap-5">
+
+        {/* ── Continuar trabajo ──────────────────────────────────────── */}
+        {workspace && (
+          <section>
+            <button
+              onClick={() => navigate(workspace.route)}
+              className="w-full text-left bg-card rounded-xl p-4 flex items-center gap-3 active:opacity-70 transition-opacity"
+              style={{ border: '1.5px solid var(--primary)' }}
+            >
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: 'var(--agro-success-fill)' }}
+              >
+                <PlayCircle size={18} style={{ color: 'var(--agro-success-text)' }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
+                  Continuar trabajo
+                </p>
+                <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>
+                  {workspace.titulo}
+                </p>
+              </div>
+              <ChevronRight size={15} style={{ color: 'var(--muted-foreground)' }} />
+            </button>
+          </section>
+        )}
 
         {/* ── Franja de resumen ──────────────────────────────────────── */}
         {!loadingDash && resumen && (

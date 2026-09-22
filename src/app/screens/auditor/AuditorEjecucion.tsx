@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
+import { guardarLastWorkspace } from '@/hooks/useContinuarTrabajo'
 import {
   ChevronLeft, AlertTriangle, CheckCircle, Loader,
   XCircle, AlertCircle, ChevronDown, ChevronUp, Download, Clock, ShieldCheck,
@@ -803,6 +804,20 @@ export function AuditorEjecucion() {
   useEffect(() => {
     if (auditoria?.id) cargarHallazgos()
   }, [auditoria?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!auditoria?.id || !profile?.id) return
+    const nombre = auditoria.instalacion_id
+      ? (auditoria.instalacion_nombre ?? 'Instalación')
+      : `${auditoria.productor_nombre} · ${auditoria.rancho_nombre}`
+    guardarLastWorkspace({
+      profileId: profile.id,
+      route: `/auditor/auditoria/${auditoria.id}`,
+      entity_type: 'AUDITORIA',
+      entity_id: auditoria.id,
+      titulo: nombre,
+    })
+  }, [auditoria?.id, profile?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const panelHallazgosRef = useRef<HTMLDivElement>(null)
 

@@ -2250,13 +2250,13 @@
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorEjecucion.tsx": {
-    "mtime": 1790106576.645787,
-    "ast_hash": "665b7997361f3715146bc712474f2237",
+    "mtime": 1790112500.76992,
+    "ast_hash": "8e058aa3caedb354021b8025015db890",
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorHome.tsx": {
-    "mtime": 1790110022.2684696,
-    "ast_hash": "62827e5beec16523cd924a1872029efa",
+    "mtime": 1790112487.626912,
+    "ast_hash": "f22c9ddbdb11947615c0e69a4d755bed",
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorNuevaAuditoria.tsx": {
@@ -2502,6 +2502,11 @@
   "public/images/invernadero.jpeg": {
     "mtime": 1790110021.111511,
     "ast_hash": "a973acbfceebf4c868ba9d7d7b4b38b1",
+    "semantic_hash": ""
+  },
+  "src/hooks/useContinuarTrabajo.ts": {
+    "mtime": 1790112469.2090466,
+    "ast_hash": "f1a6656745426a5e6a78ea06eee2c2bc",
     "semantic_hash": ""
   }
 }
