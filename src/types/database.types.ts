@@ -2024,3 +2024,32 @@ export interface AudAcVersion {
   creado_por: string | null
   created_at: string
 }
+
+// ── aud_external_workflow (§8.sexies) ─────────────────────────────────────────
+
+export type AudExternalObservedStatus =
+  | 'pendiente'
+  | 'enviada'
+  | 'revisada'
+  | 'aceptada'
+  | 'requiere_correccion'
+  | 'cerrada'
+
+export interface AudExternalWorkflow {
+  id: string
+  org_id: string
+  system: 'AZZULE' | 'OTHER'
+  auditoria_id: string | null
+  accion_id: string | null
+  external_audit_id: string | null
+  external_program_id: string | null
+  external_question_code: string | null
+  observed_status: AudExternalObservedStatus
+  official_decision: string | null
+  official_new_response: string | null
+  official_comment: string | null
+  observed_at: string
+  observed_by: string | null
+  source_note: string | null
+  created_at: string
+}

@@ -146,6 +146,7 @@ import { AuditorNuevaInstalacion } from "./screens/auditor/AuditorNuevaInstalaci
 import { AuditorInstalacionDetalle } from "./screens/auditor/AuditorInstalacionDetalle"
 import { AuditorNuevaAuditoriaEfimera } from "./screens/auditor/AuditorNuevaAuditoriaEfimera"
 import { AuditorAgenda } from "./screens/auditor/AuditorAgenda"
+import { AuditorModoAzzule } from "./screens/auditor/AuditorModoAzzule"
 
 export const router = createBrowserRouter([
   {
@@ -191,6 +192,7 @@ export const router = createBrowserRouter([
               { path: "auditor/org/:orgId", Component: AuditorOrgDetalle },
               { path: "auditor/org/:orgId/nueva", Component: AuditorNuevaAuditoria },
               { path: "auditor/auditoria/:auditoriaId", Component: AuditorEjecucion },
+              { path: "auditor/auditoria/:auditoriaId/azzule", Component: AuditorModoAzzule },
               { path: "auditor/instalacion/nueva", Component: AuditorNuevaInstalacion },
               { path: "auditor/instalacion/:instalacionId", Component: AuditorInstalacionDetalle },
               { path: "auditor/instalacion/:instalacionId/nueva", Component: AuditorNuevaAuditoriaEfimera },

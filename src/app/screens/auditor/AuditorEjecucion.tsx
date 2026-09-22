@@ -3,12 +3,12 @@ import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
 import {
   ChevronLeft, AlertTriangle, CheckCircle, Loader,
   XCircle, AlertCircle, ChevronDown, ChevronUp, Download, Clock, ShieldCheck,
-  Flag, Plus, History, ClipboardList,
+  Flag, Plus, History, ClipboardList, Copy,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorAuditoria } from '@/hooks/useAuditorAuditoria'
-import type { AudComentarioEsquema, AudPregunta, AudRespuesta, AudHallazgo, AudHallazgoClasificacion, AudHallazgoEstado, AudAccionCorrectivaCAPA, AudAcVersion, AudInternalStatus, AudExternalStatus } from '@/types/database.types'
+import type { AudComentarioEsquema, AudPregunta, AudRespuesta, AudHallazgo, AudHallazgoClasificacion, AudHallazgoEstado, AudAccionCorrectivaCAPA, AudAcVersion, AudInternalStatus, AudExternalStatus, AudExternalWorkflow, AudExternalObservedStatus } from '@/types/database.types'
 import { generarAuditorReportePDF } from '@/lib/pdf/auditor/generarAuditorReportePDF'
 import { supabase } from '@/lib/supabase'
 import { useHallazgos } from '@/hooks/useHallazgos'
@@ -93,6 +93,15 @@ const EXTERNAL_STATUS_LABELS: Record<AudExternalStatus, string> = {
   ACCEPTED:         'Aceptado',
   REVIEWED:         'Revisado',
   CLOSED:           'Cerrado',
+}
+
+const OBSERVED_STATUS_LABELS: Record<AudExternalObservedStatus, string> = {
+  pendiente:           'Pendiente',
+  enviada:             'Enviada',
+  revisada:            'Revisada',
+  aceptada:            'Aceptada',
+  requiere_correccion: 'Requiere corrección',
+  cerrada:             'Cerrada',
 }
 
 const ESTADO_LABELS: Record<string, string> = {
@@ -804,6 +813,25 @@ export function AuditorEjecucion() {
   const [sheetHistorial, setSheetHistorial] = useState<AudAcVersion[] | null>(null)
   const [cargandoHistorial, setCargandoHistorial] = useState(false)
 
+  // — Azzule —
+  const [validandoAzzule, setValidandoAzzule] = useState(false)
+  const [azzuleItems, setAzzuleItems] = useState<Array<{ code: string; severity: string; message: string }> | null>(null)
+  const [azzuleReady, setAzzuleReady] = useState(false)
+  const [sheetRegistrarResultado, setSheetRegistrarResultado] = useState(false)
+  const initialFormResultado = {
+    observed_status: 'revisada' as AudExternalObservedStatus,
+    official_decision: '',
+    official_new_response: '',
+    official_comment: '',
+    external_audit_id: '',
+    observed_at: '',
+  }
+  const [formResultado, setFormResultado] = useState(initialFormResultado)
+  const [guardandoResultado, setGuardandoResultado] = useState(false)
+  const [historialExterno, setHistorialExterno] = useState<AudExternalWorkflow[]>([])
+  const [cargandoHistorialExterno, setCargandoHistorialExterno] = useState(false)
+  const [historialExternoVisible, setHistorialExternoVisible] = useState(false)
+
   const respuestasRef   = useRef(respuestasMap)
   const valoresRef      = useRef(valoresMap)
   const observacionesRef = useRef(observacionesMap)
@@ -1024,12 +1052,22 @@ export function AuditorEjecucion() {
     setSheetAccion({ hallazgoId: h.id, descripcion: h.descripcion })
     setAccionActual(null)
     setFormAccion({})
+    setAzzuleItems(null)
+    setAzzuleReady(false)
+    setHistorialExterno([])
+    setHistorialExternoVisible(false)
+    setSheetRegistrarResultado(false)
+    setFormResultado(initialFormResultado)
     setCargandoAccion(true)
     try {
       const ac = await cargarAccion(h.id)
       setAccionActual(ac)
-      if (ac) setFormAccion(ac)
-      else setFormAccion({ internal_status: 'REGISTERED', external_status: 'NOT_TRACKED' })
+      if (ac) {
+        setFormAccion(ac)
+        cargarHistorialExternoFn(ac.id)
+      } else {
+        setFormAccion({ internal_status: 'REGISTERED', external_status: 'NOT_TRACKED' })
+      }
     } catch (e) {
       console.error('[AuditorEjecucion] cargarAccion', e)
       toast.error('No se pudo cargar la acción correctiva. Reintenta.')
@@ -1111,6 +1149,82 @@ export function AuditorEjecucion() {
     }
     setDescartandoId(null)
     setMotivoDescarte('')
+  }
+
+  async function cargarHistorialExternoFn(accionId: string) {
+    setCargandoHistorialExterno(true)
+    try {
+      const { data, error } = await supabase
+        .from('aud_external_workflow')
+        .select('*')
+        .eq('accion_id', accionId)
+        .order('observed_at', { ascending: false })
+      if (error) throw error
+      setHistorialExterno((data ?? []) as AudExternalWorkflow[])
+    } catch (e) {
+      console.error('[cargarHistorialExterno]', e)
+    } finally {
+      setCargandoHistorialExterno(false)
+    }
+  }
+
+  async function handleValidarAzzule() {
+    if (!accionActual?.id) return
+    setValidandoAzzule(true)
+    setAzzuleItems(null)
+    setAzzuleReady(false)
+    try {
+      const { data, error } = await supabase.rpc('aud_lista_para_azzule', { p_accion_id: accionActual.id })
+      if (error) {
+        console.error('[handleValidarAzzule]', error)
+        toast.error('No se pudo validar para Azzule. Reintenta.')
+        return
+      }
+      const result = data as { ready: boolean; blockingIssues: number; warnings: number; items: Array<{ code: string; severity: string; message: string }> }
+      setAzzuleItems(result?.items ?? [])
+      setAzzuleReady(result?.ready ?? false)
+      if (result?.ready) {
+        toast.success('Lista para Azzule — puedes abrir el Modo Azzule')
+      } else {
+        const nb = result?.blockingIssues ?? 0
+        toast.warning(`${nb} bloqueo${nb !== 1 ? 's' : ''} pendiente${nb !== 1 ? 's' : ''}`)
+      }
+    } finally {
+      setValidandoAzzule(false)
+    }
+  }
+
+  async function handleRegistrarResultado() {
+    if (!accionActual?.id || !sheetAccion) return
+    setGuardandoResultado(true)
+    try {
+      const { error } = await supabase.rpc('aud_azzule_registrar_resultado', {
+        p_accion_id: accionActual.id,
+        p_observed_status: formResultado.observed_status,
+        p_official_decision: formResultado.official_decision || null,
+        p_official_new_response: formResultado.official_new_response || null,
+        p_official_comment: formResultado.official_comment || null,
+        p_external_audit_id: formResultado.external_audit_id || null,
+        p_observed_at: formResultado.observed_at || null,
+      })
+      if (error) {
+        console.error('[handleRegistrarResultado]', error)
+        toast.error('No se pudo registrar el resultado. Reintenta.')
+        return
+      }
+      toast.success('Resultado registrado')
+      setFormResultado(initialFormResultado)
+      setSheetRegistrarResultado(false)
+      cargarHistorialExternoFn(accionActual.id)
+      // Refrescar acción para ver el nuevo external_status
+      const updated = await cargarAccion(sheetAccion.hallazgoId)
+      if (updated) {
+        setAccionActual(updated)
+        setFormAccion(updated)
+      }
+    } finally {
+      setGuardandoResultado(false)
+    }
   }
 
   return (
@@ -1529,6 +1643,213 @@ export function AuditorEjecucion() {
                     : <><History size={14} /> Ver historial de versiones ({accionActual.current_version})</>
                   }
                 </button>
+              )}
+
+              {/* ── Sección Azzule ─────────────────────────────────────────── */}
+              {accionActual && (
+                <div className="flex flex-col gap-3">
+                  {/* Disclaimer */}
+                  <div className="rounded-xl px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
+                    <p className="text-[10px] italic" style={{ color: 'var(--muted-foreground)' }}>
+                      M.A.D.Y organiza, valida y da seguimiento. No sustituye a PrimusGFS, Azzule Systems, al auditor autorizado ni al organismo de certificación.
+                    </p>
+                  </div>
+
+                  {/* Botón Validar para Azzule */}
+                  <button
+                    onClick={handleValidarAzzule}
+                    disabled={validandoAzzule || cerrada}
+                    className="w-full h-10 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                  >
+                    {validandoAzzule
+                      ? <><Loader size={13} className="animate-spin" />Validando…</>
+                      : <><ShieldCheck size={13} />Validar para Azzule</>
+                    }
+                  </button>
+
+                  {/* Resultados de validación */}
+                  {azzuleItems !== null && (
+                    <div className="flex flex-col gap-2">
+                      {(['BLOCKER', 'WARNING', 'INFO'] as const).map(sev => {
+                        const grupo = azzuleItems.filter(i => i.severity === sev)
+                        if (!grupo.length) return null
+                        const cfg = sev === 'BLOCKER'
+                          ? { bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)',  label: 'Bloqueante' }
+                          : sev === 'WARNING'
+                          ? { bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', label: 'Aviso' }
+                          : { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', label: 'Info' }
+                        return (
+                          <div key={sev} className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
+                            <div className="px-3 py-1.5" style={{ backgroundColor: cfg.bg }}>
+                              <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: cfg.color }}>
+                                {cfg.label} · {grupo.length}
+                              </span>
+                            </div>
+                            {grupo.map((item, i) => (
+                              <div key={i} className="px-3 py-2 border-t" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}>
+                                <p className="text-xs leading-relaxed" style={{ color: 'var(--foreground)' }}>{item.message}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      })}
+
+                      {azzuleReady ? (
+                        <button
+                          onClick={() => navigate(
+                            `/auditor/auditoria/${auditoriaId}/azzule`,
+                            { state: { orgNombre, orgId, instalacionId, instalacionNombreNav } }
+                          )}
+                          className="w-full h-10 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+                          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                        >
+                          Abrir Modo Azzule
+                        </button>
+                      ) : (
+                        <p className="text-[10px] text-center py-1" style={{ color: 'var(--muted-foreground)' }}>
+                          Resuelve los bloqueos para habilitar el Modo Azzule
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Registrar resultado oficial (colapsable) */}
+                  <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
+                    <button
+                      onClick={() => setSheetRegistrarResultado(v => !v)}
+                      className="w-full flex items-center justify-between px-3 py-2.5 text-left"
+                    >
+                      <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>Registrar resultado de Azzule</span>
+                      {sheetRegistrarResultado
+                        ? <ChevronUp size={14} style={{ color: 'var(--muted-foreground)' }} />
+                        : <ChevronDown size={14} style={{ color: 'var(--muted-foreground)' }} />
+                      }
+                    </button>
+                    {sheetRegistrarResultado && (
+                      <div className="px-3 pb-3 flex flex-col gap-3 border-t" style={{ borderColor: 'var(--border)' }}>
+                        <p className="text-[10px] pt-2" style={{ color: 'var(--muted-foreground)' }}>
+                          Cada registro es una nueva observación — no sobrescribe el anterior.
+                        </p>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Estado observado *</label>
+                          <select
+                            value={formResultado.observed_status}
+                            onChange={e => setFormResultado(p => ({ ...p, observed_status: e.target.value as AudExternalObservedStatus }))}
+                            className="h-9 rounded-lg px-2 text-xs outline-none"
+                            style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                          >
+                            {(Object.keys(OBSERVED_STATUS_LABELS) as AudExternalObservedStatus[]).map(k => (
+                              <option key={k} value={k}>{OBSERVED_STATUS_LABELS[k]}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Fecha observada</label>
+                          <input
+                            type="date"
+                            value={formResultado.observed_at}
+                            onChange={e => setFormResultado(p => ({ ...p, observed_at: e.target.value }))}
+                            className="h-9 rounded-lg px-2 text-xs outline-none"
+                            style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>ID auditoría Azzule</label>
+                          <input
+                            type="text"
+                            value={formResultado.external_audit_id}
+                            onChange={e => setFormResultado(p => ({ ...p, external_audit_id: e.target.value }))}
+                            placeholder="Ej. AZZ-2024-00123"
+                            className="h-9 rounded-lg px-2 text-xs outline-none"
+                            style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                          />
+                        </div>
+                        {([
+                          ['official_decision',     'Decisión oficial'],
+                          ['official_new_response', 'Nueva respuesta oficial'],
+                          ['official_comment',      'Comentario'],
+                        ] as [keyof typeof formResultado, string][]).map(([campo, label]) => (
+                          <div key={campo} className="flex flex-col gap-1">
+                            <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>{label}</label>
+                            <textarea
+                              value={formResultado[campo]}
+                              onChange={e => setFormResultado(p => ({ ...p, [campo]: e.target.value }))}
+                              rows={2}
+                              className="resize-none text-xs outline-none"
+                              style={{ borderRadius: 'var(--radius)', border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)', padding: '0.375rem 0.625rem' }}
+                            />
+                          </div>
+                        ))}
+                        <button
+                          onClick={handleRegistrarResultado}
+                          disabled={guardandoResultado}
+                          className="w-full h-9 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+                          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                        >
+                          {guardandoResultado ? <><Loader size={12} className="animate-spin" />Guardando…</> : 'Registrar resultado'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Historial externo (colapsable) */}
+                  <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
+                    <button
+                      onClick={() => {
+                        const next = !historialExternoVisible
+                        setHistorialExternoVisible(next)
+                        if (next && historialExterno.length === 0) cargarHistorialExternoFn(accionActual.id)
+                      }}
+                      className="w-full flex items-center justify-between px-3 py-2.5 text-left"
+                    >
+                      <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
+                        Historial de seguimiento externo
+                      </span>
+                      {historialExternoVisible
+                        ? <ChevronUp size={14} style={{ color: 'var(--muted-foreground)' }} />
+                        : <ChevronDown size={14} style={{ color: 'var(--muted-foreground)' }} />
+                      }
+                    </button>
+                    {historialExternoVisible && (
+                      <div className="border-t" style={{ borderColor: 'var(--border)' }}>
+                        {cargandoHistorialExterno ? (
+                          <div className="flex items-center justify-center gap-2 py-4">
+                            <Loader size={14} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+                          </div>
+                        ) : historialExterno.length === 0 ? (
+                          <p className="text-xs px-3 py-3" style={{ color: 'var(--muted-foreground)' }}>
+                            Sin seguimiento externo registrado.
+                          </p>
+                        ) : (
+                          <div className="flex flex-col divide-y" style={{ borderColor: 'var(--border)' }}>
+                            {historialExterno.map(ewr => (
+                              <div key={ewr.id} className="px-3 py-2.5 flex flex-col gap-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] font-bold" style={{ color: 'var(--foreground)' }}>
+                                    {OBSERVED_STATUS_LABELS[ewr.observed_status]}
+                                  </span>
+                                  <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                                    {new Date(ewr.observed_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                  </span>
+                                </div>
+                                {ewr.official_decision && (
+                                  <p className="text-[10px]" style={{ color: 'var(--foreground)' }}>{ewr.official_decision}</p>
+                                )}
+                                {ewr.official_comment && (
+                                  <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>{ewr.official_comment}</p>
+                                )}
+                                {ewr.source_note && (
+                                  <p className="text-[10px] italic" style={{ color: 'var(--muted-foreground)' }}>{ewr.source_note}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
           )}
