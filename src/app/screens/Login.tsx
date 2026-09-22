@@ -42,6 +42,18 @@ export function Login() {
   const [recupCargando, setRecupCargando] = useState(false)
   const [recupError, setRecupError] = useState<string | null>(null)
 
+  // El widget de Turnstile es una sola instancia compartida entre móvil y
+  // escritorio (no se duplica el montaje) — el tamaño 'compact' solo debe
+  // aplicar en escritorio, así que se decide por matchMedia, no por CSS.
+  const [isDesktop, setIsDesktop] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    setIsDesktop(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
   useEffect(() => {
     if (!loading && user) navigate(returnTo, { replace: true })
   }, [user, loading, navigate])
@@ -93,11 +105,11 @@ export function Login() {
     <div className="flex min-h-screen" style={{ background: 'var(--background)' }}>
 
       {/* ── PANEL IZQUIERDO: carrusel de fotos (solo lg+, 60%) ── */}
-      <AuthCarouselPanel className="hidden lg:flex lg:w-[65%]" />
+      <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
 
       {/* ── PANEL DERECHO: formulario (40% en escritorio, verde oscuro derivado del mint) ── */}
       <div
-        className="auth-panel relative flex-1 lg:w-[35%] flex flex-col items-center justify-center p-6 lg:p-12 min-h-screen transition-colors duration-150"
+        className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-6 lg:p-12 min-h-screen transition-colors duration-150"
         style={{ background: 'var(--auth-panel-bg)' }}
       >
         <AuthLeavesDecor className="hidden lg:block" />
@@ -110,7 +122,7 @@ export function Login() {
           </Link>
         </div>
 
-        <div className="w-full max-w-[380px] space-y-7">
+        <div className="w-full max-w-[380px] space-y-7 lg:space-y-8">
 
           {/* Logo M.A.D.Y + tagline — solo móvil, en escritorio ya está en el carrusel */}
           <div className="space-y-[3px] lg:hidden">
@@ -217,7 +229,7 @@ export function Login() {
           )}
 
           {/* Formulario de login */}
-          {!modoRecup && <form onSubmit={handleSubmit} className="space-y-4">
+          {!modoRecup && <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-5">
 
             {/* Correo */}
             <div className="space-y-[6px]">
@@ -293,7 +305,7 @@ export function Login() {
             {/* Turnstile — fila simple en móvil, tarjeta con encabezado en escritorio */}
             {SITE_KEY && (
               <div
-                className="flex items-center gap-3 lg:flex-col lg:items-stretch lg:gap-3 lg:p-4 lg:rounded-[10px] lg:border lg:bg-[var(--auth-input-bg)]"
+                className="flex items-center gap-3 lg:flex-col lg:items-stretch lg:gap-2 lg:p-3 lg:rounded-[10px] lg:border lg:bg-[var(--auth-input-bg)]"
                 style={{ borderColor: 'var(--auth-input-border)' }}
               >
                 <div className="flex items-center gap-3 lg:gap-2">
@@ -311,7 +323,7 @@ export function Login() {
                   <Turnstile
                     ref={turnstileRef}
                     siteKey={SITE_KEY}
-                    options={{ theme: 'auto', size: 'normal' }}
+                    options={{ theme: 'auto', size: isDesktop ? 'compact' : 'normal' }}
                     onSuccess={(token) => setCaptchaToken(token)}
                     onExpire={() => setCaptchaToken(null)}
                     onError={() => {
@@ -350,7 +362,7 @@ export function Login() {
             </button>
 
             {/* Línea de confianza — solo escritorio (arriba ya está el nav de Regístrate) */}
-            <p className="hidden lg:flex items-center justify-center gap-1.5 text-xs pt-1" style={{ color: 'var(--auth-link-color)' }}>
+            <p className="hidden lg:flex items-center justify-center gap-1.5 text-xs pt-1 lg:pt-4" style={{ color: 'var(--auth-link-color)' }}>
               <Lock className="w-3 h-3" />
               Tu información está protegida
             </p>

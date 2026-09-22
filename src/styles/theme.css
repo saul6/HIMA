@@ -79,7 +79,8 @@
      secundario no compita con el título, igual que la referencia de diseño. */
   --auth-text-secondary-dark: color-mix(in srgb, var(--muted-foreground) 55%, white 45%);
   /* Línea divisoria: fina + glow mint suave (no barra sólida). */
-  --auth-divider: color-mix(in srgb, var(--secondary) 38%, transparent);
+  --auth-divider: color-mix(in srgb, var(--secondary) 40%, transparent);
+  --auth-divider-width: 2px;
   --auth-divider-glow: 0 0 12px 0 color-mix(in srgb, var(--secondary) 45%, transparent);
   /* Capa sobre las fotos del carrusel: derivada del verde de marca (no negro puro,
      "toque verde súper ligero"), más fuerte en la esquina inferior-izquierda

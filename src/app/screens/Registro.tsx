@@ -125,9 +125,9 @@ export function Registro() {
 
         {/* Escritorio — panel oscuro con paleta M.A.D.Y */}
         <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
-          <AuthCarouselPanel className="flex lg:w-[65%]" />
+          <AuthCarouselPanel className="flex lg:w-[60%]" />
           <div
-            className="auth-panel relative flex-1 lg:w-[35%] flex flex-col items-center justify-center p-12 min-h-screen"
+            className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12 min-h-screen"
             style={{ background: 'var(--auth-panel-bg)' }}
           >
             <AuthLeavesDecor className="hidden lg:block" />
@@ -312,14 +312,14 @@ export function Registro() {
 
       {/* Escritorio — carrusel 2/3 + panel oscuro con paleta M.A.D.Y 1/3 */}
       <div className="hidden lg:flex min-h-screen" style={{ background: 'var(--background)' }}>
-        <AuthCarouselPanel className="flex lg:w-[65%]" />
+        <AuthCarouselPanel className="flex lg:w-[60%]" />
 
         <div
-          className="auth-panel relative flex-1 lg:w-[35%] flex flex-col items-center justify-center p-12 min-h-screen transition-colors duration-150"
+          className="auth-panel relative flex-1 lg:w-[40%] flex flex-col items-center justify-center p-12 min-h-screen transition-colors duration-150"
           style={{ background: 'var(--auth-panel-bg)' }}
         >
           <AuthLeavesDecor className="hidden lg:block" />
-          <div className="w-full max-w-[380px] space-y-6">
+          <div className="w-full max-w-[380px] space-y-7">
             <div className="space-y-1">
               <h1
                 className="text-[38px] font-bold leading-tight [letter-spacing:-0.01em]"
@@ -332,7 +332,7 @@ export function Registro() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-[6px]">
                 <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
                   Nombre completo
@@ -439,7 +439,7 @@ export function Registro() {
 
               {SITE_KEY && (
                 <div
-                  className="flex flex-col items-stretch gap-3 p-4 rounded-[10px] border"
+                  className="flex flex-col items-stretch gap-2 p-3 rounded-[10px] border"
                   style={{ borderColor: 'var(--auth-input-border)', background: 'var(--auth-input-bg)' }}
                 >
                   <div className="flex items-center gap-2">
@@ -457,7 +457,7 @@ export function Registro() {
                     <Turnstile
                       ref={turnstileRef}
                       siteKey={SITE_KEY}
-                      options={{ theme: 'auto', size: 'normal' }}
+                      options={{ theme: 'auto', size: 'compact' }}
                       onSuccess={(token) => setCaptchaToken(token)}
                       onExpire={() => setCaptchaToken(null)}
                       onError={() => {

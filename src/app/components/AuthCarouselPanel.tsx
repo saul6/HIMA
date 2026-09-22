@@ -61,7 +61,7 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
       className={`relative flex-col overflow-hidden ${className}`}
       style={{
         background: 'var(--auth-panel-dark)',
-        borderRight: '1px solid var(--auth-divider)',
+        borderRight: 'var(--auth-divider-width) solid var(--auth-divider)',
         boxShadow: `var(--auth-divider-glow)`,
       }}
     >
@@ -88,14 +88,14 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
 
       <div className="relative flex flex-col h-full p-10 xl:p-12 z-10">
         <div>
-          <MadyLogo theme="dark" style={{ height: 64, width: 'auto' }} />
+          <MadyLogo theme="dark" style={{ height: 61, width: 'auto' }} />
         </div>
 
-        {/* Bloque fijo — título + un subtítulo, no cambia entre fotos. Subido
-            hacia el centro-izquierda en vez de pegado al fondo. */}
-        <div className="mt-16 xl:mt-20" style={{ maxWidth: 420 }}>
-          <h2 className="text-white text-[34px] xl:text-[38px] font-bold leading-tight [letter-spacing:-0.01em]">
-            Inocuidad <span style={{ color: 'var(--secondary)' }}>Inteligente</span>
+        {/* Bloque fijo — título + un subtítulo, no cambia entre fotos. */}
+        <div className="mt-20 xl:mt-24" style={{ maxWidth: 420 }}>
+          <h2 className="text-white text-[36px] xl:text-[40px] font-bold leading-tight [letter-spacing:-0.01em]">
+            <span className="block">Inocuidad</span>
+            <span className="block" style={{ color: 'var(--secondary)' }}>Inteligente</span>
           </h2>
           <p className="mt-2 text-sm" style={{ color: 'rgba(255,255,255,0.75)' }}>
             Tecnología para una operación agrícola más segura.
