@@ -1,6 +1,8 @@
 // Panel de carrusel compartido para las pantallas de auth (Login, Registro,
 // RestablecerContrasena) en escritorio. Respeta prefers-reduced-motion.
-// Solo se usa en el split de escritorio — no afecta la vista móvil.
+// Solo se usa en escritorio (lg+) — no afecta la vista móvil. Se monta como
+// fondo a pantalla completa (absolute inset-0) detrás de la tarjeta glass
+// flotante del formulario, ver clase .auth-panel en cada screen.
 // El bloque de título/subtítulo es FIJO (no cambia entre fotos); cada foto
 // rota detrás con un caption discreto de su área abajo, y Ken Burns + crossfade.
 
@@ -79,7 +81,7 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
         />
       ))}
 
-      {/* Capa general (derivada del verde de marca) + scrim difuminado detrás
+      {/* Capa general (derivada del navy de marca) + scrim difuminado detrás
           del logo — ambas por token, se funden sin verse como "parche". */}
       <div aria-hidden="true" className="absolute inset-0" style={{ background: 'var(--auth-carousel-overlay)' }} />
       <div aria-hidden="true" className="absolute inset-0" style={{ background: 'var(--auth-logo-scrim)' }} />
@@ -93,7 +95,7 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
         <div className="mt-24 xl:mt-28" style={{ maxWidth: 440 }}>
           <h2 className="text-white text-[38px] xl:text-[42px] font-bold leading-[1.08] [letter-spacing:0.02em]">
             <span className="block uppercase">INOCUIDAD</span>
-            <span className="block uppercase" style={{ color: 'var(--secondary)' }}>INTELIGENTE</span>
+            <span className="block uppercase" style={{ color: 'var(--auth-accent)' }}>INTELIGENTE</span>
           </h2>
           <p className="mt-3 text-sm" style={{ color: 'rgba(255,255,255,0.75)' }}>
             Tecnología para una operación agrícola más segura.

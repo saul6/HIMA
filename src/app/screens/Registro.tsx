@@ -13,9 +13,9 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 function getInputStyle(focused: boolean): React.CSSProperties {
   return {
     background: 'var(--auth-input-bg)',
-    borderColor: focused ? 'var(--secondary)' : 'var(--auth-input-border)',
+    borderColor: focused ? 'var(--auth-accent)' : 'var(--auth-input-border)',
     boxShadow: focused
-      ? '0 0 0 3px color-mix(in srgb, var(--secondary) 18%, transparent)'
+      ? '0 0 0 3px color-mix(in srgb, var(--auth-accent) 18%, transparent)'
       : 'none',
     color: 'var(--auth-input-text)',
     borderRadius: 10,
@@ -90,19 +90,19 @@ export function Registro() {
   }
 
   const iconCls = 'absolute left-3 top-1/2 -translate-y-1/2 w-[17px] h-[17px] pointer-events-none'
-  const ctaCls = 'auth-cta w-full h-12 rounded-xl text-white font-semibold flex items-center justify-center gap-2 disabled:cursor-not-allowed'
+  const ctaCls = 'auth-cta w-full h-12 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:cursor-not-allowed'
 
   // ── Confirmación pendiente ────────────────────────────────────────────────
 
   if (confirmacionPendiente) {
     return (
-      <div className="flex flex-col lg:flex-row min-h-screen justify-center lg:justify-normal" style={{ background: 'var(--background)' }}>
+      <div className="relative flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden justify-center lg:justify-end lg:items-center" style={{ background: 'var(--background)' }}>
         <div className="lg:hidden">
           <AuthMobileBackdrop />
         </div>
-        <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
+        <AuthCarouselPanel className="hidden lg:flex lg:absolute lg:inset-0 lg:w-full lg:z-0" />
         <div
-          className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-5 lg:p-12"
+          className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-16 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl p-5 lg:p-10"
           style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
         >
           <AuthLeavesDecor />
@@ -122,7 +122,7 @@ export function Registro() {
             <Link
               to="/login"
               className="block text-sm text-center font-semibold"
-              style={{ color: 'var(--secondary)' }}
+              style={{ color: 'var(--auth-accent)' }}
             >
               Ir a iniciar sesión
             </Link>
@@ -135,19 +135,19 @@ export function Registro() {
   // ── Formulario de registro ────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen justify-center lg:justify-normal" style={{ background: 'var(--background)' }}>
+    <div className="relative flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden justify-center lg:justify-end lg:items-center" style={{ background: 'var(--background)' }}>
 
-      {/* ── Fondo móvil v2: carrusel a pantalla completa + logo arriba-izquierda, solo <lg ── */}
+      {/* ── Fondo móvil: carrusel a pantalla completa + logo arriba-izquierda, solo <lg ── */}
       <div className="lg:hidden">
         <AuthMobileBackdrop paused={!!focusedField} />
       </div>
 
-      {/* ── PANEL IZQUIERDO: carrusel de fotos (solo lg+, 60%) ── */}
-      <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
+      {/* ── Escritorio: carrusel a pantalla completa detrás de la tarjeta ── */}
+      <AuthCarouselPanel className="hidden lg:flex lg:absolute lg:inset-0 lg:w-full lg:z-0" />
 
-      {/* ── PANEL: tarjeta glass flotante en móvil, panel sólido de 40% en escritorio ── */}
+      {/* ── PANEL: tarjeta glass flotante — móvil centrada, escritorio flotando a la derecha ── */}
       <div
-        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-5 lg:items-center lg:justify-start lg:pt-12 lg:pb-10 lg:px-12 transition-colors duration-150"
+        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-16 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl p-5 lg:p-10 transition-colors duration-150"
         style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
         <AuthLeavesDecor />
@@ -155,7 +155,7 @@ export function Registro() {
         {/* Nav superior — misma posición que en Login */}
         <div className="absolute top-6 right-6 lg:top-8 lg:right-10 text-sm">
           <span style={{ color: 'var(--auth-subtext-color)' }}>¿Ya tienes cuenta? </span>
-          <Link to="/login" style={{ color: 'var(--secondary)', fontWeight: 600 }}>
+          <Link to="/login" style={{ color: 'var(--auth-accent)', fontWeight: 600 }}>
             Inicia sesión
           </Link>
         </div>
@@ -281,7 +281,7 @@ export function Registro() {
                 style={{ borderColor: 'var(--auth-input-border)', background: 'var(--auth-input-bg)' }}
               >
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: 'var(--secondary)' }} />
+                  <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: 'var(--auth-accent)' }} />
                   <div>
                     <p className="text-xs font-semibold" style={{ color: 'var(--auth-label-color)' }}>
                       Verificación de seguridad
@@ -320,7 +320,7 @@ export function Registro() {
               type="submit"
               disabled={submitting || (!!SITE_KEY && !captchaToken)}
               className={ctaCls}
-              style={{ marginTop: '4px' }}
+              style={{ marginTop: '4px', color: 'var(--auth-cta-text)' }}
             >
               {submitting ? 'Creando cuenta…' : (<>Crear cuenta<ArrowRight className="w-4 h-4" /></>)}
             </button>

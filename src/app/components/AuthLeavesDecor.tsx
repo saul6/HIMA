@@ -1,8 +1,8 @@
 // Motivo decorativo de hojas — trazo lineal, opacidad mínima y variada,
 // puramente ornamental detrás del formulario en el panel oscuro de auth.
 // No estorba la lectura. Color por token (--auth-leaf-stroke, derivado de
-// --secondary). Varias ramas en distintas esquinas/tamaños/opacidades para
-// que se sienta orgánico y no repetitivo.
+// --auth-accent, el sky de marca). Varias ramas en distintas esquinas/tamaños/
+// opacidades para que se sienta orgánico y no repetitivo.
 
 interface AuthLeavesDecorProps {
   className?: string

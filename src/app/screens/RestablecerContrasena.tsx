@@ -10,9 +10,9 @@ import { AuthLeavesDecor } from '@/app/components/AuthLeavesDecor'
 function getInputStyle(focused: boolean): React.CSSProperties {
   return {
     background: 'var(--auth-input-bg)',
-    borderColor: focused ? 'var(--secondary)' : 'var(--auth-input-border)',
+    borderColor: focused ? 'var(--auth-accent)' : 'var(--auth-input-border)',
     boxShadow: focused
-      ? '0 0 0 3px color-mix(in srgb, var(--secondary) 18%, transparent)'
+      ? '0 0 0 3px color-mix(in srgb, var(--auth-accent) 18%, transparent)'
       : 'none',
     color: 'var(--auth-input-text)',
     borderRadius: 10,
@@ -31,13 +31,13 @@ interface StatusPanelProps {
 
 function StatusPanel({ iconBg, icon, title, titleSizeLg, message, ctaLabel, onCta }: StatusPanelProps) {
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen justify-center lg:justify-normal" style={{ background: 'var(--background)' }}>
+    <div className="relative flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden justify-center lg:justify-end lg:items-center" style={{ background: 'var(--background)' }}>
       <div className="lg:hidden">
         <AuthMobileBackdrop />
       </div>
-      <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
+      <AuthCarouselPanel className="hidden lg:flex lg:absolute lg:inset-0 lg:w-full lg:z-0" />
       <div
-        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-5 lg:p-12"
+        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-16 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl p-5 lg:p-10"
         style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
         <AuthLeavesDecor />
@@ -58,8 +58,8 @@ function StatusPanel({ iconBg, icon, title, titleSizeLg, message, ctaLabel, onCt
           </div>
           <button
             onClick={onCta}
-            className="auth-cta w-full h-12 text-white font-semibold flex items-center justify-center gap-2"
-            style={{ borderRadius: 10 }}
+            className="auth-cta w-full h-12 font-semibold flex items-center justify-center gap-2"
+            style={{ borderRadius: 10, color: 'var(--auth-cta-text)' }}
           >
             {ctaLabel}
             <ArrowRight className="w-4 h-4" />
@@ -127,7 +127,7 @@ export function RestablecerContrasena() {
   }
 
   const iconCls = 'absolute left-3 top-1/2 -translate-y-1/2 w-[17px] h-[17px] pointer-events-none'
-  const ctaCls = 'auth-cta w-full h-12 text-white font-semibold flex items-center justify-center gap-2'
+  const ctaCls = 'auth-cta w-full h-12 font-semibold flex items-center justify-center gap-2'
 
   if (loading) {
     return (
@@ -166,17 +166,18 @@ export function RestablecerContrasena() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen justify-center lg:justify-normal" style={{ background: 'var(--background)' }}>
+    <div className="relative flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden justify-center lg:justify-end lg:items-center" style={{ background: 'var(--background)' }}>
 
-      {/* ── Fondo móvil v2: carrusel a pantalla completa + logo arriba-izquierda, solo <lg ── */}
+      {/* ── Fondo móvil: carrusel a pantalla completa + logo arriba-izquierda, solo <lg ── */}
       <div className="lg:hidden">
         <AuthMobileBackdrop paused={!!focusedField} />
       </div>
 
-      <AuthCarouselPanel className="hidden lg:flex lg:w-[60%]" />
+      {/* ── Escritorio: carrusel a pantalla completa detrás de la tarjeta ── */}
+      <AuthCarouselPanel className="hidden lg:flex lg:absolute lg:inset-0 lg:w-full lg:z-0" />
 
       <div
-        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:w-[40%] lg:max-w-none lg:mx-0 lg:flex-1 flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl lg:rounded-none lg:border-0 lg:backdrop-blur-none p-5 lg:justify-start lg:pt-20 lg:pb-12 lg:px-12 transition-colors duration-150"
+        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-16 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl p-5 lg:p-10 transition-colors duration-150"
         style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
         <AuthLeavesDecor />
@@ -273,7 +274,7 @@ export function RestablecerContrasena() {
               type="submit"
               disabled={submitting}
               className={ctaCls}
-              style={{ borderRadius: 10 }}
+              style={{ borderRadius: 10, color: 'var(--auth-cta-text)' }}
             >
               {submitting ? (
                 'Guardando...'

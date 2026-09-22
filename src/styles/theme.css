@@ -59,75 +59,69 @@
   --sidebar-border: rgba(9, 13, 21, 0.1);
   --sidebar-ring: #81BEE5;
 
-  /* Paleta login/registro/restablecer — panel oscuro desktop (Navy/Mint/Sky/Muted
-     ya existen como --primary/--secondary/--agro-blue/--muted-foreground) */
-  --mint-tint: #E6F6F2;
-  --mint-hover: #1E8C78;
+  /* Paleta login/registro/restablecer — panel oscuro Navy/Sky/Muted. Navy es
+     el mismo tono que --primary; Sky reutiliza --agro-blue; Muted reutiliza
+     --muted-foreground. --secondary (mint) NO se usa aquí — sigue siendo el
+     color de éxito/validación (ej. check de correo válido) en toda la app. */
+  --auth-accent: var(--agro-blue);
+  --auth-accent-hover: #5AA8D8;
   --auth-border: #E3E9EF;
   --auth-text: #33404D;
   --auth-bg-page: #F6F9FB;
-  /* Verde oscuro DERIVADO del mint #2AAD95 (mismo tono, luminosidad muy baja) —
-     usado como superficie del panel de formulario en escritorio, nunca como hex
-     suelto en componentes. -darker es un segundo escalón para degradados. */
-  --mady-green-dark: #0E2A20;
-  --mady-green-darker: #081912;
-  --auth-panel-dark: var(--mady-green-dark);
-  /* Fondo de input: el verde del panel, apenas aclarado — no blanco-alpha. */
-  --auth-input-dark: color-mix(in srgb, var(--mady-green-dark) 90%, white 10%);
+  /* Navy del panel de formulario: mismo tono que --primary. -darker es un
+     segundo escalón (derivado por color-mix, nunca hex suelto) para degradados. */
+  --auth-navy-dark: var(--primary);
+  --auth-navy-darker: color-mix(in srgb, var(--primary) 78%, black 22%);
+  --auth-panel-dark: var(--auth-navy-dark);
+  /* Fondo de input: el navy del panel, apenas aclarado — no blanco-alpha. */
+  --auth-input-dark: color-mix(in srgb, var(--auth-navy-dark) 90%, white 10%);
   --auth-border-dark: rgba(255, 255, 255, 0.14);
   /* Gris claro derivado de --muted-foreground (NO azul/sky) — para que el texto
      secundario no compita con el título, igual que la referencia de diseño. */
   --auth-text-secondary-dark: color-mix(in srgb, var(--muted-foreground) 55%, white 45%);
-  /* Línea divisoria: fina + glow mint suave (no barra sólida). */
-  --auth-divider: color-mix(in srgb, var(--secondary) 40%, transparent);
+  /* Línea divisoria: fina + glow sky suave (no barra sólida). */
+  --auth-divider: color-mix(in srgb, var(--auth-accent) 40%, transparent);
   --auth-divider-width: 2px;
-  --auth-divider-glow: 0 0 12px 0 color-mix(in srgb, var(--secondary) 45%, transparent);
-  /* Capa sobre las fotos del carrusel: derivada del verde de marca (no negro puro,
-     "toque verde súper ligero"), más fuerte en la esquina inferior-izquierda
-     (donde va el bloque de texto), se desvanece hacia el resto. Token único —
-     nunca inline en el componente. Un poco más densa que la iteración anterior. */
+  --auth-divider-glow: 0 0 12px 0 color-mix(in srgb, var(--auth-accent) 45%, transparent);
+  /* Capa sobre las fotos del carrusel: derivada del navy de marca (no negro
+     puro), más fuerte en la esquina inferior-izquierda (donde va el bloque de
+     texto), se desvanece hacia el resto. Token único — nunca inline en el
+     componente. */
   --auth-carousel-overlay: radial-gradient(150% 150% at 0% 100%,
-    color-mix(in srgb, var(--mady-green-darker) 80%, transparent) 0%,
-    color-mix(in srgb, var(--mady-green-darker) 55%, transparent) 30%,
-    color-mix(in srgb, var(--mady-green-darker) 34%, transparent) 60%,
-    color-mix(in srgb, var(--mady-green-darker) 40%, transparent) 100%);
+    color-mix(in srgb, var(--auth-navy-darker) 80%, transparent) 0%,
+    color-mix(in srgb, var(--auth-navy-darker) 55%, transparent) 30%,
+    color-mix(in srgb, var(--auth-navy-darker) 34%, transparent) 60%,
+    color-mix(in srgb, var(--auth-navy-darker) 40%, transparent) 100%);
   /* Scrim detrás del logo (esquina superior-izquierda): muy difuminado, se funde
      con la capa general — nunca un "parche" de borde duro. */
   --auth-logo-scrim: radial-gradient(60% 55% at 12% 10%,
-    color-mix(in srgb, var(--mady-green-darker) 55%, transparent) 0%,
-    color-mix(in srgb, var(--mady-green-darker) 25%, transparent) 55%,
+    color-mix(in srgb, var(--auth-navy-darker) 55%, transparent) 0%,
+    color-mix(in srgb, var(--auth-navy-darker) 25%, transparent) 55%,
     transparent 100%);
-  /* Motivo decorativo de hojas detrás del formulario — trazo mint a opacidad
+  /* Motivo decorativo de hojas detrás del formulario — trazo sky a opacidad
      mínima, puramente ornamental (ver AuthLeavesDecor.tsx). */
-  --auth-leaf-stroke: color-mix(in srgb, var(--secondary) 100%, transparent);
-  /* Fondo móvil v3: carrusel a pantalla completa (ver AuthMobileBackdrop.tsx)
-     detrás de una tarjeta "glass" flotante. Capa más densa que la v2 en todo
-     el alto (el carrusel debe leerse como fondo, no competir con la tarjeta)
-     para que el logo y la tarjeta resalten incluso en fotos claras (almacén,
-     campo) — sigue algo más ligera al centro que en los extremos. */
+  --auth-leaf-stroke: color-mix(in srgb, var(--auth-accent) 100%, transparent);
+  /* Fondo móvil: carrusel a pantalla completa (ver AuthMobileBackdrop.tsx)
+     detrás de una tarjeta "glass" flotante. Capa densa en todo el alto (el
+     carrusel debe leerse como fondo, no competir con la tarjeta) para que el
+     logo y la tarjeta resalten incluso en fotos claras (almacén, campo) —
+     algo más ligera al centro que en los extremos. */
   --auth-mobile-bg-overlay: linear-gradient(180deg,
-    color-mix(in srgb, var(--mady-green-darker) 70%, transparent) 0%,
-    color-mix(in srgb, var(--mady-green-darker) 48%, transparent) 42%,
-    color-mix(in srgb, var(--mady-green-darker) 56%, transparent) 65%,
-    color-mix(in srgb, var(--mady-green-darker) 74%, transparent) 100%);
-  /* Tarjeta glass del formulario en móvil: verde oscuro semitransparente +
-     backdrop-blur (ver clase .auth-panel en cada screen) — deja intuir la
-     foto de fondo sin sacrificar legibilidad. v3: un poco más translúcida
-     que la v2 (80% → 70%) para acentuar el efecto glass, apoyada en el scrim
-     más denso de arriba para seguir leyéndose oscura. Escritorio ignora este
-     valor: .auth-panel lo sobreescribe por el gradiente sólido de siempre a
-     partir de 1024px (ver bloque @media abajo). */
-  --auth-glass-bg: color-mix(in srgb, var(--mady-green-dark) 70%, transparent);
+    color-mix(in srgb, var(--auth-navy-darker) 70%, transparent) 0%,
+    color-mix(in srgb, var(--auth-navy-darker) 48%, transparent) 42%,
+    color-mix(in srgb, var(--auth-navy-darker) 56%, transparent) 65%,
+    color-mix(in srgb, var(--auth-navy-darker) 74%, transparent) 100%);
+  /* Tarjeta glass del formulario — navy semitransparente + backdrop-blur (ver
+     clase .auth-panel en cada screen), consistente en móvil Y escritorio: deja
+     intuir la foto/carrusel de fondo sin sacrificar legibilidad. */
+  --auth-glass-bg: color-mix(in srgb, var(--auth-navy-dark) 68%, transparent);
 
-  /* Panel de formulario de auth (Login/Registro/Restablecer). En móvil usa la
-     tarjeta glass semitransparente (flota sobre AuthMobileBackdrop); desde
-     1024px cambia al gradiente sólido de siempre — mismo valor exacto que
-     escritorio ya tenía, solo que ahora vive detrás de un media query en vez
-     de ser el único valor, así móvil puede diferir sin tocar el resultado en
-     escritorio. */
+  /* Panel de formulario de auth (Login/Registro/Restablecer): tarjeta glass
+     navy, mismo valor en todos los breakpoints — escritorio ya no vuelve a un
+     panel sólido edge-to-edge, queda consistente con móvil. */
   --auth-panel-bg: var(--auth-glass-bg);
   --auth-heading-color: #FFFFFF;
-  --auth-heading-accent-color: var(--secondary);
+  --auth-heading-accent-color: var(--auth-accent);
   --auth-subtext-color: var(--auth-text-secondary-dark);
   --auth-label-color: #FFFFFF;
   --auth-icon-color: rgba(255, 255, 255, 0.55);
@@ -135,8 +129,10 @@
   --auth-input-border: var(--auth-border-dark);
   --auth-input-text: #FFFFFF;
   --auth-input-placeholder: rgba(255, 255, 255, 0.4);
-  --auth-link-color: var(--secondary);
-  --auth-cta-bg: linear-gradient(135deg, var(--secondary) 0%, var(--mint-hover) 100%);
+  --auth-link-color: var(--auth-accent);
+  /* CTA sky con degradado + texto navy oscuro (nunca navy sobre panel navy). */
+  --auth-cta-bg: linear-gradient(135deg, var(--auth-accent) 0%, var(--auth-accent-hover) 100%);
+  --auth-cta-text: var(--auth-navy-dark);
   /* Espacio extra antes del bloque de inputs, además del space-y del
      contenedor. Sigue por inline style porque un utility de margen no puede
      ganarle en especificidad al selector que genera space-y-*. */
@@ -254,8 +250,8 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   /* Paleta login/registro/restablecer */
-  --color-mint-tint: var(--mint-tint);
-  --color-mint-hover: var(--mint-hover);
+  --color-auth-accent: var(--auth-accent);
+  --color-auth-accent-hover: var(--auth-accent-hover);
   --color-auth-border: var(--auth-border);
   --color-auth-text: var(--auth-text);
   --color-auth-bg-page: var(--auth-bg-page);
@@ -263,8 +259,8 @@
   --color-auth-input-dark: var(--auth-input-dark);
   --color-auth-border-dark: var(--auth-border-dark);
   --color-auth-text-secondary-dark: var(--auth-text-secondary-dark);
-  --color-mady-green-dark: var(--mady-green-dark);
-  --color-mady-green-darker: var(--mady-green-darker);
+  --color-auth-navy-dark: var(--auth-navy-dark);
+  --color-auth-navy-darker: var(--auth-navy-darker);
 }
 
 @keyframes slideUpFade {
@@ -291,7 +287,7 @@
 .auth-cta:disabled { opacity: 0.4; cursor: not-allowed; }
 .auth-panel .auth-cta:hover:not(:disabled) {
   opacity: 1;
-  background: var(--mint-hover);
+  background: var(--auth-accent-hover);
 }
 .auth-panel .auth-cta:active:not(:disabled) {
   transform: scale(0.97);
@@ -299,15 +295,6 @@
 @media (prefers-reduced-motion: reduce) {
   .auth-cta { transition: none; }
   .auth-panel .auth-cta:active:not(:disabled) { transform: none; }
-}
-
-/* Desde escritorio, el panel de auth vuelve al gradiente sólido de siempre
-   (no glass) — valor idéntico al que --auth-panel-bg tenía como único valor
-   antes de la v2 móvil. */
-@media (min-width: 1024px) {
-  .auth-panel {
-    --auth-panel-bg: linear-gradient(165deg, color-mix(in srgb, var(--mady-green-dark) 88%, black) 0%, color-mix(in srgb, var(--mady-green-darker) 88%, black) 100%);
-  }
 }
 
 /* Fix de autofill de Chrome — el navegador pinta su propio fondo (blanco/
