@@ -428,8 +428,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "package_dependencies_emotion_react",
-      "community": 327,
-      "community_name": "@emotion/react",
+      "community": 5,
+      "community_name": "dependencies",
       "norm_label": "@emotion/react"
     },
     {
@@ -439,8 +439,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "emotion_react",
-      "community": 327,
-      "community_name": "@emotion/react",
+      "community": 5,
+      "community_name": "dependencies",
       "norm_label": "@emotion/react"
     },
     {
@@ -472,8 +472,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "package_dependencies_fontsource_inter",
-      "community": 328,
-      "community_name": "@fontsource/inter",
+      "community": 5,
+      "community_name": "dependencies",
       "norm_label": "@fontsource/inter"
     },
     {
@@ -483,8 +483,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "fontsource_inter",
-      "community": 328,
-      "community_name": "@fontsource/inter",
+      "community": 5,
+      "community_name": "dependencies",
       "norm_label": "@fontsource/inter"
     },
     {
@@ -494,8 +494,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "package_dependencies_marsidev_react_turnstile",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 327,
+      "community_name": "@marsidev/react-turnstile",
       "norm_label": "@marsidev/react-turnstile"
     },
     {
@@ -505,8 +505,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "marsidev_react_turnstile",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 327,
+      "community_name": "@marsidev/react-turnstile",
       "norm_label": "@marsidev/react-turnstile"
     },
     {
@@ -626,8 +626,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "package_dependencies_radix_ui_react_aspect_ratio",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 328,
+      "community_name": "@radix-ui/react-aspect-ratio",
       "norm_label": "@radix-ui/react-aspect-ratio"
     },
     {
@@ -637,8 +637,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "radix_ui_react_aspect_ratio",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 328,
+      "community_name": "@radix-ui/react-aspect-ratio",
       "norm_label": "@radix-ui/react-aspect-ratio"
     },
     {
@@ -670,8 +670,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "package_dependencies_radix_ui_react_checkbox",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 331,
+      "community_name": "@radix-ui/react-checkbox",
       "norm_label": "@radix-ui/react-checkbox"
     },
     {
@@ -681,8 +681,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "radix_ui_react_checkbox",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 331,
+      "community_name": "@radix-ui/react-checkbox",
       "norm_label": "@radix-ui/react-checkbox"
     },
     {
@@ -736,8 +736,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "package_dependencies_radix_ui_react_dialog",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 343,
+      "community_name": "@radix-ui/react-dialog",
       "norm_label": "@radix-ui/react-dialog"
     },
     {
@@ -747,8 +747,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "radix_ui_react_dialog",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 343,
+      "community_name": "@radix-ui/react-dialog",
       "norm_label": "@radix-ui/react-dialog"
     },
     {
@@ -758,8 +758,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "package_dependencies_radix_ui_react_dropdown_menu",
-      "community": 331,
-      "community_name": "@radix-ui/react-dropdown-menu",
+      "community": 5,
+      "community_name": "dependencies",
       "norm_label": "@radix-ui/react-dropdown-menu"
     },
     {
@@ -769,8 +769,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "radix_ui_react_dropdown_menu",
-      "community": 331,
-      "community_name": "@radix-ui/react-dropdown-menu",
+      "community": 5,
+      "community_name": "dependencies",
       "norm_label": "@radix-ui/react-dropdown-menu"
     },
     {
@@ -780,8 +780,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "package_dependencies_radix_ui_react_hover_card",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 346,
+      "community_name": "@radix-ui/react-hover-card",
       "norm_label": "@radix-ui/react-hover-card"
     },
     {
@@ -791,8 +791,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "radix_ui_react_hover_card",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 346,
+      "community_name": "@radix-ui/react-hover-card",
       "norm_label": "@radix-ui/react-hover-card"
     },
     {
@@ -802,8 +802,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "package_dependencies_radix_ui_react_label",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 351,
+      "community_name": "@radix-ui/react-label",
       "norm_label": "@radix-ui/react-label"
     },
     {
@@ -813,8 +813,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "radix_ui_react_label",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 351,
+      "community_name": "@radix-ui/react-label",
       "norm_label": "@radix-ui/react-label"
     },
     {
@@ -868,8 +868,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "package_dependencies_radix_ui_react_popover",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 352,
+      "community_name": "@radix-ui/react-popover",
       "norm_label": "@radix-ui/react-popover"
     },
     {
@@ -879,8 +879,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "radix_ui_react_popover",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 352,
+      "community_name": "@radix-ui/react-popover",
       "norm_label": "@radix-ui/react-popover"
     },
     {
@@ -1132,8 +1132,8 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "package_dependencies_radix_ui_react_tooltip",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 368,
+      "community_name": "@radix-ui/react-tooltip",
       "norm_label": "@radix-ui/react-tooltip"
     },
     {
@@ -1143,8 +1143,8 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "radix_ui_react_tooltip",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 368,
+      "community_name": "@radix-ui/react-tooltip",
       "norm_label": "@radix-ui/react-tooltip"
     },
     {
@@ -1286,8 +1286,8 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "package_dependencies_class_variance_authority",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 312,
+      "community_name": "class-variance-authority",
       "norm_label": "class-variance-authority"
     },
     {
@@ -1297,8 +1297,8 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "class_variance_authority",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 312,
+      "community_name": "class-variance-authority",
       "norm_label": "class-variance-authority"
     },
     {
@@ -1594,8 +1594,8 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "package_dependencies_react_dnd_html5_backend",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 369,
+      "community_name": "react-dnd-html5-backend",
       "norm_label": "react-dnd-html5-backend"
     },
     {
@@ -1605,8 +1605,8 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "react_dnd_html5_backend",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 369,
+      "community_name": "react-dnd-html5-backend",
       "norm_label": "react-dnd-html5-backend"
     },
     {
@@ -1682,8 +1682,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "package_dependencies_react_responsive_masonry",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 370,
+      "community_name": "react-responsive-masonry",
       "norm_label": "react-responsive-masonry"
     },
     {
@@ -1693,8 +1693,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "react_responsive_masonry",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 370,
+      "community_name": "react-responsive-masonry",
       "norm_label": "react-responsive-masonry"
     },
     {
@@ -1704,8 +1704,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "package_dependencies_react_router",
-      "community": 343,
-      "community_name": "react-router",
+      "community": 5,
+      "community_name": "dependencies",
       "norm_label": "react-router"
     },
     {
@@ -1715,8 +1715,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "react_router",
-      "community": 343,
-      "community_name": "react-router",
+      "community": 5,
+      "community_name": "dependencies",
       "norm_label": "react-router"
     },
     {
@@ -1726,8 +1726,8 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "package_dependencies_react_slick",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 371,
+      "community_name": "react-slick",
       "norm_label": "react-slick"
     },
     {
@@ -1737,8 +1737,8 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "react_slick",
-      "community": 5,
-      "community_name": "dependencies",
+      "community": 371,
+      "community_name": "react-slick",
       "norm_label": "react-slick"
     },
     {
@@ -1814,8 +1814,8 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "package_dependencies_tw_animate_css",
-      "community": 346,
-      "community_name": "tw-animate-css",
+      "community": 5,
+      "community_name": "dependencies",
       "norm_label": "tw-animate-css"
     },
     {
@@ -1825,8 +1825,8 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "tw_animate_css",
-      "community": 346,
-      "community_name": "tw-animate-css",
+      "community": 5,
+      "community_name": "dependencies",
       "norm_label": "tw-animate-css"
     },
     {
@@ -1858,8 +1858,8 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "package_devdependencies",
-      "community": 312,
-      "community_name": "devDependencies",
+      "community": 7,
+      "community_name": "package.json",
       "norm_label": "devdependencies"
     },
     {
@@ -1869,8 +1869,8 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "package_devdependencies_tailwindcss_vite",
-      "community": 312,
-      "community_name": "devDependencies",
+      "community": 7,
+      "community_name": "package.json",
       "norm_label": "@tailwindcss/vite"
     },
     {
@@ -1880,8 +1880,8 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "tailwindcss_vite",
-      "community": 312,
-      "community_name": "devDependencies",
+      "community": 7,
+      "community_name": "package.json",
       "norm_label": "@tailwindcss/vite"
     },
     {
@@ -1891,8 +1891,8 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "package_devdependencies_vitejs_plugin_react",
-      "community": 312,
-      "community_name": "devDependencies",
+      "community": 7,
+      "community_name": "package.json",
       "norm_label": "@vitejs/plugin-react"
     },
     {
@@ -1902,8 +1902,8 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "vitejs_plugin_react",
-      "community": 312,
-      "community_name": "devDependencies",
+      "community": 7,
+      "community_name": "package.json",
       "norm_label": "@vitejs/plugin-react"
     },
     {
@@ -1913,8 +1913,8 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "package_devdependencies_dotenv",
-      "community": 312,
-      "community_name": "devDependencies",
+      "community": 7,
+      "community_name": "package.json",
       "norm_label": "dotenv"
     },
     {
@@ -1924,8 +1924,8 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "dotenv",
-      "community": 312,
-      "community_name": "devDependencies",
+      "community": 7,
+      "community_name": "package.json",
       "norm_label": "dotenv"
     },
     {
@@ -1935,8 +1935,8 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "package_devdependencies_tailwindcss",
-      "community": 312,
-      "community_name": "devDependencies",
+      "community": 7,
+      "community_name": "package.json",
       "norm_label": "tailwindcss"
     },
     {
@@ -1946,8 +1946,8 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "tailwindcss",
-      "community": 312,
-      "community_name": "devDependencies",
+      "community": 7,
+      "community_name": "package.json",
       "norm_label": "tailwindcss"
     },
     {
@@ -1957,8 +1957,8 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "package_devdependencies_tsx",
-      "community": 312,
-      "community_name": "devDependencies",
+      "community": 7,
+      "community_name": "package.json",
       "norm_label": "tsx"
     },
     {
@@ -1968,8 +1968,8 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "tsx",
-      "community": 312,
-      "community_name": "devDependencies",
+      "community": 7,
+      "community_name": "package.json",
       "norm_label": "tsx"
     },
     {
@@ -1979,8 +1979,8 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "package_devdependencies_vite",
-      "community": 312,
-      "community_name": "devDependencies",
+      "community": 7,
+      "community_name": "package.json",
       "norm_label": "vite"
     },
     {
@@ -1990,8 +1990,8 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "vite",
-      "community": 312,
-      "community_name": "devDependencies",
+      "community": 7,
+      "community_name": "package.json",
       "norm_label": "vite"
     },
     {
@@ -2001,8 +2001,8 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "package_devdependencies_vite_plugin_node_polyfills",
-      "community": 312,
-      "community_name": "devDependencies",
+      "community": 7,
+      "community_name": "package.json",
       "norm_label": "vite-plugin-node-polyfills"
     },
     {
@@ -2012,8 +2012,8 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "vite_plugin_node_polyfills",
-      "community": 312,
-      "community_name": "devDependencies",
+      "community": 7,
+      "community_name": "package.json",
       "norm_label": "vite-plugin-node-polyfills"
     },
     {
@@ -8161,8 +8161,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_screens_calibracionequipos",
-      "community": 368,
-      "community_name": "CalibracionEquipos.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "calibracionequipos.tsx"
     },
     {
@@ -8172,8 +8172,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "src_app_screens_calibracionequipos_formatfecha",
-      "community": 368,
-      "community_name": "CalibracionEquipos.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "formatfecha()"
     },
     {
@@ -8183,8 +8183,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "src_app_screens_calibracionequipos_formstate",
-      "community": 368,
-      "community_name": "CalibracionEquipos.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "formstate"
     },
     {
@@ -8194,8 +8194,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "src_app_screens_calibracionequipos_form_vacio",
-      "community": 368,
-      "community_name": "CalibracionEquipos.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "form_vacio"
     },
     {
@@ -8205,8 +8205,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "src_app_screens_calibracionequipos_calibracionequipos",
-      "community": 368,
-      "community_name": "CalibracionEquipos.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "calibracionequipos()"
     },
     {
@@ -8678,8 +8678,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_screens_cronogramacapacitacion",
-      "community": 192,
-      "community_name": "CronogramaCapacitacion.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "cronogramacapacitacion.tsx"
     },
     {
@@ -8689,8 +8689,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "src_app_screens_cronogramacapacitacion_periodicidades",
-      "community": 192,
-      "community_name": "CronogramaCapacitacion.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "periodicidades"
     },
     {
@@ -8700,8 +8700,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "src_app_screens_cronogramacapacitacion_formstate",
-      "community": 192,
-      "community_name": "CronogramaCapacitacion.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "formstate"
     },
     {
@@ -8711,8 +8711,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "src_app_screens_cronogramacapacitacion_form_vacio",
-      "community": 192,
-      "community_name": "CronogramaCapacitacion.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "form_vacio"
     },
     {
@@ -8722,8 +8722,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "src_app_screens_cronogramacapacitacion_cronogramacapacitacion",
-      "community": 192,
-      "community_name": "CronogramaCapacitacion.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "cronogramacapacitacion()"
     },
     {
@@ -9030,8 +9030,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_screens_frecuenciacapacitacion",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 126,
+      "community_name": "FrecuenciaCapacitacion.tsx",
       "norm_label": "frecuenciacapacitacion.tsx"
     },
     {
@@ -9041,8 +9041,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "src_app_screens_frecuenciacapacitacion_meses",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 126,
+      "community_name": "FrecuenciaCapacitacion.tsx",
       "norm_label": "meses"
     },
     {
@@ -9052,8 +9052,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "src_app_screens_frecuenciacapacitacion_anio_actual",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 126,
+      "community_name": "FrecuenciaCapacitacion.tsx",
       "norm_label": "anio_actual"
     },
     {
@@ -9063,8 +9063,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "src_app_screens_frecuenciacapacitacion_formstate",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 126,
+      "community_name": "FrecuenciaCapacitacion.tsx",
       "norm_label": "formstate"
     },
     {
@@ -9074,8 +9074,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "src_app_screens_frecuenciacapacitacion_form_vacio",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 126,
+      "community_name": "FrecuenciaCapacitacion.tsx",
       "norm_label": "form_vacio"
     },
     {
@@ -9085,8 +9085,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "src_app_screens_frecuenciacapacitacion_frecuenciacapacitacion",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 126,
+      "community_name": "FrecuenciaCapacitacion.tsx",
       "norm_label": "frecuenciacapacitacion()"
     },
     {
@@ -13672,8 +13672,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_screens_registro",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 192,
+      "community_name": "Registro.tsx",
       "norm_label": "registro.tsx"
     },
     {
@@ -13683,8 +13683,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "src_app_screens_registro_site_key",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 192,
+      "community_name": "Registro.tsx",
       "norm_label": "site_key"
     },
     {
@@ -13694,8 +13694,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "src_app_screens_registro_getinputstyle",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 192,
+      "community_name": "Registro.tsx",
       "norm_label": "getinputstyle()"
     },
     {
@@ -13705,8 +13705,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "src_app_screens_registro_registro",
-      "community": 8,
-      "community_name": "routes.tsx",
+      "community": 192,
+      "community_name": "Registro.tsx",
       "norm_label": "registro()"
     },
     {
@@ -16532,8 +16532,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_app_screens_auditor_auditororgdetalle",
-      "community": 126,
-      "community_name": "AuditorOrgDetalle.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "auditororgdetalle.tsx"
     },
     {
@@ -16543,8 +16543,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "src_app_screens_auditor_auditororgdetalle_estado_labels",
-      "community": 126,
-      "community_name": "AuditorOrgDetalle.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "estado_labels"
     },
     {
@@ -16554,8 +16554,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "src_app_screens_auditor_auditororgdetalle_estado_style",
-      "community": 126,
-      "community_name": "AuditorOrgDetalle.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "estado_style"
     },
     {
@@ -16565,8 +16565,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "src_app_screens_auditor_auditororgdetalle_formatfecha",
-      "community": 126,
-      "community_name": "AuditorOrgDetalle.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "formatfecha()"
     },
     {
@@ -16576,8 +16576,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "src_app_screens_auditor_auditororgdetalle_auditoriacard",
-      "community": 126,
-      "community_name": "AuditorOrgDetalle.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "auditoriacard()"
     },
     {
@@ -16587,8 +16587,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "src_app_screens_auditor_auditororgdetalle_auditororgdetalle",
-      "community": 126,
-      "community_name": "AuditorOrgDetalle.tsx",
+      "community": 8,
+      "community_name": "routes.tsx",
       "norm_label": "auditororgdetalle()"
     },
     {
@@ -16606,7 +16606,7 @@
       "label": "TIPO_LABELS",
       "file_type": "code",
       "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
-      "source_location": "L10",
+      "source_location": "L11",
       "_origin": "ast",
       "id": "src_app_screens_auditor_evidenciapanel_tipo_labels",
       "community": 98,
@@ -16614,10 +16614,32 @@
       "norm_label": "tipo_labels"
     },
     {
+      "label": "CAPABILITIES",
+      "file_type": "code",
+      "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "src_app_screens_auditor_evidenciapanel_capabilities",
+      "community": 98,
+      "community_name": "AuditorEjecucion.tsx",
+      "norm_label": "capabilities"
+    },
+    {
+      "label": "GwRegistro",
+      "file_type": "code",
+      "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
+      "source_location": "L28",
+      "_origin": "ast",
+      "id": "src_app_screens_auditor_evidenciapanel_gwregistro",
+      "community": 98,
+      "community_name": "AuditorEjecucion.tsx",
+      "norm_label": "gwregistro"
+    },
+    {
       "label": "Props",
       "file_type": "code",
       "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
-      "source_location": "L21",
+      "source_location": "L41",
       "_origin": "ast",
       "id": "src_app_screens_auditor_evidenciapanel_props",
       "community": 98,
@@ -16628,7 +16650,7 @@
       "label": "EvidenciaPanel()",
       "file_type": "code",
       "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
-      "source_location": "L32",
+      "source_location": "L52",
       "_origin": "ast",
       "id": "src_app_screens_auditor_evidenciapanel_evidenciapanel",
       "community": 98,
@@ -22945,8 +22967,8 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "src_lib_pdf_auditoria_generarauditoriapdf_generarblobauditoria",
-      "community": 30,
-      "community_name": "generarBlobHistorial.tsx",
+      "community": 69,
+      "community_name": "AuditoriaPDF.tsx",
       "norm_label": "generarblobauditoria()"
     },
     {
@@ -25211,8 +25233,8 @@
       "source_location": "L147",
       "_origin": "ast",
       "id": "src_lib_pdf_m21_generarmonitoreoestacionespdf_generarblobmonitoreoestaciones",
-      "community": 46,
-      "community_name": "MonitoreoEstacionesPDF.tsx",
+      "community": 30,
+      "community_name": "generarBlobHistorial.tsx",
       "norm_label": "generarblobmonitoreoestaciones()"
     },
     {
@@ -26311,8 +26333,8 @@
       "source_location": "L186",
       "_origin": "ast",
       "id": "src_lib_pdf_m26_generaraccionescorrectivaspdf_generarblobaccioncorrectiva",
-      "community": 26,
-      "community_name": "AccionesCorrectivasPDF.tsx",
+      "community": 30,
+      "community_name": "generarBlobHistorial.tsx",
       "norm_label": "generarblobaccioncorrectiva()"
     },
     {
@@ -29732,8 +29754,8 @@
       "source_location": "L108",
       "_origin": "ast",
       "id": "src_lib_pdf_m39_generarrecepcionfrutapdf_generarblobrecepcionfruta",
-      "community": 30,
-      "community_name": "generarBlobHistorial.tsx",
+      "community": 9,
+      "community_name": "generarRecepcionFrutaPDF.tsx",
       "norm_label": "generarblobrecepcionfruta()"
     },
     {
@@ -30117,8 +30139,8 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "src_lib_pdf_m41_generartemperaturaconservadorpdf_generarblobtemperaturaconservador",
-      "community": 30,
-      "community_name": "generarBlobHistorial.tsx",
+      "community": 162,
+      "community_name": "TemperaturaConservadorPDF.tsx",
       "norm_label": "generarblobtemperaturaconservador()"
     },
     {
@@ -30909,8 +30931,8 @@
       "source_location": "L115",
       "_origin": "ast",
       "id": "src_lib_pdf_m45_generarmttopreventivopdf_generarblobmttopreventivo",
-      "community": 30,
-      "community_name": "generarBlobHistorial.tsx",
+      "community": 76,
+      "community_name": "MttoPreventivoPDF.tsx",
       "norm_label": "generarblobmttopreventivo()"
     },
     {
@@ -32273,8 +32295,8 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "src_lib_pdf_m53_generarmippreventivopdf_generarblobmippreventivo",
-      "community": 30,
-      "community_name": "generarBlobHistorial.tsx",
+      "community": 60,
+      "community_name": "generarMipPreventivoPDF.tsx",
       "norm_label": "generarblobmippreventivo()"
     },
     {
@@ -32438,8 +32460,8 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "src_lib_pdf_m54_generarmipobservacionpdf_generarblobmipobservacion",
-      "community": 58,
-      "community_name": "generarMipObservacionPDF.tsx",
+      "community": 30,
+      "community_name": "generarBlobHistorial.tsx",
       "norm_label": "generarblobmipobservacion()"
     },
     {
@@ -63288,7 +63310,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
-      "source_location": "L32",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_app_screens_auditor_evidenciapanel",
+      "target": "src_app_screens_auditor_evidenciapanel_capabilities",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
+      "source_location": "L52",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_evidenciapanel",
@@ -63299,7 +63332,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
-      "source_location": "L21",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_app_screens_auditor_evidenciapanel",
+      "target": "src_app_screens_auditor_evidenciapanel_gwregistro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
+      "source_location": "L41",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_evidenciapanel",
@@ -63310,7 +63354,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/app/screens/auditor/EvidenciaPanel.tsx",
-      "source_location": "L10",
+      "source_location": "L11",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_app_screens_auditor_evidenciapanel",
@@ -94849,5 +94893,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "339851b2d9f67fde1ad1827485f03a017d5b5ac1"
+  "built_at_commit": "745ed30a32076e924da4c3f67724f350d466088d"
 }
