@@ -6,7 +6,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
 import { AuthMobileBackdrop } from '@/app/components/AuthMobileBackdrop'
 import { AuthLeavesDecor } from '@/app/components/AuthLeavesDecor'
-import { LoginTransition } from '@/app/components/LoginTransition'
+import { useIntroTransition } from '@/context/IntroTransitionContext'
 
 const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -36,7 +36,7 @@ export function Login() {
   const [submitting, setSubmitting] = useState(false)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const turnstileRef = useRef<TurnstileInstance>(null)
-  const [showIntro, setShowIntro] = useState(false)
+  const { start: startIntro } = useIntroTransition()
   const navigatedRef = useRef(false)
 
   // Turnstile 'flexible' (100% ancho, min 300x65) mantiene la forma acostada
@@ -70,12 +70,11 @@ export function Login() {
     // Sesión ya existente (ej. visita directa a /login estando logueado) —
     // sin animación de bienvenida, solo cuando viene de un submit real.
     if (!submitting) { goToApp(); return }
-    setShowIntro(true)
-    // Red de seguridad: si LoginTransition no llamara a onDone por algún
-    // motivo, igual se entra a la app — el login nunca queda condicionado
-    // a que la animación termine.
-    const fallback = setTimeout(goToApp, 2600)
-    return () => clearTimeout(fallback)
+    // El overlay vive por encima del router (IntroTransitionProvider en
+    // App.tsx) y sobrevive esta navegación — se activa y se navega de
+    // inmediato; nada aquí espera a que la animación termine.
+    startIntro()
+    goToApp()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loading, submitting])
 
@@ -124,8 +123,6 @@ export function Login() {
 
   return (
     <div className="relative flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden justify-center lg:justify-end lg:items-center" style={{ background: 'var(--background)' }}>
-
-      {showIntro && <LoginTransition onDone={goToApp} />}
 
       {/* ── Fondo móvil: carrusel a pantalla completa + logo arriba-izquierda, solo <lg ── */}
       <div className="lg:hidden">

@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation, Link } from "react-router";
 import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck, X, Calendar } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
 import { useHomeSearch } from "@/context/HomeSearchContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useIntroTransition } from "@/context/IntroTransitionContext";
 import { MadyLogo } from "@/app/components/MadyLogo";
 import { BottomSheet } from "@/app/components/BottomSheet";
 import { AuditorCampana } from "@/app/screens/auditor/AuditorCampana";
@@ -53,6 +54,16 @@ export function Layout() {
   const { theme, resolvedTheme, cycleTheme } = useTheme();
   const isHome = location.pathname === '/';
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const { markAppReady } = useIntroTransition();
+
+  // Señal determinística para el overlay de bienvenida (ver
+  // IntroTransitionContext/LoginTransition): Layout es el shell común a
+  // todo destino autenticado (Home y cualquier módulo), así que su montaje
+  // es el punto correcto para avisar "la app ya está lista detrás del
+  // overlay". No-op si no hay overlay activo.
+  useEffect(() => {
+    markAppReady()
+  }, [markAppReady]);
 
   const esAuditor = profile?.rol === 'auditor';
   const esAdmin   = profile?.rol === 'admin_org';

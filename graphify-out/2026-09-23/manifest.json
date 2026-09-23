@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "src/app/App.tsx": {
-    "mtime": 1790185055.2995417,
-    "seen": 1790185213.3295116,
-    "ast_hash": "9328e2d7ad059c5e69362a8b7c0e279f",
+    "mtime": 1790011962.71563,
+    "seen": 1790138850.904911,
+    "ast_hash": "df0bfa53c5911a3a9fcff2210ac5d780",
     "semantic_hash": ""
   },
   "src/app/components/FormField.tsx": {
@@ -78,9 +78,9 @@
     "semantic_hash": ""
   },
   "src/app/components/Layout.tsx": {
-    "mtime": 1790184644.0209324,
-    "seen": 1790185213.332514,
-    "ast_hash": "5b2c08a36bfe20c7246a9563e2c748ab",
+    "mtime": 1790027817.9729612,
+    "seen": 1790138850.904911,
+    "ast_hash": "b3f81a94e4eae82786ad130de856adbe",
     "semantic_hash": ""
   },
   "src/app/components/MadyLogo.tsx": {
@@ -588,9 +588,9 @@
     "semantic_hash": ""
   },
   "src/app/screens/Login.tsx": {
-    "mtime": 1790184628.479365,
-    "seen": 1790185213.3865085,
-    "ast_hash": "aa60457c9c695e553751438de482306a",
+    "mtime": 1790139335.4644508,
+    "seen": 1790139566.2599087,
+    "ast_hash": "14cdee2abc6a51fd08b92bdb6405eedc",
     "semantic_hash": ""
   },
   "src/app/screens/MiOrganizacion.tsx": {
@@ -2008,9 +2008,9 @@
     "semantic_hash": ""
   },
   "public/theme-init.js": {
-    "mtime": 1790184652.4081855,
-    "seen": 1790185213.3295116,
-    "ast_hash": "04af9bfe8cb1d70e91abf2e7a22694d6",
+    "mtime": 1790011962.7034042,
+    "seen": 1790138850.904911,
+    "ast_hash": "62794586f0a19555bd4c88a026acb6e5",
     "semantic_hash": ""
   },
   "src/app/screens/NfcEstacion.tsx": {
@@ -3034,15 +3034,9 @@
     "semantic_hash": ""
   },
   "src/app/components/LoginTransition.tsx": {
-    "mtime": 1790184606.4702983,
-    "seen": 1790185213.332514,
-    "ast_hash": "016d8a1fea33e449a79fb830ada8bb2d",
-    "semantic_hash": ""
-  },
-  "src/context/IntroTransitionContext.tsx": {
-    "mtime": 1790185080.6442351,
-    "seen": 1790185213.4050272,
-    "ast_hash": "eea379afe21230110306db9e8bb4615e",
+    "mtime": 1790139135.9886823,
+    "seen": 1790139566.1992326,
+    "ast_hash": "28ffe7e46199166dcad9ac7a1ac65e2a",
     "semantic_hash": ""
   }
 }
