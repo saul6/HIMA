@@ -6,6 +6,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
 import { AuthMobileBackdrop } from '@/app/components/AuthMobileBackdrop'
 import { AuthLeavesDecor } from '@/app/components/AuthLeavesDecor'
+import { LoginTransition } from '@/app/components/LoginTransition'
 
 const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -35,6 +36,8 @@ export function Login() {
   const [submitting, setSubmitting] = useState(false)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const turnstileRef = useRef<TurnstileInstance>(null)
+  const [showIntro, setShowIntro] = useState(false)
+  const navigatedRef = useRef(false)
 
   // Turnstile 'flexible' (100% ancho, min 300x65) mantiene la forma acostada
   // también en móvil — 'compact' (150x140) se ve casi cuadrado, lo cual no
@@ -56,9 +59,25 @@ export function Login() {
   const [recupCargando, setRecupCargando] = useState(false)
   const [recupError, setRecupError] = useState<string | null>(null)
 
+  function goToApp() {
+    if (navigatedRef.current) return
+    navigatedRef.current = true
+    navigate(returnTo, { replace: true })
+  }
+
   useEffect(() => {
-    if (!loading && user) navigate(returnTo, { replace: true })
-  }, [user, loading, navigate])
+    if (loading || !user) return
+    // Sesión ya existente (ej. visita directa a /login estando logueado) —
+    // sin animación de bienvenida, solo cuando viene de un submit real.
+    if (!submitting) { goToApp(); return }
+    setShowIntro(true)
+    // Red de seguridad: si LoginTransition no llamara a onDone por algún
+    // motivo, igual se entra a la app — el login nunca queda condicionado
+    // a que la animación termine.
+    const fallback = setTimeout(goToApp, 2600)
+    return () => clearTimeout(fallback)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading, submitting])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -94,7 +113,7 @@ export function Login() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--primary)' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--auth-navy-dark)' }}>
         <div className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>Cargando...</div>
       </div>
     )
@@ -105,6 +124,8 @@ export function Login() {
 
   return (
     <div className="relative flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden justify-center lg:justify-end lg:items-center" style={{ background: 'var(--background)' }}>
+
+      {showIntro && <LoginTransition onDone={goToApp} />}
 
       {/* ── Fondo móvil: carrusel a pantalla completa + logo arriba-izquierda, solo <lg ── */}
       <div className="lg:hidden">
@@ -304,7 +325,12 @@ export function Login() {
             {/* Turnstile — fila simple en móvil, tarjeta con encabezado en escritorio */}
             {SITE_KEY && (
               <div
-                className="flex flex-col items-stretch gap-2 p-2 lg:p-3 rounded-[10px] border bg-[var(--auth-input-bg)]"
+                // -mx-5 cancela el padding horizontal de la tarjeta (p-5=20px)
+                // en móvil: Turnstile tiene un mínimo duro de ~300px que no
+                // cabía en teléfonos angostos (S21/iPhone 11) con ese padding
+                // acumulado. lg:mx-0 lo restaura en escritorio, donde el panel
+                // siempre tiene sobra de ancho.
+                className="flex flex-col items-stretch gap-2 p-2 lg:p-3 rounded-[10px] border bg-[var(--auth-input-bg)] -mx-5 lg:mx-0"
                 style={{ borderColor: 'var(--auth-input-border)' }}
               >
                 <div className="flex items-center gap-2">

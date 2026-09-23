@@ -117,8 +117,10 @@
     color-mix(in srgb, var(--auth-navy-darker) 74%, transparent) 100%);
   /* Tarjeta glass del formulario — navy semitransparente + backdrop-blur (ver
      clase .auth-panel en cada screen), consistente en móvil Y escritorio: deja
-     intuir la foto/carrusel de fondo sin sacrificar legibilidad. */
-  --auth-glass-bg: color-mix(in srgb, var(--auth-navy-dark) 68%, transparent);
+     intuir la foto/carrusel de fondo sin sacrificar legibilidad. v11: dos
+     escalones más oscura que la v10 (68% → 84%, +8pts cada paso) — sigue
+     dejando asomar el carrusel de fondo, sutil, no un panel sólido. */
+  --auth-glass-bg: color-mix(in srgb, var(--auth-navy-dark) 84%, transparent);
 
   /* Panel de formulario de auth (Login/Registro/Restablecer): tarjeta glass
      navy, mismo valor en todos los breakpoints — escritorio ya no vuelve a un
@@ -299,6 +301,21 @@
 @media (prefers-reduced-motion: reduce) {
   .auth-cta { transition: none; }
   .auth-panel .auth-cta:active:not(:disabled) { transform: none; }
+}
+
+/* Overlay de bienvenida tras login exitoso (ver LoginTransition.tsx) — logo
+   con fade + escala suave ~1.5s. El componente ya se salta por completo el
+   montaje si prefers-reduced-motion está activo, pero el guard de abajo
+   queda como defensa adicional por si se reutiliza en otro lado. */
+@keyframes authIntroLogoIn {
+  from { opacity: 0; transform: scale(0.82); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.auth-intro-logo {
+  animation: authIntroLogoIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-intro-logo { animation: none; }
 }
 
 /* Fix de autofill de Chrome — el navegador pinta su propio fondo (blanco/
