@@ -175,7 +175,7 @@
       "ingrediente_activo": "BIFENTRINA",
       "concentracion": "12.15",
       "empresa": "GOWAN MEXICANA, S.A.P.I. DE C.V.",
-      "rsco": "RSCO-INAC-0176-001-009-012 ",
+      "rsco": "RSCO-INAC-0176-001-009-012",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -184,7 +184,7 @@
       "ingrediente_activo": "BIFENTRINA",
       "concentracion": "0.3",
       "empresa": "FMC AGROQUÍMICA DE MÉXICO, S. DE R.L. DE C.V.",
-      "rsco": "RSCO-INAC-0176-318-005-0.30  ",
+      "rsco": "RSCO-INAC-0176-318-005-0.30",
       "unidad": "kg",
       "categoria": "Insecticidas"
     },
@@ -211,7 +211,7 @@
       "ingrediente_activo": "BIFENTRINA + IMIDACLOPRID",
       "concentracion": "4.58/ 22.87",
       "empresa": null,
-      "rsco": "RSCO-MEZC-1101N-0232-064-27.45 ",
+      "rsco": "RSCO-MEZC-1101N-0232-064-27.45",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -454,7 +454,7 @@
       "ingrediente_activo": "HEXITIAZOX",
       "concentracion": "11.8",
       "empresa": "GOWAN MEXICANA S.A.P.I DE C.V",
-      "rsco": "RSCO-INAC-0102R-X0355-009-11.80 ",
+      "rsco": "RSCO-INAC-0102R-X0355-009-11.80",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -607,7 +607,7 @@
       "ingrediente_activo": "PIRIPROXIFEN",
       "concentracion": "24.5",
       "empresa": "AGROQUIMICOS VERSA SA DE CV",
-      "rsco": "RSCO-INAC-1104P-X0434-345-24.50 ",
+      "rsco": "RSCO-INAC-1104P-X0434-345-24.50",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -1687,7 +1687,7 @@
       "ingrediente_activo": "Bacillus subtilis",
       "concentracion": "5.1",
       "empresa": "BIOKRONE SA DE CV",
-      "rsco": " RSCO-FUNG-0395-0211-064-5.15",
+      "rsco": "RSCO-FUNG-0395-0211-064-5.15",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1912,7 +1912,7 @@
       "ingrediente_activo": "EXTRACTO DE AJO/ EXTRACTO DE CHILE PICANTE/ EXTRACTO DE CANELA",
       "concentracion": "25/ 25/ 10",
       "empresa": "MS AGROS SA DE CV",
-      "rsco": " RSCO-INAC-1802-0243-052-60",
+      "rsco": "RSCO-INAC-1802-0243-052-60",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2209,7 +2209,7 @@
       "ingrediente_activo": "EXTRACTO DE TAGETES",
       "concentracion": "90",
       "empresa": "ULTRAQUIMIA AGRICOLA S.A. DE C.V.",
-      "rsco": " RSCO-INAC-03-50T-X006-009-94.5",
+      "rsco": "RSCO-INAC-03-50T-X006-009-94.5",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2443,7 +2443,7 @@
       "ingrediente_activo": "SALES POTASICAS DE ACIDOS GRASOS",
       "concentracion": "50.0",
       "empresa": "ULTRAQUIMIA AGRICOLA S.A. DE C.V.",
-      "rsco": " RSCO-INAC-0101W-0426-375-50",
+      "rsco": "RSCO-INAC-0101W-0426-375-50",
       "unidad": "L",
       "categoria": "Biorracionales"
     },

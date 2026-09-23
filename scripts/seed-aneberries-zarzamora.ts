@@ -107,7 +107,7 @@ async function main() {
     ingrediente_activo: p.ingrediente_activo,
     concentracion:     p.concentracion ?? null,
     empresa:           p.empresa       ?? null,
-    rsco:              p.rsco          ?? null,
+    rsco:              (p.rsco ?? '').trim() || null,
     categoria:         p.categoria,
     unidad:            p.unidad        ?? null,
   }))
