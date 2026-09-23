@@ -13,7 +13,7 @@
       "ingrediente_activo": "ABAMECTINA",
       "concentracion": "3.84",
       "empresa": "FMC AGROQUÍMICA DE MÉXICO, S. DE R.L. DE C.V.",
-      "rsco": "RSCO-INAC-0174-",
+      "rsco": "RSCO-INAC-0174-326-330-004",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -31,7 +31,7 @@
       "ingrediente_activo": "ABAMECTINA",
       "concentracion": "3.84",
       "empresa": "FMC AGROQUIMICAA DE MEXICO S DE RL DE CV",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0174-326-330-004",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -40,7 +40,7 @@
       "ingrediente_activo": "ABAMECTINA",
       "concentracion": "1.8",
       "empresa": "INGENIERÍA INDUSTRIAL S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0174-340-009-002",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -49,7 +49,7 @@
       "ingrediente_activo": "ABAMECTINA",
       "concentracion": "1.8",
       "empresa": "DVA AGRO DE MÉXICO S.A. DE C.V.",
-      "rsco": "RSCO-INAC-0174-338-009-",
+      "rsco": "RSCO-INAC-0174-338-009-002",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -58,7 +58,7 @@
       "ingrediente_activo": "ABAMECTINA",
       "concentracion": "1.8",
       "empresa": "AGRICAM, S.A DE C.V",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0174-336-009-002",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -67,7 +67,7 @@
       "ingrediente_activo": "ABAMECTINA",
       "concentracion": "1.8",
       "empresa": "BIOKRONE SA DE CV",
-      "rsco": "RSCO-INAC-0174-338-009-",
+      "rsco": "RSCO-INAC-0174-338-009-002",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -103,7 +103,7 @@
       "ingrediente_activo": "ABAMECTINA + BIFENTRINA",
       "concentracion": "0.34 / 3.37",
       "empresa": "AGRICULTURA NACIONAL SA DE CV",
-      "rsco": "RSCO-MEZC-INAC-0188-X0021-",
+      "rsco": "RSCO-MEZC-INAC-0188-X0021-009-3.71",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -112,7 +112,7 @@
       "ingrediente_activo": "ACEITE PARAFINICO DE PETROLEO",
       "concentracion": "80.0",
       "empresa": "DISTRIBUCIONES IMEX SA DE CV",
-      "rsco": "RSCO-INAC-0197-",
+      "rsco": "RSCO-INAC-0197-302-015-080",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -157,7 +157,7 @@
       "ingrediente_activo": "BIFENAZATE",
       "concentracion": "50.0",
       "empresa": "ARYSTA LIFESCIENCE MEXICO, S.A. DE C.V.",
-      "rsco": "RSCO-INAC-0103U-303-034-",
+      "rsco": "RSCO-INAC-0103U-303-034-050",
       "unidad": "kg",
       "categoria": "Insecticidas"
     },
@@ -166,17 +166,17 @@
       "ingrediente_activo": "BIFENTRINA",
       "concentracion": "12.15",
       "empresa": "FMC AGROQUIMICA DE MEXICO, S. DE R.L. DE C.V.",
-      "rsco": "RSCO-INAC-0176-",
+      "rsco": "RSCO-INAC-0176-001-009-012",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
     {
       "nombre_comercial": "CONCORD 100 CE",
       "ingrediente_activo": "BIFENTRINA",
-      "concentracion": null,
+      "concentracion": "12.15",
       "empresa": "GOWAN MEXICANA, S.A.P.I. DE C.V.",
-      "rsco": null,
-      "unidad": null,
+      "rsco": "RSCO-INAC-0176-001-009-012 ",
+      "unidad": "L",
       "categoria": "Insecticidas"
     },
     {
@@ -184,7 +184,7 @@
       "ingrediente_activo": "BIFENTRINA",
       "concentracion": "0.3",
       "empresa": "FMC AGROQUÍMICA DE MÉXICO, S. DE R.L. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0176-318-005-0.30  ",
       "unidad": "kg",
       "categoria": "Insecticidas"
     },
@@ -193,7 +193,7 @@
       "ingrediente_activo": "BIFENTRINA",
       "concentracion": "12.15",
       "empresa": "AGROQUIMICA TRIDENTE SA DE CV",
-      "rsco": "RSCO-INAC-0176-",
+      "rsco": "RSCO-INAC-0176-X0102-009-12.15",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -202,7 +202,7 @@
       "ingrediente_activo": "BIFENTRINA + IMIDACLOPRID",
       "concentracion": "0.30 / 0.40",
       "empresa": "FMC AGROQUÍMICA DE MÉXICO, S. DE R.L. DE C.V..",
-      "rsco": "RSCO-MEZC-",
+      "rsco": "RSCO-MEZC-1101N-0007-005-070",
       "unidad": "kg",
       "categoria": "Insecticidas"
     },
@@ -211,7 +211,7 @@
       "ingrediente_activo": "BIFENTRINA + IMIDACLOPRID",
       "concentracion": "4.58/ 22.87",
       "empresa": null,
-      "rsco": null,
+      "rsco": "RSCO-MEZC-1101N-0232-064-27.45 ",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -220,7 +220,7 @@
       "ingrediente_activo": "BIFENTRINA + IMIDACLOPRID",
       "concentracion": "4.58/22.87",
       "empresa": "AGRICAM, S.A DE C.V",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-INAC-1101N-X0090-064-27.0",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -229,7 +229,7 @@
       "ingrediente_activo": "BIFENTRINA + IMIDACLOPRID",
       "concentracion": "0.30/0.40",
       "empresa": "AGRICAM, S.A DE C.V",
-      "rsco": "RSCO-MEZC-",
+      "rsco": "RSCO-MEZC-1101N-0007-005-070",
       "unidad": "kg",
       "categoria": "Insecticidas"
     },
@@ -238,7 +238,7 @@
       "ingrediente_activo": "BIFENTRINA + IMIDACLOPRID",
       "concentracion": "0.30/0.40",
       "empresa": "FMC AGROQUÍMICA DE MEXICO S DE RL DE CV",
-      "rsco": "RSCO-MEZC-",
+      "rsco": "RSCO-MEZC-1101N-0007-005-070",
       "unidad": "kg",
       "categoria": "Insecticidas"
     },
@@ -256,7 +256,7 @@
       "ingrediente_activo": "BIFENTRINA + ZETA- CIPERMETRINA",
       "concentracion": "10.26",
       "empresa": "FMC AGROQUIMICA DE MEXICO S. DE R. L. DE C. V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0190-0332-409-10.26",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -265,7 +265,7 @@
       "ingrediente_activo": "CICLANILIPROL",
       "concentracion": "0.05",
       "empresa": "ISK BIOSCIENCES, S.A DE C.V.",
-      "rsco": "RSCO-INAC-0572-X0389-375-",
+      "rsco": "RSCO-INAC-0572-X0389-375-4.55",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -301,7 +301,7 @@
       "ingrediente_activo": "DIAZINON",
       "concentracion": "5",
       "empresa": "VELSIMEX S.A DE C.V",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0120-328-005-005",
       "unidad": "kg",
       "categoria": "Insecticidas"
     },
@@ -310,7 +310,7 @@
       "ingrediente_activo": "DIAZINON",
       "concentracion": "5",
       "empresa": "PROVINDUSTRIAS DE OCCIDENTE, S.A. DE C.V.",
-      "rsco": "RSCO-INAC-0120-",
+      "rsco": "RSCO-INAC-0120-364-005-005",
       "unidad": null,
       "categoria": "Insecticidas"
     },
@@ -319,7 +319,7 @@
       "ingrediente_activo": "DIAZINON",
       "concentracion": "25",
       "empresa": "MEZCLAS Y FERTILIZANTES SA DE CV",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0120-X0317-009-25.0",
       "unidad": null,
       "categoria": "Insecticidas"
     },
@@ -328,7 +328,7 @@
       "ingrediente_activo": "DIAZINON",
       "concentracion": "25",
       "empresa": "QUÍMICA LUCAVA SA DE CV",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0120-304-009-025",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -355,7 +355,7 @@
       "ingrediente_activo": "ETOXAZOLE",
       "concentracion": "10.34",
       "empresa": "VALENT DE MEXICO, S.A. DE C.V.",
-      "rsco": "RSCO-INAC-",
+      "rsco": "RSCO-INAC-0103E-301-064-010",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -364,7 +364,7 @@
       "ingrediente_activo": "SPIRODICLOFEN",
       "concentracion": "22.39",
       "empresa": "HELM DE MEXICO S.A.",
-      "rsco": "RSCO-INAC-0103R-XO181-064-",
+      "rsco": "RSCO-INAC-0103R-XO181-064-22.39",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -373,7 +373,7 @@
       "ingrediente_activo": "SPIRODICLOFEN",
       "concentracion": null,
       "empresa": null,
-      "rsco": null,
+      "rsco": "RSCO-INAC-0103R-X0181-064-22.39",
       "unidad": null,
       "categoria": "Insecticidas"
     },
@@ -382,7 +382,7 @@
       "ingrediente_activo": "FENPYROXIMATE",
       "concentracion": "5",
       "empresa": "ARYSTA LIFESCIENCE MÉXICO SA DE CV",
-      "rsco": "RSCO-INAC-0103J-",
+      "rsco": "RSCO-INAC-0103J-301-064-005",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -400,7 +400,7 @@
       "ingrediente_activo": "FLONICAMID",
       "concentracion": "50",
       "empresa": "FMC AGROQUIMICA DE MEXICO S DE RL DE CV",
-      "rsco": "RSCO-INAC-0103P-305-032-",
+      "rsco": "RSCO-INAC-0103P-305-032-050",
       "unidad": "kg",
       "categoria": "Insecticidas"
     },
@@ -409,7 +409,7 @@
       "ingrediente_activo": "FLUPYRADIFURONE",
       "concentracion": "17.09",
       "empresa": "BAYER DE MEXICO SA DE CV",
-      "rsco": "RSCO-INAC-",
+      "rsco": "RSCO-INAC-0189-0672-009-17.09",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -418,7 +418,7 @@
       "ingrediente_activo": "FLUPYRADIFURONE",
       "concentracion": "24",
       "empresa": "AMVAC MEXICO S DE RL DE CV",
-      "rsco": "RSCO-INAC-0102R-X0331-",
+      "rsco": "RSCO-INAC-0102R-X0331-064-24.0",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -436,7 +436,7 @@
       "ingrediente_activo": "FLUPYRADIFURONE",
       "concentracion": "45.0",
       "empresa": "GLOBE CHEMICAL´S, S.A. DE C.V.",
-      "rsco": "RSCO-INAC-0102R-",
+      "rsco": "RSCO-INAC-0102R-X0365-064-45.00",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -445,7 +445,7 @@
       "ingrediente_activo": "FLUPYRADIFURONE",
       "concentracion": "45.0",
       "empresa": "HELM DE MEXICO S.A.",
-      "rsco": "RSCO-INAC-0102R-",
+      "rsco": "RSCO-INAC-0102R-X0365-064-45.00",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -454,7 +454,7 @@
       "ingrediente_activo": "HEXITIAZOX",
       "concentracion": "11.8",
       "empresa": "GOWAN MEXICANA S.A.P.I DE C.V",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0102R-X0355-009-11.80 ",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -463,7 +463,7 @@
       "ingrediente_activo": "HEXITIAZOX",
       "concentracion": "24.0",
       "empresa": "DVA AGRO DE MÉXICO S.A. DE C.V.",
-      "rsco": "RSCO-INAC-0102R-X0331-",
+      "rsco": "RSCO-INAC-0102R-X0331-064-24.0",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -472,7 +472,7 @@
       "ingrediente_activo": "HEXITIAZOX",
       "concentracion": "50.0",
       "empresa": "SHARDA DE MEXICO S DE RL DE CV",
-      "rsco": "RSCO-INAC-0102R-X0415-034-",
+      "rsco": "RSCO-INAC-0102R-X0415-034-50.00",
       "unidad": "kg",
       "categoria": "Insecticidas"
     },
@@ -481,7 +481,7 @@
       "ingrediente_activo": "HEXITIAZOX",
       "concentracion": "45.0",
       "empresa": "INGENIERÍA INDUSTRIAL, S.A. DE C.V.",
-      "rsco": "RSCO-INAC-0102R-X0365-",
+      "rsco": "RSCO-INAC-0102R-X0365-064-45.00",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -490,7 +490,7 @@
       "ingrediente_activo": "HEXITIAZOX",
       "concentracion": "45.0",
       "empresa": "UPL AGRO, S.A. DE C.V",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0102R-X365-064-45.00",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -499,7 +499,7 @@
       "ingrediente_activo": "IMIDACLOPRID",
       "concentracion": "30.2",
       "empresa": "HELM DE MEXICO S.A.",
-      "rsco": "RSCO-INAC-0199-",
+      "rsco": "RSCO-INAC-0199-351-064-030",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -508,7 +508,7 @@
       "ingrediente_activo": "IMIDACLOPRID",
       "concentracion": "32",
       "empresa": "LAPISA SA DE CV",
-      "rsco": "RSCO-INAC-0199-",
+      "rsco": "RSCO-INAC-0199-339-064-033",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -517,7 +517,7 @@
       "ingrediente_activo": "IMIDACLOPRID",
       "concentracion": "31.06",
       "empresa": "AGROQUIMICOS VERSA SA DE CV",
-      "rsco": "RSCO-INAC-0199-",
+      "rsco": "RSCO-INAC-0199-319-064-031",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -526,7 +526,7 @@
       "ingrediente_activo": "IMIDACLOPRID + BIFENTRINA",
       "concentracion": "18.92 / 6.49",
       "empresa": "AGRICULTURA NACIONAL SA DE CV",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-INAC-1101N-X0013-064-25.41",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -544,7 +544,7 @@
       "ingrediente_activo": "MALATHION",
       "concentracion": "84",
       "empresa": "AGRICULTURA NACIONAL SA DE CV",
-      "rsco": "RSCO-INAC-0143-X0172-009-",
+      "rsco": "RSCO-INAC-0143-X0172-009-084",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -553,7 +553,7 @@
       "ingrediente_activo": "METALDEHIDO",
       "concentracion": "6.0",
       "empresa": "AGRICULTURA NACIONAL, S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-MOLU-0801-301-057-006",
       "unidad": "kg",
       "categoria": "Insecticidas"
     },
@@ -562,7 +562,7 @@
       "ingrediente_activo": "MONOLAURATO DE PROPILENGLICOL",
       "concentracion": "70.81",
       "empresa": "ARYSTA LIFESCIENCE MÉXICO, S.A. DE C.V.",
-      "rsco": "RSCO-INAC-0105D-301-009-",
+      "rsco": "RSCO-INAC-0105D-301-009-071",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -571,7 +571,7 @@
       "ingrediente_activo": "PIRIPROXIFEN",
       "concentracion": "10.99",
       "empresa": "KOOR INTERCOMERCIAL SA",
-      "rsco": "RSCO-INAC-1104P-X0033-009-",
+      "rsco": "RSCO-INAC-1104P-X0033-009-10.99",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -580,7 +580,7 @@
       "ingrediente_activo": "PIRIPROXIFEN",
       "concentracion": "10.99",
       "empresa": "FMC AGROQUIMICA DE MEXICO S DE RL DE CV",
-      "rsco": "RSCO-INAC-1104P-X0033-009-",
+      "rsco": "RSCO-INAC-1104P-X0033-009-10.99",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -589,7 +589,7 @@
       "ingrediente_activo": "PIRIPROXIFEN",
       "concentracion": "10.99",
       "empresa": "HELM DE MEXICO, S.A.",
-      "rsco": "RSCO-INAC-1104P-X0033-009-",
+      "rsco": "RSCO-INAC-1104P-X0033-009-10.99",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -598,7 +598,7 @@
       "ingrediente_activo": "PIRIPROXIFEN",
       "concentracion": "11.11",
       "empresa": "ALLISTER DE MEXICO SA DE CV",
-      "rsco": "RSCO-INAC-1104P-X0271-009-",
+      "rsco": "RSCO-INAC-1104P-X0271-009-11.11",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -607,7 +607,7 @@
       "ingrediente_activo": "PIRIPROXIFEN",
       "concentracion": "24.5",
       "empresa": "AGROQUIMICOS VERSA SA DE CV",
-      "rsco": null,
+      "rsco": "RSCO-INAC-1104P-X0434-345-24.50 ",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -634,7 +634,7 @@
       "ingrediente_activo": "SPINOSAD",
       "concentracion": "22.14",
       "empresa": "DOW AGROSCIENCES DE MÉXICO, S.A. DE C.V.",
-      "rsco": "RSCO-INAC-",
+      "rsco": "RSCO-INAC-0101Y-X0487-064-22.5",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -643,7 +643,7 @@
       "ingrediente_activo": "SULFOXAFLOR",
       "concentracion": "21.80",
       "empresa": "DOW AGROSCIENCES DE MÉXICO, S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0197-0456-064-21.80",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -658,10 +658,10 @@
     },
     {
       "nombre_comercial": "ACTARA 25 GS / ACTARA 25 WG",
-      "ingrediente_activo": "SULFOXAFLOR",
+      "ingrediente_activo": "THIAMETOXAM",
       "concentracion": "25",
       "empresa": "SYNGENTA AGRO, S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0102U-301-034-025",
       "unidad": "kg",
       "categoria": "Insecticidas"
     },
@@ -697,7 +697,7 @@
       "ingrediente_activo": "SULFOXAFLOR",
       "concentracion": "25",
       "empresa": "AGROQUIMICOS VERSA SA DE CV",
-      "rsco": "RSCO-INAC-0102U-X0285-034-",
+      "rsco": "RSCO-INAC-0102U-X0285-034-25.0",
       "unidad": "kg",
       "categoria": "Insecticidas"
     },
@@ -706,7 +706,7 @@
       "ingrediente_activo": "ZETA- CIPERMETRINA",
       "concentracion": "9.22",
       "empresa": "FMC AGROQUIMICA DE MEXICO S. DE R. L. DE C. V.",
-      "rsco": "RSCO-INAC-0106-",
+      "rsco": "RSCO-INAC-0106-312-337-009",
       "unidad": "L",
       "categoria": "Insecticidas"
     },
@@ -715,7 +715,7 @@
       "ingrediente_activo": "ZETA- CIPERMETRINA",
       "concentracion": "50",
       "empresa": "SYNGENTA AGRO, S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-0386-303-032-",
+      "rsco": "RSCO-FUNG-0386-303-032-050",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -733,7 +733,7 @@
       "ingrediente_activo": "ZETA- CIPERMETRINA",
       "concentracion": "22.9",
       "empresa": "AGRICULTURA NACIONAL SA DE CV",
-      "rsco": null,
+      "rsco": "RSCO-FUNG-0386-X0176-064-22.9",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -760,7 +760,7 @@
       "ingrediente_activo": "ZETA- CIPERMETRINA",
       "concentracion": "50",
       "empresa": "AGROQUIMICOS VERSA SA DE CV",
-      "rsco": "RSCO-FUNG-0386-X0106-343-",
+      "rsco": "RSCO-FUNG-0386-X0106-343-050",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -769,7 +769,7 @@
       "ingrediente_activo": "ZETA- CIPERMETRINA",
       "concentracion": "50",
       "empresa": "DVA AGRO DE MÉXICO S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-0386-X0106-343-",
+      "rsco": "RSCO-FUNG-0386-X0106-343-050",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -778,7 +778,7 @@
       "ingrediente_activo": "AZOXISTROBIN",
       "concentracion": "22.9",
       "empresa": "ANAJALSA S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-0386-X0176-064-",
+      "rsco": "RSCO-FUNG-0386-X0536-064-22.99",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -787,7 +787,7 @@
       "ingrediente_activo": "AZOXISTROBIN + METALAXIL-M",
       "concentracion": "27.73/ 10.66",
       "empresa": "SYNGENTA AGRO, S.A. DE C.V.",
-      "rsco": "RSCO-MEZC-",
+      "rsco": "RSCO-MEZC-1301T-301-425-028",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -814,7 +814,7 @@
       "ingrediente_activo": "AZOXISTROBIN/ DIFENOCONAZOLE",
       "concentracion": "17.96 / 11.23",
       "empresa": "ALLISTER DE MEXICO SA DE CV",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-FUNG-1301R-X0024-064-29.19",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -823,7 +823,7 @@
       "ingrediente_activo": "AZOXISTROBIN/ DIFENOCONAZOLE",
       "concentracion": "18.35 / 11.47",
       "empresa": "HELM DE MEXICO, S.A.",
-      "rsco": "RSCO-MEZC-FUNG-1301R-X0049-",
+      "rsco": "RSCO-MEZC-FUNG-1301R-X0049-064-29.82",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -850,7 +850,7 @@
       "ingrediente_activo": "AZUFRE COLOIDAL",
       "concentracion": "20",
       "empresa": "AGROSANIDAD SA DE CV",
-      "rsco": "RSCO-FUNG-0302-X0229-013-",
+      "rsco": "RSCO-FUNG-0302-X0229-013-20.0",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -868,7 +868,7 @@
       "ingrediente_activo": "ACEITE DE ARBOL DE TÉ / DIFECONAZOLE",
       "concentracion": "40.53 / 20.26",
       "empresa": "NEVADA CHEMICALS, S.A. DE C.V",
-      "rsco": "RSCO-MEZC-FUNG-0302D-",
+      "rsco": "RSCO-MEZC-FUNG-0302D-0375-X0068-009-60.79",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -877,7 +877,7 @@
       "ingrediente_activo": "BICARBONATO DE POTASIO",
       "concentracion": "82",
       "empresa": "ARYSTA LIFESCIENCE MÉXICO, S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-0302I-301-",
+      "rsco": "RSCO-FUNG-0302I-301-003-082",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -886,7 +886,7 @@
       "ingrediente_activo": "BICARBONATO DE POTASIO",
       "concentracion": "85",
       "empresa": "ULTRAQUIMIA AGRICOLA S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-0301N-0487-",
+      "rsco": "RSCO-FUNG-0301N-0487-003-85.0",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -904,7 +904,7 @@
       "ingrediente_activo": "BICARBONATO DE POTASIO",
       "concentracion": "82",
       "empresa": "SINTESIS Y FORMULACIONES DE ALTA TECNOLOGÍA SA DE CV",
-      "rsco": "RSCO-FUNG-0321-",
+      "rsco": "RSCO-FUNG-0302I-303-003-082",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -922,7 +922,7 @@
       "ingrediente_activo": "BOSCALID+ PYRACLOSTROBIN",
       "concentracion": "25.2 / 12.8",
       "empresa": "BASF MEXICANA, S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-1301A-",
+      "rsco": "RSCO-MEZC-1301A-301-034-038",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -940,7 +940,7 @@
       "ingrediente_activo": "BOSCALID",
       "concentracion": "50",
       "empresa": "LAPISA SA DE CV",
-      "rsco": "RSCO-FUNG-0301V-",
+      "rsco": "RSCO-FUNG-0301V-X0355-034-50.0",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -976,7 +976,7 @@
       "ingrediente_activo": "CYPRODINIL + FLUDIOXONIL",
       "concentracion": "37.5/25",
       "empresa": "ALBAUGH MEXICO S. DE R.L DE C.V",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-FUNG-0512-0383-X0098-420-62.5",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -985,7 +985,7 @@
       "ingrediente_activo": "CYPRODINIL + FLUDIOXONIL",
       "concentracion": "37.5/ 25",
       "empresa": "SYNGENTA AGRO, S.A. DE C.V.",
-      "rsco": "RSCO-MEZC-1386-",
+      "rsco": "RSCO-MEZC-1386-301-034-063",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -1003,7 +1003,7 @@
       "ingrediente_activo": "DIOXIDO DE HIDROGENO",
       "concentracion": null,
       "empresa": null,
-      "rsco": null,
+      "rsco": "RSCO-FUNG-0302X-301-013-025",
       "unidad": null,
       "categoria": "Fungicidas"
     },
@@ -1030,7 +1030,7 @@
       "ingrediente_activo": "DIFENOCONAZOLE",
       "concentracion": "25.0",
       "empresa": "HELM DE MEXICO, S.A.",
-      "rsco": "RSCO-FUNG-",
+      "rsco": "RSCO-FUNG-0375-X0131-009-025",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1039,7 +1039,7 @@
       "ingrediente_activo": "DIOXIDO DE HIDROGENO + ACIDO PERACETICO",
       "concentracion": "27.1 + 2",
       "empresa": "BIOSAFE SYSTEMS DE MEXICO, S. DE R.L. DE C.V.",
-      "rsco": "RSCO-MEZC-1394-0436-",
+      "rsco": "RSCO-MEZC-1394-0436-375-29.11",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1048,7 +1048,7 @@
       "ingrediente_activo": "FENHEXAMID",
       "concentracion": "50",
       "empresa": "ARYSTA LIFESCIENCE MÉXICO, S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-0399-",
+      "rsco": "RSCO-FUNG-0399-301-034-054",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -1057,7 +1057,7 @@
       "ingrediente_activo": "FENHEXAMID",
       "concentracion": "80",
       "empresa": "HELM DE MEXICO, S. A.",
-      "rsco": null,
+      "rsco": "RSCO-FUNG-0347-306-034-080",
       "unidad": null,
       "categoria": "Fungicidas"
     },
@@ -1075,7 +1075,7 @@
       "ingrediente_activo": "FENHEXAMID",
       "concentracion": "80",
       "empresa": "BAYER DE MÉXICO, S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-0347-304-034-",
+      "rsco": "RSCO-FUNG-0347-304-034-080",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -1084,7 +1084,7 @@
       "ingrediente_activo": "FENHEXAMID",
       "concentracion": "80",
       "empresa": "AGROQUIMICOS VERSA SA DE CV",
-      "rsco": "RSCO-FUNG-0347-",
+      "rsco": "RSCO-FUNG-0347-X0125-034-080",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -1093,7 +1093,7 @@
       "ingrediente_activo": "FENHEXAMID",
       "concentracion": "80",
       "empresa": "DVA AGRO DE MÉXICO S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-0347-",
+      "rsco": "RSCO-FUNG-0347-X0125-034-080",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -1102,7 +1102,7 @@
       "ingrediente_activo": "FLUOPYRAM + TRIFLOXYSTROBIN",
       "concentracion": "21.37/21.37",
       "empresa": "BAYER DE MEXICO S.A DE C.V",
-      "rsco": "RSCO-MEZC-",
+      "rsco": "RSCO-MEZC-FUNG-1302-0394-X0099-064-42.74",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1111,7 +1111,7 @@
       "ingrediente_activo": "FLUXAPYROXAD + PYRACLOSTROBIN",
       "concentracion": "21.2/21.2",
       "empresa": "BASF MEXICANA, S.A. DE C.V.",
-      "rsco": "RSCO-MEZC-",
+      "rsco": "RSCO-MEZC-FUNG-0399-0281-064-42.40",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1129,7 +1129,7 @@
       "ingrediente_activo": "HIDROXIDO DE COBRE",
       "concentracion": "20",
       "empresa": "AGROSANIDAD SA DE CV",
-      "rsco": "RSCO-FUNG-0302-X0229-013-",
+      "rsco": "RSCO-FUNG-0319-X0222-013-20.0",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1138,7 +1138,7 @@
       "ingrediente_activo": "HIDROXIDO DE COBRE",
       "concentracion": "20",
       "empresa": "AGROSANIDAD SA DE CV",
-      "rsco": "RSCO-FUNG-0319-X0222-013-",
+      "rsco": "RSCO-FUNG-0319-X0222-013-20.00",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1147,7 +1147,7 @@
       "ingrediente_activo": "HIDROXIDO CUPRICO",
       "concentracion": "15.38",
       "empresa": "ALBAUGH MEXICO S. DE R.L DE C.V",
-      "rsco": null,
+      "rsco": "RSCO-FUNG-0319-366-424-015",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1156,7 +1156,7 @@
       "ingrediente_activo": "HIDROXIDO CUPRICO",
       "concentracion": "30.77",
       "empresa": "ALBAUGH MEXICO S. DE R.L DE C.V",
-      "rsco": null,
+      "rsco": "RSCO-FUNG-0319-360-034-031",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -1165,7 +1165,7 @@
       "ingrediente_activo": "HIDROXIDO CUPRICO",
       "concentracion": null,
       "empresa": null,
-      "rsco": null,
+      "rsco": "RSCO-FUNG-0319-360-034-031",
       "unidad": null,
       "categoria": "Fungicidas"
     },
@@ -1183,7 +1183,7 @@
       "ingrediente_activo": "ISOFETAMID",
       "concentracion": "36",
       "empresa": "ARYSTA LIFESCIENCE MEXICO, S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-0379-X0115-064-",
+      "rsco": "RSCO-FUNG-0379-X0115-064-036",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1192,7 +1192,7 @@
       "ingrediente_activo": "GLUCONATO DE COBRE",
       "concentracion": "35.67",
       "empresa": "FMC AGROQUIMICA DE MEXICO, S. DE R.L. DE C.V.",
-      "rsco": "RSCO-FUNG-305G-X0050-375-",
+      "rsco": "RSCO-FUNG-305G-X0050-375-35.676",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1201,7 +1201,7 @@
       "ingrediente_activo": "GLUCONATO DE COBRE",
       "concentracion": "14% C 35.6 %GLU",
       "empresa": "IDAI NATURE AMERICA, S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-305G-X0050-375-",
+      "rsco": "RSCO-FUNG-305G-X0050-375-35.676",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1210,7 +1210,7 @@
       "ingrediente_activo": "GLUCONATO DE COBRE",
       "concentracion": "35.71",
       "empresa": "GRUPO AGROTECNOLOGIA MEXICO TCB E IBERFOL SA DE CV",
-      "rsco": "RSCO-FUNG-305G-",
+      "rsco": "RSCO-FUNG-305G-X0144-375-35.71",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1237,7 +1237,7 @@
       "ingrediente_activo": "MYCLOBUTANIL",
       "concentracion": "40",
       "empresa": "LAPISA SA DE CV",
-      "rsco": "RSCO-FUNG-",
+      "rsco": "RSCO-FUNG-0351-X0255-002-40.00",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -1246,7 +1246,7 @@
       "ingrediente_activo": "MYCLOBUTANIL",
       "concentracion": "40",
       "empresa": "NEVADA CHEMICALS, S.A. DE C.V",
-      "rsco": "RSCO-FUNG-",
+      "rsco": "RSCO-FUNG-0351-X0255-002-40.00",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -1264,7 +1264,7 @@
       "ingrediente_activo": "OXICLORURO DE COBRE",
       "concentracion": "85",
       "empresa": "INGENIERIA INDUSTRIAL, S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-FUNG-0328-011-002-085",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -1282,7 +1282,7 @@
       "ingrediente_activo": "OXIDO CUPROSO",
       "concentracion": "84.44",
       "empresa": "KOOR INTERCOMERCIAL, S.A.",
-      "rsco": "RSCO-FUNG-0329-",
+      "rsco": "RSCO-FUNG-0329-308-034-084",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -1291,7 +1291,7 @@
       "ingrediente_activo": "PIRIMETANIL",
       "concentracion": "54.6",
       "empresa": "BAYER DE MÉXICO, S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-0301G-",
+      "rsco": "RSCO-FUNG-0301G-301-064-055",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1300,7 +1300,7 @@
       "ingrediente_activo": "PIRIMETANIL/ DIFENOCONAZOL",
       "concentracion": "36.40/ 9.10",
       "empresa": "ANASAC MÉXICO, S. DE R.L DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-FUNG-0301G-0375-X0030-064-45.5",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1309,7 +1309,7 @@
       "ingrediente_activo": "POLYXIN D SAL DE ZINC",
       "concentracion": "11.30",
       "empresa": "ARYSTA LIFESCIENCE MÉXICO, S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-FUNG-0302H-301-034-011",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -1318,7 +1318,7 @@
       "ingrediente_activo": "PYRACLOSTROBIN",
       "concentracion": "23.6",
       "empresa": "BASF MEXICANA, S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-",
+      "rsco": "RSCO-FUNG-0301O-301-009-024",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -1327,7 +1327,7 @@
       "ingrediente_activo": "PYRACLOSTROBIN / DIMETOMORF",
       "concentracion": "6.70/12.00",
       "empresa": "BASF MEXICANA, S.A. DE C.V.",
-      "rsco": "RSCO-MEZC-",
+      "rsco": "RSCO-MEZC-01301D-0179-034-18.70",
       "unidad": "kg",
       "categoria": "Fungicidas"
     },
@@ -1336,7 +1336,7 @@
       "ingrediente_activo": "SILICATO DE CALCIO + OXIDO DE ZINC",
       "concentracion": "20.80/9.96",
       "empresa": "COSMOCEL CROP HEALTH, S.A DE C.V",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-FUNG-1101Q-1701Z-X0060-026-30.76",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1345,7 +1345,7 @@
       "ingrediente_activo": "SULFATO DE COBRE",
       "concentracion": "21.36",
       "empresa": "DISTRIBUCIONES IMEX SA DE CV",
-      "rsco": "RSCO-FUNG-",
+      "rsco": "RSCO-FUNG-0357-311-013-021",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1363,7 +1363,7 @@
       "ingrediente_activo": "SULFATO DE COBRE PENTAHIDRATADO",
       "concentracion": "12.5",
       "empresa": "BIO LOGA, S.A. DE C.V",
-      "rsco": "RSCO-FUNG-0357-",
+      "rsco": "RSCO-FUNG-0357-X0327-064-12.50",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1372,7 +1372,7 @@
       "ingrediente_activo": "TRIFLUMIZOLE",
       "concentracion": "43",
       "empresa": "ARYSTA LIFESCIENSE MEXICO SA DE CV",
-      "rsco": "RSCO-FUNG-0385-307-",
+      "rsco": "RSCO-FUNG-0385-307-375-043",
       "unidad": "L",
       "categoria": "Fungicidas"
     },
@@ -1399,7 +1399,7 @@
       "ingrediente_activo": "DIURON",
       "concentracion": "80",
       "empresa": "VELSIMEX, S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-HEDE-0221-004-002-080",
       "unidad": "L",
       "categoria": "Herbicidas"
     },
@@ -1417,7 +1417,7 @@
       "ingrediente_activo": "DIURON",
       "concentracion": "80",
       "empresa": "CUPROSA SA DE CV",
-      "rsco": null,
+      "rsco": "RSCO-HEDE-0221-332-002-080",
       "unidad": "kg",
       "categoria": "Herbicidas"
     },
@@ -1435,7 +1435,7 @@
       "ingrediente_activo": "DIURON",
       "concentracion": "80",
       "empresa": "UNITHED PHOSPHORUS DE MÉXICO SA DE CV",
-      "rsco": null,
+      "rsco": "RSCO-HEDE-0221-320-002-080",
       "unidad": "kg",
       "categoria": "Herbicidas"
     },
@@ -1453,7 +1453,7 @@
       "ingrediente_activo": "GLUFOSINATO DE AMONIO",
       "concentracion": "24.35",
       "empresa": "INSECTICIDAS DEL PACIFICO S.A DE C.V",
-      "rsco": null,
+      "rsco": "RSCO-HEDE-0231-X0037-375-24.35",
       "unidad": "L",
       "categoria": "Herbicidas"
     },
@@ -1480,7 +1480,7 @@
       "ingrediente_activo": "PARAQUAT",
       "concentracion": "25.6",
       "empresa": "GOWAN MEXICANA, S.A.P.I. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-HEDE-0244-328-013-026",
       "unidad": "L",
       "categoria": "Herbicidas"
     },
@@ -1489,7 +1489,7 @@
       "ingrediente_activo": "PARAQUAT",
       "concentracion": "25.6",
       "empresa": "HELM DE MEXICO, S.A.",
-      "rsco": null,
+      "rsco": "RSCO-HEDE-0244-380-013-026",
       "unidad": null,
       "categoria": "Herbicidas"
     },
@@ -1507,7 +1507,7 @@
       "ingrediente_activo": "PARAQUAT + DIURON",
       "concentracion": "27.6/10",
       "empresa": "SYNGENTA AGRO, S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-1229-001-008-038",
       "unidad": "L",
       "categoria": "Herbicidas"
     },
@@ -1516,7 +1516,7 @@
       "ingrediente_activo": "PARAQUAT + DIURON",
       "concentracion": "27.6/10",
       "empresa": "GOWAN MEXICANA S.A.P.I DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-1229-309-008-038",
       "unidad": null,
       "categoria": "Herbicidas"
     },
@@ -1579,7 +1579,7 @@
       "ingrediente_activo": "ACEITE VEGETAL DE SEMILLA DE SOYA",
       "concentracion": "1.2",
       "empresa": "GOWAN MEXICANA S.A.P.I. DE CV",
-      "rsco": "RSCO-INAC-",
+      "rsco": "RSCO-INAC-0101B-311-009-001",
       "unidad": null,
       "categoria": "Biorracionales"
     },
@@ -1615,7 +1615,7 @@
       "ingrediente_activo": "AZADIRACTINA",
       "concentracion": "3",
       "empresa": "PLANT HEALT CARE DE MEXICO S DE RL DE CV",
-      "rsco": "RSCO-INAC-0101B-305-",
+      "rsco": "RSCO-INAC-0101B-305-008-003",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1624,7 +1624,7 @@
       "ingrediente_activo": "AZADIRACTINA",
       "concentracion": "1.0",
       "empresa": "CERTIS AGRO MEXICO S DE RL DE CV",
-      "rsco": "RSCO-INAC-0101B-0333-",
+      "rsco": "RSCO-INAC-0101B-0333-009-1.0",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1642,7 +1642,7 @@
       "ingrediente_activo": "ACEITE DE NARANJA",
       "concentracion": "6",
       "empresa": "ORO AGRI S DE RL DE CV",
-      "rsco": "RSCO-INAC-FUNG-0808-X0354-",
+      "rsco": "RSCO-INAC-FUNG-0808-X0354-350-6.00",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1651,7 +1651,7 @@
       "ingrediente_activo": "ACEITE DE NEEM/EXTRACTO DE AJO/ EXTRACTO DE CARDO SANTO/ EXTRACTO DE CHILE",
       "concentracion": "20/10/10/10",
       "empresa": "AGROTRADE MEXICO S DE RL DE CV",
-      "rsco": "RSCO-MEZC-INAC-0103I-104Z-",
+      "rsco": "RSCO-MEZC-INAC-0103I-104Z-1108C-1118-X0067-009-50",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1660,7 +1660,7 @@
       "ingrediente_activo": "Bacillus pumilus",
       "concentracion": "1.38",
       "empresa": "BASF MEXICANA, S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-",
+      "rsco": "RSCO-FUNG-0301Q-303-008-001",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1669,7 +1669,7 @@
       "ingrediente_activo": "Bacillus pumilus",
       "concentracion": "14.6",
       "empresa": "AGRAQUEST DE MEXICO, S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-0395-002-",
+      "rsco": "RSCO-FUNG-0395-319-002-015",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -1678,7 +1678,7 @@
       "ingrediente_activo": "Bacillus pumilus",
       "concentracion": "1",
       "empresa": "FMC AGROQUÍMICA DE MÉXICO S. DE R.L. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-FUNG-0395-321-002-001",
       "unidad": null,
       "categoria": "Biorracionales"
     },
@@ -1687,7 +1687,7 @@
       "ingrediente_activo": "Bacillus subtilis",
       "concentracion": "5.1",
       "empresa": "BIOKRONE SA DE CV",
-      "rsco": null,
+      "rsco": " RSCO-FUNG-0395-0211-064-5.15",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1723,7 +1723,7 @@
       "ingrediente_activo": "Bacillus amyloliquefaciens QST 713",
       "concentracion": "26.2",
       "empresa": "BAYER DE MEXICO, S.A. DE C.V",
-      "rsco": "RSCO-FUNG-0395-0311-",
+      "rsco": "RSCO-FUNG-0395-0311-002-26.2",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -1732,7 +1732,7 @@
       "ingrediente_activo": "Bacillus amyloliquefaciens CEPA MBI 600",
       "concentracion": "11",
       "empresa": "BASF MEXICANA SA DE CV",
-      "rsco": "RSCO-FUNG-",
+      "rsco": "RSCO-FUNG-0395BA-X0143-002-11.0",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -1750,7 +1750,7 @@
       "ingrediente_activo": "Bacillus thuringiensis",
       "concentracion": "10.3",
       "empresa": "VALENT DE MEXICO, S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0105-362-372-010",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -1759,7 +1759,7 @@
       "ingrediente_activo": "Bacillus thuringiensis",
       "concentracion": "10.3",
       "empresa": "FMC AGROQUIMICA DE MEXICO S DE RL DE CV A",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0105-362-372-010",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -1777,7 +1777,7 @@
       "ingrediente_activo": "Bacillus thuringiensis var. Kurstaki serotipo 3a, 3b",
       "concentracion": "7.5",
       "empresa": "SUMMIT AGRO MEXICO, S.A. DE C.V",
-      "rsco": "RSCO-INAC-",
+      "rsco": "RSCO-INAC-0105-374-034-008",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -1804,7 +1804,7 @@
       "ingrediente_activo": "Burkholderia spp CEPA A396",
       "concentracion": "94.46",
       "empresa": "GLP ESTRATEGIAS AVANZADAS, S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-1102B-X0026-064-94.46",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1813,7 +1813,7 @@
       "ingrediente_activo": "Chromobacterium subtsugae CEPA PRAA4- 1",
       "concentracion": "30",
       "empresa": "NUEVA AGROINDUSTRIAS DEL NORTE,S.A. DE C.V.",
-      "rsco": "RSCO-FUNG",
+      "rsco": "RSCO-INAC-1103C-X0027-002-030",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -1822,7 +1822,7 @@
       "ingrediente_activo": "EXTRACTO ALCOHOLICO DE MIMOSA Y QUERCUS",
       "concentracion": "8.3",
       "empresa": "IDAI NATURE S.L.",
-      "rsco": "RSCO-FUNG-0386-0558-009-",
+      "rsco": "RSCO-FUNG-0386-0558-009-8.3",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1831,7 +1831,7 @@
       "ingrediente_activo": "EXTRACTO ALCOHOLICO DE MIMOSA Y QUERCUS",
       "concentracion": "8.3",
       "empresa": "IDAI NATURE AMERICA, S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-FUNG-0386-0558-009-8.3",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1849,7 +1849,7 @@
       "ingrediente_activo": "EXTRACTO DE ACEITE DE NEEM",
       "concentracion": "70",
       "empresa": "SUMMIT AGRO DE MÉXICO S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0103V-X0066-375-010",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1858,7 +1858,7 @@
       "ingrediente_activo": "EXTRACTO DE ACEITE DE NEEM",
       "concentracion": "20",
       "empresa": "AGROSANIDAD SA DE CV",
-      "rsco": "RSCO-INAC-0104S-X0298-064-",
+      "rsco": "RSCO-INAC-0104S-X0298-064-20.0",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1876,7 +1876,7 @@
       "ingrediente_activo": "EXTRACTO DE ACEITE DE NEEM",
       "concentracion": "20",
       "empresa": "AGROSANIDAD SA DE CV",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0104S-X0298-064-20.0",
       "unidad": null,
       "categoria": "Biorracionales"
     },
@@ -1885,7 +1885,7 @@
       "ingrediente_activo": "EXTRACTO DE ACEITE DE NEEM",
       "concentracion": "80",
       "empresa": "QUÍMICA LUCAVA SA DE CV",
-      "rsco": "RSCO-INAC-",
+      "rsco": "RSCO-INAC-0103I-303-009-080",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1894,7 +1894,7 @@
       "ingrediente_activo": "ACEITE DE AJO/ ACEITE DE AJONJOLI",
       "concentracion": "2.50/1.25",
       "empresa": "COSMOCEL CROP HEALTH, S.A DE C.V",
-      "rsco": "RSCO-MEZC-INAC-",
+      "rsco": "RSCO-MEZC-INAC-0104Z-1120A-X0071-096-3.75",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1903,7 +1903,7 @@
       "ingrediente_activo": "EXTRACTO DE AJO/ EXTRACTO DE CHILE PICANTE/ EXTRACTO DE CANELA",
       "concentracion": "25/ 25/ 10",
       "empresa": "ULTRAQUIMIA AGRICOLA S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-1802-0243-052-60",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1912,7 +1912,7 @@
       "ingrediente_activo": "EXTRACTO DE AJO/ EXTRACTO DE CHILE PICANTE/ EXTRACTO DE CANELA",
       "concentracion": "25/ 25/ 10",
       "empresa": "MS AGROS SA DE CV",
-      "rsco": null,
+      "rsco": " RSCO-INAC-1802-0243-052-60",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1921,7 +1921,7 @@
       "ingrediente_activo": "EXTRACTO DE AJO/ EXTRACTO DE CHILE PICANTE/ EXTRACTO DE CANELA",
       "concentracion": "25/ 25/ 10",
       "empresa": "QUÍMICA LUCAVA SA DE CV",
-      "rsco": null,
+      "rsco": "RSCO-INAC-1802-0243-052-60",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1930,8 +1930,8 @@
       "ingrediente_activo": "EXTRACTO DE AJO",
       "concentracion": "20",
       "empresa": "AGROSANIDAD SA DE CV",
-      "rsco": "RSCO-INAC-01047-X0313-064-",
-      "unidad": null,
+      "rsco": "RSCO-INAC-01047-X0313-064-20.0",
+      "unidad": "RSCO-INAC-01047-X0313-064-20.0",
       "categoria": "Biorracionales"
     },
     {
@@ -1939,7 +1939,7 @@
       "ingrediente_activo": "EXTRACTO DE AJO",
       "concentracion": "20",
       "empresa": "AGROSANIDAD SA DE CV",
-      "rsco": "RSCO-INAC-01047-X0311-064-",
+      "rsco": "RSCO-INAC-01047-X0311-064-20.0",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1948,7 +1948,7 @@
       "ingrediente_activo": "EXTRACTO DE AJO /EXTRACTO DE NEEM",
       "concentracion": "33.00/ 9.90",
       "empresa": "RALI AGROPECUARIA S. DE R.L DE C.V",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-INAC-104Z-0104S-X0088-009-42.9",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1957,7 +1957,7 @@
       "ingrediente_activo": "EXTRACTO DE AJO /EXTRACTO DE CANELA/ ACEITE DE NEEM",
       "concentracion": "15/10/10/",
       "empresa": "AGRO TRADE MEXICO S. DE R.L DE C.V.",
-      "rsco": "RSCO-MEZC-INAC-104Z-",
+      "rsco": "RSCO-MEZC-INAC-104Z-0104R-01031-X0068-009-35",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1966,7 +1966,7 @@
       "ingrediente_activo": "EXTRACTO DE AJO + EXTRACTO DE CHILE",
       "concentracion": "23.4 / 7.6",
       "empresa": "GOWAN MEXICANA SAPI DE CV",
-      "rsco": "RSCO-MEZC-INAC-1108A-",
+      "rsco": "RSCO-MEZC-INAC-1108A-X0026-009-031",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1975,7 +1975,7 @@
       "ingrediente_activo": "EXTRACTO ACUOSO DE AJO/EXTRACTO ACUOSO DE MANZANILLA Y RUDA",
       "concentracion": "87 / 10",
       "empresa": "BERNI LABS S DE RL",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-1166-301-008-097",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -1984,7 +1984,7 @@
       "ingrediente_activo": "EXTRACTO ACUOSO DE AJO/EXTRACTO ACUOSO DE MANZANILLA Y RUDA",
       "concentracion": "20",
       "empresa": "AGROSANIDAD SA DE CV",
-      "rsco": "RSCO-INAC-0104R-X0265-064-",
+      "rsco": "RSCO-INAC-0104R-X0265-064-20.0",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2011,7 +2011,7 @@
       "ingrediente_activo": "EXTRACTO ACUOSO DE AJO/EXTRACTO ACUOSO DE MANZANILLA Y RUDA",
       "concentracion": "15",
       "empresa": "ULTRAQUIMIA AGRÍCOLA S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0104R-0232-015-15",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2020,7 +2020,7 @@
       "ingrediente_activo": "EXTRACTO ACUOSO DE AJO/EXTRACTO ACUOSO DE MANZANILLA Y RUDA",
       "concentracion": "20",
       "empresa": "AGROSANIDAD SA DE CV",
-      "rsco": "RSCO-INAC-",
+      "rsco": "RSCO-INAC-0104R-X0265-064-20.0",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2029,7 +2029,7 @@
       "ingrediente_activo": "EXTRACTO ACUOSO DE AJO/EXTRACTO ACUOSO DE MANZANILLA Y RUDA",
       "concentracion": "30.0",
       "empresa": "BIOCONTROL-DAYMSA DE MEXICO, S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-",
+      "rsco": "RSCO-FUNG-0104R-X0191-009-30.0",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2038,7 +2038,7 @@
       "ingrediente_activo": "EXTRACTO DE CHICALOTE",
       "concentracion": "90",
       "empresa": "ULTRAQUIMIA AGRÍCOLA S.A. DE C.V.",
-      "rsco": "RSCO-INAC-",
+      "rsco": "RSCO-INAC-0103Y-0266-009-90",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2047,7 +2047,7 @@
       "ingrediente_activo": "EXTRACTOS DE CITRICOS / EXTRACTO DE CANELA",
       "concentracion": "25.0 / 7.0",
       "empresa": "GRUPO AGROTECNOLOGIA MEXICO TCB E IBERFOL SA DE CV",
-      "rsco": "RSCO-MEZC-INAC-1301L-",
+      "rsco": "RSCO-MEZC-INAC-1301L-0104R-X0051-375-32.0",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2056,7 +2056,7 @@
       "ingrediente_activo": "EXTRACTOS DE CITRICOS / EXTRACTO DE CANELA",
       "concentracion": "25.0 / 7.0",
       "empresa": "SYNGENTA AGRO, S.A. DE C.V.",
-      "rsco": "RSCO-MEZC-INAC-1301L-",
+      "rsco": "RSCO-MEZC-INAC-1301L-0104R-X0051-375-32.0",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2065,7 +2065,7 @@
       "ingrediente_activo": "EXTRACTO CITRICO / QUERCETINA",
       "concentracion": "9.996 / 0.004",
       "empresa": "BERNI LABS S DE RL MICROINDUSTRIAL",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-1301L-0417-013-10",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2083,7 +2083,7 @@
       "ingrediente_activo": "EXTRACTO CITRICO / QUERCETINA",
       "concentracion": "4.0",
       "empresa": "GOWAN MEXICANA S.A.P.I DE C.V",
-      "rsco": "RSCO-FUNG-0301M-",
+      "rsco": "RSCO-FUNG-0301M-X0242-013-4.0",
       "unidad": null,
       "categoria": "Biorracionales"
     },
@@ -2101,7 +2101,7 @@
       "ingrediente_activo": "EXTRACTO CITRICO / QUERCETINA",
       "concentracion": "39",
       "empresa": "ARVENSIS A.A DE CV",
-      "rsco": null,
+      "rsco": "RSCO-FUNG-0575-X0286-013-39.00",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2119,7 +2119,7 @@
       "ingrediente_activo": "POLISULFURO DE CALCIO/ EXTRACTO VEGETAL DE GOBERNADORA",
       "concentracion": "50/ 10",
       "empresa": "ARVENSIS, S.A DE C.V",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-FUNG-0301M-0576-X0072-013-60.00",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2128,7 +2128,7 @@
       "ingrediente_activo": "EXTRACTO DE MOSTAZA",
       "concentracion": "20",
       "empresa": "AGROSANIDAD SA DE CV",
-      "rsco": null,
+      "rsco": "RSCO-INAC-1113M-X0313-064-20.0",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2137,7 +2137,7 @@
       "ingrediente_activo": "EXTRACTO DE MOSTAZA",
       "concentracion": "20",
       "empresa": "AGROSANIDAD SA DE CV",
-      "rsco": "RSCO-INAC-1113M-X0313-",
+      "rsco": "RSCO-INAC-1113M-X0313-064-20.0",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2146,7 +2146,7 @@
       "ingrediente_activo": "EXTRACTO DE TORVISCO + RUDA + HOJA SANTA",
       "concentracion": "20/20/10",
       "empresa": "IDAI NATURE S.L.",
-      "rsco": "RSCO-MEZC-INAC-",
+      "rsco": "RSCO-MEZC-INAC-1106R-X0009-375-050",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2155,7 +2155,7 @@
       "ingrediente_activo": "EXTRACTO DE QUILLAY (Quillaja saponaria)",
       "concentracion": "30.3",
       "empresa": "BASF MEXICANA, S.A. DE C.V.",
-      "rsco": "RSCO-NEMA-0908-301-",
+      "rsco": "RSCO-NEMA-0908-301-375-030",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2164,7 +2164,7 @@
       "ingrediente_activo": "EXTRACTO DE QUILLAY (Quillaja saponaria)",
       "concentracion": "7.5",
       "empresa": "ECOPROTECTO SA DE CV",
-      "rsco": "RSCO-INAC-0105C-",
+      "rsco": "RSCO-INAC-0105C-301-096-008",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2182,7 +2182,7 @@
       "ingrediente_activo": "EXTRACTO DE MIMOSA TENUIFLORA",
       "concentracion": "80.0",
       "empresa": "ATLANTICA AGRICOLA MEXICANA SA DE CV",
-      "rsco": "RSCO-FUNG-0350M-",
+      "rsco": "RSCO-FUNG-0350M-X0008-052-080",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2191,7 +2191,7 @@
       "ingrediente_activo": "EXTRACTO DE TAGETES",
       "concentracion": "90",
       "empresa": "QUIMICA LUCAVA, S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0350T-X0006-009-94.5",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2209,7 +2209,7 @@
       "ingrediente_activo": "EXTRACTO DE TAGETES",
       "concentracion": "90",
       "empresa": "ULTRAQUIMIA AGRICOLA S.A. DE C.V.",
-      "rsco": null,
+      "rsco": " RSCO-INAC-03-50T-X006-009-94.5",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2218,7 +2218,7 @@
       "ingrediente_activo": "EXTRACTOS DE GERANIOL, CITRONELLOL, NEROLIDOL, FARMESOL",
       "concentracion": "0.4 / 0.4 / 0.4 / 0.16",
       "empresa": "ARYSTA LIFESCIENCE MÉXICO, S.A. DE C.V.",
-      "rsco": "RSCO-MEZC-0101I-0321-009-",
+      "rsco": "RSCO-MEZC-0101I-0321-009-1.418",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2236,7 +2236,7 @@
       "ingrediente_activo": "EXTRACTO DE QUASSIA, NEEM, KARANJA",
       "concentracion": "2.0, 2.0, 2.0",
       "empresa": "NUEVA AGROINDUSTRIAS DEL NORTE S.A. DE C.V.",
-      "rsco": "RSCO-MEZC-INAC-1107N-",
+      "rsco": "RSCO-MEZC-INAC-1107N-X0010-375-006",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2245,7 +2245,7 @@
       "ingrediente_activo": "EXTRACTO DE PIRETRO",
       "concentracion": "4.50",
       "empresa": "GRUPO AGROTECNOLOGIA MEXICO TBC E IBERFOL SA DE CV",
-      "rsco": "RSCO-INAC-0185-",
+      "rsco": "RSCO-INAC-0185-X0358-009-4.50",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2254,7 +2254,7 @@
       "ingrediente_activo": "EXTRACTO DE SAUCE BLANCO",
       "concentracion": "1.00",
       "empresa": "COSMOCEL CROP HEALTH, S.A DE C.V",
-      "rsco": null,
+      "rsco": "RSCO- FUNG-0106B-X0256-032-1.00",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -2263,7 +2263,7 @@
       "ingrediente_activo": "LAMINARINA",
       "concentracion": "4.27",
       "empresa": "ARYSTA LIFESCIENCE MÉXICO, S.A. DE C.V.",
-      "rsco": "RSCO-FUNG-0382-",
+      "rsco": "RSCO-FUNG-0382-X0132-375-4.27",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2281,7 +2281,7 @@
       "ingrediente_activo": "Metarhizium anisopliae",
       "concentracion": "2.5",
       "empresa": "IDAI NATURE AMERICA, S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-1142-0631-009-2.50",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2290,7 +2290,7 @@
       "ingrediente_activo": "PIRETRINAS",
       "concentracion": "5",
       "empresa": "AGRICOLA INNOVACIÓN S.A. DE C.V.",
-      "rsco": "RSCO-INAC-0185-",
+      "rsco": "RSCO-INAC-0185-X0205-009-005",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2299,7 +2299,7 @@
       "ingrediente_activo": "PIRETRINAS",
       "concentracion": "0.2",
       "empresa": "AGRICOLA INNOVACIÓN S.A. DE C.V.",
-      "rsco": "RSCO-INAC-0101I-",
+      "rsco": "RSCO-INAC-0101I-329-002-0.20",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -2317,7 +2317,7 @@
       "ingrediente_activo": "PIRETRINAS",
       "concentracion": "0.2",
       "empresa": "BIOKRONE SA DE CV",
-      "rsco": "RSCO-INAC-0101I-",
+      "rsco": "RSCO-INAC-0101I-329-002-0.20",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -2326,7 +2326,7 @@
       "ingrediente_activo": "PIRETRINAS",
       "concentracion": "0.2",
       "empresa": "AMVAC MEXICO S DE RL DE CV",
-      "rsco": "RSCO-INAC-0101I-329-002-",
+      "rsco": "RSCO-INAC-0101I-329-002-0.20",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -2335,7 +2335,7 @@
       "ingrediente_activo": "PIRETRINAS",
       "concentracion": "5",
       "empresa": "AGRICOLA INNOVACION SA DE CV",
-      "rsco": "RSCO-INAC-0185-",
+      "rsco": "RSCO-INAC-0185-X0205-009-005",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2344,7 +2344,7 @@
       "ingrediente_activo": "PIRETRINAS",
       "concentracion": "4.5",
       "empresa": "SYNGENTA AGRO, S.A. DE C.V.",
-      "rsco": "RSCO-INAC-0185-",
+      "rsco": "RSCO-INAC-0185-X0358-009-4.50",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2362,7 +2362,7 @@
       "ingrediente_activo": "PIRETRINAS",
       "concentracion": "20",
       "empresa": "BIOAMIN SA DE CV",
-      "rsco": "RSCO-INAC-0907-",
+      "rsco": "RSCO-INAC-0907-0409-002-20",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -2371,7 +2371,7 @@
       "ingrediente_activo": "PIRETRINAS",
       "concentracion": "3",
       "empresa": "AGROBIOLOGICOS DEL NOROESTE SA DE CV",
-      "rsco": "RSCO-INAC-0906-",
+      "rsco": "RSCO-INAC-0906-0286-002-3.0",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -2389,7 +2389,7 @@
       "ingrediente_activo": "Pacilomyces lilacinus / Bacillus firmus",
       "concentracion": "3.4 / 2.6",
       "empresa": "AMVAC MÉXICO, S. DE R.L. DE C.V.",
-      "rsco": "RSCO-MEZC-NEMA-0910-",
+      "rsco": "RSCO-MEZC-NEMA-0910-X0001-02-006",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -2398,7 +2398,7 @@
       "ingrediente_activo": "QUITOSANO/ Bacillus thuringiensis+ Lecanicillum lecani+ Beauveria bassiana + Metarhizum anisopliae",
       "concentracion": "0.5/ 5.0/ 5.0/5.0 /5.0",
       "empresa": "ARVENSIS, S.A DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-INAC-0911Z-X0118-375-20.5",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2407,7 +2407,7 @@
       "ingrediente_activo": "Isaria fumosoroseus",
       "concentracion": "20",
       "empresa": "CERTIS AGRO MEXICO S DE RL DE CV",
-      "rsco": "RSCO-INAC-0910-0014-034-",
+      "rsco": "RSCO-INAC-0910-0014-034-020",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -2416,7 +2416,7 @@
       "ingrediente_activo": "OLEINA DE PALMA AFRICANA",
       "concentracion": "50",
       "empresa": "ATLANTICA AGRICOLA MEXICANA SA DE CV",
-      "rsco": "RSCO-INAC-",
+      "rsco": "RSCO-INAC-1108-X0109-009-050",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2425,7 +2425,7 @@
       "ingrediente_activo": "SALES POTASICAS DE ACIDOS GRASOS",
       "concentracion": "49",
       "empresa": "GOWAN MEXICANA, S.A.P.I. DE C.V.",
-      "rsco": "RSCO-INAC-0101W-303-052-",
+      "rsco": "RSCO-INAC-0101W-303-052-049",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2443,7 +2443,7 @@
       "ingrediente_activo": "SALES POTASICAS DE ACIDOS GRASOS",
       "concentracion": "50.0",
       "empresa": "ULTRAQUIMIA AGRICOLA S.A. DE C.V.",
-      "rsco": null,
+      "rsco": " RSCO-INAC-0101W-0426-375-50",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2452,7 +2452,7 @@
       "ingrediente_activo": "SALES POTASICAS DE ACIDOS GRASOS",
       "concentracion": "51.0",
       "empresa": "CERTIS AGRO MEXICO S DE RL DE CV",
-      "rsco": "RSCO-INAC-0101W-",
+      "rsco": "RSCO-INAC-0101W-0324-009-51",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2479,7 +2479,7 @@
       "ingrediente_activo": "ARGEMONINA, BERBERINA, RICINA, Y a- TERTHIENIL",
       "concentracion": "3.5 / 2.2 / 2.8 / 3.5",
       "empresa": "PROMOTORA TÉCNICA INDUSTRIAL, S.A. DE C.V.",
-      "rsco": "RSCO-MEZC-1101E-",
+      "rsco": "RSCO-MEZC-1101E-301-406-012",
       "unidad": null,
       "categoria": "Biorracionales"
     },
@@ -2488,7 +2488,7 @@
       "ingrediente_activo": "ARGEMONINA, BERBERINA, RICINA, Y a- TERTHIENIL",
       "concentracion": "1.15%",
       "empresa": "BIOKRONE SA DE CV",
-      "rsco": "RSCO-FUNG-",
+      "rsco": "RSCO-FUNG-0301B-307-002-001",
       "unidad": "kg",
       "categoria": "Biorracionales"
     },
@@ -2515,7 +2515,7 @@
       "ingrediente_activo": "EXTRACTO DE EQUISETUM/ ACEITE DE MOSTAZA",
       "concentracion": "5.0/25.0",
       "empresa": "ECONATUR MEXICO , S.A DE C.V",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-FUNG-0910C-X0065-009-30.00",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2524,7 +2524,7 @@
       "ingrediente_activo": "EXTRACTO DE AJO Y CAPSAICINA",
       "concentracion": "87%/3.5%",
       "empresa": "BIOKRONE SA DE CV",
-      "rsco": "RSCO-MEZC-",
+      "rsco": "RSCO-MEZC-INAC-1108A-X0023-009-90.50",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2533,7 +2533,7 @@
       "ingrediente_activo": "Streptomyces spp.",
       "concentracion": "62.45",
       "empresa": "ALTUS BIOPHARM, SA DE CV",
-      "rsco": "RSCO-FUNG-0315S-X0165-52-",
+      "rsco": "RSCO-FUNG-0315S-X0165-52-62.46",
       "unidad": "L",
       "categoria": "Biorracionales"
     },
@@ -2551,7 +2551,7 @@
       "ingrediente_activo": "FOSFITO ACIDO DE POTASIO",
       "concentracion": "55",
       "empresa": "SINTESIS Y FORMULACIONES DE ALTA TECNOLOGÍA SA DE CV",
-      "rsco": "RSCO-FUNG-0633-",
+      "rsco": "RSCO-FUNG-0633-0283-013-55.4",
       "unidad": "L",
       "categoria": "Biorracionales"
     },

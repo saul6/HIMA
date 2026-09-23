@@ -67,7 +67,7 @@
       "ingrediente_activo": "ABAMECTIN + BIFENTHRIN",
       "concentracion": "0.34 / 3.37",
       "empresa": "NATIONAL AGRICULTURE SA de CV",
-      "rsco": null,
+      "rsco": "RSCO-HEDE-0231-X0405-420-50.0",
       "categoria": "Insecticidas",
       "unidad": "L"
     },
@@ -85,7 +85,7 @@
       "ingrediente_activo": "ACETAMIPRID",
       "concentracion": "20",
       "empresa": "LAPISA SA de CV",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0101U-0508-003-20.0",
       "categoria": "Insecticidas",
       "unidad": "kg"
     },
@@ -94,7 +94,7 @@
       "ingrediente_activo": "PARAFFINIC OIL OF PETROLEUM",
       "concentracion": "80",
       "empresa": "DISTRIBUCIONES IMEX S.A. 0 S. de R.L.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0197-302-015-080",
       "categoria": "Fungicidas",
       "unidad": "L"
     },
@@ -202,7 +202,7 @@
       "ingrediente_activo": "DIAZINON",
       "concentracion": "5",
       "empresa": "VELSIMEX S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0120-328-005-005",
       "categoria": "Fungicidas",
       "unidad": null
     },
@@ -310,7 +310,7 @@
       "ingrediente_activo": "IMIDACLOPRID + BIFENTRIN",
       "concentracion": "18.92 / 6.49",
       "empresa": "NATIONAL AGRICULTURE SA de CV",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-INAC-1101N-X0013-064-25.41",
       "categoria": "Fungicidas",
       "unidad": "L"
     },
@@ -328,7 +328,7 @@
       "ingrediente_activo": "MALATHION",
       "concentracion": "84",
       "empresa": "NATIONAL AGRICULTURE Limited Liability Company",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0143-X0172-009-084",
       "categoria": "Fungicidas",
       "unidad": "L"
     },
@@ -337,7 +337,7 @@
       "ingrediente_activo": "Metaldehyde",
       "concentracion": "6",
       "empresa": "NATIONAL AGRICULTURE S.A. DE C.V",
-      "rsco": null,
+      "rsco": "RSCO-MOLU-0801-X0005-057-6.0",
       "categoria": "Fungicidas",
       "unidad": "kg"
     },
@@ -373,7 +373,7 @@
       "ingrediente_activo": "SPINOSAD",
       "concentracion": "N 22.14",
       "empresa": "DOW AGROSCIENCES OF MEXICO, S.A. DE C.V.",
-      "rsco": "RSCO-INAC-0101Y-313-002-080ForTripsmake2appointmentsatintervalsof7days",
+      "rsco": "RSCO-INAC-0101Y-0195-064-22.14",
       "categoria": "Fungicidas",
       "unidad": "L"
     },
@@ -436,7 +436,7 @@
       "ingrediente_activo": "ZETA- CYPERMETHRIN + BIFENTHRIN",
       "concentracion": "3.25 / 11.25",
       "empresa": "FMC AGROCHEMICAL OF MEXICO, S. DE R.L. DE C.V.",
-      "rsco": "RSCO-MEZC-1101J-301-009-015.DT857-2017",
+      "rsco": "RSCO-MEZC-1101J-301-009-015",
       "categoria": "Fungicidas",
       "unidad": "L"
     },
@@ -463,7 +463,7 @@
       "ingrediente_activo": "AZOXYSTROBIN",
       "concentracion": "22.9",
       "empresa": "NATIONAL AGRICULTURE SA de CV",
-      "rsco": null,
+      "rsco": "RSCO-FUNG-0386-X0176-064-22.9",
       "categoria": "Fungicidas",
       "unidad": "L"
     },
@@ -526,7 +526,7 @@
       "ingrediente_activo": "ELEMENTAL SULFUR + Copper Oxychloride",
       "concentracion": "50",
       "empresa": "AZUMOR, S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-1324-001-008-057",
       "categoria": "Fungicidas",
       "unidad": "L"
     },
@@ -535,7 +535,7 @@
       "ingrediente_activo": "ELEMENTAL SULFUR + Copper Oxychloride",
       "concentracion": "50",
       "empresa": "",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-1324-001-008-057",
       "categoria": "Fungicidas",
       "unidad": "L"
     },
@@ -787,7 +787,7 @@
       "ingrediente_activo": "Copper gluconate",
       "concentracion": "35.67",
       "empresa": "FMC AGROCHEMICAL OF MEXICO, S. DE R.L. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-FUNG-305G-X0050-375-35.676",
       "categoria": "Fungicidas",
       "unidad": "L"
     },
@@ -850,7 +850,7 @@
       "ingrediente_activo": "Gibberellic Acid",
       "concentracion": "10",
       "empresa": "ARYSTA LIFESCIENCE MEXICO, S.A. DE C.V.",
-      "rsco": "RSCO-0038",
+      "rsco": "RSCO-0028/II/97",
       "categoria": "Reguladores",
       "unidad": "kg"
     },
@@ -859,7 +859,7 @@
       "ingrediente_activo": "ETEPHON",
       "concentracion": "21.7",
       "empresa": "BAYER DE MEXICO, S.A. DE C.V",
-      "rsco": "RSCO-3056",
+      "rsco": "RSCO-3056/VI/94",
       "categoria": "Reguladores",
       "unidad": "L"
     },
@@ -868,7 +868,7 @@
       "ingrediente_activo": "ETEPHON",
       "concentracion": "21.65",
       "empresa": "Technical promoter INTERNATIONAL S.A. de C.V.",
-      "rsco": "RSCO-033",
+      "rsco": "RSCO-033/11/02",
       "categoria": "Reguladores",
       "unidad": null
     },
@@ -886,7 +886,7 @@
       "ingrediente_activo": "DIURON",
       "concentracion": "80",
       "empresa": "BAYER OF MEXICO, S.A. OF C.V.",
-      "rsco": null,
+      "rsco": "RSCO-HEDE-0221-X0148-002-80.0",
       "categoria": "Reguladores",
       "unidad": "kg"
     },
@@ -967,7 +967,7 @@
       "ingrediente_activo": "PARAQUAT + DIURON",
       "concentracion": "27.6",
       "empresa": "SYNGENTA AGRO, S.A. OF C.V.",
-      "rsco": null,
+      "rsco": "RSCO-MEZC-1229-001-008-038",
       "categoria": "Biorracionales",
       "unidad": "L"
     },
@@ -1174,7 +1174,7 @@
       "ingrediente_activo": "Burkholderia spp. CEPA A396",
       "concentracion": "94.46",
       "empresa": "GLP STRATEGIES ADVANCED, S.A. DE C.V.",
-      "rsco": "RSCO-INAC-1102B-X0026-064-94.46EPAREGISTER8459-14",
+      "rsco": "RSCO-INAC-1102B-X0026-064-94.46",
       "categoria": "Nematicidas",
       "unidad": "L"
     },
@@ -1183,7 +1183,7 @@
       "ingrediente_activo": "Chromobacterium subtsugaeCEPA PRAA4-1",
       "concentracion": "30",
       "empresa": "GLP STRATEGIES AVANZADAS, S.A. DE C.V.",
-      "rsco": "RSCO-INAC-1103C-X0027-002-030EPAREGISTER84059-17",
+      "rsco": "RSCO-INAC-1103C-X0027-002-030",
       "categoria": "Nematicidas",
       "unidad": "kg"
     },
@@ -1201,7 +1201,7 @@
       "ingrediente_activo": "ALCOHOLIC EXTRACT OF MIMOSA AND QUERCUS",
       "concentracion": "8.3",
       "empresa": "NEW AGROINDUSTRIES DEL NORTE S.A. DE C.V.",
-      "rsco": "RSCO-FUNG",
+      "rsco": "RSCO-FUNG-0386-0558-009-8.3",
       "categoria": "Nematicidas",
       "unidad": "L"
     },
@@ -1210,7 +1210,7 @@
       "ingrediente_activo": "EXTRACT OF OIL FROM NEEM",
       "concentracion": "80",
       "empresa": "ULTRAQUIMIA AGRICOLA S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0103I-303-009-080",
       "categoria": "Nematicidas",
       "unidad": "L"
     },
@@ -1282,7 +1282,7 @@
       "ingrediente_activo": "GARLIC EXTRACT EXTRACT OF CHILE SPICY/ EXTRACT OF CINNAMON",
       "concentracion": "25/ 25/ 10",
       "empresa": "ULTRAQUIMIA AGRICULTURAL S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-1802-0243-052-60",
       "categoria": "Nematicidas",
       "unidad": "L"
     },
@@ -1345,7 +1345,7 @@
       "ingrediente_activo": "EXTRACT OF CHICALOTE",
       "concentracion": "90",
       "empresa": "ULTRAAGRICHEMISTRY 2 to S.A. DE C.V.",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0105-0273-009-90",
       "categoria": "Nematicidas",
       "unidad": "L"
     },
@@ -1660,7 +1660,7 @@
       "ingrediente_activo": "Verticillium lecanii",
       "concentracion": "6",
       "empresa": "AGROCHEMICALS VERSA SA Of CV",
-      "rsco": null,
+      "rsco": "RSCO-INAC-0104M-303-002-006",
       "categoria": "Nematicidas",
       "unidad": "kg"
     }
