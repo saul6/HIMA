@@ -18,6 +18,7 @@ import {
 } from '@/hooks/useM24QuimicosInventario'
 import { generarInventarioQuimicosPDF } from '@/lib/pdf/m24/generarInventarioQuimicosPDF'
 import { generarInventarioQuimicosConsolidadoPDF } from '@/lib/pdf/m24/generarInventarioQuimicosConsolidadoPDF'
+import { Fab } from '@/app/components/Fab'
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -259,13 +260,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
       </div>
 
       {/* FAB */}
-      <button
-        onClick={abrirForm}
-        className="fixed bottom-safe-fab right-4 w-14 h-14 bg-primary rounded-full flex items-center justify-center z-10 hover:bg-agro-blue transition-colors"
-        aria-label="Nuevo movimiento"
-      >
-        <Plus className="w-6 h-6 text-white" />
-      </button>
+            <Fab onClick={abrirForm} aria-label="Nuevo movimiento" />
 
       {/* Form sheet */}
       <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) setSheetOpen(false) }}>

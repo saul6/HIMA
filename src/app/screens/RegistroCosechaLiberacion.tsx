@@ -16,6 +16,7 @@ import { generarCosechaLiberacionPDF } from '@/lib/pdf/m10/generarCosechaLiberac
 import { generarCosechaLiberacionConsolidadoPDF } from '@/lib/pdf/m10/generarCosechaLiberacionConsolidadoPDF'
 import type { CosechaLiberacionPaginaProps } from '@/lib/pdf/m10/CosechaLiberacionPDF'
 import { useModulosContext } from '@/context/ModulosContext'
+import { Fab } from '@/app/components/Fab'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -502,15 +503,7 @@ export function RegistroCosechaLiberacion() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-        <button
-          onClick={abrirSheet}
-          className="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-lg pointer-events-auto hover:bg-agro-blue transition-colors"
-          aria-label="Nueva liberación"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      </div>
+            <Fab onClick={abrirSheet} aria-label="Nueva liberación" />
 
       {/* ── Bottom Sheet — Exportar consolidado ─────────────────────────────── */}
       <BottomSheet open={sheetConsAbierto} onClose={() => setSheetConsAbierto(false)}>

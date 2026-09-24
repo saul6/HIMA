@@ -18,6 +18,7 @@ import {
 } from '@/hooks/useM43InspeccionAlmacen'
 import { generarInspeccionAlmacenEmpaquePDF } from '@/lib/pdf/m43/generarInspeccionAlmacenEmpaquePDF'
 import { generarInspeccionAlmacenEmpaqueConsolidadoPDF } from '@/lib/pdf/m43/generarInspeccionAlmacenEmpaqueConsolidadoPDF'
+import { Fab } from '@/app/components/Fab'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -731,21 +732,14 @@ export function InspeccionAlmacenEmpaque() {
       )}
 
       {/* ── FAB ────────────────────────────────────────────────────────── */}
-      <button
-        onClick={() => {
+            <Fab onClick={() => {
           if (vista === 'lista') {
             setSheetCrear(true)
             setErrRancho(false)
           } else {
             abrirSheetDia()
           }
-        }}
-        className="fixed bottom-safe-fab right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-40"
-        style={{ backgroundColor: 'var(--primary)' }}
-        aria-label="Agregar"
-      >
-        <Plus className="w-6 h-6 text-white" />
-      </button>
+        }} aria-label="Agregar" />
 
       {/* ── Sheet: crear registro ──────────────────────────────────────── */}
       {sheetCrear && (

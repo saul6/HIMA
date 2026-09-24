@@ -22,6 +22,7 @@ import { generarFertilizacionPDF } from '@/lib/pdf/m8/generarFertilizacionPDF'
 import { generarFertilizacionConsolidadoPDF } from '@/lib/pdf/m8/generarFertilizacionConsolidadoPDF'
 import type { FertilizacionPDFProps } from '@/lib/pdf/m8/FertilizacionPDF'
 import { useModulosContext } from '@/context/ModulosContext'
+import { Fab } from '@/app/components/Fab'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -1013,16 +1014,7 @@ export function RegistroFertilizacion() {
       )}
 
       {/* FAB contextual */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-        <button
-          onClick={tab === 'registros' ? abrirSheetNuevo : abrirSheetMov}
-          className="w-14 h-14 rounded-full text-white flex items-center justify-center shadow-lg pointer-events-auto transition-colors"
-          style={{ backgroundColor: 'var(--primary)' }}
-          aria-label={tab === 'registros' ? 'Nuevo registro' : 'Movimiento de inventario'}
-        >
-          {tab === 'inventario' ? <TrendingDown className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
-        </button>
-      </div>
+            <Fab onClick={tab === 'registros' ? abrirSheetNuevo : abrirSheetMov} aria-label={tab === 'registros' ? 'Nuevo registro' : 'Movimiento de inventario'} icon={tab === 'inventario' ? TrendingDown : Plus} />
 
       {/* ── Sheet: Nuevo registro ─────────────────────────────────────────────── */}
       <BottomSheet open={sheetNuevoAbierto} onClose={() => !guardando && setSheetNuevoAbierto(false)} height="85%">

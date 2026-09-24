@@ -17,6 +17,7 @@ import {
 } from '@/hooks/useAuditoriaVisitas'
 import type { NoConformidad } from '@/types/database.types'
 import { generarResumenNoConformidadesPDF } from '@/lib/pdf/m25/generarResumenNoConformidadesPDF'
+import { Fab } from '@/app/components/Fab'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -321,15 +322,7 @@ export function ResumenNoConformidades() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-        <button
-          onClick={abrirNuevo}
-          className="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center pointer-events-auto hover:bg-agro-blue transition-colors"
-          aria-label="Nueva visita"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      </div>
+            <Fab onClick={abrirNuevo} aria-label="Nueva visita" />
 
       {/* ── Bottom Sheet — Formulario ────────────────────────────────────────── */}
       <BottomSheet

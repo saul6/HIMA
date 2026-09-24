@@ -13,6 +13,7 @@ import { useM50CalibracionEquipos } from '@/hooks/useM50CalibracionEquipos'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { generarCalibracionEquiposPDF, generarCalibracionEquiposConsolidadoPDF } from '@/lib/pdf/m50/generarCalibracionEquiposPDF'
+import { Fab } from '@/app/components/Fab'
 
 function formatFecha(iso: string): string {
   try {
@@ -226,16 +227,7 @@ export function CalibracionEquipos() {
         ))}
       </div>
 
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10 md:bottom-6">
-        <button
-          onClick={abrirNuevo}
-          className="pointer-events-auto w-14 h-14 rounded-full text-white flex items-center justify-center active:scale-95 transition-transform"
-          style={{ backgroundColor: 'var(--primary)' }}
-          aria-label="Nueva calibración"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      </div>
+            <Fab onClick={abrirNuevo} aria-label="Nueva calibración" />
 
       <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">

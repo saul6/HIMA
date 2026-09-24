@@ -4,6 +4,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { useAuditoriasPGFS } from '@/hooks/useAuditoriasPGFS'
 import type { AuditoriaListItem } from '@/hooks/useAuditoriasPGFS'
 import { LEYENDA_LEGAL_PGFS } from '@/lib/auditoriasPGFS'
+import { Fab } from '@/app/components/Fab'
 
 const ROLES_PERMITIDOS = ['auditor', 'admin_org', 'super_admin']
 
@@ -128,14 +129,7 @@ export default function AuditoriasPrimusGFS() {
       </main>
 
       {/* FAB */}
-      <button
-        onClick={() => navigate('/inocuidad/auditorias-primusgfs/nueva')}
-        className="fixed bottom-20 right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-20"
-        style={{ backgroundColor: 'var(--primary)' }}
-        aria-label="Nueva auditoría"
-      >
-        <Plus size={24} color="white" />
-      </button>
+            <Fab onClick={() => navigate('/inocuidad/auditorias-primusgfs/nueva')} aria-label="Nueva auditoría" />
     </div>
   )
 }

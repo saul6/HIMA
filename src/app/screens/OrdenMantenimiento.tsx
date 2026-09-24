@@ -13,6 +13,7 @@ import {
   type PrioridadM44,
 } from '@/hooks/useM44OrdenesMantenimiento'
 import { generarOrdenMantenimientoPDF } from '@/lib/pdf/m44/generarOrdenMantenimientoPDF'
+import { Fab } from '@/app/components/Fab'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -329,14 +330,7 @@ export function OrdenMantenimiento() {
       </div>
 
       {/* FAB */}
-      <button
-        onClick={abrirFormulario}
-        className="fixed bottom-safe-fab right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-40"
-        style={{ backgroundColor: 'var(--primary)' }}
-        aria-label="Nueva orden"
-      >
-        <Plus className="w-6 h-6 text-white" />
-      </button>
+            <Fab onClick={abrirFormulario} aria-label="Nueva orden" />
 
       {/* ── Sheet: nueva orden ─────────────────────────────────────────── */}
       {abierto && (

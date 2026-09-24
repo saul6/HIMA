@@ -20,6 +20,7 @@ import { generarVidrioPlasticoPDF } from '@/lib/pdf/m7/generarVidrioPlasticoPDF'
 import { generarVidrioPlasticoConsolidadoPDF } from '@/lib/pdf/m7/generarVidrioPlasticoConsolidadoPDF'
 import type { VidrioPlasticoPDFProps } from '@/lib/pdf/m7/VidrioPlasticoPDF'
 import { useModulosContext } from '@/context/ModulosContext'
+import { Fab } from '@/app/components/Fab'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -783,15 +784,7 @@ export function InspeccionVidrioPlastico() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-        <button
-          onClick={abrirSheetInspeccion}
-          className="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-lg pointer-events-auto hover:bg-agro-blue transition-colors"
-          aria-label="Nueva inspección"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      </div>
+            <Fab onClick={abrirSheetInspeccion} aria-label="Nueva inspección" />
 
       {/* ── Sheet: configurar materiales ───────────────────────────────────── */}
       <BottomSheet open={sheetConfigAbierto} onClose={() => setSheetConfigAbierto(false)} height="85%">

@@ -27,6 +27,7 @@ import { generarVerificacionInsumosPDF } from '@/lib/pdf/m23/generarVerificacion
 import { generarVerificacionInsumosConsolidadoPDF } from '@/lib/pdf/m23/generarVerificacionInsumosConsolidadoPDF'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
+import { Fab } from '@/app/components/Fab'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -827,9 +828,7 @@ export function VerificacionInsumos() {
       )}
 
       {/* ── FAB ── */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-        <button
-          onClick={() => {
+            <Fab onClick={() => {
             if (vista === 'lista') {
               setNRanchoId(''); setNMes(mesActual())
               setNVerificoNombre(profile?.nombre_completo ?? '')
@@ -840,13 +839,7 @@ export function VerificacionInsumos() {
               setDFecha(''); setDErrFecha(false); setDYaExiste(false)
               setSheetDia(true)
             }
-          }}
-          className="pointer-events-auto w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg"
-          aria-label={vista === 'lista' ? 'Nuevo registro mensual' : 'Agregar día de verificación'}
-        >
-          <Plus className="w-6 h-6 text-white" />
-        </button>
-      </div>
+          }} aria-label={vista === 'lista' ? 'Nuevo registro mensual' : 'Agregar día de verificación'} />
 
       {/* ═══ SHEET: NUEVO REGISTRO MENSUAL ═══════════════════════════════════════ */}
       <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">

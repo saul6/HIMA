@@ -9,6 +9,7 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM70VerificacionRoedores } from '@/hooks/useM70VerificacionRoedores'
 import { supabase } from '@/lib/supabase'
+import { Fab } from '@/app/components/Fab'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -243,16 +244,7 @@ export function VerificacionRoedores() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10 md:bottom-6">
-        <button
-          onClick={abrirNuevo}
-          className="pointer-events-auto w-14 h-14 rounded-full text-white flex items-center justify-center active:scale-95 transition-transform"
-          style={{ backgroundColor: 'var(--primary)' }}
-          aria-label="Nueva verificación"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      </div>
+            <Fab onClick={abrirNuevo} aria-label="Nueva verificación" />
 
       {/* Sheet — nuevo registro */}
       <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} height="85%">

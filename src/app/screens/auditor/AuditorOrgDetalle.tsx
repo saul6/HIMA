@@ -3,6 +3,7 @@ import { ChevronLeft, Plus, MapPin, ClipboardCheck } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorOrg } from '@/hooks/useAuditorOrg'
 import type { AuditorAuditoriaItem } from '@/hooks/useAuditorOrg'
+import { Fab } from '@/app/components/Fab'
 
 const ESTADO_LABELS: Record<string, string> = {
   en_proceso:  'En proceso',
@@ -149,14 +150,7 @@ export function AuditorOrgDetalle() {
       )}
 
       {/* FAB */}
-      <button
-        onClick={() => navigate(`/auditor/org/${orgId}/nueva`, { state: { orgNombre } })}
-        className="fixed bottom-20 right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-20"
-        style={{ backgroundColor: 'var(--primary)' }}
-        aria-label="Nueva auditoría"
-      >
-        <Plus size={24} color="white" />
-      </button>
+            <Fab onClick={() => navigate(`/auditor/org/${orgId}/nueva`, { state: { orgNombre } })} aria-label="Nueva auditoría" />
     </div>
   )
 }

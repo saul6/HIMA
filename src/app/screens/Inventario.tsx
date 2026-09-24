@@ -24,6 +24,7 @@ import { FormField } from "@/app/components/FormField"
 import { FormSelect } from "@/app/components/FormSelect"
 import type { TipoMovimiento, InventarioSaldoRancho, InventarioSaldoProductor, Rancho } from "@/types/database.types"
 import { useModulosContext } from '@/context/ModulosContext'
+import { Fab } from '@/app/components/Fab'
 
 const LOW_STOCK = 5
 
@@ -689,14 +690,7 @@ export function Inventario() {
       </div>
 
       {/* FAB — mismo ancla que el bottom-nav para quedar dentro del contenedor de 390px */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-        <button
-          onClick={() => setShowSheet(true)}
-          className="pointer-events-auto w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg hover:bg-agro-blue transition-colors"
-        >
-          <Plus className="w-6 h-6 text-white" />
-        </button>
-      </div>
+            <Fab onClick={() => setShowSheet(true)} />
 
       {/* Bottom sheet */}
       {showSheet && user && profile?.org_id && (

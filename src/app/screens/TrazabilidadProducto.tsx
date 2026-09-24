@@ -20,6 +20,7 @@ import {
 } from '@/hooks/useM48Trazabilidad'
 import { registrarYGenerarEtiqueta, registrarEImprimirEtiqueta } from '@/lib/pdf/m48/generarM48PDF'
 import QRCode from 'qrcode'
+import { Fab } from '@/app/components/Fab'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -677,20 +678,12 @@ export function TrazabilidadProducto() {
 
       {/* FAB */}
       {showFAB && (
-        <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-          <button
-            onClick={() => {
+                <Fab onClick={() => {
               if (tab === 'lr') { setFormLR(LR_VACÍO); setSheetLR(true) }
               else if (tab === 'lpt') { setFormLPT(LPT_VACÍO); setSheetLPT(true) }
               else if (tab === 'lc') { setFormLC(LC_VACÍO); setSheetLC(true) }
               else if (tab === 'fe') { setFormFE(FE_VACÍO); setSheetFE(true) }
-            }}
-            className="w-14 h-14 rounded-full text-white flex items-center justify-center shadow-lg pointer-events-auto"
-            style={{ background: 'var(--primary)' }}
-          >
-            <Plus className="w-6 h-6" />
-          </button>
-        </div>
+            }} />
       )}
 
       {/* ── Bottom Sheet: LR ─────────────────────────────────────────────── */}

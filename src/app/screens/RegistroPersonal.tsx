@@ -15,6 +15,7 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { supabase } from '@/lib/supabase'
 import { useM47Trabajadores, useM47Items } from '@/hooks/useM47RegistroPersonal'
 import { generarRegistroPersonalPDF } from '@/lib/pdf/m47/generarRegistroPersonalPDF'
+import { Fab } from '@/app/components/Fab'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -473,16 +474,7 @@ export function RegistroPersonal() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10 md:bottom-6">
-        <button
-          onClick={abrirNuevo}
-          className="pointer-events-auto w-14 h-14 rounded-full text-white flex items-center justify-center"
-          style={{ backgroundColor: 'var(--primary)', boxShadow: '0 2px 12px rgba(43,122,181,0.35)' }}
-          aria-label="Nuevo trabajador"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      </div>
+            <Fab onClick={abrirNuevo} aria-label="Nuevo trabajador" />
 
       {/* ═══ SHEET: FORMULARIO ══════════════════════════════════════════════════ */}
       <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) setSheetOpen(false) }} height="85%">

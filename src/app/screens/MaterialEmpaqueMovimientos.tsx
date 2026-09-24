@@ -11,6 +11,7 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { supabase } from '@/lib/supabase'
 import { generarMaterialEmpaquePDF } from '@/lib/pdf/m42/generarMaterialEmpaquePDF'
 import { generarMaterialEmpaqueConsolidadoPDF } from '@/lib/pdf/m42/generarMaterialEmpaqueConsolidadoPDF'
+import { Fab } from '@/app/components/Fab'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 const tbl = (name: string) => (supabase as any).from(name)
@@ -297,13 +298,7 @@ export function MaterialEmpaqueMovimientos() {
       </div>
 
       {/* FAB */}
-      <button
-        onClick={abrirFormulario}
-        className="fixed bottom-20 right-4 w-14 h-14 rounded-full flex items-center justify-center z-10"
-        style={{ backgroundColor: 'var(--primary)' }}
-      >
-        <Plus size={24} color="white" />
-      </button>
+            <Fab onClick={abrirFormulario} />
 
       {/* Formulario */}
       <BottomSheet open={abierto} onClose={() => setAbierto(false)} height="85%">

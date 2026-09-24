@@ -8,6 +8,7 @@ import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { useM56FrecuenciaCapacitacion } from '@/hooks/useM56FrecuenciaCapacitacion'
 import { supabase } from '@/lib/supabase'
 import { generarFrecuenciaCapacitacionPDF } from '@/lib/pdf/m56/generarFrecuenciaCapacitacionPDF'
+import { Fab } from '@/app/components/Fab'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const ANIO_ACTUAL = new Date().getFullYear()
@@ -250,16 +251,7 @@ export function FrecuenciaCapacitacion() {
       </div>
 
       {esAdmin && (
-        <div className="fixed bottom-20 right-4 z-50">
-          <button
-            onClick={abrirNuevo}
-            className="w-14 h-14 rounded-full text-white flex items-center justify-center active:scale-95 transition-transform"
-            style={{ backgroundColor: 'var(--primary)' }}
-            aria-label="Nuevo registro"
-          >
-            <Plus className="w-6 h-6" />
-          </button>
-        </div>
+                <Fab onClick={abrirNuevo} aria-label="Nuevo registro" />
       )}
 
       <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} height="85%">

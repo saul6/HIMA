@@ -23,6 +23,7 @@ import {
   generarRondinesVigilanciaPDF,
   generarRondinesVigilanciaConsolidadoPDF,
 } from '@/lib/pdf/m46/generarRondinesVigilanciaPDF'
+import { Fab } from '@/app/components/Fab'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -569,19 +570,7 @@ export function RondinesVigilancia() {
       </div>
 
       {/* FAB */}
-      <button
-        onClick={abrirNuevo}
-        className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10"
-        style={{ bottom: 'calc(72px + 16px)' }}
-      >
-        <span
-          className="pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: 'var(--primary)', boxShadow: '0 2px 12px rgba(43,122,181,0.35)' }}
-          aria-label="Nuevo rondín"
-        >
-          <Plus className="w-6 h-6 text-white" />
-        </span>
-      </button>
+      <Fab onClick={abrirNuevo} aria-label="Nuevo rondín" />
 
       {/* ═══ SHEET: NUEVO RONDÍN ══════════════════════════════════════════════ */}
       {sheetNuevo && (

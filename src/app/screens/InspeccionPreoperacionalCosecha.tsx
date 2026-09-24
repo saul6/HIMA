@@ -22,6 +22,7 @@ import { generarPreoperacionalPDF } from '@/lib/pdf/m11/generarPreoperacionalPDF
 import { generarPreoperacionalConsolidadoPDF } from '@/lib/pdf/m11/generarPreoperacionalConsolidadoPDF'
 import { useModulosContext } from '@/context/ModulosContext'
 import { hoyMX } from '@/lib/fecha'
+import { Fab } from '@/app/components/Fab'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -692,9 +693,7 @@ export function InspeccionPreoperacionalCosecha() {
       )}
 
       {/* ── FAB ────────────────────────────────────────────────────────── */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-        <button
-          onClick={() => {
+            <Fab onClick={() => {
             if (vista === 'lista') {
               setNRanchoId(''); setNMes(mesActual())
               setNRealizadoPor(profile?.nombre_completo ?? '')
@@ -704,13 +703,7 @@ export function InspeccionPreoperacionalCosecha() {
               setDFecha(''); setDErrFecha(false); setDYaExiste(false)
               setSheetDia(true)
             }
-          }}
-          className="pointer-events-auto w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg hover:bg-agro-blue transition-colors"
-          aria-label={vista === 'lista' ? 'Nuevo registro mensual' : 'Agregar día de inspección'}
-        >
-          <Plus className="w-6 h-6 text-white" />
-        </button>
-      </div>
+          }} aria-label={vista === 'lista' ? 'Nuevo registro mensual' : 'Agregar día de inspección'} />
 
       {/* ═══ SHEET: NUEVO REGISTRO MENSUAL ═══════════════════════════════ */}
       <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">

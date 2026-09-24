@@ -13,6 +13,7 @@ import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { generarMuestrasLaboratorioPDF } from '@/lib/pdf/m22/generarMuestrasLaboratorioPDF'
 import { generarMuestrasLaboratorioConsolidadoPDF } from '@/lib/pdf/m22/generarMuestrasLaboratorioConsolidadoPDF'
+import { Fab } from '@/app/components/Fab'
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -235,15 +236,7 @@ export function RegistroMuestrasLaboratorio() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-        <button
-          onClick={abrirNueva}
-          className="pointer-events-auto w-14 h-14 rounded-full bg-[var(--primary)] text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-          aria-label="Nueva muestra"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      </div>
+            <Fab onClick={abrirNueva} aria-label="Nueva muestra" />
 
       {/* Bottom sheet — Formulario */}
       <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>

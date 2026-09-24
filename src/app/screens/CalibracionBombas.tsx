@@ -13,6 +13,7 @@ import { useM49CalibracionBombas } from '@/hooks/useM49CalibracionBombas'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { generarCalibracionBombasPDF, generarCalibracionBombasConsolidadoPDF } from '@/lib/pdf/m49/generarCalibracionBombasPDF'
+import { Fab } from '@/app/components/Fab'
 
 function formatFecha(iso: string): string {
   try {
@@ -239,16 +240,7 @@ export function CalibracionBombas() {
         ))}
       </div>
 
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10 md:bottom-6">
-        <button
-          onClick={abrirNuevo}
-          className="pointer-events-auto w-14 h-14 rounded-full text-white flex items-center justify-center active:scale-95 transition-transform"
-          style={{ backgroundColor: 'var(--primary)' }}
-          aria-label="Nueva calibración"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      </div>
+            <Fab onClick={abrirNuevo} aria-label="Nueva calibración" />
 
       {/* Formulario */}
       <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>

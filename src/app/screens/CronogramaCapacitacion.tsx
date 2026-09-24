@@ -8,6 +8,7 @@ import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { useM57CronogramaCapacitacion } from '@/hooks/useM57CronogramaCapacitacion'
 import { supabase } from '@/lib/supabase'
 import { generarCronogramaCapacitacionPDF } from '@/lib/pdf/m57/generarCronogramaCapacitacionPDF'
+import { Fab } from '@/app/components/Fab'
 
 const PERIODICIDADES = ['Mensual', 'Bimestral', 'Trimestral', 'Semestral', 'Anual']
 
@@ -225,16 +226,7 @@ export function CronogramaCapacitacion() {
       </div>
 
       {esAdmin && (
-        <div className="fixed bottom-20 right-4 z-50">
-          <button
-            onClick={abrirNuevo}
-            className="w-14 h-14 rounded-full text-white flex items-center justify-center active:scale-95 transition-transform"
-            style={{ backgroundColor: 'var(--primary)' }}
-            aria-label="Nuevo registro"
-          >
-            <Plus className="w-6 h-6" />
-          </button>
-        </div>
+                <Fab onClick={abrirNuevo} aria-label="Nuevo registro" />
       )}
 
       <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} height="85%">

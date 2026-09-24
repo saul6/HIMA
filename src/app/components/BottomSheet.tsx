@@ -21,16 +21,33 @@ interface BottomSheetProps {
   animateFrom?: 'bottom-left'
 }
 
+// Centrado horizontal por inset-x-0 + mx-auto (no por transform: translateX)
+// a propósito: la variante animada escribe su propio `transform` inline
+// (scale/x/y del spring) vía motion, y un inline `transform` pisa por
+// completo cualquier transform que viniera de una clase (-translate-x-1/2),
+// rompiendo el centrado en cuanto arranca la animación. inset+margin no
+// usa transform, así que no compite con motion. Sin cambio visual para la
+// variante estática (mismo resultado, solo otra técnica de centrado).
 const PANEL_CLASS = [
-  'fixed left-1/2 -translate-x-1/2 w-full bg-card flex flex-col z-50',
+  'fixed inset-x-0 mx-auto w-full bg-card flex flex-col z-50',
   'max-w-[390px] rounded-t-[0.625rem]',
   'md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:max-w-[560px] md:rounded-xl',
 ].join(' ')
 
-// Abre con un ease-out suave, cierra con un ease-in un poco más rápido —
-// mismo origen/familia de curva en ambos sentidos, sin spring con rebote.
-const OPEN_TRANSITION = { duration: 0.26, ease: [0.16, 1, 0.3, 1] as const }
+// Abre con un spring vivo pero elegante: crece, rebasa ~2% y asienta (medido
+// con motion/react — no exagerado, un solo overshoot chico + una corrección
+// mínima, nunca varios rebotes visibles). Cierra con un ease-in rápido: un
+// cierre no necesita "rebotar", solo asentar limpio y veloz hacia el botón.
+const SPRING_OPEN = { type: 'spring', stiffness: 380, damping: 18 } as const
 const CLOSE_TRANSITION = { duration: 0.2, ease: [0.4, 0, 1, 1] as const }
+// Stagger sutil de los ítems del menú (ver Layout.tsx) — solo al abrir,
+// acompañando el spring; nunca en el cierre (se vería lento).
+const STAGGER = { staggerChildren: 0.035, delayChildren: 0.05 }
+
+export const fabMenuItemVariants = {
+  hidden: { opacity: 0, y: 6 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] as const } },
+}
 
 function StaticSheet({ open, onClose, height, children, raised }: {
   open: boolean
@@ -79,7 +96,7 @@ export function BottomSheet({ open, onClose, height, children, animateFrom }: Bo
             className="fixed inset-0 bg-black/40 z-40"
             onClick={onClose}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1, transition: OPEN_TRANSITION }}
+            animate={{ opacity: 1, transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] } }}
             exit={{ opacity: 0, transition: CLOSE_TRANSITION }}
           />
           <motion.div
@@ -89,8 +106,15 @@ export function BottomSheet({ open, onClose, height, children, animateFrom }: Bo
               ...(height ? { height } : { maxHeight: '85vh' }),
               transformOrigin: 'bottom left',
             }}
-            initial={{ opacity: 0, scale: 0.9, x: -12, y: 12 }}
-            animate={{ opacity: 1, scale: 1, x: 0, y: 0, transition: OPEN_TRANSITION }}
+            variants={{
+              hidden: { opacity: 0, scale: 0.9, x: -12, y: 12 },
+              visible: {
+                opacity: 1, scale: 1, x: 0, y: 0,
+                transition: { ...SPRING_OPEN, staggerChildren: STAGGER.staggerChildren, delayChildren: STAGGER.delayChildren },
+              },
+            }}
+            initial="hidden"
+            animate="visible"
             exit={{ opacity: 0, scale: 0.9, x: -12, y: 12, transition: CLOSE_TRANSITION }}
           >
             {children}

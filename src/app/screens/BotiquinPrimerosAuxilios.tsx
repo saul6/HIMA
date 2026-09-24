@@ -22,6 +22,7 @@ import { supabase } from '@/lib/supabase'
 import { generarBotiquinPDF } from '@/lib/pdf/m6/generarBotiquinPDF'
 import { generarBotiquinConsolidadoPDF } from '@/lib/pdf/m6/generarBotiquinConsolidadoPDF'
 import type { BotiquinPDFProps } from '@/lib/pdf/m6/BotiquinPDF'
+import { Fab } from '@/app/components/Fab'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -484,15 +485,7 @@ export function BotiquinPrimerosAuxilios() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-        <button
-          onClick={abrirSheet}
-          className="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-lg pointer-events-auto hover:bg-agro-blue transition-colors"
-          aria-label="Nueva verificación"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      </div>
+            <Fab onClick={abrirSheet} aria-label="Nueva verificación" />
 
       {/* Bottom Sheet — exportar consolidado */}
       <BottomSheet open={sheetConsolidadoAbierto} onClose={() => setSheetConsolidadoAbierto(false)}>

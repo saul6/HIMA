@@ -16,6 +16,7 @@ import { generarLimpiezaBanosPDF } from '@/lib/pdf/m12/generarLimpiezaBanosPDF'
 import { generarLimpiezaBanosConsolidadoPDF } from '@/lib/pdf/m12/generarLimpiezaBanosConsolidadoPDF'
 import type { LimpiezaBanosPaginaProps } from '@/lib/pdf/m12/LimpiezaBanosPDF'
 import { useModulosContext } from '@/context/ModulosContext'
+import { Fab } from '@/app/components/Fab'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -473,15 +474,7 @@ export function RegistroLimpiezaBanos() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-        <button
-          onClick={abrirSheet}
-          className="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-lg pointer-events-auto hover:bg-agro-blue transition-colors"
-          aria-label="Nueva limpieza"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      </div>
+            <Fab onClick={abrirSheet} aria-label="Nueva limpieza" />
 
       {/* ── Bottom Sheet — Exportar consolidado ─────────────────────────────── */}
       <BottomSheet open={sheetConsAbierto} onClose={() => setSheetConsAbierto(false)}>

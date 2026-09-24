@@ -12,6 +12,7 @@ import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { generarTensiometrosPDF } from '@/lib/pdf/m58/generarTensiometrosPDF'
 import { generarTensiometrosConsolidadoPDF } from '@/lib/pdf/m58/generarTensiometrosPDF'
+import { Fab } from '@/app/components/Fab'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -234,16 +235,7 @@ export function Tensiometros() {
         ))}
       </div>
 
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10 md:bottom-6">
-        <button
-          onClick={abrirNuevo}
-          className="pointer-events-auto w-14 h-14 rounded-full text-white flex items-center justify-center active:scale-95 transition-transform"
-          style={{ backgroundColor: 'var(--primary)' }}
-          aria-label="Nueva lectura"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      </div>
+            <Fab onClick={abrirNuevo} aria-label="Nueva lectura" />
 
       <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">

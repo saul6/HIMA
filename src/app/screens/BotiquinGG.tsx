@@ -20,6 +20,7 @@ import {
   type M73RegistroResumen,
 } from '@/hooks/useM73BotiquinGG'
 import { supabase } from '@/lib/supabase'
+import { Fab } from '@/app/components/Fab'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -298,16 +299,7 @@ export function BotiquinGG() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-        <button
-          onClick={abrirSheet}
-          className="pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors"
-          style={{ backgroundColor: 'var(--primary)' }}
-          aria-label="Nuevo registro"
-        >
-          <Plus className="w-6 h-6 text-white" />
-        </button>
-      </div>
+            <Fab onClick={abrirSheet} aria-label="Nuevo registro" />
 
       {/* Sheet nuevo registro */}
       <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">

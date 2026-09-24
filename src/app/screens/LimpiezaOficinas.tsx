@@ -22,6 +22,7 @@ import { supabase } from '@/lib/supabase'
 import { generarLimpiezaOficinasPDF } from '@/lib/pdf/m31/generarLimpiezaOficinasPDF'
 import { generarLimpiezaOficinasConsolidadoPDF } from '@/lib/pdf/m31/generarLimpiezaOficinasConsolidadoPDF'
 import type { M31ItemPDF, M31DiaDataPDF, ValorM31PDF } from '@/lib/pdf/m31/LimpiezaOficinasPDF'
+import { Fab } from '@/app/components/Fab'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -832,20 +833,10 @@ export function LimpiezaOficinas() {
 
       {/* ── FAB ──────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
-        <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-          <button
-            type="button"
-            onClick={() => {
+                <Fab onClick={() => {
               setNRanchoId(''); setNAnio(new Date().getFullYear()); setNMes(new Date().getMonth() + 1)
               setNErrRancho(false); setSheetNuevo(true)
-            }}
-            className="pointer-events-auto w-14 h-14 bg-primary rounded-full flex items-center justify-center"
-            style={{ boxShadow: '0 2px 12px rgba(43,122,181,0.35)' }}
-            aria-label="Nuevo registro mensual"
-          >
-            <Plus className="w-6 h-6 text-white" />
-          </button>
-        </div>
+            }} aria-label="Nuevo registro mensual" />
       )}
 
       {/* ═══ SHEET: NUEVO REGISTRO ══════════════════════════════════════════════ */}

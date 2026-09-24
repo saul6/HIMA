@@ -26,6 +26,7 @@ import { supabase } from '@/lib/supabase'
 import { generarMonitoreoEstacionesPDF } from '@/lib/pdf/m21/generarMonitoreoEstacionesPDF'
 import { generarMonitoreoEstacionesConsolidadoPDF } from '@/lib/pdf/m21/generarMonitoreoEstacionesConsolidadoPDF'
 import { Button } from '@/app/components/ui/button'
+import { Fab } from '@/app/components/Fab'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -978,20 +979,11 @@ export function MonitoreoEstacionesPlagas() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-        <button
-          type="button"
-          onClick={() => {
+            <Fab onClick={() => {
             setForm({ ...FORM_INICIAL, inspectorNombre: profile?.nombre_completo ?? '' })
             setEstForm({})
             setSheetNuevo(true)
-          }}
-          className="pointer-events-auto w-14 h-14 rounded-full bg-[var(--primary)] text-white shadow-lg flex items-center justify-center active:scale-95 transition-transform"
-          aria-label="Nueva revisión"
-        >
-          <Plus className="w-7 h-7" />
-        </button>
-      </div>
+          }} aria-label="Nueva revisión" />
 
       {/* ── Sheet: Gestionar Estaciones ──────────────────────────────────────── */}
       <BottomSheet open={sheetEstaciones} onClose={() => setSheetEstaciones(false)} height="85%">

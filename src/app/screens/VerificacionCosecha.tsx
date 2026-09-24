@@ -23,6 +23,7 @@ import {
   type M69Resultado,
 } from '@/hooks/useM69VerificacionCosecha'
 import { supabase } from '@/lib/supabase'
+import { Fab } from '@/app/components/Fab'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -811,9 +812,7 @@ export function VerificacionCosecha() {
 
       {/* ── FAB — solo en lista ──────────────────────────────────────── */}
       {vista === 'lista' && (
-        <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-          <button
-            onClick={() => {
+                <Fab onClick={() => {
               setNRanchoId('')
               setNMes(mesActual())
               setNCodigo('')
@@ -823,14 +822,7 @@ export function VerificacionCosecha() {
               setNErrRancho(false)
               setNYaExiste(false)
               setSheetNuevo(true)
-            }}
-            className="pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors"
-            style={{ backgroundColor: 'var(--primary)' }}
-            aria-label="Nuevo registro mensual"
-          >
-            <Plus className="w-6 h-6 text-white" />
-          </button>
-        </div>
+            }} aria-label="Nuevo registro mensual" />
       )}
 
       {/* ═══ SHEET: NUEVO REGISTRO ═══════════════════════════════════════ */}

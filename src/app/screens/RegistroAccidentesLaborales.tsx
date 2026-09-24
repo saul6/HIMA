@@ -20,6 +20,7 @@ import { validarImagen } from '@/lib/validarImagen'
 import { generarAccidenteLaboralPDF } from '@/lib/pdf/m20/generarAccidenteLaboralPDF'
 import { generarAccidenteLaboralConsolidadoPDF } from '@/lib/pdf/m20/generarAccidenteLaboralConsolidadoPDF'
 import { Button } from '@/app/components/ui/button'
+import { Fab } from '@/app/components/Fab'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -533,16 +534,7 @@ export function RegistroAccidentesLaborales() {
       </div>
 
       {/* FAB */}
-      <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-        <button
-          type="button"
-          onClick={() => { setForm(FORM_INICIAL); setFotosLocal([]); setSheetNuevo(true) }}
-          className="pointer-events-auto w-14 h-14 rounded-full bg-[var(--primary)] text-white shadow-lg flex items-center justify-center active:scale-95 transition-transform"
-          aria-label="Nuevo registro"
-        >
-          <Plus className="w-7 h-7" />
-        </button>
-      </div>
+            <Fab onClick={() => { setForm(FORM_INICIAL); setFotosLocal([]); setSheetNuevo(true) }} aria-label="Nuevo registro" />
 
       {/* Sheet: Nuevo registro ─────────────────────────────────────────────── */}
       <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">

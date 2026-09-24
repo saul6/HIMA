@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { useAuditorAsignaciones } from '@/hooks/useAuditorAsignaciones'
+import { Fab } from '@/app/components/Fab'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -384,16 +385,9 @@ export function AuditorInstalacionDetalle() {
 
       {/* FAB */}
       {!instalacion?.linked_org_id && (
-        <button
-          onClick={() => navigate(`/auditor/instalacion/${instalacionId}/nueva`, {
+                <Fab onClick={() => navigate(`/auditor/instalacion/${instalacionId}/nueva`, {
             state: { instalacionNombre: instalacion?.nombre }
-          })}
-          className="fixed bottom-20 right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-20"
-          style={{ backgroundColor: 'var(--primary)' }}
-          aria-label="Nueva auditoría"
-        >
-          <Plus size={24} color="white" />
-        </button>
+          })} aria-label="Nueva auditoría" />
       )}
 
       {/* Sheet: Vincular a organización M.A.D.Y. */}

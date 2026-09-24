@@ -22,6 +22,7 @@ import {
   type EmpleadoBasicoConRol,
 } from '@/lib/queries'
 import type { Organizacion, Rancho } from '@/types/database.types'
+import { Fab } from '@/app/components/Fab'
 
 const CULTIVOS = ['Zarzamora', 'Frambuesa', 'Fresa', 'Mora azul', 'Coco']
 const CULTIVO_OTRO = '__otro__'
@@ -544,27 +545,11 @@ export function MiOrganizacion() {
 
       {/* FAB — solo admin */}
       {esAdmin && (
-        <div className="fixed bottom-safe-fab left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-          <button
-            onClick={bloqueado ? undefined : abrirCrear}
-            disabled={bloqueado}
-            className="w-14 h-14 rounded-full text-white flex items-center justify-center shadow-lg pointer-events-auto transition-colors"
-            style={{
-              background: bloqueado ? 'var(--muted-foreground)' : 'var(--primary)',
-              cursor: bloqueado ? 'not-allowed' : 'pointer',
-              opacity: bloqueado ? 0.5 : 1,
-            }}
-            aria-label={
-              esPendiente
+                <Fab onClick={bloqueado ? undefined : abrirCrear} aria-label={esPendiente
                 ? 'Cuenta pendiente de activación'
                 : enLimite
                   ? `Límite de ${sPluralL} alcanzado`
-                  : terminosSitio.agregar
-            }
-          >
-            <Plus className="w-6 h-6" />
-          </button>
-        </div>
+                  : terminosSitio.agregar} disabled={bloqueado} />
       )}
 
       {/* Bottom Sheet — crear/editar rancho */}

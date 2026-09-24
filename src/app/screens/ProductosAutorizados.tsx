@@ -8,6 +8,7 @@ import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { useM66ProductosAutorizados } from '@/hooks/useM66ProductosAutorizados'
 import { supabase } from '@/lib/supabase'
 import { generarProductosAutorizadosPDF } from '@/lib/pdf/m66/generarProductosAutorizadosPDF'
+import { Fab } from '@/app/components/Fab'
 
 type FormState = {
   cultivo: string
@@ -309,16 +310,7 @@ export function ProductosAutorizados() {
 
       {/* FAB — solo admin */}
       {esAdmin && (
-        <div className="fixed bottom-20 right-4 z-50">
-          <button
-            onClick={abrirNuevo}
-            className="w-14 h-14 rounded-full text-white flex items-center justify-center active:scale-95 transition-transform"
-            style={{ backgroundColor: 'var(--primary)' }}
-            aria-label="Nuevo producto"
-          >
-            <Plus className="w-6 h-6" />
-          </button>
-        </div>
+                <Fab onClick={abrirNuevo} aria-label="Nuevo producto" />
       )}
 
       {/* Bottom sheet — Formulario */}

@@ -17,6 +17,7 @@ import {
 } from '@/hooks/useM45MttoPreventivo'
 import { generarMttoPreventivoPDF } from '@/lib/pdf/m45/generarMttoPreventivoPDF'
 import { generarMttoPreventivoConsolidadoPDF } from '@/lib/pdf/m45/generarMttoPreventivoPDF'
+import { Fab } from '@/app/components/Fab'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -711,21 +712,14 @@ export function MantenimientoPreventivo() {
       )}
 
       {/* ── FAB ────────────────────────────────────────────────────────── */}
-      <button
-        onClick={() => {
+            <Fab onClick={() => {
           if (vista === 'lista') {
             setSheetCrear(true)
             setErrRancho(false)
           } else {
             abrirSheetDia()
           }
-        }}
-        className="fixed bottom-safe-fab right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-40"
-        style={{ backgroundColor: 'var(--primary)' }}
-        aria-label="Agregar"
-      >
-        <Plus className="w-6 h-6 text-white" />
-      </button>
+        }} aria-label="Agregar" />
 
       {/* ── Sheet: crear registro ──────────────────────────────────────── */}
       {sheetCrear && (

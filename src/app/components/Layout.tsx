@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, Link } from "react-router";
+import { motion } from "motion/react";
 import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck, X, Calendar } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
@@ -7,7 +8,7 @@ import { useHomeSearch } from "@/context/HomeSearchContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useIntroTransition } from "@/context/IntroTransitionContext";
 import { MadyLogo } from "@/app/components/MadyLogo";
-import { BottomSheet } from "@/app/components/BottomSheet";
+import { BottomSheet, fabMenuItemVariants } from "@/app/components/BottomSheet";
 import { AuditorCampana } from "@/app/screens/auditor/AuditorCampana";
 
 const PATH_TITLES: Record<string, string> = {
@@ -333,25 +334,26 @@ export function Layout() {
           {menuItems.map(({ path, icon: Icon, label }) => {
             const active = isActive(path);
             return (
-              <Link
-                key={path}
-                to={path}
-                onClick={() => setMenuAbierto(false)}
-                className="flex items-center gap-4 px-4 py-3 transition-colors"
-                style={{
-                  backgroundColor: active ? 'var(--accent)' : undefined,
-                  color: active ? 'var(--accent-foreground)' : 'var(--foreground)',
-                }}
-              >
-                <Icon
-                  className="w-5 h-5 flex-shrink-0"
-                  style={{ color: active ? 'var(--primary)' : 'var(--muted-foreground)' }}
-                  strokeWidth={active ? 2 : 1.5}
-                />
-                <span className="text-sm" style={{ fontWeight: active ? 600 : 400 }}>
-                  {label}
-                </span>
-              </Link>
+              <motion.div key={path} variants={fabMenuItemVariants}>
+                <Link
+                  to={path}
+                  onClick={() => setMenuAbierto(false)}
+                  className="flex items-center gap-4 px-4 py-3 transition-colors"
+                  style={{
+                    backgroundColor: active ? 'var(--accent)' : undefined,
+                    color: active ? 'var(--accent-foreground)' : 'var(--foreground)',
+                  }}
+                >
+                  <Icon
+                    className="w-5 h-5 flex-shrink-0"
+                    style={{ color: active ? 'var(--primary)' : 'var(--muted-foreground)' }}
+                    strokeWidth={active ? 2 : 1.5}
+                  />
+                  <span className="text-sm" style={{ fontWeight: active ? 600 : 400 }}>
+                    {label}
+                  </span>
+                </Link>
+              </motion.div>
             );
           })}
         </div>
