@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useEvidencia } from '@/hooks/useEvidencia'
 import { getSignedUrlEvidencia } from '@/lib/storage/audEvidenciaStorage'
+import { useMisPermisos } from '@/hooks/useMisPermisos'
 import type {
   AudEvidenciaEntityType, AudEvidenciaTipo, AudEvidenciaSnapshot,
 } from '@/types/database.types'
@@ -74,6 +75,10 @@ export function EvidenciaPanel({
   preguntaId, criterionCode, ranchoId,
 }: Props) {
   const hook = useEvidencia(entityType, entityId)
+  const { can, cargando: cargandoPermisos } = useMisPermisos()
+  const canLink      = cargandoPermisos || can('evidence.link')
+  const canUpload    = cargandoPermisos || can('evidence.upload')
+  const canModuleRead = cargandoPermisos || can('module_record.read')
 
   const [abierto, setAbierto] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
@@ -410,7 +415,7 @@ export function EvidenciaPanel({
           )}
 
           {/* Evidencia sugerida por criterio */}
-          {!!preguntaId && (
+          {!!preguntaId && canModuleRead && (
             <div className="border-t border-border flex flex-col gap-0">
               {/* Header */}
               <div className="px-4 pt-3 pb-2 flex items-center justify-between">
@@ -536,18 +541,20 @@ export function EvidenciaPanel({
                               Ver en módulo
                             </button>
                           )}
-                          <button
-                            onClick={() => handleRelacionar(reg)}
-                            disabled={!!gwRelacionandoId}
-                            className="flex items-center gap-1 text-[10px] font-semibold h-6 px-2 rounded ml-auto disabled:opacity-50"
-                            style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                          >
-                            {gwRelacionandoId === reg.source_record_id
-                              ? <Loader size={10} className="animate-spin" />
-                              : <Link2 size={10} />
-                            }
-                            Relacionar
-                          </button>
+                          {canLink && (
+                            <button
+                              onClick={() => handleRelacionar(reg)}
+                              disabled={!!gwRelacionandoId}
+                              className="flex items-center gap-1 text-[10px] font-semibold h-6 px-2 rounded ml-auto disabled:opacity-50"
+                              style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                            >
+                              {gwRelacionandoId === reg.source_record_id
+                                ? <Loader size={10} className="animate-spin" />
+                                : <Link2 size={10} />
+                              }
+                              Relacionar
+                            </button>
+                          )}
                         </div>
                       </div>
                     )
@@ -558,24 +565,28 @@ export function EvidenciaPanel({
           )}
 
           {/* Botones de acción */}
-          {!cerrada && (
+          {!cerrada && (canUpload || canLink) && (
             <div className="px-4 py-3 flex gap-2 flex-wrap border-t border-border">
-              <button
-                onClick={() => { setShowUpload(v => !v); setShowGateway(false) }}
-                className="flex items-center gap-1 text-[10px] font-semibold h-7 px-3 rounded-lg"
-                style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-              >
-                <Upload size={10} />
-                Añadir evidencia externa
-              </button>
-              <button
-                onClick={() => { setShowGateway(v => !v); setShowFallback(true); setShowUpload(false) }}
-                className="flex items-center gap-1 text-[10px] font-semibold h-7 px-3 rounded-lg"
-                style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-              >
-                <Database size={10} />
-                Buscar en otro módulo
-              </button>
+              {canUpload && (
+                <button
+                  onClick={() => { setShowUpload(v => !v); setShowGateway(false) }}
+                  className="flex items-center gap-1 text-[10px] font-semibold h-7 px-3 rounded-lg"
+                  style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                >
+                  <Upload size={10} />
+                  Añadir evidencia externa
+                </button>
+              )}
+              {canLink && (
+                <button
+                  onClick={() => { setShowGateway(v => !v); setShowFallback(true); setShowUpload(false) }}
+                  className="flex items-center gap-1 text-[10px] font-semibold h-7 px-3 rounded-lg"
+                  style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                >
+                  <Database size={10} />
+                  Buscar en otro módulo
+                </button>
+              )}
             </div>
           )}
 
@@ -755,18 +766,20 @@ export function EvidenciaPanel({
                             Ver en módulo
                           </button>
                         )}
-                        <button
-                          onClick={() => handleRelacionar(reg)}
-                          disabled={!!gwRelacionandoId}
-                          className="flex items-center gap-1 text-[10px] font-semibold h-6 px-2 rounded ml-auto disabled:opacity-50"
-                          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                        >
-                          {gwRelacionandoId === reg.source_record_id
-                            ? <Loader size={10} className="animate-spin" />
-                            : <Link2 size={10} />
-                          }
-                          Relacionar
-                        </button>
+                        {canLink && (
+                          <button
+                            onClick={() => handleRelacionar(reg)}
+                            disabled={!!gwRelacionandoId}
+                            className="flex items-center gap-1 text-[10px] font-semibold h-6 px-2 rounded ml-auto disabled:opacity-50"
+                            style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                          >
+                            {gwRelacionandoId === reg.source_record_id
+                              ? <Loader size={10} className="animate-spin" />
+                              : <Link2 size={10} />
+                            }
+                            Relacionar
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}

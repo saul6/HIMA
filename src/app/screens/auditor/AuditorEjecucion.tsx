@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
 import { guardarLastWorkspace } from '@/hooks/useContinuarTrabajo'
+import { useMisPermisos } from '@/hooks/useMisPermisos'
 import {
   ChevronLeft, AlertTriangle, CheckCircle, Loader,
   XCircle, AlertCircle, ChevronDown, ChevronUp, Download, Clock, ShieldCheck,
@@ -210,7 +211,7 @@ function CampoEsquema({
 
 function PreguntaCard({
   pregunta, esquemas, respuesta, valores, observacion,
-  saveStatus, saveMessage, onRespuesta, onValor, onObservacion, onBlur, onRetry, cerrada,
+  saveStatus, saveMessage, onRespuesta, onValor, onObservacion, onBlur, onRetry, cerrada, canWriteNC,
   hallazgosCount, instanciaDisponible, onRegistrarHallazgo, onVerHallazgos,
   reincidencia,
 }: {
@@ -227,6 +228,7 @@ function PreguntaCard({
   onBlur: () => void
   onRetry: () => void
   cerrada: boolean
+  canWriteNC: boolean
   hallazgosCount?: number
   instanciaDisponible?: boolean
   onRegistrarHallazgo?: () => void
@@ -409,7 +411,7 @@ function PreguntaCard({
               {hallazgosCount} hallazgo{(hallazgosCount ?? 0) !== 1 ? 's' : ''}
             </button>
           )}
-          {!cerrada && (
+          {!cerrada && canWriteNC && (
             <button
               onClick={onRegistrarHallazgo}
               disabled={!instanciaDisponible}
@@ -704,6 +706,7 @@ function PanelPreliminar({
 
 function PanelHallazgos({
   hallazgos, preguntas, onVerAccion, onEstadoChange, onVerEvidencias, onVerIncidencias, cargando,
+  canWriteNC, canWriteAC,
 }: {
   hallazgos: AudHallazgo[]
   preguntas: AudPregunta[]
@@ -712,6 +715,8 @@ function PanelHallazgos({
   onVerEvidencias: (h: AudHallazgo) => void
   onVerIncidencias: (h: AudHallazgo) => void
   cargando: boolean
+  canWriteNC: boolean
+  canWriteAC: boolean
 }) {
   const [abierto, setAbierto] = useState(true)
 
@@ -778,10 +783,11 @@ function PanelHallazgos({
                       <select
                         value={h.estado}
                         onChange={e => onEstadoChange(h.id, e.target.value as AudHallazgoEstado)}
-                        className="text-[10px] h-7 rounded-lg px-2 outline-none"
+                        disabled={!canWriteNC}
+                        className="text-[10px] h-7 rounded-lg px-2 outline-none disabled:opacity-50"
                         style={{
                           border: '1px solid var(--border)',
-                          backgroundColor: 'var(--input-background)',
+                          backgroundColor: canWriteNC ? 'var(--input-background)' : 'var(--muted)',
                           color: 'var(--foreground)',
                         }}
                       >
@@ -789,14 +795,16 @@ function PanelHallazgos({
                           <option key={est} value={est}>{HALL_ESTADO_CONFIG[est].label}</option>
                         ))}
                       </select>
-                      <button
-                        onClick={() => onVerAccion(h)}
-                        className="flex items-center gap-1 text-[10px] font-semibold h-7 px-2 rounded-lg"
-                        style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                      >
-                        <ClipboardList size={11} />
-                        Acción correctiva
-                      </button>
+                      {canWriteAC && (
+                        <button
+                          onClick={() => onVerAccion(h)}
+                          className="flex items-center gap-1 text-[10px] font-semibold h-7 px-2 rounded-lg"
+                          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                        >
+                          <ClipboardList size={11} />
+                          Acción correctiva
+                        </button>
+                      )}
                       <button
                         onClick={() => onVerEvidencias(h)}
                         className="flex items-center gap-1 text-[10px] font-semibold h-7 px-2 rounded-lg"
@@ -1015,6 +1023,12 @@ export function AuditorEjecucion() {
   useEffect(() => { observacionesRef.current = observacionesMap }, [observacionesMap])
 
   const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+
+  const { can, cargando: cargandoPermisos } = useMisPermisos()
+  const canWriteNC       = cargandoPermisos || can('nc.write')
+  const canWriteAC       = cargandoPermisos || can('ac.write')
+  const canAuditReview   = cargandoPermisos || can('audit.review')
+  const canExternalStatus = cargandoPermisos || can('external_status.record')
 
   if (profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin') {
     return <Navigate to="/" replace />
@@ -1594,7 +1608,7 @@ export function AuditorEjecucion() {
             )}
 
             {/* Panel de validación */}
-            {panelValidacionVisible && !cerrada && (
+            {panelValidacionVisible && !cerrada && canAuditReview && (
               <PanelValidacion
                 issues={reviewIssues}
                 validando={validando}
@@ -1622,6 +1636,8 @@ export function AuditorEjecucion() {
                   })
                 }}
                 cargando={hallazgosHook.cargando}
+                canWriteNC={canWriteNC}
+                canWriteAC={canWriteAC}
               />
             </div>
 
@@ -1743,6 +1759,7 @@ export function AuditorEjecucion() {
                             onBlur={() => handleBlur(preg.id)}
                             onRetry={() => dispatchSave(preg.id)}
                             cerrada={!!cerrada}
+                            canWriteNC={canWriteNC}
                             instanciaDisponible={
                               !!instanciasMap.get(preg.id) &&
                               (savingMap[preg.id] ?? 'idle') !== 'saving'
@@ -1775,17 +1792,19 @@ export function AuditorEjecucion() {
             {!cerrada && !cargando && allPreguntas.length > 0 && (
               <div className="flex flex-col gap-2.5 mt-2">
                 {/* Botón Validar */}
-                <button
-                  onClick={handleValidar}
-                  disabled={validando || cambiando}
-                  className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
-                  style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-                >
-                  {validando
-                    ? <><Loader size={15} className="animate-spin" />Validando…</>
-                    : <><ShieldCheck size={15} />Validar</>
-                  }
-                </button>
+                {canAuditReview && (
+                  <button
+                    onClick={handleValidar}
+                    disabled={validando || cambiando}
+                    className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+                    style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                  >
+                    {validando
+                      ? <><Loader size={15} className="animate-spin" />Validando…</>
+                      : <><ShieldCheck size={15} />Validar</>
+                    }
+                  </button>
+                )}
 
                 {auditoria?.estado !== 'preliminar' && (
                   <button
@@ -2017,17 +2036,19 @@ export function AuditorEjecucion() {
                   </div>
 
                   {/* Botón Validar para Azzule */}
-                  <button
-                    onClick={handleValidarAzzule}
-                    disabled={validandoAzzule || cerrada}
-                    className="w-full h-10 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-                    style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-                  >
-                    {validandoAzzule
-                      ? <><Loader size={13} className="animate-spin" />Validando…</>
-                      : <><ShieldCheck size={13} />Validar para Azzule</>
-                    }
-                  </button>
+                  {canExternalStatus && (
+                    <button
+                      onClick={handleValidarAzzule}
+                      disabled={validandoAzzule || cerrada}
+                      className="w-full h-10 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+                      style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                    >
+                      {validandoAzzule
+                        ? <><Loader size={13} className="animate-spin" />Validando…</>
+                        : <><ShieldCheck size={13} />Validar para Azzule</>
+                      }
+                    </button>
+                  )}
 
                   {/* Resultados de validación */}
                   {azzuleItems !== null && (
@@ -2056,7 +2077,7 @@ export function AuditorEjecucion() {
                         )
                       })}
 
-                      {azzuleReady ? (
+                      {azzuleReady && canExternalStatus ? (
                         <button
                           onClick={() => navigate(
                             `/auditor/auditoria/${auditoriaId}/azzule`,
@@ -2067,15 +2088,16 @@ export function AuditorEjecucion() {
                         >
                           Abrir Modo Azzule
                         </button>
-                      ) : (
+                      ) : !azzuleReady ? (
                         <p className="text-[10px] text-center py-1" style={{ color: 'var(--muted-foreground)' }}>
                           Resuelve los bloqueos para habilitar el Modo Azzule
                         </p>
-                      )}
+                      ) : null}
                     </div>
                   )}
 
                   {/* Registrar resultado oficial (colapsable) */}
+                  {canExternalStatus && (
                   <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
                     <button
                       onClick={() => setSheetRegistrarResultado(v => !v)}
@@ -2153,6 +2175,7 @@ export function AuditorEjecucion() {
                       </div>
                     )}
                   </div>
+                  )}
 
                   {/* Historial externo (colapsable) */}
                   <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
@@ -2215,7 +2238,7 @@ export function AuditorEjecucion() {
             </div>
           )}
 
-          {!cargandoAccion && (
+          {!cargandoAccion && canWriteAC && (
             <div className="px-4 pb-6 pt-3 flex-shrink-0 border-t border-border">
               <button
                 onClick={handleGuardarAccion}
