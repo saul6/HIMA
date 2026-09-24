@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
 import { guardarLastWorkspace } from '@/hooks/useContinuarTrabajo'
+import { ahora, ms, segundos, emitirEvento, consumeResumeMetrics } from '@/lib/telemetria'
 import { useMisPermisos } from '@/hooks/useMisPermisos'
 import {
   ChevronLeft, AlertTriangle, CheckCircle, Loader,
@@ -1024,6 +1025,23 @@ export function AuditorEjecucion() {
 
   const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
 
+  const loadStartRef      = useRef(ahora())
+  const loadEmittedRef    = useRef(false)
+  const openedAtRef       = useRef(new Map<string, number>())
+  const measuredRef       = useRef(new Set<string>())
+  const firstEditEmittedRef = useRef(false)
+
+  useEffect(() => {
+    if (!cargando && !loadEmittedRef.current && modulosData.length > 0) {
+      loadEmittedRef.current = true
+      emitirEvento('lat_workspace', ms(loadStartRef.current), { auditoriaId: auditoriaId ?? null })
+      const t = ahora()
+      modulosData.flatMap(m => m.preguntas).forEach(p => {
+        openedAtRef.current.set(p.id, t)
+      })
+    }
+  }, [cargando, modulosData.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const { can, cargando: cargandoPermisos } = useMisPermisos()
   const canWriteNC       = cargandoPermisos || can('nc.write')
   const canWriteAC       = cargandoPermisos || can('ac.write')
@@ -1049,6 +1067,27 @@ export function AuditorEjecucion() {
     return 'No se pudo guardar. Reintenta.'
   }
 
+  function emitFirstEdit(pregId: string) {
+    const openedAt = openedAtRef.current.get(pregId)
+    if (openedAt !== undefined && !measuredRef.current.has(pregId)) {
+      measuredRef.current.add(pregId)
+      const instId = instanciasMap.get(pregId) ?? null
+      emitirEvento('T_open_to_first_edit', segundos(openedAt), {
+        auditoriaId: auditoriaId ?? null,
+        preguntaId: pregId,
+        instanciaId: instId,
+      })
+    }
+    if (!firstEditEmittedRef.current) {
+      firstEditEmittedRef.current = true
+      const resume = consumeResumeMetrics()
+      if (resume) {
+        emitirEvento('T_resume_to_edit', segundos(resume.ts), { auditoriaId: auditoriaId ?? null })
+        emitirEvento('clicks_to_resume', resume.clicks, { auditoriaId: auditoriaId ?? null })
+      }
+    }
+  }
+
   function dispatchSave(pregId: string, forceResp?: AudRespuesta) {
     const resp = forceResp ?? respuestasRef.current.get(pregId)
     if (!resp || !auditoriaId) return
@@ -1057,6 +1096,7 @@ export function AuditorEjecucion() {
     const vals  = valoresRef.current.get(pregId) ?? new Map<string, string>()
     const obs   = observacionesRef.current.get(pregId)
 
+    const t0 = ahora()
     setSavingMap(prev => ({ ...prev, [pregId]: 'saving' }))
     setSaveErrMap(prev => { const n = { ...prev }; delete n[pregId]; return n })
     guardarRespuesta({
@@ -1067,6 +1107,7 @@ export function AuditorEjecucion() {
       observacion: obs,
     })
       .then(() => {
+        emitirEvento('lat_autosave', ms(t0), { auditoriaId: auditoriaId ?? null, preguntaId: pregId })
         setSavingMap(prev => ({ ...prev, [pregId]: 'saved' }))
         setSaveErrMap(prev => { const n = { ...prev }; delete n[pregId]; return n })
         setTimeout(() => setSavingMap(prev => ({ ...prev, [pregId]: 'idle' })), 2500)
@@ -1079,6 +1120,7 @@ export function AuditorEjecucion() {
   }
 
   function handleRespuesta(pregId: string, resp: AudRespuesta) {
+    emitFirstEdit(pregId)
     setRespuestasMap(prev => new Map(prev).set(pregId, resp))
     clearTimeout(debounceTimers.current[pregId])
     debounceTimers.current[pregId] = setTimeout(() => dispatchSave(pregId, resp), 50)
@@ -1089,6 +1131,7 @@ export function AuditorEjecucion() {
   }
 
   function handleValor(pregId: string, esquemaId: string, v: string) {
+    emitFirstEdit(pregId)
     setValoresMap(prev => {
       const next = new Map(prev)
       const campos = new Map(next.get(pregId) ?? [])
@@ -1099,6 +1142,7 @@ export function AuditorEjecucion() {
   }
 
   function handleObservacion(pregId: string, v: string) {
+    emitFirstEdit(pregId)
     setObservacionesMap(prev => new Map(prev).set(pregId, v))
   }
 

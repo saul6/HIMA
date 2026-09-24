@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Paperclip, Upload, Database, ExternalLink, Trash2, ChevronDown, ChevronUp, Loader, X, Link2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useEvidencia } from '@/hooks/useEvidencia'
 import { getSignedUrlEvidencia } from '@/lib/storage/audEvidenciaStorage'
 import { useMisPermisos } from '@/hooks/useMisPermisos'
+import { ahora, ms, segundos, emitirEvento } from '@/lib/telemetria'
 import type {
   AudEvidenciaEntityType, AudEvidenciaTipo, AudEvidenciaSnapshot,
 } from '@/types/database.types'
@@ -111,6 +112,12 @@ export function EvidenciaPanel({
   // Quitar
   const [quitandoId, setQuitandoId] = useState<string | null>(null)
 
+  // Telemetría de gateway
+  const findStartRef      = useRef<number | null>(null)
+  const searchCountRef    = useRef(0)
+  const linkClickCountRef = useRef(0)
+  const findEmittedRef    = useRef(false)
+
   useEffect(() => {
     if (abierto && hook.usos.length === 0 && !hook.cargando) {
       hook.cargar()
@@ -118,7 +125,13 @@ export function EvidenciaPanel({
   }, [abierto]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (showGateway) handleBuscar()
+    if (showGateway) {
+      findStartRef.current = ahora()
+      searchCountRef.current = 0
+      linkClickCountRef.current = 0
+      findEmittedRef.current = false
+      handleBuscar()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showGateway])
 
@@ -184,6 +197,7 @@ export function EvidenciaPanel({
   }
 
   async function handleBuscar(capOverride?: string) {
+    searchCountRef.current++
     const cap = capOverride ?? gwCapacidad
     setGwCargando(true)
     setGwRegistros([])
@@ -206,6 +220,12 @@ export function EvidenciaPanel({
   }
 
   async function handleRelacionar(reg: GwRegistro) {
+    linkClickCountRef.current++
+    if (!findEmittedRef.current && findStartRef.current !== null) {
+      findEmittedRef.current = true
+      emitirEvento('T_find_evidence', segundos(findStartRef.current), { auditoriaId })
+    }
+    const t0 = ahora()
     setGwRelacionandoId(reg.source_record_id)
     try {
       await hook.snapshotDesdeRegistro({
@@ -216,6 +236,9 @@ export function EvidenciaPanel({
         accionId: accionId ?? null,
         criterionCode: criterionCode ?? null,
       })
+      emitirEvento('T_link_evidence', ms(t0), { auditoriaId })
+      emitirEvento('searches_per_criterion', searchCountRef.current, { auditoriaId })
+      emitirEvento('clicks_to_link_evidence', linkClickCountRef.current, { auditoriaId })
       toast.success('Registro vinculado como evidencia')
       setShowGateway(false)
     } catch (e) {

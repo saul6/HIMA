@@ -7,6 +7,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/app/components/ui/dialog'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/app/components/ui/command'
 import { supabase } from '@/lib/supabase'
+import { ahora, ms, emitirEvento } from '@/lib/telemetria'
 
 interface BusquedaResultado {
   tipo: 'ORGANIZACION' | 'RANCHO' | 'AUDITORIA' | 'HALLAZGO' | 'ACCION' | 'EVIDENCIA'
@@ -51,11 +52,13 @@ export function AuditorBusqueda() {
 
     setCargando(true)
     const timer = setTimeout(async () => {
+      const t0 = ahora()
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data, error } = await (supabase as any).rpc('aud_buscar', { p_q: q, p_limit: 30 })
         if (error) throw error
         setResultados((data as BusquedaResultado[]) ?? [])
+        emitirEvento('lat_search', ms(t0))
       } catch (e) {
         console.error('[AuditorBusqueda]', e)
         setResultados([])

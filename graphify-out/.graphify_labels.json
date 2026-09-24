@@ -144,7 +144,7 @@
   "142": "InspeccionPreoperacionalCosecha.tsx",
   "143": "routes.tsx",
   "144": "ReporteIncidencias.tsx",
-  "145": "RegistroMuestrasLaboratorio.tsx",
+  "145": "telemetria.ts",
   "146": "FertilizacionGGPDF.tsx",
   "147": "CalibracionBombasPDF.tsx",
   "148": "LimpiezaPatiosAzoteasPDF.tsx",
@@ -369,5 +369,7 @@
   "367": "log.ts",
   "368": "logoMadyPdf.ts",
   "369": "MadyLogoPDF.tsx",
-  "370": "permisos.ts"
+  "370": "permisos.ts",
+  "371": "ResumenNoConformidades.tsx",
+  "372": "useMisPermisos.ts"
 }

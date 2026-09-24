@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Navigate } from 'react-router'
 import {
   Building2, ChevronRight, Plus,
@@ -9,6 +9,7 @@ import { useAuditorAsignaciones } from '@/hooks/useAuditorAsignaciones'
 import { supabase } from '@/lib/supabase'
 import { hoyMX } from '@/lib/fecha'
 import { useLastWorkspace } from '@/hooks/useContinuarTrabajo'
+import { ahora, ms, emitirEvento, markResume } from '@/lib/telemetria'
 import { AuditorNuevaAuditoriaSheet } from './AuditorNuevaAuditoriaSheet'
 import { AuditorCampana } from './AuditorCampana'
 import { AuditorBusqueda } from './AuditorBusqueda'
@@ -160,6 +161,8 @@ export function AuditorHome() {
   const [refreshKey, setRefreshKey] = useState(0)
   const [showSheet, setShowSheet] = useState(false)
 
+  const clicksBeforeResumeRef = useRef(0)
+
   const hoy = hoyMX()
 
   if (profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin') {
@@ -174,6 +177,7 @@ export function AuditorHome() {
     async function cargar() {
       setLoadingDash(true)
       setErrorDash(false)
+      const t0 = ahora()
       try {
         const [colaRes, resRes] = await Promise.all([
           tbl('aud_work_queue')
@@ -188,6 +192,7 @@ export function AuditorHome() {
         if (resRes.error) throw resRes.error
         setCola(colaRes.data ?? [])
         setResumen((resRes.data as DashboardResumen) ?? null)
+        emitirEvento('lat_dashboard', ms(t0))
       } catch (e) {
         if (!cancelled) {
           console.error('[AuditorHome] dashboard', e)
@@ -247,7 +252,7 @@ export function AuditorHome() {
         {workspace && (
           <section>
             <button
-              onClick={() => navigate(workspace.route)}
+              onClick={() => { markResume(clicksBeforeResumeRef.current); navigate(workspace.route) }}
               className="w-full text-left bg-card rounded-xl p-4 flex items-center gap-3 active:opacity-70 transition-opacity"
               style={{ border: '1.5px solid var(--primary)' }}
             >
@@ -446,7 +451,7 @@ export function AuditorHome() {
                       item={item}
                       orgNombre={item.organization_id ? (orgNombreMap.get(item.organization_id) ?? null) : null}
                       hoy={hoy}
-                      onClick={() => navigate(item.route)}
+                      onClick={() => { clicksBeforeResumeRef.current++; navigate(item.route) }}
                     />
                   ))}
                 </div>
@@ -468,7 +473,7 @@ export function AuditorHome() {
                       item={item}
                       orgNombre={item.organization_id ? (orgNombreMap.get(item.organization_id) ?? null) : null}
                       hoy={hoy}
-                      onClick={() => navigate(item.route)}
+                      onClick={() => { clicksBeforeResumeRef.current++; navigate(item.route) }}
                     />
                   ))}
                 </div>
