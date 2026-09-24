@@ -284,16 +284,11 @@ export function Layout() {
         style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
         aria-label="Abrir menú"
       >
-        <svg width="28" height="28" viewBox="0 0 100 100" aria-hidden="true">
-          <rect x="6"  y="6"  width="40" height="40" rx="12" fill="#81BEE5" />
-          <rect x="54" y="6"  width="40" height="40" rx="12" fill="#173251" />
-          <rect x="6"  y="54" width="40" height="40" rx="12" fill="#173251" />
-          <rect x="54" y="54" width="40" height="40" rx="12" fill="#2AAD95" />
-        </svg>
+        <img src="/images/MADYIsotipo.png" alt="" aria-hidden="true" className="w-7 h-7 object-contain" />
       </button>
 
       {/* ── Mobile Menu Sheet ─────────────────────────────────────────────── */}
-      <BottomSheet open={menuAbierto} onClose={() => setMenuAbierto(false)}>
+      <BottomSheet open={menuAbierto} onClose={() => setMenuAbierto(false)} origin="bottom-left">
         {/* Handle bar */}
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
@@ -302,8 +297,7 @@ export function Layout() {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <div className="flex items-center gap-2">
-            <img src="/images/MADYy.png" alt="M.A.D.Y" className="h-6 w-auto object-contain" />
-            <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>M.A.D.Y</span>
+            <MadyLogo theme={resolvedTheme} className="h-6 w-auto" />
           </div>
           <button
             onClick={() => setMenuAbierto(false)}

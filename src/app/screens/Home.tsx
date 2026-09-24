@@ -2,7 +2,7 @@
 import type { ReactNode } from 'react'
 import { Link, Navigate } from 'react-router'
 import {
-  Plus, Loader2, TriangleAlert, Clock3,
+  Loader2, TriangleAlert, Clock3,
   Users, AlertTriangle, ChevronRight, ClipboardList, BarChart2,
   FileCheck, ShieldAlert, Search, Pin, X, Sun, Moon, Lock,
 } from 'lucide-react'
@@ -1022,17 +1022,6 @@ export function Home() {
         </div>{/* fin dos columnas */}
 
       </div>
-
-      {/* FAB — móvil/tablet únicamente */}
-      {tieneAplicaciones && (
-        <Link
-          to="/nueva-aplicacion"
-          className="lg:hidden fixed bottom-safe-fab right-4 w-14 h-14 rounded-full flex items-center justify-center z-40 bg-primary hover:opacity-90 transition-opacity"
-          aria-label="Nueva aplicación"
-        >
-          <Plus className="w-6 h-6" style={{ color: 'var(--primary-foreground)' }} />
-        </Link>
-      )}
 
       {/* Popup de categoría */}
       {grupoAbierto && (
