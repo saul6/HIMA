@@ -1,4 +1,5 @@
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 
 interface BottomSheetProps {
   open: boolean
@@ -8,105 +9,94 @@ interface BottomSheetProps {
   children: ReactNode
   /**
    * Variante opt-in — NO cambia el comportamiento por defecto (omitir esta
-   * prop, como hacen el resto de los ~69 usos, deja el sheet exactamente
-   * igual: sin animación, aparece/desaparece de inmediato).
-   * 'bottom-left': crece/encoge (~280ms, escala + fade) desde la esquina
-   * inferior-izquierda — pensado para el menú del isotipo en Layout.tsx,
-   * que abre desde un FAB ahí. Respeta prefers-reduced-motion.
+   * prop, como hacen el resto de los ~68 usos, deja el sheet exactamente
+   * igual: sin animación, montaje/desmontaje instantáneo).
+   * 'bottom-left': el panel EMERGE desde la esquina inferior-izquierda al
+   * abrir y se REABSORBE hacia ahí al cerrar — vía motion + AnimatePresence,
+   * así el exit se anima antes de desmontar (con `if (!open) return null`
+   * puro no hay forma de animar el cierre). Pensado para el menú del
+   * isotipo en Layout.tsx, que abre desde un FAB ahí. Respeta
+   * prefers-reduced-motion (sin animación si está activo).
    */
-  origin?: 'default' | 'bottom-left'
+  animateFrom?: 'bottom-left'
 }
 
-const ANIM_MS = 280
-
-const PANEL_BASE = [
+const PANEL_CLASS = [
   'fixed left-1/2 -translate-x-1/2 w-full bg-card flex flex-col z-50',
   'max-w-[390px] rounded-t-[0.625rem]',
   'md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:max-w-[560px] md:rounded-xl',
-]
+].join(' ')
+
+// Abre con un ease-out suave, cierra con un ease-in un poco más rápido —
+// mismo origen/familia de curva en ambos sentidos, sin spring con rebote.
+const OPEN_TRANSITION = { duration: 0.26, ease: [0.16, 1, 0.3, 1] as const }
+const CLOSE_TRANSITION = { duration: 0.2, ease: [0.4, 0, 1, 1] as const }
+
+function StaticSheet({ open, onClose, height, children, raised }: {
+  open: boolean
+  onClose: () => void
+  height?: string
+  children: ReactNode
+  raised?: boolean
+}) {
+  if (!open) return null
+  return (
+    <>
+      <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
+      <div
+        className={`${PANEL_CLASS} ${raised ? 'bottom-3' : 'bottom-0'}`}
+        style={height ? { height } : { maxHeight: '85vh' }}
+      >
+        {children}
+      </div>
+    </>
+  )
+}
 
 /**
  * Móvil: panel anclado al fondo centrado en 390 px.
  * Escritorio (lg:): modal centrado en 560 px.
  */
-export function BottomSheet({ open, onClose, height, children, origin = 'default' }: BottomSheetProps) {
-  // Comportamiento por defecto — idéntico al de siempre, sin estado ni
-  // efectos extra (ningún otro uso de BottomSheet pasa `origin`).
-  if (origin === 'default') {
-    if (!open) return null
-    return (
-      <>
-        <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
-        <div
-          className={[...PANEL_BASE, 'bottom-0'].join(' ')}
-          style={height ? { height } : { maxHeight: '85vh' }}
-        >
-          {children}
-        </div>
-      </>
-    )
+export function BottomSheet({ open, onClose, height, children, animateFrom }: BottomSheetProps) {
+  const reducedMotion = useReducedMotion()
+
+  if (!animateFrom) {
+    // Comportamiento por defecto — idéntico al de siempre, sin motion.
+    return <StaticSheet open={open} onClose={onClose} height={height}>{children}</StaticSheet>
+  }
+
+  if (reducedMotion) {
+    // Misma variante visual (bottom-3), pero sin animación.
+    return <StaticSheet open={open} onClose={onClose} height={height} raised>{children}</StaticSheet>
   }
 
   return (
-    <BottomSheetBottomLeft open={open} onClose={onClose} height={height}>
-      {children}
-    </BottomSheetBottomLeft>
-  )
-}
-
-function BottomSheetBottomLeft({ open, onClose, height, children }: Omit<BottomSheetProps, 'origin'>) {
-  const [reducedMotion, setReducedMotion] = useState(false)
-  const [mounted, setMounted] = useState(open)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReducedMotion(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-
-  useEffect(() => {
-    if (open) {
-      setMounted(true)
-      if (reducedMotion) { setVisible(true); return }
-      const raf = requestAnimationFrame(() => setVisible(true))
-      return () => cancelAnimationFrame(raf)
-    }
-    setVisible(false)
-    if (reducedMotion) { setMounted(false); return }
-    const t = setTimeout(() => setMounted(false), ANIM_MS)
-    return () => clearTimeout(t)
-  }, [open, reducedMotion])
-
-  if (!mounted) return null
-
-  const panelStyle: React.CSSProperties = {
-    ...(height ? { height } : { maxHeight: '85vh' }),
-    ...(reducedMotion ? {} : {
-      transformOrigin: 'bottom left',
-      transition: `transform ${ANIM_MS}ms cubic-bezier(0.16, 1, 0.3, 1), opacity ${ANIM_MS}ms ease`,
-      transform: visible ? 'scale(1)' : 'scale(0.3)',
-      opacity: visible ? 1 : 0,
-    }),
-  }
-
-  return (
-    <>
-      <div
-        className="fixed inset-0 bg-black/40 z-40"
-        onClick={onClose}
-        style={reducedMotion ? undefined : {
-          transition: `opacity ${ANIM_MS}ms ease`,
-          opacity: visible ? 1 : 0,
-        }}
-      />
-      {/* bottom-3 (en vez de bottom-0): sube el sheet un poco del borde,
-          sutil, solo en esta variante — no toca el resto de los usos. */}
-      <div className={[...PANEL_BASE, 'bottom-3'].join(' ')} style={panelStyle}>
-        {children}
-      </div>
-    </>
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            key="overlay"
+            className="fixed inset-0 bg-black/40 z-40"
+            onClick={onClose}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: OPEN_TRANSITION }}
+            exit={{ opacity: 0, transition: CLOSE_TRANSITION }}
+          />
+          <motion.div
+            key="panel"
+            className={`${PANEL_CLASS} bottom-3`}
+            style={{
+              ...(height ? { height } : { maxHeight: '85vh' }),
+              transformOrigin: 'bottom left',
+            }}
+            initial={{ opacity: 0, scale: 0.9, x: -12, y: 12 }}
+            animate={{ opacity: 1, scale: 1, x: 0, y: 0, transition: OPEN_TRANSITION }}
+            exit={{ opacity: 0, scale: 0.9, x: -12, y: 12, transition: CLOSE_TRANSITION }}
+          >
+            {children}
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   )
 }
