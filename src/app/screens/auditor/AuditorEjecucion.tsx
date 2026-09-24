@@ -969,7 +969,12 @@ export function AuditorEjecucion() {
   const [cargandoHistorial, setCargandoHistorial] = useState(false)
 
   // Sheet: evidencias de hallazgo
-  const [sheetEvidenciaHallazgo, setSheetEvidenciaHallazgo] = useState<{ hallazgoId: string; descripcion: string } | null>(null)
+  const [sheetEvidenciaHallazgo, setSheetEvidenciaHallazgo] = useState<{
+    hallazgoId: string
+    descripcion: string
+    preguntaId: string | null
+    criterionCode: string | null
+  } | null>(null)
 
   // Sheet: incidencias M13 como antecedentes del hallazgo
   const [sheetIncidenciasHallazgo, setSheetIncidenciasHallazgo] = useState<{ hallazgoId: string; descripcion: string } | null>(null)
@@ -1608,7 +1613,7 @@ export function AuditorEjecucion() {
                 hallazgos={hallazgos}
                 preguntas={allPreguntas}
                 onVerAccion={handleAbrirAccion}
-                onVerEvidencias={h => setSheetEvidenciaHallazgo({ hallazgoId: h.id, descripcion: h.descripcion })}
+                onVerEvidencias={h => setSheetEvidenciaHallazgo({ hallazgoId: h.id, descripcion: h.descripcion, preguntaId: h.pregunta_id ?? null, criterionCode: h.criterion_code ?? null })}
                 onVerIncidencias={handleAbrirIncidencias}
                 onEstadoChange={(id, estado) => {
                   actualizarEstadoHallazgo(id, estado).catch(e => {
@@ -1995,6 +2000,9 @@ export function AuditorEjecucion() {
                   cerrada={!!cerrada}
                   hallazgoId={sheetAccion?.hallazgoId ?? null}
                   accionId={accionActual.id}
+                  preguntaId={hallazgos.find(h => h.id === (sheetAccion?.hallazgoId ?? ''))?.pregunta_id ?? null}
+                  criterionCode={hallazgos.find(h => h.id === (sheetAccion?.hallazgoId ?? ''))?.criterion_code ?? null}
+                  ranchoId={auditoria.rancho_id ?? null}
                 />
               )}
 
@@ -2478,6 +2486,9 @@ export function AuditorEjecucion() {
                 auditoriaId={auditoria.id}
                 cerrada={!!cerrada}
                 hallazgoId={sheetEvidenciaHallazgo.hallazgoId}
+                preguntaId={sheetEvidenciaHallazgo.preguntaId}
+                criterionCode={sheetEvidenciaHallazgo.criterionCode}
+                ranchoId={auditoria.rancho_id ?? null}
               />
             )}
           </div>

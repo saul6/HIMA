@@ -49,6 +49,11 @@ interface GwRegistro {
   updated_at: string | null
 }
 
+interface SugeridaRegistro extends GwRegistro {
+  relevance: string   // 'HIGH' | 'MEDIUM' | 'LOW'
+  preferred: boolean
+}
+
 interface Props {
   entityType: AudEvidenciaEntityType
   entityId: string
@@ -58,17 +63,22 @@ interface Props {
   hallazgoId?: string | null
   instanciaId?: string | null
   accionId?: string | null
+  preguntaId?: string | null
+  criterionCode?: string | null
+  ranchoId?: string | null
 }
 
 export function EvidenciaPanel({
   entityType, entityId, orgId, auditoriaId, cerrada,
   hallazgoId, instanciaId: _instanciaId, accionId,
+  preguntaId, criterionCode, ranchoId,
 }: Props) {
   const hook = useEvidencia(entityType, entityId)
 
   const [abierto, setAbierto] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
   const [showGateway, setShowGateway] = useState(false)
+  const [showFallback, setShowFallback] = useState(!preguntaId)
   const [viewSnap, setViewSnap] = useState<AudEvidenciaSnapshot | null>(null)
 
   // Upload form
@@ -87,6 +97,12 @@ export function EvidenciaPanel({
   const [gwCargando, setGwCargando] = useState(false)
   const [gwRelacionandoId, setGwRelacionandoId] = useState<string | null>(null)
 
+  // Sugeridas state
+  const [sugeridas, setSugeridas] = useState<SugeridaRegistro[]>([])
+  const [sugeridasCargando, setSugeridasCargando] = useState(false)
+  const [sugeridasCargadas, setSugeridasCargadas] = useState(false)
+  const [capacidadChips, setCapacidadChips] = useState<{ capability: string; relevance: string }[]>([])
+
   // Quitar
   const [quitandoId, setQuitandoId] = useState<string | null>(null)
 
@@ -100,6 +116,13 @@ export function EvidenciaPanel({
     if (showGateway) handleBuscar()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showGateway])
+
+  useEffect(() => {
+    if (abierto && preguntaId && !sugeridasCargadas) {
+      cargarSugeridas()
+      cargarCapacidadChips()
+    }
+  }, [abierto, preguntaId]) // eslint-disable-line
 
   useEffect(() => {
     async function cargarCapacidades() {
@@ -120,6 +143,40 @@ export function EvidenciaPanel({
     }
     cargarCapacidades()
   }, [])
+
+  async function cargarSugeridas() {
+    setSugeridasCargando(true)
+    try {
+      const { data, error } = await (supabase as any).rpc('aud_evidencia_sugerida_criterio', {
+        p_org_id: orgId,
+        p_pregunta_id: preguntaId,
+        p_rancho_id: ranchoId ?? null,
+        p_date_from: gwDesde || null,
+        p_date_to: gwHasta || null,
+      })
+      if (error) throw error
+      setSugeridas((data ?? []) as SugeridaRegistro[])
+      setSugeridasCargadas(true)
+    } catch (e) {
+      console.error('[EvidenciaPanel] sugeridas', e)
+      setSugeridas([])
+      setSugeridasCargadas(true)
+    } finally {
+      setSugeridasCargando(false)
+    }
+  }
+
+  async function cargarCapacidadChips() {
+    try {
+      const { data, error } = await (supabase as any).rpc('aud_criterio_capacidades', {
+        p_pregunta_id: preguntaId,
+      })
+      if (error) throw error
+      setCapacidadChips((data ?? []) as { capability: string; relevance: string }[])
+    } catch (e) {
+      console.error('[EvidenciaPanel] capacidadChips', e)
+    }
+  }
 
   async function handleBuscar(capOverride?: string) {
     const cap = capOverride ?? gwCapacidad
@@ -152,7 +209,7 @@ export function EvidenciaPanel({
         sourceRecordId: reg.source_record_id,
         hallazgoId: hallazgoId ?? null,
         accionId: accionId ?? null,
-        criterionCode: null,
+        criterionCode: criterionCode ?? null,
       })
       toast.success('Registro vinculado como evidencia')
       setShowGateway(false)
@@ -352,6 +409,154 @@ export function EvidenciaPanel({
             </div>
           )}
 
+          {/* Evidencia sugerida por criterio */}
+          {!!preguntaId && (
+            <div className="border-t border-border flex flex-col gap-0">
+              {/* Header */}
+              <div className="px-4 pt-3 pb-2 flex items-center justify-between">
+                <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>
+                  Evidencia sugerida
+                </p>
+                {sugeridasCargando && (
+                  <Loader size={11} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+                )}
+              </div>
+
+              {/* Capacity chips row (only when chips available) */}
+              {capacidadChips.length > 0 && (
+                <div className="px-4 pb-2 flex gap-1.5 flex-wrap">
+                  {capacidadChips.map(chip => {
+                    const isHigh = chip.relevance === 'HIGH'
+                    const isMed = chip.relevance === 'MEDIUM'
+                    return (
+                      <button
+                        key={chip.capability}
+                        onClick={() => {
+                          setGwCapacidad(chip.capability)
+                          setShowFallback(true)
+                          setShowGateway(true)
+                          handleBuscar(chip.capability)
+                        }}
+                        className="text-[9px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1"
+                        style={isHigh
+                          ? { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
+                          : isMed
+                          ? { backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }
+                          : { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }
+                        }
+                      >
+                        {CAPABILITY_LABELS[chip.capability] ?? chip.capability}
+                        {' · '}
+                        {isHigh ? 'Alta' : isMed ? 'Media' : 'Baja'}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Sugeridas list or empty state */}
+              {sugeridasCargando ? (
+                <div className="flex items-center gap-2 px-4 pb-3">
+                  <span className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Buscando evidencia sugerida…</span>
+                </div>
+              ) : sugeridas.length === 0 && sugeridasCargadas ? (
+                <p className="text-[11px] px-4 pb-3" style={{ color: 'var(--muted-foreground)' }}>
+                  Sin evidencia sugerida para este criterio.{' '}
+                  <button
+                    onClick={() => { setShowFallback(true); setShowGateway(true); setShowUpload(false) }}
+                    className="underline"
+                    style={{ color: 'var(--primary)' }}
+                  >
+                    Buscar manualmente
+                  </button>
+                </p>
+              ) : sugeridas.length > 0 ? (
+                <div className="flex flex-col gap-2 px-4 pb-3 max-h-72 overflow-y-auto">
+                  {sugeridas.map(reg => {
+                    const isHigh = reg.relevance === 'HIGH'
+                    const isMed = reg.relevance === 'MEDIUM'
+                    const relLabel = isHigh ? 'Alta' : isMed ? 'Media' : 'Baja'
+                    const relStyle = isHigh
+                      ? { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
+                      : isMed
+                      ? { backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }
+                      : { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }
+                    return (
+                      <div
+                        key={reg.source_record_id}
+                        className="rounded-lg p-3 flex flex-col gap-1.5"
+                        style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
+                      >
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
+                            style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                          >
+                            M.A.D.Y · {reg.source_module_code.toUpperCase()}
+                          </span>
+                          <span
+                            className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
+                            style={relStyle}
+                          >
+                            {relLabel}
+                          </span>
+                          {reg.preferred && (
+                            <span
+                              className="text-[9px] px-1.5 py-0.5 rounded-full"
+                              style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                            >
+                              ● Sugerido
+                            </span>
+                          )}
+                          <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                            {new Date(reg.record_date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          </span>
+                          {reg.responsible_name && (
+                            <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                              · {reg.responsible_name}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] font-semibold leading-tight" style={{ color: 'var(--foreground)' }}>
+                          {reg.title}
+                        </p>
+                        {reg.human_summary && (
+                          <p className="text-[10px] leading-snug" style={{ color: 'var(--muted-foreground)' }}>
+                            {reg.human_summary}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {reg.source_route && (
+                            <button
+                              onClick={() => window.open(reg.source_route!, '_blank')}
+                              className="flex items-center gap-1 text-[10px] h-6 px-2 rounded"
+                              style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
+                            >
+                              <ExternalLink size={10} />
+                              Ver en módulo
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleRelacionar(reg)}
+                            disabled={!!gwRelacionandoId}
+                            className="flex items-center gap-1 text-[10px] font-semibold h-6 px-2 rounded ml-auto disabled:opacity-50"
+                            style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                          >
+                            {gwRelacionandoId === reg.source_record_id
+                              ? <Loader size={10} className="animate-spin" />
+                              : <Link2 size={10} />
+                            }
+                            Relacionar
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : null}
+            </div>
+          )}
+
           {/* Botones de acción */}
           {!cerrada && (
             <div className="px-4 py-3 flex gap-2 flex-wrap border-t border-border">
@@ -364,12 +569,12 @@ export function EvidenciaPanel({
                 Añadir evidencia externa
               </button>
               <button
-                onClick={() => { setShowGateway(v => !v); setShowUpload(false) }}
+                onClick={() => { setShowGateway(v => !v); setShowFallback(true); setShowUpload(false) }}
                 className="flex items-center gap-1 text-[10px] font-semibold h-7 px-3 rounded-lg"
                 style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
               >
                 <Database size={10} />
-                Registros M.A.D.Y.
+                Buscar en otro módulo
               </button>
             </div>
           )}
@@ -431,11 +636,11 @@ export function EvidenciaPanel({
             </div>
           )}
 
-          {/* Gateway: Evidencia sugerida en M.A.D.Y. */}
+          {/* Gateway: Buscar en otro módulo */}
           {showGateway && (
             <div className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="flex items-center justify-between pt-3">
-                <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>Evidencia sugerida en M.A.D.Y.</p>
+                <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>Buscar en otro módulo</p>
                 <button onClick={() => setShowGateway(false)}>
                   <X size={14} style={{ color: 'var(--muted-foreground)' }} />
                 </button>
