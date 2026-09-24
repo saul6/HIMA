@@ -210,7 +210,7 @@
   "208": "accionesCorrectivasStorage.ts",
   "209": "AuditorModoAzzule.tsx",
   "210": "ControlHerramientas.tsx",
-  "211": "FrecuenciaCapacitacion.tsx",
+  "211": "AuditorNuevaAuditoria.tsx",
   "212": "GestionResiduos.tsx",
   "213": "MonitoreoGermicida.tsx",
   "214": "AccionesCorrectivasPDF.tsx",
@@ -371,5 +371,10 @@
   "369": "MadyLogoPDF.tsx",
   "370": "permisos.ts",
   "371": "ResumenNoConformidades.tsx",
-  "372": "useMisPermisos.ts"
+  "372": "useMisPermisos.ts",
+  "373": "AuditorAgenda.tsx",
+  "374": "AuditorCalendario.tsx",
+  "375": "AuditorNuevaAuditoriaSheet.tsx",
+  "376": "RegistroMuestrasLaboratorio.tsx",
+  "377": "useCalendario.ts"
 }

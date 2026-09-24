@@ -236,6 +236,13 @@ export function AuditorHome() {
         </div>
         <AuditorBusqueda />
         <button
+          onClick={() => navigate('/auditor/calendario')}
+          className="w-8 h-8 rounded-lg flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          aria-label="Calendario"
+        >
+          <Calendar size={16} style={{ color: 'var(--muted-foreground)' }} />
+        </button>
+        <button
           onClick={() => setShowSheet(true)}
           className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg"
           style={{ backgroundColor: 'var(--primary)', color: '#fff' }}

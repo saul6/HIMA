@@ -400,8 +400,8 @@
     "semantic_hash": ""
   },
   "src/app/routes.tsx": {
-    "mtime": 1790039720.6425457,
-    "ast_hash": "afb5ef67c37339aef7c7c931eb9fc481",
+    "mtime": 1790224097.4994004,
+    "ast_hash": "6e60a0369c63cf21887a6cb63e1918c5",
     "semantic_hash": ""
   },
   "src/app/screens/ActividadEquipo.tsx": {
@@ -2255,8 +2255,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorHome.tsx": {
-    "mtime": 1790222445.570608,
-    "ast_hash": "a4ab345fc61b347d845f2ef4901fdd4c",
+    "mtime": 1790224094.3091342,
+    "ast_hash": "94a240d143e51e1cdb04d0edc3765ba8",
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorNuevaAuditoria.tsx": {
@@ -2532,6 +2532,16 @@
   "src/lib/telemetria.ts": {
     "mtime": 1790222418.2456014,
     "ast_hash": "d85f6c899a6c22018666ae525fab02b7",
+    "semantic_hash": ""
+  },
+  "src/app/screens/auditor/AuditorCalendario.tsx": {
+    "mtime": 1790223977.084131,
+    "ast_hash": "ce1b7985dd3ba651de63cc781c9eba7b",
+    "semantic_hash": ""
+  },
+  "src/hooks/useCalendario.ts": {
+    "mtime": 1790223936.4407916,
+    "ast_hash": "a40961b4b19504b3c7cf8a6fd287da2b",
     "semantic_hash": ""
   }
 }

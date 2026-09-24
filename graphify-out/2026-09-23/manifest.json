@@ -2250,13 +2250,13 @@
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorEjecucion.tsx": {
-    "mtime": 1790219919.966786,
-    "ast_hash": "09fb175b8d97e04c733b9d273302b951",
+    "mtime": 1790222499.5746315,
+    "ast_hash": "142777209127fd720c2689d28411532b",
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorHome.tsx": {
-    "mtime": 1790115796.1539829,
-    "ast_hash": "c536c65087b3d13f297cd6cc3915caaa",
+    "mtime": 1790222445.570608,
+    "ast_hash": "a4ab345fc61b347d845f2ef4901fdd4c",
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorNuevaAuditoria.tsx": {
@@ -2450,8 +2450,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/auditor/EvidenciaPanel.tsx": {
-    "mtime": 1790219899.7418976,
-    "ast_hash": "919501aca271f5cdf10496ec502ebddf",
+    "mtime": 1790222532.3193545,
+    "ast_hash": "dac68191681363708cbff5369df94602",
     "semantic_hash": ""
   },
   "src/hooks/useEvidencia.ts": {
@@ -2510,8 +2510,8 @@
     "semantic_hash": ""
   },
   "src/app/screens/auditor/AuditorBusqueda.tsx": {
-    "mtime": 1790115788.4945266,
-    "ast_hash": "bca6f1e3fc070915e133d09174722b41",
+    "mtime": 1790222455.3381114,
+    "ast_hash": "fd5fce25d0da6cc20a5ca6da6fefe2ec",
     "semantic_hash": ""
   },
   "src/app/components/LoginTransition.tsx": {
@@ -2522,6 +2522,16 @@
   "src/context/IntroTransitionContext.tsx": {
     "mtime": 1790187320.2658966,
     "ast_hash": "b9e85fc6733ea2efeeeb1842361491eb",
+    "semantic_hash": ""
+  },
+  "src/hooks/useMisPermisos.ts": {
+    "mtime": 1790221097.9863777,
+    "ast_hash": "fc45e9d98d920c88014354fc0c8bcb0a",
+    "semantic_hash": ""
+  },
+  "src/lib/telemetria.ts": {
+    "mtime": 1790222418.2456014,
+    "ast_hash": "d85f6c899a6c22018666ae525fab02b7",
     "semantic_hash": ""
   }
 }
