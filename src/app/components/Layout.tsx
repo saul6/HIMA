@@ -128,8 +128,10 @@ export function Layout() {
       {/* ── Desktop Sidebar ───────────────────────────────────────────────── */}
       <aside className="hidden md:flex flex-col md:w-[64px] lg:w-[220px] flex-shrink-0 border-r border-border bg-card">
 
-        {/* Logo → Inicio */}
-        <div className="flex items-center justify-center px-2 pt-4 pb-3 lg:px-5 lg:pt-5 lg:pb-4 border-b border-border">
+        {/* Logo → Inicio — misma altura que el header de la derecha (h-14/h-16)
+            para que ambos border-b queden en la misma línea; antes cada uno
+            se dimensionaba por su propio padding vertical y no coincidían. */}
+        <div className="flex items-center justify-center h-14 lg:h-16 px-2 lg:px-5 border-b border-border">
           <Link
             to="/"
             aria-label="Ir al inicio"
@@ -215,8 +217,9 @@ export function Layout() {
       {/* ── Right column: topbar + scrollable content ─────────────────────── */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
 
-        {/* Desktop top bar */}
-        <header className="hidden md:grid md:grid-cols-[auto_1fr_auto] items-center gap-4 px-6 py-3 border-b border-border bg-card flex-shrink-0">
+        {/* Desktop top bar — misma altura que el bloque del logo (h-14/h-16),
+            ver comentario ahí. */}
+        <header className="hidden md:grid md:grid-cols-[auto_1fr_auto] items-center gap-4 h-14 lg:h-16 px-6 border-b border-border bg-card flex-shrink-0">
           {/* Left: page title or greeting on home */}
           <div className="min-w-0">
             <p className="text-sm" style={{ color: 'var(--foreground)', fontWeight: 600 }}>
