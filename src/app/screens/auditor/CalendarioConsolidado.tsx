@@ -1,10 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate, Navigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import { ChevronLeft, ChevronRight, CalendarDays, Loader, RefreshCw } from 'lucide-react'
-import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useCalendario, type EventoCalendario } from '@/hooks/useCalendario'
-import { AuditorCampana } from './AuditorCampana'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -94,17 +92,12 @@ function EventoItem({
   )
 }
 
-export function AuditorCalendario() {
-  const { profile } = useAuthContext()
+export function CalendarioConsolidado() {
   const navigate = useNavigate()
 
   const [mesOffset, setMesOffset] = useState(0)
   const [calendarioTipos, setCalendarioTipos] = useState<CalendarioTipo[]>([])
   const [tiposActivos, setTiposActivos] = useState<Set<string>>(new Set())
-
-  if (profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin') {
-    return <Navigate to="/" replace />
-  }
 
   const { año, mes, desde, hasta, nombreMes } = useMemo(() => {
     const hoy = new Date()
@@ -122,7 +115,6 @@ export function AuditorCalendario() {
     }
   }, [mesOffset])
 
-  // Supress unused warning — mes used in grouping only via dates
   void mes
 
   useEffect(() => {
@@ -133,7 +125,7 @@ export function AuditorCalendario() {
           .order('event_type')
         setCalendarioTipos(data ?? [])
       } catch (e) {
-        console.error('[AuditorCalendario] tipos', e)
+        console.error('[CalendarioConsolidado] tipos', e)
       }
     })()
   }, [])
@@ -167,24 +159,28 @@ export function AuditorCalendario() {
   }, [eventos])
 
   return (
-    <div className="flex flex-col min-h-screen pb-10" style={{ backgroundColor: 'var(--background)' }}>
-      {/* Header */}
-      <header
-        className="sticky top-0 z-10 border-b border-border flex items-center gap-3 px-4 py-3"
-        style={{ backgroundColor: 'var(--card)' }}
-      >
+    <div className="flex flex-col gap-4">
+      {/* Selector de mes + recargar */}
+      <div className="flex items-center gap-2">
         <button
-          onClick={() => navigate('/auditor')}
-          className="flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
-          style={{ color: 'var(--muted-foreground)' }}
-          aria-label="Volver"
+          onClick={() => setMesOffset(o => o - 1)}
+          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
+          aria-label="Mes anterior"
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft size={16} />
         </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>Calendario</h1>
-          <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Eventos consolidados</p>
-        </div>
+        <p className="flex-1 text-center text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+          {nombreMes} {año}
+        </p>
+        <button
+          onClick={() => setMesOffset(o => o + 1)}
+          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
+          aria-label="Mes siguiente"
+        >
+          <ChevronRight size={16} />
+        </button>
         <button
           onClick={recargar}
           disabled={cargando}
@@ -196,108 +192,81 @@ export function AuditorCalendario() {
             : <RefreshCw size={15} style={{ color: 'var(--muted-foreground)' }} />
           }
         </button>
-        <AuditorCampana />
-      </header>
+      </div>
 
-      <main className="flex-1 px-4 py-4 flex flex-col gap-4 max-w-lg mx-auto w-full">
-
-        {/* Selector de mes */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setMesOffset(o => o - 1)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
-            aria-label="Mes anterior"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <p className="flex-1 text-center text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-            {nombreMes} {año}
-          </p>
-          <button
-            onClick={() => setMesOffset(o => o + 1)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
-            aria-label="Mes siguiente"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
-
-        {/* Chips de filtro por tipo */}
-        {calendarioTipos.length > 0 && (
-          <div className="flex gap-1.5 flex-wrap">
-            {calendarioTipos.map(t => {
-              const activo = tiposActivos.has(t.event_type)
-              const cfg = TIPO_CONFIG[t.event_type] ?? { fillVar: 'var(--muted)', textVar: 'var(--muted-foreground)' }
-              return (
-                <button
-                  key={t.event_type}
-                  onClick={() => toggleTipo(t.event_type)}
-                  className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  style={activo
-                    ? { backgroundColor: cfg.textVar, color: '#fff' }
-                    : { backgroundColor: cfg.fillVar, color: cfg.textVar, border: '1px solid transparent' }
-                  }
-                >
-                  {t.descripcion}
-                </button>
-              )
-            })}
-            {tiposActivos.size > 0 && (
+      {/* Chips de filtro por tipo */}
+      {calendarioTipos.length > 0 && (
+        <div className="flex gap-1.5 flex-wrap">
+          {calendarioTipos.map(t => {
+            const activo = tiposActivos.has(t.event_type)
+            const cfg = TIPO_CONFIG[t.event_type] ?? { fillVar: 'var(--muted)', textVar: 'var(--muted-foreground)' }
+            return (
               <button
-                onClick={() => setTiposActivos(new Set())}
-                className="text-[11px] px-2.5 py-1 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                key={t.event_type}
+                onClick={() => toggleTipo(t.event_type)}
+                className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                style={activo
+                  ? { backgroundColor: cfg.textVar, color: '#fff' }
+                  : { backgroundColor: cfg.fillVar, color: cfg.textVar, border: '1px solid transparent' }
+                }
               >
-                Limpiar
+                {t.descripcion}
               </button>
-            )}
-          </div>
-        )}
+            )
+          })}
+          {tiposActivos.size > 0 && (
+            <button
+              onClick={() => setTiposActivos(new Set())}
+              className="text-[11px] px-2.5 py-1 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
+            >
+              Limpiar
+            </button>
+          )}
+        </div>
+      )}
 
-        {/* Contenido */}
-        {cargando ? (
-          <div className="flex flex-col gap-2 pt-2">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-[72px] rounded-xl animate-pulse" style={{ backgroundColor: 'var(--muted)' }} />
-            ))}
-          </div>
-        ) : eventosPorDia.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-            <CalendarDays size={32} style={{ color: 'var(--muted-foreground)', opacity: 0.4 }} />
-            <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-              Sin eventos en {nombreMes.toLowerCase()}
-            </p>
-            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-              {tiposActivos.size > 0 ? 'Prueba quitando los filtros activos.' : 'Aquí aparecerán visitas, vencimientos y capacitaciones.'}
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-5">
-            {eventosPorDia.map(([dayIso, evs]) => (
-              <section key={dayIso}>
-                <p
-                  className="text-[11px] font-semibold uppercase tracking-wide mb-2"
-                  style={{ color: 'var(--muted-foreground)' }}
-                >
-                  {formatDayHeader(dayIso)}
-                </p>
-                <div className="flex flex-col gap-2">
-                  {evs.map(ev => (
-                    <EventoItem
-                      key={`${ev.source}-${ev.source_id}`}
-                      evento={ev}
-                      tipoLabel={tipoLabelMap.get(ev.event_type) ?? ev.event_type}
-                      onNavegar={ev.route ? () => navigate(ev.route!) : null}
-                    />
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
-        )}
-      </main>
+      {/* Contenido */}
+      {cargando ? (
+        <div className="flex flex-col gap-2 pt-2">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-[72px] rounded-xl animate-pulse" style={{ backgroundColor: 'var(--muted)' }} />
+          ))}
+        </div>
+      ) : eventosPorDia.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+          <CalendarDays size={32} style={{ color: 'var(--muted-foreground)', opacity: 0.4 }} />
+          <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+            Sin eventos en {nombreMes.toLowerCase()}
+          </p>
+          <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+            {tiposActivos.size > 0 ? 'Prueba quitando los filtros activos.' : 'Aquí aparecerán visitas, vencimientos y capacitaciones.'}
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-5">
+          {eventosPorDia.map(([dayIso, evs]) => (
+            <section key={dayIso}>
+              <p
+                className="text-[11px] font-semibold uppercase tracking-wide mb-2"
+                style={{ color: 'var(--muted-foreground)' }}
+              >
+                {formatDayHeader(dayIso)}
+              </p>
+              <div className="flex flex-col gap-2">
+                {evs.map(ev => (
+                  <EventoItem
+                    key={`${ev.source}-${ev.source_id}`}
+                    evento={ev}
+                    tipoLabel={tipoLabelMap.get(ev.event_type) ?? ev.event_type}
+                    onNavegar={ev.route ? () => navigate(ev.route!) : null}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

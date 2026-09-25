@@ -236,7 +236,7 @@ export function AuditorHome() {
         </div>
         <AuditorBusqueda />
         <button
-          onClick={() => navigate('/auditor/calendario')}
+          onClick={() => navigate('/auditor/agenda?tab=calendario')}
           className="w-8 h-8 rounded-lg flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-label="Calendario"
         >
