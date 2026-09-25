@@ -402,12 +402,12 @@ export function AuditorReportePDF({
 
             <View style={S.fichaRow}>
               <View style={S.fichaItem}>
-                <Text style={S.fichaLabel}>{esEfimera ? 'Instalacion' : 'Empresa auditada'}</Text>
+                <Text style={S.fichaLabel}>{esEfimera ? 'Operación' : 'Empresa auditada'}</Text>
                 <Text style={S.fichaValue}>{nombrePrincipal}</Text>
               </View>
               {subNombre ? (
                 <View style={S.fichaItem}>
-                  <Text style={S.fichaLabel}>{esEfimera ? 'Ubicacion' : 'Instalacion'}</Text>
+                  <Text style={S.fichaLabel}>{esEfimera ? 'Ubicacion' : 'Operación'}</Text>
                   <Text style={S.fichaValue}>{subNombre}</Text>
                 </View>
               ) : null}
@@ -443,7 +443,7 @@ export function AuditorReportePDF({
                 </View>
               )}
               <View style={S.fichaItem}>
-                <Text style={S.fichaLabel}>Norma</Text>
+                <Text style={S.fichaLabel}>Protocolo</Text>
                 <Text style={S.fichaValue}>PrimusGFS v3.2</Text>
               </View>
             </View>
