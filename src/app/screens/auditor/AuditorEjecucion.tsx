@@ -7,7 +7,10 @@ import {
   ChevronLeft, AlertTriangle, CheckCircle, Loader,
   XCircle, AlertCircle, ChevronDown, ChevronUp, Download, Clock, ShieldCheck,
   Flag, Plus, History, ClipboardList, Copy, Paperclip, Link2,
+  BarChart2, AlertOctagon,
 } from 'lucide-react'
+import { SCORE_MATRIX, RESP_TO_CLASS } from '@/lib/scoring/matriz'
+import type { ScoreMatrixKey } from '@/lib/scoring/matriz'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorAuditoria } from '@/hooks/useAuditorAuditoria'
@@ -39,6 +42,48 @@ const RESP_TOOLTIPS: Record<AudRespuesta, string> = {
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+
+type EstadoCalculo =
+  | 'NO_SCORABLE_CRITERIA'
+  | 'BLOCKED_MISSING_MAX'
+  | 'IN_PROGRESS'
+  | 'INTERNAL_COMPLETE'
+
+interface PorModuloCalculo {
+  modulo: string
+  nombre: string
+  posibles: number
+  ganados: number
+  pendientes: number
+  perdida: number
+  falla_automatica: boolean
+  resultado_bruto: number
+  resultado_efectivo: number
+  proyeccion_si_cumplen: number
+}
+
+interface CalculoPuntaje {
+  official: false
+  estado: EstadoCalculo
+  puntos_posibles: number
+  puntos_ganados: number
+  pendientes: number
+  perdida: number
+  proyeccion_si_pendientes_cumplen: number
+  cota_inferior: number
+  avance_respondidas: number
+  resultado_bruto: number
+  falla_automatica_activa: boolean
+  conteo: {
+    total: number
+    evaluadas: number
+    con_maximo: number
+    pendientes_maximo: number
+    na: number
+  }
+  por_modulo: PorModuloCalculo[]
+  mensaje: string
+}
 
 interface ReincidenciaResult {
   reincidente: boolean
@@ -306,6 +351,48 @@ function PreguntaCard({
           )
         })}
       </div>
+
+      {/* Sugerencia de scoring por pregunta (F2) */}
+      {(() => {
+        const VALID_MAX: Set<number> = new Set([15, 10, 5, 3])
+        if (respuesta === 'na') {
+          if (pregunta.permite_na) {
+            return (
+              <div className="rounded-lg px-3 py-2 text-[11px]" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                N/A — excluida del denominador de puntaje
+              </div>
+            )
+          }
+          return null
+        }
+        if (VALID_MAX.has(pregunta.max_puntos) && respuesta && respuesta in RESP_TO_CLASS) {
+          const max = pregunta.max_puntos as ScoreMatrixKey
+          const clase = RESP_TO_CLASS[respuesta as keyof typeof RESP_TO_CLASS]
+          const obtenido = SCORE_MATRIX[max][clase]
+          const descuento = max - obtenido
+          const esTotal = clase === 'TOTAL'
+          const esNC    = clase === 'NON_COMPLIANCE'
+          const bg    = esTotal ? 'var(--agro-success-fill)' : esNC ? 'var(--agro-danger-fill)' : 'var(--agro-warning-fill)'
+          const color = esTotal ? 'var(--agro-success-text)' : esNC ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)'
+          return (
+            <div className="rounded-lg px-3 py-2 flex items-center gap-2" style={{ backgroundColor: bg }}>
+              <BarChart2 size={12} className="flex-shrink-0" style={{ color }} />
+              <p className="text-[11px] font-medium" style={{ color }}>
+                {max} posibles → {obtenido} obtenidos
+                {descuento > 0 && <span className="font-bold"> · −{descuento} descuento</span>}
+              </p>
+            </div>
+          )
+        }
+        if (pregunta.max_puntos === 0 && respuesta) {
+          return (
+            <div className="rounded-lg px-3 py-2 text-[11px]" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+              Máximo pendiente de verificar
+            </div>
+          )
+        }
+        return null
+      })()}
 
       {reincidencia?.reincidente && (
         <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
@@ -627,74 +714,214 @@ function PanelValidacion({
   )
 }
 
-// ── Panel de puntaje preliminar ───────────────────────────────────────────────
+// ── Panel de scoring en vivo (F8) ────────────────────────────────────────────
 
-function PanelPreliminar({
-  totalPreguntas, respondidas, aplicables, completos, hasCritico,
+function PanelScoring({
+  auditoriaId,
+  version,
 }: {
-  totalPreguntas: number
-  respondidas: number
-  aplicables: number
-  completos: number
-  hasCritico: boolean
+  auditoriaId: string | undefined
+  version: number
 }) {
-  const [abierto, setAbierto] = useState(false)
-  const pct = aplicables > 0 ? Math.round((completos / aplicables) * 100) : null
+  const [calculo, setCalculo]  = useState<CalculoPuntaje | null>(null)
+  const [cargando, setCargando] = useState(false)
+  const [abierto, setAbierto]  = useState(false)
+
+  useEffect(() => {
+    if (!auditoriaId) return
+    let cancelado = false
+    setCargando(true)
+    ;(async () => {
+      try {
+        const { data, error } = await supabase.rpc('aud_calcular_puntaje', { p_auditoria_id: auditoriaId })
+        if (error) { console.error('[PanelScoring] aud_calcular_puntaje', error); return }
+        if (!cancelado) setCalculo(data as CalculoPuntaje)
+      } catch (e) {
+        console.error('[PanelScoring] aud_calcular_puntaje', e)
+      } finally {
+        if (!cancelado) setCargando(false)
+      }
+    })()
+    return () => { cancelado = true }
+  }, [auditoriaId, version])
+
+  const estado = calculo?.estado
+  const fallaActiva = calculo?.falla_automatica_activa ?? false
+
+  function tituloPrincipal(): string {
+    if (cargando && !calculo) return 'Calculando…'
+    if (!calculo) return 'Scoring en vivo'
+    if (estado === 'BLOCKED_MISSING_MAX') return 'Scoring en vivo — máximos pendientes'
+    if (estado === 'IN_PROGRESS') {
+      const ev = calculo.conteo.evaluadas
+      const tot = calculo.conteo.total
+      return `${ev}/${tot} evaluadas · −${calculo.perdida} pts`
+    }
+    if (estado === 'INTERNAL_COMPLETE') return `Resultado interno: ${calculo.resultado_bruto}%`
+    if (estado === 'NO_SCORABLE_CRITERIA') return 'Sin criterios puntuables'
+    return 'Scoring en vivo'
+  }
 
   return (
-    <div
-      className="rounded-xl border border-border overflow-hidden"
-      style={{ backgroundColor: hasCritico ? 'var(--agro-danger-fill)' : 'var(--card)' }}
-    >
+    <div className="rounded-xl border border-border overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
+      {/* Cabecera */}
       <button
         onClick={() => setAbierto(v => !v)}
         className="w-full flex items-center justify-between px-4 py-3 text-left"
       >
         <div className="flex items-center gap-2 min-w-0">
-          <AlertCircle
+          <BarChart2
             size={15}
             className="flex-shrink-0"
-            style={{ color: hasCritico ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }}
+            style={{ color: fallaActiva ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }}
           />
-          <span
-            className="text-xs font-semibold"
-            style={{ color: hasCritico ? 'var(--agro-danger-text)' : 'var(--foreground)' }}
-          >
-            {hasCritico
-              ? 'SUSPENDIDA (preliminar)'
-              : pct !== null
-                ? `Puntaje preliminar: ${pct}%`
-                : 'Sin respuestas aún'}
+          <span className="text-xs font-semibold" style={{ color: fallaActiva ? 'var(--agro-danger-text)' : 'var(--foreground)' }}>
+            {tituloPrincipal()}
           </span>
+          {cargando && <Loader size={12} className="animate-spin flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />}
         </div>
-        {abierto ? (
-          <ChevronUp size={14} style={{ color: 'var(--muted-foreground)' }} />
-        ) : (
-          <ChevronDown size={14} style={{ color: 'var(--muted-foreground)' }} />
-        )}
+        {abierto
+          ? <ChevronUp size={14} style={{ color: 'var(--muted-foreground)' }} />
+          : <ChevronDown size={14} style={{ color: 'var(--muted-foreground)' }} />
+        }
       </button>
 
       {abierto && (
-        <div className="px-4 pb-4 flex flex-col gap-1.5 border-t border-border">
-          <p className="text-[11px] pt-3" style={{ color: 'var(--muted-foreground)' }}>
-            Puntaje preliminar — el cálculo oficial se hará en el servidor.
+        <div className="border-t border-border px-4 pb-4 flex flex-col gap-3">
+          {/* Etiqueta invariante */}
+          <p className="text-[10px] pt-3 italic" style={{ color: 'var(--muted-foreground)' }}>
+            Cálculo interno M.A.D.Y. · no oficial — el puntaje definitivo lo emite el organismo certificador.
           </p>
-          <div className="grid grid-cols-2 gap-2 mt-1">
-            {[
-              ['Total preguntas', totalPreguntas],
-              ['Respondidas', respondidas],
-              ['Aplicables (no N/A)', aplicables],
-              ['Completas (CT)', completos],
-            ].map(([label, val]) => (
-              <div key={label as string} className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
-                <p className="text-[10px] font-medium" style={{ color: 'var(--muted-foreground)' }}>{label}</p>
-                <p className="text-base font-bold" style={{ color: 'var(--foreground)' }}>{val}</p>
+
+          {/* Falla automática activa */}
+          {fallaActiva && calculo && (
+            <div
+              className="flex items-start gap-2 rounded-lg px-3 py-2"
+              style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}
+            >
+              <AlertOctagon size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
+              <div className="flex flex-col gap-0.5">
+                <p className="text-[11px] font-bold" style={{ color: 'var(--agro-danger-text)' }}>
+                  Fallo automático detectado · módulo afectado 0% efectivo
+                </p>
+                <p className="text-[11px]" style={{ color: 'var(--agro-danger-text)' }}>
+                  Resultado aritmético bruto: {calculo.resultado_bruto}% (antes de aplicar el cero)
+                </p>
               </div>
-            ))}
-          </div>
-          {hasCritico && (
-            <p className="text-[11px] font-medium mt-1" style={{ color: 'var(--agro-danger-text)' }}>
-              Al menos una respuesta marcada como No Conformidad (NC) suspende la certificación de forma preliminar.
+            </div>
+          )}
+
+          {calculo && estado === 'BLOCKED_MISSING_MAX' && (
+            <>
+              <div className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
+                <p className="text-[11px] font-medium" style={{ color: 'var(--foreground)' }}>
+                  Puntuación integral no disponible — faltan máximos verificados
+                </p>
+                <p className="text-[10px] mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                  {calculo.mensaje}
+                </p>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  ['Total', calculo.conteo.total],
+                  ['Con máximo', calculo.conteo.con_maximo],
+                  ['Pendientes máx.', calculo.conteo.pendientes_maximo],
+                ].map(([lbl, val]) => (
+                  <div key={lbl as string} className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
+                    <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>{lbl}</p>
+                    <p className="text-base font-bold" style={{ color: 'var(--foreground)' }}>{val}</p>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {calculo && estado === 'IN_PROGRESS' && (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  ['Evaluadas', `${calculo.conteo.evaluadas}/${calculo.conteo.total}`],
+                  ['Puntos ganados', `${calculo.puntos_ganados}`],
+                  ['Perdida', `−${calculo.perdida} pts`],
+                  ['Pendientes', `${calculo.pendientes} pts`],
+                ].map(([lbl, val]) => (
+                  <div key={lbl as string} className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
+                    <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>{lbl}</p>
+                    <p className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>{val}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-lg px-3 py-2 flex flex-col gap-1" style={{ backgroundColor: 'var(--agro-success-fill)' }}>
+                <p className="text-[10px] font-semibold" style={{ color: 'var(--agro-success-text)' }}>
+                  Escenario si pendientes cumplen: {calculo.proyeccion_si_pendientes_cumplen}%
+                </p>
+                <p className="text-[10px]" style={{ color: 'var(--agro-success-text)' }}>
+                  Cota inferior (todas fallan): {calculo.cota_inferior}%
+                </p>
+              </div>
+            </>
+          )}
+
+          {calculo && estado === 'INTERNAL_COMPLETE' && (
+            <div className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
+              <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>
+                Resultado aritmético interno: {calculo.resultado_bruto}%
+              </p>
+            </div>
+          )}
+
+          {calculo && estado === 'NO_SCORABLE_CRITERIA' && (
+            <p className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+              No hay criterios puntuables configurados para esta auditoría.
+            </p>
+          )}
+
+          {/* Desglose por módulo (IN_PROGRESS o INTERNAL_COMPLETE) */}
+          {calculo && (estado === 'IN_PROGRESS' || estado === 'INTERNAL_COMPLETE') && calculo.por_modulo.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
+                Por módulo
+              </p>
+              {calculo.por_modulo.map(m => (
+                <div key={m.modulo} className="rounded-lg px-3 py-2 flex flex-col gap-0.5" style={{ backgroundColor: 'var(--muted)' }}>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[11px] font-semibold truncate flex-1" style={{ color: 'var(--foreground)' }}>
+                      {m.nombre || m.modulo}
+                    </p>
+                    {m.falla_automatica && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
+                        Falla
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex gap-3 flex-wrap">
+                    <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                      Bruto: <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{m.resultado_bruto}%</span>
+                    </span>
+                    {m.falla_automatica && (
+                      <span className="text-[10px]" style={{ color: 'var(--agro-danger-text)' }}>
+                        Efectivo: <span className="font-bold">0%</span>
+                      </span>
+                    )}
+                    {!m.falla_automatica && m.resultado_efectivo !== m.resultado_bruto && (
+                      <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                        Efectivo: <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{m.resultado_efectivo}%</span>
+                      </span>
+                    )}
+                    {m.proyeccion_si_cumplen > 0 && (
+                      <span className="text-[10px]" style={{ color: 'var(--agro-success-text)' }}>
+                        Proj.: {m.proyeccion_si_cumplen}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!calculo && !cargando && (
+            <p className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+              No se pudo obtener el cálculo. Recarga la pantalla.
             </p>
           )}
         </div>
@@ -862,6 +1089,7 @@ export function AuditorEjecucion() {
   const [saveErrMap, setSaveErrMap] = useState<Record<string, string>>({})
   const [cambiando, setCambiando] = useState(false)
   const [descargando, setDescargando] = useState(false)
+  const [scoringVersion, setScoringVersion] = useState(0)
 
   const [reviewIssues, setReviewIssues] = useState<ReviewIssue[]>([])
   const [validando, setValidando] = useState(false)
@@ -1111,6 +1339,7 @@ export function AuditorEjecucion() {
         setSavingMap(prev => ({ ...prev, [pregId]: 'saved' }))
         setSaveErrMap(prev => { const n = { ...prev }; delete n[pregId]; return n })
         setTimeout(() => setSavingMap(prev => ({ ...prev, [pregId]: 'idle' })), 2500)
+        setScoringVersion(v => v + 1)
       })
       .catch((err: unknown) => {
         console.error('[AuditorEjecucion] guardarRespuesta:', err)
@@ -1196,12 +1425,7 @@ export function AuditorEjecucion() {
     }
   }
 
-  // Scoring preliminar
   const allPreguntas = modulosData.flatMap(m => m.preguntas)
-  const respondidas  = allPreguntas.filter(p => respuestasMap.has(p.id))
-  const aplicables   = respondidas.filter(p => respuestasMap.get(p.id) !== 'na')
-  const completos    = aplicables.filter(p => respuestasMap.get(p.id) === 'cumplimiento_total')
-  const hasCritico   = [...respuestasMap.values()].some(r => r === 'no_conformidad')
 
   const estadoStyle = ESTADO_STYLE[auditoria?.estado ?? ''] ?? ESTADO_STYLE.cerrada
 
@@ -1640,14 +1864,11 @@ export function AuditorEjecucion() {
               </button>
             )}
 
-            {/* Puntaje preliminar */}
-            {!cerrada && respondidas.length > 0 && (
-              <PanelPreliminar
-                totalPreguntas={allPreguntas.length}
-                respondidas={respondidas.length}
-                aplicables={aplicables.length}
-                completos={completos.length}
-                hasCritico={hasCritico}
+            {/* Scoring en vivo */}
+            {!cerrada && allPreguntas.length > 0 && (
+              <PanelScoring
+                auditoriaId={auditoriaId}
+                version={scoringVersion}
               />
             )}
 
