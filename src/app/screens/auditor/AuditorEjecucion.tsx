@@ -5,7 +5,7 @@ import { ahora, ms, segundos, emitirEvento, consumeResumeMetrics } from '@/lib/t
 import { useMisPermisos } from '@/hooks/useMisPermisos'
 import {
   ChevronLeft, AlertTriangle, CheckCircle, Loader,
-  XCircle, AlertCircle, ChevronDown, ChevronUp, Download, Clock, ShieldCheck,
+  XCircle, AlertCircle, ChevronDown, ChevronUp, Download, ShieldCheck,
   Flag, Plus, History, ClipboardList, Copy, Paperclip, Link2,
   BarChart2, AlertOctagon,
 } from 'lucide-react'
@@ -1410,7 +1410,7 @@ export function AuditorEjecucion() {
     }
 
     const msg = nuevoEstado === 'cerrada'
-      ? '¿Cerrar esta auditoría?\n\nNo podrás editar las respuestas después.\n\nImportante: los datos se eliminan automáticamente 15 días después del cierre. Descarga el reporte PDF antes de esa fecha.'
+      ? '¿Cerrar esta auditoría? No podrás editar las respuestas después. Descarga el reporte PDF si lo necesitas.'
       : '¿Marcar esta auditoría como preliminar?'
     if (!window.confirm(msg)) return
     setCambiando(true)
@@ -1437,13 +1437,6 @@ export function AuditorEjecucion() {
   const backState = instalacionId
     ? { instalacionNombre: instalacionNombreNav }
     : { orgNombre }
-
-  // Fecha de expiración (15 días desde el cierre, la BD la fija en expires_at)
-  const expiresAt = auditoria?.expires_at ?? null
-  function formatExpira(iso: string): string {
-    const d = new Date(iso)
-    return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })
-  }
 
   async function handleDescargarPDF() {
     if (!auditoria) return
@@ -1831,24 +1824,6 @@ export function AuditorEjecucion() {
           </p>
         ) : (
           <>
-            {/* Aviso: auditoría se borra en 15 días */}
-            {cerrada && expiresAt && (
-              <div
-                className="rounded-xl px-4 py-3 flex items-start gap-3"
-                style={{ backgroundColor: 'var(--agro-warning-fill)', borderLeft: '3px solid var(--agro-amber)' }}
-              >
-                <Clock size={16} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold" style={{ color: 'var(--agro-warning-text)' }}>
-                    Esta auditoría se elimina el {formatExpira(expiresAt)}.
-                  </p>
-                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--agro-warning-text)' }}>
-                    Descarga el reporte PDF antes de esa fecha — no podrás recuperar los datos después.
-                  </p>
-                </div>
-              </div>
-            )}
-
             {/* Botón descargar reporte PDF */}
             {auditoria && allPreguntas.length > 0 && (
               <button

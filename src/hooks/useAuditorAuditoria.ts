@@ -21,7 +21,6 @@ export interface AuditorAuditoriaDetalle {
   instalacion_id: string | null
   instalacion_nombre: string | null
   instalacion_ubicacion: string | null
-  expires_at: string | null
   fecha: string
   auditor_nombre: string | null
   estado: EstadoAuditoria
@@ -60,7 +59,7 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
     try {
       const { data: audData, error: audErr } = await tbl('aud_auditorias')
         .select(`
-          id, org_id, rancho_id, instalacion_id, fecha, auditor_nombre, estado, expires_at,
+          id, org_id, rancho_id, instalacion_id, fecha, auditor_nombre, estado,
           tipo_operacion, producto, periodo,
           ranchos(nombre),
           productor:organizaciones!aud_auditorias_org_id_fkey(nombre),
@@ -92,7 +91,6 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
         instalacion_nombre: (audData as any).aud_instalaciones?.nombre ?? null,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         instalacion_ubicacion: (audData as any).aud_instalaciones?.ubicacion ?? null,
-        expires_at: audData.expires_at ?? null,
         fecha: audData.fecha,
         auditor_nombre: audData.auditor_nombre ?? null,
         estado: audData.estado as EstadoAuditoria,
