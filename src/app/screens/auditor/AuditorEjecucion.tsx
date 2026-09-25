@@ -7,7 +7,7 @@ import {
   ChevronLeft, AlertTriangle, CheckCircle, Loader,
   XCircle, AlertCircle, ChevronDown, ChevronUp, Download, ShieldCheck,
   Flag, Plus, History, ClipboardList, Copy, Paperclip, Link2,
-  BarChart2, AlertOctagon,
+  BarChart2, AlertOctagon, Pencil, X,
 } from 'lucide-react'
 import { SCORE_MATRIX, RESP_TO_CLASS } from '@/lib/scoring/matriz'
 import type { ScoreMatrixKey } from '@/lib/scoring/matriz'
@@ -20,6 +20,20 @@ import { supabase } from '@/lib/supabase'
 import { useHallazgos } from '@/hooks/useHallazgos'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { EvidenciaPanel } from './EvidenciaPanel'
+
+const CLASS_TO_RESP: Partial<Record<string, AudRespuesta>> = {
+  TOTAL: 'cumplimiento_total',
+  MINOR: 'deficiencia_menor',
+  MAJOR: 'deficiencia_mayor',
+  NON_COMPLIANCE: 'no_conformidad',
+}
+
+interface AjusteInfo {
+  puntos_manual: number | null
+  ajuste_motivo: string | null
+  ajuste_estado: string | null
+  ajuste_en: string | null
+}
 
 const RESP_OPTIONS: {
   value: AudRespuesta
@@ -59,6 +73,7 @@ type EstadoCalculo =
   | 'BLOCKED_MISSING_MAX'
   | 'IN_PROGRESS'
   | 'INTERNAL_COMPLETE'
+  | 'REQUIRES_VALIDATION'
 
 interface PorModuloCalculo {
   modulo: string
@@ -87,6 +102,12 @@ interface CalculoPuntaje {
   falla_automatica_activa: boolean
   conteo: {
     total: number
+    // New keys (BD >= sep-2026):
+    resueltas?: number
+    scored_con_max?: number
+    missing_max?: number
+    na_excluidas?: number
+    // Legacy compat:
     evaluadas: number
     con_maximo: number
     pendientes_maximo: number
@@ -94,6 +115,11 @@ interface CalculoPuntaje {
   }
   por_modulo: PorModuloCalculo[]
   mensaje: string
+  // Ajuste manual (F3):
+  ajustes_manuales?: number
+  ajustes_en_conflicto?: number
+  escenario_trabajo?: { etiqueta: string; puntos_ganados: number; resultado: number }
+  fallas?: Array<{ question_id: string; modulo: string; respuesta: string }>
 }
 
 interface M9CalcResult {
@@ -280,6 +306,7 @@ function PreguntaCard({
   saveStatus, saveMessage, onRespuesta, onValor, onObservacion, onBlur, onRetry, cerrada, canWriteNC,
   hallazgosCount, instanciaDisponible, onRegistrarHallazgo, onVerHallazgos,
   reincidencia,
+  ajuste, instanciaId, onAjusteActualizado,
 }: {
   pregunta: AudPregunta
   esquemas: AudComentarioEsquema[]
@@ -300,12 +327,150 @@ function PreguntaCard({
   onRegistrarHallazgo?: () => void
   onVerHallazgos?: () => void
   reincidencia?: ReincidenciaResult
+  ajuste?: AjusteInfo
+  instanciaId?: string
+  onAjusteActualizado?: (nuevoAjuste: AjusteInfo | null) => void
 }) {
   const falla =
     respuesta &&
     respuesta !== 'na' &&
     ((pregunta.trigger_falla_automatica === 'cualquier_descuento' && respuesta !== 'cumplimiento_total') ||
       (pregunta.trigger_falla_automatica === 'solo_cero' && respuesta === 'no_conformidad'))
+
+  // ── Ajuste manual state ──
+  const [ajusteOpen, setAjusteOpen] = useState(false)
+  const [puntosInput, setPuntosInput] = useState('')
+  const [descuentoInput, setDescuentoInput] = useState('')
+  const [motivoInput, setMotivoInput] = useState('')
+  const ajusteEventIdRef = useRef<string | null>(null)
+  const [enviandoAjuste, setEnviandoAjuste] = useState(false)
+  const [ajusteWarning, setAjusteWarning] = useState<{
+    tipo: 'OTHER_CATEGORY' | 'OFF_MATRIX'
+    mensaje: string
+    clasificacion_sugerida?: string
+  } | null>(null)
+  const [quitandoAjuste, setQuitandoAjuste] = useState(false)
+
+  const VALID_MAX_SET: Set<number> = new Set([15, 10, 5, 3])
+  const hasValidMax = VALID_MAX_SET.has(pregunta.max_puntos) && !!respuesta && respuesta in RESP_TO_CLASS
+  const matrizMax = hasValidMax ? pregunta.max_puntos as ScoreMatrixKey : null
+  const matrizClase = (hasValidMax && respuesta) ? RESP_TO_CLASS[respuesta as keyof typeof RESP_TO_CLASS] : null
+  const matrizObtenido = (matrizMax && matrizClase) ? SCORE_MATRIX[matrizMax][matrizClase] : null
+  const matrizDescuento = (matrizMax != null && matrizObtenido != null) ? matrizMax - matrizObtenido : null
+
+  const puedeAjustar = !cerrada &&
+    !pregunta.es_cualitativa &&
+    pregunta.tipo !== 'information_gathering' &&
+    hasValidMax &&
+    !!instanciaId &&
+    !!onAjusteActualizado
+
+  function abrirAjuste() {
+    if (matrizMax == null) return
+    const initPuntos = ajuste?.puntos_manual != null ? ajuste.puntos_manual : (matrizObtenido ?? 0)
+    setPuntosInput(String(initPuntos))
+    setDescuentoInput(String(matrizMax - initPuntos))
+    setMotivoInput(ajuste?.ajuste_motivo ?? '')
+    setAjusteWarning(null)
+    ajusteEventIdRef.current = null
+    setAjusteOpen(true)
+  }
+
+  function handlePuntosChange(val: string) {
+    setPuntosInput(val)
+    if (matrizMax != null) {
+      const n = parseInt(val, 10)
+      setDescuentoInput(!isNaN(n) ? String(matrizMax - n) : '')
+    }
+  }
+
+  function handleDescuentoChange(val: string) {
+    setDescuentoInput(val)
+    if (matrizMax != null) {
+      const n = parseInt(val, 10)
+      setPuntosInput(!isNaN(n) ? String(matrizMax - n) : '')
+    }
+  }
+
+  const puntosNum = parseInt(puntosInput, 10)
+  const puntosValido = !isNaN(puntosNum) && puntosNum >= 0 && puntosNum <= (matrizMax ?? 0) && String(puntosNum) === puntosInput.trim()
+  const difiere = puntosValido && matrizObtenido != null && puntosNum !== matrizObtenido
+  const motivoValido = !difiere || motivoInput.trim().length > 0
+  const puedeConfirmar = puntosValido && motivoValido && !enviandoAjuste
+
+  let errorPuntos: string | null = null
+  if (puntosInput !== '' && !puntosValido) {
+    if (isNaN(puntosNum) || String(puntosNum) !== puntosInput.trim()) errorPuntos = 'Solo se permiten números enteros'
+    else if (puntosNum < 0 || puntosNum > (matrizMax ?? 0)) errorPuntos = `El valor debe estar entre 0 y ${matrizMax}`
+  }
+
+  async function handleConfirmarAjuste() {
+    if (!puedeConfirmar || !instanciaId) return
+    if (!ajusteEventIdRef.current) ajusteEventIdRef.current = crypto.randomUUID()
+    setEnviandoAjuste(true)
+    try {
+      const { data, error } = await supabase.rpc('aud_ajustar_puntaje', {
+        p_instancia_id: instanciaId,
+        p_puntos: puntosNum,
+        p_motivo: motivoInput.trim(),
+        p_event_id: ajusteEventIdRef.current,
+      })
+      if (error) {
+        toast.error(error.message ?? 'No se pudo guardar el ajuste. Reintenta.')
+        return
+      }
+      const r = data as {
+        estado: 'MANUAL_MATCHES_MATRIX' | 'MANUAL_OTHER_CATEGORY' | 'MANUAL_OFF_MATRIX'
+        puntos_manual: number
+        clasificacion_sugerida: string
+        mensaje: string
+      }
+      ajusteEventIdRef.current = null
+      const nuevoAjuste: AjusteInfo = {
+        puntos_manual: r.puntos_manual,
+        ajuste_motivo: motivoInput.trim() || null,
+        ajuste_estado: r.estado,
+        ajuste_en: new Date().toISOString(),
+      }
+      onAjusteActualizado?.(nuevoAjuste)
+      setAjusteOpen(false)
+      if (r.estado === 'MANUAL_MATCHES_MATRIX') {
+        toast.success('Coincide con la matriz PrimusGFS')
+      } else if (r.estado === 'MANUAL_OTHER_CATEGORY') {
+        setAjusteWarning({ tipo: 'OTHER_CATEGORY', mensaje: r.mensaje, clasificacion_sugerida: r.clasificacion_sugerida })
+      } else {
+        setAjusteWarning({ tipo: 'OFF_MATRIX', mensaje: 'Valor fuera de la matriz: escenario interno en conflicto, no es puntaje normativo.' })
+      }
+    } catch (e) {
+      console.error('[PreguntaCard] aud_ajustar_puntaje', e)
+      toast.error('No se pudo guardar el ajuste. Reintenta.')
+    } finally {
+      setEnviandoAjuste(false)
+    }
+  }
+
+  async function handleQuitarAjuste() {
+    if (!instanciaId) return
+    setQuitandoAjuste(true)
+    try {
+      const { error } = await supabase.rpc('aud_quitar_ajuste', {
+        p_instancia_id: instanciaId,
+        p_event_id: crypto.randomUUID(),
+      })
+      if (error) {
+        toast.error(error.message ?? 'No se pudo quitar el ajuste. Reintenta.')
+        return
+      }
+      onAjusteActualizado?.(null)
+      setAjusteWarning(null)
+      toast.success('Ajuste quitado')
+    } catch (e) {
+      console.error('[PreguntaCard] aud_quitar_ajuste', e)
+      toast.error('No se pudo quitar el ajuste. Reintenta.')
+    } finally {
+      setQuitandoAjuste(false)
+    }
+  }
 
   return (
     <div
@@ -378,47 +543,210 @@ function PreguntaCard({
         </p>
       )}
 
-      {/* Sugerencia de scoring por pregunta (F2) — solo para preguntas numéricas */}
-      {!pregunta.es_cualitativa && (() => {
-        const VALID_MAX: Set<number> = new Set([15, 10, 5, 3])
-        if (respuesta === 'na') {
-          if (pregunta.permite_na) {
-            return (
-              <div className="rounded-lg px-3 py-2 text-[11px]" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
-                N/A — excluida del denominador de puntaje
-              </div>
-            )
-          }
-          return null
-        }
-        if (VALID_MAX.has(pregunta.max_puntos) && respuesta && respuesta in RESP_TO_CLASS) {
-          const max = pregunta.max_puntos as ScoreMatrixKey
-          const clase = RESP_TO_CLASS[respuesta as keyof typeof RESP_TO_CLASS]
-          const obtenido = SCORE_MATRIX[max][clase]
-          const descuento = max - obtenido
-          const esTotal = clase === 'TOTAL'
-          const esNC    = clase === 'NON_COMPLIANCE'
-          const bg    = esTotal ? 'var(--agro-success-fill)' : esNC ? 'var(--agro-danger-fill)' : 'var(--agro-warning-fill)'
-          const color = esTotal ? 'var(--agro-success-text)' : esNC ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)'
-          return (
-            <div className="rounded-lg px-3 py-2 flex items-center gap-2" style={{ backgroundColor: bg }}>
-              <BarChart2 size={12} className="flex-shrink-0" style={{ color }} />
-              <p className="text-[11px] font-medium" style={{ color }}>
-                {max} posibles → {obtenido} obtenidos
-                {descuento > 0 && <span className="font-bold"> · −{descuento} descuento</span>}
-              </p>
-            </div>
-          )
-        }
-        if (pregunta.max_puntos === 0 && respuesta) {
-          return (
-            <div className="rounded-lg px-3 py-2 text-[11px]" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
-              Máximo pendiente de verificar
-            </div>
-          )
-        }
-        return null
+      {/* Sugerencia de scoring + ajuste manual (F2/F3) — solo para preguntas numéricas */}
+      {!pregunta.es_cualitativa && respuesta === 'na' && pregunta.permite_na && (
+        <div className="rounded-lg px-3 py-2 text-[11px]" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+          N/A — excluida del denominador de puntaje
+        </div>
+      )}
+      {!pregunta.es_cualitativa && hasValidMax && matrizMax && matrizClase && matrizObtenido != null && (() => {
+        const esTotal = matrizClase === 'TOTAL'
+        const esNC    = matrizClase === 'NON_COMPLIANCE'
+        const bg    = esTotal ? 'var(--agro-success-fill)' : esNC ? 'var(--agro-danger-fill)' : 'var(--agro-warning-fill)'
+        const color = esTotal ? 'var(--agro-success-text)' : esNC ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)'
+        const desc = matrizDescuento ?? 0
+        return (
+          <div className="rounded-lg px-3 py-2 flex items-center gap-2" style={{ backgroundColor: bg }}>
+            <BarChart2 size={12} className="flex-shrink-0" style={{ color }} />
+            <p className="text-[11px] font-medium flex-1" style={{ color }}>
+              {matrizMax} posibles → {matrizObtenido} obtenidos
+              {desc > 0 && <span className="font-bold"> · −{desc} descuento</span>}
+            </p>
+          </div>
+        )
       })()}
+      {!pregunta.es_cualitativa && pregunta.max_puntos === 0 && respuesta && respuesta !== 'na' && (
+        <div className="rounded-lg px-3 py-2 text-[11px]" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+          Máximo pendiente de verificar
+        </div>
+      )}
+
+      {/* Chip de ajuste manual vigente */}
+      {!pregunta.es_cualitativa && ajuste?.puntos_manual != null && matrizMax != null && (
+        <div className="rounded-lg px-3 py-2 flex flex-col gap-1.5" style={{
+          backgroundColor: ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-fill)'
+            : ajuste.ajuste_estado === 'MANUAL_OFF_MATRIX' ? 'var(--agro-warning-fill)'
+            : 'var(--agro-warning-fill)',
+          border: `1px solid ${ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-text)' : 'var(--agro-amber)'}`,
+        }}>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <Pencil size={11} style={{ color: ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-text)' : 'var(--agro-warning-text)', flexShrink: 0 }} />
+              <span className="text-[11px] font-semibold" style={{ color: ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-text)' : 'var(--agro-warning-text)' }}>
+                Ajuste manual: {ajuste.puntos_manual}/{matrizMax}
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded" style={{
+                backgroundColor: 'rgba(0,0,0,0.07)',
+                color: ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-text)' : 'var(--agro-warning-text)',
+              }}>
+                {ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'coincide'
+                  : ajuste.ajuste_estado === 'MANUAL_OTHER_CATEGORY' ? 'otra clasificación'
+                  : 'fuera de matriz'}
+              </span>
+            </div>
+            {!cerrada && (
+              <button
+                onClick={handleQuitarAjuste}
+                disabled={quitandoAjuste}
+                className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded disabled:opacity-50"
+                style={{ backgroundColor: 'rgba(0,0,0,0.07)', color: 'var(--agro-warning-text)' }}
+              >
+                {quitandoAjuste ? <Loader size={10} className="animate-spin" /> : <X size={10} />}
+                Quitar
+              </button>
+            )}
+          </div>
+          {ajuste.ajuste_motivo && (
+            <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>
+              Motivo: {ajuste.ajuste_motivo}
+            </p>
+          )}
+
+          {/* Aviso OTHER_CATEGORY con botón cambiar clasificación */}
+          {ajusteWarning?.tipo === 'OTHER_CATEGORY' && ajusteWarning.clasificacion_sugerida && (
+            <div className="flex items-start gap-2 pt-0.5">
+              <AlertCircle size={12} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+              <div className="flex flex-col gap-1 flex-1">
+                <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>{ajusteWarning.mensaje}</p>
+                {!cerrada && (
+                  <button
+                    onClick={() => {
+                      const resp = CLASS_TO_RESP[ajusteWarning.clasificacion_sugerida!]
+                      if (resp) {
+                        onRespuesta(resp)
+                        onAjusteActualizado?.(null)
+                        setAjusteWarning(null)
+                      }
+                    }}
+                    className="self-start text-[10px] font-semibold px-2 py-0.5 rounded"
+                    style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                  >
+                    Cambiar clasificación a {ajusteWarning.clasificacion_sugerida === 'MINOR' ? 'Menor'
+                      : ajusteWarning.clasificacion_sugerida === 'MAJOR' ? 'Mayor'
+                      : ajusteWarning.clasificacion_sugerida === 'TOTAL' ? 'Total'
+                      : 'No conformidad'}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+          {ajusteWarning?.tipo === 'OFF_MATRIX' && (
+            <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>{ajusteWarning.mensaje}</p>
+          )}
+        </div>
+      )}
+
+      {/* Aviso OTHER_CATEGORY cuando aún no hay chip (ajuste recién mostrado antes de refetch) */}
+      {!pregunta.es_cualitativa && ajuste?.puntos_manual == null && ajusteWarning && (
+        <div className="rounded-lg px-3 py-2 flex items-start gap-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
+          <AlertCircle size={12} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+          <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>{ajusteWarning.mensaje}</p>
+        </div>
+      )}
+
+      {/* Enlace "Ajustar puntuación" */}
+      {puedeAjustar && !ajusteOpen && (
+        <button
+          onClick={abrirAjuste}
+          className="self-start flex items-center gap-1 text-[11px] font-medium"
+          style={{ color: 'var(--primary)' }}
+        >
+          <Pencil size={10} />
+          Ajustar puntuación
+        </button>
+      )}
+
+      {/* Panel de ajuste en línea */}
+      {ajusteOpen && matrizMax != null && (
+        <div className="rounded-xl p-3 flex flex-col gap-2.5" style={{ backgroundColor: 'var(--muted)', border: '1px solid var(--border)' }}>
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>Ajuste manual de puntuación</p>
+            <button onClick={() => setAjusteOpen(false)} className="text-muted-foreground">
+              <X size={14} />
+            </button>
+          </div>
+          <div className="flex gap-3">
+            <div className="flex flex-col gap-1 flex-1">
+              <label className="text-[10px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Puntos otorgados</label>
+              <input
+                type="number"
+                min={0}
+                max={matrizMax}
+                step={1}
+                value={puntosInput}
+                onChange={e => handlePuntosChange(e.target.value)}
+                className="h-9 rounded-lg px-2 text-sm outline-none text-center"
+                style={{ border: `1px solid ${errorPuntos ? 'var(--agro-red)' : 'var(--border)'}`, backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+              />
+            </div>
+            <div className="flex flex-col gap-1 flex-1">
+              <label className="text-[10px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Descuento</label>
+              <input
+                type="number"
+                min={0}
+                max={matrizMax}
+                step={1}
+                value={descuentoInput}
+                onChange={e => handleDescuentoChange(e.target.value)}
+                className="h-9 rounded-lg px-2 text-sm outline-none text-center"
+                style={{ border: `1px solid ${errorPuntos ? 'var(--agro-red)' : 'var(--border)'}`, backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+              />
+            </div>
+          </div>
+          {errorPuntos && (
+            <p className="text-[10px]" style={{ color: 'var(--agro-danger-text)' }}>{errorPuntos}</p>
+          )}
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
+              Motivo del ajuste{difiere && <span style={{ color: 'var(--agro-red)' }}> *</span>}
+            </label>
+            <textarea
+              value={motivoInput}
+              onChange={e => setMotivoInput(e.target.value)}
+              rows={2}
+              placeholder={difiere ? 'Requerido cuando el valor difiere de la sugerencia…' : 'Opcional cuando coincide con la matriz…'}
+              className="resize-none text-[0.8125rem] outline-none"
+              style={{
+                borderRadius: 'var(--radius)',
+                border: `1px solid ${difiere && !motivoValido ? 'var(--agro-red)' : 'var(--border)'}`,
+                backgroundColor: 'var(--input-background)',
+                color: 'var(--foreground)',
+                padding: '0.375rem 0.625rem',
+              }}
+            />
+            {difiere && !motivoValido && (
+              <p className="text-[10px]" style={{ color: 'var(--agro-danger-text)' }}>El motivo es obligatorio cuando el valor difiere de la sugerencia.</p>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleConfirmarAjuste}
+              disabled={!puedeConfirmar}
+              className="flex-1 h-9 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50"
+              style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+            >
+              {enviandoAjuste ? <><Loader size={11} className="animate-spin" /> Guardando…</> : 'Confirmar'}
+            </button>
+            <button
+              onClick={() => setAjusteOpen(false)}
+              className="flex-1 h-9 rounded-lg text-[11px] font-medium"
+              style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
       {!pregunta.es_cualitativa && reincidencia?.reincidente && (
         <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
@@ -849,11 +1177,12 @@ function PanelScoring({
     if (!calculo) return 'Scoring en vivo'
     if (estado === 'BLOCKED_MISSING_MAX') return 'Scoring en vivo — máximos pendientes'
     if (estado === 'IN_PROGRESS') {
-      const ev = calculo.conteo.evaluadas
+      const ev = calculo.conteo.resueltas ?? calculo.conteo.evaluadas
       const tot = calculo.conteo.total
       return `${ev}/${tot} evaluadas · −${calculo.perdida} pts`
     }
     if (estado === 'INTERNAL_COMPLETE') return `Resultado interno: ${calculo.resultado_bruto}%`
+    if (estado === 'REQUIRES_VALIDATION') return `Revisión requerida · ${calculo.resultado_bruto}% normativo`
     if (estado === 'NO_SCORABLE_CRITERIA') return 'Sin criterios puntuables'
     return 'Scoring en vivo'
   }
@@ -920,12 +1249,12 @@ function PanelScoring({
               <div className="grid grid-cols-3 gap-2">
                 {[
                   ['Total', calculo.conteo.total],
-                  ['Con máximo', calculo.conteo.con_maximo],
-                  ['Pendientes máx.', calculo.conteo.pendientes_maximo],
+                  ['Con máximo', calculo.conteo.scored_con_max ?? calculo.conteo.con_maximo],
+                  ['Pendientes máx.', calculo.conteo.missing_max ?? calculo.conteo.pendientes_maximo],
                 ].map(([lbl, val]) => (
                   <div key={lbl as string} className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
                     <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>{lbl}</p>
-                    <p className="text-base font-bold" style={{ color: 'var(--foreground)' }}>{val}</p>
+                    <p className="text-base font-bold" style={{ color: 'var(--foreground)' }}>{val ?? '—'}</p>
                   </div>
                 ))}
               </div>
@@ -936,7 +1265,7 @@ function PanelScoring({
             <>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  ['Evaluadas', `${calculo.conteo.evaluadas}/${calculo.conteo.total}`],
+                  ['Evaluadas', `${calculo.conteo.resueltas ?? calculo.conteo.evaluadas}/${calculo.conteo.total}`],
                   ['Puntos ganados', `${calculo.puntos_ganados}`],
                   ['Perdida', `−${calculo.perdida} pts`],
                   ['Pendientes', `${calculo.pendientes} pts`],
@@ -966,10 +1295,58 @@ function PanelScoring({
             </div>
           )}
 
+          {calculo && estado === 'REQUIRES_VALIDATION' && (
+            <>
+              <div className="rounded-lg px-3 py-2 flex flex-col gap-1" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}>
+                <p className="text-[11px] font-bold" style={{ color: 'var(--agro-warning-text)' }}>
+                  Revisión de puntuación requerida
+                </p>
+                <p className="text-[11px]" style={{ color: 'var(--agro-warning-text)' }}>
+                  Resultado normativo: {calculo.resultado_bruto}%
+                  {(calculo.ajustes_en_conflicto ?? 0) > 0 && (
+                    <span className="font-semibold"> · {calculo.ajustes_en_conflicto} ajuste{calculo.ajustes_en_conflicto !== 1 ? 's' : ''} en conflicto</span>
+                  )}
+                </p>
+              </div>
+            </>
+          )}
+
           {calculo && estado === 'NO_SCORABLE_CRITERIA' && (
             <p className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
               No hay criterios puntuables configurados para esta auditoría.
             </p>
+          )}
+
+          {/* Escenario de trabajo (no normativo) cuando hay ajustes manuales */}
+          {calculo && (calculo.ajustes_manuales ?? 0) > 0 && calculo.escenario_trabajo && (
+            <div className="rounded-lg px-3 py-2 flex flex-col gap-0.5" style={{ backgroundColor: 'var(--muted)', border: '1px dashed var(--border)' }}>
+              <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
+                Escenario de trabajo · no normativo
+              </p>
+              <p className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>
+                {calculo.escenario_trabajo.resultado}%
+              </p>
+              <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                {calculo.escenario_trabajo.etiqueta} · {calculo.ajustes_manuales} ajuste{calculo.ajustes_manuales !== 1 ? 's' : ''} manual{calculo.ajustes_manuales !== 1 ? 'es' : ''}
+              </p>
+            </div>
+          )}
+
+          {/* Fallas automáticas detalle */}
+          {calculo && fallaActiva && (calculo.fallas?.length ?? 0) > 0 && (
+            <div className="flex flex-col gap-1">
+              <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--agro-danger-text)' }}>
+                Numerales con falla
+              </p>
+              {calculo.fallas!.map(f => (
+                <div key={f.question_id} className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
+                    {f.question_id}
+                  </span>
+                  <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>{f.modulo}</span>
+                </div>
+              ))}
+            </div>
           )}
 
           {/* Desglose por módulo (IN_PROGRESS o INTERNAL_COMPLETE) */}
@@ -1177,6 +1554,7 @@ export function AuditorEjecucion() {
     valoresMap, setValoresMap,
     observacionesMap, setObservacionesMap,
     instanciasMap,
+    ajustesMap, setAjustesMap,
     cargando, errorMsg,
     guardarRespuesta, cambiarEstado,
   } = hook
@@ -1453,6 +1831,19 @@ export function AuditorEjecucion() {
       const preg = modulosData.flatMap(m => m.preguntas).find(p => p.id === pregId)
       if (preg && !preg.es_cualitativa) cargarReincidenciaForPreg(preg.id, String(preg.prompt_component_id))
     }
+  }
+
+  function handleAjusteActualizado(pregId: string, nuevoAjuste: AjusteInfo | null) {
+    setAjustesMap(prev => {
+      const next = new Map(prev)
+      if (nuevoAjuste && nuevoAjuste.puntos_manual != null) {
+        next.set(pregId, nuevoAjuste)
+      } else {
+        next.delete(pregId)
+      }
+      return next
+    })
+    setScoringVersion(v => v + 1)
   }
 
   function handleValor(pregId: string, esquemaId: string, v: string) {
@@ -2110,6 +2501,9 @@ export function AuditorEjecucion() {
                             }
                             hallazgosCount={hallazgos.filter(h => h.pregunta_id === preg.id).length}
                             reincidencia={reincidenciaMap.get(preg.id)}
+                            ajuste={ajustesMap.get(preg.id)}
+                            instanciaId={instanciasMap.get(preg.id)}
+                            onAjusteActualizado={a => handleAjusteActualizado(preg.id, a)}
                             onRegistrarHallazgo={() => {
                               const instId = instanciasMap.get(preg.id)
                               if (!instId) {
