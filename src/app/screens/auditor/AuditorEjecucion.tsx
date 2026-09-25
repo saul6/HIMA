@@ -34,12 +34,23 @@ const RESP_OPTIONS: {
 ]
 
 const RESP_TOOLTIPS: Record<AudRespuesta, string> = {
+  excede_cumplimiento: 'Excede cumplimiento',
   cumplimiento_total: 'Cumplimiento total',
   deficiencia_menor:  'Deficiencia menor',
   deficiencia_mayor:  'Deficiencia mayor',
   no_conformidad:     'No conformidad',
   na:                 'No aplica',
 }
+
+const RESP_OPTIONS_M9: {
+  value: AudRespuesta
+  label: string
+  activeStyle: { bg: string; color: string }
+}[] = [
+  { value: 'excede_cumplimiento', label: 'Excede',    activeStyle: { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' } },
+  { value: 'cumplimiento_total',  label: 'Total',     activeStyle: { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' } },
+  { value: 'no_conformidad',      label: 'No cumple', activeStyle: { bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  } },
+]
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -83,6 +94,15 @@ interface CalculoPuntaje {
   }
   por_modulo: PorModuloCalculo[]
   mensaje: string
+}
+
+interface M9CalcResult {
+  estado: 'SIN_M9' | 'TOTAL_COMPLIANCE_REACHED' | 'TOTAL_COMPLIANCE_NOT_REACHED' | 'PENDING_REVIEW'
+  delta_score: number
+  total: number
+  resueltas: number
+  no_conformes: number
+  por_pregunta: Array<{ question_id: string; clase: string }>
 }
 
 interface ReincidenciaResult {
@@ -300,7 +320,7 @@ function PreguntaCard({
         >
           {pregunta.question_id}
         </span>
-        {pregunta.tipo === 'informativa' && (
+        {pregunta.tipo === 'information_gathering' && (
           <span
             className="text-[10px] font-semibold flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
             style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
@@ -331,14 +351,14 @@ function PreguntaCard({
       </div>
 
       <div className="flex gap-1.5">
-        {RESP_OPTIONS.map(opt => {
+        {(pregunta.es_cualitativa ? RESP_OPTIONS_M9 : RESP_OPTIONS).map(opt => {
           const active = respuesta === opt.value
           return (
             <button
               key={opt.value}
               onClick={() => !cerrada && onRespuesta(opt.value)}
               disabled={cerrada}
-              title={RESP_TOOLTIPS[opt.value]}
+              title={opt.label}
               className="flex-1 min-w-0 h-8 rounded-lg text-xs font-bold border transition-all disabled:opacity-50"
               style={
                 active
@@ -352,8 +372,14 @@ function PreguntaCard({
         })}
       </div>
 
-      {/* Sugerencia de scoring por pregunta (F2) */}
-      {(() => {
+      {pregunta.es_cualitativa && (
+        <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+          MIP es un complemento cualitativo; no afecta el puntaje de los demás módulos.
+        </p>
+      )}
+
+      {/* Sugerencia de scoring por pregunta (F2) — solo para preguntas numéricas */}
+      {!pregunta.es_cualitativa && (() => {
         const VALID_MAX: Set<number> = new Set([15, 10, 5, 3])
         if (respuesta === 'na') {
           if (pregunta.permite_na) {
@@ -394,7 +420,7 @@ function PreguntaCard({
         return null
       })()}
 
-      {reincidencia?.reincidente && (
+      {!pregunta.es_cualitativa && reincidencia?.reincidente && (
         <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
           <History size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
           <p className="text-[11px]" style={{ color: 'var(--agro-warning-text)' }}>
@@ -403,7 +429,7 @@ function PreguntaCard({
         </div>
       )}
 
-      {falla && (
+      {!pregunta.es_cualitativa && falla && (
         <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
           <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
           <p className="text-[11px] font-medium" style={{ color: 'var(--agro-warning-text)' }}>
@@ -486,8 +512,8 @@ function PreguntaCard({
         )}
       </div>
 
-      {/* Hallazgos de esta pregunta */}
-      {(respuesta === 'deficiencia_menor' || respuesta === 'deficiencia_mayor' || respuesta === 'no_conformidad') && (
+      {/* Hallazgos de esta pregunta — solo para preguntas numéricas */}
+      {!pregunta.es_cualitativa && (respuesta === 'deficiencia_menor' || respuesta === 'deficiencia_mayor' || respuesta === 'no_conformidad') && (
         <div className="flex items-center gap-2 pt-0.5">
           {(hallazgosCount ?? 0) > 0 && (
             <button
@@ -512,6 +538,76 @@ function PreguntaCard({
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+// ── Panel MIP / Módulo 9 cualitativo ─────────────────────────────────────────
+
+function PanelM9({
+  auditoriaId,
+  version,
+}: {
+  auditoriaId: string | undefined
+  version: number
+}) {
+  const [calculo, setCalculo] = useState<M9CalcResult | null>(null)
+  const [cargando, setCargando] = useState(false)
+
+  useEffect(() => {
+    if (!auditoriaId) return
+    let cancelado = false
+    setCargando(true)
+    ;(async () => {
+      try {
+        const { data, error } = await supabase.rpc('aud_calcular_m9', { p_auditoria_id: auditoriaId })
+        if (error) { console.error('[PanelM9] aud_calcular_m9', error); return }
+        if (!cancelado) setCalculo(data as M9CalcResult)
+      } catch (e) {
+        console.error('[PanelM9] aud_calcular_m9', e)
+      } finally {
+        if (!cancelado) setCargando(false)
+      }
+    })()
+    return () => { cancelado = true }
+  }, [auditoriaId, version])
+
+  if (!calculo || calculo.estado === 'SIN_M9') return null
+
+  const estadoConfig = {
+    TOTAL_COMPLIANCE_REACHED:     { label: 'Total alcanzado', bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', icon: <CheckCircle size={12} /> },
+    TOTAL_COMPLIANCE_NOT_REACHED: { label: 'No alcanzado',   bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)',  icon: <AlertCircle size={12} /> },
+    PENDING_REVIEW:               { label: 'Pendiente',      bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', icon: <AlertCircle size={12} /> },
+  }
+
+  const cfg = estadoConfig[calculo.estado as keyof typeof estadoConfig] ?? estadoConfig.PENDING_REVIEW
+
+  return (
+    <div
+      className="rounded-xl border border-border px-4 py-3 flex items-center justify-between gap-3"
+      style={{ backgroundColor: 'var(--card)' }}
+    >
+      <div className="flex flex-col gap-0.5 min-w-0">
+        <p className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
+          MIP · Módulo 9
+        </p>
+        <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+          Complemento cualitativo · no afecta el puntaje numérico
+        </p>
+      </div>
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {cargando && <Loader size={12} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />}
+        <span className="text-xs font-bold" style={{ color: 'var(--muted-foreground)' }}>
+          {calculo.resueltas}/{calculo.total}
+        </span>
+        <span
+          className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg"
+          style={{ backgroundColor: cfg.bg, color: cfg.color }}
+        >
+          {cfg.icon}
+          {cfg.label}
+        </span>
+      </div>
     </div>
   )
 }
@@ -1355,7 +1451,7 @@ export function AuditorEjecucion() {
     debounceTimers.current[pregId] = setTimeout(() => dispatchSave(pregId, resp), 50)
     if (resp === 'no_conformidad' || resp === 'deficiencia_menor' || resp === 'deficiencia_mayor') {
       const preg = modulosData.flatMap(m => m.preguntas).find(p => p.id === pregId)
-      if (preg) cargarReincidenciaForPreg(preg.id, String(preg.prompt_component_id))
+      if (preg && !preg.es_cualitativa) cargarReincidenciaForPreg(preg.id, String(preg.prompt_component_id))
     }
   }
 
@@ -1842,6 +1938,14 @@ export function AuditorEjecucion() {
             {/* Scoring en vivo */}
             {!cerrada && allPreguntas.length > 0 && (
               <PanelScoring
+                auditoriaId={auditoriaId}
+                version={scoringVersion}
+              />
+            )}
+
+            {/* MIP · Módulo 9 cualitativo */}
+            {!cerrada && allPreguntas.length > 0 && (
+              <PanelM9
                 auditoriaId={auditoriaId}
                 version={scoringVersion}
               />

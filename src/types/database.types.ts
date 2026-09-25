@@ -1807,6 +1807,7 @@ export interface PortadaBPM {
 // ── aud_* PrimusGFS v3.2 — Motor de auditorías ───────────────────────────────
 
 export type AudRespuesta =
+  | 'excede_cumplimiento'
   | 'cumplimiento_total'
   | 'deficiencia_menor'
   | 'deficiencia_mayor'
@@ -1833,13 +1834,14 @@ export interface AudPregunta {
   familia_id: string | null
   question_id: string
   texto: string
-  tipo: 'evaluable' | 'informativa' | 'compuesta'
+  tipo: 'evaluacion' | 'information_gathering'
   max_puntos: number
   permite_na: boolean
   orden: number
   prompt_component_id: number
   trigger_falla_automatica: AudTriggerFalla
   info_minima: string | null
+  es_cualitativa?: boolean
 }
 
 export interface AudComentarioEsquema {
@@ -1847,9 +1849,13 @@ export interface AudComentarioEsquema {
   pregunta_id: string
   campo_clave: string
   tipo_campo: 'text' | 'date' | 'number'
+  tipo: string
+  etiqueta: string | null
   requerido: boolean
   orden_render: number
   regla_validacion: string | null
+  info_minima: string | null
+  opciones: string[] | null
 }
 
 export interface AudModuloNorma {
