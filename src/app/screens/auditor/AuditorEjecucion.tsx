@@ -20,6 +20,8 @@ import { supabase } from '@/lib/supabase'
 import { useHallazgos } from '@/hooks/useHallazgos'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { EvidenciaPanel } from './EvidenciaPanel'
+import { useReglasRama } from '@/hooks/useReglasRama'
+import type { ReglaRama, CausaNA, AplicarResultado, RetirarResultado } from '@/hooks/useReglasRama'
 
 const CLASS_TO_RESP: Partial<Record<string, AudRespuesta>> = {
   TOTAL: 'cumplimiento_total',
@@ -64,6 +66,7 @@ const RESP_OPTIONS_M9: {
   { value: 'excede_cumplimiento', label: 'Excede',    activeStyle: { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' } },
   { value: 'cumplimiento_total',  label: 'Total',     activeStyle: { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' } },
   { value: 'no_conformidad',      label: 'No cumple', activeStyle: { bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  } },
+  { value: 'na',                  label: 'N/A',       activeStyle: { bg: 'var(--muted)',              color: 'var(--muted-foreground)'  } },
 ]
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
@@ -107,6 +110,8 @@ interface CalculoPuntaje {
     scored_con_max?: number
     missing_max?: number
     na_excluidas?: number
+    na_por_rama?: number
+    revision_pendiente?: number
     // Legacy compat:
     evaluadas: number
     con_maximo: number
@@ -307,6 +312,8 @@ function PreguntaCard({
   hallazgosCount, instanciaDisponible, onRegistrarHallazgo, onVerHallazgos,
   reincidencia,
   ajuste, instanciaId, onAjusteActualizado,
+  estadoAplicabilidad, causasNA, reglasPrincipal, reglasC,
+  onAplicarRegla, onRetirarRegla, onConfirmarRevision,
 }: {
   pregunta: AudPregunta
   esquemas: AudComentarioEsquema[]
@@ -330,6 +337,13 @@ function PreguntaCard({
   ajuste?: AjusteInfo
   instanciaId?: string
   onAjusteActualizado?: (nuevoAjuste: AjusteInfo | null) => void
+  estadoAplicabilidad?: string
+  causasNA?: CausaNA[]
+  reglasPrincipal?: ReglaRama[]
+  reglasC?: ReglaRama[]
+  onAplicarRegla?: (reglaId: string, explicacion: string, confirmaciones: Record<string, boolean>, forzar: boolean, eventId: string) => Promise<AplicarResultado>
+  onRetirarRegla?: (reglaId: string, motivo: string, eventId: string) => Promise<RetirarResultado>
+  onConfirmarRevision?: () => Promise<void>
 }) {
   const falla =
     respuesta &&
@@ -351,6 +365,25 @@ function PreguntaCard({
   } | null>(null)
   const [quitandoAjuste, setQuitandoAjuste] = useState(false)
 
+  // ── Reglas de rama ──
+  const [reglaExpandidaId, setReglaExpandidaId] = useState<string | null>(null)
+  const [reglaExplicacion, setReglaExplicacion] = useState('')
+  const [reglaConfirmaciones, setReglaConfirmaciones] = useState<Record<string, boolean>>({})
+  const reglaEventIdRef = useRef<string | null>(null)
+  const [aplicandoReglaId, setAplicandoReglaId] = useState<string | null>(null)
+  const [reglaConflictos, setReglaConflictos] = useState<Array<{ question_id: string; tipo: 'respuesta' | 'hallazgo'; valor: string }> | null>(null)
+  const [reglaFaltantes, setReglaFaltantes] = useState<string[] | null>(null)
+  const [retirandoReglaId, setRetirandoReglaId] = useState<string | null>(null)
+  const [motivoRetiro, setMotivoRetiro] = useState('')
+  const retirarEventIdRef = useRef<string | null>(null)
+  const [retirandoEnCurso, setRetirandoEnCurso] = useState(false)
+  const [retiroResultado, setRetiroResultado] = useState<RetirarResultado | null>(null)
+  const [confirmandoRevision, setConfirmandoRevision] = useState(false)
+  const [sugerenciaCId, setSugerenciaCId] = useState<string | null>(null)
+  const [sugerenciaCExplicacion, setSugerenciaCExplicacion] = useState('')
+  const [aplicandoSugerenciaC, setAplicandoSugerenciaC] = useState(false)
+  const sugerenciaCEventIdRef = useRef<string | null>(null)
+
   const VALID_MAX_SET: Set<number> = new Set([15, 10, 5, 3])
   const hasValidMax = VALID_MAX_SET.has(pregunta.max_puntos) && !!respuesta && respuesta in RESP_TO_CLASS
   const matrizMax = hasValidMax ? pregunta.max_puntos as ScoreMatrixKey : null
@@ -358,7 +391,12 @@ function PreguntaCard({
   const matrizObtenido = (matrizMax && matrizClase) ? SCORE_MATRIX[matrizMax][matrizClase] : null
   const matrizDescuento = (matrizMax != null && matrizObtenido != null) ? matrizMax - matrizObtenido : null
 
+  const esNaPorRama = estadoAplicabilidad === 'na_rama'
+  const esRevisionPendiente = estadoAplicabilidad === 'revision_pendiente'
+  const bloqueadoPorRama = esNaPorRama  // selector + ajuste disabled
+
   const puedeAjustar = !cerrada &&
+    !bloqueadoPorRama &&
     !pregunta.es_cualitativa &&
     pregunta.tipo !== 'information_gathering' &&
     hasValidMax &&
@@ -521,8 +559,8 @@ function PreguntaCard({
           return (
             <button
               key={opt.value}
-              onClick={() => !cerrada && onRespuesta(opt.value)}
-              disabled={cerrada}
+              onClick={() => !cerrada && !bloqueadoPorRama && onRespuesta(opt.value)}
+              disabled={cerrada || bloqueadoPorRama}
               title={opt.label}
               className="flex-1 min-w-0 h-8 rounded-lg text-xs font-bold border transition-all disabled:opacity-50"
               style={
@@ -543,8 +581,417 @@ function PreguntaCard({
         </p>
       )}
 
+      {/* Sugerencia de clase C — mostrar cuando el usuario elige N/A y hay reglas C */}
+      {respuesta === 'na' && !esNaPorRama && (reglasC ?? []).length > 0 && (reglasC ?? []).map(regla => {
+        const otrosNumerales = regla.dependientes.filter(d => d !== pregunta.question_id)
+        if (otrosNumerales.length === 0) return null
+        const yaAplicada = regla.aplicada
+        if (yaAplicada) return null
+        const esSugerenciaAbierta = sugerenciaCId === regla.id
+        return (
+          <div key={regla.id} className="rounded-lg px-3 py-2 flex flex-col gap-2" style={{ backgroundColor: 'var(--agro-success-fill)', border: '1px solid var(--agro-success-text)' }}>
+            <p className="text-[11px] font-medium" style={{ color: 'var(--agro-success-text)' }}>
+              ¿La causa es: "{regla.causa}"? Aplicar también a {otrosNumerales.join(', ')}
+            </p>
+            {!esSugerenciaAbierta ? (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setSugerenciaCId(regla.id); setSugerenciaCExplicacion(''); sugerenciaCEventIdRef.current = null }}
+                  className="flex-1 h-7 rounded-lg text-[10px] font-semibold"
+                  style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                >
+                  Sí, aplicar también
+                </button>
+                <button
+                  onClick={() => setSugerenciaCId(null)}
+                  className="h-7 px-3 rounded-lg text-[10px]"
+                  style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                >
+                  No
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <textarea
+                  value={sugerenciaCExplicacion}
+                  onChange={e => setSugerenciaCExplicacion(e.target.value)}
+                  rows={2}
+                  placeholder="Explicación obligatoria…"
+                  className="resize-none text-[0.8125rem] outline-none"
+                  style={{ borderRadius: 'var(--radius)', border: `1px solid ${!sugerenciaCExplicacion.trim() ? 'var(--agro-red)' : 'var(--border)'}`, backgroundColor: 'var(--input-background)', color: 'var(--foreground)', padding: '0.375rem 0.625rem' }}
+                />
+                <div className="flex gap-2">
+                  <button
+                    disabled={!sugerenciaCExplicacion.trim() || aplicandoSugerenciaC}
+                    onClick={async () => {
+                      if (!sugerenciaCExplicacion.trim() || !onAplicarRegla) return
+                      if (!sugerenciaCEventIdRef.current) sugerenciaCEventIdRef.current = crypto.randomUUID()
+                      setAplicandoSugerenciaC(true)
+                      try {
+                        const r = await onAplicarRegla(regla.id, sugerenciaCExplicacion.trim(), {}, false, sugerenciaCEventIdRef.current)
+                        sugerenciaCEventIdRef.current = null
+                        if (r.estado === 'APLICADA') {
+                          setSugerenciaCId(null)
+                        } else {
+                          toast.warning(r.mensaje)
+                        }
+                      } catch { /* handled by parent */ }
+                      finally { setAplicandoSugerenciaC(false) }
+                    }}
+                    className="flex-1 h-7 rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1 disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                  >
+                    {aplicandoSugerenciaC ? <><Loader size={10} className="animate-spin" /> Aplicando…</> : 'Confirmar'}
+                  </button>
+                  <button
+                    onClick={() => setSugerenciaCId(null)}
+                    className="flex-1 h-7 rounded-lg text-[10px]"
+                    style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      })}
+
+      {/* N/A por rama — banner de causa activa */}
+      {esNaPorRama && (causasNA ?? []).length > 0 && (
+        <div className="rounded-lg px-3 py-2 flex flex-col gap-1" style={{ backgroundColor: 'var(--muted)', border: '1px solid var(--border)' }}>
+          {(causasNA ?? []).map((causa, i) => {
+            const regla = reglasPrincipal?.find(r => r.id === causa.regla_id) ?? reglasC?.find(r => r.id === causa.regla_id)
+            return (
+              <div key={i} className="flex flex-col gap-0.5">
+                <p className="text-[11px] font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+                  N/A por {causa.regla_id}{regla ? ` — ${causa.causa}` : ` — ${causa.causa}`}
+                </p>
+                {causa.explicacion && (
+                  <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                    {causa.explicacion}
+                  </p>
+                )}
+                {causa.created_at && (
+                  <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                    {new Date(causa.created_at).toLocaleDateString('es-MX')}
+                  </p>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Revisión pendiente — respuesta anterior necesita confirmación */}
+      {esRevisionPendiente && (
+        <div className="rounded-lg px-3 py-2 flex flex-col gap-2" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}>
+          <div className="flex items-start gap-2">
+            <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+            <div className="flex flex-col gap-1 flex-1">
+              <p className="text-[11px] font-semibold" style={{ color: 'var(--agro-warning-text)' }}>
+                Reactivada tras retirar una regla
+                {respuesta && respuesta !== 'na' && ` — respuesta anterior: ${RESP_TOOLTIPS[respuesta]}`}
+              </p>
+              <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>
+                Confirma o cambia la respuesta para que vuelva a contar.
+              </p>
+            </div>
+          </div>
+          {!cerrada && onConfirmarRevision && (
+            <button
+              onClick={async () => {
+                setConfirmandoRevision(true)
+                try { await onConfirmarRevision() } catch { /* handled */ }
+                finally { setConfirmandoRevision(false) }
+              }}
+              disabled={confirmandoRevision}
+              className="self-start h-7 px-3 rounded-lg text-[10px] font-semibold flex items-center gap-1 disabled:opacity-50"
+              style={{ backgroundColor: 'var(--agro-warning-text)', color: '#fff' }}
+            >
+              {confirmandoRevision ? <><Loader size={10} className="animate-spin" /> Confirmando…</> : 'Confirmar respuesta anterior'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Reglas de rama en esta pregunta (clase A principal / clase B sugeridas) */}
+      {!bloqueadoPorRama && (reglasPrincipal ?? []).length > 0 && (reglasPrincipal ?? []).map(regla => {
+        const estaAplicada = regla.aplicada
+        const expandida = reglaExpandidaId === regla.id
+        const esClaseB = !regla.habilitada
+        const retirandoEsta = retirandoReglaId === regla.id
+
+        return (
+          <div key={regla.id} className="rounded-lg flex flex-col overflow-hidden" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}>
+            <div className="px-3 py-2 flex items-start justify-between gap-2">
+              <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>
+                  {esClaseB ? '📋 ' : ''}{regla.causa}
+                  {regla.dependientes.length > 0 && (
+                    <span className="font-normal" style={{ color: 'var(--muted-foreground)' }}>
+                      {' '}→ N/A en {regla.dependientes.length} {regla.dependientes.length === 1 ? 'pregunta' : 'preguntas'}
+                    </span>
+                  )}
+                </p>
+                {esClaseB && (
+                  <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                    Dependencias sugeridas: requieren revisión
+                  </p>
+                )}
+              </div>
+              {!esClaseB && (
+                estaAplicada ? (
+                  <button
+                    onClick={() => { setRetirandoReglaId(regla.id); setMotivoRetiro(''); retirarEventIdRef.current = null; setRetiroResultado(null) }}
+                    className="flex-shrink-0 h-6 px-2 rounded text-[10px] font-medium"
+                    style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                  >
+                    Retirar
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      if (expandida) {
+                        setReglaExpandidaId(null)
+                      } else {
+                        setReglaExpandidaId(regla.id)
+                        setReglaExplicacion('')
+                        setReglaConfirmaciones({})
+                        reglaEventIdRef.current = null
+                        setReglaConflictos(null)
+                        setReglaFaltantes(null)
+                      }
+                    }}
+                    className="flex-shrink-0 h-6 px-2 rounded text-[10px] font-semibold"
+                    style={{ backgroundColor: expandida ? 'var(--muted)' : 'var(--primary)', color: expandida ? 'var(--foreground)' : '#fff' }}
+                  >
+                    {expandida ? 'Cancelar' : 'Aplicar'}
+                  </button>
+                )
+              )}
+            </div>
+
+            {/* Expanded apply panel */}
+            {!esClaseB && !estaAplicada && expandida && (
+              <div className="border-t border-border px-3 pb-3 pt-2 flex flex-col gap-2" style={{ backgroundColor: 'var(--muted)' }}>
+                <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>
+                  Se marcarán N/A estas {regla.dependientes.length} preguntas:
+                </p>
+                <p className="text-[10px] font-mono" style={{ color: 'var(--muted-foreground)' }}>
+                  {regla.dependientes.join(' · ')}
+                </p>
+                {regla.principal_conserva && respuesta && respuesta !== 'na' && (
+                  <p className="text-[10px]" style={{ color: 'var(--agro-success-text)' }}>
+                    El principal conserva su respuesta: {RESP_TOOLTIPS[respuesta] ?? respuesta}
+                  </p>
+                )}
+                {regla.condiciones.length > 0 && (
+                  <div className="flex flex-col gap-1">
+                    <p className="text-[10px] font-medium" style={{ color: 'var(--foreground)' }}>Confirmar condiciones:</p>
+                    {regla.condiciones.map(cond => (
+                      <label key={cond.clave} className="flex items-start gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={reglaConfirmaciones[cond.clave] ?? false}
+                          onChange={e => setReglaConfirmaciones(prev => ({ ...prev, [cond.clave]: e.target.checked }))}
+                          className="mt-0.5 flex-shrink-0"
+                          style={{ accentColor: 'var(--primary)' }}
+                        />
+                        <span className="text-[11px]" style={{ color: reglaFaltantes?.includes(cond.clave) ? 'var(--agro-danger-text)' : 'var(--foreground)' }}>
+                          {cond.texto}
+                        </span>
+                      </label>
+                    ))}
+                    {reglaFaltantes && reglaFaltantes.length > 0 && (
+                      <p className="text-[10px]" style={{ color: 'var(--agro-danger-text)' }}>
+                        Marca todas las condiciones para continuar.
+                      </p>
+                    )}
+                  </div>
+                )}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-medium" style={{ color: 'var(--foreground)' }}>
+                    Explicación <span style={{ color: 'var(--agro-red)' }}>*</span>
+                  </label>
+                  <textarea
+                    value={reglaExplicacion}
+                    onChange={e => setReglaExplicacion(e.target.value)}
+                    rows={2}
+                    placeholder="Obligatoria — describe el motivo de esta N/A por rama…"
+                    className="resize-none text-[0.8125rem] outline-none"
+                    style={{ borderRadius: 'var(--radius)', border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)', padding: '0.375rem 0.625rem' }}
+                  />
+                </div>
+
+                {/* Conflicts display */}
+                {reglaConflictos && reglaConflictos.length > 0 && (
+                  <div className="flex flex-col gap-1 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
+                    <p className="text-[11px] font-semibold" style={{ color: 'var(--agro-warning-text)' }}>
+                      Conflictos encontrados — revisar antes de continuar:
+                    </p>
+                    {reglaConflictos.map((c, i) => (
+                      <p key={i} className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>
+                        {c.question_id}: {c.tipo === 'respuesta' ? `respuesta capturada: ${c.valor}` : `hallazgo abierto: ${c.valor}`}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <button
+                    disabled={!reglaExplicacion.trim() || !!aplicandoReglaId}
+                    onClick={async () => {
+                      if (!reglaExplicacion.trim() || !onAplicarRegla) return
+                      if (!reglaEventIdRef.current) reglaEventIdRef.current = crypto.randomUUID()
+                      setAplicandoReglaId(regla.id)
+                      setReglaConflictos(null)
+                      setReglaFaltantes(null)
+                      try {
+                        const r = await onAplicarRegla(regla.id, reglaExplicacion.trim(), reglaConfirmaciones, false, reglaEventIdRef.current)
+                        if (r.estado === 'APLICADA') {
+                          reglaEventIdRef.current = null
+                          setReglaExpandidaId(null)
+                        } else if (r.estado === 'CONFLICTO') {
+                          setReglaConflictos(r.conflictos ?? [])
+                        } else if (r.estado === 'CONDICIONES_INCOMPLETAS') {
+                          setReglaFaltantes(r.faltantes ?? [])
+                        } else {
+                          toast.warning(r.mensaje)
+                        }
+                      } catch { /* handled by parent */ }
+                      finally { setAplicandoReglaId(null) }
+                    }}
+                    className="flex-1 h-8 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1 disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                  >
+                    {aplicandoReglaId === regla.id ? <><Loader size={11} className="animate-spin" /> Aplicando…</> : 'Confirmar N/A en dependientes'}
+                  </button>
+                  {reglaConflictos && reglaConflictos.length > 0 && (
+                    <button
+                      disabled={!reglaExplicacion.trim() || !!aplicandoReglaId}
+                      onClick={async () => {
+                        if (!reglaExplicacion.trim() || !onAplicarRegla) return
+                        reglaEventIdRef.current = crypto.randomUUID()
+                        setAplicandoReglaId(regla.id)
+                        try {
+                          const r = await onAplicarRegla(regla.id, reglaExplicacion.trim(), reglaConfirmaciones, true, reglaEventIdRef.current)
+                          if (r.estado === 'APLICADA') {
+                            reglaEventIdRef.current = null
+                            setReglaExpandidaId(null)
+                            setReglaConflictos(null)
+                          } else {
+                            toast.warning(r.mensaje)
+                          }
+                        } catch { /* handled */ }
+                        finally { setAplicandoReglaId(null) }
+                      }}
+                      className="flex-shrink-0 h-8 px-3 rounded-lg text-[11px] font-semibold flex items-center gap-1 disabled:opacity-50"
+                      style={{ backgroundColor: 'var(--agro-warning-text)', color: '#fff' }}
+                    >
+                      Confirmar de todos modos
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Applied state */}
+            {!esClaseB && estaAplicada && (
+              <div className="border-t border-border px-3 py-2" style={{ backgroundColor: 'var(--agro-success-fill)' }}>
+                <p className="text-[11px]" style={{ color: 'var(--agro-success-text)' }}>
+                  N/A aplicado · {regla.dependientes.length} {regla.dependientes.length === 1 ? 'pregunta' : 'preguntas'} afectadas
+                  {regla.dependientes_na.length > 0 && ` (${regla.dependientes_na.length} siguen N/A)`}
+                </p>
+              </div>
+            )}
+
+            {/* Class B dependientes list */}
+            {esClaseB && regla.dependientes.length > 0 && (
+              <div className="border-t border-border px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
+                <p className="text-[10px] font-mono" style={{ color: 'var(--muted-foreground)' }}>
+                  {regla.dependientes.join(' · ')}
+                </p>
+              </div>
+            )}
+
+            {/* Retiro panel */}
+            {!esClaseB && retirandoEsta && (
+              <div className="border-t border-border px-3 pb-3 pt-2 flex flex-col gap-2" style={{ backgroundColor: 'var(--muted)' }}>
+                {retiroResultado ? (
+                  <div className="flex flex-col gap-1">
+                    <p className="text-[11px] font-semibold" style={{ color: 'var(--agro-success-text)' }}>Regla retirada</p>
+                    {retiroResultado.reactivadas.length > 0 && (
+                      <p className="text-[10px]" style={{ color: 'var(--foreground)' }}>
+                        Reactivadas: {retiroResultado.reactivadas.join(', ')}
+                      </p>
+                    )}
+                    {retiroResultado.siguen_na_por_otra_causa.length > 0 && (
+                      <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                        Siguen N/A por otra causa: {retiroResultado.siguen_na_por_otra_causa.join(', ')}
+                      </p>
+                    )}
+                    {retiroResultado.revision_pendiente.length > 0 && (
+                      <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>
+                        Pendientes de revisión: {retiroResultado.revision_pendiente.join(', ')}
+                      </p>
+                    )}
+                    <button
+                      onClick={() => { setRetirandoReglaId(null); setRetiroResultado(null) }}
+                      className="self-start h-6 px-2 rounded text-[10px]"
+                      style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                    >
+                      Cerrar
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <label className="text-[10px] font-medium" style={{ color: 'var(--foreground)' }}>Motivo del retiro (opcional)</label>
+                    <textarea
+                      value={motivoRetiro}
+                      onChange={e => setMotivoRetiro(e.target.value)}
+                      rows={2}
+                      placeholder="Describe el motivo…"
+                      className="resize-none text-[0.8125rem] outline-none"
+                      style={{ borderRadius: 'var(--radius)', border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)', padding: '0.375rem 0.625rem' }}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        disabled={retirandoEnCurso}
+                        onClick={async () => {
+                          if (!onRetirarRegla) return
+                          if (!retirarEventIdRef.current) retirarEventIdRef.current = crypto.randomUUID()
+                          setRetirandoEnCurso(true)
+                          try {
+                            const r = await onRetirarRegla(regla.id, motivoRetiro.trim(), retirarEventIdRef.current)
+                            retirarEventIdRef.current = null
+                            setRetiroResultado(r)
+                          } catch { /* handled */ }
+                          finally { setRetirandoEnCurso(false) }
+                        }}
+                        className="flex-1 h-7 rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1 disabled:opacity-50"
+                        style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                      >
+                        {retirandoEnCurso ? <><Loader size={10} className="animate-spin" /> Retirando…</> : 'Confirmar retiro'}
+                      </button>
+                      <button
+                        onClick={() => { setRetirandoReglaId(null); setMotivoRetiro('') }}
+                        className="flex-1 h-7 rounded-lg text-[10px]"
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )
+      })}
+
       {/* Sugerencia de scoring + ajuste manual (F2/F3) — solo para preguntas numéricas */}
-      {!pregunta.es_cualitativa && respuesta === 'na' && pregunta.permite_na && (
+      {!pregunta.es_cualitativa && respuesta === 'na' && pregunta.permite_na && !esNaPorRama && (
         <div className="rounded-lg px-3 py-2 text-[11px]" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
           N/A — excluida del denominador de puntaje
         </div>
@@ -1284,6 +1731,22 @@ function PanelScoring({
                   Cota inferior (todas fallan): {calculo.cota_inferior}%
                 </p>
               </div>
+              {((calculo.conteo.na_por_rama ?? 0) > 0 || (calculo.conteo.revision_pendiente ?? 0) > 0) && (
+                <div className="grid grid-cols-2 gap-2">
+                  {(calculo.conteo.na_por_rama ?? 0) > 0 && (
+                    <div className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
+                      <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>N/A por rama</p>
+                      <p className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>{calculo.conteo.na_por_rama}</p>
+                    </div>
+                  )}
+                  {(calculo.conteo.revision_pendiente ?? 0) > 0 && (
+                    <div className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
+                      <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>Revisión pendiente</p>
+                      <p className="text-sm font-bold" style={{ color: 'var(--agro-warning-text)' }}>{calculo.conteo.revision_pendiente}</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           )}
 
@@ -1313,7 +1776,7 @@ function PanelScoring({
 
           {calculo && estado === 'NO_SCORABLE_CRITERIA' && (
             <p className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
-              No hay criterios puntuables configurados para esta auditoría.
+              Sin puntuación aplicable
             </p>
           )}
 
@@ -1555,9 +2018,16 @@ export function AuditorEjecucion() {
     observacionesMap, setObservacionesMap,
     instanciasMap,
     ajustesMap, setAjustesMap,
+    estadoAplicabilidadMap,
     cargando, errorMsg,
-    guardarRespuesta, cambiarEstado,
+    guardarRespuesta, cambiarEstado, refetch,
   } = hook
+
+  const reglasHook = useReglasRama(auditoriaId)
+  const {
+    reglasPorPrincipal, reglasPorMiembroC, causasPorPregunta,
+    refrescar: refrescarReglas, aplicarRegla, retirarRegla, confirmarRevision,
+  } = reglasHook
 
   const [savingMap, setSavingMap] = useState<Record<string, SaveStatus>>({})
   const [saveErrMap, setSaveErrMap] = useState<Record<string, string>>({})
@@ -1584,6 +2054,10 @@ export function AuditorEjecucion() {
   useEffect(() => {
     if (auditoria?.id) cargarHallazgos()
   }, [auditoria?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (auditoriaId) reglasHook.refrescar()
+  }, [auditoriaId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!auditoria?.id || !profile?.id) return
@@ -1824,6 +2298,16 @@ export function AuditorEjecucion() {
 
   function handleRespuesta(pregId: string, resp: AudRespuesta) {
     emitFirstEdit(pregId)
+    // La BD limpia el ajuste manual cuando cambia la clasificación (trigger trg_aud_ip_limpiar_ajuste);
+    // reflejarlo en la UI para no mostrar un ajuste que ya no existe.
+    if (respuestasMap.get(pregId) !== resp) {
+      setAjustesMap(prev => {
+        if (!prev.has(pregId)) return prev
+        const next = new Map(prev)
+        next.delete(pregId)
+        return next
+      })
+    }
     setRespuestasMap(prev => new Map(prev).set(pregId, resp))
     clearTimeout(debounceTimers.current[pregId])
     debounceTimers.current[pregId] = setTimeout(() => dispatchSave(pregId, resp), 50)
@@ -1913,6 +2397,60 @@ export function AuditorEjecucion() {
   }
 
   const allPreguntas = modulosData.flatMap(m => m.preguntas)
+
+  async function handleAplicarRegla(
+    reglaId: string,
+    explicacion: string,
+    confirmaciones: Record<string, boolean>,
+    forzar: boolean,
+    eventId: string,
+  ): Promise<AplicarResultado> {
+    try {
+      const result = await aplicarRegla(reglaId, explicacion, confirmaciones, forzar, eventId)
+      if (result.estado === 'APLICADA') {
+        toast.success(result.mensaje)
+        await Promise.all([refrescarReglas(), refetch()])
+        setScoringVersion(v => v + 1)
+      }
+      return result
+    } catch (e) {
+      console.error('[AuditorEjecucion] aplicarRegla', e)
+      toast.error('No se pudo aplicar la regla. Reintenta.')
+      throw e
+    }
+  }
+
+  async function handleRetirarRegla(
+    reglaId: string,
+    motivo: string,
+    eventId: string,
+  ): Promise<RetirarResultado> {
+    try {
+      const result = await retirarRegla(reglaId, motivo, eventId)
+      if (result.estado === 'RETIRADA') {
+        toast.success('Regla retirada')
+        await Promise.all([refrescarReglas(), refetch()])
+        setScoringVersion(v => v + 1)
+      }
+      return result
+    } catch (e) {
+      console.error('[AuditorEjecucion] retirarRegla', e)
+      toast.error('No se pudo retirar la regla. Reintenta.')
+      throw e
+    }
+  }
+
+  async function handleConfirmarRevision(preguntaId: string): Promise<void> {
+    try {
+      await confirmarRevision(preguntaId)
+      toast.success('Respuesta confirmada')
+      await Promise.all([refrescarReglas(), refetch()])
+      setScoringVersion(v => v + 1)
+    } catch (e) {
+      console.error('[AuditorEjecucion] confirmarRevision', e)
+      toast.error('No se pudo confirmar la respuesta. Reintenta.')
+    }
+  }
 
   const estadoStyle = ESTADO_STYLE[auditoria?.estado ?? ''] ?? ESTADO_STYLE.cerrada
 
@@ -2504,6 +3042,13 @@ export function AuditorEjecucion() {
                             ajuste={ajustesMap.get(preg.id)}
                             instanciaId={instanciasMap.get(preg.id)}
                             onAjusteActualizado={a => handleAjusteActualizado(preg.id, a)}
+                            estadoAplicabilidad={estadoAplicabilidadMap.get(preg.id)}
+                            causasNA={causasPorPregunta.get(preg.id)}
+                            reglasPrincipal={reglasPorPrincipal.get(preg.question_id)}
+                            reglasC={reglasPorMiembroC.get(preg.question_id)}
+                            onAplicarRegla={!cerrada && can('audit.write') ? handleAplicarRegla : undefined}
+                            onRetirarRegla={!cerrada && can('audit.write') ? handleRetirarRegla : undefined}
+                            onConfirmarRevision={!cerrada ? () => handleConfirmarRevision(preg.id) : undefined}
                             onRegistrarHallazgo={() => {
                               const instId = instanciasMap.get(preg.id)
                               if (!instId) {

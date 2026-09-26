@@ -54,6 +54,7 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
     ajuste_estado: string | null
     ajuste_en: string | null
   }>>(new Map())
+  const [estadoAplicabilidadMap, setEstadoAplicabilidadMap] = useState<Map<string, string>>(new Map())
 
   const [cargando, setCargando] = useState(true)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -154,18 +155,20 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
       setModulosData(mdata)
 
       const { data: instRaw, error: instLoadErr } = await tbl('aud_instancia_pregunta')
-        .select('id, pregunta_id, respuesta, puntos_manual, ajuste_motivo, ajuste_estado, ajuste_en').eq('auditoria_id', auditoriaId)
+        .select('id, pregunta_id, respuesta, puntos_manual, ajuste_motivo, ajuste_estado, ajuste_en, estado_aplicabilidad').eq('auditoria_id', auditoriaId)
       if (instLoadErr) throw instLoadErr
 
       const instancias = (instRaw ?? []) as {
         id: string; pregunta_id: string; respuesta: string
         puntos_manual: number | null; ajuste_motivo: string | null
         ajuste_estado: string | null; ajuste_en: string | null
+        estado_aplicabilidad: string | null
       }[]
       const rm = new Map<string, AudRespuesta>()
       const instIdToPreg = new Map<string, string>()
       const pregIdToInstId = new Map<string, string>()
       const am = new Map<string, { puntos_manual: number | null; ajuste_motivo: string | null; ajuste_estado: string | null; ajuste_en: string | null }>()
+      const eam = new Map<string, string>()
       for (const inst of instancias) {
         rm.set(inst.pregunta_id, inst.respuesta as AudRespuesta)
         instIdToPreg.set(inst.id, inst.pregunta_id)
@@ -178,10 +181,12 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
             ajuste_en: inst.ajuste_en,
           })
         }
+        if (inst.estado_aplicabilidad) eam.set(inst.pregunta_id, inst.estado_aplicabilidad)
       }
       setRespuestasMap(rm)
       setInstanciasMap(pregIdToInstId)
       setAjustesMap(am)
+      setEstadoAplicabilidadMap(eam)
 
       const vm = new Map<string, Map<string, string>>()
       const om = new Map<string, string>()
@@ -315,6 +320,7 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
     instanciasMap,
     ajustesMap,
     setAjustesMap,
+    estadoAplicabilidadMap,
     cargando,
     errorMsg,
     guardarRespuesta,
