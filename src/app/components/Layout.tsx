@@ -9,7 +9,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useIntroTransition } from "@/context/IntroTransitionContext";
 import { MadyLogo } from "@/app/components/MadyLogo";
 import { BottomSheet, fabMenuItemVariants } from "@/app/components/BottomSheet";
-import { AuditorCampana } from "@/app/screens/auditor/AuditorCampana";
+import { CampanaNotificaciones } from "@/app/components/CampanaNotificaciones";
 
 const PATH_TITLES: Record<string, string> = {
   '/': 'Inicio',
@@ -256,9 +256,9 @@ export function Layout() {
             )}
           </div>
 
-          {/* Right: campana (auditor) + theme toggle + date */}
+          {/* Right: campana + theme toggle + date */}
           <div className="flex items-center gap-3">
-            {esAuditor && <AuditorCampana />}
+            <CampanaNotificaciones />
             <button
               onClick={e => cycleTheme(e.currentTarget as HTMLElement)}
               className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
@@ -361,13 +361,11 @@ export function Layout() {
           })}
         </div>
 
-        {/* Campana (auditor) */}
-        {esAuditor && (
-          <div className="px-4 py-3 border-t border-border flex items-center gap-4">
-            <AuditorCampana />
-            <span className="text-sm" style={{ color: 'var(--foreground)' }}>Notificaciones</span>
-          </div>
-        )}
+        {/* Campana */}
+        <div className="px-4 py-3 border-t border-border flex items-center gap-4">
+          <CampanaNotificaciones />
+          <span className="text-sm" style={{ color: 'var(--foreground)' }}>Notificaciones</span>
+        </div>
 
         {/* Switch de tema */}
         <div className="px-4 py-3 border-t border-border">

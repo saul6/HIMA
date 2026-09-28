@@ -4,12 +4,13 @@ import { Link, Navigate } from 'react-router'
 import {
   Loader2, TriangleAlert, Clock3,
   Users, AlertTriangle, ChevronRight, ClipboardList, BarChart2,
-  FileCheck, ShieldAlert, Search, Pin, X, Sun, Moon, Lock,
+  FileCheck, ShieldAlert, Search, Pin, X, Sun, Moon, Lock, ListChecks,
 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useHomeDashboard } from '@/hooks/useHomeDashboard'
 import { useDashboardResumen } from '@/hooks/useDashboardResumen'
 import { useCorreccionesPendientes } from '@/hooks/useCorreccionesPendientes'
+import { useAgendaResumen } from '@/hooks/useAgendaResumen'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useHomeSearch } from '@/context/HomeSearchContext'
 import { useTheme } from '@/context/ThemeContext'
@@ -401,6 +402,7 @@ export function Home() {
   const { orgNombre, orgPlan, metricas, recientes, loading, error } = useHomeDashboard()
   const { resumen, loading: resumenLoading } = useDashboardResumen()
   const { items: correcciones, count: countCorrecciones } = useCorreccionesPendientes()
+  const { resumen: agendaResumen } = useAgendaResumen()
   const {
     modulos, loading: loadingModulos, error: errorModulos,
     refetch: refetchModulos, terminosSitio,
@@ -683,6 +685,35 @@ export function Home() {
               )}
             </div>
           </div>
+        )}
+
+        {/* Banner agenda de tareas */}
+        {agendaResumen && !loading && (
+          (esAdmin && (agendaResumen.por_verificar ?? 0) > 0) ||
+          (!esAdmin && agendaResumen.mis_pendientes > 0)
+        ) && (
+          <Link
+            to="/inocuidad/agenda"
+            className="flex items-center gap-3 rounded-xl p-3 border transition-colors hover:border-primary/40"
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+          >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--agro-success-fill)' }}>
+              <ListChecks className="w-4 h-4" style={{ color: 'var(--agro-success-text)' }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              {esAdmin ? (
+                <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+                  {agendaResumen.por_verificar} {agendaResumen.por_verificar === 1 ? 'tarea' : 'tareas'} por verificar
+                </p>
+              ) : (
+                <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+                  Tienes {agendaResumen.mis_pendientes} {agendaResumen.mis_pendientes === 1 ? 'tarea pendiente' : 'tareas pendientes'}
+                </p>
+              )}
+              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Agenda de tareas</p>
+            </div>
+            <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+          </Link>
         )}
 
         {/* ── Métricas ─────────────────────────────────────────────────────── */}
