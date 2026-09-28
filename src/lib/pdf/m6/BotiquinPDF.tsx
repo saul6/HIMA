@@ -11,6 +11,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfTable, PdfTableRow, PdfTableCell } from '@/lib/pdf/components/PdfTable'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface BotiquinPDFProps {
   folio: string
@@ -25,6 +26,8 @@ export interface BotiquinPDFProps {
   responsableNombre: string
   codigoClave?: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 export interface BotiquinConsolidadoPDFProps {
@@ -80,6 +83,7 @@ export function BotiquinPagina({
   folio, rancho, ranchoCodigo, fechaVerificacion,
   parches_curitas, guantes_curacion, vendas_tijeras, gasas_cinta, desinfectante,
   responsableNombre, codigoClave = 'MXA', terminoSitio = 'Rancho',
+  firmaRealizo, firmaVerifico,
 }: BotiquinPDFProps) {
   const emision = new Date().toLocaleDateString('es-MX')
   const codigoFmt = `${codigoClave}-F-SC-SIG`
@@ -134,8 +138,18 @@ export function BotiquinPagina({
           <PdfSectionBanner>3. FIRMAS Y RESPONSABLES</PdfSectionBanner>
           <PdfSignatures
             signatures={[
-              { label: 'Responsable que realizó la verificación', nombre: responsableNombre, caption: 'Firma del responsable' },
-              { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
+              {
+                label: 'Responsable que realizó la verificación',
+                nombre: responsableNombre,
+                caption: 'Firma del responsable',
+                firma: firmaRealizo ?? null,
+              },
+              {
+                label: '',
+                nombre: '',
+                caption: 'Responsable de Inocuidad — Firma',
+                firma: firmaVerifico ?? null,
+              },
             ]}
           />
 

@@ -255,7 +255,7 @@ const { user, loading, isRecovery, clearRecovery, signOut } = useAuthContext()
 Cuando el formato oficial de PrimusGFS choca con "diseño más limpio", **manda el formato oficial**. M9 y M11 son matrices mensuales tipo calendario porque el auditor lo exige — no se simplifican.
 
 ### Firma del Responsable de Inocuidad en PDFs
-Siempre en blanco para firmar a mano. Nunca se rellena programáticamente.
+Si el registro tiene firma digital vigente (`registro_firmas`, rol `verifico`), se imprime. Si no la hay, la línea queda en blanco para firma a mano. Ver `useFirmasRegistro` / `PdfSignatures.firma`.
 
 ### Multi-tenant estricto
 Ver sección 4 (Backend Supabase). `org_id` del auth context, nunca del input.
@@ -338,11 +338,13 @@ Todos los módulos deben usar estos componentes. No duplicar lógica de layout e
 | `PdfMonthlyMatrix.tsx` | Matriz mensual tipo calendario (M9, M11, M19, M23, etc.) |
 | `PdfFieldGrid.tsx` | Grid de campos de datos generales |
 | `PdfChecklist.tsx` | Lista de verificación con marcas |
-| `PdfSignatures.tsx` | Líneas de firma en blanco |
+| `PdfSignatures.tsx` | actualizado: acepta `firma?: FirmaParaPdf` por ítem; imprime imagen si vigente, aviso texto si desactualizada, en blanco si null |
 | `PdfLegend.tsx` | Leyenda de códigos al pie |
 
 **Assets:**
 - `src/lib/pdf/assets/logoMadyPdf.ts` → `LOGO_MADY_PDF` (isotipo como base64)
+
+**FirmaParaPdf** (`@/hooks/useFirmasRegistro`): tipo compartido `{ png, firmante, fecha, sello, estado }`. Helper `firmaDetalleAParaPdf(firma)` convierte `FirmaDetalle` (con imagen) al formato PDF.
 
 ### Pie de página estándar (PdfFooter)
 ```
@@ -395,10 +397,11 @@ src/app/screens/<Modulo>.tsx               ← pantalla completa
 **Flujo estándar de pantalla:**
 1. Header con ChevronLeft + título + ícono
 2. Botón "Exportar consolidado" → bottom sheet con selector de fechas
-3. Lista de registros como cards con chip de estado + botón PDF individual
+3. Lista de registros como cards con chip de estado + botón PDF individual. Al final de cada card: `<FirmasRegistro modulo={...} registroId={r.id} ...>` del hook `useFirmasRegistro`.
 4. FAB (+) → bottom sheet formulario (85% altura)
+4b. Post-save: el sheet muestra panel "¿Firmar como Realizó?" [Firmar] [Después]; PDF se genera después de la decisión.
 5. Validación de rancho + prevención proactiva del límite de frecuencia (banner ámbar)
-6. Guardar → INSERT con `org_id` del auth → refetch → generar PDF → try/catch con toast
+6. Guardar → INSERT con `org_id` del auth → refetch → transición a paso firma_decision → decisión → generar PDF → try/catch con toast
 
 **Restricciones de frecuencia:** Viven en triggers Postgres + prevención proactiva en UI.
 Patrón de captura: `mensaje.includes('<NOMBRE_TRIGGER>')` → `toast.warning(parsearErrorLimite(mensaje), { duration: 7000 })`

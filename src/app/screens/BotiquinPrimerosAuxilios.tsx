@@ -1,4 +1,4 @@
-﻿// ╔══════════════════════════════════════════════════════════════════════╗
+// ╔══════════════════════════════════════════════════════════════════════╗
 // ║  PATRÓN INOCUIDAD M6 — copia esta estructura para M7–M12           ║
 // ║                                                                      ║
 // ║  Flujo estándar de cada módulo de inocuidad:                        ║
@@ -8,7 +8,7 @@
 // ║  4. org_id y IDs sensibles SIEMPRE del contexto de auth             ║
 // ╚══════════════════════════════════════════════════════════════════════╝
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ChevronLeft, Plus, FileDown, X, Loader2, Shield, Files, AlertTriangle } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -25,6 +25,14 @@ import type { BotiquinPDFProps } from '@/lib/pdf/m6/BotiquinPDF'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import {
+  useFirmasRegistro,
+  obtenerFirmasParaPdf,
+  firmaDetalleAParaPdf,
+} from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaPad, type FirmaPadRef } from '@/app/components/FirmaPad'
+import { FirmaSvg } from '@/app/components/FirmaSvg'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -66,6 +74,18 @@ const FORM_INICIAL: FormState = {
   desinfectante: true,
 }
 
+const ERRORES_FIRMA_WARNING = [
+  'Primero registra tu firma',
+  'ya está firmado',
+  'Solo un administrador',
+  'Primero debe firmar',
+  'Quien realizó',
+  'Quien verificó',
+  'El registro cambió',
+  'no admite firmas',
+  'no puede firmar registros',
+]
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function contarPresentes(r: Pick<FormState, 'parches_curitas' | 'guantes_curacion' | 'vendas_tijeras' | 'gasas_cinta' | 'desinfectante'>): number {
@@ -85,7 +105,6 @@ function formatFecha(iso: string): string {
 }
 
 // Extrae la fecha del mensaje del trigger BOTIQUIN_LIMITE_SEMANAL y arma texto amigable.
-// El trigger incluye dos fechas DD/MM/YYYY: la del último registro y la del próximo permitido.
 function parsearErrorLimite(mensaje: string, singular = 'rancho'): string {
   const fechas = mensaje.match(/\d{2}\/\d{2}\/\d{4}/g)
   const proxima = fechas ? fechas[fechas.length - 1] : null
@@ -142,16 +161,39 @@ export function BotiquinPrimerosAuxilios() {
   }, [ranchoInicial])
   const orgNombre = useOrganizacion(profile?.org_id)
 
+  // Firmas del hook (sin imágenes)
+  const ids = registros.map((r) => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M6', ids)
+
   const [sheetAbierto, setSheetAbierto] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'form' | 'firma_decision'>('form')
   const [form, setForm] = useState<FormState>({ ...FORM_INICIAL, fecha_verificacion: hoy() })
   const [guardando, setGuardando] = useState(false)
   const [errRancho, setErrRancho] = useState(false)
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null)
   const [limiteInfo, setLimiteInfo] = useState<{ proxima: string } | null>(null)
 
+  // Estado del paso firma_decision
+  const [pendienteFirma, setPendienteFirma] = useState<{
+    id: string
+    pdfProps: BotiquinPDFProps
+    ranchoNombre: string
+    fecha: string
+  } | null>(null)
+  const [miFirmaDecision, setMiFirmaDecision] = useState<{
+    tiene: boolean
+    trazos?: any
+    firma_png?: string
+  } | null>(null)
+  const [cargandoMiFirmaDecision, setCargandoMiFirmaDecision] = useState(false)
+  const firmaPadDecisionRef = useRef<FirmaPadRef>(null)
+  const [firmaPadDecisionInfo, setFirmaPadDecisionInfo] = useState({ vacia: true, puntos: 0 })
+  const [guardandoFirmaDecision, setGuardandoFirmaDecision] = useState(false)
+  const [firmandoDecision, setFirmandoDecision] = useState(false)
+
   // Verifica si el rancho ya tiene un registro en los 7 días anteriores a la fecha elegida.
   useEffect(() => {
-    if (!sheetAbierto || !form.rancho_id || !form.fecha_verificacion || !profile?.org_id) {
+    if (!sheetAbierto || sheetPaso !== 'form' || !form.rancho_id || !form.fecha_verificacion || !profile?.org_id) {
       setLimiteInfo(null)
       return
     }
@@ -182,7 +224,7 @@ export function BotiquinPrimerosAuxilios() {
         }
       })
     return () => { cancelado = true }
-  }, [sheetAbierto, form.rancho_id, form.fecha_verificacion, profile?.org_id])
+  }, [sheetAbierto, sheetPaso, form.rancho_id, form.fecha_verificacion, profile?.org_id])
 
   // Consolidado
   const [sheetConsolidadoAbierto, setSheetConsolidadoAbierto] = useState(false)
@@ -199,6 +241,9 @@ export function BotiquinPrimerosAuxilios() {
     setForm({ ...FORM_INICIAL, fecha_verificacion: hoy(), rancho_id: ranchoInicial ?? '' })
     setErrRancho(false)
     setLimiteInfo(null)
+    setSheetPaso('form')
+    setPendienteFirma(null)
+    setMiFirmaDecision(null)
     setSheetAbierto(true)
   }
 
@@ -232,31 +277,40 @@ export function BotiquinPrimerosAuxilios() {
       if (error) throw error
 
       toast.success('Registro guardado')
-      setSheetAbierto(false)
       if (tareaId) setRegistroGuardado(true)
       await refetch()
 
-      // Generar PDF automáticamente tras guardar
+      // Transicionar al paso firma_decision
       const rancho = ranchos.find((r) => r.id === form.rancho_id)
-      if (rancho) {
-        const pdfProps: BotiquinPDFProps = {
-          folio: (data.id as string).slice(0, 8).toUpperCase(),
-          rancho: rancho.nombre,
-          ranchoCodigo: rancho.codigo,
-          fechaVerificacion: form.fecha_verificacion,
-          parches_curitas: form.parches_curitas,
-          guantes_curacion: form.guantes_curacion,
-          vendas_tijeras: form.vendas_tijeras,
-          gasas_cinta: form.gasas_cinta,
-          desinfectante: form.desinfectante,
-          responsableNombre: profile.nombre_completo,
-        }
-        try {
-          await generarBotiquinPDF(pdfProps, rancho.nombre, form.fecha_verificacion)
-        } catch {
-          toast.warning('Registro guardado — el PDF no se pudo generar. Descárgalo desde el historial.')
-        }
+      const pdfProps: BotiquinPDFProps = {
+        folio: (data.id as string).slice(0, 8).toUpperCase(),
+        rancho: rancho?.nombre ?? '',
+        ranchoCodigo: rancho?.codigo ?? '',
+        fechaVerificacion: form.fecha_verificacion,
+        parches_curitas: form.parches_curitas,
+        guantes_curacion: form.guantes_curacion,
+        vendas_tijeras: form.vendas_tijeras,
+        gasas_cinta: form.gasas_cinta,
+        desinfectante: form.desinfectante,
+        responsableNombre: profile.nombre_completo,
       }
+      setPendienteFirma({
+        id: data.id as string,
+        pdfProps,
+        ranchoNombre: rancho?.nombre ?? '',
+        fecha: form.fecha_verificacion,
+      })
+      setSheetPaso('firma_decision')
+
+      // Cargar mi_firma para mostrar preview en el panel
+      setCargandoMiFirmaDecision(true)
+      ;(supabase as any).rpc('mi_firma').then(({ data: fd }: any) => {
+        setMiFirmaDecision(fd ?? { tiene: false })
+        setCargandoMiFirmaDecision(false)
+      }).catch(() => {
+        setMiFirmaDecision({ tiene: false })
+        setCargandoMiFirmaDecision(false)
+      })
     } catch (err: unknown) {
       const mensaje = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
       if (mensaje.includes('BOTIQUIN_LIMITE_SEMANAL')) {
@@ -269,9 +323,108 @@ export function BotiquinPrimerosAuxilios() {
     }
   }
 
+  async function handleGuardarFirmaDecision() {
+    if (!firmaPadDecisionRef.current) return
+    const { png, trazos } = firmaPadDecisionRef.current.exportar()
+    setGuardandoFirmaDecision(true)
+    try {
+      const eventId = crypto.randomUUID()
+      const { error } = await (supabase as any).rpc('mi_firma_guardar', {
+        p_firma_png: png,
+        p_trazos: trazos,
+        p_event_id: eventId,
+      })
+      if (error) throw error
+      setMiFirmaDecision({ tiene: true, trazos, firma_png: png })
+      toast.success('Firma registrada')
+    } catch (err: any) {
+      console.error('[BotiquinPrimerosAuxilios] guardar firma decision error:', err)
+      toast.error('No se pudo guardar la firma')
+    } finally {
+      setGuardandoFirmaDecision(false)
+    }
+  }
+
+  async function handleFirmarDecision() {
+    if (!pendienteFirma) return
+    setFirmandoDecision(true)
+    try {
+      const eventId = crypto.randomUUID()
+      const { error } = await (supabase as any).rpc('registro_firmar', {
+        p_modulo: 'M6',
+        p_registro_id: pendienteFirma.id,
+        p_rol_firma: 'realizo',
+        p_contenido_sha256: null,
+        p_event_id: eventId,
+      })
+      if (error) throw error
+
+      // Obtener firma con imagen para PDF
+      const firmasConImagen = await obtenerFirmasParaPdf('M6', [pendienteFirma.id])
+      const firmasReg = firmasConImagen[pendienteFirma.id]
+
+      const pdfPropsConFirma: BotiquinPDFProps = {
+        ...pendienteFirma.pdfProps,
+        firmaRealizo: firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null,
+        firmaVerifico: null,
+      }
+      try {
+        await generarBotiquinPDF(pdfPropsConFirma, pendienteFirma.ranchoNombre, pendienteFirma.fecha)
+      } catch {
+        toast.warning('Registro guardado y firmado — el PDF no se pudo generar. Descárgalo desde el historial.')
+      }
+      await refetchFirmas()
+    } catch (err: any) {
+      const msg = err?.message ?? ''
+      if (ERRORES_FIRMA_WARNING.some((e) => msg.includes(e))) {
+        toast.warning(msg)
+      } else {
+        console.error('[BotiquinPrimerosAuxilios] firmar decision error:', err)
+        toast.error('No se pudo firmar el registro')
+      }
+    } finally {
+      setFirmandoDecision(false)
+      setSheetAbierto(false)
+      setSheetPaso('form')
+      setPendienteFirma(null)
+      setMiFirmaDecision(null)
+    }
+  }
+
+  async function handleDespuesFirma() {
+    if (!pendienteFirma) {
+      setSheetAbierto(false)
+      setSheetPaso('form')
+      return
+    }
+    try {
+      await generarBotiquinPDF(pendienteFirma.pdfProps, pendienteFirma.ranchoNombre, pendienteFirma.fecha)
+    } catch {
+      toast.warning('Registro guardado — el PDF no se pudo generar. Descárgalo desde el historial.')
+    }
+    setSheetAbierto(false)
+    setSheetPaso('form')
+    setPendienteFirma(null)
+    setMiFirmaDecision(null)
+  }
+
+  function handleCerrarSheet() {
+    if (sheetPaso === 'firma_decision') {
+      // Cerrar sin generar PDF (usuario puede descargar desde el historial)
+      setSheetAbierto(false)
+      setSheetPaso('form')
+      setPendienteFirma(null)
+      setMiFirmaDecision(null)
+    } else {
+      setSheetAbierto(false)
+    }
+  }
+
   async function handleDescargarPDF(registro: M6BotiquinConRancho) {
     setGenerandoPDF(registro.id)
     try {
+      const firmasConImagen = await obtenerFirmasParaPdf('M6', [registro.id])
+      const firmasReg = firmasConImagen[registro.id]
       const pdfProps: BotiquinPDFProps = {
         folio: registro.id.slice(0, 8).toUpperCase(),
         rancho: registro.rancho_nombre,
@@ -282,8 +435,9 @@ export function BotiquinPrimerosAuxilios() {
         vendas_tijeras: registro.vendas_tijeras,
         gasas_cinta: registro.gasas_cinta,
         desinfectante: registro.desinfectante,
-        responsableNombre:
-          profile?.nombre_completo ?? 'Responsable',
+        responsableNombre: profile?.nombre_completo ?? 'Responsable',
+        firmaRealizo: firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null,
+        firmaVerifico: firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null,
       }
       await generarBotiquinPDF(pdfProps, registro.rancho_nombre, registro.fecha_verificacion)
     } catch {
@@ -320,18 +474,27 @@ export function BotiquinPrimerosAuxilios() {
       const rancho = ranchos.find((r) => r.id === consRanchoId)
       const ranchoNombre = rancho?.nombre ?? 'Rancho'
 
-      const propsList: BotiquinPDFProps[] = (data as any[]).map((r) => ({
-        folio: (r.id as string).slice(0, 8).toUpperCase(),
-        rancho: r.ranchos?.nombre ?? ranchoNombre,
-        ranchoCodigo: r.ranchos?.codigo ?? '—',
-        fechaVerificacion: r.fecha_verificacion,
-        parches_curitas: r.parches_curitas,
-        guantes_curacion: r.guantes_curacion,
-        vendas_tijeras: r.vendas_tijeras,
-        gasas_cinta: r.gasas_cinta,
-        desinfectante: r.desinfectante,
-        responsableNombre: r.profiles?.nombre_completo ?? profile.nombre_completo,
-      }))
+      // Obtener firmas para todos los registros
+      const idsConsol = (data as any[]).map((r) => r.id)
+      const firmasMapa = await obtenerFirmasParaPdf('M6', idsConsol)
+
+      const propsList: BotiquinPDFProps[] = (data as any[]).map((r) => {
+        const firmasReg = firmasMapa[r.id]
+        return {
+          folio: (r.id as string).slice(0, 8).toUpperCase(),
+          rancho: r.ranchos?.nombre ?? ranchoNombre,
+          ranchoCodigo: r.ranchos?.codigo ?? '—',
+          fechaVerificacion: r.fecha_verificacion,
+          parches_curitas: r.parches_curitas,
+          guantes_curacion: r.guantes_curacion,
+          vendas_tijeras: r.vendas_tijeras,
+          gasas_cinta: r.gasas_cinta,
+          desinfectante: r.desinfectante,
+          responsableNombre: r.profiles?.nombre_completo ?? profile.nombre_completo,
+          firmaRealizo: firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null,
+          firmaVerifico: firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null,
+        }
+      })
 
       await generarBotiquinConsolidadoPDF(propsList, ranchoNombre, consDesde, consHasta)
       setSheetConsolidadoAbierto(false)
@@ -489,6 +652,19 @@ export function BotiquinPrimerosAuxilios() {
                     )
                   })}
                 </div>
+
+                {/* Firmas del registro */}
+                <FirmasRegistro
+                  modulo="M6"
+                  registroId={r.id}
+                  fechaRegistro={r.fecha_verificacion}
+                  firma={firmas[r.id]}
+                  loadingFirmas={loadingFirmas}
+                  onFirmado={async () => {
+                    await refetch()
+                    await refetchFirmas()
+                  }}
+                />
               </div>
             )
           })
@@ -578,8 +754,8 @@ export function BotiquinPrimerosAuxilios() {
             </div>
       </BottomSheet>
 
-      {/* Bottom Sheet — formulario */}
-      <BottomSheet open={sheetAbierto} onClose={() => setSheetAbierto(false)} height="85%">
+      {/* Bottom Sheet — formulario / firma_decision */}
+      <BottomSheet open={sheetAbierto} onClose={handleCerrarSheet} height="85%">
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
@@ -588,133 +764,223 @@ export function BotiquinPrimerosAuxilios() {
             {/* Header sheet */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
-                Nueva verificación
+                {sheetPaso === 'form' ? 'Nueva verificación' : 'Firmar registro'}
               </h2>
               <button
-                onClick={() => setSheetAbierto(false)}
+                onClick={handleCerrarSheet}
                 className="p-1"
               >
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
-            {/* Campos */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {sheetPaso === 'form' ? (
+              <>
+                {/* Campos del formulario */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
-              {/* Sitio */}
-              <div>
-                <label
-                  className="block text-xs text-muted-foreground mb-1.5"
-                  style={{ fontWeight: 600 }}
-                >
-                  {terminosSitio.singular.toUpperCase()} *
-                </label>
-                <select
-                  value={form.rancho_id}
-                  onChange={(e) => {
-                    setForm((f) => ({ ...f, rancho_id: e.target.value }))
-                    setErrRancho(false)
-                  }}
-                  className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                    errRancho ? 'border-agro-red' : 'border-border'
-                  } ${!form.rancho_id ? 'text-muted-foreground' : 'text-foreground'}`}
-                >
-                  <option value="" disabled>
-                    Seleccionar {terminosSitio.singular.toLowerCase()}
-                  </option>
-                  {ranchoOptions.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-                {errRancho && (
-                  <p className="text-xs text-agro-red mt-1">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</p>
-                )}
-              </div>
+                  {/* Sitio */}
+                  <div>
+                    <label
+                      className="block text-xs text-muted-foreground mb-1.5"
+                      style={{ fontWeight: 600 }}
+                    >
+                      {terminosSitio.singular.toUpperCase()} *
+                    </label>
+                    <select
+                      value={form.rancho_id}
+                      onChange={(e) => {
+                        setForm((f) => ({ ...f, rancho_id: e.target.value }))
+                        setErrRancho(false)
+                      }}
+                      className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
+                        errRancho ? 'border-agro-red' : 'border-border'
+                      } ${!form.rancho_id ? 'text-muted-foreground' : 'text-foreground'}`}
+                    >
+                      <option value="" disabled>
+                        Seleccionar {terminosSitio.singular.toLowerCase()}
+                      </option>
+                      {ranchoOptions.map((o) => (
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </select>
+                    {errRancho && (
+                      <p className="text-xs text-agro-red mt-1">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</p>
+                    )}
+                  </div>
 
-              {/* Fecha */}
-              <div>
-                <label
-                  className="block text-xs text-muted-foreground mb-1.5"
-                  style={{ fontWeight: 600 }}
-                >
-                  FECHA DE VERIFICACIÓN *
-                </label>
-                <input
-                  type="date"
-                  value={form.fecha_verificacion}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, fecha_verificacion: e.target.value }))
-                  }
-                  className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                />
-              </div>
-
-              {/* Aviso límite semanal */}
-              {limiteInfo && (
-                <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid #F5A623' }}>
-                  <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-                  <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
-                    Ya existe un registro para este {terminosSitio.singular.toLowerCase()} en los últimos 7 días.{' '}
-                    Próximo registro disponible:{' '}
-                    <span style={{ fontWeight: 600 }}>{limiteInfo.proxima}</span>
-                  </p>
-                </div>
-              )}
-
-              {/* Artículos */}
-              <div>
-                <label
-                  className="block text-xs text-muted-foreground mb-2"
-                  style={{ fontWeight: 600 }}
-                >
-                  ARTÍCULOS EN BOTIQUÍN
-                </label>
-                <p className="text-xs text-muted-foreground mb-3">
-                  Todos activados por defecto. Desactiva lo que NO haya.
-                </p>
-                <div className="space-y-2">
-                  {ARTICULOS.map((a) => (
-                    <ArticuloToggle
-                      key={a.key}
-                      label={a.label}
-                      activo={form[a.key]}
-                      onToggle={() => toggleArticulo(a.key)}
+                  {/* Fecha */}
+                  <div>
+                    <label
+                      className="block text-xs text-muted-foreground mb-1.5"
+                      style={{ fontWeight: 600 }}
+                    >
+                      FECHA DE VERIFICACIÓN *
+                    </label>
+                    <input
+                      type="date"
+                      value={form.fecha_verificacion}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, fecha_verificacion: e.target.value }))
+                      }
+                      className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                     />
-                  ))}
+                  </div>
+
+                  {/* Aviso límite semanal */}
+                  {limiteInfo && (
+                    <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid #F5A623' }}>
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+                      <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                        Ya existe un registro para este {terminosSitio.singular.toLowerCase()} en los últimos 7 días.{' '}
+                        Próximo registro disponible:{' '}
+                        <span style={{ fontWeight: 600 }}>{limiteInfo.proxima}</span>
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Artículos */}
+                  <div>
+                    <label
+                      className="block text-xs text-muted-foreground mb-2"
+                      style={{ fontWeight: 600 }}
+                    >
+                      ARTÍCULOS EN BOTIQUÍN
+                    </label>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Todos activados por defecto. Desactiva lo que NO haya.
+                    </p>
+                    <div className="space-y-2">
+                      {ARTICULOS.map((a) => (
+                        <ArticuloToggle
+                          key={a.key}
+                          label={a.label}
+                          activo={form[a.key]}
+                          onToggle={() => toggleArticulo(a.key)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Responsable (read-only) */}
+                  <div>
+                    <label
+                      className="block text-xs text-muted-foreground mb-1.5"
+                      style={{ fontWeight: 600 }}
+                    >
+                      RESPONSABLE
+                    </label>
+                    <div className="h-11 px-3 rounded-lg bg-muted border border-border flex items-center">
+                      <span className="text-sm text-muted-foreground">
+                        {profile?.nombre_completo ?? '—'}
+                      </span>
+                    </div>
+                  </div>
+
                 </div>
-              </div>
 
-              {/* Responsable (read-only) */}
-              <div>
-                <label
-                  className="block text-xs text-muted-foreground mb-1.5"
-                  style={{ fontWeight: 600 }}
-                >
-                  RESPONSABLE
-                </label>
-                <div className="h-11 px-3 rounded-lg bg-muted border border-border flex items-center">
-                  <span className="text-sm text-muted-foreground">
-                    {profile?.nombre_completo ?? '—'}
-                  </span>
+                {/* Guardar */}
+                <div className="p-4 border-t border-border flex-shrink-0">
+                  <button
+                    onClick={handleGuardar}
+                    disabled={guardando || !!limiteInfo}
+                    className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
+                    style={{ fontWeight: 600 }}
+                  >
+                    {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
+                    Guardar y generar PDF
+                  </button>
                 </div>
-              </div>
+              </>
+            ) : (
+              <>
+                {/* Paso firma_decision */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  <div className="space-y-1">
+                    <p className="text-base" style={{ color: 'var(--foreground)', fontWeight: 600 }}>
+                      ¿Firmar como Realizó?
+                    </p>
+                    <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                      Puedes firmar ahora o hacerlo después desde la lista de registros.
+                    </p>
+                  </div>
 
-            </div>
+                  {cargandoMiFirmaDecision ? (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+                    </div>
+                  ) : miFirmaDecision?.tiene ? (
+                    /* Preview de la firma del usuario */
+                    <div
+                      className="rounded-lg border p-3"
+                      style={{ backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                    >
+                      {miFirmaDecision.trazos && Array.isArray(miFirmaDecision.trazos) && miFirmaDecision.trazos.length > 0 ? (
+                        <FirmaSvg
+                          trazos={miFirmaDecision.trazos}
+                          className="h-20 w-auto"
+                          style={{ color: 'var(--foreground)' } as any}
+                        />
+                      ) : miFirmaDecision.firma_png ? (
+                        <img
+                          src={miFirmaDecision.firma_png}
+                          alt="Tu firma"
+                          className="h-20 w-auto"
+                          style={{ backgroundColor: '#fff' }}
+                        />
+                      ) : (
+                        <p className="text-xs text-center py-4" style={{ color: 'var(--muted-foreground)' }}>
+                          Firma guardada
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    /* No tiene firma → FirmaPad */
+                    <div className="space-y-2">
+                      <p className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                        Primero registra tu firma para poder firmar registros
+                      </p>
+                      <FirmaPad
+                        ref={firmaPadDecisionRef}
+                        onChange={(info) => setFirmaPadDecisionInfo(info)}
+                      />
+                      <button
+                        onClick={handleGuardarFirmaDecision}
+                        disabled={guardandoFirmaDecision || firmaPadDecisionInfo.puntos < 15}
+                        className="w-full h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition-colors"
+                        style={{ backgroundColor: 'var(--primary)', color: 'white' }}
+                      >
+                        {guardandoFirmaDecision ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : 'Guardar mi firma'}
+                      </button>
+                    </div>
+                  )}
+                </div>
 
-            {/* Guardar */}
-            <div className="p-4 border-t border-border flex-shrink-0">
-              <button
-                onClick={handleGuardar}
-                disabled={guardando || !!limiteInfo}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-                style={{ fontWeight: 600 }}
-              >
-                {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-                Guardar y generar PDF
-              </button>
-            </div>
+                {/* Footer firma_decision */}
+                <div className="p-4 border-t border-border flex-shrink-0 flex gap-3">
+                  <button
+                    onClick={handleDespuesFirma}
+                    className="flex-1 h-14 rounded-3xl border font-semibold"
+                    style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                  >
+                    Después
+                  </button>
+                  <button
+                    onClick={handleFirmarDecision}
+                    disabled={firmandoDecision || !miFirmaDecision?.tiene}
+                    className="flex-1 h-14 rounded-3xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50 transition-colors hover:bg-agro-blue"
+                    style={{ backgroundColor: 'var(--primary)', color: 'white' }}
+                  >
+                    {firmandoDecision && <Loader2 className="w-4 h-4 animate-spin" />}
+                    Firmar
+                  </button>
+                </div>
+              </>
+            )}
       </BottomSheet>
     </div>
   )

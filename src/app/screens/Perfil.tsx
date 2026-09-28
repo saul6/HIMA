@@ -1,11 +1,14 @@
-﻿import { useState } from 'react'
-import { LogOut, Pencil, Check, X, ChevronRight, Building2 } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { LogOut, Pencil, Check, X, ChevronRight, Building2, PenLine, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import { actualizarNombreCompleto } from '@/lib/queries'
 import { MadyLogo } from '@/app/components/MadyLogo'
+import { supabase } from '@/lib/supabase'
+import { FirmaPad, type FirmaPadRef } from '@/app/components/FirmaPad'
+import { FirmaSvg } from '@/app/components/FirmaSvg'
 
 const ROL_LABEL: Record<string, string> = {
   super_admin: 'Super Admin',
@@ -31,6 +34,64 @@ export function Perfil() {
   const [editando, setEditando] = useState(false)
   const [nuevoNombre, setNuevoNombre] = useState(profile?.nombre_completo ?? '')
   const [guardando, setGuardando] = useState(false)
+
+  // ── Estado firma ────────────────────────────────────────────────────────────
+  const [loadingFirma, setLoadingFirma] = useState(true)
+  const [tieneFirma, setTieneFirma] = useState(false)
+  const [firmaExistente, setFirmaExistente] = useState<{
+    trazos?: Array<Array<{ x: number; y: number }>>
+    firma_png?: string
+  } | null>(null)
+  const [cambiandoFirma, setCambiandoFirma] = useState(false)
+  const [firmaInfo, setFirmaInfo] = useState({ vacia: true, puntos: 0 })
+  const [guardandoFirma, setGuardandoFirma] = useState(false)
+  const firmaPadRef = useRef<FirmaPadRef>(null)
+
+  const esAuditor = profile?.rol === 'auditor'
+
+  useEffect(() => {
+    let cancelled = false
+    ;(supabase as any).rpc('mi_firma').then(({ data }: any) => {
+      if (cancelled) return
+      if (data && data.tiene) {
+        setTieneFirma(true)
+        setFirmaExistente(data)
+      } else {
+        setTieneFirma(false)
+        setFirmaExistente(null)
+      }
+      setLoadingFirma(false)
+    }).catch(() => {
+      if (!cancelled) setLoadingFirma(false)
+    })
+    return () => { cancelled = true }
+  }, [])
+
+  async function handleGuardarFirma() {
+    if (!firmaPadRef.current) return
+    const { png, trazos } = firmaPadRef.current.exportar()
+    setGuardandoFirma(true)
+    try {
+      const eventId = crypto.randomUUID()
+      const { error } = await (supabase as any).rpc('mi_firma_guardar', {
+        p_firma_png: png,
+        p_trazos: trazos,
+        p_event_id: eventId,
+      })
+      if (error) throw error
+      setTieneFirma(true)
+      setFirmaExistente({ trazos, firma_png: png })
+      setCambiandoFirma(false)
+      firmaPadRef.current?.limpiar()
+      setFirmaInfo({ vacia: true, puntos: 0 })
+      toast.success('Firma guardada correctamente')
+    } catch (err: any) {
+      console.error('[Perfil] guardar firma error:', err)
+      toast.error('No se pudo guardar la firma')
+    } finally {
+      setGuardandoFirma(false)
+    }
+  }
 
   async function handleGuardarNombre() {
     if (!user || !nuevoNombre.trim()) return
@@ -146,6 +207,101 @@ export function Perfil() {
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
           </button>
+        )}
+
+        {/* Mi firma — para todos excepto auditor */}
+        {!esAuditor && (
+          <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <PenLine className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Mi firma</p>
+                  <p className="text-xs text-muted-foreground">Para firma digital de registros</p>
+                </div>
+              </div>
+              {tieneFirma && !cambiandoFirma && (
+                <button
+                  onClick={() => setCambiandoFirma(true)}
+                  className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
+                  style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                >
+                  Cambiar firma
+                </button>
+              )}
+            </div>
+
+            {loadingFirma ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+              </div>
+            ) : tieneFirma && !cambiandoFirma ? (
+              /* Mostrar firma existente */
+              <div
+                className="rounded-lg border p-2"
+                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              >
+                {firmaExistente?.trazos && firmaExistente.trazos.length > 0 ? (
+                  <FirmaSvg
+                    trazos={firmaExistente.trazos}
+                    className="h-20 w-auto mx-auto"
+                    style={{ color: 'var(--foreground)' } as any}
+                  />
+                ) : firmaExistente?.firma_png ? (
+                  <img
+                    src={firmaExistente.firma_png}
+                    alt="Mi firma"
+                    className="h-20 w-auto mx-auto"
+                    style={{ backgroundColor: '#fff' }}
+                  />
+                ) : (
+                  <p className="text-xs text-center py-4" style={{ color: 'var(--muted-foreground)' }}>
+                    Firma guardada
+                  </p>
+                )}
+              </div>
+            ) : (
+              /* Pad para registrar / cambiar firma */
+              <div className="space-y-2">
+                {cambiandoFirma && (
+                  <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                    Al guardar, tu firma anterior sera reemplazada.
+                  </p>
+                )}
+                <FirmaPad
+                  ref={firmaPadRef}
+                  onChange={(info) => setFirmaInfo(info)}
+                />
+                <div className="flex gap-2">
+                  {cambiandoFirma && (
+                    <button
+                      onClick={() => {
+                        setCambiandoFirma(false)
+                        firmaPadRef.current?.limpiar()
+                        setFirmaInfo({ vacia: true, puntos: 0 })
+                      }}
+                      className="flex-1 h-10 rounded-lg text-sm border transition-colors"
+                      style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                  <button
+                    onClick={handleGuardarFirma}
+                    disabled={guardandoFirma || firmaInfo.puntos < 15}
+                    className="flex-1 h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition-colors"
+                    style={{ backgroundColor: 'var(--primary)', color: 'white' }}
+                  >
+                    {guardandoFirma ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : 'Guardar firma'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Info de la app */}
