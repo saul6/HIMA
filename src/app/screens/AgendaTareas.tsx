@@ -2,13 +2,14 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   ChevronLeft, Plus, Loader2, AlertTriangle,
   Calendar, MapPin, FileText, ChevronDown, ChevronUp, ExternalLink,
-  Clock, Camera, Trash2, CheckCircle2, RotateCcw, XCircle, Image, Lock, PenLine,
+  Clock, Camera, Trash2, CheckCircle2, RotateCcw, XCircle, Image, Lock, PenLine, Copy,
 } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { FirmaPad } from '@/app/components/FirmaPad'
 import type { FirmaPadRef } from '@/app/components/FirmaPad'
+import { FirmaSvg } from '@/app/components/FirmaSvg'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
@@ -218,6 +219,7 @@ function FotoMiniaturas({
 function DetalleSheet({
   tareaId,
   esAdmin,
+  esSuperAdmin,
   orgId,
   onClose,
   onRefresh,
@@ -229,6 +231,7 @@ function DetalleSheet({
 }: {
   tareaId: string
   esAdmin: boolean
+  esSuperAdmin: boolean
   orgId: string
   onClose: () => void
   onRefresh: () => void
@@ -273,6 +276,7 @@ function DetalleSheet({
   const [acusesDetalle, setAcusesDetalle] = useState<AcuseDetalle[] | null>(null)
   const [acuseExpandido, setAcuseExpandido] = useState(false)
   const [acuseVerLoading, setAcuseVerLoading] = useState(false)
+  const [acuseTecnicoId, setAcuseTecnicoId] = useState<string | null>(null)
 
   // Formulario editar (mismos campos que crear)
   const [editForm, setEditForm] = useState({
@@ -285,6 +289,7 @@ function DetalleSheet({
     setDetalleError(null)
     setAcusesDetalle(null)
     setAcuseExpandido(false)
+    setAcuseTecnicoId(null)
     const { data: d, errorMsg } = await hook.detalle(tareaId)
     setDet(d)
     if (errorMsg) {
@@ -1061,20 +1066,61 @@ function DetalleSheet({
                         anterior
                       </span>
                     )}
-                    {ac.firma_png && (
+                    {ac.trazos && ac.trazos.length > 0 ? (
+                      <div
+                        className="rounded border border-border p-2"
+                        style={{ backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                      >
+                        <FirmaSvg trazos={ac.trazos} className="h-16 w-auto" />
+                      </div>
+                    ) : ac.firma_png ? (
                       <img
                         src={ac.firma_png}
                         alt="Firma"
                         className="h-16 w-auto rounded border border-border"
                         style={{ backgroundColor: '#fff' }}
                       />
-                    )}
-                    <div className="text-[10px] space-y-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                    ) : null}
+                    <div className="text-[10px] space-y-1" style={{ color: 'var(--muted-foreground)' }}>
                       <p className="italic">"{ac.declaracion}"</p>
-                      <p>IP: {ac.ip}</p>
-                      <p className="break-all">Navegador: {ac.user_agent}</p>
-                      <p className="font-mono">SHA firma: {ac.firma_sha256}</p>
-                      <p className="font-mono">SHA contenido: {ac.contenido_sha256}</p>
+                      <div className="flex items-center gap-1 font-mono">
+                        <span>Sello: {ac.registro_sha256.slice(0, 12)}…</span>
+                        <button
+                          type="button"
+                          onClick={() => navigator.clipboard.writeText(ac.registro_sha256).then(() => toast.success('Sello copiado'))}
+                          aria-label="Copiar sello"
+                          className="inline-flex items-center hover:opacity-70 transition-opacity"
+                          style={{ color: 'var(--primary)' }}
+                        >
+                          <Copy className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <p className="font-mono">SHA firma: {ac.firma_sha256.slice(0, 12)}…</p>
+                      <p className="font-mono">SHA contenido: {ac.contenido_sha256.slice(0, 12)}…</p>
+                      {ac.metadatos_resguardados && (
+                        <p className="italic leading-relaxed mt-1">
+                          Los datos técnicos de la firma (IP, navegador y sesión) quedan resguardados para aclaraciones.
+                        </p>
+                      )}
+                      {esSuperAdmin && (ac.ip || ac.user_agent) && (
+                        <div className="mt-1">
+                          <button
+                            type="button"
+                            onClick={() => setAcuseTecnicoId(prev => prev === ac.acuse_id ? null : ac.acuse_id)}
+                            className="flex items-center gap-1 hover:opacity-70 transition-opacity"
+                            style={{ color: 'var(--primary)' }}
+                          >
+                            {acuseTecnicoId === ac.acuse_id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                            Datos técnicos (solo M.A.D.Y.)
+                          </button>
+                          {acuseTecnicoId === ac.acuse_id && (
+                            <div className="mt-1 space-y-0.5 pl-1">
+                              {ac.ip && <p>IP: {ac.ip}</p>}
+                              {ac.user_agent && <p className="break-all">Navegador: {ac.user_agent}</p>}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -1121,9 +1167,16 @@ function DetalleSheet({
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
                       anterior
                     </span>
-                    {ac.firma_png && (
+                    {ac.trazos && ac.trazos.length > 0 ? (
+                      <div
+                        className="rounded border border-border p-2"
+                        style={{ backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                      >
+                        <FirmaSvg trazos={ac.trazos} className="h-14 w-auto" />
+                      </div>
+                    ) : ac.firma_png ? (
                       <img src={ac.firma_png} alt="Firma" className="h-14 w-auto rounded border border-border" style={{ backgroundColor: '#fff' }} />
-                    )}
+                    ) : null}
                     <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
                       {ac.firmante} · {new Date(ac.firmado_en).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     </p>
@@ -1335,6 +1388,7 @@ export function AgendaTareas() {
   const hook = useAgendaTareas()
 
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
+  const esSuperAdmin = profile?.rol === 'super_admin'
 
   // Estado de UI
   const [tabAdmin, setTabAdmin] = useState<'verificar' | 'abiertas' | 'cerradas' | 'canceladas'>('verificar')
@@ -1703,6 +1757,7 @@ export function AgendaTareas() {
           <DetalleSheet
             tareaId={tareaSeleccionada}
             esAdmin={esAdmin}
+            esSuperAdmin={esSuperAdmin}
             orgId={profile.org_id}
             onClose={cerrarDetalle}
             onRefresh={refrescar}

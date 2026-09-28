@@ -28,12 +28,14 @@ export interface AcuseDetalle {
   declaracion: string
   firmado_en: string
   firma_png: string
+  trazos?: Array<Array<{ x: number; y: number; t: number }>>
   firma_sha256: string
   contenido: Record<string, unknown>
   contenido_sha256: string
   registro_sha256: string
-  ip: string
-  user_agent: string
+  ip?: string | null
+  user_agent?: string | null
+  metadatos_resguardados?: boolean
   n_puntos: number
   vigente: boolean
 }

@@ -63,18 +63,35 @@ export const FirmaPad = forwardRef<FirmaPadRef, FirmaPadProps>(function FirmaPad
   useImperativeHandle(ref, () => ({
     exportar() {
       const canvas = canvasRef.current!
+      const dpr = window.devicePixelRatio || 1
       const srcW = canvas.width
       const srcH = canvas.height
+      const cssW = srcW / dpr
       const maxW = 600
       const dstW = Math.min(maxW, srcW)
       const dstH = Math.round(srcH * (dstW / srcW))
+      // s convierte coordenadas CSS (de trazos) al espacio del canvas de exportación
+      const s = dstW / cssW
       const tmp = document.createElement('canvas')
       tmp.width = dstW
       tmp.height = dstH
       const ctx2 = tmp.getContext('2d')!
-      ctx2.fillStyle = '#ffffff'
+      // Fondo blanco + tinta negra fija (keywords de canvas — excepción para PNG probatorio, independiente del tema)
+      ctx2.fillStyle = 'white'
       ctx2.fillRect(0, 0, dstW, dstH)
-      ctx2.drawImage(canvas, 0, 0, srcW, srcH, 0, 0, dstW, dstH)
+      ctx2.strokeStyle = 'black'
+      ctx2.lineWidth = 2.5 * s
+      ctx2.lineCap = 'round'
+      ctx2.lineJoin = 'round'
+      for (const trazo of trazosRef.current) {
+        if (trazo.length < 2) continue
+        ctx2.beginPath()
+        ctx2.moveTo(trazo[0].x * s, trazo[0].y * s)
+        for (let k = 1; k < trazo.length; k++) {
+          ctx2.lineTo(trazo[k].x * s, trazo[k].y * s)
+        }
+        ctx2.stroke()
+      }
       return { png: tmp.toDataURL('image/png'), trazos: trazosRef.current }
     },
     limpiar() {
