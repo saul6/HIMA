@@ -1007,13 +1007,15 @@ export function BibliotecaHistorial() {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
-      <div className="max-w-[390px] mx-auto">
 
-        {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-3 bg-card border-b border-border">
-          <FileText className="w-5 h-5" style={{ color: 'var(--primary)' }} />
-          <h1 className="text-[17px] flex-1" style={{ fontWeight: 600 }}>Historial de Registros</h1>
-        </div>
+      {/* Header — mismo patrón que Inventario: arriba a la izquierda, a todo lo ancho, con línea inferior */}
+      <header className="bg-card border-b border-border px-4 py-4">
+        <h1 className="text-foreground" style={{ fontWeight: 600 }}>
+          Historial de Registros
+        </h1>
+      </header>
+
+      <div className="max-w-[390px] mx-auto">
 
         <div className="p-4 space-y-4 pb-28">
 
@@ -1156,13 +1158,21 @@ export function BibliotecaHistorial() {
                         {MODULO_META[reg.modulo].label}
                       </span>
                     </div>
-                    <p className="text-[13px] truncate" style={{ fontWeight: 600 }}>
+                    <p
+                      className="text-[13px] truncate"
+                      style={{ fontWeight: 600, overflowWrap: 'anywhere' }}
+                      title={reg.rancho_nombre}
+                    >
                       {reg.rancho_nombre}
                     </p>
                     <p className="text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
                       {formatFecha(reg.fecha)}
                     </p>
-                    <p className="text-[11px] mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                    <p
+                      className="text-[11px] mt-0.5 line-clamp-2"
+                      style={{ color: 'var(--muted-foreground)', overflowWrap: 'anywhere' }}
+                      title={reg.resumen}
+                    >
                       {reg.resumen}
                     </p>
                   </div>

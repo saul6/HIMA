@@ -149,6 +149,12 @@
   --auth-success-text: #B9F0E1;
   --auth-warning-fill: rgba(129, 190, 229, 0.16);
   --auth-warning-text: #D6ECFA;
+
+  /* Scrollbars nativas acordes al tema — pista clara y pulgar suave en modo claro */
+  --scrollbar-track: var(--muted);
+  --scrollbar-thumb: color-mix(in srgb, var(--muted-foreground) 40%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--muted-foreground) 60%, transparent);
+  color-scheme: light;
 }
 
 .dark {
@@ -198,6 +204,12 @@
   --agro-warning-text: #81BEE5;
   --agro-danger-fill: #2D1515;
   --agro-danger-text: #E54D4D;
+
+  /* Scrollbars nativas en modo oscuro — pista y pulgar en tonos navy/gris azulado de marca */
+  --scrollbar-track: var(--muted);
+  --scrollbar-thumb: color-mix(in srgb, var(--agro-blue) 30%, var(--card) 70%);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--agro-blue) 50%, var(--card) 50%);
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -347,6 +359,29 @@
 
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Scrollbars nativas delgadas y acordes al tema (claro/oscuro) — toda la app,
+   incluidos modales y listas con scroll interno. No se ocultan, solo se
+   pintan con los tokens de --scrollbar-* definidos arriba. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 8px;
+  border: 2px solid var(--scrollbar-track);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
 
 @layer base {
   * {
