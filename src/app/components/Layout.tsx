@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, Link } from "react-router";
 import { motion } from "motion/react";
-import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck, X, Calendar } from "lucide-react";
+import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck, X, Calendar, ListChecks } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
 import { useHomeSearch } from "@/context/HomeSearchContext";
@@ -17,6 +17,7 @@ const PATH_TITLES: Record<string, string> = {
   '/inventario': 'Inventario',
   '/historial': 'Historial',
   '/equipo/actividad': 'Actividad del equipo',
+  '/inocuidad/agenda': 'Agenda',
   '/perfil': 'Perfil',
   '/perfil/mi-organizacion': 'Mi organización',
 }
@@ -77,6 +78,7 @@ export function Layout() {
   const mostrarInventario      = !esAuditor && (loadingModulos || modulos.some(m => m.clave === "inventario"));
   const mostrarActividadEquipo = !esAuditor && (loadingModulos || (esAdmin && terminosSitio.singular !== 'Rancho'));
   const mostrarAuditorias      = !esAuditor && ['admin_org', 'super_admin'].includes(profile?.rol ?? '');
+  const mostrarAgendaTareas    = !esAuditor && !loadingModulos && modulos.some(m => m.clave === "agenda_tareas" && m.desbloqueado);
 
   const homeItem = esAuditor
     ? { path: "/auditor",  icon: Home, label: "Inicio" }
@@ -85,7 +87,8 @@ export function Layout() {
   const navItems = [
     homeItem,
     ...(esAuditor              ? [{ path: "/auditor/agenda",                icon: Calendar,       label: "Agenda"           }] : []),
-    ...(mostrarAplicaciones    ? [{ path: "/nueva-aplicacion",              icon: PlusCircle,     label: "Nueva Aplicación" }] : []),
+    ...(mostrarAgendaTareas    ? [{ path: "/inocuidad/agenda",              icon: ListChecks,     label: "Agenda"           }] : []),
+    ...(mostrarAplicaciones    ? [{ path: "/nueva-aplicacion",             icon: PlusCircle,     label: "Nueva Aplicación" }] : []),
     ...(mostrarInventario      ? [{ path: "/inventario",                    icon: Package,        label: "Inventario"       }] : []),
     ...(esAuditor              ? [] : [{ path: "/historial",                icon: History,        label: "Historial"        }]),
     ...(mostrarActividadEquipo ? [{ path: "/equipo/actividad",              icon: Users,          label: "Actividad"        }] : []),
