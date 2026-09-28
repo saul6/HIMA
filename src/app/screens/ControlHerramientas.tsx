@@ -12,6 +12,8 @@ import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { generarControlHerramientasPDF, generarControlHerramientasConsolidadoPDF } from '@/lib/pdf/m64/generarControlHerramientasPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -57,6 +59,7 @@ export function ControlHerramientas() {
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos(orgId)
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, refetch } = useM64ControlHerramientas(orgId)
   const orgNombre = useOrganizacion(orgId)
 
@@ -69,7 +72,7 @@ export function ControlHerramientas() {
   const [exportando, setExportando] = useState(false)
 
   function abrirNuevo() {
-    setForm({ ...FORM_VACIO, fecha: hoyMX() })
+    setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX() })
     setSheetOpen(true)
   }
 
@@ -174,6 +177,8 @@ export function ControlHerramientas() {
         </div>
         <Wrench className="w-5 h-5 text-muted-foreground" />
       </div>
+
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}
       <div className="px-4 mb-4">

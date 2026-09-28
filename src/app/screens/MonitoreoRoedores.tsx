@@ -13,6 +13,8 @@ import { supabase } from '@/lib/supabase'
 import { generarMonitoreoRoedoresPDF } from '@/lib/pdf/m68/generarMonitoreoRoedoresPDF'
 import { generarMonitoreoRoedoresConsolidadoPDF } from '@/lib/pdf/m68/generarMonitoreoRoedoresPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -137,6 +139,7 @@ export function MonitoreoRoedores() {
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos(orgId)
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, refetch } = useM68MonitoreoRoedores(orgId)
   const { criterios } = useM68Criterios()
   const orgNombre = useOrganizacion(orgId)
@@ -162,7 +165,7 @@ export function MonitoreoRoedores() {
 
   function abrirNuevo() {
     const numT = FORM_VACIO.num_trampas
-    setForm({ ...FORM_VACIO, fecha: hoyMX(), responsable: profile?.nombre_completo ?? '' })
+    setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX(), responsable: profile?.nombre_completo ?? '' })
     setMatriz(iniciarMatriz(numT))
     setSheetOpen(true)
   }
@@ -284,6 +287,7 @@ export function MonitoreoRoedores() {
         </div>
         <Bug className="w-5 h-5 text-muted-foreground" />
       </div>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       <div className="px-4 mb-4">
         <button

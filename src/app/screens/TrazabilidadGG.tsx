@@ -17,6 +17,8 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { useM78TrazabilidadGG } from '@/hooks/useM78TrazabilidadGG'
 import { supabase } from '@/lib/supabase'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -83,6 +85,7 @@ export function TrazabilidadGG() {
   const { profile, user } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM78TrazabilidadGG()
 
   const termino = terminosSitio.singular
@@ -95,7 +98,7 @@ export function TrazabilidadGG() {
     setForm((f) => ({ ...f, [k]: e.target.value }))
 
   function abrirSheet() {
-    setForm(formInicial())
+    setForm({ ...formInicial(), rancho_id: ranchoInicial ?? '' })
     setErrRancho(false)
     setSheetNuevo(true)
   }
@@ -170,6 +173,7 @@ export function TrazabilidadGG() {
           </div>
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista */}
       <div className="p-4 space-y-3">

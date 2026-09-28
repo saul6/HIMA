@@ -12,6 +12,8 @@ import { supabase } from '@/lib/supabase'
 import { generarConsumoEnergiaPDF } from '@/lib/pdf/m60/generarConsumoEnergiaPDF'
 import { generarConsumoEnergiaConsolidadoPDF } from '@/lib/pdf/m60/generarConsumoEnergiaPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 function mesActual(): string {
   const d = new Date()
@@ -57,6 +59,7 @@ export function ConsumoEnergia() {
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos(orgId)
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, refetch } = useM60ConsumoEnergia(orgId)
   const orgNombre = useOrganizacion(orgId)
 
@@ -69,7 +72,7 @@ export function ConsumoEnergia() {
   const [exportando, setExportando] = useState(false)
 
   function abrirNuevo() {
-    setForm({ ...FORM_VACIO, mes: mesActual(), realizo: profile?.nombre_completo ?? '' })
+    setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', mes: mesActual(), realizo: profile?.nombre_completo ?? '' })
     setSheetOpen(true)
   }
 
@@ -162,6 +165,8 @@ export function ConsumoEnergia() {
         </div>
         <Zap className="w-5 h-5 text-muted-foreground" />
       </div>
+
+      <BannerTareaOrigen tareaId={tareaId} />
 
       <div className="px-4 mb-4">
         <button

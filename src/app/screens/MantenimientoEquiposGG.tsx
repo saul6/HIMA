@@ -17,6 +17,8 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { useM76MantenimientoEquiposGG } from '@/hooks/useM76MantenimientoEquiposGG'
 import { supabase } from '@/lib/supabase'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -124,6 +126,7 @@ export function MantenimientoEquiposGG() {
   const { profile, user } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM76MantenimientoEquiposGG()
 
   const termino = terminosSitio.singular
@@ -136,7 +139,7 @@ export function MantenimientoEquiposGG() {
     setForm((f) => ({ ...f, [k]: v }))
 
   function abrirSheet() {
-    setForm(formInicial(profile?.nombre_completo ?? ''))
+    setForm({ ...formInicial(profile?.nombre_completo ?? ''), rancho_id: ranchoInicial ?? '' })
     setErrRancho(false)
     setSheetNuevo(true)
   }
@@ -205,6 +208,8 @@ export function MantenimientoEquiposGG() {
           </div>
         </div>
       </header>
+
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista */}
       <div className="p-4 space-y-3">

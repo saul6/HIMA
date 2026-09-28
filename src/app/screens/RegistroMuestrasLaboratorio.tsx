@@ -14,6 +14,8 @@ import { supabase } from '@/lib/supabase'
 import { generarMuestrasLaboratorioPDF } from '@/lib/pdf/m22/generarMuestrasLaboratorioPDF'
 import { generarMuestrasLaboratorioConsolidadoPDF } from '@/lib/pdf/m22/generarMuestrasLaboratorioConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -51,6 +53,7 @@ export function RegistroMuestrasLaboratorio() {
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos(orgId)
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { muestras, loading, refetch } = useM22Muestras(orgId)
   const { microorganismos } = useM22Microorganismos()
   const orgNombre = useOrganizacion(orgId)
@@ -76,7 +79,7 @@ export function RegistroMuestrasLaboratorio() {
   }
 
   function abrirNueva() {
-    setForm({ ...FORM_INICIAL, solicitante_nombre: profile?.nombre_completo ?? '' })
+    setForm({ ...FORM_INICIAL, rancho_id: ranchoInicial ?? '', solicitante_nombre: profile?.nombre_completo ?? '' })
     setSheetOpen(true)
   }
 
@@ -177,6 +180,7 @@ export function RegistroMuestrasLaboratorio() {
         </div>
         <FlaskConical className="w-5 h-5 text-muted-foreground" />
       </div>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}
       <div className="px-4 mb-4">

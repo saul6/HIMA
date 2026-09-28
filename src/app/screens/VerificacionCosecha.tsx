@@ -24,6 +24,8 @@ import {
 } from '@/hooks/useM69VerificacionCosecha'
 import { supabase } from '@/lib/supabase'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -148,6 +150,7 @@ export function VerificacionCosecha() {
   const { profile, user } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM69VerificacionCosecha()
   const { items, loading: loadingItems } = useM69ItemsCatalogo()
 
@@ -425,6 +428,7 @@ export function VerificacionCosecha() {
           )}
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* ── LISTA ──────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
@@ -813,7 +817,7 @@ export function VerificacionCosecha() {
       {/* ── FAB — solo en lista ──────────────────────────────────────── */}
       {vista === 'lista' && (
                 <Fab onClick={() => {
-              setNRanchoId('')
+              setNRanchoId(ranchoInicial ?? '')
               setNMes(mesActual())
               setNCodigo('')
               setNCultivo('')

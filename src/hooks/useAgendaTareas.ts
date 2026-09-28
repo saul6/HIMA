@@ -35,6 +35,7 @@ export interface TareaEvento {
   actor: string
   nota: string | null
   fecha: string
+  datos: Record<string, unknown> | null
 }
 
 export interface TareaEvidencia {
@@ -45,6 +46,9 @@ export interface TareaDetalle {
   tarea: TareaListada
   eventos: TareaEvento[]
   evidencias: TareaEvidencia[]
+  reporte_nota: string | null
+  verificacion_nota: string | null
+  cancelada_motivo: string | null
 }
 
 export interface AgendaResumen {
@@ -74,6 +78,12 @@ export interface FiltrosListar {
 const rpc = (name: string, params?: Record<string, unknown>) =>
   (supabase as any).rpc(name, params)
 
+// La BD devuelve jsonb (un objeto) pero supabase-js lo envuelve a veces en array.
+function unwrap<T>(data: unknown): T | null {
+  if (data == null) return null
+  return (Array.isArray(data) ? (data[0] ?? null) : data) as T | null
+}
+
 export function useAgendaTareas() {
   const { profile } = useAuthContext()
   const [tareas, setTareas] = useState<TareaListada[]>([])
@@ -88,8 +98,7 @@ export function useAgendaTareas() {
     try {
       const { data, error } = await rpc('org_agenda_resumen')
       if (error) throw error
-      const rows = data as AgendaResumen[] | null
-      setResumen(rows?.[0] ?? null)
+      setResumen(unwrap<AgendaResumen>(data))
     } catch (e) {
       console.error('[useAgendaTareas] cargarResumen', e)
     } finally {
@@ -116,15 +125,20 @@ export function useAgendaTareas() {
     }
   }, [profile?.id])
 
-  const detalle = useCallback(async (tareaId: string): Promise<TareaDetalle | null> => {
+  const detalle = useCallback(async (
+    tareaId: string,
+  ): Promise<{ data: TareaDetalle | null; errorMsg: string | null }> => {
     try {
       const { data, error } = await rpc('org_tarea_detalle', { p_tarea_id: tareaId })
-      if (error) throw error
-      const rows = data as TareaDetalle[] | null
-      return rows?.[0] ?? null
+      if (error) {
+        const msg = (error as { message?: string })?.message ?? ''
+        return { data: null, errorMsg: msg || 'Error al cargar el detalle' }
+      }
+      return { data: unwrap<TareaDetalle>(data), errorMsg: null }
     } catch (e) {
       console.error('[useAgendaTareas] detalle', e)
-      return null
+      const msg = e instanceof Error ? e.message : 'Error al cargar el detalle'
+      return { data: null, errorMsg: msg }
     }
   }, [])
 
@@ -160,7 +174,7 @@ export function useAgendaTareas() {
         p_event_id: crypto.randomUUID(),
       })
       if (error) return { ok: false, mensaje: error.message }
-      const row = (data as { tarea_id: string; estado: string }[] | null)?.[0]
+      const row = unwrap<{ tarea_id: string; estado: string }>(data)
       return { ok: true, tarea_id: row?.tarea_id }
     } catch (e) {
       console.error('[useAgendaTareas] crear', e)

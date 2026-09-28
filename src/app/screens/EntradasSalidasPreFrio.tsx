@@ -17,6 +17,8 @@ import { supabase } from '@/lib/supabase'
 import { generarEntradasSalidasPreFrioPDF } from '@/lib/pdf/m40/generarEntradasSalidasPreFrioPDF'
 import { generarEntradasSalidasPreFrioConsolidadoPDF } from '@/lib/pdf/m40/generarEntradasSalidasPreFrioConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -80,6 +82,7 @@ export function EntradasSalidasPreFrio() {
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM40RegistrosPrefrio()
   const orgNombre = useOrganizacion(orgId)
 
@@ -93,7 +96,7 @@ export function EntradasSalidasPreFrio() {
   const [exportando, setExportando] = useState(false)
 
   function abrirNuevo() {
-    setForm({ ...FORM_BASE, fecha: hoyMX() })
+    setForm({ ...FORM_BASE, rancho_id: ranchoInicial ?? '', fecha: hoyMX() })
     setLineas([nuevaLinea()])
     setSheetOpen(true)
   }
@@ -239,6 +242,8 @@ export function EntradasSalidasPreFrio() {
           </button>
         </div>
       </header>
+
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista */}
       <div className="p-4 space-y-3">

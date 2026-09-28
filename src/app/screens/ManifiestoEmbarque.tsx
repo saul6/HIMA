@@ -17,6 +17,8 @@ import { supabase } from '@/lib/supabase'
 import { generarManifiestoEmbarquePDF } from '@/lib/pdf/m38/generarManifiestoEmbarquePDF'
 import { generarManifiestoEmbarqueConsolidadoPDF } from '@/lib/pdf/m38/generarManifiestoEmbarqueConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -153,6 +155,7 @@ export function ManifiestoEmbarque() {
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { manifiestos, loading, error, refetch } = useM38Manifiestos()
   const orgNombre = useOrganizacion(orgId)
 
@@ -166,7 +169,7 @@ export function ManifiestoEmbarque() {
   const [exportando, setExportando] = useState(false)
 
   function abrirNuevo() {
-    setForm({ ...FORM_BASE, fecha: hoyMX() })
+    setForm({ ...FORM_BASE, rancho_id: ranchoInicial ?? '', fecha: hoyMX() })
     setLineas([nuevaLinea()])
     setSheetOpen(true)
   }
@@ -357,6 +360,8 @@ export function ManifiestoEmbarque() {
           </button>
         </div>
       </header>
+
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista */}
       <div className="p-4 space-y-3">

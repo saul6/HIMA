@@ -23,6 +23,8 @@ import { generarLimpiezaCisternaPDF } from '@/lib/pdf/m37/generarLimpiezaCistern
 import { generarLimpiezaCisternaConsolidadoPDF } from '@/lib/pdf/m37/generarLimpiezaCisternaConsolidadoPDF'
 import type { M37ItemPDF, M37DiaDataPDF, ValorM37PDF } from '@/lib/pdf/m37/LimpiezaCisternaPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -80,6 +82,7 @@ export function LimpiezaCisterna() {
   const { profile, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM37LimpiezaCisterna()
   const orgId = profile?.org_id ?? null
   const termino = terminosSitio.singular
@@ -663,6 +666,7 @@ export function LimpiezaCisterna() {
           )}
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* ── LISTA ────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
@@ -1074,7 +1078,7 @@ export function LimpiezaCisterna() {
       {/* ── FAB ──────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
                 <Fab onClick={() => {
-              setNRanchoId(''); setNAnio(new Date().getFullYear()); setNMes(new Date().getMonth() + 1)
+              setNRanchoId(ranchoInicial ?? ''); setNAnio(new Date().getFullYear()); setNMes(new Date().getMonth() + 1)
               setNErrRancho(false); setSheetNuevo(true)
             }} aria-label="Nuevo registro mensual" />
       )}

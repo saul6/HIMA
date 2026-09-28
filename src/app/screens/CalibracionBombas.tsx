@@ -14,6 +14,8 @@ import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { generarCalibracionBombasPDF, generarCalibracionBombasConsolidadoPDF } from '@/lib/pdf/m49/generarCalibracionBombasPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 function formatFecha(iso: string): string {
   try {
@@ -63,6 +65,7 @@ export function CalibracionBombas() {
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos(orgId)
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, refetch } = useM49CalibracionBombas(orgId)
   const orgNombre = useOrganizacion(orgId)
 
@@ -75,7 +78,7 @@ export function CalibracionBombas() {
   const [exportando, setExportando] = useState(false)
 
   function abrirNuevo() {
-    setForm({ ...FORM_VACIO, fecha: hoyMX(), realizo: profile?.nombre_completo ?? '' })
+    setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX(), realizo: profile?.nombre_completo ?? '' })
     setSheetOpen(true)
   }
 
@@ -182,6 +185,8 @@ export function CalibracionBombas() {
         </div>
         <Gauge className="w-5 h-5 text-muted-foreground" />
       </div>
+
+      <BannerTareaOrigen tareaId={tareaId} />
 
       <div className="px-4 mb-4">
         <button

@@ -24,6 +24,8 @@ import {
 } from '@/hooks/useM71LimpiezaCampo'
 import { supabase } from '@/lib/supabase'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -148,6 +150,7 @@ export function LimpiezaCampo() {
   const { profile, user } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM71LimpiezaCampo()
   const { items, loading: loadingItems } = useM71ItemsCatalogo()
 
@@ -409,6 +412,7 @@ export function LimpiezaCampo() {
           )}
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* ── LISTA ──────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
@@ -751,7 +755,7 @@ export function LimpiezaCampo() {
       {/* ── FAB — solo en lista ──────────────────────────────────────── */}
       {vista === 'lista' && (
                 <Fab onClick={() => {
-              setNRanchoId('')
+              setNRanchoId(ranchoInicial ?? '')
               setNMes(mesActual())
               setNRealizo(profile?.nombre_completo ?? '')
               setNObservaciones('')

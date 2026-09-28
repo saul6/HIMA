@@ -15,6 +15,8 @@ import {
   generarFertilizacionGGConsolidadoPDF,
 } from '@/lib/pdf/m67/generarFertilizacionGGPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -70,6 +72,7 @@ export function FertilizacionGG() {
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos(orgId)
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, refetch } = useM67FertilizacionGG(orgId)
   const orgNombre = useOrganizacion(orgId)
 
@@ -87,7 +90,7 @@ export function FertilizacionGG() {
   }
 
   function abrirNuevo() {
-    setForm({ ...FORM_VACIO, fecha: hoyMX(), operario: profile?.nombre_completo ?? '' })
+    setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX(), operario: profile?.nombre_completo ?? '' })
     setSheetOpen(true)
   }
 
@@ -211,6 +214,8 @@ export function FertilizacionGG() {
         </div>
         <Sprout className="w-5 h-5 text-muted-foreground" />
       </div>
+
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}
       <div className="px-4 mb-4">

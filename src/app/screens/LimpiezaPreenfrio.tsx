@@ -23,6 +23,8 @@ import { generarLimpiezaPreenfrioPDF } from '@/lib/pdf/m34/generarLimpiezaPreenf
 import { generarLimpiezaPreenfrioConsolidadoPDF } from '@/lib/pdf/m34/generarLimpiezaPreenfrioConsolidadoPDF'
 import type { M34ItemPDF, M34DiaDataPDF, ValorM34PDF } from '@/lib/pdf/m34/LimpiezaPreenfrioPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -83,6 +85,7 @@ export function LimpiezaPreenfrio() {
   const { profile, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM34LimpiezaPreenfrio()
   const orgId = profile?.org_id ?? null
   const termino = terminosSitio.singular
@@ -667,6 +670,8 @@ export function LimpiezaPreenfrio() {
         </div>
       </header>
 
+      <BannerTareaOrigen tareaId={tareaId} />
+
       {/* ── LISTA ────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
         <div className="p-4 space-y-4">
@@ -1073,7 +1078,7 @@ export function LimpiezaPreenfrio() {
       {/* ── FAB ──────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
                 <Fab onClick={() => {
-              setNRanchoId(''); setNAnio(new Date().getFullYear()); setNMes(new Date().getMonth() + 1)
+              setNRanchoId(ranchoInicial ?? ''); setNAnio(new Date().getFullYear()); setNMes(new Date().getMonth() + 1)
               setNErrRancho(false); setSheetNuevo(true)
             }} aria-label="Nuevo registro mensual" />
       )}

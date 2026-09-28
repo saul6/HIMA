@@ -12,6 +12,8 @@ import { supabase } from '@/lib/supabase'
 import { generarMaterialEmpaquePDF } from '@/lib/pdf/m42/generarMaterialEmpaquePDF'
 import { generarMaterialEmpaqueConsolidadoPDF } from '@/lib/pdf/m42/generarMaterialEmpaqueConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 const tbl = (name: string) => (supabase as any).from(name)
@@ -94,6 +96,7 @@ export function MaterialEmpaqueMovimientos() {
   const { profile, user, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { movimientos, loading, error, refetch } = useM42Movimientos()
 
   const esSuperAdmin = profile?.rol === 'super_admin'
@@ -113,9 +116,9 @@ export function MaterialEmpaqueMovimientos() {
   const setF = (patch: Partial<FormState>) => setForm(f => ({ ...f, ...patch }))
 
   const abrirFormulario = useCallback(() => {
-    setForm({ ...FORM_INICIAL, fecha: hoyMX() })
+    setForm({ ...FORM_INICIAL, rancho_id: ranchoInicial ?? '', fecha: hoyMX() })
     setAbierto(true)
-  }, [])
+  }, [ranchoInicial])
 
   const guardar = useCallback(async () => {
     if (!orgId || !form.rancho_id) {
@@ -241,6 +244,8 @@ export function MaterialEmpaqueMovimientos() {
           Consolidado
         </button>
       </div>
+
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista */}
       <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 space-y-3">

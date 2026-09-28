@@ -17,6 +17,8 @@ import { supabase } from '@/lib/supabase'
 import { generarRecepcionFrutaPDF } from '@/lib/pdf/m39/generarRecepcionFrutaPDF'
 import { generarRecepcionFrutaConsolidadoPDF } from '@/lib/pdf/m39/generarRecepcionFrutaConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -170,6 +172,7 @@ export function RecepcionFruta() {
   const { terminosSitio, modulos } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { recepciones, loading, error, refetch } = useM39Recepciones()
   const orgNombre = useOrganizacion(orgId)
 
@@ -187,7 +190,7 @@ export function RecepcionFruta() {
   const [exportando, setExportando] = useState(false)
 
   function abrirNuevo() {
-    setForm({ ...FORM_BASE, fecha: hoyMX() })
+    setForm({ ...FORM_BASE, rancho_id: ranchoInicial ?? '', fecha: hoyMX() })
     setLineas([nuevaLinea()])
     setSheetOpen(true)
   }
@@ -441,6 +444,7 @@ export function RecepcionFruta() {
           </button>
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista */}
       <div className="p-4 space-y-3">

@@ -18,6 +18,8 @@ import {
 import { generarMttoPreventivoPDF } from '@/lib/pdf/m45/generarMttoPreventivoPDF'
 import { generarMttoPreventivoConsolidadoPDF } from '@/lib/pdf/m45/generarMttoPreventivoPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -155,6 +157,7 @@ export function MantenimientoPreventivo() {
   const { profile, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos }       = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM45MttoPreventivo()
 
   const mesActual    = hoyMX().slice(0, 7)  // YYYY-MM
@@ -561,6 +564,8 @@ export function MantenimientoPreventivo() {
         </div>
       </header>
 
+      <BannerTareaOrigen tareaId={tareaId} />
+
       {/* ── LISTA ──────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
         <div className="p-4 space-y-4">
@@ -714,6 +719,7 @@ export function MantenimientoPreventivo() {
       {/* ── FAB ────────────────────────────────────────────────────────── */}
             <Fab onClick={() => {
           if (vista === 'lista') {
+            setNRanchoId(ranchoInicial ?? '')
             setSheetCrear(true)
             setErrRancho(false)
           } else {

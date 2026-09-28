@@ -17,6 +17,8 @@ import { generarLimpiezaBanosConsolidadoPDF } from '@/lib/pdf/m12/generarLimpiez
 import type { LimpiezaBanosPaginaProps } from '@/lib/pdf/m12/LimpiezaBanosPDF'
 import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -100,6 +102,8 @@ export function RegistroLimpiezaBanos() {
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
+  const [registroGuardado, setRegistroGuardado] = useState(false)
   const { jornadas, loading, refetch } = useM12LimpiezaBanos()
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
@@ -107,6 +111,10 @@ export function RegistroLimpiezaBanos() {
   // Form principal
   const [sheetAbierto, setSheetAbierto] = useState(false)
   const [ranchoId, setRanchoId]   = useState('')
+
+  useEffect(() => {
+    if (ranchoInicial) setRanchoId(ranchoInicial)
+  }, [ranchoInicial])
   const [fecha, setFecha]         = useState(hoy())
   const [banos, setBanos]         = useState<FilaBano[]>([{ ...BANO_INICIAL }])
   const [guardando, setGuardando] = useState(false)
@@ -164,7 +172,7 @@ export function RegistroLimpiezaBanos() {
   // ── Helpers del formulario ─────────────────────────────────────────────────
 
   function abrirSheet() {
-    setRanchoId('')
+    setRanchoId(ranchoInicial ?? '')
     setFecha(hoy())
     setBanos([{ ...BANO_INICIAL }])
     setErrRancho(false)
@@ -234,6 +242,7 @@ export function RegistroLimpiezaBanos() {
 
       toast.success('Registro guardado')
       setSheetAbierto(false)
+      if (tareaId) setRegistroGuardado(true)
       await refetch()
 
       // Generar PDF automáticamente
@@ -350,6 +359,8 @@ export function RegistroLimpiezaBanos() {
           </div>
         </div>
       </header>
+
+      <BannerTareaOrigen tareaId={tareaId} registroGuardado={registroGuardado} />
 
       {/* Exportar consolidado */}
       <div className="px-4 pt-3">

@@ -24,6 +24,8 @@ import {
   generarRondinesVigilanciaConsolidadoPDF,
 } from '@/lib/pdf/m46/generarRondinesVigilanciaPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -172,6 +174,7 @@ export function RondinesVigilancia() {
   const { profile, user, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { rondines, loading, error, refetch } = useM46Rondines()
 
   const orgId = profile?.org_id ?? null
@@ -244,7 +247,7 @@ export function RondinesVigilancia() {
   }
 
   function abrirNuevo() {
-    setNRanchoId('')
+    setNRanchoId(ranchoInicial ?? '')
     setNFecha(hoyMX())
     setNTurno('')
     setNVigilante('')
@@ -528,6 +531,7 @@ export function RondinesVigilancia() {
           </div>
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista */}
       <div className="p-4 space-y-4">

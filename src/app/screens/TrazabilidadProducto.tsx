@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import {
   ChevronLeft, Plus, X, Loader2, Search, Printer, Eye, FileDown,
@@ -21,6 +21,8 @@ import {
 import { registrarYGenerarEtiqueta, registrarEImprimirEtiqueta } from '@/lib/pdf/m48/generarM48PDF'
 import QRCode from 'qrcode'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -141,6 +143,7 @@ export function TrazabilidadProducto() {
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
 
   const [ranchoId, setRanchoId] = useState<string>('')
   const [tab, setTab] = useState<Tab>('lr')
@@ -177,6 +180,11 @@ export function TrazabilidadProducto() {
   const [filtroLPT, setFiltroLPT] = useState('')
 
   const sTermino = terminosSitio.singular
+
+  // Preseleccionar rancho desde contexto de tarea de agenda
+  useEffect(() => {
+    if (ranchoInicial && !ranchoId) setRanchoId(ranchoInicial)
+  }, [ranchoInicial]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Guardar LR ─────────────────────────────────────────────────────────────
 
@@ -455,6 +463,7 @@ export function TrazabilidadProducto() {
           <p className="text-xs text-muted-foreground">POE-COCO-CAL-13</p>
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Instalacion selector */}
       <div className="px-4 pt-3 pb-2 flex-shrink-0">

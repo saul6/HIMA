@@ -23,6 +23,8 @@ import { generarBotiquinPDF } from '@/lib/pdf/m6/generarBotiquinPDF'
 import { generarBotiquinConsolidadoPDF } from '@/lib/pdf/m6/generarBotiquinConsolidadoPDF'
 import type { BotiquinPDFProps } from '@/lib/pdf/m6/BotiquinPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -131,7 +133,13 @@ export function BotiquinPrimerosAuxilios() {
   const { profile } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
+  const [registroGuardado, setRegistroGuardado] = useState(false)
   const { registros, loading, refetch } = useBotiquin()
+
+  useEffect(() => {
+    if (ranchoInicial) setForm((f) => ({ ...f, rancho_id: ranchoInicial }))
+  }, [ranchoInicial])
   const orgNombre = useOrganizacion(profile?.org_id)
 
   const [sheetAbierto, setSheetAbierto] = useState(false)
@@ -188,7 +196,7 @@ export function BotiquinPrimerosAuxilios() {
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }))
 
   function abrirSheet() {
-    setForm({ ...FORM_INICIAL, fecha_verificacion: hoy() })
+    setForm({ ...FORM_INICIAL, fecha_verificacion: hoy(), rancho_id: ranchoInicial ?? '' })
     setErrRancho(false)
     setLimiteInfo(null)
     setSheetAbierto(true)
@@ -225,6 +233,7 @@ export function BotiquinPrimerosAuxilios() {
 
       toast.success('Registro guardado')
       setSheetAbierto(false)
+      if (tareaId) setRegistroGuardado(true)
       await refetch()
 
       // Generar PDF automáticamente tras guardar
@@ -358,6 +367,8 @@ export function BotiquinPrimerosAuxilios() {
           </div>
         </div>
       </header>
+
+      <BannerTareaOrigen tareaId={tareaId} registroGuardado={registroGuardado} />
 
       {/* Acción consolidado */}
       <div className="px-4 pt-3">

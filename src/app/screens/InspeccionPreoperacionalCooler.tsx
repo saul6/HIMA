@@ -32,6 +32,8 @@ import {
 } from '@/lib/pdf/m19/generarInspeccionPreoperacionalCoolerConsolidadoPDF'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -253,6 +255,7 @@ export function InspeccionPreoperacionalCooler() {
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM19InspeccionPreoperacional()
   const orgNombre = useOrganizacion(profile?.org_id)
 
@@ -682,6 +685,8 @@ export function InspeccionPreoperacionalCooler() {
         </div>
       </header>
 
+      <BannerTareaOrigen tareaId={tareaId} />
+
       {/* ── LISTA ──────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
         <div className="p-4 space-y-4">
@@ -847,7 +852,7 @@ export function InspeccionPreoperacionalCooler() {
       {/* ── FAB ────────────────────────────────────────────────────────── */}
             <Fab onClick={() => {
             if (vista === 'lista') {
-              setNRanchoId(''); setNMes(mesActual())
+              setNRanchoId(ranchoInicial ?? ''); setNMes(mesActual())
               setNRealizadoPor(profile?.nombre_completo ?? '')
               setNErrRancho(false); setNYaExiste(false)
               setSheetNuevo(true)

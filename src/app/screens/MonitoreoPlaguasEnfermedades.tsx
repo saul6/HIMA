@@ -13,6 +13,8 @@ import {
 } from '@/hooks/useM72MonitoreoPlaguasEnfermedades'
 import { supabase } from '@/lib/supabase'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -61,6 +63,7 @@ export function MonitoreoPlaguasEnfermedades() {
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos(orgId)
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, refetch } = useM72MonitoreoPlaguasEnfermedades(orgId)
   const { organismos } = useM72Organismos()
 
@@ -71,7 +74,7 @@ export function MonitoreoPlaguasEnfermedades() {
   const [guardando, setGuardando] = useState(false)
 
   function abrirNuevo() {
-    setForm({ ...FORM_VACIO, fecha: hoyMX() })
+    setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX() })
     setFilas([filaPlantaVacia(), filaPlantaVacia()])
     setSheetOpen(true)
   }
@@ -178,6 +181,7 @@ export function MonitoreoPlaguasEnfermedades() {
         </div>
         <Sprout className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
       </div>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Botón consolidado */}
       <div className="px-4 mb-4">

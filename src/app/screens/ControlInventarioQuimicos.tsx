@@ -19,6 +19,8 @@ import {
 import { generarInventarioQuimicosPDF } from '@/lib/pdf/m24/generarInventarioQuimicosPDF'
 import { generarInventarioQuimicosConsolidadoPDF } from '@/lib/pdf/m24/generarInventarioQuimicosConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -367,6 +369,7 @@ export function ControlInventarioQuimicos() {
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos(orgId)
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
 
   const [ranchoId, setRanchoId] = useState('')
   const [selectedQuimico, setSelectedQuimico] = useState<M24SaldoQuimico | null>(null)
@@ -386,10 +389,11 @@ export function ControlInventarioQuimicos() {
   const [guardandoQuimico, setGuardandoQuimico] = useState(false)
   const [exportando, setExportando] = useState(false)
 
-  // Auto-seleccionar si hay un solo rancho
+  // Auto-seleccionar si hay un solo rancho o si hay contexto de tarea
   useEffect(() => {
+    if (ranchoInicial && !ranchoId) { setRanchoId(ranchoInicial); return }
     if (ranchos.length === 1 && !ranchoId) setRanchoId(ranchos[0].id)
-  }, [ranchos, ranchoId])
+  }, [ranchos, ranchoId, ranchoInicial])
 
   const ranchoNombreById = useMemo(
     () => Object.fromEntries(ranchos.map(r => [r.id, r.nombre])),
@@ -506,6 +510,8 @@ export function ControlInventarioQuimicos() {
           <Settings className="w-4 h-4" />
         </button>
       </header>
+
+      <BannerTareaOrigen tareaId={tareaId} />
 
       <div className="p-4 space-y-4">
         {/* Selector de instalación */}

@@ -23,6 +23,8 @@ import { generarLimpiezaPatiosAzoteasPDF } from '@/lib/pdf/m32/generarLimpiezaPa
 import { generarLimpiezaPatiosAzoteasConsolidadoPDF } from '@/lib/pdf/m32/generarLimpiezaPatiosAzoteasConsolidadoPDF'
 import type { M32ItemPDF, M32DiaDataPDF, ValorM32PDF } from '@/lib/pdf/m32/LimpiezaPatiosAzoteasPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -78,6 +80,7 @@ export function LimpiezaPatiosAzoteas() {
   const { profile, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM32LimpiezaPatiosAzoteas()
   const orgId = profile?.org_id ?? null
   const termino = terminosSitio.singular
@@ -547,6 +550,7 @@ export function LimpiezaPatiosAzoteas() {
           )}
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* ── LISTA ────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
@@ -833,7 +837,7 @@ export function LimpiezaPatiosAzoteas() {
       {/* ── FAB ──────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
                 <Fab onClick={() => {
-              setNRanchoId(''); setNAnio(new Date().getFullYear()); setNMes(new Date().getMonth() + 1)
+              setNRanchoId(ranchoInicial ?? ''); setNAnio(new Date().getFullYear()); setNMes(new Date().getMonth() + 1)
               setNErrRancho(false); setSheetNuevo(true)
             }} aria-label="Nuevo registro mensual" />
       )}

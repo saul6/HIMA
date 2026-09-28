@@ -22,6 +22,8 @@ import {
   type M13DraftData,
 } from '@/lib/idb/m13DraftStore'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -323,12 +325,18 @@ export function ReporteIncidencias() {
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
+  const [registroGuardado, setRegistroGuardado] = useState(false)
   const { reportes, loading, refetch } = useM13Incidencias()
   const orgNombre = useOrganizacion(profile?.org_id)
 
   // Sheet formulario
   const [sheetAbierto, setSheetAbierto] = useState(false)
   const [ranchoId, setRanchoId] = useState('')
+
+  useEffect(() => {
+    if (ranchoInicial) setRanchoId(ranchoInicial)
+  }, [ranchoInicial])
   const [fecha, setFecha] = useState(hoy())
   const [auditorNombre, setAuditorNombre] = useState('')
   const [incidencias, setIncidencias] = useState<IncidenciaLocal[]>([nuevaIncidencia()])
@@ -403,7 +411,7 @@ export function ReporteIncidencias() {
   }, [sheetAbierto, ranchoId, fecha, auditorNombre, incidencias, draftKey])
 
   function abrirSheetFresco() {
-    setRanchoId('')
+    setRanchoId(ranchoInicial ?? '')
     setFecha(hoy())
     setAuditorNombre('')
     setIncidencias([nuevaIncidencia()])
@@ -624,6 +632,7 @@ export function ReporteIncidencias() {
       }
 
       setSheetAbierto(false)
+      if (tareaId) setRegistroGuardado(true)
       await refetch()
       if (draftKey) { borrarBorrador(draftKey).catch(() => {}); setHayBorrador(false) }
 
@@ -758,6 +767,8 @@ export function ReporteIncidencias() {
           </div>
         </div>
       </header>
+
+      <BannerTareaOrigen tareaId={tareaId} registroGuardado={registroGuardado} />
 
       {/* Acción consolidado */}
       <div className="px-4 pt-3">

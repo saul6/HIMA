@@ -14,6 +14,8 @@ import {
 } from '@/hooks/useM44OrdenesMantenimiento'
 import { generarOrdenMantenimientoPDF } from '@/lib/pdf/m44/generarOrdenMantenimientoPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -110,6 +112,7 @@ export function OrdenMantenimiento() {
   const { profile, user, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos }       = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { ordenes, loading, error, refetch } = useM44OrdenesMantenimiento()
 
   const esSuperAdmin = profile?.rol === 'super_admin'
@@ -126,10 +129,10 @@ export function OrdenMantenimiento() {
   const setF = (patch: Partial<FormState>) => setForm((f) => ({ ...f, ...patch }))
 
   const abrirFormulario = useCallback(() => {
-    setForm(formInicial())
+    setForm({ ...formInicial(), rancho_id: ranchoInicial ?? '' })
     setErrRancho(false)
     setAbierto(true)
-  }, [])
+  }, [ranchoInicial])
 
   const guardar = useCallback(async () => {
     if (!orgId) return
@@ -244,6 +247,7 @@ export function OrdenMantenimiento() {
           </div>
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista */}
       <div className="p-4 space-y-3">

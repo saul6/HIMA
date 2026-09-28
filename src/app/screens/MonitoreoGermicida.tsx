@@ -14,6 +14,8 @@ import { supabase } from '@/lib/supabase'
 import { generarMonitoreoGermicidaPDF } from '@/lib/pdf/m36/generarMonitoreoGermicidaPDF'
 import { generarMonitoreoGermicidaConsolidadoPDF } from '@/lib/pdf/m36/generarMonitoreoGermicidaConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -51,6 +53,7 @@ export function MonitoreoGermicida() {
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos(orgId)
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { monitoreos, loading, refetch } = useM36Monitoreos(orgId)
   const orgNombre = useOrganizacion(orgId)
 
@@ -63,7 +66,7 @@ export function MonitoreoGermicida() {
   const [exportando, setExportando] = useState(false)
 
   function abrirNuevo() {
-    setForm({ ...FORM_VACIO, fecha: hoyMX(), preparado_por: profile?.nombre_completo ?? '' })
+    setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX(), preparado_por: profile?.nombre_completo ?? '' })
     setSheetOpen(true)
   }
 
@@ -164,6 +167,8 @@ export function MonitoreoGermicida() {
         </div>
         <Droplets className="w-5 h-5 text-muted-foreground" />
       </div>
+
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}
       <div className="px-4 mb-4">

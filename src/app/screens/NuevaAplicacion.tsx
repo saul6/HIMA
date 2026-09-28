@@ -22,6 +22,8 @@ import { Step1ParcelaYCultivo } from "../components/nueva-aplicacion/Step1Parcel
 import { Step2Productos } from "../components/nueva-aplicacion/Step2Productos";
 import { Step3AplicacionYAgua } from "../components/nueva-aplicacion/Step3AplicacionYAgua";
 import { Step4CierreYObservaciones } from "../components/nueva-aplicacion/Step4CierreYObservaciones";
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // Redondea a máximo 4 decimales (evita notación científica y floats infinitos en BD y PDF)
 const r4 = (n: number) => parseFloat(n.toFixed(4));
@@ -34,6 +36,7 @@ export function NuevaAplicacion() {
   const { terminosSitio } = useModulosContext();
   const esCampo = terminosSitio.singular === 'Rancho';
   const { ranchos } = useRanchos();
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const [productosEnInventario, setProductosEnInventario] = useState<string[]>([])
 
   const [formData, setFormData] = useState({
@@ -81,6 +84,13 @@ export function NuevaAplicacion() {
     proximaCosecha: "",
     metodoAplicacionGg: "",
   });
+
+  // Preselecciona rancho si se viene desde una tarea de agenda
+  useEffect(() => {
+    if (ranchoInicial && !formData.huerto) {
+      setFormData((prev) => ({ ...prev, huerto: ranchoInicial }))
+    }
+  }, [ranchoInicial]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sincroniza los datos del perfil si el contexto de auth termina de cargar
   // después del primer render (caso edge: carga lenta de perfil)
@@ -339,6 +349,7 @@ export function NuevaAplicacion() {
           ))}
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Banner: alerta cuando la aplicación supera 7 días desde la recomendación */}
       {alertaFechaVencida && (

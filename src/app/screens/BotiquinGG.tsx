@@ -21,6 +21,8 @@ import {
 } from '@/hooks/useM73BotiquinGG'
 import { supabase } from '@/lib/supabase'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -54,6 +56,7 @@ export function BotiquinGG() {
   const { profile, user } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM73BotiquinGG()
   const { items: catalogo, loading: loadingCatalogo } = useM73Catalogo()
 
@@ -74,7 +77,7 @@ export function BotiquinGG() {
   const [filasExtra, setFilasExtra] = useState<FilaMaterial[]>([])
 
   const abrirSheet = useCallback(() => {
-    setNRanchoId('')
+    setNRanchoId(ranchoInicial ?? '')
     setNFecha(hoy())
     setNBotiquinNum('')
     setNRealizo(profile?.nombre_completo ?? '')
@@ -209,6 +212,7 @@ export function BotiquinGG() {
           </div>
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista */}
       <div className="p-4 space-y-3">

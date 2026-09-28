@@ -19,6 +19,8 @@ import {
 import { generarInspeccionAlmacenEmpaquePDF } from '@/lib/pdf/m43/generarInspeccionAlmacenEmpaquePDF'
 import { generarInspeccionAlmacenEmpaqueConsolidadoPDF } from '@/lib/pdf/m43/generarInspeccionAlmacenEmpaqueConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -163,6 +165,7 @@ export function InspeccionAlmacenEmpaque() {
   const { profile, user, codigoClave } = useAuthContext()
   const { terminosSitio }  = useModulosContext()
   const { ranchos }        = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM43InspeccionAlmacen()
 
   const mesActual    = hoyMX().slice(0, 7)
@@ -290,6 +293,10 @@ export function InspeccionAlmacenEmpaque() {
   const [nAutoriza,     setNAutoriza]     = useState('')
   const [creando,       setCreando]       = useState(false)
   const [errRancho,     setErrRancho]     = useState(false)
+
+  useEffect(() => {
+    if (sheetCrear && ranchoInicial) setNRanchoId(ranchoInicial)
+  }, [sheetCrear, ranchoInicial])
 
   async function handleCrearRegistro() {
     if (!nRanchoId) { setErrRancho(true); return }
@@ -548,6 +555,7 @@ export function InspeccionAlmacenEmpaque() {
           )}
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* ── LISTA ──────────────────────────────────────────────────────── */}
       {vista === 'lista' && (

@@ -23,6 +23,8 @@ import { generarLimpiezaAlmacenEmpaquePDF } from '@/lib/pdf/m35/generarLimpiezaA
 import { generarLimpiezaAlmacenEmpaqueConsolidadoPDF } from '@/lib/pdf/m35/generarLimpiezaAlmacenEmpaqueConsolidadoPDF'
 import type { M35ItemPDF, M35DiaDataPDF, ValorM35PDF } from '@/lib/pdf/m35/LimpiezaAlmacenEmpaquePDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -79,6 +81,7 @@ export function LimpiezaAlmacenEmpaque() {
   const { profile, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM35LimpiezaAlmacenEmpaque()
   const orgId = profile?.org_id ?? null
   const termino = terminosSitio.singular
@@ -635,6 +638,7 @@ export function LimpiezaAlmacenEmpaque() {
           )}
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* ── LISTA ─────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
@@ -998,7 +1002,7 @@ export function LimpiezaAlmacenEmpaque() {
       {/* ── FAB ───────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
                 <Fab onClick={() => {
-              setNRanchoId(''); setNAnio(new Date().getFullYear()); setNMes(new Date().getMonth() + 1)
+              setNRanchoId(ranchoInicial ?? ''); setNAnio(new Date().getFullYear()); setNMes(new Date().getMonth() + 1)
               setNErrRancho(false); setSheetNuevo(true)
             }} aria-label="Nuevo registro mensual" />
       )}

@@ -6,6 +6,11 @@ import type { AgendaResumen } from './useAgendaTareas'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rpc = (name: string) => (supabase as any).rpc(name)
 
+function unwrap<T>(data: unknown): T | null {
+  if (data == null) return null
+  return (Array.isArray(data) ? (data[0] ?? null) : data) as T | null
+}
+
 export function useAgendaResumen() {
   const { profile } = useAuthContext()
   const [resumen, setResumen] = useState<AgendaResumen | null>(null)
@@ -17,8 +22,7 @@ export function useAgendaResumen() {
     try {
       const { data, error } = await rpc('org_agenda_resumen')
       if (error) throw error
-      const rows = data as AgendaResumen[] | null
-      setResumen(rows?.[0] ?? null)
+      setResumen(unwrap<AgendaResumen>(data))
     } catch (e) {
       console.error('[useAgendaResumen]', e)
     } finally {

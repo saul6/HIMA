@@ -23,6 +23,8 @@ import { generarLimpiezaBanosQuimicosPDF } from '@/lib/pdf/m28/generarLimpiezaBa
 import { generarLimpiezaBanosQuimicosConsolidadoPDF } from '@/lib/pdf/m28/generarLimpiezaBanosQuimicosConsolidadoPDF'
 import type { M28ItemPDF, M28DiaDataPDF, ValorM28PDF } from '@/lib/pdf/m28/LimpiezaBanosQuimicosPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -89,6 +91,7 @@ export function LimpiezaBanosQuimicos() {
   const { profile, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM28LimpiezaBanosQuimicos()
   const orgId = profile?.org_id ?? null
   const termino = terminosSitio.singular
@@ -589,6 +592,7 @@ export function LimpiezaBanosQuimicos() {
           )}
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* ── LISTA ────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
@@ -919,7 +923,7 @@ export function LimpiezaBanosQuimicos() {
       {/* ── FAB ──────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
                 <Fab onClick={() => {
-              setNRanchoId(''); setNAnio(new Date().getFullYear()); setNMes(new Date().getMonth() + 1)
+              setNRanchoId(ranchoInicial ?? ''); setNAnio(new Date().getFullYear()); setNMes(new Date().getMonth() + 1)
               setNErrRancho(false); setSheetNuevo(true)
             }} aria-label="Nuevo registro mensual" />
       )}

@@ -12,6 +12,8 @@ import { supabase } from '@/lib/supabase'
 import { generarTemperaturaConservadorPDF } from '@/lib/pdf/m41/generarTemperaturaConservadorPDF'
 import { generarTemperaturaConservadorConsolidadoPDF } from '@/lib/pdf/m41/generarTemperaturaConservadorConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 const HORAS = Array.from({ length: 24 }, (_, i) => i + 1)
@@ -47,6 +49,7 @@ export function TemperaturasConservador() {
   const { profile, user, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM41TemperaturaConservador()
 
   const esSuperAdmin = profile?.rol === 'super_admin'
@@ -68,11 +71,11 @@ export function TemperaturasConservador() {
 
   const abrirFormulario = useCallback(() => {
     const hoy = hoyMX()
-    setForm({ rancho_id: '', fecha: hoy, temp_min: '', temp_max: '', observaciones: '' })
+    setForm({ rancho_id: ranchoInicial ?? '', fecha: hoy, temp_min: '', temp_max: '', observaciones: '' })
     setLecturas({})
     setRegistroExistenteId(null)
     setAbierto(true)
-  }, [])
+  }, [ranchoInicial])
 
   const handleRanchoChange = useCallback(async (ranchoId: string, fecha: string) => {
     setForm(f => ({ ...f, rancho_id: ranchoId, temp_min: '', temp_max: '', observaciones: '' }))
@@ -249,6 +252,7 @@ export function TemperaturasConservador() {
           Consolidado
         </button>
       </div>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista */}
       <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 space-y-3">

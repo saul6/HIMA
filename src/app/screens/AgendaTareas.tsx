@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   ChevronLeft, Plus, Loader2, AlertTriangle,
   Calendar, MapPin, FileText, ChevronDown, ChevronUp, ExternalLink,
-  Clock, Camera, Trash2, CheckCircle2, RotateCcw, XCircle, Image,
+  Clock, Camera, Trash2, CheckCircle2, RotateCcw, XCircle, Image, Lock,
 } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
@@ -212,6 +212,7 @@ function DetalleSheet({
   hook,
   ranchosSelect,
   modulosSelect,
+  accionInicial,
 }: {
   tareaId: string
   esAdmin: boolean
@@ -221,14 +222,22 @@ function DetalleSheet({
   hook: ReturnType<typeof useAgendaTareas>
   ranchosSelect: { id: string; nombre: string }[]
   modulosSelect: { codigo: string; nombre: string }[]
+  accionInicial?: string | null
 }) {
   const navigate = useNavigate()
+  const { modulos } = useModulosContext()
   const [det, setDet] = useState<TareaDetalle | null>(null)
   const [cargando, setCargando] = useState(true)
+  const [detalleError, setDetalleError] = useState<string | null>(null)
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({})
 
   // Acción activa: 'iniciar'|'reportar'|'aprobar'|'regresar'|'cancelar'|'editar'|null
   const [accion, setAccion] = useState<string | null>(null)
+
+  // Si se llega desde el módulo con ?accion=reportar, preseleccionar
+  useEffect(() => {
+    if (accionInicial === 'reportar') setAccion('reportar')
+  }, [accionInicial])
   const [guardando, setGuardando] = useState(false)
 
   // Formulario de reportar
@@ -250,8 +259,16 @@ function DetalleSheet({
 
   const cargarDetalle = useCallback(async () => {
     setCargando(true)
-    const d = await hook.detalle(tareaId)
+    setDetalleError(null)
+    const { data: d, errorMsg } = await hook.detalle(tareaId)
     setDet(d)
+    if (errorMsg) {
+      setDetalleError(
+        errorMsg.toLowerCase().includes('no encontrada') || errorMsg.toLowerCase().includes('not found')
+          ? 'Tarea no encontrada.'
+          : 'No se pudo cargar el detalle.',
+      )
+    }
     if (d) {
       const paths = d.evidencias.map(e => e.storage_path)
       if (paths.length > 0) {
@@ -421,12 +438,14 @@ function DetalleSheet({
   if (!det) {
     return (
       <div className="px-4 py-8 text-center">
-        <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>No se pudo cargar el detalle.</p>
+        <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+          {detalleError ?? 'No se pudo cargar el detalle.'}
+        </p>
       </div>
     )
   }
 
-  const { tarea, eventos, evidencias } = det
+  const { tarea, eventos, evidencias, reporte_nota, verificacion_nota } = det
   const soloLectura = tarea.estado === 'cerrada' || tarea.estado === 'cancelada'
 
   return (
@@ -504,15 +523,55 @@ function DetalleSheet({
         </div>
 
         {/* Botón ir al formato */}
-        {tarea.modulo_ruta && (
-          <button
-            onClick={() => { onClose(); navigate(tarea.modulo_ruta!) }}
-            className="w-full h-9 rounded-lg text-sm flex items-center justify-center gap-2 border border-border transition-colors hover:bg-muted"
-            style={{ color: 'var(--primary)', fontWeight: 600 }}
-          >
-            <ExternalLink className="w-4 h-4" />
-            Ir a {tarea.modulo_nombre ?? 'el formato'}
-          </button>
+        {tarea.modulo_ruta && (() => {
+          const moduloAccesible = modulos.some(
+            (m) => m.ruta === tarea.modulo_ruta && m.desbloqueado,
+          )
+          if (!moduloAccesible) {
+            return (
+              <div
+                className="w-full h-9 rounded-lg text-sm flex items-center justify-center gap-2 border border-border"
+                style={{ color: 'var(--muted-foreground)' }}
+              >
+                <Lock className="w-4 h-4" />
+                {tarea.modulo_nombre ?? 'Formato no disponible'}
+              </div>
+            )
+          }
+          const params = new URLSearchParams()
+          if (tarea.rancho_id) params.set('rancho', tarea.rancho_id)
+          params.set('tarea', tareaId)
+          const labelRancho = tarea.rancho_nombre ? ` · ${tarea.rancho_nombre}` : ''
+          return (
+            <button
+              onClick={() => { onClose(); navigate(`${tarea.modulo_ruta}?${params}`) }}
+              className="w-full h-9 rounded-lg text-sm flex items-center justify-center gap-2 border border-border transition-colors hover:bg-muted"
+              style={{ color: 'var(--primary)', fontWeight: 600 }}
+            >
+              <ExternalLink className="w-4 h-4" />
+              Ir a {tarea.modulo_nombre ?? 'el formato'}{labelRancho}
+            </button>
+          )
+        })()}
+
+        {/* Reporte del colaborador */}
+        {reporte_nota && (
+          <div>
+            <p className="text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>
+              Reporte del colaborador
+            </p>
+            <p className="text-sm" style={{ color: 'var(--foreground)' }}>{reporte_nota}</p>
+          </div>
+        )}
+
+        {/* Nota de verificación */}
+        {verificacion_nota && (
+          <div>
+            <p className="text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>
+              Nota de verificación
+            </p>
+            <p className="text-sm" style={{ color: 'var(--foreground)' }}>{verificacion_nota}</p>
+          </div>
         )}
 
         {/* Evidencias */}
@@ -1022,6 +1081,7 @@ export function AgendaTareas() {
 
   // Sheet detalle
   const tareaParam = searchParams.get('tarea')
+  const accionParam = searchParams.get('accion')
   const [tareaSeleccionada, setTareaSeleccionada] = useState<string | null>(tareaParam)
 
   useEffect(() => {
@@ -1347,6 +1407,7 @@ export function AgendaTareas() {
             hook={hook}
             ranchosSelect={ranchosSelect}
             modulosSelect={modulosSelect}
+            accionInicial={accionParam}
           />
         )}
       </BottomSheet>

@@ -27,6 +27,8 @@ import { generarMonitoreoEstacionesPDF } from '@/lib/pdf/m21/generarMonitoreoEst
 import { generarMonitoreoEstacionesConsolidadoPDF } from '@/lib/pdf/m21/generarMonitoreoEstacionesConsolidadoPDF'
 import { Button } from '@/app/components/ui/button'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -422,6 +424,7 @@ export function MonitoreoEstacionesPlagas() {
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { revisiones, loading, error, refetch } = useM21MonitoreoEstaciones()
   const orgNombre = useOrganizacion(profile?.org_id)
 
@@ -948,6 +951,8 @@ export function MonitoreoEstacionesPlagas() {
         </Button>
       </div>
 
+      <BannerTareaOrigen tareaId={tareaId} />
+
       {/* Lista */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 pb-28 flex flex-col gap-3">
@@ -980,7 +985,7 @@ export function MonitoreoEstacionesPlagas() {
 
       {/* FAB */}
             <Fab onClick={() => {
-            setForm({ ...FORM_INICIAL, inspectorNombre: profile?.nombre_completo ?? '' })
+            setForm({ ...FORM_INICIAL, ranchoId: ranchoInicial ?? '', inspectorNombre: profile?.nombre_completo ?? '' })
             setEstForm({})
             setSheetNuevo(true)
           }} aria-label="Nueva revisión" />

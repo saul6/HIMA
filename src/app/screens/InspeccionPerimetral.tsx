@@ -22,6 +22,8 @@ import { generarPerimetralPDF } from '@/lib/pdf/m9/generarPerimetralPDF'
 import { generarPerimetralConsolidadoPDF } from '@/lib/pdf/m9/generarPerimetralConsolidadoPDF'
 import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -159,6 +161,7 @@ export function InspeccionPerimetral() {
   const { profile, user } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM9Perimetral()
   const { terminosSitio } = useModulosContext()
 
@@ -278,6 +281,10 @@ export function InspeccionPerimetral() {
   // ── Sheet: nuevo registro mensual ──
   const [nRanchoId, setNRanchoId]     = useState('')
   const [nMes, setNMes]               = useState(mesActual)
+
+  useEffect(() => {
+    if (ranchoInicial) setNRanchoId(ranchoInicial)
+  }, [ranchoInicial])
   const [nAlmacen, setNAlmacen]       = useState(false)
   const [nYaExiste, setNYaExiste]     = useState(false)
   const [nGuardando, setNGuardando]   = useState(false)
@@ -548,6 +555,8 @@ export function InspeccionPerimetral() {
         </div>
       </header>
 
+      <BannerTareaOrigen tareaId={tareaId} />
+
       {/* ── LISTA ──────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
         <div className="p-4 space-y-4">
@@ -741,7 +750,7 @@ export function InspeccionPerimetral() {
       {/* ── FAB ────────────────────────────────────────────────────────── */}
             <Fab onClick={() => {
             if (vista === 'lista') {
-              setNRanchoId(''); setNMes(mesActual()); setNAlmacen(false)
+              setNRanchoId(ranchoInicial ?? ''); setNMes(mesActual()); setNAlmacen(false)
               setNErrRancho(false); setNYaExiste(false)
               setSheetNuevo(true)
             } else {

@@ -17,6 +17,8 @@ import { generarCosechaLiberacionConsolidadoPDF } from '@/lib/pdf/m10/generarCos
 import type { CosechaLiberacionPaginaProps } from '@/lib/pdf/m10/CosechaLiberacionPDF'
 import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -107,6 +109,7 @@ export function RegistroCosechaLiberacion() {
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, refetch } = useM10CosechaLiberacion()
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
@@ -200,7 +203,7 @@ export function RegistroCosechaLiberacion() {
   // ── Helpers del formulario ────────────────────────────────────────────────
 
   function abrirSheet() {
-    setRanchoId('')
+    setRanchoId(ranchoInicial ?? '')
     setFecha(hoy())
     setLiberaciones([nuevaFila(profile?.id ?? '')])
     setErrRancho(false)
@@ -383,6 +386,7 @@ export function RegistroCosechaLiberacion() {
           </div>
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}
       <div className="px-4 pt-3">

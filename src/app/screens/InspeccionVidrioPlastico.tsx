@@ -21,6 +21,8 @@ import { generarVidrioPlasticoConsolidadoPDF } from '@/lib/pdf/m7/generarVidrioP
 import type { VidrioPlasticoPDFProps } from '@/lib/pdf/m7/VidrioPlasticoPDF'
 import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -237,6 +239,8 @@ export function InspeccionVidrioPlastico() {
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
+  const [registroGuardado, setRegistroGuardado] = useState(false)
   const { inspecciones, loading, refetch } = useVidrioPlastico()
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
@@ -246,6 +250,10 @@ export function InspeccionVidrioPlastico() {
   // ── Estado inspección ───────────────────────────────────────────────────
   const [sheetInspeccionAbierto, setSheetInspeccionAbierto] = useState(false)
   const [ranchoId, setRanchoId] = useState('')
+
+  useEffect(() => {
+    if (ranchoInicial) setRanchoId(ranchoInicial)
+  }, [ranchoInicial])
   const [fecha, setFecha] = useState(hoy())
   const [filasInspeccion, setFilasInspeccion] = useState<FilaInspeccion[]>([])
   const [cargandoMateriales, setCargandoMateriales] = useState(false)
@@ -396,7 +404,7 @@ export function InspeccionVidrioPlastico() {
   // ── Handlers inspección ──────────────────────────────────────────────────
 
   function abrirSheetInspeccion() {
-    setRanchoId('')
+    setRanchoId(ranchoInicial ?? '')
     setFecha(hoy())
     setFilasInspeccion([])
     setErrRancho(false)
@@ -439,6 +447,7 @@ export function InspeccionVidrioPlastico() {
 
       toast.success('Inspección guardada')
       setSheetInspeccionAbierto(false)
+      if (tareaId) setRegistroGuardado(true)
       await refetch()
 
       const rancho = ranchos.find((r) => r.id === ranchoId)
@@ -685,6 +694,8 @@ export function InspeccionVidrioPlastico() {
           </div>
         </div>
       </header>
+
+      <BannerTareaOrigen tareaId={tareaId} registroGuardado={registroGuardado} />
 
       {/* Botones de acción */}
       <div className="px-4 pt-3 grid grid-cols-2 gap-2">

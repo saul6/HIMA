@@ -21,6 +21,8 @@ import { generarAccidenteLaboralPDF } from '@/lib/pdf/m20/generarAccidenteLabora
 import { generarAccidenteLaboralConsolidadoPDF } from '@/lib/pdf/m20/generarAccidenteLaboralConsolidadoPDF'
 import { Button } from '@/app/components/ui/button'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -261,6 +263,7 @@ export function RegistroAccidentesLaborales() {
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { accidentes, loading, error, refetch } = useM20Accidentes()
   const orgNombre = useOrganizacion(profile?.org_id)
 
@@ -503,6 +506,7 @@ export function RegistroAccidentesLaborales() {
           Exportar
         </Button>
       </div>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista */}
       <div className="flex-1 overflow-y-auto">
@@ -534,7 +538,7 @@ export function RegistroAccidentesLaborales() {
       </div>
 
       {/* FAB */}
-            <Fab onClick={() => { setForm(FORM_INICIAL); setFotosLocal([]); setSheetNuevo(true) }} aria-label="Nuevo registro" />
+            <Fab onClick={() => { setForm({ ...FORM_INICIAL, ranchoId: ranchoInicial ?? '' }); setFotosLocal([]); setSheetNuevo(true) }} aria-label="Nuevo registro" />
 
       {/* Sheet: Nuevo registro ─────────────────────────────────────────────── */}
       <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">

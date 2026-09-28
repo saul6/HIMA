@@ -17,6 +17,8 @@ import { generarPreparacionCloroPDF } from '@/lib/pdf/m27/generarPreparacionClor
 import { generarPreparacionCloroConsolidadoPDF } from '@/lib/pdf/m27/generarPreparacionCloroConsolidadoPDF'
 import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -48,6 +50,7 @@ export function PreparacionCloro() {
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { preparaciones, loading, refetch } = useM27PreparacionCloro()
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
@@ -94,7 +97,7 @@ export function PreparacionCloro() {
   // ── Formulario ─────────────────────────────────────────────────────────────
 
   function abrirSheet() {
-    setRanchoId(''); setFecha(hoy()); setArea(''); setLitrosAgua('')
+    setRanchoId(ranchoInicial ?? ''); setFecha(hoy()); setArea(''); setLitrosAgua('')
     setResponsable(''); setObservaciones('')
     setErrRancho(false); setErrArea(false); setErrLitros(false)
     setSheetAbierto(true)
@@ -231,6 +234,7 @@ export function PreparacionCloro() {
           </div>
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}
       <div className="px-4 pt-3">

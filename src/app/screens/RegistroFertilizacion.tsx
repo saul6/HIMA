@@ -23,6 +23,8 @@ import { generarFertilizacionConsolidadoPDF } from '@/lib/pdf/m8/generarFertiliz
 import type { FertilizacionPDFProps } from '@/lib/pdf/m8/FertilizacionPDF'
 import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -340,6 +342,7 @@ export function RegistroFertilizacion() {
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, refetch: refetchRegistros } = useM8Fertilizacion()
   const { fertilizantes: catalogo, refetch: refetchCatalogo } = useFertilizantesOrg()
   const { saldos, loading: saldosLoading, refetch: refetchSaldos } = useInventarioFertilizantes()
@@ -412,7 +415,7 @@ export function RegistroFertilizacion() {
   // ── Handlers nuevo registro ──────────────────────────────────────────────
 
   function abrirSheetNuevo() {
-    setRanchoId('')
+    setRanchoId(ranchoInicial ?? '')
     setFecha(hoy())
     setSector('')
     setFilas([filaVacia()])
@@ -830,6 +833,7 @@ export function RegistroFertilizacion() {
           </div>
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Tabs */}
       <div className="px-4 pt-3 flex gap-1 bg-card border-b border-border">

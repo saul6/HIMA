@@ -16,6 +16,8 @@ import { supabase } from '@/lib/supabase'
 import { useM47Trabajadores, useM47Items } from '@/hooks/useM47RegistroPersonal'
 import { generarRegistroPersonalPDF } from '@/lib/pdf/m47/generarRegistroPersonalPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -104,6 +106,7 @@ export function RegistroPersonal() {
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { trabajadores, loading, error, refetch } = useM47Trabajadores()
 
   // ── Filtros lista ──
@@ -162,7 +165,7 @@ export function RegistroPersonal() {
   function abrirNuevo() {
     setGuardando(false)
     setEditingId(null)
-    setForm({ ...FORM_VACIO, fecha: hoyMX() })
+    setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX() })
     setChecklistValues({})
     setSheetOpen(true)
   }
@@ -380,6 +383,7 @@ export function RegistroPersonal() {
           </button>
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Filtros */}
       <div className="px-4 pt-3 pb-2 space-y-2">

@@ -18,6 +18,8 @@ import {
 import type { NoConformidad } from '@/types/database.types'
 import { generarResumenNoConformidadesPDF } from '@/lib/pdf/m25/generarResumenNoConformidadesPDF'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -45,6 +47,7 @@ export function ResumenNoConformidades() {
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const {
     visitas, loading, error, refetch,
     crearVisita, actualizarVisita,
@@ -84,7 +87,7 @@ export function ResumenNoConformidades() {
 
   function abrirNuevo() {
     setEditandoVisita(null)
-    setRanchoId('')
+    setRanchoId(ranchoInicial ?? '')
     setFecha(hoy())
     setAuditorNombre(profile?.nombre_completo ?? '')
     setClienteNombre('')
@@ -263,6 +266,7 @@ export function ResumenNoConformidades() {
           </div>
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista de visitas */}
       <div className="p-4 space-y-3">

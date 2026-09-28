@@ -28,6 +28,8 @@ import { generarVerificacionInsumosConsolidadoPDF } from '@/lib/pdf/m23/generarV
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { Fab } from '@/app/components/Fab'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -196,6 +198,7 @@ export function VerificacionInsumos() {
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM23VerificacionInsumos()
   const orgId = profile?.org_id ?? null
   const orgNombre = useOrganizacion(orgId)
@@ -703,6 +706,7 @@ export function VerificacionInsumos() {
           )}
         </div>
       </header>
+      <BannerTareaOrigen tareaId={tareaId} />
 
       {/* ── LISTA ── */}
       {vista === 'lista' && (
@@ -830,7 +834,7 @@ export function VerificacionInsumos() {
       {/* ── FAB ── */}
             <Fab onClick={() => {
             if (vista === 'lista') {
-              setNRanchoId(''); setNMes(mesActual())
+              setNRanchoId(ranchoInicial ?? ''); setNMes(mesActual())
               setNVerificoNombre(profile?.nombre_completo ?? '')
               setNAutorizoNombre('')
               setNErrRancho(false); setNYaExiste(false)
