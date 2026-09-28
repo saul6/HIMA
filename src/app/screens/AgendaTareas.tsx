@@ -2,16 +2,18 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   ChevronLeft, Plus, Loader2, AlertTriangle,
   Calendar, MapPin, FileText, ChevronDown, ChevronUp, ExternalLink,
-  Clock, Camera, Trash2, CheckCircle2, RotateCcw, XCircle, Image, Lock,
+  Clock, Camera, Trash2, CheckCircle2, RotateCcw, XCircle, Image, Lock, PenLine,
 } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { FirmaPad } from '@/app/components/FirmaPad'
+import type { FirmaPadRef } from '@/app/components/FirmaPad'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useAgendaTareas } from '@/hooks/useAgendaTareas'
-import type { TareaListada, TareaDetalle, PrioridadTarea, EstadoTarea } from '@/hooks/useAgendaTareas'
+import type { TareaListada, TareaDetalle, PrioridadTarea, EstadoTarea, AcuseDetalle } from '@/hooks/useAgendaTareas'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { subirEvidencia, getSignedUrlsEvidencia } from '@/lib/storage/agendaStorage'
 
@@ -48,6 +50,7 @@ const EVENTO_LABELS: Record<string, string> = {
   APROBADA: 'Aprobada',
   REGRESADA: 'Regresada',
   CANCELADA: 'Cancelada',
+  ACUSE_FIRMADO: 'Firmó de enterado',
 }
 
 function ChipPrioridad({ prioridad }: { prioridad: PrioridadTarea }) {
@@ -130,6 +133,15 @@ function TareaCard({
 
       <div className="flex flex-wrap items-center gap-2">
         <ChipEstado estado={tarea.estado} vencida={tarea.vencida} />
+        {(tarea.acuse_estado === 'pendiente' || tarea.acuse_estado === 'desactualizado') && (
+          <span
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold leading-none"
+            style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+          >
+            <PenLine className="w-2.5 h-2.5" />
+            Firma pendiente
+          </span>
+        )}
         {tarea.fecha_limite && (
           <span
             className="inline-flex items-center gap-1 text-xs"
@@ -213,6 +225,7 @@ function DetalleSheet({
   ranchosSelect,
   modulosSelect,
   accionInicial,
+  terminoSingular,
 }: {
   tareaId: string
   esAdmin: boolean
@@ -223,6 +236,7 @@ function DetalleSheet({
   ranchosSelect: { id: string; nombre: string }[]
   modulosSelect: { codigo: string; nombre: string }[]
   accionInicial?: string | null
+  terminoSingular: string
 }) {
   const navigate = useNavigate()
   const { modulos } = useModulosContext()
@@ -251,6 +265,15 @@ function DetalleSheet({
   const [cancelarMotivo, setCancelarMotivo] = useState('')
   const [cancelarConfirm, setCancelarConfirm] = useState(false)
 
+  // Firma / acuse
+  const firmaRef = useRef<FirmaPadRef | null>(null)
+  const acuseEventIdRef = useRef<string | null>(null)
+  const [firmaPuntos, setFirmaPuntos] = useState(0)
+  const [firmando, setFirmando] = useState(false)
+  const [acusesDetalle, setAcusesDetalle] = useState<AcuseDetalle[] | null>(null)
+  const [acuseExpandido, setAcuseExpandido] = useState(false)
+  const [acuseVerLoading, setAcuseVerLoading] = useState(false)
+
   // Formulario editar (mismos campos que crear)
   const [editForm, setEditForm] = useState({
     titulo: '', descripcion: '', prioridad: '' as PrioridadTarea | '',
@@ -260,6 +283,8 @@ function DetalleSheet({
   const cargarDetalle = useCallback(async () => {
     setCargando(true)
     setDetalleError(null)
+    setAcusesDetalle(null)
+    setAcuseExpandido(false)
     const { data: d, errorMsg } = await hook.detalle(tareaId)
     setDet(d)
     if (errorMsg) {
@@ -314,6 +339,34 @@ function DetalleSheet({
       if (f) URL.revokeObjectURL(f.preview)
       return prev.filter(x => x.uid !== uid)
     })
+  }
+
+  async function handleFirmarAcuse() {
+    if (!firmaRef.current || !det?.acuse) return
+    if (!acuseEventIdRef.current) acuseEventIdRef.current = crypto.randomUUID()
+    const { png, trazos } = firmaRef.current.exportar()
+    setFirmando(true)
+    const res = await hook.firmarAcuse(
+      tareaId, png, trazos, det.acuse.contenido_sha256, acuseEventIdRef.current,
+    )
+    setFirmando(false)
+    if (res.ok) {
+      acuseEventIdRef.current = null
+      toast.success('Firmaste de enterado')
+      onRefresh()
+      cargarDetalle()
+    } else {
+      const msg = res.mensaje ?? ''
+      if (msg.includes('La tarea cambió')) {
+        toast.warning(msg)
+        firmaRef.current?.limpiar()
+        setFirmaPuntos(0)
+        cargarDetalle()
+      } else {
+        toast.error(msg || 'No se pudo guardar la firma. Intenta de nuevo.')
+        console.error('[DetalleSheet] firmarAcuse:', msg)
+      }
+    }
   }
 
   async function handleIniciar() {
@@ -411,6 +464,9 @@ function DetalleSheet({
     setGuardando(false)
     if (!res.ok) { toast.error(res.mensaje ?? 'Error al editar'); return }
     toast.success('Tarea actualizada')
+    if (res.requiere_nueva_firma) {
+      toast.info('El colaborador deberá firmar el acuse de nuevo')
+    }
     setAccion(null)
     onRefresh()
     cargarDetalle()
@@ -447,6 +503,7 @@ function DetalleSheet({
 
   const { tarea, eventos, evidencias, reporte_nota, verificacion_nota } = det
   const soloLectura = tarea.estado === 'cerrada' || tarea.estado === 'cancelada'
+  const acuse = det.acuse
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
@@ -470,6 +527,87 @@ function DetalleSheet({
           )}
         </div>
       </div>
+
+      {/* ── PUERTA DE FIRMA (colaborador, requiere firmar antes de trabajar) ── */}
+      {acuse?.requiere_mi_firma ? (
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+          {acuse.estado === 'desactualizado' && (
+            <div
+              className="rounded-lg p-3 text-sm"
+              style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+            >
+              El administrador modificó esta tarea. Revísala y firma de nuevo.
+            </div>
+          )}
+
+          {/* Contenido completo visible para la firma */}
+          {tarea.descripcion && (
+            <div>
+              <p className="text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>Descripción</p>
+              <p className="text-sm" style={{ color: 'var(--foreground)' }}>{tarea.descripcion}</p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div>
+              <p style={{ color: 'var(--muted-foreground)' }}>Prioridad</p>
+              <div className="mt-0.5"><ChipPrioridad prioridad={tarea.prioridad} /></div>
+            </div>
+            {tarea.fecha_limite && (
+              <div>
+                <p style={{ color: 'var(--muted-foreground)' }}>Fecha límite</p>
+                <p className="font-semibold mt-0.5" style={{ color: tarea.vencida ? 'var(--agro-danger-text)' : 'var(--foreground)' }}>
+                  {formatFechaLimite(tarea.fecha_limite)}
+                </p>
+              </div>
+            )}
+            {tarea.rancho_nombre && (
+              <div>
+                <p style={{ color: 'var(--muted-foreground)' }}>{terminoSingular}</p>
+                <p className="font-semibold mt-0.5" style={{ color: 'var(--foreground)' }}>{tarea.rancho_nombre}</p>
+              </div>
+            )}
+            {tarea.modulo_nombre && (
+              <div>
+                <p style={{ color: 'var(--muted-foreground)' }}>Formato</p>
+                <p className="font-semibold mt-0.5" style={{ color: 'var(--foreground)' }}>{tarea.modulo_nombre}</p>
+              </div>
+            )}
+            <div className="col-span-2">
+              <p style={{ color: 'var(--muted-foreground)' }}>Asignada por</p>
+              <p className="font-semibold mt-0.5" style={{ color: 'var(--foreground)' }}>
+                {tarea.creador_nombre} · {formatFechaCorta(tarea.created_at)}
+              </p>
+            </div>
+          </div>
+
+          {/* Bloque acuse */}
+          <div className="rounded-xl border border-border p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <PenLine className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--primary)' }} />
+              <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Acuse de recibo</p>
+            </div>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>
+              {acuse.declaracion_preview}
+            </p>
+            <FirmaPad
+              ref={firmaRef}
+              onChange={({ puntos }) => setFirmaPuntos(puntos)}
+            />
+            <button
+              onClick={handleFirmarAcuse}
+              disabled={firmando || firmaPuntos < 15}
+              className="w-full h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition-colors"
+              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+            >
+              {firmando
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : <><PenLine className="w-4 h-4" /> Firmar de enterado</>
+              }
+            </button>
+          </div>
+        </div>
+      ) : (
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
 
@@ -798,6 +936,16 @@ function DetalleSheet({
               </div>
             )}
 
+            {esAdmin && accion === 'editar' && acuse?.estado === 'firmado' && (
+              <div
+                className="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
+                style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+              >
+                <PenLine className="w-3.5 h-3.5 flex-shrink-0" />
+                El colaborador tendrá que volver a firmar.
+              </div>
+            )}
+
             {esAdmin && accion === 'editar' && (
               <EditarForm
                 form={editForm}
@@ -864,6 +1012,128 @@ function DetalleSheet({
           </div>
         )}
 
+        {/* ── Sección acuse (visible cuando no es puerta de firma) ── */}
+        {acuse && acuse.estado !== 'no_requerido' && (
+          <div>
+            <p className="text-xs font-semibold mb-2" style={{ color: 'var(--muted-foreground)' }}>Acuse de recibo</p>
+
+            {acuse.estado === 'firmado' && acuse.ultimo && (
+              <div className="rounded-lg border border-border p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <PenLine className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--agro-success-text)' }} />
+                  <p className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
+                    Firmado por {acuse.ultimo.firmante} el{' '}
+                    {new Date(acuse.ultimo.firmado_en).toLocaleString('es-MX', {
+                      day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+                <p className="text-[10px] font-mono" style={{ color: 'var(--muted-foreground)' }}>
+                  Sello: {acuse.ultimo.registro_sha256.slice(0, 12)}…
+                </p>
+                <button
+                  onClick={async () => {
+                    if (!acuseExpandido && !acusesDetalle) {
+                      setAcuseVerLoading(true)
+                      const res = await hook.verAcuses(tareaId)
+                      setAcuseVerLoading(false)
+                      if (res.data.length) setAcusesDetalle(res.data)
+                    }
+                    setAcuseExpandido(o => !o)
+                  }}
+                  className="text-xs flex items-center gap-1 transition-colors hover:opacity-70"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  {acuseVerLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : acuseExpandido ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  {acuseExpandido ? 'Ocultar detalle' : 'Ver detalle'}
+                </button>
+                {acuseExpandido && acusesDetalle && acusesDetalle.map((ac) => (
+                  <div
+                    key={ac.acuse_id}
+                    className="rounded-lg p-3 space-y-2 border border-border"
+                    style={{ backgroundColor: ac.vigente ? 'var(--card)' : 'var(--muted)' }}
+                  >
+                    {!ac.vigente && (
+                      <span
+                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                      >
+                        anterior
+                      </span>
+                    )}
+                    {ac.firma_png && (
+                      <img
+                        src={ac.firma_png}
+                        alt="Firma"
+                        className="h-16 w-auto rounded border border-border"
+                        style={{ backgroundColor: '#fff' }}
+                      />
+                    )}
+                    <div className="text-[10px] space-y-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                      <p className="italic">"{ac.declaracion}"</p>
+                      <p>IP: {ac.ip}</p>
+                      <p className="break-all">Navegador: {ac.user_agent}</p>
+                      <p className="font-mono">SHA firma: {ac.firma_sha256}</p>
+                      <p className="font-mono">SHA contenido: {ac.contenido_sha256}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {acuse.estado === 'pendiente' && esAdmin && (
+              <div
+                className="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
+                style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+              >
+                <PenLine className="w-3.5 h-3.5 flex-shrink-0" />
+                Sin acuse: {tarea.asignado_nombre} aún no firma
+              </div>
+            )}
+
+            {acuse.estado === 'desactualizado' && esAdmin && (
+              <div className="space-y-2">
+                <div
+                  className="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
+                  style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+                >
+                  <PenLine className="w-3.5 h-3.5 flex-shrink-0" />
+                  Firma desactualizada: se editó la tarea
+                </div>
+                <button
+                  onClick={async () => {
+                    if (!acuseExpandido && !acusesDetalle) {
+                      setAcuseVerLoading(true)
+                      const res = await hook.verAcuses(tareaId)
+                      setAcuseVerLoading(false)
+                      if (res.data.length) setAcusesDetalle(res.data)
+                    }
+                    setAcuseExpandido(o => !o)
+                  }}
+                  className="text-xs flex items-center gap-1"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  {acuseVerLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : acuseExpandido ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  {acuseExpandido ? 'Ocultar acuses anteriores' : 'Ver acuses anteriores'}
+                </button>
+                {acuseExpandido && acusesDetalle && acusesDetalle.map((ac) => (
+                  <div key={ac.acuse_id} className="rounded-lg p-3 space-y-2 border border-border" style={{ backgroundColor: 'var(--muted)' }}>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
+                      anterior
+                    </span>
+                    {ac.firma_png && (
+                      <img src={ac.firma_png} alt="Firma" className="h-14 w-auto rounded border border-border" style={{ backgroundColor: '#fff' }} />
+                    )}
+                    <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                      {ac.firmante} · {new Date(ac.firmado_en).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Historial de eventos */}
         {eventos.length > 0 && (
           <div>
@@ -876,9 +1146,10 @@ function DetalleSheet({
                     {i < eventos.length - 1 && <div className="w-px flex-1 mt-1" style={{ backgroundColor: 'var(--border)' }} />}
                   </div>
                   <div className="pb-3 flex-1">
-                    <p className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
+                    <p className="text-xs font-semibold flex items-center gap-1.5" style={{ color: 'var(--foreground)' }}>
+                      {ev.tipo === 'ACUSE_FIRMADO' && <PenLine className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--primary)' }} />}
                       {EVENTO_LABELS[ev.tipo] ?? ev.tipo}
-                      <span className="font-normal ml-1.5" style={{ color: 'var(--muted-foreground)' }}>
+                      <span className="font-normal" style={{ color: 'var(--muted-foreground)' }}>
                         por {ev.actor}
                       </span>
                     </p>
@@ -895,6 +1166,7 @@ function DetalleSheet({
           </div>
         )}
       </div>
+      )} {/* fin else puerta-firma */}
     </div>
   )
 }
@@ -1227,6 +1499,17 @@ export function AgendaTareas() {
               </div>
             )}
 
+            {/* Chip sin acuse org */}
+            {resumen && (resumen.sin_acuse_org ?? 0) > 0 && (
+              <div
+                className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold"
+                style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+              >
+                <PenLine className="w-3.5 h-3.5 flex-shrink-0" />
+                {resumen.sin_acuse_org} {(resumen.sin_acuse_org ?? 0) === 1 ? 'tarea sin acuse' : 'tareas sin acuse'}
+              </div>
+            )}
+
             {/* Filtro por colaborador */}
             {hook.colaboradores.length > 0 && (
               <select
@@ -1285,9 +1568,28 @@ export function AgendaTareas() {
         ) : (
           /* ── VISTA COLABORADOR ── */
           <>
+            {/* Aviso firma pendiente (primero y más visible) */}
+            {resumen && (resumen.mis_sin_firmar ?? 0) > 0 && (
+              <div
+                className="rounded-xl p-3 flex items-center gap-3"
+                style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+              >
+                <PenLine className="w-4 h-4 flex-shrink-0" />
+                <p className="text-sm font-semibold">
+                  Tienes {resumen.mis_sin_firmar} {(resumen.mis_sin_firmar ?? 0) === 1 ? 'tarea nueva por firmar' : 'tareas nuevas por firmar'}
+                </p>
+              </div>
+            )}
+
             {/* Chips resumen */}
             {resumen && (
               <div className="flex gap-2 flex-wrap">
+                {(resumen.mis_sin_firmar ?? 0) > 0 && (
+                  <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold" style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
+                    <PenLine className="w-3 h-3" />
+                    {resumen.mis_sin_firmar} por firmar
+                  </span>
+                )}
                 {resumen.mis_pendientes > 0 && (
                   <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold" style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
                     {resumen.mis_pendientes} pendiente{resumen.mis_pendientes !== 1 ? 's' : ''}
@@ -1408,6 +1710,7 @@ export function AgendaTareas() {
             ranchosSelect={ranchosSelect}
             modulosSelect={modulosSelect}
             accionInicial={accionParam}
+            terminoSingular={terminoSingular}
           />
         )}
       </BottomSheet>

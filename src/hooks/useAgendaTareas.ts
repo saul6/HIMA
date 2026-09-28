@@ -4,6 +4,39 @@ import { useAuthContext } from '@/context/AuthContext'
 
 export type EstadoTarea = 'pendiente' | 'en_progreso' | 'por_verificar' | 'cerrada' | 'cancelada'
 export type PrioridadTarea = 'alta' | 'media' | 'baja'
+export type AcuseEstado = 'no_requerido' | 'pendiente' | 'firmado' | 'desactualizado'
+
+export interface AcuseUltimo {
+  firmante: string
+  firmado_en: string
+  registro_sha256: string
+  vigente: boolean
+}
+
+export interface AcuseInfo {
+  estado: AcuseEstado
+  requiere_mi_firma: boolean
+  contenido_sha256: string
+  declaracion_preview: string
+  ultimo: AcuseUltimo | null
+}
+
+export interface AcuseDetalle {
+  acuse_id: string
+  firmante: string
+  rol: string
+  declaracion: string
+  firmado_en: string
+  firma_png: string
+  firma_sha256: string
+  contenido: Record<string, unknown>
+  contenido_sha256: string
+  registro_sha256: string
+  ip: string
+  user_agent: string
+  n_puntos: number
+  vigente: boolean
+}
 
 export interface TareaListada {
   id: string
@@ -28,6 +61,8 @@ export interface TareaListada {
   n_evidencias: number
   created_at: string
   updated_at: string
+  acuse_estado: AcuseEstado
+  acuse_firmado_en: string | null
 }
 
 export interface TareaEvento {
@@ -49,6 +84,7 @@ export interface TareaDetalle {
   reporte_nota: string | null
   verificacion_nota: string | null
   cancelada_motivo: string | null
+  acuse: AcuseInfo
 }
 
 export interface AgendaResumen {
@@ -56,9 +92,11 @@ export interface AgendaResumen {
   mis_pendientes: number
   mis_vencidas: number
   mis_regresadas: number
+  mis_sin_firmar: number | null
   por_verificar: number | null
   abiertas_org: number | null
   vencidas_org: number | null
+  sin_acuse_org: number | null
 }
 
 export interface Colaborador {
@@ -185,18 +223,56 @@ export function useAgendaTareas() {
   async function editar(
     tareaId: string,
     cambios: Record<string, unknown>,
-  ): Promise<{ ok: boolean; mensaje?: string }> {
+  ): Promise<{ ok: boolean; mensaje?: string; requiere_nueva_firma?: boolean }> {
     try {
-      const { error } = await rpc('org_tarea_editar', {
+      const { data, error } = await rpc('org_tarea_editar', {
         p_tarea_id: tareaId,
         p_cambios: cambios,
         p_event_id: crypto.randomUUID(),
       })
       if (error) return { ok: false, mensaje: error.message }
-      return { ok: true }
+      const row = unwrap<{ requiere_nueva_firma?: boolean }>(data)
+      return { ok: true, requiere_nueva_firma: row?.requiere_nueva_firma ?? false }
     } catch (e) {
       console.error('[useAgendaTareas] editar', e)
       return { ok: false, mensaje: 'Error al editar la tarea' }
+    }
+  }
+
+  async function firmarAcuse(
+    tareaId: string,
+    firmaPng: string,
+    trazos: unknown[][],
+    contenidoSha256: string,
+    eventId: string,
+  ): Promise<{ ok: boolean; mensaje?: string; acuse_id?: string; firmado_en?: string; registro_sha256?: string }> {
+    try {
+      const { data, error } = await rpc('org_tarea_firmar_acuse', {
+        p_tarea_id: tareaId,
+        p_firma_png: firmaPng,
+        p_trazos: trazos,
+        p_contenido_sha256: contenidoSha256,
+        p_event_id: eventId,
+      })
+      if (error) return { ok: false, mensaje: error.message }
+      const row = unwrap<{ acuse_id: string; firmado_en: string; registro_sha256: string }>(data)
+      return { ok: true, acuse_id: row?.acuse_id, firmado_en: row?.firmado_en, registro_sha256: row?.registro_sha256 }
+    } catch (e) {
+      console.error('[useAgendaTareas] firmarAcuse', e)
+      return { ok: false, mensaje: 'No se pudo guardar la firma. Intenta de nuevo.' }
+    }
+  }
+
+  async function verAcuses(
+    tareaId: string,
+  ): Promise<{ data: AcuseDetalle[]; errorMsg: string | null }> {
+    try {
+      const { data, error } = await rpc('org_tarea_acuses_ver', { p_tarea_id: tareaId })
+      if (error) return { data: [], errorMsg: error.message }
+      return { data: (data as AcuseDetalle[]) ?? [], errorMsg: null }
+    } catch (e) {
+      console.error('[useAgendaTareas] verAcuses', e)
+      return { data: [], errorMsg: 'Error al cargar los acuses' }
     }
   }
 
@@ -305,5 +381,7 @@ export function useAgendaTareas() {
     aprobar,
     regresar,
     cancelar,
+    firmarAcuse,
+    verAcuses,
   }
 }
