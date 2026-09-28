@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import {
-  ChevronLeft, Plus, ListChecks, Loader2, AlertTriangle,
+  ChevronLeft, Plus, Loader2, AlertTriangle,
   Calendar, MapPin, FileText, ChevronDown, ChevronUp, ExternalLink,
   Clock, Camera, Trash2, CheckCircle2, RotateCcw, XCircle, Image,
 } from 'lucide-react'
@@ -1107,16 +1107,17 @@ export function AgendaTareas() {
   return (
     <div className="min-h-full pb-safe-nav">
       {/* Header */}
-      <header className="px-4 py-3 border-b border-border bg-card flex items-center gap-2 flex-shrink-0">
-        <button
-          onClick={() => navigate('/')}
-          className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-muted"
-          aria-label="Volver"
-        >
-          <ChevronLeft className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
-        </button>
-        <ListChecks className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--primary)' }} />
-        <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Agenda</span>
+      <header className="bg-card border-b border-border px-4 py-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/')}
+            className="p-1 md:hidden"
+            aria-label="Volver"
+          >
+            <ChevronLeft className="w-6 h-6 text-foreground" />
+          </button>
+          <h1 className="text-foreground" style={{ fontWeight: 600 }}>Agenda</h1>
+        </div>
       </header>
 
       <div className="p-4 space-y-4 max-w-[390px] mx-auto md:max-w-2xl">

@@ -316,7 +316,7 @@ export function NuevaAplicacion() {
       {/* Header */}
       <header className="bg-card border-b border-border px-4 py-4 sticky top-0 z-20">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/")} className="p-1">
+          <button onClick={() => navigate("/")} className="p-1 md:hidden" aria-label="Volver">
             <ChevronLeft className="w-6 h-6 text-foreground" />
           </button>
           <h1 className="text-foreground" style={{ fontWeight: 600 }}>Nueva Aplicación</h1>

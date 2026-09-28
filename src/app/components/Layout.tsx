@@ -119,7 +119,8 @@ export function Layout() {
       return (
         location.pathname === "/" ||
         (location.pathname.startsWith("/inocuidad") &&
-          !location.pathname.startsWith("/inocuidad/auditorias-primusgfs"))
+          !location.pathname.startsWith("/inocuidad/auditorias-primusgfs") &&
+          !location.pathname.startsWith("/inocuidad/agenda"))
       )
     }
     return location.pathname.startsWith(path)

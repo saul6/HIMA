@@ -25,6 +25,7 @@ import { FormSelect } from "@/app/components/FormSelect"
 import type { TipoMovimiento, InventarioSaldoRancho, InventarioSaldoProductor, Rancho } from "@/types/database.types"
 import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
+import { BottomSheet } from '@/app/components/BottomSheet'
 
 const LOW_STOCK = 5
 
@@ -208,28 +209,13 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
   ]
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/40 z-30"
-        onClick={onClose}
-      />
-      {/* Sheet */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-40 bg-card overflow-y-auto"
-        style={{
-          height: "85%",
-          borderRadius: "0.625rem 0.625rem 0 0",
-          maxWidth: 390,
-          margin: "0 auto",
-        }}
-      >
+    <BottomSheet open onClose={onClose} height="85%">
         {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1">
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
           <div className="w-10 h-1 rounded-full bg-border" />
         </div>
 
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             Registrar movimiento
           </h2>
@@ -238,7 +224,7 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
           </button>
         </div>
 
-        <div className="p-4 space-y-4 pb-8">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Tipo */}
           <div>
             <label className="text-xs text-muted-foreground mb-2 block" style={{ fontWeight: 600 }}>
@@ -310,7 +296,9 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
             value={form.notas}
             onChange={set("notas")}
           />
+        </div>
 
+        <div className="px-4 py-4 border-t border-border flex-shrink-0">
           <button
             onClick={handleSave}
             disabled={saving}
@@ -320,8 +308,7 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
             {saving ? "Guardando…" : "Guardar movimiento"}
           </button>
         </div>
-      </div>
-    </>
+    </BottomSheet>
   )
 }
 
