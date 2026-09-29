@@ -10,6 +10,7 @@ import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -37,6 +38,8 @@ export interface CosechaLiberacionPaginaProps {
   folio?: string
   codigoClave?: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 export interface CosechaLiberacionConsolidadoPDFProps {
@@ -107,6 +110,7 @@ function CeldaSiNo({ width, valor }: { width: number; valor: boolean }) {
 export function CosechaLiberacionPagina({
   rancho, ranchoCodigo, fecha, liberaciones,
   folio, codigoClave = 'MXA', terminoSitio = 'Rancho',
+  firmaRealizo, firmaVerifico,
 }: CosechaLiberacionPaginaProps) {
   const emision = new Date().toLocaleDateString('es-MX')
   const codigoFmt = `${codigoClave}-F-SC-SIG`
@@ -232,8 +236,18 @@ export function CosechaLiberacionPagina({
           <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
           <PdfSignatures
             signatures={[
-              { label: 'Verificó el registro', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
-              { label: '', nombre: '', caption: '' },
+              {
+                label: 'Responsable que realizó el registro',
+                nombre: '',
+                caption: 'Realizó — Firma',
+                firma: firmaRealizo ?? null,
+              },
+              {
+                label: '',
+                nombre: '',
+                caption: 'Responsable de Inocuidad — Verificó',
+                firma: firmaVerifico ?? null,
+              },
             ]}
           />
 

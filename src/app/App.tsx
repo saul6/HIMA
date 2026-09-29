@@ -4,6 +4,7 @@ import { Toaster } from 'sonner'
 import { router } from './routes'
 import { AuthProvider } from '@/context/AuthContext'
 import { ModulosProvider } from '@/context/ModulosContext'
+import { FirmaProvider } from '@/context/FirmaContext'
 import { HomeSearchProvider } from '@/context/HomeSearchContext'
 import { ThemeProvider } from '@/context/ThemeContext'
 import { IntroTransitionProvider } from '@/context/IntroTransitionContext'
@@ -20,12 +21,14 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <ModulosProvider>
+          <FirmaProvider>
           <HomeSearchProvider>
             <IntroTransitionProvider>
               <RouterProvider router={router} />
             </IntroTransitionProvider>
             <Toaster position="top-center" richColors />
           </HomeSearchProvider>
+          </FirmaProvider>
         </ModulosProvider>
       </AuthProvider>
     </ThemeProvider>

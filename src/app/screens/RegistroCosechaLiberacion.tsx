@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect } from 'react'
 import {
   ChevronLeft, Plus, FileDown, X, Loader2, Package, Files,
-  AlertTriangle, Trash2,
+  AlertTriangle, Trash2, PenLine,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -19,6 +19,16 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import {
+  useFirmasRegistro,
+  obtenerFirmasParaPdf,
+  firmaDetalleAParaPdf,
+  type MapaFirmas,
+} from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -113,6 +123,11 @@ export function RegistroCosechaLiberacion() {
   const { registros, loading, refetch } = useM10CosechaLiberacion()
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
+  const { obligatoria, tengoFirma } = useFirmaContext()
+
+  // Firmas del hook (sin imágenes) para la lista
+  const todosIds = registros.flatMap((r) => r.liberaciones.map((l) => l.id))
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M10', todosIds)
 
   // Perfiles de la org para el select de encargado
   const [perfiles, setPerfiles] = useState<PerfilItem[]>([])
@@ -130,6 +145,7 @@ export function RegistroCosechaLiberacion() {
 
   // Form principal
   const [sheetAbierto, setSheetAbierto]     = useState(false)
+  const [sheetPaso, setSheetPaso]           = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
   const [ranchoId, setRanchoId]             = useState('')
   const [fecha, setFecha]                   = useState(hoy())
   const [liberaciones, setLiberaciones]     = useState<FilaLiberacion[]>([])
@@ -137,6 +153,14 @@ export function RegistroCosechaLiberacion() {
   const [errRancho, setErrRancho]           = useState(false)
   const [advertencias, setAdvertencias]     = useState<Advertencia[]>([])
   const [cargandoVerif, setCargandoVerif]   = useState(false)
+
+  // Estado del paso firma_decision
+  const [pendienteFirma, setPendienteFirma] = useState<{
+    ids: string[]
+    pdfProps: CosechaLiberacionPaginaProps
+    ranchoNombre: string
+    fechaReg: string
+  } | null>(null)
 
   // Consolidado
   const [sheetConsAbierto, setSheetConsAbierto] = useState(false)
@@ -208,6 +232,8 @@ export function RegistroCosechaLiberacion() {
     setLiberaciones([nuevaFila(profile?.id ?? '')])
     setErrRancho(false)
     setAdvertencias([])
+    setPendienteFirma(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetAbierto(true)
   }
 
@@ -255,45 +281,51 @@ export function RegistroCosechaLiberacion() {
         observaciones: lib.observaciones || null,
       }))
 
-      const { error } = await supabase.from('m10_cosecha_liberacion').insert(rows)
+      const { data: insertedData, error } = await supabase
+        .from('m10_cosecha_liberacion')
+        .insert(rows)
+        .select('id')
       if (error) throw error
 
       toast.success('Registro guardado')
-      setSheetAbierto(false)
       await refetch()
 
-      // PDF automático
       const rancho = ranchos.find((r) => r.id === ranchoId)
-      if (rancho) {
-        const pdfProps: CosechaLiberacionPaginaProps = {
-          rancho: rancho.nombre,
-          ranchoCodigo: rancho.codigo,
-          fecha,
-          liberaciones: liberaciones.map((lib) => ({
-            sector: lib.sector || null,
-            cantidad_bandejas: lib.cantidad_bandejas ? parseInt(lib.cantidad_bandejas, 10) : null,
-            lote_liberado: lib.lote_liberado,
-            numero_comprobante: lib.numero_comprobante || null,
-            codigo_trazabilidad: lib.codigo_trazabilidad || null,
-            marca_embalaje: lib.marca_embalaje || null,
-            destino_final: lib.destino_final || null,
-            fruta_proceso_kg: lib.fruta_proceso_kg ? parseFloat(lib.fruta_proceso_kg) : null,
-            encargado_nombre: perfiles.find((p) => p.id === lib.encargado_liberacion_id)?.nombre_completo ?? null,
-            verificacion_semanal: lib.verificacion_semanal,
-            hora_inicio_cosecha: lib.hora_inicio_cosecha || null,
-            hora_fin_cosecha: lib.hora_fin_cosecha || null,
-            observaciones: lib.observaciones || null,
-          })),
-        }
-        try {
-          await generarCosechaLiberacionPDF(pdfProps)
-        } catch {
-          toast.warning('Registro guardado — el PDF no se pudo generar. Descárgalo desde el historial.')
-        }
+      const pdfProps: CosechaLiberacionPaginaProps = {
+        rancho: rancho?.nombre ?? '',
+        ranchoCodigo: rancho?.codigo ?? '',
+        fecha,
+        liberaciones: liberaciones.map((lib) => ({
+          sector: lib.sector || null,
+          cantidad_bandejas: lib.cantidad_bandejas ? parseInt(lib.cantidad_bandejas, 10) : null,
+          lote_liberado: lib.lote_liberado,
+          numero_comprobante: lib.numero_comprobante || null,
+          codigo_trazabilidad: lib.codigo_trazabilidad || null,
+          marca_embalaje: lib.marca_embalaje || null,
+          destino_final: lib.destino_final || null,
+          fruta_proceso_kg: lib.fruta_proceso_kg ? parseFloat(lib.fruta_proceso_kg) : null,
+          encargado_nombre: perfiles.find((p) => p.id === lib.encargado_liberacion_id)?.nombre_completo ?? null,
+          verificacion_semanal: lib.verificacion_semanal,
+          hora_inicio_cosecha: lib.hora_inicio_cosecha || null,
+          hora_fin_cosecha: lib.hora_fin_cosecha || null,
+          observaciones: lib.observaciones || null,
+        })),
       }
+
+      const idsInsertados = (insertedData as Array<{ id: string }>).map((r) => r.id)
+      setPendienteFirma({
+        ids: idsInsertados,
+        pdfProps,
+        ranchoNombre: rancho?.nombre ?? '',
+        fechaReg: fecha,
+      })
+      setSheetPaso('firma_decision')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : (err as any)?.message ?? ''
-      if (msg.includes('FECHA_SOLO_HOY')) {
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        toast.warning('Registra tu firma en tu perfil antes de capturar formatos')
+        setSheetPaso('firma_gate')
+      } else if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
         toast.error(msg || 'No se pudo guardar el registro')
@@ -307,8 +339,18 @@ export function RegistroCosechaLiberacion() {
 
   async function handleDescargarPDF(registro: M10Registro) {
     const key = `${registro.rancho_id}|${registro.fecha}`
+    const priId = registro.liberaciones[0]?.id
+    // Si obligatoria y sin firma del creador, abrir paso de firma desde la card
+    if (obligatoria && priId && !firmas[priId]?.realizo) {
+      toast.info('Este registro necesita firma antes de generar el PDF')
+      return
+    }
     setGenerandoPDF(key)
     try {
+      const firmasConImagen = priId
+        ? await obtenerFirmasParaPdf('M10', [priId])
+        : {}
+      const firmasReg = priId ? firmasConImagen[priId] : undefined
       const pdfProps: CosechaLiberacionPaginaProps = {
         rancho: registro.rancho_nombre,
         ranchoCodigo: registro.rancho_codigo,
@@ -328,6 +370,8 @@ export function RegistroCosechaLiberacion() {
           hora_fin_cosecha: lib.hora_fin_cosecha,
           observaciones: lib.observaciones,
         })),
+        firmaRealizo: firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null,
+        firmaVerifico: firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null,
       }
       await generarCosechaLiberacionPDF(pdfProps)
     } catch {
@@ -426,8 +470,13 @@ export function RegistroCosechaLiberacion() {
             const key = `${reg.rancho_id}|${reg.fecha}`
             const lotesLiberados = reg.liberaciones.filter((l) => l.lote_liberado).length
             const totalBandejas  = reg.liberaciones.reduce((s, l) => s + (l.cantidad_bandejas ?? 0), 0)
+            const priId = reg.liberaciones[0]?.id
+            const firmaReg = priId ? firmas[priId] : undefined
+            const pendienteDeFirma = obligatoria && priId && !firmaReg?.realizo
             return (
-              <div key={key} className="bg-card border border-border rounded-xl p-4">
+              <div key={key} className="bg-card border border-border rounded-xl p-4"
+                style={{ borderColor: pendienteDeFirma ? 'var(--agro-red)' : undefined }}
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -443,6 +492,15 @@ export function RegistroCosechaLiberacion() {
                       >
                         {reg.liberaciones.length} {reg.liberaciones.length === 1 ? 'liberación' : 'liberaciones'}
                       </span>
+                      {pendienteDeFirma && (
+                        <span
+                          className="text-[11px] px-2 py-0.5 rounded flex-shrink-0 flex items-center gap-1"
+                          style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', fontWeight: 600 }}
+                        >
+                          <PenLine className="w-3 h-3" />
+                          Pendiente de firma
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground">{formatFecha(reg.fecha)}</p>
                   </div>
@@ -500,6 +558,21 @@ export function RegistroCosechaLiberacion() {
                     </div>
                   ))}
                 </div>
+
+                {/* Firmas del registro */}
+                {priId && (
+                  <FirmasRegistro
+                    modulo="M10"
+                    registroId={priId}
+                    fechaRegistro={reg.fecha}
+                    firma={firmaReg}
+                    loadingFirmas={loadingFirmas}
+                    onFirmado={async () => {
+                      await refetch()
+                      await refetchFirmas()
+                    }}
+                  />
+                )}
               </div>
             )
           })
@@ -586,20 +659,63 @@ export function RegistroCosechaLiberacion() {
             </div>
       </BottomSheet>
 
-      {/* ── Bottom Sheet — Formulario ────────────────────────────────────────── */}
+      {/* ── Bottom Sheet — Formulario / firma_gate / firma_decision ─────────── */}
       <BottomSheet open={sheetAbierto} onClose={() => setSheetAbierto(false)} height="85%">
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
             <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
-                Nueva liberación de cosecha
+                {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nueva liberación de cosecha'}
               </h2>
               <button onClick={() => setSheetAbierto(false)} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
+            {sheetPaso === 'firma_gate' && (
+              <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+            )}
+
+            {sheetPaso === 'firma_decision' && pendienteFirma && (
+              <PasoFirmaRegistro
+                modulo="M10"
+                ids={pendienteFirma.ids}
+                descripcion={`Cosecha y Liberación · ${formatFecha(pendienteFirma.fechaReg)} · ${pendienteFirma.ranchoNombre}`}
+                obligatoria={obligatoria}
+                onFirmadoYPDF={async (firmasMapa: MapaFirmas) => {
+                  const priId = pendienteFirma.ids[0]
+                  const firmasReg = priId ? firmasMapa[priId] : undefined
+                  const pdfPropsConFirma: CosechaLiberacionPaginaProps = {
+                    ...pendienteFirma.pdfProps,
+                    firmaRealizo: firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null,
+                    firmaVerifico: firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null,
+                  }
+                  try {
+                    await generarCosechaLiberacionPDF(pdfPropsConFirma)
+                  } catch {
+                    toast.warning('Registro firmado — el PDF no se pudo generar. Descárgalo desde el historial.')
+                  }
+                  await refetchFirmas()
+                  setSheetAbierto(false)
+                  setSheetPaso('form')
+                  setPendienteFirma(null)
+                }}
+                onDespues={!obligatoria ? async () => {
+                  try {
+                    await generarCosechaLiberacionPDF(pendienteFirma.pdfProps)
+                  } catch {
+                    toast.warning('Registro guardado — el PDF no se pudo generar. Descárgalo desde el historial.')
+                  }
+                  setSheetAbierto(false)
+                  setSheetPaso('form')
+                  setPendienteFirma(null)
+                } : undefined}
+              />
+            )}
+
+            {sheetPaso === 'form' && (
+            <>
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
 
               {/* Rancho */}
@@ -916,6 +1032,8 @@ export function RegistroCosechaLiberacion() {
                 Guardar registro
               </button>
             </div>
+            </>
+            )}
       </BottomSheet>
     </div>
   )

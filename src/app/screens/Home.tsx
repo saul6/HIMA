@@ -7,6 +7,8 @@ import {
   FileCheck, ShieldAlert, Search, Pin, X, Sun, Moon, Lock, ListChecks,
 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
+import { useFirmaContext } from '@/context/FirmaContext'
+import { supabase } from '@/lib/supabase'
 import { useHomeDashboard } from '@/hooks/useHomeDashboard'
 import { useDashboardResumen } from '@/hooks/useDashboardResumen'
 import { useCorreccionesPendientes } from '@/hooks/useCorreccionesPendientes'
@@ -400,6 +402,21 @@ export function Home() {
   const ThemeIcon = theme === 'dark' ? Moon : Sun
   const themeLabel = theme === 'dark' ? 'Oscuro' : 'Claro'
   const { orgNombre, orgPlan, metricas, recientes, loading, error } = useHomeDashboard()
+  const { obligatoria } = useFirmaContext()
+
+  // Registros propios sin firma (solo cuando firma obligatoria está activa)
+  const [sinFirma, setSinFirma] = useState<{
+    total: number
+    modulos: { modulo: string; nombre: string; ruta: string; sin_firma: number }[]
+  } | null>(null)
+  useEffect(() => {
+    if (!obligatoria || !profile?.id) { setSinFirma(null); return }
+    let cancelado = false
+    ;(supabase as any).rpc('mis_registros_sin_firma').then(({ data }: any) => {
+      if (!cancelado && data) setSinFirma({ total: data.total ?? 0, modulos: data.modulos ?? [] })
+    }).catch(() => {})
+    return () => { cancelado = true }
+  }, [obligatoria, profile?.id])
   const { resumen, loading: resumenLoading } = useDashboardResumen()
   const { items: correcciones, count: countCorrecciones } = useCorreccionesPendientes()
   const { resumen: agendaResumen } = useAgendaResumen()
@@ -560,6 +577,43 @@ export function Home() {
                   ¿Dudas?
                 </a>
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* Banner firmas pendientes */}
+        {sinFirma && sinFirma.total > 0 && (
+          <div
+            className="rounded-xl p-4 border space-y-2"
+            style={{ backgroundColor: 'var(--agro-danger-fill)', borderColor: 'var(--agro-red)' }}
+          >
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
+              <p className="text-sm font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
+                Tienes {sinFirma.total} {sinFirma.total === 1 ? 'formato sin firmar' : 'formatos sin firmar'}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {sinFirma.modulos.filter(m => m.sin_firma > 0).map(m => (
+                <Link
+                  key={m.modulo}
+                  to={m.ruta}
+                  className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg"
+                  style={{
+                    backgroundColor: 'rgba(153,60,29,0.12)',
+                    color: 'var(--agro-danger-text)',
+                    fontWeight: 600,
+                  }}
+                >
+                  {m.nombre}
+                  <span
+                    className="ml-1 px-1 rounded-full text-[10px]"
+                    style={{ backgroundColor: 'var(--agro-red)', color: 'white' }}
+                  >
+                    {m.sin_firma}
+                  </span>
+                </Link>
+              ))}
             </div>
           </div>
         )}

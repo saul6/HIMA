@@ -33,6 +33,7 @@ import {
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaPad, type FirmaPadRef } from '@/app/components/FirmaPad'
 import { FirmaSvg } from '@/app/components/FirmaSvg'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -151,6 +152,7 @@ export function BotiquinPrimerosAuxilios() {
   const navigate = useNavigate()
   const { profile } = useAuthContext()
   const { terminosSitio } = useModulosContext()
+  const { obligatoria } = useFirmaContext()
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const [registroGuardado, setRegistroGuardado] = useState(false)
@@ -962,13 +964,15 @@ export function BotiquinPrimerosAuxilios() {
 
                 {/* Footer firma_decision */}
                 <div className="p-4 border-t border-border flex-shrink-0 flex gap-3">
-                  <button
-                    onClick={handleDespuesFirma}
-                    className="flex-1 h-14 rounded-3xl border font-semibold"
-                    style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
-                  >
-                    Después
-                  </button>
+                  {!obligatoria && (
+                    <button
+                      onClick={handleDespuesFirma}
+                      className="flex-1 h-14 rounded-3xl border font-semibold"
+                      style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                    >
+                      Después
+                    </button>
+                  )}
                   <button
                     onClick={handleFirmarDecision}
                     disabled={firmandoDecision || !miFirmaDecision?.tiene}
@@ -976,7 +980,7 @@ export function BotiquinPrimerosAuxilios() {
                     style={{ backgroundColor: 'var(--primary)', color: 'white' }}
                   >
                     {firmandoDecision && <Loader2 className="w-4 h-4 animate-spin" />}
-                    Firmar
+                    {obligatoria ? 'Firmar y generar PDF' : 'Firmar'}
                   </button>
                 </div>
               </>
