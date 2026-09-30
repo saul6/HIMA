@@ -302,13 +302,36 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
             <Fab onClick={abrirForm} aria-label="Nuevo movimiento" />
 
       {/* Form sheet */}
-      <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) setSheetOpen(false) }}>
+      <BottomSheet open={sheetOpen} onClose={handleCerrarSheet}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base font-semibold">Nuevo movimiento</h2>
-              <button onClick={() => { if (!guardando) setSheetOpen(false) }} className="p-1 rounded hover:bg-muted">
+              <h2 className="text-base font-semibold">
+                {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nuevo movimiento'}
+              </h2>
+              <button onClick={handleCerrarSheet} className="p-1 rounded hover:bg-muted">
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {sheetPaso === 'firma_gate' && (
+              <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+            )}
+
+            {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+              <PasoFirmaRegistro
+                modulo="M24"
+                ids={[pendienteFirmaId]}
+                descripcion={`Movimiento de inventario · ${movForm.fecha}`}
+                obligatoria={obligatoria}
+                onFirmadoYPDF={async () => {
+                  await generarInventarioQuimicosPDF(quimico.quimico_id, orgId)
+                  handleCerrarSheet()
+                  await refetchFirmas()
+                }}
+                onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+              />
+            )}
+
+            {sheetPaso === 'form' && (
             <div className="px-4 py-4 space-y-4">
               {/* Tipo */}
               <div>
@@ -365,7 +388,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                 <input
                   type="text"
                   value={movForm.persona_solicita}
-                  onChange={e => setMovForm(f => ({ ...f, persona_solicita: e.target.value }))}
+                  readOnly
                   className="w-full rounded-xl px-3 py-2.5 text-sm border border-border"
                   style={{ backgroundColor: 'var(--input-background)' }}
                   placeholder="Nombre completo"
@@ -391,6 +414,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                 {guardando ? 'Guardando...' : 'Guardar movimiento'}
               </button>
             </div>
+            )}
       </BottomSheet>
     </div>
   )

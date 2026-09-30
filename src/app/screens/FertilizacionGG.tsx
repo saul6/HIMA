@@ -17,6 +17,11 @@ import {
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -76,13 +81,25 @@ export function FertilizacionGG() {
   const { registros, loading, refetch } = useM67FertilizacionGG(orgId)
   const orgNombre = useOrganizacion(orgId)
 
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M67', todosIds)
+
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const [form, setForm] = useState<FormState>(FORM_VACIO)
   const [guardando, setGuardando] = useState(false)
   const [pdfLoading, setPdfLoading] = useState<string | null>(null)
   const [consolidadoForm, setConsolidadoForm] = useState({ rancho_id: '', desde: hoyMX(), hasta: hoyMX() })
   const [exportando, setExportando] = useState(false)
+
+  function handleCerrarSheet() {
+    setSheetOpen(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
 
   function set(field: keyof FormState) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -91,6 +108,8 @@ export function FertilizacionGG() {
 
   function abrirNuevo() {
     setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX(), operario: profile?.nombre_completo ?? '' })
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetOpen(true)
   }
 
@@ -140,18 +159,16 @@ export function FertilizacionGG() {
         .single()
       if (error) throw error
 
-      setSheetOpen(false)
       await refetch()
       toast.success('Registro guardado')
-
-      try {
-        await generarFertilizacionGGPDF(data.id, orgId)
-      } catch (e) {
-        toast.error('PDF no generado')
-        console.error(e)
-      }
+      setPendienteFirmaId(data.id as string)
+      setSheetPaso('firma_decision')
     } catch (e: any) {
       const msg: string = e?.message ?? 'Error al guardar'
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+        return
+      }
       if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
@@ -165,6 +182,10 @@ export function FertilizacionGG() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (obligatoria && !firmas[id]?.realizo) {
+      toast.info('Firma este registro antes de descargar el PDF')
+      return
+    }
     setPdfLoading(id)
     try {
       await generarFertilizacionGGPDF(id, orgId)
@@ -275,6 +296,12 @@ export function FertilizacionGG() {
                 {reg.metodo_aplicacion && (
                   <p className="text-xs mt-1 text-muted-foreground">{reg.metodo_aplicacion}</p>
                 )}
+                {obligatoria && !firmas[reg.id]?.realizo && (
+                  <span className="text-xs px-2 py-0.5 rounded font-medium mt-1 inline-block"
+                    style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
+                    Pendiente de firma
+                  </span>
+                )}
               </div>
               <button
                 onClick={() => descargarPDF(reg.id)}
@@ -287,6 +314,14 @@ export function FertilizacionGG() {
                 }
               </button>
             </div>
+            <FirmasRegistro
+              modulo="M67"
+              registroId={reg.id}
+              fechaRegistro={reg.fecha}
+              firma={firmas[reg.id]}
+              loadingFirmas={loadingFirmas}
+              onFirmado={refetchFirmas}
+            />
           </div>
         ))}
       </div>
@@ -295,14 +330,36 @@ export function FertilizacionGG() {
             <Fab onClick={abrirNuevo} aria-label="Nuevo registro" />
 
       {/* Bottom sheet — Formulario */}
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
+      <BottomSheet open={sheetOpen} onClose={handleCerrarSheet}>
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
-          <h2 className="text-base font-semibold">Nuevo registro</h2>
-          <button onClick={() => setSheetOpen(false)}>
+          <h2 className="text-base font-semibold">
+            {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nuevo registro'}
+          </h2>
+          <button onClick={handleCerrarSheet}>
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="overflow-y-auto flex-1 px-4 pt-4 pb-8 space-y-4">
+
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+        )}
+
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M67"
+            ids={[pendienteFirmaId]}
+            descripcion={`Fertilización · ${form.fecha}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              await generarFertilizacionGGPDF(pendienteFirmaId, orgId!)
+              handleCerrarSheet()
+              await refetchFirmas()
+            }}
+            onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+          />
+        )}
+
+        {sheetPaso === 'form' && (<><div className="overflow-y-auto flex-1 px-4 pt-4 pb-8 space-y-4">
 
           {/* Sitio */}
           <div>
@@ -500,6 +557,7 @@ export function FertilizacionGG() {
             Guardar y generar PDF
           </button>
         </div>
+        </>)}
       </BottomSheet>
 
       {/* Bottom sheet — Consolidado */}

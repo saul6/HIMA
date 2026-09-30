@@ -19,6 +19,11 @@ import { supabase } from '@/lib/supabase'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -129,11 +134,23 @@ export function MantenimientoEquiposGG() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM76MantenimientoEquiposGG()
 
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M76', todosIds)
+
   const termino = terminosSitio.singular
   const [sheetNuevo, setSheetNuevo] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [form, setForm] = useState<FormState>(formInicial)
   const [errRancho, setErrRancho] = useState(false)
   const [guardando, setGuardando] = useState(false)
+
+  function handleCerrarSheet() {
+    setSheetNuevo(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
 
   const setF = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((f) => ({ ...f, [k]: v }))
@@ -141,6 +158,8 @@ export function MantenimientoEquiposGG() {
   function abrirSheet() {
     setForm({ ...formInicial(profile?.nombre_completo ?? ''), rancho_id: ranchoInicial ?? '' })
     setErrRancho(false)
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetNuevo(true)
   }
 
@@ -149,7 +168,7 @@ export function MantenimientoEquiposGG() {
     if (!profile?.org_id) { toast.error('Sin organización activa'); return }
     setGuardando(true)
     try {
-      const { error: e } = await tbl('m76_mantenimiento_equipos').insert({
+      const { data, error: e } = await tbl('m76_mantenimiento_equipos').insert({
         org_id: profile.org_id,
         rancho_id: form.rancho_id,
         fecha: form.fecha,
@@ -164,13 +183,18 @@ export function MantenimientoEquiposGG() {
         descripcion_trabajo: form.descripcion_trabajo.trim() || null,
         observaciones: form.observaciones.trim() || null,
         creado_por: user?.id ?? null,
-      })
+      }).select('id').single()
       if (e) throw e
       toast.success('Registro guardado')
-      setSheetNuevo(false)
       await refetch()
+      setPendienteFirmaId(data.id as string)
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+        return
+      }
       if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
@@ -274,6 +298,21 @@ export function MantenimientoEquiposGG() {
                       Realizó: {reg.realizo}
                     </div>
                   )}
+                  {!loadingFirmas && !firmas[reg.id]?.realizo && (
+                    <span
+                      className="inline-block mt-1 text-xs px-2 py-0.5 rounded"
+                      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}
+                    >
+                      Pendiente de firma
+                    </span>
+                  )}
+                  <FirmasRegistro
+                    modulo="M76"
+                    registroId={reg.id}
+                    firmas={firmas}
+                    loading={loadingFirmas}
+                    fechaRegistro={reg.fecha}
+                  />
                 </div>
               )
             })}
@@ -285,17 +324,37 @@ export function MantenimientoEquiposGG() {
             <Fab onClick={abrirSheet} aria-label="Nuevo registro" />
 
       {/* Sheet */}
-      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
+      <BottomSheet open={sheetNuevo} onClose={handleCerrarSheet} height="85%">
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
         </div>
         <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nuevo registro de equipos</h2>
-          <button onClick={() => setSheetNuevo(false)}>
+          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+            {sheetPaso === 'firma_decision' ? 'Registro guardado' : 'Nuevo registro de equipos'}
+          </h2>
+          <button onClick={handleCerrarSheet}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
 
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onClose={handleCerrarSheet} />
+        )}
+
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M76"
+            registroId={pendienteFirmaId}
+            descripcion={`Equipo: ${form.equipo || 'Registro'} · ${form.fecha}`}
+            onFirmadoYPDF={async () => {
+              handleCerrarSheet()
+              await refetchFirmas()
+            }}
+            onOmitir={handleCerrarSheet}
+          />
+        )}
+
+        {sheetPaso === 'form' && (
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
           {/* Rancho */}
           <div className="space-y-1">
@@ -401,18 +460,19 @@ export function MantenimientoEquiposGG() {
               className="w-full rounded-xl border px-3 py-2 text-sm focus:outline-none resize-none"
               style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
           </div>
-        </div>
 
-        <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
-          <button
-            onClick={handleGuardar}
-            disabled={guardando || !form.rancho_id}
-            className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-          >
-            {guardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</> : 'Guardar registro'}
-          </button>
+          <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
+            <button
+              onClick={handleGuardar}
+              disabled={guardando || !form.rancho_id}
+              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
+              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+            >
+              {guardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</> : 'Guardar registro'}
+            </button>
+          </div>
         </div>
+        )}
       </BottomSheet>
     </div>
   )

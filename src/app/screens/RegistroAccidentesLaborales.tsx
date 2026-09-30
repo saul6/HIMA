@@ -27,6 +27,7 @@ import {
   useFirmasRegistro,
 } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 
@@ -294,7 +295,7 @@ export function RegistroAccidentesLaborales() {
   const { accidentes, loading, error, refetch } = useM20Accidentes()
   const orgNombre = useOrganizacion(profile?.org_id)
 
-  const { obligatoria } = useFirmaContext()
+  const { obligatoria, tengoFirma } = useFirmaContext()
 
   // Firmas
   const todosIds = accidentes.map(a => a.id)
@@ -302,8 +303,14 @@ export function RegistroAccidentesLaborales() {
 
   // Sheets
   const [sheetNuevo, setSheetNuevo] = useState(false)
-  const [sheetPaso, setSheetPaso] = useState<'form' | 'firma_decision'>('form')
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
   const [pendienteFirma, setPendienteFirma] = useState<{ ids: string[] } | null>(null)
+
+  function handleCerrarSheet() {
+    setSheetNuevo(false)
+    setSheetPaso('form')
+    setPendienteFirma(null)
+  }
   const [sheetConsolidado, setSheetConsolidado] = useState(false)
 
   // Form
@@ -455,7 +462,7 @@ export function RegistroAccidentesLaborales() {
       }
       const msg = e instanceof Error ? e.message : 'Error al guardar el registro'
       if (msg.includes('FIRMA_REQUERIDA')) {
-        setSheetPaso('form')
+        setSheetPaso('firma_gate')
       } else if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
@@ -570,20 +577,41 @@ export function RegistroAccidentesLaborales() {
       </div>
 
       {/* FAB */}
-            <Fab onClick={() => { setForm({ ...FORM_INICIAL, ranchoId: ranchoInicial ?? '' }); setFotosLocal([]); setSheetNuevo(true) }} aria-label="Nuevo registro" />
+            <Fab onClick={() => { setForm({ ...FORM_INICIAL, ranchoId: ranchoInicial ?? '' }); setFotosLocal([]); setPendienteFirma(null); setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form'); setSheetNuevo(true) }} aria-label="Nuevo registro" />
 
       {/* Sheet: Nuevo registro ─────────────────────────────────────────────── */}
-      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
+      <BottomSheet open={sheetNuevo} onClose={handleCerrarSheet} height="85%">
           {/* Handle bar */}
           <div className="flex justify-center pt-3 pb-1 shrink-0">
             <div className="w-10 h-1 rounded-full bg-muted" />
           </div>
           <div className="px-4 pb-2 shrink-0">
-            <h2 className="text-base font-semibold text-foreground">Registrar accidente</h2>
+            <h2 className="text-base font-semibold text-foreground">
+              {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Registrar accidente'}
+            </h2>
             <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-CAL-15', codigoClave)} · Cuarto Frío</p>
           </div>
 
-          {/* Scroll content */}
+          {sheetPaso === 'firma_gate' && (
+            <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+          )}
+
+          {sheetPaso === 'firma_decision' && pendienteFirma && (
+            <PasoFirmaRegistro
+              modulo="M20"
+              ids={pendienteFirma.ids}
+              descripcion={`Accidente laboral · ${form.fecha}`}
+              obligatoria={obligatoria}
+              onFirmadoYPDF={async () => {
+                if (profile?.org_id) await generarAccidenteLaboralPDF(pendienteFirma.ids[0], profile.org_id)
+                handleCerrarSheet()
+                await refetchFirmas()
+              }}
+              onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+            />
+          )}
+
+          {sheetPaso === 'form' && (<>
           <div className="flex-1 overflow-y-auto px-4 pb-6 flex flex-col gap-5">
 
             {/* Instalación */}
@@ -822,6 +850,7 @@ export function RegistroAccidentesLaborales() {
               )}
             </Button>
           </div>
+          </>)}
       </BottomSheet>
 
       {/* Sheet: Exportar consolidado ─────────────────────────────────────────── */}

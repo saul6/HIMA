@@ -19,6 +19,11 @@ import { supabase } from '@/lib/supabase'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -65,12 +70,24 @@ export function EmpleadosGG() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM77EmpleadosGG()
 
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M77', todosIds)
+
   const termino = terminosSitio.singular
   const [sheetNuevo, setSheetNuevo] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [form, setForm] = useState<FormState>(formInicial)
   const [errRancho, setErrRancho] = useState(false)
   const [errNombre, setErrNombre] = useState(false)
   const [guardando, setGuardando] = useState(false)
+
+  function handleCerrarSheet() {
+    setSheetNuevo(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
 
   const setF = (k: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }))
@@ -79,6 +96,8 @@ export function EmpleadosGG() {
     setForm({ ...formInicial(), rancho_id: ranchoInicial ?? '' })
     setErrRancho(false)
     setErrNombre(false)
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetNuevo(true)
   }
 
@@ -91,7 +110,7 @@ export function EmpleadosGG() {
 
     setGuardando(true)
     try {
-      const { error: e } = await tbl('m77_empleados').insert({
+      const { data, error: e } = await tbl('m77_empleados').insert({
         org_id: profile.org_id,
         rancho_id: form.rancho_id,
         nombre: form.nombre.trim(),
@@ -101,13 +120,18 @@ export function EmpleadosGG() {
         persona_contacto: form.persona_contacto.trim() || null,
         observaciones: form.observaciones.trim() || null,
         creado_por: user?.id ?? null,
-      })
+      }).select('id').single()
       if (e) throw e
       toast.success('Empleado registrado')
-      setSheetNuevo(false)
       await refetch()
+      setPendienteFirmaId(data.id as string)
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+        return
+      }
       toast.error(msg || 'Error al guardar')
     } finally {
       setGuardando(false)
@@ -223,6 +247,12 @@ export function EmpleadosGG() {
                           Contacto: {reg.persona_contacto}
                         </div>
                       )}
+                      {obligatoria && !firmas[reg.id]?.realizo && (
+                        <span className="text-xs px-2 py-0.5 rounded font-medium mt-1 inline-block"
+                          style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
+                          Pendiente de firma
+                        </span>
+                      )}
                     </div>
                     {(esAdmin || esMio) && (
                       <button
@@ -235,6 +265,14 @@ export function EmpleadosGG() {
                       </button>
                     )}
                   </div>
+                  <FirmasRegistro
+                    modulo="M77"
+                    registroId={reg.id}
+                    fechaRegistro={reg.fecha_ingreso ?? reg.created_at ?? ''}
+                    firma={firmas[reg.id]}
+                    loadingFirmas={loadingFirmas}
+                    onFirmado={refetchFirmas}
+                  />
                 </div>
               )
             })}
@@ -246,18 +284,35 @@ export function EmpleadosGG() {
             <Fab onClick={abrirSheet} aria-label="Nuevo empleado" />
 
       {/* Sheet */}
-      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
+      <BottomSheet open={sheetNuevo} onClose={handleCerrarSheet} height="85%">
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
         </div>
         <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Registrar empleado</h2>
-          <button onClick={() => setSheetNuevo(false)}>
+          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+            {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Registrar empleado'}
+          </h2>
+          <button onClick={handleCerrarSheet}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+        )}
+
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M77"
+            ids={[pendienteFirmaId]}
+            descripcion={`Empleado: ${form.nombre}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => { handleCerrarSheet(); await refetchFirmas() }}
+            onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+          />
+        )}
+
+        {sheetPaso === 'form' && (<><div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
           {/* Aviso firma */}
           <div
             className="flex items-start gap-2 rounded-xl p-3"
@@ -351,6 +406,7 @@ export function EmpleadosGG() {
             {guardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</> : 'Guardar empleado'}
           </button>
         </div>
+        </>)}
       </BottomSheet>
     </div>
   )

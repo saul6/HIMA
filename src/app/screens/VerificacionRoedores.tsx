@@ -12,6 +12,8 @@ import { supabase } from '@/lib/supabase'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -85,6 +87,9 @@ export function VerificacionRoedores() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, refetch } = useM70VerificacionRoedores(orgId)
 
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M70', todosIds)
+
   const [sheetOpen, setSheetOpen] = useState(false)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const [form, setForm] = useState<FormState>(FORM_VACIO)
@@ -142,6 +147,7 @@ export function VerificacionRoedores() {
 
       setSheetOpen(false)
       await refetch()
+      await refetchFirmas()
       toast.success(`${filasValidas.length} trampa${filasValidas.length > 1 ? 's' : ''} registrada${filasValidas.length > 1 ? 's' : ''}`)
     } catch (e: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -240,6 +246,13 @@ export function VerificacionRoedores() {
                   {t.observaciones && (
                     <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{t.observaciones}</p>
                   )}
+                  <FirmasRegistro
+                    modulo="M70"
+                    registroId={t.id}
+                    firmas={firmas}
+                    loading={loadingFirmas}
+                    fechaRegistro={t.fecha}
+                  />
                 </div>
               ))}
             </div>

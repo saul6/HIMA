@@ -15,6 +15,11 @@ import { supabase } from '@/lib/supabase'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -67,6 +72,19 @@ export function MonitoreoPlaguasEnfermedades() {
   const { registros, loading, refetch } = useM72MonitoreoPlaguasEnfermedades(orgId)
   const { organismos } = useM72Organismos()
 
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M72', todosIds)
+
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+
+  function handleCerrarSheet() {
+    setSheetOpen(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
+
   const [sheetOpen, setSheetOpen] = useState(false)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const [form, setForm] = useState<FormEncabezado>(FORM_VACIO)
@@ -74,8 +92,10 @@ export function MonitoreoPlaguasEnfermedades() {
   const [guardando, setGuardando] = useState(false)
 
   function abrirNuevo() {
-    setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX() })
+    setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX(), realizo: profile?.nombre_completo ?? '' })
     setFilas([filaPlantaVacia(), filaPlantaVacia()])
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetOpen(true)
   }
 
@@ -148,12 +168,17 @@ export function MonitoreoPlaguasEnfermedades() {
         if (resErr) throw resErr
       }
 
-      setSheetOpen(false)
       await refetch()
       toast.success('Monitoreo registrado')
+      setPendienteFirmaId(registroId)
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const msg: string = (e as any)?.message ?? 'Error al guardar'
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+        return
+      }
       if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
@@ -236,6 +261,13 @@ export function MonitoreoPlaguasEnfermedades() {
                 Realizó: <span style={{ color: 'var(--foreground)' }}>{r.realizo}</span>
               </p>
             )}
+            <FirmasRegistro
+              modulo="M72"
+              registroId={r.id}
+              firmas={firmas}
+              loading={loadingFirmas}
+              fechaRegistro={r.fecha}
+            />
           </div>
         ))}
       </div>
@@ -244,17 +276,37 @@ export function MonitoreoPlaguasEnfermedades() {
             <Fab onClick={abrirNuevo} aria-label="Nuevo monitoreo" />
 
       {/* Sheet — nuevo registro */}
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} height="90%">
+      <BottomSheet open={sheetOpen} onClose={handleCerrarSheet} height="90%">
         <div
           className="flex items-center justify-between px-4 pt-4 pb-3 border-b"
           style={{ borderColor: 'var(--border)' }}
         >
-          <h2 className="text-base font-semibold">Nuevo monitoreo</h2>
-          <button onClick={() => setSheetOpen(false)}>
+          <h2 className="text-base font-semibold">
+            {sheetPaso === 'firma_decision' ? 'Monitoreo guardado' : 'Nuevo monitoreo'}
+          </h2>
+          <button onClick={handleCerrarSheet}>
             <X className="w-5 h-5" />
           </button>
         </div>
 
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onClose={handleCerrarSheet} />
+        )}
+
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M72"
+            registroId={pendienteFirmaId}
+            descripcion={`Monitoreo plagas · ${form.fecha}`}
+            onFirmadoYPDF={async () => {
+              handleCerrarSheet()
+              await refetchFirmas()
+            }}
+            onOmitir={handleCerrarSheet}
+          />
+        )}
+
+        {sheetPaso === 'form' && (<>
         <div className="overflow-y-auto flex-1 px-4 pt-4 pb-8 space-y-5">
 
           {/* ── Sección 1: Encabezado ── */}
@@ -476,6 +528,7 @@ export function MonitoreoPlaguasEnfermedades() {
             Guardar
           </button>
         </div>
+        </>)}
       </BottomSheet>
 
       {/* Sheet — consolidado */}

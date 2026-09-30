@@ -90,6 +90,12 @@ export function UsoEpp() {
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
   const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
 
+  function handleCerrarSheet() {
+    setSheetOpen(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
+
   function abrirNuevo() {
     setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX(), realizo: profile?.nombre_completo ?? '' })
     setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
@@ -292,13 +298,36 @@ export function UsoEpp() {
             <Fab onClick={abrirNuevo} aria-label="Nuevo registro EPP" />
 
       {/* Bottom sheet — Formulario */}
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
+      <BottomSheet open={sheetOpen} onClose={handleCerrarSheet}>
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
-          <h2 className="text-base font-semibold">Nuevo registro de EPP</h2>
-          <button onClick={() => setSheetOpen(false)}>
+          <h2 className="text-base font-semibold">
+            {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nuevo registro de EPP'}
+          </h2>
+          <button onClick={handleCerrarSheet}>
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+        )}
+
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M63"
+            ids={[pendienteFirmaId]}
+            descripcion={`Uso EPP · ${form.fecha}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              await generarUsoEppPDF(pendienteFirmaId, orgId!, codigoClave)
+              handleCerrarSheet()
+              await refetchFirmas()
+            }}
+            onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+          />
+        )}
+
+        {sheetPaso === 'form' && (<>
         <div className="overflow-y-auto flex-1 px-4 pt-4 pb-8 space-y-4">
 
           <div>
@@ -414,6 +443,7 @@ export function UsoEpp() {
             Guardar y generar PDF
           </button>
         </div>
+        </>)}
       </BottomSheet>
 
       {/* Bottom sheet — Consolidado */}

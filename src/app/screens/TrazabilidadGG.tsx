@@ -19,6 +19,11 @@ import { supabase } from '@/lib/supabase'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -88,11 +93,23 @@ export function TrazabilidadGG() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM78TrazabilidadGG()
 
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M78', todosIds)
+
   const termino = terminosSitio.singular
   const [sheetNuevo, setSheetNuevo] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [form, setForm] = useState<FormState>(formInicial)
   const [errRancho, setErrRancho] = useState(false)
   const [guardando, setGuardando] = useState(false)
+
+  function handleCerrarSheet() {
+    setSheetNuevo(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
 
   const setF = (k: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }))
@@ -100,6 +117,8 @@ export function TrazabilidadGG() {
   function abrirSheet() {
     setForm({ ...formInicial(), rancho_id: ranchoInicial ?? '' })
     setErrRancho(false)
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetNuevo(true)
   }
 
@@ -108,7 +127,7 @@ export function TrazabilidadGG() {
     if (!profile?.org_id) { toast.error('Sin organización activa'); return }
     setGuardando(true)
     try {
-      const { error: e } = await tbl('m78_nota_trazabilidad').insert({
+      const { data, error: e } = await tbl('m78_nota_trazabilidad').insert({
         org_id: profile.org_id,
         rancho_id: form.rancho_id,
         folio: form.folio.trim() || null,
@@ -129,13 +148,18 @@ export function TrazabilidadGG() {
         recibio: form.recibio.trim() || null,
         observaciones: form.observaciones.trim() || null,
         creado_por: user?.id ?? null,
-      })
+      }).select('id').single()
       if (e) throw e
       toast.success('Nota de trazabilidad guardada')
-      setSheetNuevo(false)
       await refetch()
+      setPendienteFirmaId(data.id as string)
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+        return
+      }
       if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
@@ -250,6 +274,20 @@ export function TrazabilidadGG() {
                     Chofer: {reg.chofer}
                   </div>
                 )}
+                {obligatoria && !firmas[reg.id]?.realizo && (
+                  <span className="text-xs px-2 py-0.5 rounded font-medium mt-2 inline-block"
+                    style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
+                    Pendiente de firma
+                  </span>
+                )}
+                <FirmasRegistro
+                  modulo="M78"
+                  registroId={reg.id}
+                  fechaRegistro={reg.fecha}
+                  firma={firmas[reg.id]}
+                  loadingFirmas={loadingFirmas}
+                  onFirmado={refetchFirmas}
+                />
               </div>
             ))}
           </div>
@@ -260,18 +298,35 @@ export function TrazabilidadGG() {
             <Fab onClick={abrirSheet} aria-label="Nueva nota" />
 
       {/* Sheet */}
-      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
+      <BottomSheet open={sheetNuevo} onClose={handleCerrarSheet} height="85%">
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
         </div>
         <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nueva nota de trazabilidad</h2>
-          <button onClick={() => setSheetNuevo(false)}>
+          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+            {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nueva nota de trazabilidad'}
+          </h2>
+          <button onClick={handleCerrarSheet}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+        )}
+
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M78"
+            ids={[pendienteFirmaId]}
+            descripcion={`Nota de trazabilidad · ${form.fecha}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => { handleCerrarSheet(); await refetchFirmas() }}
+            onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+          />
+        )}
+
+        {sheetPaso === 'form' && (<><div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
           {/* Rancho */}
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
@@ -442,6 +497,7 @@ export function TrazabilidadGG() {
             {guardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</> : 'Guardar nota'}
           </button>
         </div>
+        </>)}
       </BottomSheet>
     </div>
   )

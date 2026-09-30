@@ -26,6 +26,8 @@ import { supabase } from '@/lib/supabase'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -153,6 +155,9 @@ export function LimpiezaCampo() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM71LimpiezaCampo()
   const { items, loading: loadingItems } = useM71ItemsCatalogo()
+
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M71', todosIds)
 
   // ── Navegación interna ──
   const [vista, setVista] = useState<Vista>('lista')
@@ -309,6 +314,7 @@ export function LimpiezaCampo() {
       toast.success('Registro creado')
       setSheetNuevo(false)
       await refetch()
+      await refetchFirmas()
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const r = data as any
@@ -456,41 +462,52 @@ export function LimpiezaCampo() {
           ) : (
             <div className="space-y-3">
               {registros.map((reg) => (
-                <button
+                <div
                   key={reg.id}
-                  onClick={() => abrirDetalle(reg)}
-                  className="w-full text-left rounded-xl p-4 border"
+                  className="rounded-xl border overflow-hidden"
                   style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span
-                          className="text-xs px-2 py-0.5 rounded"
-                          style={{
-                            backgroundColor: 'var(--agro-success-fill)',
-                            color: 'var(--agro-success-text)',
-                            fontWeight: 600,
-                          }}
-                        >
-                          {formatMesLabel(reg.mes)}
-                        </span>
-                      </div>
-                      <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
-                        {reg.rancho_nombre}
-                      </span>
-                      {reg.realizo && (
-                        <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                          Realizó: {reg.realizo}
+                  <button
+                    onClick={() => abrirDetalle(reg)}
+                    className="w-full text-left p-4"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span
+                            className="text-xs px-2 py-0.5 rounded"
+                            style={{
+                              backgroundColor: 'var(--agro-success-fill)',
+                              color: 'var(--agro-success-text)',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {formatMesLabel(reg.mes)}
+                          </span>
                         </div>
-                      )}
+                        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                          {reg.rancho_nombre}
+                        </span>
+                        {reg.realizo && (
+                          <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                            Realizó: {reg.realizo}
+                          </div>
+                        )}
+                      </div>
+                      <ChevronLeft
+                        className="w-4 h-4 flex-shrink-0 mt-0.5 rotate-180"
+                        style={{ color: 'var(--muted-foreground)' }}
+                      />
                     </div>
-                    <ChevronLeft
-                      className="w-4 h-4 flex-shrink-0 mt-0.5 rotate-180"
-                      style={{ color: 'var(--muted-foreground)' }}
-                    />
-                  </div>
-                </button>
+                  </button>
+                  <FirmasRegistro
+                    modulo="M71"
+                    registroId={reg.id}
+                    firmas={firmas}
+                    loading={loadingFirmas}
+                    fechaRegistro={reg.mes}
+                  />
+                </div>
               ))}
             </div>
           )}
