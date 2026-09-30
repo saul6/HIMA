@@ -24,6 +24,8 @@ import { Step3AplicacionYAgua } from "../components/nueva-aplicacion/Step3Aplica
 import { Step4CierreYObservaciones } from "../components/nueva-aplicacion/Step4CierreYObservaciones";
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmaContext } from '@/context/FirmaContext'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 
 // Redondea a máximo 4 decimales (evita notación científica y floats infinitos en BD y PDF)
 const r4 = (n: number) => parseFloat(n.toFixed(4));
@@ -38,6 +40,12 @@ export function NuevaAplicacion() {
   const { ranchos } = useRanchos();
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const [productosEnInventario, setProductosEnInventario] = useState<string[]>([])
+  const { obligatoria } = useFirmaContext()
+  const [aplicacionGuardada, setAplicacionGuardada] = useState<{
+    id: string
+    pdfProps: Parameters<typeof generarAplicacionPDF>[0] | null
+    ranchoNombre: string
+  } | null>(null)
 
   const [formData, setFormData] = useState({
     // Step 1
@@ -252,8 +260,9 @@ export function NuevaAplicacion() {
         ).catch((err) => console.warn('[inv] auto-salida:', err))
       }
 
-      // ── Paso 4: generar PDF (no bloquea el guardado si falla) ────────────
+      // ── Paso 4: preparar props del PDF y pasar a firma ────────────────────
       const ranchoSeleccionado = ranchos.find((r) => r.id === formData.huerto)
+      let pdfProps: Parameters<typeof generarAplicacionPDF>[0] | null = null
       if (ranchoSeleccionado && profile) {
         const aguaPDF = formData.totalWater ? parseFloat(formData.totalWater) : 0
         const supPDF = formData.surface ? parseFloat(formData.surface) : 0
@@ -294,24 +303,25 @@ export function NuevaAplicacion() {
           }
         })
 
-        try {
-          await generarAplicacionPDF({
-            aplicacion,
-            productos: productosParaPDF,
-            rancho: ranchoSeleccionado,
-            asesor: asesorProfile,
-            responsable: responsableProfile,
-            operario: profile,
-            operarioEmail: user?.email,
-            esCampo,
-          })
-        } catch {
-          toast.warning("Registro guardado. No se pudo generar el PDF — descárgalo desde el historial.")
+        pdfProps = {
+          aplicacion,
+          productos: productosParaPDF,
+          rancho: ranchoSeleccionado,
+          asesor: asesorProfile,
+          responsable: responsableProfile,
+          operario: profile,
+          operarioEmail: user?.email,
+          esCampo,
         }
       }
 
       toast.success("Aplicación guardada correctamente");
-      navigate("/");
+      setAplicacionGuardada({
+        id: aplicacion.id,
+        pdfProps,
+        ranchoNombre: ranchoSeleccionado?.nombre ?? '—',
+      })
+      setCurrentStep(5);
     } catch (err: unknown) {
       console.error('[NuevaAplicacion] error al guardar:', err);
       const msg = err instanceof Error ? err.message : "Error al guardar la aplicación";
@@ -337,7 +347,7 @@ export function NuevaAplicacion() {
           {[1, 2, 3, 4].map((step) => (
             <button
               key={step}
-              onClick={() => setCurrentStep(step)}
+              onClick={() => { if (currentStep < 5) setCurrentStep(step) }}
               className={`w-3 h-3 rounded-full transition-colors ${
                 step === currentStep
                   ? "bg-primary"
@@ -401,6 +411,26 @@ export function NuevaAplicacion() {
           />
         )}
       </div>
+
+      {currentStep === 5 && aplicacionGuardada && (
+        <div className="flex flex-col" style={{ height: 'calc(100dvh - 130px)' }}>
+          <PasoFirmaRegistro
+            modulo="M1"
+            ids={[aplicacionGuardada.id]}
+            descripcion={`Nueva Aplicación · ${formData.applicationDate} · ${aplicacionGuardada.ranchoNombre}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              if (aplicacionGuardada.pdfProps) {
+                try { await generarAplicacionPDF(aplicacionGuardada.pdfProps) } catch {
+                  toast.warning("No se pudo generar el PDF — descárgalo desde el historial.")
+                }
+              }
+              navigate("/")
+            }}
+            onDespues={!obligatoria ? () => { navigate("/") } : undefined}
+          />
+        </div>
+      )}
     </div>
   );
 }

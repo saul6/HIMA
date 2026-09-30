@@ -24,6 +24,11 @@ import {
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmaContext } from '@/context/FirmaContext'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -330,6 +335,14 @@ export function ReporteIncidencias() {
   const { reportes, loading, refetch } = useM13Incidencias()
   const orgNombre = useOrganizacion(profile?.org_id)
 
+  const todosIds = reportes.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M13', todosIds)
+  const { obligatoria, tengoFirma } = useFirmaContext()
+
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+  const [pendienteReporteParaPDF, setPendienteReporteParaPDF] = useState<M13ReporteConRancho | null>(null)
+
   // Sheet formulario
   const [sheetAbierto, setSheetAbierto] = useState(false)
   const [ranchoId, setRanchoId] = useState('')
@@ -418,7 +431,18 @@ export function ReporteIncidencias() {
     setErrRancho(false)
     setProgreso(null)
     setEstadoBorrador(null)
+    setPendienteFirmaId(null)
+    setPendienteReporteParaPDF(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetAbierto(true)
+  }
+
+  function handleCerrarSheet() {
+    if (guardando) return
+    setSheetAbierto(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+    setPendienteReporteParaPDF(null)
   }
 
   function abrirSheet() {
@@ -447,6 +471,9 @@ export function ReporteIncidencias() {
       setErrRancho(false)
       setProgreso(null)
       setEstadoBorrador('guardado')
+      setPendienteFirmaId(null)
+      setPendienteReporteParaPDF(null)
+      setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
       setSheetAbierto(true)
     } catch {
       abrirSheetFresco()
@@ -631,41 +658,39 @@ export function ReporteIncidencias() {
         )
       }
 
-      setSheetAbierto(false)
       if (tareaId) setRegistroGuardado(true)
       await refetch()
+      await refetchFirmas()
       if (draftKey) { borrarBorrador(draftKey).catch(() => {}); setHayBorrador(false) }
 
-      // PASO 5: Descarga automática del PDF con lo guardado
-      try {
-        const ranchoInfo = ranchos.find((r) => r.id === ranchoId)
-        const reporteParaPDF: M13ReporteConRancho = {
-          id: reporteId!,
-          org_id: orgId,
-          rancho_id: ranchoId,
-          rancho_nombre: ranchoInfo?.nombre ?? '—',
-          rancho_codigo: (ranchoInfo as any)?.codigo ?? '',
-          fecha,
-          auditor_nombre: auditorNombre.trim() || null,
-          realizado_por_id: profile!.id,
-          created_at: new Date().toISOString(),
-          creado_por: profile!.id,
-          creado_por_nombre: profile!.nombre_completo ?? '—',
-          requiere_correccion: false,
-          comentario_correccion: null,
-          marcado_por: null,
-          marcado_en: null,
-          incidencias: incidenciaIds.map((incId, i) => ({
-            id: incId,
-            orden: i + 1,
-            descripcion: incidencias[i].descripcion.trim(),
-            fotos: fotosSubidasPorIncidencia[i],
-          })),
-        }
-        await generarReporteIncidenciasPDF(reporteParaPDF)
-      } catch {
-        // La descarga automática falla silenciosamente — el usuario puede descargar manualmente
+      // PASO 5: Preparar para firma y PDF
+      const ranchoInfo = ranchos.find((r) => r.id === ranchoId)
+      const reporteParaPDF: M13ReporteConRancho = {
+        id: reporteId!,
+        org_id: orgId,
+        rancho_id: ranchoId,
+        rancho_nombre: ranchoInfo?.nombre ?? '—',
+        rancho_codigo: (ranchoInfo as any)?.codigo ?? '',
+        fecha,
+        auditor_nombre: auditorNombre.trim() || null,
+        realizado_por_id: profile!.id,
+        created_at: new Date().toISOString(),
+        creado_por: profile!.id,
+        creado_por_nombre: profile!.nombre_completo ?? '—',
+        requiere_correccion: false,
+        comentario_correccion: null,
+        marcado_por: null,
+        marcado_en: null,
+        incidencias: incidenciaIds.map((incId, i) => ({
+          id: incId,
+          orden: i + 1,
+          descripcion: incidencias[i].descripcion.trim(),
+          fotos: fotosSubidasPorIncidencia[i],
+        })),
       }
+      setPendienteReporteParaPDF(reporteParaPDF)
+      setPendienteFirmaId(reporteId!)
+      setSheetPaso('firma_decision')
 
     } catch (err: unknown) {
       const mensaje = err instanceof Error ? err.message : 'No se pudo guardar el reporte'
@@ -900,6 +925,7 @@ export function ReporteIncidencias() {
                       ))}
                     </div>
                   )}
+                  <FirmasRegistro modulo="M13" registroId={r.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={r.fecha} />
                 </div>
               </div>
             )
@@ -1037,7 +1063,7 @@ export function ReporteIncidencias() {
       )}
 
       {/* Bottom Sheet — formulario */}
-      <BottomSheet open={sheetAbierto} onClose={() => !guardando && setSheetAbierto(false)} height="85%">
+      <BottomSheet open={sheetAbierto} onClose={handleCerrarSheet} height="85%">
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
@@ -1047,20 +1073,40 @@ export function ReporteIncidencias() {
             <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
               <div className="flex flex-col">
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
-                  Nuevo reporte
+                  {sheetPaso === 'firma_decision' ? 'Firmar reporte' : sheetPaso === 'firma_gate' ? 'Registra tu firma' : 'Nuevo reporte'}
                 </h2>
-                {estadoBorrador === 'guardado' && (
+                {sheetPaso === 'form' && estadoBorrador === 'guardado' && (
                   <span className="text-[11px] text-muted-foreground">Borrador guardado</span>
                 )}
               </div>
               <button
-                onClick={() => !guardando && setSheetAbierto(false)}
+                onClick={handleCerrarSheet}
                 className="p-1"
               >
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
+            {sheetPaso === 'firma_gate' && (
+              <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+            )}
+            {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+              <PasoFirmaRegistro
+                modulo="M13"
+                ids={[pendienteFirmaId]}
+                descripcion={`Reporte de Incidencias · ${formatFecha(fecha)} · ${ranchos.find(r => r.id === ranchoId)?.nombre ?? '—'}`}
+                obligatoria={obligatoria}
+                onFirmadoYPDF={async () => {
+                  if (pendienteReporteParaPDF) {
+                    try { await generarReporteIncidenciasPDF(pendienteReporteParaPDF) } catch {}
+                  }
+                  handleCerrarSheet()
+                }}
+                onDespues={!obligatoria ? handleCerrarSheet : undefined}
+              />
+            )}
+
+            {sheetPaso === 'form' && (<>
             {/* Campos scrollables */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
@@ -1218,6 +1264,7 @@ export function ReporteIncidencias() {
                 </button>
               </div>
             </div>
+            </>)}
       </BottomSheet>
     </div>
   )

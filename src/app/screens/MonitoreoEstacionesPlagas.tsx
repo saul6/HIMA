@@ -29,6 +29,11 @@ import { Button } from '@/app/components/ui/button'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmaContext } from '@/context/FirmaContext'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmasRegistro, type MapaFirmas } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -109,11 +114,15 @@ function RevisionCard({
   onPDF,
   cargandoPDF,
   orgNombre,
+  firmas,
+  loadingFirmas,
 }: {
   rev: M21RevisionConResultados
   onPDF: (id: string) => void
   cargandoPDF: string | null
   orgNombre: string | null
+  firmas: MapaFirmas
+  loadingFirmas: boolean
 }) {
   const conHallazgo = rev.resultados.filter(r => r.incidencia_id).length
   const totalEst = rev.resultados.length
@@ -165,6 +174,7 @@ function RevisionCard({
       {rev.observaciones && (
         <p className="text-xs text-muted-foreground italic line-clamp-2">{rev.observaciones}</p>
       )}
+      <FirmasRegistro modulo="M21" registroId={rev.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={rev.fecha} />
     </div>
   )
 }
@@ -427,6 +437,15 @@ export function MonitoreoEstacionesPlagas() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { revisiones, loading, error, refetch } = useM21MonitoreoEstaciones()
   const orgNombre = useOrganizacion(profile?.org_id)
+
+  const todosIds = revisiones.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M21', todosIds)
+  const { obligatoria, tengoFirma } = useFirmaContext()
+
+  const [sheetNuevoPaso, setSheetNuevoPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+  const [nfcPaso, setNfcPaso] = useState<'form' | 'firma_decision'>('form')
+  const [pendienteNfcFirmaId, setPendienteNfcFirmaId] = useState<string | null>(null)
 
   // ── Catálogos ───────────────────────────────────────────────────────────────
   const [catalogoEstado, setCatalogoEstado] = useState<CatCodigo[]>([])
@@ -694,19 +713,12 @@ export function MonitoreoEstacionesPlagas() {
         .insert(resultados)
       if (resErr) throw resErr
 
-      // 4. Refetch + cierre
+      // 4. Refetch + paso firma
       await refetch()
+      await refetchFirmas()
       toast.success('Revisión registrada')
-      setSheetNuevo(false)
-      setForm({ ...FORM_INICIAL, inspectorNombre: profile.nombre_completo ?? '' })
-      setEstForm({})
-
-      // 5. Generar PDF automáticamente
-      try {
-        await generarMonitoreoEstacionesPDF(revisionId, profile.org_id)
-      } catch {
-        toast.warning('Registro guardado. No se pudo generar el PDF automáticamente.')
-      }
+      setPendienteFirmaId(revisionId!)
+      setSheetNuevoPaso('firma_decision')
     } catch (e: unknown) {
       // Rollback revisión si existe
       if (revisionId) {
@@ -837,17 +849,12 @@ export function MonitoreoEstacionesPlagas() {
         .upsert(resultado, { onConflict: 'revision_id,estacion_id' })
       if (resErr) throw resErr
 
-      // 4. Refetch + cierre
+      // 4. Refetch + paso firma
       await refetch()
+      await refetchFirmas()
       toast.success(`Trampa N.° ${estacion.numero} guardada`)
-      setNfcModal(null)
-
-      // 5. PDF automático
-      try {
-        await generarMonitoreoEstacionesPDF(revisionId, profile.org_id)
-      } catch {
-        toast.warning('Registro guardado. No se pudo generar el PDF automáticamente.')
-      }
+      setPendienteNfcFirmaId(revisionId)
+      setNfcPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Error al guardar'
       if (msg.includes('FECHA_SOLO_HOY')) {
@@ -978,6 +985,8 @@ export function MonitoreoEstacionesPlagas() {
               onPDF={handlePDF}
               cargandoPDF={cargandoPDF}
               orgNombre={orgNombre}
+              firmas={firmas}
+              loadingFirmas={loadingFirmas}
             />
           ))}
         </div>
@@ -987,6 +996,8 @@ export function MonitoreoEstacionesPlagas() {
             <Fab onClick={() => {
             setForm({ ...FORM_INICIAL, ranchoId: ranchoInicial ?? '', inspectorNombre: profile?.nombre_completo ?? '' })
             setEstForm({})
+            setSheetNuevoPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
+            setPendienteFirmaId(null)
             setSheetNuevo(true)
           }} aria-label="Nueva revisión" />
 
@@ -1087,16 +1098,46 @@ export function MonitoreoEstacionesPlagas() {
       </BottomSheet>
 
       {/* ── Sheet: Nueva Revisión ─────────────────────────────────────────────── */}
-      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="90%">
+      <BottomSheet open={sheetNuevo} onClose={() => { setSheetNuevo(false); setSheetNuevoPaso('form'); setPendienteFirmaId(null) }} height="90%">
           <div className="flex justify-center pt-3 pb-1 shrink-0">
             <div className="w-10 h-1 rounded-full bg-muted" />
           </div>
           <div className="px-4 pb-2 shrink-0">
-            <h2 className="text-base font-semibold text-foreground">Nueva revisión</h2>
+            <h2 className="text-base font-semibold text-foreground">
+              {sheetNuevoPaso === 'firma_decision' ? 'Firmar revisión' : sheetNuevoPaso === 'firma_gate' ? 'Registra tu firma' : 'Nueva revisión'}
+            </h2>
             <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-CAL-19', codigoClave)} · Cuarto Frío</p>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 pb-6 flex flex-col gap-5">
+          {sheetNuevoPaso === 'firma_gate' && (
+            <FirmaGatePaso onFirmaGuardada={() => setSheetNuevoPaso('form')} />
+          )}
+          {sheetNuevoPaso === 'firma_decision' && pendienteFirmaId && (
+            <PasoFirmaRegistro
+              modulo="M21"
+              ids={[pendienteFirmaId]}
+              descripcion={`Monitoreo de Plagas · ${form.fecha} · ${ranchos.find(r => r.id === form.ranchoId)?.nombre ?? '—'}`}
+              obligatoria={obligatoria}
+              onFirmadoYPDF={async () => {
+                try { await generarMonitoreoEstacionesPDF(pendienteFirmaId!, profile!.org_id!) } catch {
+                  toast.warning('No se pudo generar el PDF automáticamente.')
+                }
+                setSheetNuevo(false)
+                setSheetNuevoPaso('form')
+                setPendienteFirmaId(null)
+                setForm({ ...FORM_INICIAL, inspectorNombre: profile?.nombre_completo ?? '' })
+                setEstForm({})
+              }}
+              onDespues={!obligatoria ? () => {
+                setSheetNuevo(false)
+                setSheetNuevoPaso('form')
+                setPendienteFirmaId(null)
+                setForm({ ...FORM_INICIAL, inspectorNombre: profile?.nombre_completo ?? '' })
+                setEstForm({})
+              } : undefined}
+            />
+          )}
+          {sheetNuevoPaso === 'form' && <div className="flex-1 overflow-y-auto px-4 pb-6 flex flex-col gap-5">
 
             {/* Instalación */}
             <div className="flex flex-col gap-1.5">
@@ -1199,10 +1240,8 @@ export function MonitoreoEstacionesPlagas() {
               />
             </div>
 
-          </div>
-
-          {/* Botón guardar */}
-          <div className="px-4 pb-safe-bottom pb-6 pt-3 border-t border-border shrink-0">
+          </div>}
+          {sheetNuevoPaso === 'form' && <div className="px-4 pb-safe-bottom pb-6 pt-3 border-t border-border shrink-0">
             <Button
               className="w-full h-12 text-base bg-[var(--primary)] hover:bg-[var(--agro-blue)] text-white"
               onClick={handleGuardar}
@@ -1214,7 +1253,7 @@ export function MonitoreoEstacionesPlagas() {
                 'Guardar y generar PDF'
               )}
             </Button>
-          </div>
+          </div>}
       </BottomSheet>
 
       {/* ── Sheet: Exportar consolidado ───────────────────────────────────────── */}
@@ -1275,14 +1314,14 @@ export function MonitoreoEstacionesPlagas() {
       </BottomSheet>
 
       {/* ── Sheet: Modal NFC (trampa individual) ─────────────────────────────── */}
-      <BottomSheet open={!!nfcModal} onClose={() => setNfcModal(null)} height="85%">
+      <BottomSheet open={!!nfcModal} onClose={() => { setNfcModal(null); setNfcPaso('form'); setPendienteNfcFirmaId(null) }} height="85%">
         <div className="flex justify-center pt-3 pb-1 shrink-0">
           <div className="w-10 h-1 rounded-full bg-muted" />
         </div>
         <div className="px-4 pb-2 shrink-0 flex items-start gap-2">
           <div className="flex-1 min-w-0">
             <h2 className="text-base font-semibold text-foreground">
-              {nfcModal?.estacion
+              {nfcPaso === 'firma_decision' ? 'Firmar revisión' : nfcModal?.estacion
                 ? `Trampa N.° ${nfcModal.estacion.numero} · ${TIPO_TRAMPA_LABELS[nfcModal.estacion.tipo_trampa]}`
                 : 'Cargando trampa...'}
             </h2>
@@ -1290,7 +1329,7 @@ export function MonitoreoEstacionesPlagas() {
           </div>
           <button
             type="button"
-            onClick={() => setNfcModal(null)}
+            onClick={() => { setNfcModal(null); setNfcPaso('form'); setPendienteNfcFirmaId(null) }}
             className="p-1 text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Cerrar"
           >
@@ -1298,6 +1337,31 @@ export function MonitoreoEstacionesPlagas() {
           </button>
         </div>
 
+        {nfcPaso === 'firma_decision' && pendienteNfcFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M21"
+            ids={[pendienteNfcFirmaId]}
+            descripcion={`Monitoreo de Plagas · Trampa N.° ${nfcModal?.estacion?.numero ?? '—'} · ${hoy()}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              try { await generarMonitoreoEstacionesPDF(pendienteNfcFirmaId!, profile!.org_id!) } catch {
+                toast.warning('No se pudo generar el PDF automáticamente.')
+              }
+              setNfcModal(null)
+              setNfcPaso('form')
+              setPendienteNfcFirmaId(null)
+              setNfcFormData({ ...EST_FORM_INICIAL })
+            }}
+            onDespues={!obligatoria ? () => {
+              setNfcModal(null)
+              setNfcPaso('form')
+              setPendienteNfcFirmaId(null)
+              setNfcFormData({ ...EST_FORM_INICIAL })
+            } : undefined}
+          />
+        )}
+
+        {nfcPaso === 'form' && <>
         <div className="flex-1 overflow-y-auto px-4 pb-6 flex flex-col gap-4">
           {nfcCargandoEst && (
             <div className="flex justify-center py-10">
@@ -1320,7 +1384,7 @@ export function MonitoreoEstacionesPlagas() {
           <Button
             variant="outline"
             className="flex-1 h-12"
-            onClick={() => setNfcModal(null)}
+            onClick={() => { setNfcModal(null); setNfcPaso('form'); setPendienteNfcFirmaId(null) }}
           >
             Cancelar
           </Button>
@@ -1334,6 +1398,7 @@ export function MonitoreoEstacionesPlagas() {
               : 'Guardar'}
           </Button>
         </div>
+        </>}
       </BottomSheet>
 
     </div>

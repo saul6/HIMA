@@ -23,6 +23,11 @@ import QRCode from 'qrcode'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmaContext } from '@/context/FirmaContext'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -179,6 +184,17 @@ export function TrazabilidadProducto() {
   const [filtroLR, setFiltroLR] = useState('')
   const [filtroLPT, setFiltroLPT] = useState('')
 
+  const todosIds = [
+    ...lotesLR.map(r => r.id),
+    ...lotesLPT.map(r => r.id),
+    ...lotesLC.map(r => r.id),
+    ...feFolios.map(r => r.id),
+  ]
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M48', todosIds)
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+
   const sTermino = terminosSitio.singular
 
   // Preseleccionar rancho desde contexto de tarea de agenda
@@ -210,7 +226,10 @@ export function TrazabilidadProducto() {
       const { data, error } = await tbl('m48_lotes_recepcion').insert(payload).select().single()
       if (error) throw error
       toast.success(`LR registrado: ${data.codigo}`)
-      setSheetLR(false); setFormLR(LR_VACÍO); refetchLR()
+      refetchLR()
+      await refetchFirmas()
+      setPendienteFirmaId(data.id)
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar LR')
     } finally { setGuardando(false) }
@@ -251,7 +270,10 @@ export function TrazabilidadProducto() {
       const { data, error } = await tbl('m48_lotes_producto').insert(payload).select().single()
       if (error) throw error
       toast.success(`LPT registrado: ${data.codigo}`)
-      setSheetLPT(false); setFormLPT(LPT_VACÍO); refetchLPT()
+      refetchLPT()
+      await refetchFirmas()
+      setPendienteFirmaId(data.id)
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar LPT')
     } finally { setGuardando(false) }
@@ -276,7 +298,10 @@ export function TrazabilidadProducto() {
       const { error: relErr } = await tbl('m48_lc_lr').insert(rels)
       if (relErr) throw relErr
       toast.success(`LC registrado: ${lc.codigo}`)
-      setSheetLC(false); setFormLC(LC_VACÍO); refetchLC()
+      refetchLC()
+      await refetchFirmas()
+      setPendienteFirmaId(lc.id)
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar LC')
     } finally { setGuardando(false) }
@@ -315,7 +340,10 @@ export function TrazabilidadProducto() {
       const { error: relErr } = await tbl('m48_fe_lpt').insert(rels)
       if (relErr) throw relErr
       toast.success(`FE registrado: ${fe.codigo}`)
-      setSheetFE(false); setFormFE(FE_VACÍO); refetchFE()
+      refetchFE()
+      await refetchFirmas()
+      setPendienteFirmaId(fe.id)
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar FE')
     } finally { setGuardando(false) }
@@ -528,6 +556,7 @@ export function TrazabilidadProducto() {
                     </span>
                   )}
                 </div>
+                <FirmasRegistro modulo="M48" registroId={lr.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={lr.fecha} />
               </div>
             ))}
           </div>
@@ -601,6 +630,7 @@ export function TrazabilidadProducto() {
                       Empacado: {lpt.cant_empacada} · Merma: {lpt.rechazo_merma ?? 0} · Pendiente: {lpt.pendiente_retenido ?? 0}
                     </p>
                   )}
+                  <FirmasRegistro modulo="M48" registroId={lpt.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={lpt.fecha_empaque} />
                 </div>
               )
             })}
@@ -626,6 +656,7 @@ export function TrazabilidadProducto() {
                     </div>
                   ))}
                 </div>
+                <FirmasRegistro modulo="M48" registroId={lc.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={lc.fecha} />
               </div>
             ))}
           </div>
@@ -654,6 +685,7 @@ export function TrazabilidadProducto() {
                     ))}
                   </div>
                 )}
+                <FirmasRegistro modulo="M48" registroId={fe.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={fe.fecha} />
               </div>
             ))}
           </div>
@@ -688,16 +720,34 @@ export function TrazabilidadProducto() {
       {/* FAB */}
       {showFAB && (
                 <Fab onClick={() => {
-              if (tab === 'lr') { setFormLR(LR_VACÍO); setSheetLR(true) }
-              else if (tab === 'lpt') { setFormLPT(LPT_VACÍO); setSheetLPT(true) }
-              else if (tab === 'lc') { setFormLC(LC_VACÍO); setSheetLC(true) }
-              else if (tab === 'fe') { setFormFE(FE_VACÍO); setSheetFE(true) }
+              const paso = obligatoria && !tengoFirma ? 'firma_gate' : 'form'
+              setPendienteFirmaId(null)
+              if (tab === 'lr') { setFormLR(LR_VACÍO); setSheetPaso(paso); setSheetLR(true) }
+              else if (tab === 'lpt') { setFormLPT(LPT_VACÍO); setSheetPaso(paso); setSheetLPT(true) }
+              else if (tab === 'lc') { setFormLC(LC_VACÍO); setSheetPaso(paso); setSheetLC(true) }
+              else if (tab === 'fe') { setFormFE(FE_VACÍO); setSheetPaso(paso); setSheetFE(true) }
             }} />
       )}
 
       {/* ── Bottom Sheet: LR ─────────────────────────────────────────────── */}
       {sheetLR && (
-        <BottomSheet title="Nuevo Lote de Recepcion (LR)" onClose={() => setSheetLR(false)}>
+        <BottomSheet
+          title={sheetPaso === 'firma_decision' ? 'Firmar como Realizó' : sheetPaso === 'firma_gate' ? 'Registrar tu firma' : 'Nuevo Lote de Recepcion (LR)'}
+          onClose={() => { if (guardando) return; setSheetLR(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLR(LR_VACÍO) }}
+          noContentPad={sheetPaso !== 'form'}
+        >
+          {sheetPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />}
+          {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+            <PasoFirmaRegistro
+              modulo="M48"
+              ids={[pendienteFirmaId]}
+              descripcion={`Lote de Recepcion · ${formLR.fecha || hoyMX()}`}
+              obligatoria={obligatoria}
+              onFirmadoYPDF={async () => { setSheetLR(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLR(LR_VACÍO) }}
+              onDespues={!obligatoria ? () => { setSheetLR(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLR(LR_VACÍO) } : undefined}
+            />
+          )}
+          {sheetPaso === 'form' && (<>
           <FormField label="FECHA">
             <input type="date" value={formLR.fecha} onChange={e => setFormLR(f => ({ ...f, fecha: e.target.value }))} className={inputCls} />
           </FormField>
@@ -738,12 +788,29 @@ export function TrazabilidadProducto() {
             <textarea value={formLR.observaciones} onChange={e => setFormLR(f => ({ ...f, observaciones: e.target.value }))} rows={2} className={inputCls + ' resize-none'} />
           </FormField>
           <SaveBtn loading={guardando} onClick={handleGuardarLR} label="Registrar LR" />
+          </>)}
         </BottomSheet>
       )}
 
       {/* ── Bottom Sheet: LPT ───────────────────────────────────────────── */}
       {sheetLPT && (
-        <BottomSheet title="Nuevo Lote de Producto Terminado (LPT)" onClose={() => setSheetLPT(false)}>
+        <BottomSheet
+          title={sheetPaso === 'firma_decision' ? 'Firmar como Realizó' : sheetPaso === 'firma_gate' ? 'Registrar tu firma' : 'Nuevo Lote de Producto Terminado (LPT)'}
+          onClose={() => { if (guardando) return; setSheetLPT(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLPT(LPT_VACÍO) }}
+          noContentPad={sheetPaso !== 'form'}
+        >
+          {sheetPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />}
+          {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+            <PasoFirmaRegistro
+              modulo="M48"
+              ids={[pendienteFirmaId]}
+              descripcion={`Lote de Producto Terminado · ${formLPT.fecha_empaque || hoyMX()}`}
+              obligatoria={obligatoria}
+              onFirmadoYPDF={async () => { setSheetLPT(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLPT(LPT_VACÍO) }}
+              onDespues={!obligatoria ? () => { setSheetLPT(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLPT(LPT_VACÍO) } : undefined}
+            />
+          )}
+          {sheetPaso === 'form' && (<>
           <div className="flex gap-2">
             <FormField label="FECHA EMPAQUE" className="flex-1">
               <input type="date" value={formLPT.fecha_empaque} onChange={e => setFormLPT(f => ({ ...f, fecha_empaque: e.target.value }))} className={inputCls} />
@@ -825,12 +892,29 @@ export function TrazabilidadProducto() {
             <textarea value={formLPT.observaciones} onChange={e => setFormLPT(f => ({ ...f, observaciones: e.target.value }))} rows={2} className={inputCls + ' resize-none'} />
           </FormField>
           <SaveBtn loading={guardando} onClick={handleGuardarLPT} label="Registrar LPT" />
+          </>)}
         </BottomSheet>
       )}
 
       {/* ── Bottom Sheet: LC ─────────────────────────────────────────────── */}
       {sheetLC && (
-        <BottomSheet title="Nuevo Lote Compuesto (LC)" onClose={() => setSheetLC(false)}>
+        <BottomSheet
+          title={sheetPaso === 'firma_decision' ? 'Firmar como Realizó' : sheetPaso === 'firma_gate' ? 'Registrar tu firma' : 'Nuevo Lote Compuesto (LC)'}
+          onClose={() => { if (guardando) return; setSheetLC(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLC(LC_VACÍO) }}
+          noContentPad={sheetPaso !== 'form'}
+        >
+          {sheetPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />}
+          {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+            <PasoFirmaRegistro
+              modulo="M48"
+              ids={[pendienteFirmaId]}
+              descripcion={`Lote Compuesto · ${formLC.fecha || hoyMX()}`}
+              obligatoria={obligatoria}
+              onFirmadoYPDF={async () => { setSheetLC(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLC(LC_VACÍO) }}
+              onDespues={!obligatoria ? () => { setSheetLC(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLC(LC_VACÍO) } : undefined}
+            />
+          )}
+          {sheetPaso === 'form' && (<>
           <FormField label="FECHA">
             <input type="date" value={formLC.fecha} onChange={e => setFormLC(f => ({ ...f, fecha: e.target.value }))} className={inputCls} />
           </FormField>
@@ -859,12 +943,29 @@ export function TrazabilidadProducto() {
             <textarea value={formLC.observaciones} onChange={e => setFormLC(f => ({ ...f, observaciones: e.target.value }))} rows={2} className={inputCls + ' resize-none'} />
           </FormField>
           <SaveBtn loading={guardando} onClick={handleGuardarLC} label="Registrar LC" />
+          </>)}
         </BottomSheet>
       )}
 
       {/* ── Bottom Sheet: FE ─────────────────────────────────────────────── */}
       {sheetFE && (
-        <BottomSheet title="Nuevo Folio de Embarque (FE)" onClose={() => setSheetFE(false)}>
+        <BottomSheet
+          title={sheetPaso === 'firma_decision' ? 'Firmar como Realizó' : sheetPaso === 'firma_gate' ? 'Registrar tu firma' : 'Nuevo Folio de Embarque (FE)'}
+          onClose={() => { if (guardando) return; setSheetFE(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormFE(FE_VACÍO) }}
+          noContentPad={sheetPaso !== 'form'}
+        >
+          {sheetPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />}
+          {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+            <PasoFirmaRegistro
+              modulo="M48"
+              ids={[pendienteFirmaId]}
+              descripcion={`Folio de Embarque · ${formFE.fecha || hoyMX()}`}
+              obligatoria={obligatoria}
+              onFirmadoYPDF={async () => { setSheetFE(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormFE(FE_VACÍO) }}
+              onDespues={!obligatoria ? () => { setSheetFE(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormFE(FE_VACÍO) } : undefined}
+            />
+          )}
+          {sheetPaso === 'form' && (<>
           <FormField label="FECHA">
             <input type="date" value={formFE.fecha} onChange={e => setFormFE(f => ({ ...f, fecha: e.target.value }))} className={inputCls} />
           </FormField>
@@ -950,6 +1051,7 @@ export function TrazabilidadProducto() {
             <textarea value={formFE.observaciones} onChange={e => setFormFE(f => ({ ...f, observaciones: e.target.value }))} rows={2} className={inputCls + ' resize-none'} />
           </FormField>
           <SaveBtn loading={guardando} onClick={handleGuardarFE} label="Registrar FE" />
+          </>)}
         </BottomSheet>
       )}
 
@@ -1038,7 +1140,7 @@ function SaveBtn({ loading, onClick, label, secondary, icon }: { loading: boolea
   )
 }
 
-function BottomSheet({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+function BottomSheet({ title, onClose, children, noContentPad }: { title: string; onClose: () => void; children: React.ReactNode; noContentPad?: boolean }) {
   return (
     <>
       <div className="fixed inset-0 bg-black/40 z-30" onClick={onClose} />
@@ -1053,7 +1155,7 @@ function BottomSheet({ title, onClose, children }: { title: string; onClose: () 
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>{title}</h2>
           <button onClick={onClose} className="p-1"><X className="w-5 h-5 text-muted-foreground" /></button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">{children}</div>
+        {noContentPad ? children : <div className="flex-1 overflow-y-auto p-4 space-y-4">{children}</div>}
       </div>
     </>
   )
