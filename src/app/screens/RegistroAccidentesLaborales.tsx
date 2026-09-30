@@ -564,6 +564,10 @@ export function RegistroAccidentesLaborales() {
               onPDF={handlePDF}
               cargandoPDF={cargandoPDF}
               orgNombre={orgNombre}
+              obligatoria={obligatoria}
+              firmas={firmas}
+              loadingFirmas={loadingFirmas}
+              onFirmado={refetchFirmas}
             />
           ))}
         </div>
