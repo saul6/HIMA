@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { PDFDocument } from 'pdf-lib'
 import { supabase } from '@/lib/supabase'
 import { TemperaturaConservadorPDF, type M41RegistroDataPDF, type M41LecturaPDF } from './TemperaturaConservadorPDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -37,6 +38,11 @@ export async function generarTemperaturaConservadorConsolidadoPDF(
   if (!registros?.length) throw new Error('Sin registros en el rango seleccionado')
 
   const ids = (registros as any[]).map((r: any) => r.id)
+
+  const firmasMapa = ids.length > 0
+    ? await obtenerFirmasParaPdf('M41', ids)
+    : {}
+
   const { data: todasLecturas, error: eL } = await (supabase as any)
     .from('m41_lecturas')
     .select('registro_id, hora, temperatura')
@@ -61,7 +67,15 @@ export async function generarTemperaturaConservadorConsolidadoPDF(
       observaciones: r.observaciones ?? null,
       lecturas: lecturasPorRegistro[r.id] ?? [],
     }
-    const blob = await pdf(<TemperaturaConservadorPDF d={d} codigoClave={codigoClave} />).toBlob()
+    const firmasR = firmasMapa[r.id]
+    const blob = await pdf(
+      <TemperaturaConservadorPDF
+        d={d}
+        codigoClave={codigoClave}
+        firmaRealizo={firmasR?.realizo ? firmaDetalleAParaPdf(firmasR.realizo) : null}
+        firmaVerifico={firmasR?.verifico ? firmaDetalleAParaPdf(firmasR.verifico) : null}
+      />
+    ).toBlob()
     const bytes = await blob.arrayBuffer()
     const doc = await PDFDocument.load(bytes)
     const pages = await merged.copyPages(doc, doc.getPageIndices())

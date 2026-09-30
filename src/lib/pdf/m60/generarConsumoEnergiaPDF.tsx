@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { ConsumoEnergiaPDF, type ConsumoEnergiaRow } from './ConsumoEnergiaPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -41,17 +42,35 @@ function toRow(r: any): ConsumoEnergiaRow {
 
 export async function generarConsumoEnergiaPDF(id: string, orgId: string, _codigoClave: string): Promise<void> {
   const r = await cargar(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M60', [id])
+  const firmasReg = firmasMapa[id]
   const rancho = r.ranchos?.nombre ?? '—'
   const blob = await pdf(
-    <ConsumoEnergiaPDF rancho={rancho} desde={r.mes} hasta={r.mes} registros={[toRow(r)]} />
+    <ConsumoEnergiaPDF
+      rancho={rancho}
+      desde={r.mes}
+      hasta={r.mes}
+      registros={[toRow(r)]}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
   ).toBlob()
   descargar(blob, nombrePdf('ConsumoEnergia', r.mes))
 }
 
 export async function generarBlobConsumoEnergia(id: string, orgId: string, _codigoClave: string): Promise<Blob> {
   const r = await cargar(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M60', [id])
+  const firmasReg = firmasMapa[id]
   return pdf(
-    <ConsumoEnergiaPDF rancho={r.ranchos?.nombre ?? '—'} desde={r.mes} hasta={r.mes} registros={[toRow(r)]} />
+    <ConsumoEnergiaPDF
+      rancho={r.ranchos?.nombre ?? '—'}
+      desde={r.mes}
+      hasta={r.mes}
+      registros={[toRow(r)]}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
   ).toBlob()
 }
 

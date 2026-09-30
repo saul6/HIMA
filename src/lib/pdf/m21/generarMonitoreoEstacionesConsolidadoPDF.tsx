@@ -5,6 +5,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { MonitoreoEstacionesConsolidadoPDF } from './MonitoreoEstacionesPDF'
 import { construirDatosM21 } from './generarMonitoreoEstacionesPDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 export async function generarMonitoreoEstacionesConsolidadoPDF(
   ranchoId: string,
@@ -26,9 +27,23 @@ export async function generarMonitoreoEstacionesConsolidadoPDF(
   if (error) throw error
   if (!data?.length) throw new Error('Sin revisiones M21 en el rango seleccionado')
 
-  const revisiones = await Promise.all(
-    (data as any[]).map((row: any) => construirDatosM21(row.id as string, orgId))
+  const rowIds = (data as any[]).map((row: any) => row.id as string)
+  const revisionesBase = await Promise.all(
+    rowIds.map((id) => construirDatosM21(id, orgId))
   )
+
+  const firmasMapa = rowIds.length > 0
+    ? await obtenerFirmasParaPdf('M21', rowIds)
+    : {}
+
+  const revisiones = revisionesBase.map((rev, i) => {
+    const firmas = firmasMapa[rowIds[i]]
+    return {
+      ...rev,
+      firmaRealizo: firmas?.realizo ? firmaDetalleAParaPdf(firmas.realizo) : null,
+      firmaVerifico: firmas?.verifico ? firmaDetalleAParaPdf(firmas.verifico) : null,
+    }
+  })
 
   const blob = await pdf(
     <MonitoreoEstacionesConsolidadoPDF

@@ -5,6 +5,7 @@ import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface ConsumoEnergiaRow {
   mes: string
@@ -25,6 +26,8 @@ interface Props {
   hasta: string
   registros: ConsumoEnergiaRow[]
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 const MARGIN = 20
@@ -71,7 +74,7 @@ function fmtMes(iso: string): string {
 
 const C = { MES: 65, TIPO: 75, LIT: 45, COST_C: 55, ACT: 90, COST_L: 50, KWH: 45, REAL: 75, OBS: 90 }
 
-export function ConsumoEnergiaPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Instalacion' }: Props) {
+export function ConsumoEnergiaPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Instalacion', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtMes(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
 
   return (
@@ -170,7 +173,10 @@ export function ConsumoEnergiaPDF({ rancho, orgNombre, desde, hasta, registros, 
         </View>
 
         <PdfSignatures
-          signatures={[{ label: '', nombre: '', caption: 'Responsable de Inocuidad' }]}
+          signatures={[
+            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
+          ]}
         />
       </Page>
     </Document>

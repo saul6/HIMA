@@ -11,6 +11,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfTable, PdfTableRow, PdfTableCell } from '@/lib/pdf/components/PdfTable'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface VidrioPlasticoPDFProps {
   folio: string
@@ -27,6 +28,8 @@ export interface VidrioPlasticoPDFProps {
   }[]
   codigoClave?: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 export interface VidrioPlasticoConsolidadoPDFProps {
@@ -75,6 +78,7 @@ function CeldaColor({ width, text, bg, color }: { width: number; text: string; b
 export function VidrioPlasticoPagina({
   folio, rancho, ranchoCodigo, fecha, responsableNombre, materiales,
   codigoClave = 'MXA', terminoSitio = 'Rancho',
+  firmaRealizo, firmaVerifico,
 }: VidrioPlasticoPDFProps) {
   const emision = new Date().toLocaleDateString('es-MX')
   const codigoFmt = `${codigoClave}-F-SC-SIG`
@@ -140,8 +144,8 @@ export function VidrioPlasticoPagina({
           <PdfSectionBanner>3. FIRMAS Y RESPONSABLES</PdfSectionBanner>
           <PdfSignatures
             signatures={[
-              { label: 'Realizó la inspección', nombre: responsableNombre, caption: 'Firma' },
-              { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
+              { label: 'Realizó la inspección', nombre: responsableNombre, caption: 'Firma', firma: firmaRealizo ?? null },
+              { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
             ]}
           />
 

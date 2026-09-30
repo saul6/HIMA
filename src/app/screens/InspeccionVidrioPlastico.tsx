@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react'
 import {
   ChevronLeft, Plus, FileDown, X, Loader2, Eye, Files,
-  AlertTriangle, Trash2, Settings,
+  AlertTriangle, Trash2, Settings, PenLine,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -23,6 +23,16 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import {
+  useFirmasRegistro,
+  obtenerFirmasParaPdf,
+  firmaDetalleAParaPdf,
+  type MapaFirmas,
+} from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -623,48 +633,11 @@ export function InspeccionVidrioPlastico() {
 
     setGenerandoConsolidado(true)
     try {
-      const { data, error } = await supabase
-        .from('m7_vidrio_plastico')
-        .select('*, ranchos(nombre, codigo)')
-        .eq('org_id', profile.org_id)
-        .eq('rancho_id', consRanchoId)
-        .gte('fecha', consDesde)
-        .lte('fecha', consHasta)
-        .order('fecha', { ascending: true })
-        .order('created_at', { ascending: true })
-
-      if (error) throw error
-      if (!data || data.length === 0) {
-        toast.warning(`No hay registros en ese rango para ${terminosSitio.genero === 'f' ? 'la' : 'el'} ${terminosSitio.singular.toLowerCase()} seleccionado${terminosSitio.genero === 'f' ? 'a' : ''}`)
-        return
-      }
-
       const rancho = ranchos.find((r) => r.id === consRanchoId)
       const ranchoNombre = rancho?.nombre ?? 'Rancho'
 
-      const grouped = new Map<string, VidrioPlasticoPDFProps>()
-      for (const row of data as any[]) {
-        if (!grouped.has(row.fecha)) {
-          grouped.set(row.fecha, {
-            folio: (row.id as string).slice(0, 8).toUpperCase(),
-            rancho: row.ranchos?.nombre ?? ranchoNombre,
-            ranchoCodigo: row.ranchos?.codigo ?? rancho?.codigo ?? '—',
-            fecha: row.fecha,
-            responsableNombre: profile.nombre_completo,
-            materiales: [],
-          })
-        }
-        grouped.get(row.fecha)!.materiales.push({
-          area: row.area,
-          material_equipo: row.material_equipo,
-          protegido: row.protegido,
-          estado: row.estado,
-          observaciones: row.observaciones,
-        })
-      }
-
       await generarVidrioPlasticoConsolidadoPDF(
-        Array.from(grouped.values()), ranchoNombre, consDesde, consHasta
+        consRanchoId, ranchoNombre, profile.org_id, consDesde, consHasta
       )
       setSheetConsolidadoAbierto(false)
     } catch (err: unknown) {

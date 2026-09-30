@@ -12,6 +12,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfMonthlyMatrix } from '@/lib/pdf/components/PdfMonthlyMatrix'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -35,6 +36,8 @@ export interface PreoperacionalPaginaProps {
   folio?: string
   codigoClave?: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 export interface PreoperacionalConsolidadoPDFProps {
@@ -67,6 +70,7 @@ export function PreoperacionalPagina({
   rancho, ranchoCodigo, mesLabel, mesDate, realizadoPor,
   items, diasInspeccionados, matriz, codigosCorrectivos, observaciones,
   folio, codigoClave = 'MXA', terminoSitio = 'Rancho',
+  firmaRealizo, firmaVerifico,
 }: PreoperacionalPaginaProps) {
   const emision = new Date().toLocaleDateString('es-MX')
   const codigoFmt = `${codigoClave}-F-SC-SIG`
@@ -141,8 +145,8 @@ export function PreoperacionalPagina({
 
       <PdfSignatures
         signatures={[
-          { label: 'Realizó la inspección', nombre: realizadoPor ?? '', caption: 'Firma' },
-          { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
+          { label: 'Realizó la inspección', nombre: realizadoPor ?? '', caption: 'Firma', firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
         ]}
       />
     </Page>

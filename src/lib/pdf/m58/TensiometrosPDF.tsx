@@ -5,6 +5,7 @@ import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface TensiometrosRow {
   fecha: string
@@ -24,6 +25,8 @@ interface Props {
   hasta: string
   registros: TensiometrosRow[]
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 const MARGIN = 20
@@ -59,7 +62,7 @@ function fmtFecha(iso: string): string {
 
 const C = { FECHA: 55, HORA: 40, P15: 45, P45: 45, POTRA: 45, LOTRA: 45, REAL: 80, OBS: 100 }
 
-export function TensiometrosPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Instalacion' }: Props) {
+export function TensiometrosPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Instalacion', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
 
   return (
@@ -152,7 +155,10 @@ export function TensiometrosPDF({ rancho, orgNombre, desde, hasta, registros, te
         </View>
 
         <PdfSignatures
-          signatures={[{ label: '', nombre: '', caption: 'Responsable de Inocuidad' }]}
+          signatures={[
+            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
+          ]}
         />
       </Page>
     </Document>

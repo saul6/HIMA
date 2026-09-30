@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { FertilizacionGGPDF, type FertilizacionGGRow } from './FertilizacionGGPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -46,6 +47,8 @@ function toRow(r: any): FertilizacionGGRow {
 
 export async function generarFertilizacionGGPDF(id: string, orgId: string): Promise<void> {
   const r = await cargar(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M67', [id])
+  const firmasReg = firmasMapa[id]
   const rancho = r.ranchos?.nombre ?? '—'
   const blob = await pdf(
     <FertilizacionGGPDF
@@ -53,6 +56,8 @@ export async function generarFertilizacionGGPDF(id: string, orgId: string): Prom
       desde={r.fecha}
       hasta={r.fecha}
       registros={[toRow(r)]}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
     />
   ).toBlob()
   descargar(blob, nombrePdf('Aplicacion_Fertilizantes_REG18', r.fecha))
@@ -60,12 +65,16 @@ export async function generarFertilizacionGGPDF(id: string, orgId: string): Prom
 
 export async function generarBlobFertilizacionGG(id: string, orgId: string): Promise<Blob> {
   const r = await cargar(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M67', [id])
+  const firmasReg = firmasMapa[id]
   return pdf(
     <FertilizacionGGPDF
       rancho={r.ranchos?.nombre ?? '—'}
       desde={r.fecha}
       hasta={r.fecha}
       registros={[toRow(r)]}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
     />
   ).toBlob()
 }

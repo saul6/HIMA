@@ -1,6 +1,7 @@
 import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { PreparacionCloroPDF, type PreparacionPDFRow } from './PreparacionCloroPDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 export async function generarPreparacionCloroConsolidadoPDF(
   ranchoId: string,
@@ -35,6 +36,15 @@ export async function generarPreparacionCloroConsolidadoPDF(
     observaciones: r.observaciones ?? null,
   }))
 
+  const ids = (data as any[]).map((r) => r.id as string)
+  const firmasMapa = ids.length > 0
+    ? await obtenerFirmasParaPdf('M27', ids)
+    : {}
+
+  const primeraFirma = ids.length > 0 ? firmasMapa[ids[0]] : undefined
+  const firmaRealizo = primeraFirma?.realizo ? firmaDetalleAParaPdf(primeraFirma.realizo) : null
+  const firmaVerifico = primeraFirma?.verifico ? firmaDetalleAParaPdf(primeraFirma.verifico) : null
+
   const desdeSlug = desde.replaceAll('-', '')
   const hastaSlug = hasta.replaceAll('-', '')
   const filename = `Preparacion_de_Cloro-consolidado-${desdeSlug}-${hastaSlug}.pdf`
@@ -47,6 +57,8 @@ export async function generarPreparacionCloroConsolidadoPDF(
       hasta={hasta}
       preparaciones={preparaciones}
       codigoClave={codigoClave}
+      firmaRealizo={firmaRealizo}
+      firmaVerifico={firmaVerifico}
     />
   ).toBlob()
 

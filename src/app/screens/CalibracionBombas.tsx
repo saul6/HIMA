@@ -16,6 +16,11 @@ import { generarCalibracionBombasPDF, generarCalibracionBombasConsolidadoPDF } f
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 function formatFecha(iso: string): string {
   try {
@@ -69,7 +74,13 @@ export function CalibracionBombas() {
   const { registros, loading, refetch } = useM49CalibracionBombas(orgId)
   const orgNombre = useOrganizacion(orgId)
 
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M49', todosIds)
+
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const [form, setForm] = useState<FormState>(FORM_VACIO)
   const [guardando, setGuardando] = useState(false)
@@ -79,6 +90,8 @@ export function CalibracionBombas() {
 
   function abrirNuevo() {
     setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX(), realizo: profile?.nombre_completo ?? '' })
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetOpen(true)
   }
 
@@ -115,20 +128,16 @@ export function CalibracionBombas() {
         .single()
       if (error) throw error
 
-      setSheetOpen(false)
       await refetch()
       toast.success('Calibración registrada')
-
-      try {
-        await generarCalibracionBombasPDF(data.id, orgId, codigoClave)
-      } catch (e) {
-        toast.error('PDF no generado')
-        console.error(e)
-      }
+      setPendienteFirmaId(data.id as string)
+      setSheetPaso('firma_decision')
     } catch (e: any) {
       const msg: string = e?.message ?? 'Error al guardar'
       if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
+      } else if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
       } else {
         console.error(e)
         toast.error(msg)
@@ -140,6 +149,10 @@ export function CalibracionBombas() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (obligatoria && !firmas[id]?.realizo) {
+      toast.info('Firma este registro antes de descargar el PDF')
+      return
+    }
     setPdfLoading(id)
     try {
       await generarCalibracionBombasPDF(id, orgId, codigoClave)
@@ -220,14 +233,24 @@ export function CalibracionBombas() {
                 </div>
                 <p className="text-xs text-muted-foreground">{formatFecha(m.fecha)}</p>
                 <p className="text-sm mt-1 font-medium">{m.equipo} — {m.num_equipo}</p>
-                {m.resultado && (
-                  <span
-                    className="inline-block text-xs px-2 py-0.5 rounded font-medium mt-1"
-                    style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
-                  >
-                    {m.resultado}
-                  </span>
-                )}
+                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                  {m.resultado && (
+                    <span
+                      className="text-xs px-2 py-0.5 rounded font-medium"
+                      style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                    >
+                      {m.resultado}
+                    </span>
+                  )}
+                  {obligatoria && !firmas[m.id]?.realizo && (
+                    <span
+                      className="text-xs px-2 py-0.5 rounded font-medium"
+                      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+                    >
+                      Pendiente de firma
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground mt-1">{m.realizo}</p>
               </div>
               <button
@@ -241,6 +264,14 @@ export function CalibracionBombas() {
                 }
               </button>
             </div>
+            <FirmasRegistro
+              modulo="M49"
+              registroId={m.id}
+              fechaRegistro={m.fecha}
+              firma={firmas[m.id]}
+              loadingFirmas={loadingFirmas}
+              onFirmado={refetchFirmas}
+            />
           </div>
         ))}
       </div>

@@ -10,6 +10,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import { codigoFormato } from '@/lib/codigoFormato'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -31,6 +32,8 @@ export interface InventarioQuimicosProps {
   hasta?: string
   codigoClave?: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -94,6 +97,7 @@ const tdCell = {
 export function InventarioQuimicosPagina({
   instalacion, quimicoNombre, unidad, movimientos,
   consolidado, desde, hasta, codigoClave, terminoSitio = 'Instalación',
+  firmaRealizo, firmaVerifico,
 }: InventarioQuimicosProps) {
   const emision = new Date().toLocaleDateString('es-MX')
   const codigoFmt = codigoFormato('F-FRUS-SAN-02', codigoClave ?? '')
@@ -182,8 +186,8 @@ export function InventarioQuimicosPagina({
           <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
           <PdfSignatures
             signatures={[
-              { label: '', nombre: '', caption: 'Encargado de limpieza' },
-              { label: '', nombre: '', caption: 'Gerente Administrativo' },
+              { label: '', nombre: '', caption: 'Encargado de limpieza', firma: firmaRealizo ?? null },
+              { label: '', nombre: '', caption: 'Gerente Administrativo', firma: firmaVerifico ?? null },
               { label: '', nombre: '', caption: 'Gerente General' },
             ]}
           />

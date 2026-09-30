@@ -6,6 +6,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import { codigoFormato } from '@/lib/codigoFormato'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface UsoEppRow {
   fecha: string
@@ -28,6 +29,8 @@ interface Props {
   hasta: string
   codigoClave: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 const MARGIN = 20
@@ -67,7 +70,7 @@ const ROW_ALT = '#F5F9FE'
 
 const C = { FECHA: 50, RANCHO: 70, APLIC: 75, MOM: 45, BOTA: 40, OVE: 40, GUA: 40, LEN: 40, MAS: 42, REAL: 80 }
 
-export function UsoEppPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoSitio = 'Instalacion' }: Props) {
+export function UsoEppPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoSitio = 'Instalacion', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
   const codigoFmt = codigoFormato('M63-USO-EPP', codigoClave)
 
@@ -172,7 +175,10 @@ export function UsoEppPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoS
         </View>
 
         <PdfSignatures
-          signatures={[{ label: '', nombre: '', caption: 'Verifico: Responsable de Inocuidad' }]}
+          signatures={[
+            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Verifico: Responsable de Inocuidad', firma: firmaVerifico ?? null },
+          ]}
         />
       </Page>
     </Document>

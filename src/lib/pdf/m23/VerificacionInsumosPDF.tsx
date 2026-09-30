@@ -13,6 +13,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfMonthlyMatrix } from '@/lib/pdf/components/PdfMonthlyMatrix'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -37,6 +38,8 @@ export interface VerificacionInsumosPaginaProps {
   codigoClave?: string
   terminoSitio?: string
   folio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 export interface VerificacionInsumosConsolidadoPDFProps {
@@ -70,6 +73,7 @@ export function VerificacionInsumosPagina({
   verificoNombre, autorizoNombre,
   items, diasInspeccionados, matriz, codigosCorrectivos, observaciones,
   codigoClave = 'MXA', terminoSitio = 'Instalación', folio,
+  firmaRealizo, firmaVerifico,
 }: VerificacionInsumosPaginaProps) {
   const emision = new Date().toLocaleDateString('es-MX')
   const codigoFmt = `${codigoClave}-F-SC-SIG`
@@ -149,8 +153,8 @@ export function VerificacionInsumosPagina({
 
       <PdfSignatures
         signatures={[
-          { label: 'Verificó', nombre: verificoNombre ?? '', caption: 'Jefe del Cooler — Firma' },
-          { label: 'Autorizó', nombre: autorizoNombre ?? '', caption: 'Gerente — Firma' },
+          { label: 'Verificó', nombre: verificoNombre ?? '', caption: 'Jefe del Cooler — Firma', firma: firmaRealizo ?? null },
+          { label: 'Autorizó', nombre: autorizoNombre ?? '', caption: 'Gerente — Firma', firma: firmaVerifico ?? null },
         ]}
       />
     </Page>

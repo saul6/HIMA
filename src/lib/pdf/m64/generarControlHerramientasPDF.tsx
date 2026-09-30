@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { ControlHerramientasPDF, type ControlHerramientasRow } from './ControlHerramientasPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -43,16 +44,34 @@ function toRow(r: any): ControlHerramientasRow {
 
 export async function generarControlHerramientasPDF(id: string, orgId: string, codigoClave: string): Promise<void> {
   const r = await cargar(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M64', [id])
+  const firmasReg = firmasMapa[id]
   const blob = await pdf(
-    <ControlHerramientasPDF rows={[toRow(r)]} desde={r.fecha} hasta={r.fecha} codigoClave={codigoClave} />
+    <ControlHerramientasPDF
+      rows={[toRow(r)]}
+      desde={r.fecha}
+      hasta={r.fecha}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
   ).toBlob()
   descargar(blob, nombrePdf('Control_Herramientas', r.fecha))
 }
 
 export async function generarBlobControlHerramientas(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const r = await cargar(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M64', [id])
+  const firmasReg = firmasMapa[id]
   return pdf(
-    <ControlHerramientasPDF rows={[toRow(r)]} desde={r.fecha} hasta={r.fecha} codigoClave={codigoClave} />
+    <ControlHerramientasPDF
+      rows={[toRow(r)]}
+      desde={r.fecha}
+      hasta={r.fecha}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
   ).toBlob()
 }
 

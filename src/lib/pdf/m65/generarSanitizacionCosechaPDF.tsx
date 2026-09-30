@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { SanitizacionCosechaPDF, type SanitizacionCosechaRow } from './SanitizacionCosechaPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -44,16 +45,34 @@ function toRow(r: any): SanitizacionCosechaRow {
 
 export async function generarSanitizacionCosechaPDF(id: string, orgId: string, codigoClave: string): Promise<void> {
   const r = await cargar(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M65', [id])
+  const firmasReg = firmasMapa[id]
   const blob = await pdf(
-    <SanitizacionCosechaPDF rows={[toRow(r)]} desde={r.fecha} hasta={r.fecha} codigoClave={codigoClave} />
+    <SanitizacionCosechaPDF
+      rows={[toRow(r)]}
+      desde={r.fecha}
+      hasta={r.fecha}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
   ).toBlob()
   descargar(blob, nombrePdf('Sanitizacion_Cosecha', r.fecha))
 }
 
 export async function generarBlobSanitizacionCosecha(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const r = await cargar(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M65', [id])
+  const firmasReg = firmasMapa[id]
   return pdf(
-    <SanitizacionCosechaPDF rows={[toRow(r)]} desde={r.fecha} hasta={r.fecha} codigoClave={codigoClave} />
+    <SanitizacionCosechaPDF
+      rows={[toRow(r)]}
+      desde={r.fecha}
+      hasta={r.fecha}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
   ).toBlob()
 }
 

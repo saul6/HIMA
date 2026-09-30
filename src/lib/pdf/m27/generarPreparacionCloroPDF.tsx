@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { PreparacionCloroPDF, type PreparacionPDFRow } from './PreparacionCloroPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 interface GenerarProps {
   rancho: string
@@ -65,6 +66,8 @@ export async function generarBlobPreparacionCloro(id: string, orgId: string, cod
     responsable: r.responsable ?? null,
     observaciones: r.observaciones ?? null,
   }
+  const firmasMapa = await obtenerFirmasParaPdf('M27', [id])
+  const firmasReg = firmasMapa[id]
   return pdf(
     <PreparacionCloroPDF
       rancho={r.ranchos?.nombre ?? '—'}
@@ -72,6 +75,8 @@ export async function generarBlobPreparacionCloro(id: string, orgId: string, cod
       hasta={r.fecha}
       preparaciones={[row]}
       codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
     />
   ).toBlob()
 }

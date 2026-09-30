@@ -3,6 +3,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { PlanSueloPDF, PlanSueloPage, type PlanSueloItemRow } from './PlanSueloPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -54,6 +55,8 @@ async function cargarM59(id: string, orgId: string) {
 
 export async function generarPlanSueloPDF(id: string, orgId: string, _codigoClave: string): Promise<void> {
   const { reg, items } = await cargarM59(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M59', [id])
+  const firmasReg = firmasMapa[id]
   const blob = await pdf(
     <PlanSueloPDF
       rancho={reg.ranchos?.nombre ?? '—'}
@@ -61,6 +64,8 @@ export async function generarPlanSueloPDF(id: string, orgId: string, _codigoClav
       realizo={reg.realizo ?? null}
       observaciones={reg.observaciones ?? null}
       items={items}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
     />
   ).toBlob()
   descargar(blob, nombrePdf('PlanSuelo', reg.fecha))
@@ -68,6 +73,8 @@ export async function generarPlanSueloPDF(id: string, orgId: string, _codigoClav
 
 export async function generarBlobPlanSuelo(id: string, orgId: string, _codigoClave: string): Promise<Blob> {
   const { reg, items } = await cargarM59(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M59', [id])
+  const firmasReg = firmasMapa[id]
   return pdf(
     <PlanSueloPDF
       rancho={reg.ranchos?.nombre ?? '—'}
@@ -75,6 +82,8 @@ export async function generarBlobPlanSuelo(id: string, orgId: string, _codigoCla
       realizo={reg.realizo ?? null}
       observaciones={reg.observaciones ?? null}
       items={items}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
     />
   ).toBlob()
 }

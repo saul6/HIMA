@@ -10,6 +10,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -32,6 +33,8 @@ export interface OrdenMantenimientoPDFProps {
   recibe: string | null
   codigoClave: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -76,6 +79,7 @@ export function OrdenMantenimientoPDF({
   descripcion_solicitud, prioridad, solicita, recibe_mtto,
   equipo_produccion, lavado_sanitizado, observaciones,
   entrega_mtto, recibe, codigoClave, terminoSitio = 'Instalación',
+  firmaRealizo, firmaVerifico,
 }: OrdenMantenimientoPDFProps) {
   const emision   = new Date().toLocaleDateString('es-MX')
   const codigoFmt = codigoFormato('F-FRUS-MTT-01', codigoClave)
@@ -188,8 +192,8 @@ export function OrdenMantenimientoPDF({
         {/* Firmas */}
         <PdfSignatures
           signatures={[
-            { label: entrega_mtto ?? '', nombre: '', caption: 'Entrega en Mantenimiento' },
-            { label: recibe ?? '', nombre: '', caption: 'Recibe' },
+            { label: entrega_mtto ?? '', nombre: '', caption: 'Entrega en Mantenimiento', firma: firmaRealizo ?? null },
+            { label: recibe ?? '', nombre: '', caption: 'Recibe', firma: firmaVerifico ?? null },
           ]}
         />
       </Page>

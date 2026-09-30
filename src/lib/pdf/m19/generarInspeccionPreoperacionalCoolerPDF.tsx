@@ -8,6 +8,7 @@ import {
   type InspeccionPreoperacionalCoolerPaginaProps,
 } from './InspeccionPreoperacionalCoolerPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -117,7 +118,16 @@ export async function generarInspeccionPreoperacionalCoolerPDF(
   codigoClave: string,
 ): Promise<void> {
   const datos = await construirDatosPaginaM19(registroId, orgId)
-  const blob = await pdf(<InspeccionPreoperacionalCoolerPDF {...datos} codigoClave={codigoClave} />).toBlob()
+  const firmasMapa = await obtenerFirmasParaPdf('M19', [registroId])
+  const firmasReg = firmasMapa[registroId]
+  const blob = await pdf(
+    <InspeccionPreoperacionalCoolerPDF
+      {...datos}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
+  ).toBlob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

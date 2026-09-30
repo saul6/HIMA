@@ -6,6 +6,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface M41LecturaPDF {
   hora: number
@@ -56,7 +57,15 @@ const tdStyle = {
 const HORAS = Array.from({ length: 24 }, (_, i) => i + 1)
 const LABEL_W = 48
 
-export function TemperaturaConservadorPDF({ d, codigoClave, terminoSitio = 'Instalación' }: { d: M41RegistroDataPDF; codigoClave: string; terminoSitio?: string }) {
+export function TemperaturaConservadorPDF({
+  d, codigoClave, terminoSitio = 'Instalación', firmaRealizo, firmaVerifico,
+}: {
+  d: M41RegistroDataPDF
+  codigoClave: string
+  terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
+}) {
   const lecturaPorHora: Record<number, number | null> = {}
   for (const l of d.lecturas) lecturaPorHora[l.hora] = l.temperatura
 
@@ -137,8 +146,8 @@ export function TemperaturaConservadorPDF({ d, codigoClave, terminoSitio = 'Inst
 
         <PdfSignatures
           signatures={[
-            { label: '', nombre: '', caption: 'Responsable de la instalacion' },
-            { label: '', nombre: '', caption: 'Responsable de la empresa' },
+            { label: '', nombre: '', caption: 'Responsable de la instalacion', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Responsable de la empresa', firma: firmaVerifico ?? null },
           ]}
         />
       </Page>

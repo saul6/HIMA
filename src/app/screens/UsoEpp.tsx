@@ -14,6 +14,11 @@ import { generarUsoEppPDF, generarUsoEppConsolidadoPDF } from '@/lib/pdf/m63/gen
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -71,6 +76,10 @@ export function UsoEpp() {
   const { registros, loading, refetch } = useM63UsoEpp(orgId)
   const orgNombre = useOrganizacion(orgId)
 
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M63', todosIds)
+
   const [sheetOpen, setSheetOpen] = useState(false)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const [form, setForm] = useState<FormState>(FORM_VACIO)
@@ -78,9 +87,13 @@ export function UsoEpp() {
   const [pdfLoading, setPdfLoading] = useState<string | null>(null)
   const [consolidadoForm, setConsolidadoForm] = useState({ rancho_id: '', desde: hoyMX(), hasta: hoyMX() })
   const [exportando, setExportando] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
 
   function abrirNuevo() {
     setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX(), realizo: profile?.nombre_completo ?? '' })
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
+    setPendienteFirmaId(null)
     setSheetOpen(true)
   }
 
@@ -112,19 +125,16 @@ export function UsoEpp() {
         .single()
       if (error) throw error
 
-      setSheetOpen(false)
       await refetch()
       toast.success('Registro guardado')
-
-      try {
-        await generarUsoEppPDF(data.id, orgId, codigoClave)
-      } catch (e) {
-        toast.error('PDF no generado')
-        console.error(e)
-      }
+      setPendienteFirmaId(data.id as string)
+      setSheetPaso('firma_decision')
     } catch (e: any) {
       const msg: string = e?.message ?? 'Error al guardar'
-      if (msg.includes('FECHA_SOLO_HOY')) {
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+        return
+      } else if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
         toast.error(msg)
@@ -136,6 +146,10 @@ export function UsoEpp() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (obligatoria && !firmas[id]?.realizo) {
+      toast.info('Firma tu registro antes de generar el PDF')
+      return
+    }
     setPdfLoading(id)
     try {
       await generarUsoEppPDF(id, orgId, codigoClave)
@@ -250,6 +264,13 @@ export function UsoEpp() {
                   {r.observaciones && (
                     <p className="text-xs mt-1 text-muted-foreground leading-snug">{r.observaciones}</p>
                   )}
+                  <FirmasRegistro
+                    modulo="M63"
+                    registroId={r.id}
+                    firmas={firmas[r.id]}
+                    loading={loadingFirmas}
+                    onFirmado={refetchFirmas}
+                  />
                 </div>
                 <button
                   onClick={() => descargarPDF(r.id)}

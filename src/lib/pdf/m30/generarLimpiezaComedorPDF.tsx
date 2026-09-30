@@ -7,6 +7,7 @@ import {
   type ValorM30PDF,
   type LimpiezaComedorPaginaProps,
 } from './LimpiezaComedorPDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -82,6 +83,9 @@ export async function generarBlobLimpiezaComedor(id: string, orgId: string, codi
     }
   }
 
+  const firmasMapa = await obtenerFirmasParaPdf('M30', [id])
+  const firmasReg = firmasMapa[id]
+
   const props: LimpiezaComedorPaginaProps = {
     instalacion: (reg.ranchos as any)?.nombre ?? '—',
     instalacionCodigo: (reg.ranchos as any)?.codigo ?? '—',
@@ -94,5 +98,11 @@ export async function generarBlobLimpiezaComedor(id: string, orgId: string, codi
     codigoClave,
   }
 
-  return pdf(<LimpiezaComedorPDF {...props} />).toBlob()
+  return pdf(
+    <LimpiezaComedorPDF
+      {...props}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
+  ).toBlob()
 }

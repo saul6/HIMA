@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { GestionResiduosPDF, type GestionResiduosRow } from './GestionResiduosPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -40,17 +41,35 @@ function toRow(r: any): GestionResiduosRow {
 
 export async function generarGestionResiduosPDF(id: string, orgId: string, _codigoClave: string): Promise<void> {
   const r = await cargar(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M61', [id])
+  const firmasReg = firmasMapa[id]
   const rancho = r.ranchos?.nombre ?? '—'
   const blob = await pdf(
-    <GestionResiduosPDF rancho={rancho} desde={r.fecha} hasta={r.fecha} registros={[toRow(r)]} />
+    <GestionResiduosPDF
+      rancho={rancho}
+      desde={r.fecha}
+      hasta={r.fecha}
+      registros={[toRow(r)]}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
   ).toBlob()
   descargar(blob, nombrePdf('GestionResiduos', r.fecha))
 }
 
 export async function generarBlobGestionResiduos(id: string, orgId: string, _codigoClave: string): Promise<Blob> {
   const r = await cargar(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M61', [id])
+  const firmasReg = firmasMapa[id]
   return pdf(
-    <GestionResiduosPDF rancho={r.ranchos?.nombre ?? '—'} desde={r.fecha} hasta={r.fecha} registros={[toRow(r)]} />
+    <GestionResiduosPDF
+      rancho={r.ranchos?.nombre ?? '—'}
+      desde={r.fecha}
+      hasta={r.fecha}
+      registros={[toRow(r)]}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
   ).toBlob()
 }
 

@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { PDFDocument } from 'pdf-lib'
 import { supabase } from '@/lib/supabase'
 import { EntradasSalidasPreFrioPDF, type M40RegistroDataPDF, type M40LineaPDF } from './EntradasSalidasPreFrioPDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -38,6 +39,11 @@ export async function generarEntradasSalidasPreFrioConsolidadoPDF(
   if (!registros?.length) throw new Error('Sin registros en el rango seleccionado')
 
   const ids = (registros as any[]).map((r: any) => r.id)
+
+  const firmasMapa = ids.length > 0
+    ? await obtenerFirmasParaPdf('M40', ids)
+    : {}
+
   const { data: todasLineas, error: eLineas } = await (supabase as any)
     .from('m40_lineas')
     .select('*')
@@ -74,7 +80,15 @@ export async function generarEntradasSalidasPreFrioConsolidadoPDF(
       observaciones: r.observaciones ?? null,
       lineas: lineasPorRegistro[r.id] ?? [],
     }
-    const blob = await pdf(<EntradasSalidasPreFrioPDF d={d} codigoClave={codigoClave} />).toBlob()
+    const firmasR = firmasMapa[r.id]
+    const blob = await pdf(
+      <EntradasSalidasPreFrioPDF
+        d={d}
+        codigoClave={codigoClave}
+        firmaRealizo={firmasR?.realizo ? firmaDetalleAParaPdf(firmasR.realizo) : null}
+        firmaVerifico={firmasR?.verifico ? firmaDetalleAParaPdf(firmasR.verifico) : null}
+      />
+    ).toBlob()
     const bytes = await blob.arrayBuffer()
     const doc = await PDFDocument.load(bytes)
     const pages = await merged.copyPages(doc, doc.getPageIndices())

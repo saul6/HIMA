@@ -10,6 +10,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -42,6 +43,8 @@ interface Props {
   resultados: M46ResultadoPDF[]
   codigoClave: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -69,6 +72,7 @@ const tdStyle = { borderRightWidth: 1, borderRightColor: PC.border, borderBottom
 export function RondinesVigilanciaPDF({
   rancho, fecha, turno, vigilante, jefe_seguridad, observaciones,
   items, rondas, resultados, codigoClave, terminoSitio = 'Instalación',
+  firmaRealizo, firmaVerifico,
 }: Props) {
   const emision   = new Date().toLocaleDateString('es-MX')
   const codigoFmt = codigoFormato('F-FRUS-ADM-07', codigoClave)
@@ -195,8 +199,8 @@ export function RondinesVigilanciaPDF({
         <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
         <PdfSignatures
           signatures={[
-            { label: '', nombre: '', caption: 'Firma del vigilante' },
-            { label: '', nombre: '', caption: 'Jefe de Seguridad' },
+            { label: '', nombre: '', caption: 'Firma del vigilante', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Jefe de Seguridad', firma: firmaVerifico ?? null },
           ]}
         />
       </Page>

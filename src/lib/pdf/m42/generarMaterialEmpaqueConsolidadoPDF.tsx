@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { PDFDocument } from 'pdf-lib'
 import { supabase } from '@/lib/supabase'
 import { MaterialEmpaquePDF, type M42MovimientoPDF } from './MaterialEmpaquePDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -35,6 +36,11 @@ export async function generarMaterialEmpaqueConsolidadoPDF(
   if (error) throw error
   if (!movimientos?.length) throw new Error('Sin registros en el rango seleccionado')
 
+  const ids = (movimientos as any[]).map((r: any) => r.id)
+  const firmasMapa = ids.length > 0
+    ? await obtenerFirmasParaPdf('M42', ids)
+    : {}
+
   const merged = await PDFDocument.create()
   for (const r of movimientos as any[]) {
     const d: M42MovimientoPDF = {
@@ -62,7 +68,15 @@ export async function generarMaterialEmpaqueConsolidadoPDF(
       tr_otros: r.tr_otros ?? null,
       observaciones: r.observaciones ?? null,
     }
-    const blob = await pdf(<MaterialEmpaquePDF d={d} codigoClave={codigoClave} />).toBlob()
+    const firmasR = firmasMapa[r.id]
+    const blob = await pdf(
+      <MaterialEmpaquePDF
+        d={d}
+        codigoClave={codigoClave}
+        firmaRealizo={firmasR?.realizo ? firmaDetalleAParaPdf(firmasR.realizo) : null}
+        firmaVerifico={firmasR?.verifico ? firmaDetalleAParaPdf(firmasR.verifico) : null}
+      />
+    ).toBlob()
     const bytes = await blob.arrayBuffer()
     const doc = await PDFDocument.load(bytes)
     const pages = await merged.copyPages(doc, doc.getPageIndices())

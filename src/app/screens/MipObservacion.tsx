@@ -14,6 +14,11 @@ import { generarMipObservacionPDF, generarMipObservacionConsolidadoPDF } from '@
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -80,7 +85,13 @@ export function MipObservacion() {
   const { items } = useM54Items()
   const orgNombre = useOrganizacion(orgId)
 
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M54', todosIds)
+
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const [form, setForm] = useState<FormState>(FORM_VACIO)
   const [marcas, setMarcas] = useState<Record<string, Marcas>>({})
@@ -96,6 +107,8 @@ export function MipObservacion() {
     for (const item of items) { init[item.id] = { ...MARCAS_INIT } }
     setMarcas(init)
     setOtra({ texto: '', maleza: false, insectos: false, enfermedades: false, vertebrados: false, comentario: '' })
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetOpen(true)
   }
 
@@ -167,18 +180,16 @@ export function MipObservacion() {
         if (resErr) throw resErr
       }
 
-      setSheetOpen(false)
       await refetch()
       toast.success('MIP Observación registrado')
-
-      try {
-        await generarMipObservacionPDF(registroId, orgId, codigoClave)
-      } catch {
-        toast.error('PDF no generado')
-      }
+      setPendienteFirmaId(registroId)
+      setSheetPaso('firma_decision')
     } catch (e: any) {
       const msg: string = e?.message ?? 'Error al guardar'
-      if (msg.includes('FECHA_SOLO_HOY')) {
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+        return
+      } else if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
         toast.error(msg)
@@ -191,6 +202,7 @@ export function MipObservacion() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (obligatoria && !firmas[id]?.realizo) { toast.info('Firma el registro antes de generar el PDF'); return }
     setPdfLoading(id)
     try {
       await generarMipObservacionPDF(id, orgId, codigoClave)
@@ -223,6 +235,12 @@ export function MipObservacion() {
       setExportando(false)
     }
   }
+
+  const sheetTitle = sheetPaso === 'firma_gate'
+    ? 'Firma requerida'
+    : sheetPaso === 'firma_decision'
+    ? '¿Firmar registro?'
+    : 'Nuevo registro MIP Observación'
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -273,6 +291,9 @@ export function MipObservacion() {
                 </div>
                 <p className="text-xs text-muted-foreground">{formatFecha(r.fecha)}</p>
                 {r.producto && <p className="text-sm mt-1 text-muted-foreground">{r.producto}</p>}
+                {obligatoria && !firmas[r.id]?.realizo && (
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text">Pendiente de firma</span>
+                )}
               </div>
               <button
                 onClick={() => descargarPDF(r.id)}
@@ -285,6 +306,14 @@ export function MipObservacion() {
                 }
               </button>
             </div>
+            <FirmasRegistro
+              modulo="M54"
+              registroId={r.id}
+              fechaRegistro={r.fecha}
+              firma={firmas[r.id]}
+              loadingFirmas={loadingFirmas}
+              onFirmado={async () => { await refetch(); await refetchFirmas() }}
+            />
           </div>
         ))}
       </div>
@@ -293,164 +322,189 @@ export function MipObservacion() {
 
       <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
-          <h2 className="text-base font-semibold">Nuevo registro MIP Observación</h2>
+          <h2 className="text-base font-semibold">{sheetTitle}</h2>
           <button onClick={() => setSheetOpen(false)}>
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="overflow-y-auto flex-1 px-4 pt-4 pb-8 space-y-4">
 
-          <div>
-            <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
-            <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
-              value={form.rancho_id}
-              onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
-            >
-              <option value="">Selecciona...</option>
-              {ranchos.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
-            </select>
-          </div>
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+        )}
 
-          <div>
-            <label className="block text-xs font-medium mb-1">Fecha</label>
-            <input
-              type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
-              value={form.fecha}
-              min={puedeEditarFecha ? undefined : hoyMX()}
-              max={puedeEditarFecha ? undefined : hoyMX()}
-              onChange={e => { if (puedeEditarFecha) setForm(f => ({ ...f, fecha: e.target.value })) }}
-            />
-          </div>
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M54"
+            ids={[pendienteFirmaId]}
+            descripcion="MIP Observación registrado"
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              await generarMipObservacionPDF(pendienteFirmaId, profile?.org_id!, codigoClave)
+              setSheetOpen(false)
+              setSheetPaso('form')
+              await refetchFirmas()
+            }}
+            onDespues={!obligatoria ? () => { setSheetOpen(false); setSheetPaso('form') } : undefined}
+          />
+        )}
 
-          <div>
-            <label className="block text-xs font-medium mb-1">
-              Producto / Cultivo <span className="text-muted-foreground">(opcional)</span>
-            </label>
-            <input
-              type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
-              placeholder="Ej. Zarzamora, Tomate..."
-              value={form.producto}
-              onChange={e => setForm(f => ({ ...f, producto: e.target.value }))}
-            />
-          </div>
+        {sheetPaso === 'form' && (
+          <>
+            <div className="overflow-y-auto flex-1 px-4 pt-4 pb-8 space-y-4">
 
-          <div>
-            <label className="block text-xs font-medium mb-1">
-              Región <span className="text-muted-foreground">(opcional)</span>
-            </label>
-            <input
-              type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
-              placeholder="Ej. Norte, Sector A..."
-              value={form.region}
-              onChange={e => setForm(f => ({ ...f, region: e.target.value }))}
-            />
-          </div>
+              <div>
+                <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
+                <select
+                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  value={form.rancho_id}
+                  onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
+                >
+                  <option value="">Selecciona...</option>
+                  {ranchos.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
+                </select>
+              </div>
 
-          <div>
-            <label className="block text-xs font-medium mb-1">
-              Realizó <span className="text-muted-foreground">(opcional)</span>
-            </label>
-            <input
-              type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
-              placeholder="Nombre completo"
-              value={form.realizo}
-              onChange={e => setForm(f => ({ ...f, realizo: e.target.value }))}
-            />
-          </div>
+              <div>
+                <label className="block text-xs font-medium mb-1">Fecha</label>
+                <input
+                  type="date"
+                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  value={form.fecha}
+                  min={puedeEditarFecha ? undefined : hoyMX()}
+                  max={puedeEditarFecha ? undefined : hoyMX()}
+                  onChange={e => { if (puedeEditarFecha) setForm(f => ({ ...f, fecha: e.target.value })) }}
+                />
+              </div>
 
-          <div>
-            <label className="block text-xs font-medium mb-1">
-              Observaciones <span className="text-muted-foreground">(opcional)</span>
-            </label>
-            <textarea
-              rows={2}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
-              value={form.observaciones}
-              onChange={e => setForm(f => ({ ...f, observaciones: e.target.value }))}
-            />
-          </div>
+              <div>
+                <label className="block text-xs font-medium mb-1">
+                  Producto / Cultivo <span className="text-muted-foreground">(opcional)</span>
+                </label>
+                <input
+                  type="text"
+                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  placeholder="Ej. Zarzamora, Tomate..."
+                  value={form.producto}
+                  onChange={e => setForm(f => ({ ...f, producto: e.target.value }))}
+                />
+              </div>
 
-          {items.length > 0 && (
-            <div>
-              <p className="text-xs font-medium mb-1">Matriz de observación y monitoreo</p>
-              <p className="text-xs text-muted-foreground mb-3">
-                Marca los tipos de problema para cada técnica aplicada.
-              </p>
-              <div className="space-y-2">
-                {items.map(item => {
-                  const m = marcas[item.id] ?? MARCAS_INIT
-                  return (
-                    <div key={item.id} className="rounded-[0.625rem] border border-border bg-card p-3">
-                      <div className="flex items-start gap-2 mb-2">
-                        <span
-                          className="text-xs font-semibold shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white"
-                          style={{ backgroundColor: 'var(--muted-foreground)', fontSize: '10px' }}
-                        >
-                          {item.numero}
-                        </span>
-                        <p className="text-xs flex-1 leading-snug text-foreground">{item.texto}</p>
-                      </div>
+              <div>
+                <label className="block text-xs font-medium mb-1">
+                  Región <span className="text-muted-foreground">(opcional)</span>
+                </label>
+                <input
+                  type="text"
+                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  placeholder="Ej. Norte, Sector A..."
+                  value={form.region}
+                  onChange={e => setForm(f => ({ ...f, region: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium mb-1">
+                  Realizó <span className="text-muted-foreground">(opcional)</span>
+                </label>
+                <input
+                  type="text"
+                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  placeholder="Nombre completo"
+                  value={form.realizo}
+                  onChange={e => setForm(f => ({ ...f, realizo: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium mb-1">
+                  Observaciones <span className="text-muted-foreground">(opcional)</span>
+                </label>
+                <textarea
+                  rows={2}
+                  className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+                  value={form.observaciones}
+                  onChange={e => setForm(f => ({ ...f, observaciones: e.target.value }))}
+                />
+              </div>
+
+              {items.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium mb-1">Matriz de observación y monitoreo</p>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Marca los tipos de problema para cada técnica aplicada.
+                  </p>
+                  <div className="space-y-2">
+                    {items.map(item => {
+                      const m = marcas[item.id] ?? MARCAS_INIT
+                      return (
+                        <div key={item.id} className="rounded-[0.625rem] border border-border bg-card p-3">
+                          <div className="flex items-start gap-2 mb-2">
+                            <span
+                              className="text-xs font-semibold shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white"
+                              style={{ backgroundColor: 'var(--muted-foreground)', fontSize: '10px' }}
+                            >
+                              {item.numero}
+                            </span>
+                            <p className="text-xs flex-1 leading-snug text-foreground">{item.texto}</p>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5 mb-2">
+                            <ToggleBtn activo={m.maleza} label="Maleza" onToggle={() => toggleMarca(item.id, 'maleza')} />
+                            <ToggleBtn activo={m.insectos} label="Insectos" onToggle={() => toggleMarca(item.id, 'insectos')} />
+                            <ToggleBtn activo={m.enfermedades} label="Enfermedades" onToggle={() => toggleMarca(item.id, 'enfermedades')} />
+                            <ToggleBtn activo={m.vertebrados} label="Vertebrados" onToggle={() => toggleMarca(item.id, 'vertebrados')} />
+                          </div>
+                          <input
+                            type="text"
+                            className="w-full h-8 rounded-lg border border-border bg-input-background px-3 text-xs"
+                            placeholder="Comentario (opcional)"
+                            value={m.comentario}
+                            onChange={e => setMarcas(mp => ({ ...mp, [item.id]: { ...(mp[item.id] ?? MARCAS_INIT), comentario: e.target.value } }))}
+                          />
+                        </div>
+                      )
+                    })}
+
+                    <div className="rounded-[0.625rem] border border-border bg-card p-3">
+                      <p className="text-xs font-semibold mb-2 text-muted-foreground">Otra técnica (opcional)</p>
+                      <input
+                        type="text"
+                        className="w-full h-8 rounded-lg border border-border bg-input-background px-3 text-xs mb-2"
+                        placeholder="Describe la técnica..."
+                        value={otra.texto}
+                        onChange={e => setOtra(o => ({ ...o, texto: e.target.value }))}
+                      />
                       <div className="flex flex-wrap gap-1.5 mb-2">
-                        <ToggleBtn activo={m.maleza} label="Maleza" onToggle={() => toggleMarca(item.id, 'maleza')} />
-                        <ToggleBtn activo={m.insectos} label="Insectos" onToggle={() => toggleMarca(item.id, 'insectos')} />
-                        <ToggleBtn activo={m.enfermedades} label="Enfermedades" onToggle={() => toggleMarca(item.id, 'enfermedades')} />
-                        <ToggleBtn activo={m.vertebrados} label="Vertebrados" onToggle={() => toggleMarca(item.id, 'vertebrados')} />
+                        <ToggleBtn activo={otra.maleza} label="Maleza" onToggle={() => setOtra(o => ({ ...o, maleza: !o.maleza }))} />
+                        <ToggleBtn activo={otra.insectos} label="Insectos" onToggle={() => setOtra(o => ({ ...o, insectos: !o.insectos }))} />
+                        <ToggleBtn activo={otra.enfermedades} label="Enfermedades" onToggle={() => setOtra(o => ({ ...o, enfermedades: !o.enfermedades }))} />
+                        <ToggleBtn activo={otra.vertebrados} label="Vertebrados" onToggle={() => setOtra(o => ({ ...o, vertebrados: !o.vertebrados }))} />
                       </div>
                       <input
                         type="text"
                         className="w-full h-8 rounded-lg border border-border bg-input-background px-3 text-xs"
                         placeholder="Comentario (opcional)"
-                        value={m.comentario}
-                        onChange={e => setMarcas(mp => ({ ...mp, [item.id]: { ...(mp[item.id] ?? MARCAS_INIT), comentario: e.target.value } }))}
+                        value={otra.comentario}
+                        onChange={e => setOtra(o => ({ ...o, comentario: e.target.value }))}
                       />
                     </div>
-                  )
-                })}
-
-                <div className="rounded-[0.625rem] border border-border bg-card p-3">
-                  <p className="text-xs font-semibold mb-2 text-muted-foreground">Otra técnica (opcional)</p>
-                  <input
-                    type="text"
-                    className="w-full h-8 rounded-lg border border-border bg-input-background px-3 text-xs mb-2"
-                    placeholder="Describe la técnica..."
-                    value={otra.texto}
-                    onChange={e => setOtra(o => ({ ...o, texto: e.target.value }))}
-                  />
-                  <div className="flex flex-wrap gap-1.5 mb-2">
-                    <ToggleBtn activo={otra.maleza} label="Maleza" onToggle={() => setOtra(o => ({ ...o, maleza: !o.maleza }))} />
-                    <ToggleBtn activo={otra.insectos} label="Insectos" onToggle={() => setOtra(o => ({ ...o, insectos: !o.insectos }))} />
-                    <ToggleBtn activo={otra.enfermedades} label="Enfermedades" onToggle={() => setOtra(o => ({ ...o, enfermedades: !o.enfermedades }))} />
-                    <ToggleBtn activo={otra.vertebrados} label="Vertebrados" onToggle={() => setOtra(o => ({ ...o, vertebrados: !o.vertebrados }))} />
                   </div>
-                  <input
-                    type="text"
-                    className="w-full h-8 rounded-lg border border-border bg-input-background px-3 text-xs"
-                    placeholder="Comentario (opcional)"
-                    value={otra.comentario}
-                    onChange={e => setOtra(o => ({ ...o, comentario: e.target.value }))}
-                  />
                 </div>
-              </div>
-            </div>
-          )}
+              )}
 
-        </div>
-        <div className="px-4 pb-6 pt-3 border-t border-border">
-          <button
-            onClick={guardar}
-            disabled={guardando}
-            className="w-full h-11 rounded-[0.625rem] text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-            style={{ backgroundColor: 'var(--primary)' }}
-          >
-            {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar y generar PDF
-          </button>
-        </div>
+            </div>
+            <div className="px-4 pb-6 pt-3 border-t border-border">
+              <button
+                onClick={guardar}
+                disabled={guardando}
+                className="w-full h-11 rounded-[0.625rem] text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                style={{ backgroundColor: 'var(--primary)' }}
+              >
+                {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
+                Guardar
+              </button>
+            </div>
+          </>
+        )}
       </BottomSheet>
 
       <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}>

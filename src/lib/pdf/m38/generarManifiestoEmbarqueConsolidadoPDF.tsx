@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { PDFDocument } from 'pdf-lib'
 import { supabase } from '@/lib/supabase'
 import { ManifiestoEmbarquePDF, type M38ManifiestoDataPDF, type M38LineaPDF } from './ManifiestoEmbarquePDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -38,6 +39,11 @@ export async function generarManifiestoEmbarqueConsolidadoPDF(
   if (!manifiestos?.length) throw new Error('Sin manifiestos en el rango seleccionado')
 
   const ids = (manifiestos as any[]).map((m: any) => m.id)
+
+  const firmasMapa = ids.length > 0
+    ? await obtenerFirmasParaPdf('M38', ids)
+    : {}
+
   const { data: todasLineas, error: eLineas } = await (supabase as any)
     .from('m38_lineas')
     .select('*')
@@ -94,7 +100,15 @@ export async function generarManifiestoEmbarqueConsolidadoPDF(
       lineas: lineasPorManifiesto[m.id] ?? [],
       observaciones: m.observaciones ?? null,
     }
-    const blob = await pdf(<ManifiestoEmbarquePDF d={d} codigoClave={codigoClave} />).toBlob()
+    const firmasM = firmasMapa[m.id]
+    const blob = await pdf(
+      <ManifiestoEmbarquePDF
+        d={d}
+        codigoClave={codigoClave}
+        firmaRealizo={firmasM?.realizo ? firmaDetalleAParaPdf(firmasM.realizo) : null}
+        firmaVerifico={firmasM?.verifico ? firmaDetalleAParaPdf(firmasM.verifico) : null}
+      />
+    ).toBlob()
     const bytes = await blob.arrayBuffer()
     const doc = await PDFDocument.load(bytes)
     const pages = await merged.copyPages(doc, doc.getPageIndices())

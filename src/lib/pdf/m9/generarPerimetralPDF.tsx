@@ -4,6 +4,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { PerimetralPDF, type ItemPDFRow, type PerimetralPaginaProps } from './PerimetralPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function formatMesLabel(isoDate: string): string {
   try {
@@ -101,7 +102,15 @@ export async function generarPerimetralPDF(
   orgId: string,
 ): Promise<void> {
   const datos = await construirDatosPagina(registroId, orgId)
-  const blob = await pdf(<PerimetralPDF {...datos} />).toBlob()
+  const firmasMapa = await obtenerFirmasParaPdf('M9', [registroId])
+  const firmasReg = firmasMapa[registroId]
+  const blob = await pdf(
+    <PerimetralPDF
+      {...datos}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
+  ).toBlob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

@@ -11,6 +11,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PdfLegend } from '@/lib/pdf/components/PdfLegend'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -43,6 +44,8 @@ export interface RegistroPersonalPDFProps {
   capacitaciones: M47ItemPDF[]
   codigoClave: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -93,7 +96,7 @@ const tdStyle = { borderRightWidth: 1, borderRightColor: PC.border, borderBottom
 
 export function RegistroPersonalPDF({
   orgNombre, rancho, fechaPDF, trabajadores, documentos, capacitaciones,
-  codigoClave, terminoSitio = 'Instalación',
+  codigoClave, terminoSitio = 'Instalación', firmaRealizo, firmaVerifico,
 }: RegistroPersonalPDFProps) {
   const emision   = new Date().toLocaleDateString('es-MX')
   const codigoFmt = codigoFormato('F-FRUS-ADM-04', codigoClave)
@@ -311,8 +314,8 @@ export function RegistroPersonalPDF({
         <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
         <PdfSignatures
           signatures={[
-            { label: '', nombre: '', caption: 'Responsable de Recursos Humanos' },
-            { label: '', nombre: '', caption: 'Jefe de la instalacion' },
+            { label: '', nombre: '', caption: 'Responsable de Recursos Humanos', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Jefe de la instalacion', firma: firmaVerifico ?? null },
           ]}
         />
       </Page>

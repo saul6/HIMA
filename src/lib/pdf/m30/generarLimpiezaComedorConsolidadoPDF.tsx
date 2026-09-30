@@ -7,6 +7,7 @@ import {
   type M30DiaDataPDF,
   type ValorM30PDF,
 } from './LimpiezaComedorPDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -91,7 +92,19 @@ export async function generarLimpiezaComedorConsolidadoPDF(
 
   if (ids.length === 0) throw new Error('No hay registros en ese rango para la instalacion seleccionada')
 
-  const paginas = await Promise.all(ids.map((id) => construirPagina(id, orgId, codigoClave)))
+  const firmasMapa = ids.length > 0
+    ? await obtenerFirmasParaPdf('M30', ids)
+    : {}
+
+  const paginasBase = await Promise.all(ids.map((id) => construirPagina(id, orgId, codigoClave)))
+  const paginas = paginasBase.map((pagina, i) => {
+    const firmasReg = firmasMapa[ids[i]]
+    return {
+      ...pagina,
+      firmaRealizo: firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null,
+      firmaVerifico: firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null,
+    }
+  })
 
   const blob = await pdf(
     <LimpiezaComedorConsolidadoPDF

@@ -10,6 +10,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,8 @@ export interface InspeccionAlmacenEmpaquePaginaProps {
   accionesTomadas: Record<number, string>
   codigoClave: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 export interface InspeccionAlmacenEmpaqueConsolidadoPDFProps {
@@ -89,6 +92,7 @@ export function InspeccionAlmacenEmpaquePagina({
   realizadoPor, verifica, autoriza, observaciones,
   puntos, diasInspeccionados, matriz, accionesTomadas,
   codigoClave, terminoSitio = 'Instalación',
+  firmaRealizo, firmaVerifico,
 }: InspeccionAlmacenEmpaquePaginaProps) {
   const emision  = new Date().toLocaleDateString('es-MX')
   const codigoFmt = codigoFormato('F-FRUS-PRO-08', codigoClave)
@@ -102,8 +106,8 @@ export function InspeccionAlmacenEmpaquePagina({
     .sort(([a], [b]) => a - b)
 
   const firmas = [
-    { label: '', nombre: '', caption: realizadoPor ? `Realizado por: ${realizadoPor}` : 'Realizado por' },
-    { label: '', nombre: '', caption: verifica ? `Verifica: ${verifica}` : 'Verifica: Responsable del Almacen' },
+    { label: '', nombre: '', caption: realizadoPor ? `Realizado por: ${realizadoPor}` : 'Realizado por', firma: firmaRealizo ?? null },
+    { label: '', nombre: '', caption: verifica ? `Verifica: ${verifica}` : 'Verifica: Responsable del Almacen', firma: firmaVerifico ?? null },
     ...(autoriza ? [{ label: '', nombre: '', caption: `Autoriza: ${autoriza}` }] : []),
   ]
 

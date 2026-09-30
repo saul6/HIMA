@@ -6,6 +6,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface BasculaRow {
   fecha: string
@@ -27,6 +28,8 @@ interface Props {
   registros: BasculaRow[]
   codigoClave: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 const MARGIN = 20
@@ -74,6 +77,8 @@ export function CalibracionBasculasPDF({
   registros,
   codigoClave,
   terminoSitio = 'Sitio',
+  firmaRealizo,
+  firmaVerifico,
 }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
   const codigoFmt = codigoFormato('REG-05', codigoClave)
@@ -169,7 +174,10 @@ export function CalibracionBasculasPDF({
         )}
 
         <PdfSignatures
-          signatures={[{ label: '', nombre: '', caption: 'Verifico: Responsable técnico' }]}
+          signatures={[
+            { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Verifico: Responsable técnico', firma: firmaVerifico ?? null },
+          ]}
         />
       </Page>
     </Document>

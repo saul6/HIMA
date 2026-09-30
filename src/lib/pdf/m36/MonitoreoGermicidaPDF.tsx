@@ -6,6 +6,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface MonitoreoRow {
   fecha: string
@@ -24,6 +25,8 @@ interface Props {
   monitoreos: MonitoreoRow[]
   codigoClave: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 const MARGIN = 20
@@ -59,7 +62,7 @@ function fmtFecha(iso: string): string {
 
 const C = { FECHA: 55, TIPO: 105, USO: 105, PPM: 52, CORR: 100, PREP: 95 }
 
-export function MonitoreoGermicidaPDF({ rancho, orgNombre, desde, hasta, monitoreos, codigoClave, terminoSitio = 'Instalación' }: Props) {
+export function MonitoreoGermicidaPDF({ rancho, orgNombre, desde, hasta, monitoreos, codigoClave, terminoSitio = 'Instalación', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
   const codigoFmt = codigoFormato('F-FRUS-SAN-14', codigoClave)
 
@@ -142,7 +145,10 @@ export function MonitoreoGermicidaPDF({ rancho, orgNombre, desde, hasta, monitor
         </View>
 
         <PdfSignatures
-          signatures={[{ label: '', nombre: '', caption: 'Verifico: Responsable del cooler' }]}
+          signatures={[
+            { label: '', nombre: '', caption: 'Verifico: Responsable del cooler', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Verificó — Firma', firma: firmaVerifico ?? null },
+          ]}
         />
       </Page>
     </Document>

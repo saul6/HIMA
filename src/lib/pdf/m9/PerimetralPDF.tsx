@@ -12,6 +12,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfMonthlyMatrix } from '@/lib/pdf/components/PdfMonthlyMatrix'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -36,6 +37,8 @@ export interface PerimetralPaginaProps {
   folio?: string
   codigoClave?: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 export interface PerimetralConsolidadoPDFProps {
@@ -69,6 +72,7 @@ export function PerimetralPagina({
   tieneAlmacen, items, diasInspeccionados, matriz,
   observaciones, otro,
   folio, codigoClave = 'MXA', terminoSitio = 'Rancho',
+  firmaRealizo, firmaVerifico,
 }: PerimetralPaginaProps) {
   const emision = new Date().toLocaleDateString('es-MX')
   const codigoFmt = `${codigoClave}-F-SC-SIG`
@@ -131,8 +135,8 @@ export function PerimetralPagina({
 
       <PdfSignatures
         signatures={[
-          { label: 'Realizó el monitoreo', nombre: realizadoPor ?? '', caption: 'Firma' },
-          { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
+          { label: 'Realizó el monitoreo', nombre: realizadoPor ?? '', caption: 'Firma', firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
         ]}
       />
     </Page>

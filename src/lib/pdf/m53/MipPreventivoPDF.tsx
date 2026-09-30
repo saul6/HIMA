@@ -5,6 +5,7 @@ import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface MipItemRow {
   numero: number | null
@@ -26,6 +27,8 @@ export interface MipPreventivoPDFProps {
   observaciones: string | null
   items: MipItemRow[]
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 const MARGIN = 24
@@ -71,6 +74,8 @@ export function MipPreventivoPDFPage({
   observaciones,
   items,
   terminoSitio = 'Sitio',
+  firmaRealizo,
+  firmaVerifico,
 }: MipPreventivoPDFProps) {
   return (
     <Page
@@ -174,7 +179,10 @@ export function MipPreventivoPDFPage({
       </View>
 
       <PdfSignatures
-        signatures={[{ label: '', nombre: '', caption: 'Responsable de Inocuidad' }]}
+        signatures={[
+          { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
+        ]}
       />
     </Page>
   )

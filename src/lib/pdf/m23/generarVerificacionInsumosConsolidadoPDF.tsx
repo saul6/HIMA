@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { VerificacionInsumosConsolidadoPDF } from './VerificacionInsumosPDF'
 import { construirDatosPaginaM23 } from './generarVerificacionInsumosPDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -33,7 +34,20 @@ export async function generarVerificacionInsumosConsolidadoPDF(
   const ids = (data ?? []).map((r: any) => r.id as string)
   if (ids.length === 0) throw new Error('No hay registros en ese rango para la instalacion seleccionada')
 
-  const paginas = await Promise.all(ids.map((id) => construirDatosPaginaM23(id, orgId)))
+  const paginasBase = await Promise.all(ids.map((id) => construirDatosPaginaM23(id, orgId)))
+
+  const firmasMapa = ids.length > 0
+    ? await obtenerFirmasParaPdf('M23', ids)
+    : {}
+
+  const paginas = paginasBase.map((pagina, i) => {
+    const firmasJornada = firmasMapa[ids[i]]
+    return {
+      ...pagina,
+      firmaRealizo: firmasJornada?.realizo ? firmaDetalleAParaPdf(firmasJornada.realizo) : null,
+      firmaVerifico: firmasJornada?.verifico ? firmaDetalleAParaPdf(firmasJornada.verifico) : null,
+    }
+  })
 
   const desdeSlug = slugify(desdeYYYYMM)
   const hastaSlug = slugify(hastaYYYYMM)

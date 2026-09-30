@@ -11,6 +11,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfTable, PdfTableRow, PdfTableCell } from '@/lib/pdf/components/PdfTable'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface FertilizacionPDFProps {
   folio: string
@@ -30,6 +31,8 @@ export interface FertilizacionPDFProps {
   }[]
   codigoClave?: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 export interface FertilizacionConsolidadoPDFProps {
@@ -64,6 +67,7 @@ function formatFechaPDF(iso: string): string {
 export function FertilizacionPagina({
   folio, rancho, ranchoCodigo, fecha, sector, responsableNombre, fertilizantes,
   codigoClave = 'MXA', terminoSitio = 'Rancho',
+  firmaRealizo, firmaVerifico,
 }: FertilizacionPDFProps) {
   const emision = new Date().toLocaleDateString('es-MX')
   const codigoFmt = `${codigoClave}-F-SC-SIG`
@@ -120,8 +124,8 @@ export function FertilizacionPagina({
           <PdfSectionBanner>3. FIRMAS Y RESPONSABLES</PdfSectionBanner>
           <PdfSignatures
             signatures={[
-              { label: 'Realizó la aplicación', nombre: responsableNombre, caption: 'Firma' },
-              { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
+              { label: 'Realizó la aplicación', nombre: responsableNombre, caption: 'Firma', firma: firmaRealizo ?? null },
+              { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
             ]}
           />
 

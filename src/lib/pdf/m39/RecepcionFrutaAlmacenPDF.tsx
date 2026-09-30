@@ -9,6 +9,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface M39LineaAlmacenPDF {
   orden: number
@@ -66,10 +67,13 @@ const TD = {
 
 export function RecepcionFrutaAlmacenPDF({
   d, codigoClave, terminoSitio = 'Instalación',
+  firmaRealizo, firmaVerifico,
 }: {
   d: M39RecepcionAlmacenDataPDF
   codigoClave: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }) {
   const emision    = new Date().toLocaleDateString('es-MX')
   const codigoFmt  = codigoFormato('F-FRUS-PRO-02', codigoClave)
@@ -240,8 +244,8 @@ export function RecepcionFrutaAlmacenPDF({
         <PdfSectionBanner>4. Firmas y responsables</PdfSectionBanner>
         <PdfSignatures
           signatures={[
-            { label: '', nombre: '', caption: 'Responsable de Empaque — Firma' },
-            { label: '', nombre: '', caption: 'Responsable de la Empresa — Firma' },
+            { label: '', nombre: '', caption: 'Responsable de Empaque — Firma', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Responsable de la Empresa — Firma', firma: firmaVerifico ?? null },
           ]}
         />
       </Page>

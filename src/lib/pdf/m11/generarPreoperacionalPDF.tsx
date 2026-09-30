@@ -4,6 +4,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { PreoperacionalPDF, type M11ItemPDFRow, type PreoperacionalPaginaProps } from './PreoperacionalPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function formatMesLabel(isoDate: string): string {
   try {
@@ -109,7 +110,15 @@ export async function generarPreoperacionalPDF(
   orgId: string,
 ): Promise<void> {
   const datos = await construirDatosPagina(registroId, orgId)
-  const blob = await pdf(<PreoperacionalPDF {...datos} />).toBlob()
+  const firmasMapa = await obtenerFirmasParaPdf('M11', [registroId])
+  const firmasReg = firmasMapa[registroId]
+  const blob = await pdf(
+    <PreoperacionalPDF
+      {...datos}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
+  ).toBlob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

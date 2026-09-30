@@ -5,6 +5,7 @@ import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface FertilizacionGGRow {
   fecha: string
@@ -30,6 +31,8 @@ interface Props {
   hasta: string
   registros: FertilizacionGGRow[]
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 const MARGIN = 20
@@ -83,7 +86,7 @@ const tdStyle = {
 const TH_TEXT = { fontFamily: 'Helvetica-Bold' as const, fontSize: 6, color: PC.white }
 const TD_TEXT = { fontSize: 6.5, color: PC.fieldValue }
 
-export function FertilizacionGGPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Rancho' }: Props) {
+export function FertilizacionGGPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Rancho', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
 
   return (
@@ -158,7 +161,10 @@ export function FertilizacionGGPDF({ rancho, orgNombre, desde, hasta, registros,
         </View>
 
         <PdfSignatures
-          signatures={[{ label: '', nombre: '', caption: 'Responsable de Inocuidad' }]}
+          signatures={[
+            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
+          ]}
         />
       </Page>
     </Document>

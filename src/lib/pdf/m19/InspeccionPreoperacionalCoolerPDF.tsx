@@ -12,6 +12,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfMonthlyMatrix } from '@/lib/pdf/components/PdfMonthlyMatrix'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -35,6 +36,8 @@ export interface InspeccionPreoperacionalCoolerPaginaProps {
   codigoClave?: string
   terminoSitio?: string
   folio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 export interface InspeccionPreoperacionalCoolerConsolidadoPDFProps {
@@ -67,6 +70,7 @@ export function InspeccionPreoperacionalCoolerPagina({
   instalacion, instalacionCodigo, mesLabel, mesDate, realizadoPor,
   items, diasInspeccionados, matriz, codigosCorrectivos, observaciones,
   codigoClave = 'MXA', terminoSitio = 'Instalación', folio,
+  firmaRealizo, firmaVerifico,
 }: InspeccionPreoperacionalCoolerPaginaProps) {
   const emision = new Date().toLocaleDateString('es-MX')
   const codigoFmt = `${codigoClave}-F-SC-SIG`
@@ -142,8 +146,8 @@ export function InspeccionPreoperacionalCoolerPagina({
 
       <PdfSignatures
         signatures={[
-          { label: 'Realizó la inspección', nombre: realizadoPor ?? '', caption: 'Firma' },
-          { label: '', nombre: '', caption: 'Verificó: Responsable del Cooler — Firma' },
+          { label: 'Realizó la inspección', nombre: realizadoPor ?? '', caption: 'Firma', firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Verificó: Responsable del Cooler — Firma', firma: firmaVerifico ?? null },
         ]}
       />
     </Page>

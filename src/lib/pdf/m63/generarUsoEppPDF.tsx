@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { UsoEppPDF, type UsoEppRow } from './UsoEppPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -43,16 +44,34 @@ function toRow(r: any): UsoEppRow {
 
 export async function generarUsoEppPDF(id: string, orgId: string, codigoClave: string): Promise<void> {
   const r = await cargar(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M63', [id])
+  const firmasReg = firmasMapa[id]
   const blob = await pdf(
-    <UsoEppPDF rows={[toRow(r)]} desde={r.fecha} hasta={r.fecha} codigoClave={codigoClave} />
+    <UsoEppPDF
+      rows={[toRow(r)]}
+      desde={r.fecha}
+      hasta={r.fecha}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
   ).toBlob()
   descargar(blob, nombrePdf('Uso_EPP', r.fecha))
 }
 
 export async function generarBlobUsoEpp(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const r = await cargar(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M63', [id])
+  const firmasReg = firmasMapa[id]
   return pdf(
-    <UsoEppPDF rows={[toRow(r)]} desde={r.fecha} hasta={r.fecha} codigoClave={codigoClave} />
+    <UsoEppPDF
+      rows={[toRow(r)]}
+      desde={r.fecha}
+      hasta={r.fecha}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
   ).toBlob()
 }
 

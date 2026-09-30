@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { MonitoreoGermicidaPDF, type MonitoreoRow } from './MonitoreoGermicidaPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -36,8 +37,18 @@ export async function generarMonitoreoGermicidaPDF(id: string, orgId: string, co
     correccion: r.correccion ?? null,
     preparado_por: r.preparado_por,
   }
+  const firmasMapa = await obtenerFirmasParaPdf('M36', [id])
+  const firmasReg = firmasMapa[id]
   const blob = await pdf(
-    <MonitoreoGermicidaPDF rancho={rancho} desde={r.fecha} hasta={r.fecha} monitoreos={[row]} codigoClave={codigoClave} />
+    <MonitoreoGermicidaPDF
+      rancho={rancho}
+      desde={r.fecha}
+      hasta={r.fecha}
+      monitoreos={[row]}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
   ).toBlob()
   descargar(blob, nombrePdf('Monitoreo_Solucion_Germicida', r.fecha, rancho))
 }
@@ -52,7 +63,17 @@ export async function generarBlobMonitoreoGermicida(id: string, orgId: string, c
     correccion: r.correccion ?? null,
     preparado_por: r.preparado_por,
   }
+  const firmasMapa = await obtenerFirmasParaPdf('M36', [id])
+  const firmasReg = firmasMapa[id]
   return pdf(
-    <MonitoreoGermicidaPDF rancho={r.ranchos?.nombre ?? '—'} desde={r.fecha} hasta={r.fecha} monitoreos={[row]} codigoClave={codigoClave} />
+    <MonitoreoGermicidaPDF
+      rancho={r.ranchos?.nombre ?? '—'}
+      desde={r.fecha}
+      hasta={r.fecha}
+      monitoreos={[row]}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
   ).toBlob()
 }

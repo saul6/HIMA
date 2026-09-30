@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { MonitoreoGermicidaPDF, type MonitoreoRow } from './MonitoreoGermicidaPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -46,6 +47,15 @@ export async function generarMonitoreoGermicidaConsolidadoPDF(
     preparado_por: r.preparado_por,
   }))
 
+  const ids = (data as any[]).map(r => r.id as string)
+  const firmasMapa = ids.length > 0
+    ? await obtenerFirmasParaPdf('M36', ids)
+    : {}
+
+  const primeraFirma = ids.length > 0 ? firmasMapa[ids[0]] : undefined
+  const firmaRealizo = primeraFirma?.realizo ? firmaDetalleAParaPdf(primeraFirma.realizo) : null
+  const firmaVerifico = primeraFirma?.verifico ? firmaDetalleAParaPdf(primeraFirma.verifico) : null
+
   const blob = await pdf(
     <MonitoreoGermicidaPDF
       rancho={ranchoNombre}
@@ -54,6 +64,8 @@ export async function generarMonitoreoGermicidaConsolidadoPDF(
       hasta={hasta}
       monitoreos={monitoreos}
       codigoClave={codigoClave ?? 'FRUS'}
+      firmaRealizo={firmaRealizo}
+      firmaVerifico={firmaVerifico}
     />
   ).toBlob()
   descargar(blob, nombrePdf('Monitoreo_Solucion_Germicida_consolidado', `${desde}_${hasta}`, ranchoNombre))

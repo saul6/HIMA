@@ -10,6 +10,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface M45ItemPDFRow {
   id: string
@@ -42,6 +43,8 @@ export interface M45PaginaProps {
   acciones: Record<string, M45AccionesPDF>
   codigoClave: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 export interface MttoPreventivoConsolidadoPDFProps {
@@ -151,6 +154,7 @@ const colHdrText = { fontSize: 5, fontFamily: 'Helvetica-Bold', color: PC.white,
 function MttoPreventivoPaginaContent({
   instalacion, instalacionCodigo, anio, mes, mesLabel, observaciones,
   areas, resultados, acciones, codigoClave, terminoSitio = 'Instalación',
+  firmaRealizo, firmaVerifico,
 }: M45PaginaProps) {
   const codigoFmt = codigoFormato('F-FRUS-MTT-03', codigoClave)
   const dias = diasDelMes(anio, mes)
@@ -319,8 +323,8 @@ function MttoPreventivoPaginaContent({
       <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
       <PdfSignatures
         signatures={[
-          { label: '', nombre: '', caption: 'Responsable del Area' },
-          { label: '', nombre: '', caption: 'Jefe de Mantenimiento' },
+          { label: '', nombre: '', caption: 'Responsable del Area', firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Jefe de Mantenimiento', firma: firmaVerifico ?? null },
           { label: '', nombre: '', caption: 'Gerente de Operaciones' },
         ]}
       />

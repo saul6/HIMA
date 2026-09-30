@@ -13,6 +13,7 @@ import {
   EstacionResultadoPDF,
 } from './MonitoreoEstacionesPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Orden y etiquetas por tipo de trampa ──────────────────────────────────────
 
@@ -130,7 +131,16 @@ export async function generarMonitoreoEstacionesPDF(
   codigoClave: string,
 ): Promise<void> {
   const datos = await construirDatosM21(revisionId, orgId)
-  const blob = await pdf(<MonitoreoEstacionesPDF {...datos} codigoClave={codigoClave} />).toBlob()
+  const firmasMapa = await obtenerFirmasParaPdf('M21', [revisionId])
+  const firmasReg = firmasMapa[revisionId]
+  const blob = await pdf(
+    <MonitoreoEstacionesPDF
+      {...datos}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
+  ).toBlob()
 
   const filename = nombrePdf('Monitoreo_Plagas', datos.fecha, datos.instalacion)
 
@@ -150,5 +160,14 @@ export async function generarBlobMonitoreoEstaciones(
   codigoClave: string,
 ): Promise<Blob> {
   const datos = await construirDatosM21(revisionId, orgId)
-  return pdf(<MonitoreoEstacionesPDF {...datos} codigoClave={codigoClave} />).toBlob()
+  const firmasMapa = await obtenerFirmasParaPdf('M21', [revisionId])
+  const firmasReg = firmasMapa[revisionId]
+  return pdf(
+    <MonitoreoEstacionesPDF
+      {...datos}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
+  ).toBlob()
 }

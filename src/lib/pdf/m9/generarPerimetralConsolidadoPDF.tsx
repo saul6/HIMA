@@ -4,6 +4,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { PerimetralConsolidadoPDF } from './PerimetralPDF'
 import { construirDatosPagina } from './generarPerimetralPDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function slugify(s: string): string {
   return s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
@@ -34,7 +35,23 @@ export async function generarPerimetralConsolidadoPDF(
   const ids = (data ?? []).map((r: any) => r.id as string)
   if (ids.length === 0) throw new Error('No hay registros en ese rango para el rancho seleccionado')
 
-  const paginas = await Promise.all(ids.map((id) => construirDatosPagina(id, orgId)))
+  // Obtener firmas para todos los registros mensuales (cada uno es representativo de su mes)
+  const firmasMapa = ids.length > 0
+    ? await obtenerFirmasParaPdf('M9', ids)
+    : {}
+
+  const paginasBases = await Promise.all(ids.map((id) => construirDatosPagina(id, orgId)))
+
+  // Mapear firmas a cada página usando el ID del registro mensual
+  const paginas = paginasBases.map((pagina, idx) => {
+    const registroId = ids[idx]
+    const firmasRegistro = registroId ? firmasMapa[registroId] : undefined
+    return {
+      ...pagina,
+      firmaRealizo: firmasRegistro?.realizo ? firmaDetalleAParaPdf(firmasRegistro.realizo) : null,
+      firmaVerifico: firmasRegistro?.verifico ? firmaDetalleAParaPdf(firmasRegistro.verifico) : null,
+    }
+  })
 
   const desdeSlug = slugify(desdeYYYYMM)
   const hastaSlug = slugify(hastaYYYYMM)

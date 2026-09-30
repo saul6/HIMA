@@ -11,6 +11,7 @@ import { PdfTable, PdfTableRow, PdfTableCell } from '@/lib/pdf/components/PdfTab
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -31,6 +32,8 @@ export interface PreparacionCloroPaginaProps {
   preparaciones: PreparacionPDFRow[]
   codigoClave: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -57,6 +60,7 @@ const W_OBS   = 89
 
 export function PreparacionCloroPagina({
   rancho, orgNombre, desde, hasta, preparaciones, codigoClave, terminoSitio = 'Instalación',
+  firmaRealizo, firmaVerifico,
 }: PreparacionCloroPaginaProps) {
   const emision = new Date().toLocaleDateString('es-MX')
   const codigoFmt = codigoFormato('F-FRUS-SAN-03', codigoClave)
@@ -139,8 +143,8 @@ export function PreparacionCloroPagina({
           <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
           <PdfSignatures
             signatures={[
-              { label: 'Elaboro', nombre: '', caption: 'Firma' },
-              { label: '', nombre: '', caption: 'Verifico — Responsable de Inocuidad — Firma' },
+              { label: 'Elaboro', nombre: '', caption: 'Firma', firma: firmaRealizo ?? null },
+              { label: '', nombre: '', caption: 'Verifico — Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
             ]}
           />
 

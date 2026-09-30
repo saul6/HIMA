@@ -632,51 +632,11 @@ export function RegistroFertilizacion() {
 
     setGenerandoConsolidado(true)
     try {
-      const { data, error } = await supabase
-        .from('m8_fertilizacion')
-        .select('*, ranchos(nombre, codigo)')
-        .eq('org_id', profile.org_id)
-        .eq('rancho_id', consRanchoId)
-        .gte('fecha', consDesde)
-        .lte('fecha', consHasta)
-        .order('fecha', { ascending: true })
-        .order('created_at', { ascending: true })
-
-      if (error) throw error
-      if (!data || data.length === 0) {
-        toast.warning(`No hay registros en ese rango para ${terminosSitio.genero === 'f' ? 'la' : 'el'} ${terminosSitio.singular.toLowerCase()} seleccionado${terminosSitio.genero === 'f' ? 'a' : ''}`)
-        return
-      }
-
       const rancho = ranchos.find((r) => r.id === consRanchoId)
       const ranchoNombre = rancho?.nombre ?? 'Rancho'
 
-      const grouped = new Map<string, FertilizacionPDFProps>()
-      for (const row of data as any[]) {
-        if (!grouped.has(row.fecha)) {
-          grouped.set(row.fecha, {
-            folio: (row.id as string).slice(0, 8).toUpperCase(),
-            rancho: row.ranchos?.nombre ?? ranchoNombre,
-            ranchoCodigo: row.ranchos?.codigo ?? rancho?.codigo ?? '—',
-            fecha: row.fecha,
-            sector: row.sector,
-            responsableNombre: profile.nombre_completo,
-            fertilizantes: [],
-          })
-        }
-        grouped.get(row.fecha)!.fertilizantes.push({
-          nombre_comercial: row.nombre_comercial,
-          ingrediente_activo: row.ingrediente_activo,
-          concentracion: row.concentracion,
-          metodo: row.metodo,
-          superficie_ha: row.superficie_ha,
-          dosis_kg_l_ha: row.dosis_kg_l_ha,
-          cantidad_total: row.cantidad_total,
-        })
-      }
-
       await generarFertilizacionConsolidadoPDF(
-        Array.from(grouped.values()), ranchoNombre, consDesde, consHasta
+        consRanchoId, ranchoNombre, profile.org_id, consDesde, consHasta
       )
       setSheetConsolidadoAbierto(false)
     } catch (err: unknown) {

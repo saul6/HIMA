@@ -5,6 +5,7 @@ import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface M38LineaPDF {
   orden: number
@@ -96,10 +97,14 @@ export function ManifiestoEmbarquePDF({
   d,
   codigoClave,
   terminoSitio = 'Instalación',
+  firmaRealizo,
+  firmaVerifico,
 }: {
   d: M38ManifiestoDataPDF
   codigoClave: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }) {
   const codigoFmt = codigoFormato('F-FRUS-PRO-01', codigoClave)
 
@@ -289,8 +294,8 @@ export function ManifiestoEmbarquePDF({
         {/* Firmas */}
         <PdfSignatures
           signatures={[
-            { label: 'Responsable de la instalacion' },
-            { label: 'Responsable de la empresa' },
+            { label: 'Responsable de la instalacion', firma: firmaRealizo ?? null },
+            { label: 'Responsable de la empresa', firma: firmaVerifico ?? null },
             { label: 'Firma del chofer' },
           ]}
         />

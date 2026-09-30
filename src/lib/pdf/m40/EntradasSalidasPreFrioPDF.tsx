@@ -5,6 +5,7 @@ import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface M40LineaPDF {
   orden: number
@@ -70,7 +71,14 @@ const ROW_ALT = '#F5F9FE'
 
 const W = { cuarto: 60, fruta: 60, pres: 55, tar: 28, restos: 40, hora: 30, temp: 28, tiempo: 34 }
 
-export function EntradasSalidasPreFrioPDF({ d, codigoClave }: { d: M40RegistroDataPDF; codigoClave: string }) {
+export function EntradasSalidasPreFrioPDF({
+  d, codigoClave, firmaRealizo, firmaVerifico,
+}: {
+  d: M40RegistroDataPDF
+  codigoClave: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
+}) {
   const codigoFmt = codigoFormato('F-FRUS-PRO-04', codigoClave)
 
   return (
@@ -142,8 +150,8 @@ export function EntradasSalidasPreFrioPDF({ d, codigoClave }: { d: M40RegistroDa
         {/* Firmas */}
         <PdfSignatures
           signatures={[
-            { label: 'Responsable de la instalacion' },
-            { label: 'Responsable de la empresa' },
+            { label: 'Responsable de la instalacion', firma: firmaRealizo ?? null },
+            { label: 'Responsable de la empresa', firma: firmaVerifico ?? null },
           ]}
         />
 

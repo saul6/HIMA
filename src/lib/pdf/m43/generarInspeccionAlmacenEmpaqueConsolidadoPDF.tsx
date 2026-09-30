@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { InspeccionAlmacenEmpaqueConsolidadoPDF } from './InspeccionAlmacenEmpaquePDF'
 import { construirDatosPaginaM43 } from './generarInspeccionAlmacenEmpaquePDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 export async function generarInspeccionAlmacenEmpaqueConsolidadoPDF(
   ranchoId: string,
@@ -34,9 +35,24 @@ export async function generarInspeccionAlmacenEmpaqueConsolidadoPDF(
   })
   if (!filtrados.length) throw new Error('Sin registros en el rango seleccionado')
 
-  const paginas = await Promise.all(
+  const paginasBase = await Promise.all(
     filtrados.map((r: any) => construirDatosPaginaM43(r.id, orgId, codigoClave))
   )
+
+  const idsRepresentativos = filtrados.map((r: any) => r.id as string)
+  const firmasMapa = idsRepresentativos.length > 0
+    ? await obtenerFirmasParaPdf('M43', idsRepresentativos)
+    : {}
+
+  const paginas = paginasBase.map((pagina, idx) => {
+    const registroId = filtrados[idx].id as string
+    const firmasR = firmasMapa[registroId]
+    return {
+      ...pagina,
+      firmaRealizo: firmasR?.realizo ? firmaDetalleAParaPdf(firmasR.realizo) : null,
+      firmaVerifico: firmasR?.verifico ? firmaDetalleAParaPdf(firmasR.verifico) : null,
+    }
+  })
 
   const blob = await pdf(
     <InspeccionAlmacenEmpaqueConsolidadoPDF

@@ -6,6 +6,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import { codigoFormato } from '@/lib/codigoFormato'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface SanitizacionCosechaRow {
   fecha: string
@@ -29,6 +30,8 @@ interface Props {
   hasta: string
   codigoClave: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 const MARGIN = 20
@@ -64,7 +67,7 @@ const ROW_ALT = '#F5F9FE'
 
 const C = { FECHA: 50, RANCHO: 65, SECT: 65, EG: 45, TON: 38, CAN: 38, HERR: 45, PROD: 90, PPM: 38, HORA: 38, REAL: 75 }
 
-export function SanitizacionCosechaPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoSitio = 'Instalacion' }: Props) {
+export function SanitizacionCosechaPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoSitio = 'Instalacion', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
   const codigoFmt = codigoFormato('M65-SAN-COS', codigoClave)
 
@@ -175,7 +178,10 @@ export function SanitizacionCosechaPDF({ rows, orgNombre, desde, hasta, codigoCl
         </View>
 
         <PdfSignatures
-          signatures={[{ label: '', nombre: '', caption: 'Verifico: Responsable de Inocuidad' }]}
+          signatures={[
+            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Verifico: Responsable de Inocuidad', firma: firmaVerifico ?? null },
+          ]}
         />
       </Page>
     </Document>

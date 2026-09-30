@@ -23,6 +23,12 @@ import { Button } from '@/app/components/ui/button'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import {
+  useFirmasRegistro,
+} from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -137,11 +143,19 @@ function AccidenteCard({
   onPDF,
   cargandoPDF,
   orgNombre,
+  obligatoria,
+  firmas,
+  loadingFirmas,
+  onFirmado,
 }: {
   acc: M20AccidenteConFotos
   onPDF: (id: string) => void
   cargandoPDF: string | null
   orgNombre: string | null
+  obligatoria: boolean
+  firmas: Record<string, any>
+  loadingFirmas: boolean
+  onFirmado: () => Promise<void>
 }) {
   const fotoPaths = acc.fotos.map((f) => f.storage_path)
 
@@ -212,7 +226,20 @@ function AccidenteCard({
             Producto involucrado
           </span>
         )}
+        {obligatoria && !firmas[acc.id]?.realizo && (
+          <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text">
+            Pendiente de firma
+          </span>
+        )}
       </div>
+      <FirmasRegistro
+        modulo="M20"
+        registroId={acc.id}
+        fechaRegistro={acc.fecha}
+        firma={firmas[acc.id]}
+        loadingFirmas={loadingFirmas}
+        onFirmado={onFirmado}
+      />
     </div>
   )
 }
@@ -267,8 +294,16 @@ export function RegistroAccidentesLaborales() {
   const { accidentes, loading, error, refetch } = useM20Accidentes()
   const orgNombre = useOrganizacion(profile?.org_id)
 
+  const { obligatoria } = useFirmaContext()
+
+  // Firmas
+  const todosIds = accidentes.map(a => a.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M20', todosIds)
+
   // Sheets
   const [sheetNuevo, setSheetNuevo] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'form' | 'firma_decision'>('form')
+  const [pendienteFirma, setPendienteFirma] = useState<{ ids: string[] } | null>(null)
   const [sheetConsolidado, setSheetConsolidado] = useState(false)
 
   // Form
@@ -402,18 +437,13 @@ export function RegistroAccidentesLaborales() {
           .insert({ accidente_id: accidenteId, org_id: profile.org_id, storage_path: path, orden: i })
       }
 
-      // 3. Refetch + PDF + cierre
+      // 3. Refetch + cierre + transición firma
       await refetch()
       toast.success('Accidente registrado')
-      setSheetNuevo(false)
       setForm(FORM_INICIAL)
       setFotosLocal([])
-
-      try {
-        await generarAccidenteLaboralPDF(accidenteId, profile.org_id)
-      } catch {
-        toast.warning('Registro guardado. No se pudo generar el PDF automáticamente.')
-      }
+      setPendienteFirma({ ids: [accidenteId] })
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       // Rollback
       if (pathsSubidos.length > 0) {
@@ -424,7 +454,9 @@ export function RegistroAccidentesLaborales() {
         ;(supabase as any).from('m20_accidentes').delete().eq('id', accidenteId).then(() => {})
       }
       const msg = e instanceof Error ? e.message : 'Error al guardar el registro'
-      if (msg.includes('FECHA_SOLO_HOY')) {
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('form')
+      } else if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
         toast.error(msg)

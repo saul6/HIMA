@@ -10,6 +10,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -47,6 +48,8 @@ export interface AccidenteLaboralPaginaProps {
   disposicionProducto: string | null
   dataUris: string[]              // data URIs base64, puede ser vacío
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 export interface AccidenteLaboralConsolidadoPDFProps {
@@ -95,6 +98,8 @@ export function AccidenteLaboralPagina({
   disposicionProducto,
   dataUris,
   terminoSitio = 'Instalación',
+  firmaRealizo,
+  firmaVerifico,
 }: AccidenteLaboralPaginaProps) {
   const emision   = new Date().toLocaleDateString('es-MX')
   const codigoFmt = codigoFormato('F-FRUS-CAL-15', codigoClave)
@@ -273,8 +278,8 @@ export function AccidenteLaboralPagina({
       {/* Firmas */}
       <PdfSignatures
         signatures={[
-          { label: '', nombre: '', caption: 'Firma del Jefe de Seguridad' },
-          { label: '', nombre: '', caption: 'Firma del Jefe del Cooler' },
+          { label: '', nombre: '', caption: 'Firma del Jefe de Seguridad', firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Firma del Jefe del Cooler', firma: firmaVerifico ?? null },
         ]}
       />
     </Page>

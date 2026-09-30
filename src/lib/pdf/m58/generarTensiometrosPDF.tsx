@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { TensiometrosPDF, type TensiometrosRow } from './TensiometrosPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -40,16 +41,34 @@ function toRow(r: any): TensiometrosRow {
 
 export async function generarTensiometrosPDF(id: string, orgId: string, _codigoClave: string): Promise<void> {
   const r = await cargar(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M58', [id])
+  const firmasReg = firmasMapa[id]
   const blob = await pdf(
-    <TensiometrosPDF rancho={r.ranchos?.nombre ?? '—'} desde={r.fecha} hasta={r.fecha} registros={[toRow(r)]} />
+    <TensiometrosPDF
+      rancho={r.ranchos?.nombre ?? '—'}
+      desde={r.fecha}
+      hasta={r.fecha}
+      registros={[toRow(r)]}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
   ).toBlob()
   descargar(blob, nombrePdf('Tensiometros', r.fecha))
 }
 
 export async function generarBlobTensiometros(id: string, orgId: string, _codigoClave: string): Promise<Blob> {
   const r = await cargar(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M58', [id])
+  const firmasReg = firmasMapa[id]
   return pdf(
-    <TensiometrosPDF rancho={r.ranchos?.nombre ?? '—'} desde={r.fecha} hasta={r.fecha} registros={[toRow(r)]} />
+    <TensiometrosPDF
+      rancho={r.ranchos?.nombre ?? '—'}
+      desde={r.fecha}
+      hasta={r.fecha}
+      registros={[toRow(r)]}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
   ).toBlob()
 }
 

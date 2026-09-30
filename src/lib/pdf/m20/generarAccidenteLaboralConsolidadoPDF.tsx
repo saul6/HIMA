@@ -5,6 +5,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { AccidenteLaboralConsolidadoPDF } from './AccidenteLaboralPDF'
 import { construirDatosM20 } from './generarAccidenteLaboralPDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 export async function generarAccidenteLaboralConsolidadoPDF(
   ranchoId: string,
@@ -26,9 +27,23 @@ export async function generarAccidenteLaboralConsolidadoPDF(
   if (error) throw error
   if (!data?.length) throw new Error('Sin registros M20 en el rango seleccionado')
 
-  const registros = await Promise.all(
-    (data as any[]).map((row: any) => construirDatosM20(row.id as string, orgId))
+  const rowIds = (data as any[]).map((row: any) => row.id as string)
+  const registrosBase = await Promise.all(
+    rowIds.map((id) => construirDatosM20(id, orgId))
   )
+
+  const firmasMapa = rowIds.length > 0
+    ? await obtenerFirmasParaPdf('M20', rowIds)
+    : {}
+
+  const registros = registrosBase.map((reg, i) => {
+    const firmas = firmasMapa[rowIds[i]]
+    return {
+      ...reg,
+      firmaRealizo: firmas?.realizo ? firmaDetalleAParaPdf(firmas.realizo) : null,
+      firmaVerifico: firmas?.verifico ? firmaDetalleAParaPdf(firmas.verifico) : null,
+    }
+  })
 
   const blob = await pdf(
     <AccidenteLaboralConsolidadoPDF

@@ -3,6 +3,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { MonitoreoRoedoresPDF, MonitoreoRoedoresPage, type M68MatrizRow } from './MonitoreoRoedoresPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -54,6 +55,8 @@ async function cargarM68(id: string, orgId: string) {
 
 export async function generarMonitoreoRoedoresPDF(id: string, orgId: string, _codigoClave?: string): Promise<void> {
   const { reg, matriz, numTrampas } = await cargarM68(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M68', [id])
+  const firmasReg = firmasMapa[id]
   const blob = await pdf(
     <MonitoreoRoedoresPDF
       rancho={reg.ranchos?.nombre ?? '—'}
@@ -63,6 +66,8 @@ export async function generarMonitoreoRoedoresPDF(id: string, orgId: string, _co
       observaciones={reg.observaciones ?? null}
       matriz={matriz}
       num_trampas={numTrampas}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
     />
   ).toBlob()
   descargar(blob, nombrePdf('MonitoreoRoedores', reg.fecha))
@@ -70,6 +75,8 @@ export async function generarMonitoreoRoedoresPDF(id: string, orgId: string, _co
 
 export async function generarBlobMonitoreoRoedores(id: string, orgId: string, _codigoClave?: string): Promise<Blob> {
   const { reg, matriz, numTrampas } = await cargarM68(id, orgId)
+  const firmasMapa = await obtenerFirmasParaPdf('M68', [id])
+  const firmasReg = firmasMapa[id]
   return pdf(
     <MonitoreoRoedoresPDF
       rancho={reg.ranchos?.nombre ?? '—'}
@@ -79,6 +86,8 @@ export async function generarBlobMonitoreoRoedores(id: string, orgId: string, _c
       observaciones={reg.observaciones ?? null}
       matriz={matriz}
       num_trampas={numTrampas}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
     />
   ).toBlob()
 }

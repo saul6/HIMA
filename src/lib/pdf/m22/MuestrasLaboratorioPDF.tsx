@@ -7,6 +7,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PdfLegend } from '@/lib/pdf/components/PdfLegend'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface MicroorganismoPDF {
   codigo: string
@@ -36,6 +37,8 @@ export interface MuestrasLaboratorioPaginaProps {
   hasta?: string
   codigoClave: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 export interface MuestrasLaboratorioConsolidadoProps {
@@ -46,6 +49,8 @@ export interface MuestrasLaboratorioConsolidadoProps {
   microorganismos: MicroorganismoPDF[]
   muestras: MuestraPDF[]
   codigoClave: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 const MARGIN = 14
@@ -184,6 +189,8 @@ export function MuestrasLaboratorioPagina({
   hasta,
   codigoClave,
   terminoSitio = 'Instalación',
+  firmaRealizo,
+  firmaVerifico,
 }: MuestrasLaboratorioPaginaProps) {
   const indicadores = microorganismos.filter(m => m.tipo === 'indicador').sort((a, b) => a.orden - b.orden)
   const patogenos = microorganismos.filter(m => m.tipo === 'patogeno').sort((a, b) => a.orden - b.orden)
@@ -237,7 +244,10 @@ export function MuestrasLaboratorioPagina({
       />
 
       <PdfSignatures
-        signatures={[{ label: '', nombre: '', caption: 'Firma del solicitante' }]}
+        signatures={[
+          { label: '', nombre: '', caption: 'Firma del solicitante', firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Verificó — Firma', firma: firmaVerifico ?? null },
+        ]}
       />
     </Page>
   )
@@ -251,7 +261,7 @@ export function MuestrasLaboratorioPDF(props: MuestrasLaboratorioPaginaProps) {
   )
 }
 
-export function MuestrasLaboratorioConsolidadoPDF({ instalacion, instalacionCodigo, desde, hasta, microorganismos, muestras, codigoClave }: MuestrasLaboratorioConsolidadoProps) {
+export function MuestrasLaboratorioConsolidadoPDF({ instalacion, instalacionCodigo, desde, hasta, microorganismos, muestras, codigoClave, firmaRealizo, firmaVerifico }: MuestrasLaboratorioConsolidadoProps) {
   return (
     <Document>
       <MuestrasLaboratorioPagina
@@ -264,6 +274,8 @@ export function MuestrasLaboratorioConsolidadoPDF({ instalacion, instalacionCodi
         desde={desde}
         hasta={hasta}
         codigoClave={codigoClave}
+        firmaRealizo={firmaRealizo}
+        firmaVerifico={firmaVerifico}
       />
     </Document>
   )

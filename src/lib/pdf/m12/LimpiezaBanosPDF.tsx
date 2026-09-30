@@ -10,6 +10,7 @@ import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -29,6 +30,8 @@ export interface LimpiezaBanosPaginaProps {
   fecha: string       // "2026-06-15" ISO
   banos: LimpiezaBanoPDFRow[]
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 export interface LimpiezaBanosConsolidadoPDFProps {
@@ -65,6 +68,7 @@ function siNo(val: boolean): string { return val ? 'Si' : 'No' }
 
 export function LimpiezaBanosPagina({
   rancho, ranchoCodigo, fecha, banos, terminoSitio = 'Rancho',
+  firmaRealizo, firmaVerifico,
 }: LimpiezaBanosPaginaProps) {
   const emision = new Date().toLocaleDateString('es-MX')
 
@@ -157,8 +161,8 @@ export function LimpiezaBanosPagina({
       <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
       <PdfSignatures
         signatures={[
-          { label: '', nombre: '', caption: 'Realizo la limpieza' },
-          { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
+          { label: '', nombre: '', caption: 'Realizo la limpieza', firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
         ]}
       />
     </Page>

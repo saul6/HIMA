@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { MuestrasLaboratorioPDF, MuestrasLaboratorioPagina, type MicroorganismoPDF, type MuestraPDF } from './MuestrasLaboratorioPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 async function cargarMicroorganismos(): Promise<MicroorganismoPDF[]> {
   const { data } = await (supabase as any)
@@ -48,7 +49,16 @@ export async function construirDatosM22(id: string, orgId: string) {
 
 export async function generarMuestrasLaboratorioPDF(id: string, orgId: string, codigoClave: string) {
   const datos = await construirDatosM22(id, orgId)
-  const blob = await pdf(<MuestrasLaboratorioPDF {...datos} codigoClave={codigoClave} />).toBlob()
+  const firmasMapa = await obtenerFirmasParaPdf('M22', [id])
+  const firmasReg = firmasMapa[id]
+  const blob = await pdf(
+    <MuestrasLaboratorioPDF
+      {...datos}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
+  ).toBlob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -59,5 +69,14 @@ export async function generarMuestrasLaboratorioPDF(id: string, orgId: string, c
 
 export async function generarBlobMuestrasLaboratorio(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const datos = await construirDatosM22(id, orgId)
-  return pdf(<MuestrasLaboratorioPDF {...datos} codigoClave={codigoClave} />).toBlob()
+  const firmasMapa = await obtenerFirmasParaPdf('M22', [id])
+  const firmasReg = firmasMapa[id]
+  return pdf(
+    <MuestrasLaboratorioPDF
+      {...datos}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
+  ).toBlob()
 }

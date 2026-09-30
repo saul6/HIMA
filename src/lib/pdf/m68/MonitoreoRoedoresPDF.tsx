@@ -5,6 +5,7 @@ import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface M68MatrizRow {
   criterio_numero: number
@@ -21,6 +22,8 @@ export interface MonitoreoRoedoresPDFProps {
   observaciones: string | null
   matriz: M68MatrizRow[]
   num_trampas: number
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 const MARGIN = 24
@@ -43,6 +46,8 @@ export function MonitoreoRoedoresPage({
   observaciones,
   matriz,
   num_trampas,
+  firmaRealizo,
+  firmaVerifico,
 }: MonitoreoRoedoresPDFProps) {
   const usable = A4_LANDSCAPE_W - 2 * MARGIN
   const trampaColW = Math.floor((usable - CRITERIO_COL_W) / num_trampas)
@@ -158,7 +163,10 @@ export function MonitoreoRoedoresPage({
       )}
 
       <PdfSignatures
-        signatures={[{ label: '', nombre: '', caption: 'Responsable de Inocuidad' }]}
+        signatures={[
+          { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
+        ]}
       />
     </Page>
   )

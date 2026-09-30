@@ -5,6 +5,7 @@ import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface M42MovimientoPDF {
   orgNombre: string
@@ -114,7 +115,14 @@ function ChecklistBlock({ d, tipo }: { d: M42MovimientoPDF; tipo: 'mat' | 'tr' }
   )
 }
 
-export function MaterialEmpaquePDF({ d, codigoClave }: { d: M42MovimientoPDF; codigoClave: string }) {
+export function MaterialEmpaquePDF({
+  d, codigoClave, firmaRealizo, firmaVerifico,
+}: {
+  d: M42MovimientoPDF
+  codigoClave: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
+}) {
   const codigoFmt = codigoFormato('F-FRUS-PRO-03', codigoClave)
 
   return (
@@ -179,8 +187,8 @@ export function MaterialEmpaquePDF({ d, codigoClave }: { d: M42MovimientoPDF; co
         {/* Firmas */}
         <PdfSignatures
           signatures={[
-            { label: 'Responsable de la instalacion' },
-            { label: 'Responsable de la empresa' },
+            { label: 'Responsable de la instalacion', firma: firmaRealizo ?? null },
+            { label: 'Responsable de la empresa', firma: firmaVerifico ?? null },
           ]}
         />
 

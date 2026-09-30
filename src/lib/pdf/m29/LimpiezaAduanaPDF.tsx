@@ -10,6 +10,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -37,6 +38,8 @@ export interface LimpiezaAduanaPaginaProps {
   observaciones: string | null
   codigoClave: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 export interface LimpiezaAduanaConsolidadoProps {
@@ -89,7 +92,7 @@ const tdStyle = { borderRightWidth: 1, borderRightColor: PC.border, borderBottom
 
 export function LimpiezaAduanaPagina({
   instalacion, instalacionCodigo, anio, mes, items, resultados, diasData,
-  observaciones, codigoClave, terminoSitio = 'Instalación',
+  observaciones, codigoClave, terminoSitio = 'Instalación', firmaRealizo, firmaVerifico,
 }: LimpiezaAduanaPaginaProps) {
   const emision   = new Date().toLocaleDateString('es-MX')
   const codigoFmt = codigoFormato('F-FRUS-SAN-07', codigoClave)
@@ -222,8 +225,8 @@ export function LimpiezaAduanaPagina({
       <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
       <PdfSignatures
         signatures={[
-          { label: '', nombre: '', caption: 'Realizo' },
-          { label: '', nombre: '', caption: 'Aprobo' },
+          { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Aprobo', firma: firmaVerifico ?? null },
           { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
         ]}
       />

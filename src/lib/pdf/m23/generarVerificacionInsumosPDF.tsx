@@ -6,6 +6,7 @@ import {
   type VerificacionInsumosPaginaProps,
 } from './VerificacionInsumosPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -112,7 +113,16 @@ export async function construirDatosPaginaM23(
 
 export async function generarVerificacionInsumosPDF(registroId: string, orgId: string, codigoClave: string): Promise<void> {
   const datos = await construirDatosPaginaM23(registroId, orgId)
-  const blob = await pdf(<VerificacionInsumosPDF {...datos} codigoClave={codigoClave} />).toBlob()
+  const firmasMapa = await obtenerFirmasParaPdf('M23', [registroId])
+  const firmasReg = firmasMapa[registroId]
+  const blob = await pdf(
+    <VerificacionInsumosPDF
+      {...datos}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
+  ).toBlob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -123,5 +133,14 @@ export async function generarVerificacionInsumosPDF(registroId: string, orgId: s
 
 export async function generarBlobVerificacionInsumos(registroId: string, orgId: string, codigoClave: string): Promise<Blob> {
   const datos = await construirDatosPaginaM23(registroId, orgId)
-  return pdf(<VerificacionInsumosPDF {...datos} codigoClave={codigoClave} />).toBlob()
+  const firmasMapa = await obtenerFirmasParaPdf('M23', [registroId])
+  const firmasReg = firmasMapa[registroId]
+  return pdf(
+    <VerificacionInsumosPDF
+      {...datos}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
+  ).toBlob()
 }

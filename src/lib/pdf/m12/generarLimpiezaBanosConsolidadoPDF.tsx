@@ -3,6 +3,7 @@
 import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { LimpiezaBanosConsolidadoPDF, type LimpiezaBanosPaginaProps } from './LimpiezaBanosPDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function slugify(s: string): string {
   return s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
@@ -31,7 +32,9 @@ export async function generarLimpiezaBanosConsolidadoPDF(
   }
 
   // Agrupar por fecha para formar jornadas
+  // Primer ID de cada jornada = representativo para las firmas
   const jornadasMap = new Map<string, LimpiezaBanosPaginaProps>()
+  const primerosIds = new Map<string, string>() // fecha → primer row.id
   for (const row of data) {
     const key = row.fecha
     if (!jornadasMap.has(key)) {
@@ -41,6 +44,7 @@ export async function generarLimpiezaBanosConsolidadoPDF(
         fecha: row.fecha,
         banos: [],
       })
+      primerosIds.set(key, row.id)
     }
     jornadasMap.get(key)!.banos.push({
       bano_numero: row.bano_numero,
@@ -53,7 +57,23 @@ export async function generarLimpiezaBanosConsolidadoPDF(
     })
   }
 
-  const jornadas = Array.from(jornadasMap.values())
+  // Obtener firmas para los IDs representativos de cada jornada
+  const idsRepresentativos = Array.from(primerosIds.values())
+  const firmasMapa = idsRepresentativos.length > 0
+    ? await obtenerFirmasParaPdf('M12', idsRepresentativos)
+    : {}
+
+  // Mapear firmas a cada jornada por su ID representativo
+  const jornadas = Array.from(jornadasMap.entries()).map(([fecha, jornada]) => {
+    const priId = primerosIds.get(fecha)
+    const firmasJornada = priId ? firmasMapa[priId] : undefined
+    return {
+      ...jornada,
+      firmaRealizo: firmasJornada?.realizo ? firmaDetalleAParaPdf(firmasJornada.realizo) : null,
+      firmaVerifico: firmasJornada?.verifico ? firmaDetalleAParaPdf(firmasJornada.verifico) : null,
+    }
+  })
+
   const desdeSlug = desde.replaceAll('-', '')
   const hastaSlug = hasta.replaceAll('-', '')
   const filename = `limpieza-banos-consolidado-${desdeSlug}-${hastaSlug}.pdf`

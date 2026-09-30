@@ -11,6 +11,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PdfLegend } from '@/lib/pdf/components/PdfLegend'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -52,6 +53,8 @@ export interface MonitoreoEstacionesPaginaProps {
   catalogoPlagas: CatalogoCodigo[]
   codigoClave?: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 export interface MonitoreoEstacionesConsolidadoPDFProps {
@@ -213,6 +216,7 @@ export function MonitoreoEstacionesPagina({
   folio, instalacion, instalacionCodigo, fecha, inspector, observaciones,
   grupos, catalogoEstado, catalogoCondiciones, catalogoPlagas,
   codigoClave = 'MXA', terminoSitio = 'Instalación',
+  firmaRealizo, firmaVerifico,
 }: MonitoreoEstacionesPaginaProps) {
   const emision = new Date().toLocaleDateString('es-MX')
   const codigoFmt = `${codigoClave}-F-SC-SIG`
@@ -306,7 +310,8 @@ export function MonitoreoEstacionesPagina({
       {/* Firma */}
       <PdfSignatures
         signatures={[
-          { label: '', nombre: '', caption: `Firma del Responsable del ${terminoSitio}` },
+          { label: '', nombre: '', caption: `Firma del Responsable del ${terminoSitio}`, firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Verificó — Firma', firma: firmaVerifico ?? null },
         ]}
       />
     </Page>

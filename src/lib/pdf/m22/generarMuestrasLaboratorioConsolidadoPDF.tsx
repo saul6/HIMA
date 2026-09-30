@@ -1,6 +1,7 @@
 import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { MuestrasLaboratorioConsolidadoPDF, type MicroorganismoPDF, type MuestraPDF } from './MuestrasLaboratorioPDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 async function cargarMicroorganismos(): Promise<MicroorganismoPDF[]> {
   const { data } = await (supabase as any)
@@ -50,6 +51,15 @@ export async function generarMuestrasLaboratorioConsolidadoPDF(
     solicitante_nombre: r.solicitante_nombre,
   }))
 
+  const ids = muestras.map(m => m.id)
+  const firmasMapa = ids.length > 0
+    ? await obtenerFirmasParaPdf('M22', ids)
+    : {}
+
+  const primeraFirma = ids.length > 0 ? firmasMapa[ids[0]] : undefined
+  const firmaRealizo = primeraFirma?.realizo ? firmaDetalleAParaPdf(primeraFirma.realizo) : null
+  const firmaVerifico = primeraFirma?.verifico ? firmaDetalleAParaPdf(primeraFirma.verifico) : null
+
   const blob = await pdf(
     <MuestrasLaboratorioConsolidadoPDF
       instalacion={instalacion}
@@ -59,6 +69,8 @@ export async function generarMuestrasLaboratorioConsolidadoPDF(
       microorganismos={microorganismos}
       muestras={muestras}
       codigoClave={codigoClave}
+      firmaRealizo={firmaRealizo}
+      firmaVerifico={firmaVerifico}
     />
   ).toBlob()
 

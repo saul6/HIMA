@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { fotosADataUris } from '@/lib/pdf/m13/incidenciasPdfImagenes'
 import { AccidenteLaboralPDF, AccidenteLaboralPaginaProps } from './AccidenteLaboralPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Consulta + construccion de datos ─────────────────────────────────────────
 
@@ -58,7 +59,16 @@ export async function generarAccidenteLaboralPDF(
   codigoClave: string,
 ): Promise<void> {
   const datos = await construirDatosM20(accidenteId, orgId)
-  const blob = await pdf(<AccidenteLaboralPDF {...datos} codigoClave={codigoClave} />).toBlob()
+  const firmasMapa = await obtenerFirmasParaPdf('M20', [accidenteId])
+  const firmasReg = firmasMapa[accidenteId]
+  const blob = await pdf(
+    <AccidenteLaboralPDF
+      {...datos}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
+  ).toBlob()
 
   const filename = nombrePdf('Accidente_Laboral', datos.fecha, datos.instalacion)
 
@@ -78,5 +88,14 @@ export async function generarBlobAccidenteLaboral(
   codigoClave: string,
 ): Promise<Blob> {
   const datos = await construirDatosM20(accidenteId, orgId)
-  return pdf(<AccidenteLaboralPDF {...datos} codigoClave={codigoClave} />).toBlob()
+  const firmasMapa = await obtenerFirmasParaPdf('M20', [accidenteId])
+  const firmasReg = firmasMapa[accidenteId]
+  return pdf(
+    <AccidenteLaboralPDF
+      {...datos}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
+  ).toBlob()
 }

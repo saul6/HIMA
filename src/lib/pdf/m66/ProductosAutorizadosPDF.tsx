@@ -6,6 +6,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import { codigoFormato } from '@/lib/codigoFormato'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface ProductoAutorizadoRow {
   cultivo: string
@@ -25,6 +26,8 @@ interface Props {
   codigoClave: string
   cultivoFiltro?: string | null
   fecha?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 const MARGIN = 20
@@ -60,7 +63,7 @@ function fmtFecha(iso: string): string {
   } catch { return iso }
 }
 
-export function ProductosAutorizadosPDF({ orgNombre, productos, codigoClave, cultivoFiltro, fecha }: Props) {
+export function ProductosAutorizadosPDF({ orgNombre, productos, codigoClave, cultivoFiltro, fecha, firmaRealizo, firmaVerifico }: Props) {
   const codigoFmt = codigoFormato('M66-PROD-AUT', codigoClave)
   const fechaDisplay = fecha ? fmtFecha(fecha) : new Date().toLocaleDateString('es-MX')
 
@@ -164,7 +167,10 @@ export function ProductosAutorizadosPDF({ orgNombre, productos, codigoClave, cul
         })}
 
         <PdfSignatures
-          signatures={[{ label: '', nombre: '', caption: 'Verifico: Responsable de Inocuidad' }]}
+          signatures={[
+            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Verifico: Responsable de Inocuidad', firma: firmaVerifico ?? null },
+          ]}
         />
       </Page>
     </Document>

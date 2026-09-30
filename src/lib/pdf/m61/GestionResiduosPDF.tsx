@@ -5,6 +5,7 @@ import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface GestionResiduosRow {
   fecha: string
@@ -24,6 +25,8 @@ interface Props {
   hasta: string
   registros: GestionResiduosRow[]
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
 }
 
 const MARGIN = 20
@@ -59,7 +62,7 @@ function fmtFecha(iso: string): string {
 
 const C = { FECHA: 55, FUENTE: 90, DESC: 100, CLAS: 80, DEST: 90, CANT: 55, REAL: 75, OBS: 90 }
 
-export function GestionResiduosPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Instalacion' }: Props) {
+export function GestionResiduosPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Instalacion', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
 
   return (
@@ -152,7 +155,10 @@ export function GestionResiduosPDF({ rancho, orgNombre, desde, hasta, registros,
         </View>
 
         <PdfSignatures
-          signatures={[{ label: '', nombre: '', caption: 'Responsable de Inocuidad' }]}
+          signatures={[
+            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
+          ]}
         />
       </Page>
     </Document>

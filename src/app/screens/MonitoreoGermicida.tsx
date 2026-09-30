@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { ChevronLeft, Plus, FileDown, X, Loader2, Droplets, Files } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -16,6 +16,11 @@ import { generarMonitoreoGermicidaConsolidadoPDF } from '@/lib/pdf/m36/generarMo
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -51,13 +56,19 @@ export function MonitoreoGermicida() {
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
+  const { obligatoria, tengoFirma } = useFirmaContext()
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos(orgId)
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { monitoreos, loading, refetch } = useM36Monitoreos(orgId)
   const orgNombre = useOrganizacion(orgId)
 
+  const todosIds = monitoreos.map(m => m.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M36', todosIds)
+
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const [form, setForm] = useState<FormState>(FORM_VACIO)
   const [guardando, setGuardando] = useState(false)
@@ -67,6 +78,8 @@ export function MonitoreoGermicida() {
 
   function abrirNuevo() {
     setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX(), preparado_por: profile?.nombre_completo ?? '' })
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetOpen(true)
   }
 
@@ -97,18 +110,17 @@ export function MonitoreoGermicida() {
         .single()
       if (error) throw error
 
-      setSheetOpen(false)
-      await refetch()
       toast.success('Monitoreo registrado')
+      await refetch()
 
-      try {
-        await generarMonitoreoGermicidaPDF(data.id, orgId, codigoClave)
-      } catch (e) {
-        toast.error('PDF no generado')
-        console.error(e)
-      }
+      setPendienteFirmaId(data.id as string)
+      setSheetPaso('firma_decision')
     } catch (e: any) {
       const msg: string = e?.message ?? 'Error al guardar'
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+        return
+      }
       if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
@@ -121,6 +133,10 @@ export function MonitoreoGermicida() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (obligatoria && !firmas[id]?.realizo) {
+      toast.info('Firma este registro antes de descargar el PDF')
+      return
+    }
     setPdfLoading(id)
     try {
       await generarMonitoreoGermicidaPDF(id, orgId, codigoClave)
@@ -152,6 +168,12 @@ export function MonitoreoGermicida() {
     } finally {
       setExportando(false)
     }
+  }
+
+  function handleCerrarSheet() {
+    setSheetOpen(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
   }
 
   return (
@@ -221,6 +243,11 @@ export function MonitoreoGermicida() {
                     Corrección: {m.correccion}
                   </p>
                 )}
+                {obligatoria && !firmas[m.id]?.realizo && (
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                    Pendiente de firma
+                  </span>
+                )}
               </div>
               <button
                 onClick={() => descargarPDF(m.id)}
@@ -233,118 +260,156 @@ export function MonitoreoGermicida() {
                 }
               </button>
             </div>
+            <FirmasRegistro
+              modulo="M36"
+              registroId={m.id}
+              fechaRegistro={m.fecha}
+              firma={firmas[m.id]}
+              loadingFirmas={loadingFirmas}
+              onFirmado={async () => { await refetch(); await refetchFirmas() }}
+            />
           </div>
         ))}
       </div>
 
       {/* FAB */}
-            <Fab onClick={abrirNuevo} aria-label="Nuevo monitoreo" />
+      <Fab onClick={abrirNuevo} aria-label="Nuevo monitoreo" />
 
-      {/* Bottom sheet — Formulario */}
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
-        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
-          <h2 className="text-base font-semibold">Nuevo monitoreo</h2>
-          <button onClick={() => setSheetOpen(false)}>
+      {/* Bottom sheet — Formulario / firma */}
+      <BottomSheet open={sheetOpen} onClose={handleCerrarSheet} height="85%">
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div className="w-9 h-1 rounded-full bg-border" />
+        </div>
+        <div className="flex items-center justify-between px-4 pb-3 border-b border-border flex-shrink-0">
+          <h2 className="text-base font-semibold">
+            {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nuevo monitoreo'}
+          </h2>
+          <button onClick={handleCerrarSheet}>
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="overflow-y-auto flex-1 px-4 pt-4 pb-8 space-y-4">
 
-          <div>
-            <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
-            <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
-              value={form.rancho_id}
-              onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
-            >
-              <option value="">Selecciona...</option>
-              {ranchos.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
-            </select>
-          </div>
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+        )}
 
-          <div>
-            <label className="block text-xs font-medium mb-1">Fecha</label>
-            <input
-              type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
-              value={form.fecha}
-              min={puedeEditarFecha ? undefined : hoyMX()}
-              max={puedeEditarFecha ? undefined : hoyMX()}
-              onChange={e => { if (puedeEditarFecha) setForm(f => ({ ...f, fecha: e.target.value })) }}
-            />
-          </div>
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M36"
+            ids={[pendienteFirmaId]}
+            descripcion={`Monitoreo del ${formatFecha(form.fecha)}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              await generarMonitoreoGermicidaPDF(pendienteFirmaId, orgId!, codigoClave)
+              setSheetOpen(false)
+              setSheetPaso('form')
+              await refetchFirmas()
+            }}
+            onDespues={!obligatoria ? () => { setSheetOpen(false); setSheetPaso('form') } : undefined}
+          />
+        )}
 
-          <div>
-            <label className="block text-xs font-medium mb-1">Tipo de germicida</label>
-            <input
-              type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
-              placeholder="Ej. Cloro, Amonio cuaternario..."
-              value={form.tipo_germicida}
-              onChange={e => setForm(f => ({ ...f, tipo_germicida: e.target.value }))}
-            />
-          </div>
+        {sheetPaso === 'form' && (
+          <>
+            <div className="overflow-y-auto flex-1 px-4 pt-4 pb-8 space-y-4">
 
-          <div>
-            <label className="block text-xs font-medium mb-1">Uso</label>
-            <input
-              type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
-              placeholder="Para qué o dónde se usó"
-              value={form.uso}
-              onChange={e => setForm(f => ({ ...f, uso: e.target.value }))}
-            />
-          </div>
+              <div>
+                <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
+                <select
+                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  value={form.rancho_id}
+                  onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
+                >
+                  <option value="">Selecciona...</option>
+                  {ranchos.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
+                </select>
+              </div>
 
-          <div>
-            <label className="block text-xs font-medium mb-1">Concentración (ppm)</label>
-            <input
-              type="number"
-              inputMode="decimal"
-              step="any"
-              min="0"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
-              placeholder="Ej. 200"
-              value={form.concentracion}
-              onChange={e => setForm(f => ({ ...f, concentracion: e.target.value }))}
-            />
-          </div>
+              <div>
+                <label className="block text-xs font-medium mb-1">Fecha</label>
+                <input
+                  type="date"
+                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  value={form.fecha}
+                  min={puedeEditarFecha ? undefined : hoyMX()}
+                  max={puedeEditarFecha ? undefined : hoyMX()}
+                  onChange={e => { if (puedeEditarFecha) setForm(f => ({ ...f, fecha: e.target.value })) }}
+                />
+              </div>
 
-          <div>
-            <label className="block text-xs font-medium mb-1">
-              Corrección <span className="text-muted-foreground">(opcional)</span>
-            </label>
-            <input
-              type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
-              placeholder="Ajuste realizado si estuvo fuera de rango"
-              value={form.correccion}
-              onChange={e => setForm(f => ({ ...f, correccion: e.target.value }))}
-            />
-          </div>
+              <div>
+                <label className="block text-xs font-medium mb-1">Tipo de germicida</label>
+                <input
+                  type="text"
+                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  placeholder="Ej. Cloro, Amonio cuaternario..."
+                  value={form.tipo_germicida}
+                  onChange={e => setForm(f => ({ ...f, tipo_germicida: e.target.value }))}
+                />
+              </div>
 
-          <div>
-            <label className="block text-xs font-medium mb-1">Preparado por</label>
-            <input
-              type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
-              placeholder="Nombre completo"
-              value={form.preparado_por}
-              onChange={e => setForm(f => ({ ...f, preparado_por: e.target.value }))}
-            />
-          </div>
+              <div>
+                <label className="block text-xs font-medium mb-1">Uso</label>
+                <input
+                  type="text"
+                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  placeholder="Para qué o dónde se usó"
+                  value={form.uso}
+                  onChange={e => setForm(f => ({ ...f, uso: e.target.value }))}
+                />
+              </div>
 
-        </div>
-        <div className="px-4 pb-6 pt-3 border-t border-border">
-          <button
-            onClick={guardar}
-            disabled={guardando}
-            className="w-full h-11 rounded-[0.625rem] bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar y generar PDF
-          </button>
-        </div>
+              <div>
+                <label className="block text-xs font-medium mb-1">Concentración (ppm)</label>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  step="any"
+                  min="0"
+                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  placeholder="Ej. 200"
+                  value={form.concentracion}
+                  onChange={e => setForm(f => ({ ...f, concentracion: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium mb-1">
+                  Corrección <span className="text-muted-foreground">(opcional)</span>
+                </label>
+                <input
+                  type="text"
+                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  placeholder="Ajuste realizado si estuvo fuera de rango"
+                  value={form.correccion}
+                  onChange={e => setForm(f => ({ ...f, correccion: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium mb-1">Preparado por</label>
+                <input
+                  type="text"
+                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  placeholder="Nombre completo"
+                  value={form.preparado_por}
+                  onChange={e => setForm(f => ({ ...f, preparado_por: e.target.value }))}
+                />
+              </div>
+
+            </div>
+            <div className="px-4 pb-6 pt-3 border-t border-border flex-shrink-0">
+              <button
+                onClick={guardar}
+                disabled={guardando}
+                className="w-full h-11 rounded-[0.625rem] bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
+                Guardar y generar PDF
+              </button>
+            </div>
+          </>
+        )}
       </BottomSheet>
 
       {/* Bottom sheet — Consolidado */}
