@@ -24,6 +24,11 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmaContext } from '@/context/FirmaContext'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -164,6 +169,9 @@ export function InspeccionPerimetral() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM9Perimetral()
   const { terminosSitio } = useModulosContext()
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M9', todosIds)
+  const { obligatoria, tengoFirma } = useFirmaContext()
 
   // ── Navegación interna ──
   const [vista, setVista] = useState<Vista>('lista')
@@ -360,6 +368,8 @@ export function InspeccionPerimetral() {
   const [dGuardando, setDGuardando] = useState(false)
   const [dErrFecha, setDErrFecha]   = useState(false)
   const [dYaExiste, setDYaExiste]   = useState(false)
+  const [sheetDiaPaso, setSheetDiaPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaIds, setPendienteFirmaIds] = useState<string[]>([])
 
   const itemsVisibles = useMemo(() => {
     if (!registroActivo) return []
@@ -397,6 +407,11 @@ export function InspeccionPerimetral() {
     return () => { cancelado = true }
   }, [sheetDia, dFecha, registroActivo, profile?.org_id])
 
+  function handleCerrarSheetDia() {
+    setSheetDia(false); setSheetDiaPaso('form'); setPendienteFirmaIds([])
+    if (registroActivo) cargarDias(registroActivo.id)
+  }
+
   async function handleGuardarDia() {
     if (!dFecha) { setDErrFecha(true); return }
     if (!registroActivo || !profile?.org_id) { toast.error('Sin registro activo'); return }
@@ -431,8 +446,9 @@ export function InspeccionPerimetral() {
       if (rErr) throw rErr
 
       toast.success('Día de inspección guardado')
-      setSheetDia(false)
-      cargarDias(registroActivo.id)
+      await refetchFirmas()
+      setPendienteFirmaIds([registroActivo.id])
+      setSheetDiaPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Error al guardar día'
       if (msg.includes('FECHA_SOLO_HOY')) {
@@ -680,6 +696,8 @@ export function InspeccionPerimetral() {
             </span>
           </div>
 
+          <FirmasRegistro modulo="M9" registroId={registroActivo.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={registroActivo.mes} />
+
           {/* Observaciones y Otro */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
             <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>
@@ -759,6 +777,8 @@ export function InspeccionPerimetral() {
                 return
               }
               setDFecha(''); setDErrFecha(false); setDYaExiste(false)
+              setSheetDiaPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
+              setPendienteFirmaIds([])
               setSheetDia(true)
             }
           }} aria-label={vista === 'lista' ? 'Nuevo registro mensual' : 'Agregar día de inspección'} />
@@ -865,7 +885,7 @@ export function InspeccionPerimetral() {
       </BottomSheet>
 
       {/* ═══ SHEET: AGREGAR DÍA DE INSPECCIÓN ═══════════════════════════ */}
-      <BottomSheet open={sheetDia && !!registroActivo} onClose={() => setSheetDia(false)} height="85%">
+      <BottomSheet open={sheetDia && !!registroActivo} onClose={() => !dGuardando && handleCerrarSheetDia()} height="85%">
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-9 h-1 rounded-full bg-border" />
@@ -874,98 +894,119 @@ export function InspeccionPerimetral() {
             <div className="px-4 pb-2 flex-shrink-0">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
-                  Agregar día de inspección
+                  {sheetDiaPaso === 'firma_decision' ? 'Firmar registro' : sheetDiaPaso === 'firma_gate' ? 'Firma requerida' : 'Agregar día de inspección'}
                 </h2>
-                <button onClick={() => setSheetDia(false)}>
+                <button onClick={handleCerrarSheetDia}>
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
-
-              {/* Fecha */}
-              <div className="space-y-1 mb-4">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
-                  Fecha de inspección *
-                </label>
-                <input
-                  type="date"
-                  value={dFecha}
-                  min={esSuperAdmin && registroActivo ? registroActivo.mes : hoy()}
-                  max={esSuperAdmin && registroActivo ? ultimoDiaMes(registroActivo.mes) : hoy()}
-                  onChange={(e) => { if (esSuperAdmin) { setDFecha(e.target.value); setDErrFecha(false) } }}
-                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
-                />
-                {!esSuperAdmin && (
-                  <p className="text-xs text-muted-foreground">Se registra con la fecha de hoy</p>
-                )}
-                {dErrFecha && (
-                  <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Fecha requerida</p>
-                )}
-                {dYaExiste && (
-                  <div
-                    className="flex items-start gap-2 rounded-xl p-3"
-                    style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}
-                  >
-                    <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-                    <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
-                      Ya existe una inspección para esta fecha en el registro actual.
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {loadingItems && (
-                <div className="flex justify-center py-4">
-                  <Loader2 className="w-5 h-5 text-primary animate-spin" />
-                </div>
-              )}
             </div>
 
-            {/* Lista de ítems — scrollable */}
-            {!loadingItems && (
-              <div className="flex-1 overflow-y-auto px-4">
-                {seccionesAgrupadas.map((sec) => (
-                  <div key={sec.label} className="mb-4">
-                    <div
-                      className="text-xs px-3 py-2 rounded-lg mb-1"
-                      style={{
-                        backgroundColor: 'var(--primary)',
-                        color: '#fff',
-                        fontWeight: 600,
-                      }}
-                    >
-                      {sec.label}
-                    </div>
-                    <div className="bg-card border border-border rounded-xl px-3">
-                      {sec.items.map((item) => (
-                        <ToggleItem
-                          key={item.id}
-                          label={item.item}
-                          valor={dValores[item.id] ?? item.default_valor}
-                          onChange={(v) => setDValores((prev) => ({ ...prev, [item.id]: v }))}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {sheetDiaPaso === 'firma_gate' && (
+              <FirmaGatePaso onFirmaGuardada={() => setSheetDiaPaso('form')} />
             )}
 
-            {/* Botón guardar */}
-            <div className="px-4 py-4 border-t border-border flex-shrink-0">
-              <button
-                onClick={handleGuardarDia}
-                disabled={dGuardando || dYaExiste || !dFecha || loadingItems}
-                className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
-                {dGuardando ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
-                ) : (
-                  `Guardar ${itemsVisibles.length} ítems`
+            {sheetDiaPaso === 'firma_decision' && pendienteFirmaIds.length > 0 && (
+              <PasoFirmaRegistro
+                modulo="M9"
+                ids={pendienteFirmaIds}
+                descripcion={registroActivo ? `Monitoreo Perimetral · ${formatMesLabel(registroActivo.mes)} · ${registroActivo.rancho_nombre}` : 'Inspección'}
+                obligatoria={obligatoria}
+                onFirmadoYPDF={async () => { handleCerrarSheetDia(); await refetchFirmas() }}
+                onDespues={!obligatoria ? () => handleCerrarSheetDia() : undefined}
+              />
+            )}
+
+            {sheetDiaPaso === 'form' && (
+              <>
+                <div className="px-4 pb-2 flex-shrink-0">
+                  {/* Fecha */}
+                  <div className="space-y-1 mb-4">
+                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                      Fecha de inspección *
+                    </label>
+                    <input
+                      type="date"
+                      value={dFecha}
+                      min={esSuperAdmin && registroActivo ? registroActivo.mes : hoy()}
+                      max={esSuperAdmin && registroActivo ? ultimoDiaMes(registroActivo.mes) : hoy()}
+                      onChange={(e) => { if (esSuperAdmin) { setDFecha(e.target.value); setDErrFecha(false) } }}
+                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                      style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
+                    />
+                    {!esSuperAdmin && (
+                      <p className="text-xs text-muted-foreground">Se registra con la fecha de hoy</p>
+                    )}
+                    {dErrFecha && (
+                      <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Fecha requerida</p>
+                    )}
+                    {dYaExiste && (
+                      <div
+                        className="flex items-start gap-2 rounded-xl p-3"
+                        style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}
+                      >
+                        <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+                        <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                          Ya existe una inspección para esta fecha en el registro actual.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {loadingItems && (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Lista de ítems — scrollable */}
+                {!loadingItems && (
+                  <div className="flex-1 overflow-y-auto px-4">
+                    {seccionesAgrupadas.map((sec) => (
+                      <div key={sec.label} className="mb-4">
+                        <div
+                          className="text-xs px-3 py-2 rounded-lg mb-1"
+                          style={{
+                            backgroundColor: 'var(--primary)',
+                            color: '#fff',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {sec.label}
+                        </div>
+                        <div className="bg-card border border-border rounded-xl px-3">
+                          {sec.items.map((item) => (
+                            <ToggleItem
+                              key={item.id}
+                              label={item.item}
+                              valor={dValores[item.id] ?? item.default_valor}
+                              onChange={(v) => setDValores((prev) => ({ ...prev, [item.id]: v }))}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
-              </button>
-            </div>
+
+                {/* Botón guardar */}
+                <div className="px-4 py-4 border-t border-border flex-shrink-0">
+                  <button
+                    onClick={handleGuardarDia}
+                    disabled={dGuardando || dYaExiste || !dFecha || loadingItems}
+                    className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
+                    style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+                  >
+                    {dGuardando ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
+                    ) : (
+                      `Guardar ${itemsVisibles.length} ítems`
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
       </BottomSheet>
 
       {/* ═══ SHEET: EXPORTAR CONSOLIDADO ═════════════════════════════════ */}

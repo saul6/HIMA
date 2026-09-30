@@ -30,6 +30,11 @@ import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmaContext } from '@/context/FirmaContext'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -203,6 +208,9 @@ export function VerificacionInsumos() {
   const orgId = profile?.org_id ?? null
   const orgNombre = useOrganizacion(orgId)
   const termino = terminosSitio.singular
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M23', todosIds)
+  const { obligatoria, tengoFirma } = useFirmaContext()
 
   // ── Navegación interna ──
   const [vista, setVista] = useState<Vista>('lista')
@@ -379,6 +387,8 @@ export function VerificacionInsumos() {
   const [dGuardando, setDGuardando]       = useState(false)
   const [dErrFecha, setDErrFecha]         = useState(false)
   const [dYaExiste, setDYaExiste]         = useState(false)
+  const [sheetDiaPaso, setSheetDiaPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaIds, setPendienteFirmaIds] = useState<string[]>([])
 
   const gruposActivos = useMemo(() => agruparPorArea(insumosActivosFiltrados), [insumosActivosFiltrados])
 
@@ -404,6 +414,11 @@ export function VerificacionInsumos() {
     return () => { cancelado = true }
   }, [sheetDia, dFecha, registroActivo, orgId])
 
+  function handleCerrarSheetDia() {
+    setSheetDia(false); setSheetDiaPaso('form'); setPendienteFirmaIds([])
+    if (registroActivo) cargarDias(registroActivo.id)
+  }
+
   async function handleGuardarDia() {
     if (!dFecha) { setDErrFecha(true); return }
     if (!registroActivo || !orgId) { toast.error('Sin registro activo'); return }
@@ -422,6 +437,7 @@ export function VerificacionInsumos() {
         (ins) => dValores[ins.id] === 'NO' && dIncidencias[ins.id]?.trim()
       )
       const incMap: Record<string, string> = {}
+      let reporteId: string | null = null
 
       if (incItems.length > 0) {
         const { data: reporteData, error: rErr } = await tbl('m13_reportes')
@@ -433,7 +449,7 @@ export function VerificacionInsumos() {
           })
           .select('id').single()
         if (rErr) throw rErr
-        const reporteId = (reporteData as any).id as string
+        reporteId = (reporteData as any).id as string
 
         for (let i = 0; i < incItems.length; i++) {
           const ins = incItems[i]
@@ -470,8 +486,11 @@ export function VerificacionInsumos() {
       const numInc = Object.keys(incMap).length
       const msgExtra = numInc > 0 ? ` · ${numInc} incidencia${numInc > 1 ? 's' : ''} M13 vinculada${numInc > 1 ? 's' : ''}` : ''
       toast.success(`Día guardado${msgExtra}`)
-      setSheetDia(false)
-      cargarDias(registroActivo.id)
+      await refetchFirmas()
+      const firmaIds = [registroActivo.id]
+      if (reporteId) firmaIds.push(reporteId)
+      setPendienteFirmaIds(firmaIds)
+      setSheetDiaPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Error al guardar día'
       if (msg.includes('FECHA_SOLO_HOY')) {
@@ -776,6 +795,8 @@ export function VerificacionInsumos() {
             </span>
           </div>
 
+          <FirmasRegistro modulo="M23" registroId={registroActivo.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={registroActivo.mes} />
+
           {numIncidenciasTotal > 0 && (
             <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
@@ -841,6 +862,8 @@ export function VerificacionInsumos() {
               setSheetNuevo(true)
             } else {
               setDFecha(''); setDErrFecha(false); setDYaExiste(false)
+              setSheetDiaPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
+              setPendienteFirmaIds([])
               setSheetDia(true)
             }
           }} aria-label={vista === 'lista' ? 'Nuevo registro mensual' : 'Agregar día de verificación'} />
@@ -904,85 +927,109 @@ export function VerificacionInsumos() {
       </BottomSheet>
 
       {/* ═══ SHEET: AGREGAR DÍA DE VERIFICACIÓN ═════════════════════════════════ */}
-      <BottomSheet open={sheetDia && !!registroActivo} onClose={() => setSheetDia(false)} height="85%">
+      <BottomSheet open={sheetDia && !!registroActivo} onClose={() => !dGuardando && handleCerrarSheetDia()} height="85%">
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0"><div className="w-9 h-1 rounded-full bg-border" /></div>
             <div className="px-4 pb-2 flex-shrink-0">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Agregar día de verificación</h2>
-                <button onClick={() => setSheetDia(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
+                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                  {sheetDiaPaso === 'firma_decision' ? 'Firmar registro' : sheetDiaPaso === 'firma_gate' ? 'Firma requerida' : 'Agregar día de verificación'}
+                </h2>
+                <button onClick={handleCerrarSheetDia}><X className="w-5 h-5 text-muted-foreground" /></button>
               </div>
-              <div className="flex gap-2 mb-3 flex-wrap">
-                <span className="text-xs px-2 py-0.5 rounded text-white" style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}>Si = disponible</span>
-                <span className="text-xs px-2 py-0.5 rounded text-white" style={{ backgroundColor: 'var(--agro-red)', fontWeight: 600 }}>No = falta</span>
-                <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--switch-background)', color: 'var(--muted-foreground)', fontWeight: 600 }}>N/A</span>
-              </div>
-              <div className="space-y-1 mb-4">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Fecha *</label>
-                <input
-                  type="date"
-                  value={dFecha}
-                  min={puedeEditarFecha && registroActivo ? registroActivo.mes : hoy()}
-                  max={puedeEditarFecha && registroActivo ? ultimoDiaMes(registroActivo.mes) : hoy()}
-                  onChange={(e) => { if (puedeEditarFecha) { setDFecha(e.target.value); setDErrFecha(false) } }}
-                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
-                  style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
-                />
-                {dErrFecha && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Fecha requerida</p>}
-                {dYaExiste && (
-                  <div className="flex items-start gap-2 rounded-xl p-3 mt-1" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}>
-                    <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-                    <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>Ya existe una verificación para esta fecha.</p>
-                  </div>
-                )}
-              </div>
-              {loadingInsumos && <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 text-primary animate-spin" /></div>}
             </div>
 
-            {!loadingInsumos && (
-              <div className="flex-1 overflow-y-auto px-4">
-                {insumosActivosFiltrados.length === 0 ? (
-                  <div className="text-center py-8 text-sm text-muted-foreground">
-                    Sin insumos activos. Configura el catálogo primero.
-                  </div>
-                ) : (
-                  gruposActivos.map((grupo) => (
-                    <div key={grupo.area} className="mb-4">
-                      <div className="text-xs px-3 py-2 rounded-lg mb-1" style={{ backgroundColor: 'var(--primary)', color: '#fff', fontWeight: 600 }}>
-                        {grupo.area}
-                      </div>
-                      <div className="bg-card border border-border rounded-xl px-3">
-                        {grupo.items.map((ins) => (
-                          <ToggleInsumo
-                            key={ins.id}
-                            label={ins.insumo}
-                            valor={dValores[ins.id] ?? 'SI'}
-                            codigo={dCodigos[ins.id] ?? ''}
-                            incidenciaDesc={dIncidencias[ins.id] ?? ''}
-                            onChange={(v) => setDValores((prev) => ({ ...prev, [ins.id]: v }))}
-                            onCodigo={(c) => setDCodigos((prev) => ({ ...prev, [ins.id]: c }))}
-                            onIncidenciaDesc={(d) => setDIncidencias((prev) => ({ ...prev, [ins.id]: d }))}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
+            {sheetDiaPaso === 'firma_gate' && (
+              <FirmaGatePaso onFirmaGuardada={() => setSheetDiaPaso('form')} />
             )}
 
-            <div className="px-4 py-4 border-t border-border flex-shrink-0">
-              <button
-                onClick={handleGuardarDia}
-                disabled={dGuardando || dYaExiste || !dFecha || loadingInsumos || insumosActivosFiltrados.length === 0}
-                className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
-                {dGuardando
-                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
-                  : `Guardar ${insumosActivosFiltrados.length} insumos`
-                }
-              </button>
-            </div>
+            {sheetDiaPaso === 'firma_decision' && pendienteFirmaIds.length > 0 && (
+              <PasoFirmaRegistro
+                modulo="M23"
+                ids={pendienteFirmaIds}
+                descripcion={registroActivo ? `Verificación de Insumos · ${formatMesLabel(registroActivo.mes)} · ${registroActivo.rancho_nombre}` : 'Verificación'}
+                obligatoria={obligatoria}
+                onFirmadoYPDF={async () => { handleCerrarSheetDia(); await refetchFirmas() }}
+                onDespues={!obligatoria ? () => handleCerrarSheetDia() : undefined}
+              />
+            )}
+
+            {sheetDiaPaso === 'form' && (
+              <>
+                <div className="px-4 pb-2 flex-shrink-0">
+                  <div className="flex gap-2 mb-3 flex-wrap">
+                    <span className="text-xs px-2 py-0.5 rounded text-white" style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}>Si = disponible</span>
+                    <span className="text-xs px-2 py-0.5 rounded text-white" style={{ backgroundColor: 'var(--agro-red)', fontWeight: 600 }}>No = falta</span>
+                    <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--switch-background)', color: 'var(--muted-foreground)', fontWeight: 600 }}>N/A</span>
+                  </div>
+                  <div className="space-y-1 mb-4">
+                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Fecha *</label>
+                    <input
+                      type="date"
+                      value={dFecha}
+                      min={puedeEditarFecha && registroActivo ? registroActivo.mes : hoy()}
+                      max={puedeEditarFecha && registroActivo ? ultimoDiaMes(registroActivo.mes) : hoy()}
+                      onChange={(e) => { if (puedeEditarFecha) { setDFecha(e.target.value); setDErrFecha(false) } }}
+                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                      style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
+                    />
+                    {dErrFecha && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Fecha requerida</p>}
+                    {dYaExiste && (
+                      <div className="flex items-start gap-2 rounded-xl p-3 mt-1" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}>
+                        <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+                        <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>Ya existe una verificación para esta fecha.</p>
+                      </div>
+                    )}
+                  </div>
+                  {loadingInsumos && <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 text-primary animate-spin" /></div>}
+                </div>
+
+                {!loadingInsumos && (
+                  <div className="flex-1 overflow-y-auto px-4">
+                    {insumosActivosFiltrados.length === 0 ? (
+                      <div className="text-center py-8 text-sm text-muted-foreground">
+                        Sin insumos activos. Configura el catálogo primero.
+                      </div>
+                    ) : (
+                      gruposActivos.map((grupo) => (
+                        <div key={grupo.area} className="mb-4">
+                          <div className="text-xs px-3 py-2 rounded-lg mb-1" style={{ backgroundColor: 'var(--primary)', color: '#fff', fontWeight: 600 }}>
+                            {grupo.area}
+                          </div>
+                          <div className="bg-card border border-border rounded-xl px-3">
+                            {grupo.items.map((ins) => (
+                              <ToggleInsumo
+                                key={ins.id}
+                                label={ins.insumo}
+                                valor={dValores[ins.id] ?? 'SI'}
+                                codigo={dCodigos[ins.id] ?? ''}
+                                incidenciaDesc={dIncidencias[ins.id] ?? ''}
+                                onChange={(v) => setDValores((prev) => ({ ...prev, [ins.id]: v }))}
+                                onCodigo={(c) => setDCodigos((prev) => ({ ...prev, [ins.id]: c }))}
+                                onIncidenciaDesc={(d) => setDIncidencias((prev) => ({ ...prev, [ins.id]: d }))}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                <div className="px-4 py-4 border-t border-border flex-shrink-0">
+                  <button
+                    onClick={handleGuardarDia}
+                    disabled={dGuardando || dYaExiste || !dFecha || loadingInsumos || insumosActivosFiltrados.length === 0}
+                    className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
+                    style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+                  >
+                    {dGuardando
+                      ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
+                      : `Guardar ${insumosActivosFiltrados.length} insumos`
+                    }
+                  </button>
+                </div>
+              </>
+            )}
       </BottomSheet>
 
       {/* ═══ SHEET: CATÁLOGO DE INSUMOS ══════════════════════════════════════════ */}
