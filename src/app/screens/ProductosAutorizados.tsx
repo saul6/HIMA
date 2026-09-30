@@ -9,6 +9,9 @@ import { useM66ProductosAutorizados } from '@/hooks/useM66ProductosAutorizados'
 import { supabase } from '@/lib/supabase'
 import { generarProductosAutorizadosPDF } from '@/lib/pdf/m66/generarProductosAutorizadosPDF'
 import { Fab } from '@/app/components/Fab'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 type FormState = {
   cultivo: string
@@ -41,6 +44,10 @@ export function ProductosAutorizados() {
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
   const orgNombre = useOrganizacion(orgId)
   const { productos, loading, error, refetch } = useM66ProductosAutorizados(orgId)
+
+  const { obligatoria } = useFirmaContext()
+  const todosIds = productos.map(p => p.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M66', todosIds)
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
@@ -304,6 +311,13 @@ export function ProductosAutorizados() {
                 </button>
               )}
             </div>
+            <FirmasRegistro
+              modulo="M66"
+              registroId={p.id}
+              firma={firmas[p.id]}
+              loadingFirmas={loadingFirmas}
+              onFirmado={async () => { await refetch(); await refetchFirmas() }}
+            />
           </div>
         ))}
       </div>

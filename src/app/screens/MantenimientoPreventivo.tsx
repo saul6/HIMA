@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link } from 'react-router'
 import {
-  ChevronLeft, Plus, FileDown, Loader2, TriangleAlert, Settings,
+  ChevronLeft, Plus, FileDown, Loader2, TriangleAlert, Settings, X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
@@ -20,6 +20,9 @@ import { generarMttoPreventivoConsolidadoPDF } from '@/lib/pdf/m45/generarMttoPr
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -159,6 +162,7 @@ export function MantenimientoPreventivo() {
   const { ranchos }       = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM45MttoPreventivo()
+  const { obligatoria, tengoFirma } = useFirmaContext()
 
   const mesActual    = hoyMX().slice(0, 7)  // YYYY-MM
   const termino      = terminosSitio.singular
@@ -288,10 +292,20 @@ export function MantenimientoPreventivo() {
 
   // ── Sheet: crear registro mensual ──
   const [sheetCrear, setSheetCrear] = useState(false)
+  const [sheetCrearPaso, setSheetCrearPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+  const [pendienteReg, setPendienteReg] = useState<M45RegistroMensual | null>(null)
   const [nRanchoId, setNRanchoId]   = useState('')
   const [nMes, setNMes]             = useState(mesActual)
   const [creando, setCreando]       = useState(false)
   const [errRancho, setErrRancho]   = useState(false)
+
+  function handleCerrarSheetCrear() {
+    setSheetCrear(false)
+    setSheetCrearPaso('form')
+    setPendienteFirmaId(null)
+    setPendienteReg(null)
+  }
 
   async function handleCrearRegistro() {
     if (!nRanchoId) { setErrRancho(true); return }
@@ -299,7 +313,7 @@ export function MantenimientoPreventivo() {
     setCreando(true)
     try {
       const [yearStr, mesStr] = nMes.split('-')
-      const { error: err } = await (supabase as any)
+      const { data: inserted, error: err } = await (supabase as any)
         .from('m45_registro_mensual')
         .insert({
           org_id:    profile.org_id,
@@ -307,8 +321,14 @@ export function MantenimientoPreventivo() {
           anio:      parseInt(yearStr),
           mes:       parseInt(mesStr),
         })
+        .select('id, rancho_id, anio, mes, observaciones')
+        .single()
       if (err) {
         const msg = err.message as string
+        if (msg.includes('FIRMA_REQUERIDA')) {
+          setSheetCrearPaso('firma_gate')
+          return
+        }
         if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
           toast.warning('Ya existe un registro para ese mes e instalación')
         } else {
@@ -317,10 +337,22 @@ export function MantenimientoPreventivo() {
         return
       }
       toast.success('Registro mensual creado')
-      setSheetCrear(false)
-      setNRanchoId('')
-      setNMes(mesActual)
       await refetch()
+      const r = inserted as any
+      const rancho = ranchos.find(x => x.id === nRanchoId)
+      const nuevo: M45RegistroMensual = {
+        id: r.id,
+        org_id: profile!.org_id,
+        rancho_id: r.rancho_id,
+        rancho_nombre: rancho?.nombre ?? '—',
+        rancho_codigo: (rancho as any)?.codigo ?? '—',
+        anio: r.anio,
+        mes: r.mes,
+        observaciones: r.observaciones ?? null,
+      }
+      setPendienteFirmaId(r.id)
+      setPendienteReg(nuevo)
+      setSheetCrearPaso('firma_decision')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al crear registro')
     } finally {
@@ -717,9 +749,12 @@ export function MantenimientoPreventivo() {
       )}
 
       {/* ── FAB ────────────────────────────────────────────────────────── */}
-            <Fab onClick={() => {
+      <Fab onClick={() => {
           if (vista === 'lista') {
             setNRanchoId(ranchoInicial ?? '')
+            setPendienteFirmaId(null)
+            setPendienteReg(null)
+            setSheetCrearPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
             setSheetCrear(true)
             setErrRancho(false)
           } else {
@@ -729,13 +764,40 @@ export function MantenimientoPreventivo() {
 
       {/* ── Sheet: crear registro ──────────────────────────────────────── */}
       {sheetCrear && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={(e) => { if (e.target === e.currentTarget) setSheetCrear(false) }}>
+        <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={(e) => { if (e.target === e.currentTarget) handleCerrarSheetCrear() }}>
           <div className="absolute inset-0 bg-black/40" />
           <div className="relative bg-card rounded-t-[10px] flex flex-col" style={{ maxHeight: '85dvh' }}>
             <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-4 flex-shrink-0" />
-            <div className="px-4 pb-2 flex-shrink-0">
+            <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Nuevo registro mensual</h2>
+              <button type="button" onClick={handleCerrarSheetCrear}><X className="w-5 h-5 text-muted-foreground" /></button>
             </div>
+
+            {sheetCrearPaso === 'firma_gate' && (
+              <div className="flex-1 overflow-y-auto px-4 pb-6">
+                <FirmaGatePaso onIrAFirmar={() => setSheetCrearPaso('form')} />
+              </div>
+            )}
+
+            {sheetCrearPaso === 'firma_decision' && pendienteFirmaId && (
+              <div className="flex-1 overflow-y-auto px-4 pb-6">
+                <PasoFirmaRegistro
+                  modulo="M45"
+                  registroId={pendienteFirmaId}
+                  descripcion={`Mantenimiento Preventivo ${nMes}`}
+                  onFirmadoYPDF={() => {
+                    handleCerrarSheetCrear()
+                    if (pendienteReg) abrirDetalle(pendienteReg)
+                  }}
+                  onDespues={() => {
+                    handleCerrarSheetCrear()
+                    if (pendienteReg) abrirDetalle(pendienteReg)
+                  }}
+                />
+              </div>
+            )}
+
+            {sheetCrearPaso === 'form' && (
             <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-4">
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5">{termino} *</label>
@@ -774,6 +836,7 @@ export function MantenimientoPreventivo() {
                 {creando ? 'Creando…' : 'Crear registro'}
               </button>
             </div>
+            )}
           </div>
         </div>
       )}

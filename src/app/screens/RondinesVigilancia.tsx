@@ -26,6 +26,11 @@ import {
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -176,6 +181,7 @@ export function RondinesVigilancia() {
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { rondines, loading, error, refetch } = useM46Rondines()
+  const { obligatoria, tengoFirma } = useFirmaContext()
 
   const orgId = profile?.org_id ?? null
   const esSuperAdmin = profile?.rol === 'super_admin'
@@ -184,11 +190,18 @@ export function RondinesVigilancia() {
 
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }))
 
+  const todosIds = useMemo(() => rondines.map(r => r.id), [rondines])
+  const { firmas, refetch: refetchFirmas } = useFirmasRegistro('M46', todosIds)
+
   // ── PDF individual ──
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null)
 
   async function handlePDFIndividual(rondin: M46RondinResumen) {
     if (!orgId) return
+    if (obligatoria && !firmas[rondin.id]?.realizo) {
+      toast.info('Firma el registro antes de descargar el PDF')
+      return
+    }
     setGenerandoPDF(rondin.id)
     try {
       await generarRondinesVigilanciaPDF(rondin.id, orgId, codigoClave)
@@ -200,6 +213,8 @@ export function RondinesVigilancia() {
 
   // ── Sheet: nuevo rondín ──
   const [sheetNuevo, setSheetNuevo] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [nRanchoId, setNRanchoId] = useState('')
   const [nFecha, setNFecha] = useState(hoyMX())
   const [nTurno, setNTurno] = useState('')
@@ -246,6 +261,12 @@ export function RondinesVigilancia() {
     }
   }
 
+  function handleCerrarSheetNuevo() {
+    setSheetNuevo(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
+
   function abrirNuevo() {
     setNRanchoId(ranchoInicial ?? '')
     setNFecha(hoyMX())
@@ -259,6 +280,8 @@ export function RondinesVigilancia() {
     setNDescs({})
     setNErrRancho(false)
     setNErrVigilante(false)
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetNuevo(true)
   }
 
@@ -371,12 +394,14 @@ export function RondinesVigilancia() {
         ? ` · ${numInc} novedad${numInc > 1 ? 'es' : ''} vinculada${numInc > 1 ? 's' : ''} a M13`
         : ''
       toast.success(`Rondín guardado${msgExtra}`)
-      setSheetNuevo(false)
       await refetch()
-      generarRondinesVigilanciaPDF(rondinId, orgId, codigoClave).catch(() => {})
+      setPendienteFirmaId(rondinId)
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Error al guardar'
-      if (msg.includes('FECHA_SOLO_HOY')) {
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+      } else if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
         toast.error(msg)
@@ -562,12 +587,22 @@ export function RondinesVigilancia() {
         ) : (
           <div className="space-y-3">
             {rondines.map((r) => (
-              <RondinCard
-                key={r.id}
-                rondin={r}
-                onPDF={() => handlePDFIndividual(r)}
-                generando={generandoPDF === r.id}
-              />
+              <div key={r.id}>
+                {obligatoria && !firmas[r.id]?.realizo && (
+                  <div className="mb-1">
+                    <span className="text-xs px-2 py-0.5 rounded"
+                      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                      Pendiente de firma
+                    </span>
+                  </div>
+                )}
+                <RondinCard
+                  rondin={r}
+                  onPDF={() => handlePDFIndividual(r)}
+                  generando={generandoPDF === r.id}
+                />
+                <FirmasRegistro modulo="M46" registroId={r.id} orgId={orgId!} onFirmado={refetchFirmas} />
+              </div>
             ))}
           </div>
         )}
@@ -580,7 +615,7 @@ export function RondinesVigilancia() {
       {sheetNuevo && (
         <div
           className="fixed inset-0 z-50 flex flex-col justify-end"
-          onClick={(e) => { if (e.target === e.currentTarget && !nGuardando) setSheetNuevo(false) }}
+          onClick={(e) => { if (e.target === e.currentTarget && !nGuardando) handleCerrarSheetNuevo() }}
         >
           <div className="absolute inset-0 bg-black/40" />
           <div
@@ -590,11 +625,36 @@ export function RondinesVigilancia() {
             <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-1 flex-shrink-0" />
             <div className="px-4 py-3 flex items-center justify-between flex-shrink-0 border-b border-border">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Nuevo rondín</h2>
-              <button onClick={() => { if (!nGuardando) setSheetNuevo(false) }}>
+              <button onClick={() => { if (!nGuardando) handleCerrarSheetNuevo() }}>
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
+            {sheetPaso === 'firma_gate' && (
+              <div className="flex-1 overflow-y-auto px-4 pb-6 pt-4">
+                <FirmaGatePaso onIrAFirmar={() => setSheetPaso('form')} />
+              </div>
+            )}
+
+            {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+              <div className="flex-1 overflow-y-auto px-4 pb-6 pt-4">
+                <PasoFirmaRegistro
+                  modulo="M46"
+                  registroId={pendienteFirmaId}
+                  descripcion={`Rondín de Vigilancia del ${nFecha}`}
+                  onFirmadoYPDF={async () => {
+                    await generarRondinesVigilanciaPDF(pendienteFirmaId, orgId!, codigoClave)
+                    handleCerrarSheetNuevo()
+                    await refetchFirmas()
+                  }}
+                  onDespues={() => {
+                    handleCerrarSheetNuevo()
+                  }}
+                />
+              </div>
+            )}
+
+            {sheetPaso === 'form' && (
             <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-4 pt-4">
 
               {/* Encabezado */}
@@ -832,6 +892,7 @@ export function RondinesVigilancia() {
                 ) : 'Guardar rondín'}
               </button>
             </div>
+            )}
           </div>
         </div>
       )}

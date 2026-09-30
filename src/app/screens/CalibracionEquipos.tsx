@@ -16,6 +16,11 @@ import { generarCalibracionEquiposPDF, generarCalibracionEquiposConsolidadoPDF }
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 function formatFecha(iso: string): string {
   try {
@@ -61,7 +66,13 @@ export function CalibracionEquipos() {
   const { registros, loading, refetch } = useM50CalibracionEquipos(orgId)
   const orgNombre = useOrganizacion(orgId)
 
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M50', todosIds)
+
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const [form, setForm] = useState<FormState>(FORM_VACIO)
   const [guardando, setGuardando] = useState(false)
@@ -71,6 +82,8 @@ export function CalibracionEquipos() {
 
   function abrirNuevo() {
     setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX(), realizo: profile?.nombre_completo ?? '' })
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetOpen(true)
   }
 
@@ -102,18 +115,16 @@ export function CalibracionEquipos() {
         .single()
       if (error) throw error
 
-      setSheetOpen(false)
-      await refetch()
       toast.success('Calibración registrada')
-
-      try {
-        await generarCalibracionEquiposPDF(data.id, orgId, codigoClave)
-      } catch (e) {
-        toast.error('PDF no generado')
-        console.error(e)
-      }
+      await refetch()
+      setPendienteFirmaId(data.id as string)
+      setSheetPaso('firma_decision')
     } catch (e: any) {
       const msg: string = e?.message ?? 'Error al guardar'
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+        return
+      }
       if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
@@ -127,6 +138,10 @@ export function CalibracionEquipos() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (obligatoria && !firmas[id]?.realizo) {
+      toast.info('Firma este registro antes de descargar el PDF')
+      return
+    }
     setPdfLoading(id)
     try {
       await generarCalibracionEquiposPDF(id, orgId, codigoClave)
@@ -135,6 +150,12 @@ export function CalibracionEquipos() {
     } finally {
       setPdfLoading(null)
     }
+  }
+
+  function handleCerrarSheet() {
+    setSheetOpen(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
   }
 
   async function exportarConsolidado() {
@@ -216,6 +237,11 @@ export function CalibracionEquipos() {
                   </span>
                 )}
                 <p className="text-xs text-muted-foreground mt-1">{m.realizo}</p>
+                {obligatoria && !firmas[m.id]?.realizo && (
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                    Pendiente de firma
+                  </span>
+                )}
               </div>
               <button
                 onClick={() => descargarPDF(m.id)}
@@ -228,17 +254,52 @@ export function CalibracionEquipos() {
                 }
               </button>
             </div>
+            <FirmasRegistro
+              modulo="M50"
+              registroId={m.id}
+              fechaRegistro={m.fecha}
+              firma={firmas[m.id]}
+              loadingFirmas={loadingFirmas}
+              onFirmado={refetchFirmas}
+            />
           </div>
         ))}
       </div>
 
             <Fab onClick={abrirNuevo} aria-label="Nueva calibración" />
 
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
-        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
-          <h2 className="text-base font-semibold">Nueva calibración de equipo</h2>
-          <button onClick={() => setSheetOpen(false)}><X className="w-5 h-5" /></button>
+      <BottomSheet open={sheetOpen} onClose={handleCerrarSheet} height="85%">
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div className="w-9 h-1 rounded-full bg-border" />
         </div>
+        <div className="flex items-center justify-between px-4 pb-3 border-b border-border flex-shrink-0">
+          <h2 className="text-base font-semibold">
+            {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nueva calibración de equipo'}
+          </h2>
+          <button onClick={handleCerrarSheet}><X className="w-5 h-5" /></button>
+        </div>
+
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+        )}
+
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M50"
+            ids={[pendienteFirmaId]}
+            descripcion={`Calibración del ${formatFecha(form.fecha)}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              await generarCalibracionEquiposPDF(pendienteFirmaId, orgId!, codigoClave)
+              handleCerrarSheet()
+              await refetchFirmas()
+            }}
+            onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+          />
+        )}
+
+        {sheetPaso === 'form' && (
+          <>
         <div className="overflow-y-auto flex-1 px-4 pt-4 pb-8 space-y-4">
           <div>
             <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
@@ -333,7 +394,7 @@ export function CalibracionEquipos() {
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
               value={form.realizo}
-              onChange={e => setForm(f => ({ ...f, realizo: e.target.value }))}
+              readOnly
             />
           </div>
           <div>
@@ -357,6 +418,8 @@ export function CalibracionEquipos() {
             Guardar y generar PDF
           </button>
         </div>
+          </>
+        )}
       </BottomSheet>
 
       <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}>

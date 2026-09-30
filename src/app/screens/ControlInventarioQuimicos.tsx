@@ -21,6 +21,11 @@ import { generarInventarioQuimicosConsolidadoPDF } from '@/lib/pdf/m24/generarIn
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -75,10 +80,22 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
   const { movimientos, loading, refetch: refetchMovs } = useM24Movimientos(quimico.quimico_id, orgId)
   const { saldos: _, refetch: refetchSaldos } = useM24Saldos(orgId)
 
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = movimientos.map(m => m.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M24', todosIds)
+
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [movForm, setMovForm] = useState<MovForm>({ ...MOV_INICIAL, persona_solicita: perfilNombre })
   const [guardando, setGuardando] = useState(false)
   const [pdfLoading, setPdfLoading] = useState(false)
+
+  function handleCerrarSheet() {
+    setSheetOpen(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
 
   const movsConSaldo = useMemo(() => {
     let saldo = 0
@@ -104,7 +121,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
 
     setGuardando(true)
     try {
-      const { error } = await (supabase as any)
+      const { data, error } = await (supabase as any)
         .from('m24_movimientos')
         .insert({
           org_id: orgId,
@@ -116,15 +133,16 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
           tipo: movForm.tipo,
           cantidad: Number(movForm.cantidad),
         })
+        .select('id')
+        .single()
       if (error) throw error
       toast.success(`${movForm.tipo === 'entrada' ? 'Entrada' : 'Salida'} registrada`)
-      setSheetOpen(false)
       await Promise.all([refetchMovs(), refetchSaldos()])
-      try {
-        await generarInventarioQuimicosPDF(quimico.quimico_id, orgId)
-      } catch { /* PDF no crítico */ }
+      setPendienteFirmaId((data as any).id)
+      setSheetPaso('firma_decision')
     } catch (e: any) {
       const msg = e?.message ?? ''
+      if (msg.includes('FIRMA_REQUERIDA')) { setSheetPaso('firma_gate'); return }
       if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
@@ -145,6 +163,8 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
 
   function abrirForm() {
     setMovForm({ ...MOV_INICIAL, persona_solicita: perfilNombre, fecha: hoy() })
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetOpen(true)
   }
 
@@ -235,26 +255,43 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
               <span className="text-xs font-semibold text-right" style={{ color: 'var(--muted-foreground)' }}>Total</span>
             </div>
             {movsParaMostrar.map((m) => (
-              <div key={m.id} className="grid grid-cols-[80px_1fr_52px_44px] px-3 py-2.5 border-b border-border last:border-b-0">
-                <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                  {formatFecha(m.fecha)}
-                </span>
-                <div className="min-w-0 pr-2">
-                  <p className="text-xs font-medium truncate">{m.persona_solicita}</p>
-                  <p className="text-xs truncate" style={{ color: 'var(--muted-foreground)' }}>{m.area}</p>
+              <div key={m.id} className="border-b border-border last:border-b-0">
+                <div className="grid grid-cols-[80px_1fr_52px_44px] px-3 py-2.5">
+                  <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                    {formatFecha(m.fecha)}
+                  </span>
+                  <div className="min-w-0 pr-2">
+                    <p className="text-xs font-medium truncate">{m.persona_solicita}</p>
+                    <p className="text-xs truncate" style={{ color: 'var(--muted-foreground)' }}>{m.area}</p>
+                    {obligatoria && !firmas[m.id]?.realizo && (
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-0.5 inline-block">
+                        Pendiente de firma
+                      </span>
+                    )}
+                  </div>
+                  <span
+                    className="text-xs font-semibold text-right"
+                    style={{ color: m.tipo === 'entrada' ? 'var(--agro-success-text)' : 'var(--agro-danger-text)' }}
+                  >
+                    {m.tipo === 'entrada' ? '+' : '-'}{m.cantidad}
+                  </span>
+                  <span
+                    className="text-xs font-semibold text-right"
+                    style={{ color: m.saldo < 0 ? 'var(--agro-danger-text)' : undefined }}
+                  >
+                    {m.saldo}
+                  </span>
                 </div>
-                <span
-                  className="text-xs font-semibold text-right"
-                  style={{ color: m.tipo === 'entrada' ? 'var(--agro-success-text)' : 'var(--agro-danger-text)' }}
-                >
-                  {m.tipo === 'entrada' ? '+' : '-'}{m.cantidad}
-                </span>
-                <span
-                  className="text-xs font-semibold text-right"
-                  style={{ color: m.saldo < 0 ? 'var(--agro-danger-text)' : undefined }}
-                >
-                  {m.saldo}
-                </span>
+                <div className="px-3 pb-2">
+                  <FirmasRegistro
+                    modulo="M24"
+                    registroId={m.id}
+                    fechaRegistro={m.fecha}
+                    firma={firmas[m.id]}
+                    loadingFirmas={loadingFirmas}
+                    onFirmado={async () => { await refetchMovs(); await refetchFirmas() }}
+                  />
+                </div>
               </div>
             ))}
           </div>

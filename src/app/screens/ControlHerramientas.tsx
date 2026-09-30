@@ -14,6 +14,11 @@ import { generarControlHerramientasPDF, generarControlHerramientasConsolidadoPDF
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -63,7 +68,13 @@ export function ControlHerramientas() {
   const { registros, loading, refetch } = useM64ControlHerramientas(orgId)
   const orgNombre = useOrganizacion(orgId)
 
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M64', todosIds)
+
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const [form, setForm] = useState<FormState>(FORM_VACIO)
   const [guardando, setGuardando] = useState(false)
@@ -73,7 +84,15 @@ export function ControlHerramientas() {
 
   function abrirNuevo() {
     setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX() })
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetOpen(true)
+  }
+
+  function handleCerrarSheet() {
+    setSheetOpen(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
   }
 
   async function guardar() {
@@ -107,19 +126,16 @@ export function ControlHerramientas() {
         .single()
       if (error) throw error
 
-      setSheetOpen(false)
       await refetch()
       toast.success('Registro guardado')
-
-      try {
-        await generarControlHerramientasPDF(data.id, orgId, codigoClave)
-      } catch (e) {
-        toast.error('PDF no generado')
-        console.error(e)
-      }
+      setPendienteFirmaId(data.id)
+      setSheetPaso('firma_decision')
     } catch (e: any) {
       const msg: string = e?.message ?? 'Error al guardar'
-      if (msg.includes('FECHA_SOLO_HOY')) {
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+        return
+      } else if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
         toast.error(msg)
@@ -131,6 +147,10 @@ export function ControlHerramientas() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (obligatoria && !firmas[id]?.realizo) {
+      toast.info('Firma el registro antes de generar el PDF')
+      return
+    }
     setPdfLoading(id)
     try {
       await generarControlHerramientasPDF(id, orgId, codigoClave)
@@ -228,6 +248,11 @@ export function ControlHerramientas() {
                     {r.devuelto ? 'Devuelto' : 'Pendiente'}
                   </span>
                 </div>
+                {obligatoria && !firmas[r.id]?.realizo && (
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                    Pendiente de firma
+                  </span>
+                )}
               </div>
               <button
                 onClick={() => descargarPDF(r.id)}
@@ -240,6 +265,14 @@ export function ControlHerramientas() {
                 }
               </button>
             </div>
+            <FirmasRegistro
+              modulo="M64"
+              registroId={r.id}
+              fechaRegistro={r.fecha}
+              firma={firmas[r.id]}
+              loadingFirmas={loadingFirmas}
+              onFirmado={async () => { await refetch(); await refetchFirmas() }}
+            />
           </div>
         ))}
       </div>
@@ -248,10 +281,28 @@ export function ControlHerramientas() {
             <Fab onClick={abrirNuevo} aria-label="Nuevo registro" />
 
       {/* Bottom sheet — Formulario */}
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
+      <BottomSheet open={sheetOpen} onClose={handleCerrarSheet}>
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+        )}
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M64"
+            ids={[pendienteFirmaId]}
+            descripcion={`Control de herramientas del ${formatFecha(form.fecha)}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              await generarControlHerramientasPDF(pendienteFirmaId, orgId!, codigoClave)
+              handleCerrarSheet()
+              await refetchFirmas()
+            }}
+            onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+          />
+        )}
+        {sheetPaso === 'form' && (<>
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <h2 className="text-base font-semibold">Nueva entrega de herramienta</h2>
-          <button onClick={() => setSheetOpen(false)}>
+          <button onClick={handleCerrarSheet}>
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -398,9 +449,10 @@ export function ControlHerramientas() {
             className="w-full h-11 rounded-[0.625rem] bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar y generar PDF
+            Guardar
           </button>
         </div>
+        </>)}
       </BottomSheet>
 
       {/* Bottom sheet — Consolidado */}

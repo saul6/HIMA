@@ -254,11 +254,17 @@ export function InspeccionVidrioPlastico() {
   const { inspecciones, loading, refetch } = useVidrioPlastico()
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = inspecciones.flatMap(insp => insp.materiales.map(m => m.id))
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M7', todosIds)
 
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }))
 
   // ── Estado inspección ───────────────────────────────────────────────────
   const [sheetInspeccionAbierto, setSheetInspeccionAbierto] = useState(false)
+  const [sheetInspeccionPaso, setSheetInspeccionPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendientesFirmaIds, setPendientesFirmaIds] = useState<string[]>([])
+  const [pendienteFirmaFecha, setPendienteFirmaFecha] = useState<string>('')
   const [ranchoId, setRanchoId] = useState('')
 
   useEffect(() => {
@@ -419,7 +425,17 @@ export function InspeccionVidrioPlastico() {
     setFilasInspeccion([])
     setErrRancho(false)
     setLimiteInfo(null)
+    setPendientesFirmaIds([])
+    setPendienteFirmaFecha('')
+    setSheetInspeccionPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetInspeccionAbierto(true)
+  }
+
+  function handleCerrarSheetInspeccion() {
+    setSheetInspeccionAbierto(false)
+    setSheetInspeccionPaso('form')
+    setPendientesFirmaIds([])
+    setPendienteFirmaFecha('')
   }
 
   function updateFilaInspeccion(idx: number, f: FilaInspeccion) {
@@ -456,35 +472,19 @@ export function InspeccionVidrioPlastico() {
       if (error) throw error
 
       toast.success('Inspección guardada')
-      setSheetInspeccionAbierto(false)
       if (tareaId) setRegistroGuardado(true)
       await refetch()
 
-      const rancho = ranchos.find((r) => r.id === ranchoId)
-      if (rancho) {
-        const folio = (data?.[0]?.id as string)?.slice(0, 8).toUpperCase() ?? '—'
-        const pdfProps: VidrioPlasticoPDFProps = {
-          folio,
-          rancho: rancho.nombre,
-          ranchoCodigo: rancho.codigo,
-          fecha,
-          responsableNombre: profile.nombre_completo,
-          materiales: filasInspeccion.map((f) => ({
-            area: f.area,
-            material_equipo: f.material,
-            protegido: f.protegido,
-            estado: f.estado,
-            observaciones: f.observaciones.trim() || null,
-          })),
-        }
-        try {
-          await generarVidrioPlasticoPDF(pdfProps, rancho.nombre, fecha)
-        } catch {
-          toast.warning('Inspección guardada — el PDF no se pudo generar. Descárgalo desde el historial.')
-        }
-      }
+      const insertedIds = (data ?? []).map((row: any) => row.id as string)
+      setPendientesFirmaIds(insertedIds)
+      setPendienteFirmaFecha(fecha)
+      setSheetInspeccionPaso('firma_decision')
     } catch (err: unknown) {
       const mensaje = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
+      if (mensaje.includes('FIRMA_REQUERIDA')) {
+        setSheetInspeccionPaso('firma_gate')
+        return
+      }
       if (mensaje.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else if (mensaje.includes('M7_LIMITE_QUINCENAL')) {
@@ -497,8 +497,36 @@ export function InspeccionVidrioPlastico() {
     }
   }
 
+  async function generarPdfM7(inspFecha: string, inspIds: string[]) {
+    const rancho = ranchos.find((r) => r.id === ranchoId)
+    if (!rancho || !profile) return
+    const folio = inspIds[0]?.slice(0, 8).toUpperCase() ?? '—'
+    const pdfProps: VidrioPlasticoPDFProps = {
+      folio,
+      rancho: rancho.nombre,
+      ranchoCodigo: rancho.codigo,
+      fecha: inspFecha,
+      responsableNombre: profile.nombre_completo,
+      materiales: filasInspeccion.map((f) => ({
+        area: f.area,
+        material_equipo: f.material,
+        protegido: f.protegido,
+        estado: f.estado,
+        observaciones: f.observaciones.trim() || null,
+      })),
+    }
+    await generarVidrioPlasticoPDF(pdfProps, rancho.nombre, inspFecha)
+  }
+
   async function handleDescargarPDF(insp: M7Inspeccion) {
     const key = `${insp.rancho_id}|${insp.fecha}`
+    if (obligatoria) {
+      const algSinFirma = insp.materiales.some(m => !firmas[m.id]?.realizo)
+      if (algSinFirma) {
+        toast.info('Firma esta inspección antes de descargar el PDF')
+        return
+      }
+    }
     setGenerandoPDF(key)
     try {
       const folio = insp.materiales[0]?.id.slice(0, 8).toUpperCase() ?? '—'
@@ -760,7 +788,23 @@ export function InspeccionVidrioPlastico() {
                       {estado}: {count}
                     </span>
                   ))}
+                  {obligatoria && insp.materiales.some(m => !firmas[m.id]?.realizo) && (
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text" style={{ fontWeight: 600 }}>
+                      Pendiente de firma
+                    </span>
+                  )}
                 </div>
+                {insp.materiales.map(m => (
+                  <FirmasRegistro
+                    key={m.id}
+                    modulo="M7"
+                    registroId={m.id}
+                    fechaRegistro={insp.fecha}
+                    firma={firmas[m.id]}
+                    loadingFirmas={loadingFirmas}
+                    onFirmado={async () => { await refetch(); await refetchFirmas() }}
+                  />
+                ))}
               </div>
             )
           })
@@ -995,17 +1039,44 @@ export function InspeccionVidrioPlastico() {
       </BottomSheet>
 
       {/* ── Sheet: nueva inspección ────────────────────────────────────────── */}
-      <BottomSheet open={sheetInspeccionAbierto} onClose={() => setSheetInspeccionAbierto(false)} height="85%">
+      <BottomSheet open={sheetInspeccionAbierto} onClose={handleCerrarSheetInspeccion} height="85%">
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
             <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nueva inspección</h2>
-              <button onClick={() => setSheetInspeccionAbierto(false)} className="p-1">
+              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                {sheetInspeccionPaso === 'firma_gate' ? 'Registra tu firma' : sheetInspeccionPaso === 'firma_decision' ? 'Firmar registro' : 'Nueva inspección'}
+              </h2>
+              <button onClick={handleCerrarSheetInspeccion} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
+            {sheetInspeccionPaso === 'firma_gate' && (
+              <FirmaGatePaso onFirmaGuardada={() => setSheetInspeccionPaso('form')} />
+            )}
+
+            {sheetInspeccionPaso === 'firma_decision' && pendientesFirmaIds.length > 0 && (
+              <PasoFirmaRegistro
+                modulo="M7"
+                ids={pendientesFirmaIds}
+                descripcion={`Inspección del ${formatFecha(pendienteFirmaFecha)}`}
+                obligatoria={obligatoria}
+                onFirmadoYPDF={async () => {
+                  try {
+                    await generarPdfM7(pendienteFirmaFecha, pendientesFirmaIds)
+                  } catch {
+                    toast.warning('Inspección guardada — el PDF no se pudo generar. Descárgalo desde el historial.')
+                  }
+                  handleCerrarSheetInspeccion()
+                  await refetchFirmas()
+                }}
+                onDespues={!obligatoria ? () => handleCerrarSheetInspeccion() : undefined}
+              />
+            )}
+
+            {sheetInspeccionPaso === 'form' && (
+            <>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
               {/* Rancho */}
@@ -1142,6 +1213,8 @@ export function InspeccionVidrioPlastico() {
                 Guardar y generar PDF
               </button>
             </div>
+            </>
+            )}
       </BottomSheet>
     </div>
   )

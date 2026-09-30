@@ -25,6 +25,9 @@ import type { M37ItemPDF, M37DiaDataPDF, ValorM37PDF } from '@/lib/pdf/m37/Limpi
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -389,11 +392,33 @@ export function LimpiezaCisterna() {
 
   // ── Sheet: nuevo registro ─────────────────────────────────────────────────
   const [sheetNuevo, setSheetNuevo] = useState(false)
+  const [sheetNuevoPaso, setSheetNuevoPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+  const [pendienteNuevo, setPendienteNuevo] = useState<M37RegistroResumen | null>(null)
   const [nRanchoId, setNRanchoId] = useState('')
   const [nAnio, setNAnio] = useState(new Date().getFullYear())
   const [nMes, setNMes] = useState(new Date().getMonth() + 1)
   const [nGuardando, setNGuardando] = useState(false)
   const [nErrRancho, setNErrRancho] = useState(false)
+  const { obligatoria, tengoFirma } = useFirmaContext()
+
+  function handleCerrarSheetNuevo() {
+    setSheetNuevo(false)
+    setSheetNuevoPaso('form')
+    setPendienteFirmaId(null)
+    setPendienteNuevo(null)
+  }
+
+  function abrirSheetNuevo() {
+    setNRanchoId(ranchoInicial ?? '')
+    setNAnio(new Date().getFullYear())
+    setNMes(new Date().getMonth() + 1)
+    setNErrRancho(false)
+    setPendienteFirmaId(null)
+    setPendienteNuevo(null)
+    setSheetNuevoPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
+    setSheetNuevo(true)
+  }
 
   async function handleCrearRegistro() {
     if (!nRanchoId) { setNErrRancho(true); return }
@@ -406,7 +431,6 @@ export function LimpiezaCisterna() {
         .single()
       if (e) throw e
       toast.success('Registro mensual creado')
-      setSheetNuevo(false)
       await refetch()
       const r = data as any
       const nuevo: M37RegistroResumen = {
@@ -415,9 +439,12 @@ export function LimpiezaCisterna() {
         anio: r.anio, mes: r.mes, area: r.area ?? 'Cisterna',
         observaciones: null,
       }
-      abrirDetalle(nuevo)
+      setPendienteFirmaId(r.id)
+      setPendienteNuevo(nuevo)
+      setSheetNuevoPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Error al crear registro'
+      if (msg.includes('FIRMA_REQUERIDA')) { setSheetNuevoPaso('firma_gate'); return }
       if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
         toast.warning('Ya existe un registro para ese mes e instalación')
       } else {
@@ -1077,10 +1104,7 @@ export function LimpiezaCisterna() {
 
       {/* ── FAB ──────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
-                <Fab onClick={() => {
-              setNRanchoId(ranchoInicial ?? ''); setNAnio(new Date().getFullYear()); setNMes(new Date().getMonth() + 1)
-              setNErrRancho(false); setSheetNuevo(true)
-            }} aria-label="Nuevo registro mensual" />
+                <Fab onClick={abrirSheetNuevo} aria-label="Nuevo registro mensual" />
       )}
 
       {/* ═══ SHEET: PLAGA ENCONTRADA ════════════════════════════════════════════ */}
@@ -1131,14 +1155,33 @@ export function LimpiezaCisterna() {
       </BottomSheet>
 
       {/* ═══ SHEET: NUEVO REGISTRO ══════════════════════════════════════════════ */}
-      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
+      <BottomSheet open={sheetNuevo} onClose={handleCerrarSheetNuevo} height="85%">
         <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
         <div className="px-4 pb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nuevo registro mensual</h2>
-            <button type="button" onClick={() => setSheetNuevo(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
+            <button type="button" onClick={handleCerrarSheetNuevo}><X className="w-5 h-5 text-muted-foreground" /></button>
           </div>
-          <div className="space-y-4">
+
+          {sheetNuevoPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetNuevoPaso('form')} />}
+          {sheetNuevoPaso === 'firma_decision' && pendienteFirmaId && (
+            <PasoFirmaRegistro
+              modulo="M37"
+              ids={[pendienteFirmaId]}
+              descripcion={`Registro mensual ${MESES[(nMes ?? 1) - 1]} ${nAnio}`}
+              obligatoria={obligatoria}
+              onFirmadoYPDF={async () => {
+                handleCerrarSheetNuevo()
+                if (pendienteNuevo) abrirDetalle(pendienteNuevo)
+              }}
+              onDespues={!obligatoria ? () => {
+                const reg = pendienteNuevo
+                handleCerrarSheetNuevo()
+                if (reg) abrirDetalle(reg)
+              } : undefined}
+            />
+          )}
+          {sheetNuevoPaso === 'form' && <div className="space-y-4">
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{termino} *</label>
               <select
@@ -1183,7 +1226,7 @@ export function LimpiezaCisterna() {
             >
               {nGuardando ? 'Guardando…' : 'Crear registro'}
             </button>
-          </div>
+          </div>}
         </div>
       </BottomSheet>
 

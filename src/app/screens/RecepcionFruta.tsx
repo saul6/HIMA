@@ -19,6 +19,11 @@ import { generarRecepcionFrutaConsolidadoPDF } from '@/lib/pdf/m39/generarRecepc
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -175,11 +180,17 @@ export function RecepcionFruta() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { recepciones, loading, error, refetch } = useM39Recepciones()
   const orgNombre = useOrganizacion(orgId)
+  const { obligatoria, tengoFirma } = useFirmaContext()
 
   // Almacén sector → simplified variant; cuarto frío → original
   const esAlmacen = modulos.some(m => m.sector_clave === 'almacen')
 
+  const todosIds = useMemo(() => recepciones.map(r => r.id), [recepciones])
+  const { firmas, refetch: refetchFirmas } = useFirmasRegistro('M39', todosIds)
+
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const [form, setForm] = useState<FormState>({ ...FORM_BASE, fecha: hoyMX() })
   const [lineas, setLineas] = useState<LineaForm[]>([nuevaLinea()])
@@ -189,9 +200,17 @@ export function RecepcionFruta() {
   const [consolidadoForm, setConsolidadoForm] = useState({ rancho_id: '', desde: hoyMX(), hasta: hoyMX() })
   const [exportando, setExportando] = useState(false)
 
+  function handleCerrarSheet() {
+    setSheetOpen(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
+
   function abrirNuevo() {
     setForm({ ...FORM_BASE, rancho_id: ranchoInicial ?? '', fecha: hoyMX() })
     setLineas([nuevaLinea()])
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetOpen(true)
   }
 
@@ -353,21 +372,18 @@ export function RecepcionFruta() {
         }
       }
 
-      setSheetOpen(false)
-      await refetch()
       toast.success('Recepción registrada')
-
-      try {
-        await generarRecepcionFrutaPDF(recepcionId, orgId, codigoClave)
-      } catch {
-        toast.error('PDF no generado')
-      }
+      await refetch()
+      setPendienteFirmaId(recepcionId)
+      setSheetPaso('firma_decision')
     } catch (e: any) {
       console.error('save recepcion error', e)
       console.error('details', e?.details, 'code', e?.code, 'hint', e?.hint)
       const msg: string = e?.message ?? 'Error al guardar'
       const details: string = e?.details ? ` (${e.details})` : ''
-      if (msg.includes('FECHA_SOLO_HOY')) {
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+      } else if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
         toast.error(msg + details)
@@ -380,6 +396,10 @@ export function RecepcionFruta() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (obligatoria && !firmas[id]?.realizo) {
+      toast.info('Firma el registro antes de descargar el PDF')
+      return
+    }
     setPdfLoading(id)
     try {
       await generarRecepcionFrutaPDF(id, orgId, codigoClave)
@@ -469,6 +489,7 @@ export function RecepcionFruta() {
         ) : (
           recepciones.map(r => {
             const esAL = r.hoja_no !== null
+            const pendienteFirma = obligatoria && !firmas[r.id]?.realizo
             return (
               <div key={r.id} className="bg-card border border-border rounded-xl p-4">
                 <div className="flex items-start justify-between gap-2">
@@ -484,6 +505,12 @@ export function RecepcionFruta() {
                       <p className="text-xs text-muted-foreground mt-0.5">Hoja No.: {r.hoja_no}</p>
                     )}
                     <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                      {pendienteFirma && (
+                        <span className="text-xs px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                          Pendiente de firma
+                        </span>
+                      )}
                       {esAL ? (
                         <>
                           <span className="text-xs px-2 py-0.5 rounded-full"
@@ -517,6 +544,7 @@ export function RecepcionFruta() {
                     }
                   </button>
                 </div>
+                <FirmasRegistro modulo="M39" registroId={r.id} orgId={orgId!} onFirmado={refetchFirmas} />
               </div>
             )
           })
@@ -527,17 +555,42 @@ export function RecepcionFruta() {
             <Fab onClick={abrirNuevo} aria-label="Nueva recepción" />
 
       {/* ═══ SHEET: FORMULARIO ══════════════════════════════════════════════════ */}
-      <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) setSheetOpen(false) }} height="85%">
+      <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) handleCerrarSheet() }} height="85%">
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-9 h-1 rounded-full bg-border" />
         </div>
         <div className="flex items-center justify-between px-4 pb-3">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nueva recepción</h2>
-          <button type="button" onClick={() => { if (!guardando) setSheetOpen(false) }}>
+          <button type="button" onClick={() => { if (!guardando) handleCerrarSheet() }}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
+        {sheetPaso === 'firma_gate' && (
+          <div className="px-4 pb-6">
+            <FirmaGatePaso onIrAFirmar={() => setSheetPaso('form')} />
+          </div>
+        )}
+
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <div className="px-4 pb-6">
+            <PasoFirmaRegistro
+              modulo="M39"
+              registroId={pendienteFirmaId}
+              descripcion={`Recepción Fruta del ${form.fecha}`}
+              onFirmadoYPDF={async () => {
+                await generarRecepcionFrutaPDF(pendienteFirmaId, orgId!, codigoClave)
+                handleCerrarSheet()
+                await refetchFirmas()
+              }}
+              onDespues={() => {
+                handleCerrarSheet()
+              }}
+            />
+          </div>
+        )}
+
+        {sheetPaso === 'form' && (<>
         <div className="overflow-y-auto px-4 pb-6 space-y-6" style={{ flex: 1 }}>
 
           {/* ── Encabezado ── */}
@@ -873,9 +926,10 @@ export function RecepcionFruta() {
             style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            {guardando ? 'Guardando…' : 'Guardar y generar PDF'}
+            {guardando ? 'Guardando…' : 'Guardar'}
           </button>
         </div>
+        </>)}
       </BottomSheet>
 
       {/* ═══ SHEET: CONSOLIDADO ═════════════════════════════════════════════════ */}

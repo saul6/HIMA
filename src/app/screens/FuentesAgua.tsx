@@ -15,6 +15,11 @@ import { generarFuentesAguaConsolidadoPDF } from '@/lib/pdf/m62/generarFuentesAg
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -73,7 +78,13 @@ export function FuentesAgua() {
   const { items } = useM62Items()
   const orgNombre = useOrganizacion(orgId)
 
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M62', todosIds)
+
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const [form, setForm] = useState<FormState>(FORM_VACIO)
   const [valores, setValores] = useState<Record<string, Respuesta>>({})
@@ -89,7 +100,15 @@ export function FuentesAgua() {
     for (const item of items) { init[item.id] = 'si' }
     setValores(init)
     setComentarios({})
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetOpen(true)
+  }
+
+  function handleCerrarSheet() {
+    setSheetOpen(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
   }
 
   async function guardar() {
@@ -125,19 +144,16 @@ export function FuentesAgua() {
       const { error: resErr } = await (supabase as any).from('m62_resultados').insert(batch)
       if (resErr) throw resErr
 
-      setSheetOpen(false)
       await refetch()
       toast.success('Inspección registrada')
-
-      try {
-        await generarFuentesAguaPDF(registroId, orgId, codigoClave)
-      } catch (e) {
-        console.error(e)
-        toast.error('PDF no generado')
-      }
+      setPendienteFirmaId(registroId)
+      setSheetPaso('firma_decision')
     } catch (e: any) {
       const msg: string = e?.message ?? 'Error al guardar'
-      if (msg.includes('FECHA_SOLO_HOY')) {
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+        return
+      } else if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
         toast.error(msg)
@@ -149,6 +165,10 @@ export function FuentesAgua() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (obligatoria && !firmas[id]?.realizo) {
+      toast.info('Firma el registro antes de generar el PDF')
+      return
+    }
     setPdfLoading(id)
     try {
       await generarFuentesAguaPDF(id, orgId, codigoClave)
@@ -233,6 +253,11 @@ export function FuentesAgua() {
                 {r.tipo_fuente && (
                   <p className="text-sm mt-1 font-medium">{r.tipo_fuente}</p>
                 )}
+                {obligatoria && !firmas[r.id]?.realizo && (
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                    Pendiente de firma
+                  </span>
+                )}
               </div>
               <button
                 onClick={() => descargarPDF(r.id)}
@@ -245,16 +270,42 @@ export function FuentesAgua() {
                 }
               </button>
             </div>
+            <FirmasRegistro
+              modulo="M62"
+              registroId={r.id}
+              fechaRegistro={r.fecha}
+              firma={firmas[r.id]}
+              loadingFirmas={loadingFirmas}
+              onFirmado={async () => { await refetch(); await refetchFirmas() }}
+            />
           </div>
         ))}
       </div>
 
             <Fab onClick={abrirNuevo} aria-label="Nueva inspección" />
 
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} height="85%">
+      <BottomSheet open={sheetOpen} onClose={handleCerrarSheet} height="85%">
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+        )}
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M62"
+            ids={[pendienteFirmaId]}
+            descripcion={`Inspección de fuentes del ${formatFecha(form.fecha)}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              await generarFuentesAguaPDF(pendienteFirmaId, orgId!, codigoClave)
+              handleCerrarSheet()
+              await refetchFirmas()
+            }}
+            onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+          />
+        )}
+        {sheetPaso === 'form' && (<>
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <h2 className="text-base font-semibold">Nueva inspección</h2>
-          <button onClick={() => setSheetOpen(false)}>
+          <button onClick={handleCerrarSheet}>
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -365,9 +416,10 @@ export function FuentesAgua() {
             style={{ backgroundColor: 'var(--primary)' }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar y generar PDF
+            Guardar
           </button>
         </div>
+        </>)}
       </BottomSheet>
 
       <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}>

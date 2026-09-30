@@ -21,6 +21,11 @@ import { generarInspeccionAlmacenEmpaqueConsolidadoPDF } from '@/lib/pdf/m43/gen
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -173,6 +178,19 @@ export function InspeccionAlmacenEmpaque() {
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const termino      = terminosSitio.singular
 
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M43', todosIds)
+
+  const [sheetCrearPaso, setSheetCrearPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+
+  function handleCerrarSheetCrear() {
+    setSheetCrear(false)
+    setSheetCrearPaso('form')
+    setPendienteFirmaId(null)
+  }
+
   // ── Catalog ──
   const [puntos, setPuntos] = useState<M43Punto[]>([])
   useEffect(() => {
@@ -316,6 +334,7 @@ export function InspeccionAlmacenEmpaque() {
         })
       if (err) {
         const msg = err.message as string
+        if (msg.includes('FIRMA_REQUERIDA')) { setSheetCrearPaso('firma_gate'); return }
         if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
           toast.warning('Ya existe un registro para ese mes e instalación')
         } else {
@@ -324,15 +343,34 @@ export function InspeccionAlmacenEmpaque() {
         return
       }
       toast.success('Registro mensual creado')
-      setSheetCrear(false)
       setNRanchoId('')
       setNMes(mesActual)
       setNRealizadoPor('')
       setNVerifica('')
       setNAutoriza('')
       await refetch()
+      // get the newly created record id
+      const nuevoReg = registros[0] // fallback; ideally we'd have the id from insert
+      // re-fetch to get the latest id
+      const tblRef = supabase as any
+      const { data: newData } = await tblRef
+        .from('m43_registro_mensual')
+        .select('id')
+        .eq('org_id', profile.org_id)
+        .eq('rancho_id', nRanchoId)
+        .eq('anio', Number(nMes.split('-')[0]))
+        .eq('mes', Number(nMes.split('-')[1]))
+        .single()
+      if (newData?.id) {
+        setPendienteFirmaId(newData.id)
+        setSheetCrearPaso('firma_decision')
+      } else {
+        setSheetCrear(false)
+      }
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Error al crear registro')
+      const msg = e instanceof Error ? e.message : 'Error al crear registro'
+      if (msg.includes('FIRMA_REQUERIDA')) { setSheetCrearPaso('firma_gate'); return }
+      toast.error(msg)
     } finally {
       setCreando(false)
     }
@@ -617,9 +655,22 @@ export function InspeccionAlmacenEmpaque() {
                           Realizado por: {reg.realizado_por}
                         </p>
                       )}
+                      {obligatoria && !firmas[reg.id]?.realizo && (
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                          Pendiente de firma
+                        </span>
+                      )}
                     </div>
                     <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />
                   </div>
+                  <FirmasRegistro
+                    modulo="M43"
+                    registroId={reg.id}
+                    fechaRegistro={`${reg.anio}-${String(reg.mes).padStart(2, '0')}-01`}
+                    firma={firmas[reg.id]}
+                    loadingFirmas={loadingFirmas}
+                    onFirmado={async () => { await refetch(); await refetchFirmas() }}
+                  />
                 </button>
               ))}
             </div>
@@ -742,8 +793,10 @@ export function InspeccionAlmacenEmpaque() {
       {/* ── FAB ────────────────────────────────────────────────────────── */}
             <Fab onClick={() => {
           if (vista === 'lista') {
-            setSheetCrear(true)
             setErrRancho(false)
+            setPendienteFirmaId(null)
+            setSheetCrearPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
+            setSheetCrear(true)
           } else {
             abrirSheetDia()
           }
@@ -752,18 +805,34 @@ export function InspeccionAlmacenEmpaque() {
       {/* ── Sheet: crear registro ──────────────────────────────────────── */}
       {sheetCrear && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setSheetCrear(false)} />
+          <div className="absolute inset-0 bg-black/40" onClick={handleCerrarSheetCrear} />
           <div
             className="relative bg-card rounded-t-[10px] flex flex-col"
             style={{ maxHeight: '85dvh' }}
           >
+            {sheetCrearPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetCrearPaso('form')} />}
+            {sheetCrearPaso === 'firma_decision' && pendienteFirmaId && (
+              <PasoFirmaRegistro
+                modulo="M43"
+                ids={[pendienteFirmaId]}
+                descripcion={`Inspección almacén empaque ${formatMesLabel(Number(nMes.split('-')[0]), Number(nMes.split('-')[1]))}`}
+                obligatoria={obligatoria}
+                onFirmadoYPDF={async () => {
+                  if (profile?.org_id) await generarInspeccionAlmacenEmpaquePDF(pendienteFirmaId, profile.org_id, codigoClave)
+                  handleCerrarSheetCrear()
+                  await refetchFirmas()
+                }}
+                onDespues={!obligatoria ? () => handleCerrarSheetCrear() : undefined}
+              />
+            )}
+            {sheetCrearPaso === 'form' && (<>
             <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-4 flex-shrink-0" />
             <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>
                 Nuevo registro mensual
               </h2>
               <button
-                onClick={() => setSheetCrear(false)}
+                onClick={handleCerrarSheetCrear}
                 className="p-1 text-muted-foreground hover:text-foreground transition-colors"
                 aria-label="Cerrar"
               >
@@ -839,6 +908,7 @@ export function InspeccionAlmacenEmpaque() {
                 {creando ? 'Creando…' : 'Crear registro'}
               </button>
             </div>
+            </>)}
           </div>
         </div>
       )}

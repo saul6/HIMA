@@ -25,6 +25,11 @@ import type { M32ItemPDF, M32DiaDataPDF, ValorM32PDF } from '@/lib/pdf/m32/Limpi
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -84,6 +89,9 @@ export function LimpiezaPatiosAzoteas() {
   const { registros, loading, error, refetch } = useM32LimpiezaPatiosAzoteas()
   const orgId = profile?.org_id ?? null
   const termino = terminosSitio.singular
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M32', todosIds)
 
   const [vista, setVista] = useState<Vista>('lista')
   const [registroActivo, setRegistroActivo] = useState<M32RegistroResumen | null>(null)
@@ -280,6 +288,9 @@ export function LimpiezaPatiosAzoteas() {
 
   // ── Sheet: nuevo registro ─────────────────────────────────────────────────────
   const [sheetNuevo, setSheetNuevo] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+  const [pendienteDetalle, setPendienteDetalle] = useState<M32RegistroResumen | null>(null)
   const [nRanchoId, setNRanchoId] = useState('')
   const [nAnio, setNAnio] = useState(new Date().getFullYear())
   const [nMes, setNMes] = useState(new Date().getMonth() + 1)
@@ -297,7 +308,6 @@ export function LimpiezaPatiosAzoteas() {
         .single()
       if (e) throw e
       toast.success('Registro mensual creado')
-      setSheetNuevo(false)
       await refetch()
       const r = data as any
       const nuevo: M32RegistroResumen = {
@@ -306,9 +316,15 @@ export function LimpiezaPatiosAzoteas() {
         anio: r.anio, mes: r.mes, area: r.area ?? 'Patios exteriores y azoteas',
         observaciones: null,
       }
-      abrirDetalle(nuevo)
+      setPendienteFirmaId(r.id)
+      setPendienteDetalle(nuevo)
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Error al crear registro'
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+        return
+      }
       if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
         toast.warning('Ya existe un registro para ese mes e instalación')
       } else {
@@ -317,6 +333,13 @@ export function LimpiezaPatiosAzoteas() {
     } finally {
       setNGuardando(false)
     }
+  }
+
+  function handleCerrarSheet() {
+    setSheetNuevo(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+    setPendienteDetalle(null)
   }
 
   // ── Sheet: configurar catálogo ────────────────────────────────────────────────
@@ -436,6 +459,10 @@ export function LimpiezaPatiosAzoteas() {
 
   async function handlePDFIndividual() {
     if (!registroActivo || !orgId) return
+    if (obligatoria && !firmas[registroActivo.id]?.realizo) {
+      toast.info('Firma este registro antes de descargar el PDF')
+      return
+    }
     setGenerandoPDF(true)
     try {
       const ranchoCodigo = (ranchos.find((r) => r.id === registroActivo.rancho_id) as any)?.codigo ?? '—'
@@ -575,24 +602,38 @@ export function LimpiezaPatiosAzoteas() {
           ) : (
             <div className="space-y-3">
               {registros.map((reg) => (
-                <button
-                  key={reg.id}
-                  onClick={() => abrirDetalle(reg)}
-                  className="w-full text-left bg-card rounded-xl p-4 border border-border"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="mb-1">
-                        <span className="text-xs px-2 py-0.5 rounded"
-                          style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', fontWeight: 600 }}>
-                          {formatMesLabel(reg.anio, reg.mes)}
-                        </span>
+                <div key={reg.id} className="bg-card rounded-xl border border-border">
+                  <button
+                    onClick={() => abrirDetalle(reg)}
+                    className="w-full text-left p-4"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="mb-1">
+                          <span className="text-xs px-2 py-0.5 rounded"
+                            style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', fontWeight: 600 }}>
+                            {formatMesLabel(reg.anio, reg.mes)}
+                          </span>
+                        </div>
+                        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</span>
+                        {obligatoria && !firmas[reg.id]?.realizo && (
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                            Pendiente de firma
+                          </span>
+                        )}
                       </div>
-                      <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</span>
+                      <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />
                     </div>
-                    <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />
-                  </div>
-                </button>
+                  </button>
+                  <FirmasRegistro
+                    modulo="M32"
+                    registroId={reg.id}
+                    fechaRegistro={`${reg.anio}-${String(reg.mes).padStart(2, '0')}-01`}
+                    firma={firmas[reg.id]}
+                    loadingFirmas={loadingFirmas}
+                    onFirmado={async () => { await refetch(); await refetchFirmas() }}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -836,67 +877,93 @@ export function LimpiezaPatiosAzoteas() {
 
       {/* ── FAB ──────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (
-                <Fab onClick={() => {
-              setNRanchoId(ranchoInicial ?? ''); setNAnio(new Date().getFullYear()); setNMes(new Date().getMonth() + 1)
-              setNErrRancho(false); setSheetNuevo(true)
-            }} aria-label="Nuevo registro mensual" />
+        <Fab onClick={() => {
+          setNRanchoId(ranchoInicial ?? ''); setNAnio(new Date().getFullYear()); setNMes(new Date().getMonth() + 1)
+          setNErrRancho(false); setPendienteFirmaId(null); setPendienteDetalle(null)
+          setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
+          setSheetNuevo(true)
+        }} aria-label="Nuevo registro mensual" />
       )}
 
       {/* ═══ SHEET: NUEVO REGISTRO ══════════════════════════════════════════════ */}
-      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
+      <BottomSheet open={sheetNuevo} onClose={handleCerrarSheet} height="85%">
         <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
-        <div className="px-4 pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nuevo registro mensual</h2>
-            <button type="button" onClick={() => setSheetNuevo(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
-          </div>
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{termino} *</label>
-              <select
-                value={nRanchoId}
-                onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
-                className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
-                style={{ borderColor: nErrRancho ? 'var(--agro-red)' : undefined }}
-              >
-                <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}</option>
-                {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-              {nErrRancho && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>}
-            </div>
-            <div className="flex gap-3">
-              <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Año *</label>
-                <select
-                  value={nAnio}
-                  onChange={(e) => setNAnio(Number(e.target.value))}
-                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
-                >
-                  {anioOpts.map((y) => <option key={y} value={y}>{y}</option>)}
-                </select>
-              </div>
-              <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Mes *</label>
-                <select
-                  value={nMes}
-                  onChange={(e) => setNMes(Number(e.target.value))}
-                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
-                >
-                  {MESES.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
-                </select>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={handleCrearRegistro}
-              disabled={nGuardando}
-              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60"
-              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-            >
-              {nGuardando ? 'Guardando…' : 'Crear registro'}
-            </button>
-          </div>
+        <div className="flex items-center justify-between px-4 pb-3 border-b border-border flex-shrink-0">
+          <h2 className="text-base font-semibold">
+            {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nuevo registro mensual'}
+          </h2>
+          <button type="button" onClick={handleCerrarSheet}><X className="w-5 h-5 text-muted-foreground" /></button>
         </div>
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+        )}
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M32"
+            ids={[pendienteFirmaId]}
+            descripcion={`Registro de ${formatMesLabel(nAnio, nMes)}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              await refetchFirmas()
+              if (pendienteDetalle) abrirDetalle(pendienteDetalle)
+              handleCerrarSheet()
+            }}
+            onDespues={!obligatoria ? () => {
+              if (pendienteDetalle) abrirDetalle(pendienteDetalle)
+              handleCerrarSheet()
+            } : undefined}
+          />
+        )}
+        {sheetPaso === 'form' && (
+          <div className="px-4 pb-4 pt-4">
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{termino} *</label>
+                <select
+                  value={nRanchoId}
+                  onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
+                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                  style={{ borderColor: nErrRancho ? 'var(--agro-red)' : undefined }}
+                >
+                  <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}</option>
+                  {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+                {nErrRancho && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>}
+              </div>
+              <div className="flex gap-3">
+                <div className="flex-1 space-y-1">
+                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Año *</label>
+                  <select
+                    value={nAnio}
+                    onChange={(e) => setNAnio(Number(e.target.value))}
+                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                  >
+                    {anioOpts.map((y) => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+                <div className="flex-1 space-y-1">
+                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Mes *</label>
+                  <select
+                    value={nMes}
+                    onChange={(e) => setNMes(Number(e.target.value))}
+                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                  >
+                    {MESES.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
+                  </select>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleCrearRegistro}
+                disabled={nGuardando}
+                className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60"
+                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+              >
+                {nGuardando ? 'Guardando…' : 'Crear registro'}
+              </button>
+            </div>
+          </div>
+        )}
       </BottomSheet>
 
       {/* ═══ SHEET: CONFIGURAR CATÁLOGO ══════════════════════════════════════════ */}

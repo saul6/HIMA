@@ -18,6 +18,9 @@ import { generarRegistroPersonalPDF } from '@/lib/pdf/m47/generarRegistroPersona
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -108,6 +111,7 @@ export function RegistroPersonal() {
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { trabajadores, loading, error, refetch } = useM47Trabajadores()
+  const { obligatoria, tengoFirma } = useFirmaContext()
 
   // ── Filtros lista ──
   const [filtroRanchoId, setFiltroRanchoId] = useState('')
@@ -115,6 +119,8 @@ export function RegistroPersonal() {
 
   // ── Sheet formulario ──
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<FormTrabajador>(FORM_VACIO)
   const [checklistValues, setChecklistValues] = useState<Record<string, boolean>>({})
@@ -162,15 +168,25 @@ export function RegistroPersonal() {
     setForm(f => ({ ...f, [k]: v }))
   }
 
+  function handleCerrarSheet() {
+    setSheetOpen(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
+
   function abrirNuevo() {
     setGuardando(false)
     setEditingId(null)
     setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX() })
     setChecklistValues({})
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetOpen(true)
   }
 
   function abrirEditar(t: (typeof trabajadores)[0]) {
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
     setEditingId(t.id)
     setForm({
       rancho_id: t.rancho_id,
@@ -255,12 +271,21 @@ export function RegistroPersonal() {
         if (eCl) throw eCl
       }
 
-      setSheetOpen(false)
       await refetch()
-      toast.success(editingId ? 'Trabajador actualizado' : 'Trabajador registrado')
+      if (editingId) {
+        toast.success('Trabajador actualizado')
+        setSheetOpen(false)
+        setSheetPaso('form')
+      } else {
+        toast.success('Trabajador registrado')
+        setPendienteFirmaId(trabajadorId)
+        setSheetPaso('firma_decision')
+      }
     } catch (e: any) {
       const msg: string = e?.message ?? 'Error al guardar'
-      if (msg.includes('FECHA_SOLO_HOY')) {
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+      } else if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
         toast.error(msg)
@@ -481,7 +506,7 @@ export function RegistroPersonal() {
             <Fab onClick={abrirNuevo} aria-label="Nuevo trabajador" />
 
       {/* ═══ SHEET: FORMULARIO ══════════════════════════════════════════════════ */}
-      <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) setSheetOpen(false) }} height="85%">
+      <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) handleCerrarSheet() }} height="85%">
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-9 h-1 rounded-full bg-border" />
         </div>
@@ -489,11 +514,34 @@ export function RegistroPersonal() {
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             {editingId ? 'Editar trabajador' : 'Nuevo trabajador'}
           </h2>
-          <button type="button" onClick={() => { if (!guardando) setSheetOpen(false) }}>
+          <button type="button" onClick={() => { if (!guardando) handleCerrarSheet() }}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
+        {sheetPaso === 'firma_gate' && (
+          <div className="px-4 pb-6">
+            <FirmaGatePaso onIrAFirmar={() => setSheetPaso('form')} />
+          </div>
+        )}
+
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <div className="px-4 pb-6">
+            <PasoFirmaRegistro
+              modulo="M47"
+              registroId={pendienteFirmaId}
+              descripcion={`Registro Personal — ${form.nombre}`}
+              onFirmadoYPDF={() => {
+                handleCerrarSheet()
+              }}
+              onDespues={() => {
+                handleCerrarSheet()
+              }}
+            />
+          </div>
+        )}
+
+        {sheetPaso === 'form' && (<>
         <div className="overflow-y-auto px-4 pb-6 space-y-6" style={{ flex: 1 }}>
 
           {/* ── Datos de alta ── */}
@@ -723,6 +771,7 @@ export function RegistroPersonal() {
             {guardando ? 'Guardando…' : editingId ? 'Guardar cambios' : 'Registrar trabajador'}
           </button>
         </div>
+        </>)}
       </BottomSheet>
 
       {/* ═══ SHEET: CONFIGURAR ══════════════════════════════════════════════════ */}

@@ -14,6 +14,11 @@ import { generarConsumoEnergiaConsolidadoPDF } from '@/lib/pdf/m60/generarConsum
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 function mesActual(): string {
   const d = new Date()
@@ -63,7 +68,13 @@ export function ConsumoEnergia() {
   const { registros, loading, refetch } = useM60ConsumoEnergia(orgId)
   const orgNombre = useOrganizacion(orgId)
 
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M60', todosIds)
+
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const [form, setForm] = useState<FormState>(FORM_VACIO)
   const [guardando, setGuardando] = useState(false)
@@ -73,7 +84,15 @@ export function ConsumoEnergia() {
 
   function abrirNuevo() {
     setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', mes: mesActual(), realizo: profile?.nombre_completo ?? '' })
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetOpen(true)
+  }
+
+  function handleCerrarSheet() {
+    setSheetOpen(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
   }
 
   async function guardar() {
@@ -102,17 +121,17 @@ export function ConsumoEnergia() {
         .single()
       if (error) throw error
 
-      setSheetOpen(false)
       await refetch()
       toast.success('Registro guardado')
-
-      try {
-        await generarConsumoEnergiaPDF(data.id, orgId, codigoClave)
-      } catch {
-        toast.error('PDF no generado')
-      }
+      setPendienteFirmaId(data.id)
+      setSheetPaso('firma_decision')
     } catch (e: any) {
-      toast.error(e?.message ?? 'Error al guardar')
+      const msg: string = e?.message ?? 'Error al guardar'
+      if (msg.includes('FIRMA_REQUERIDA')) {
+        setSheetPaso('firma_gate')
+        return
+      }
+      toast.error(msg)
     } finally {
       setGuardando(false)
     }
@@ -120,6 +139,10 @@ export function ConsumoEnergia() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (obligatoria && !firmas[id]?.realizo) {
+      toast.info('Firma el registro antes de generar el PDF')
+      return
+    }
     setPdfLoading(id)
     try {
       await generarConsumoEnergiaPDF(id, orgId, codigoClave)
@@ -215,6 +238,11 @@ export function ConsumoEnergia() {
                   )}
                   {r.realizo && <span className="text-xs text-muted-foreground">{r.realizo}</span>}
                 </div>
+                {obligatoria && !firmas[r.id]?.realizo && (
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                    Pendiente de firma
+                  </span>
+                )}
               </div>
               <button
                 onClick={() => descargarPDF(r.id)}
@@ -227,16 +255,42 @@ export function ConsumoEnergia() {
                 }
               </button>
             </div>
+            <FirmasRegistro
+              modulo="M60"
+              registroId={r.id}
+              fechaRegistro={r.mes}
+              firma={firmas[r.id]}
+              loadingFirmas={loadingFirmas}
+              onFirmado={async () => { await refetch(); await refetchFirmas() }}
+            />
           </div>
         ))}
       </div>
 
             <Fab onClick={abrirNuevo} aria-label="Nuevo registro" />
 
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
+      <BottomSheet open={sheetOpen} onClose={handleCerrarSheet}>
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+        )}
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M60"
+            ids={[pendienteFirmaId]}
+            descripcion={`Consumo de energía ${formatMes(form.mes)}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              await generarConsumoEnergiaPDF(pendienteFirmaId, orgId!, codigoClave)
+              handleCerrarSheet()
+              await refetchFirmas()
+            }}
+            onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+          />
+        )}
+        {sheetPaso === 'form' && (<>
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <h2 className="text-base font-semibold">Nuevo registro</h2>
-          <button onClick={() => setSheetOpen(false)}>
+          <button onClick={handleCerrarSheet}>
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -388,9 +442,10 @@ export function ConsumoEnergia() {
             style={{ backgroundColor: 'var(--primary)' }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar y generar PDF
+            Guardar
           </button>
         </div>
+        </>)}
       </BottomSheet>
 
       <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}>

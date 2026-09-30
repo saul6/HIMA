@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { ChevronLeft, PackageOpen, Download, Plus, FileText, AlertTriangle } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -14,6 +14,11 @@ import { generarMaterialEmpaqueConsolidadoPDF } from '@/lib/pdf/m42/generarMater
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 const tbl = (name: string) => (supabase as any).from(name)
@@ -98,12 +103,18 @@ export function MaterialEmpaqueMovimientos() {
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { movimientos, loading, error, refetch } = useM42Movimientos()
+  const { obligatoria, tengoFirma } = useFirmaContext()
+
+  const todosIds = useMemo(() => movimientos.map(m => m.id), [movimientos])
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M42', todosIds)
 
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const orgId = profile?.org_id ?? ''
 
   const [abierto, setAbierto] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [cargando, setCargando] = useState(false)
   const [form, setForm] = useState<FormState>(FORM_INICIAL)
 
@@ -115,10 +126,18 @@ export function MaterialEmpaqueMovimientos() {
 
   const setF = (patch: Partial<FormState>) => setForm(f => ({ ...f, ...patch }))
 
+  function handleCerrarSheet() {
+    setAbierto(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
+
   const abrirFormulario = useCallback(() => {
     setForm({ ...FORM_INICIAL, rancho_id: ranchoInicial ?? '', fecha: hoyMX() })
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setAbierto(true)
-  }, [ranchoInicial])
+  }, [ranchoInicial, obligatoria, tengoFirma])
 
   const guardar = useCallback(async () => {
     if (!orgId || !form.rancho_id) {
@@ -196,11 +215,12 @@ export function MaterialEmpaqueMovimientos() {
       }
 
       await refetch()
-      setAbierto(false)
       toast.success('Movimiento guardado')
-      await generarMaterialEmpaquePDF(movId, orgId, codigoClave)
+      setPendienteFirmaId(movId)
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
+      if (msg.includes('FIRMA_REQUERIDA')) { setSheetPaso('firma_gate'); return }
       if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
@@ -288,9 +308,20 @@ export function MaterialEmpaqueMovimientos() {
                     </span>
                   </div>
                 )}
+                {obligatoria && !firmas[m.id]?.realizo && (
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                    Pendiente de firma
+                  </span>
+                )}
               </div>
               <button
-                onClick={() => generarMaterialEmpaquePDF(m.id, orgId).catch(e => toast.error(e.message))}
+                onClick={() => {
+                  if (obligatoria && !firmas[m.id]?.realizo) {
+                    toast.info('Firma este registro antes de descargar el PDF')
+                    return
+                  }
+                  generarMaterialEmpaquePDF(m.id, orgId).catch(e => toast.error(e.message))
+                }}
                 className="p-2 rounded-lg flex-shrink-0"
                 style={{ color: 'var(--primary)' }}
                 title="Descargar PDF"
@@ -298,6 +329,14 @@ export function MaterialEmpaqueMovimientos() {
                 <FileText size={18} />
               </button>
             </div>
+            <FirmasRegistro
+              modulo="M42"
+              registroId={m.id}
+              fechaRegistro={m.fecha}
+              firma={firmas[m.id]}
+              loadingFirmas={loadingFirmas}
+              onFirmado={async () => { await refetch(); await refetchFirmas() }}
+            />
           </div>
         ))}
       </div>
@@ -306,18 +345,33 @@ export function MaterialEmpaqueMovimientos() {
             <Fab onClick={abrirFormulario} />
 
       {/* Formulario */}
-      <BottomSheet open={abierto} onClose={() => setAbierto(false)} height="85%">
+      <BottomSheet open={abierto} onClose={handleCerrarSheet} height="85%">
           <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
             <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
           </div>
           <div className="flex items-center justify-between px-5 pb-3 flex-shrink-0">
             <h2 className="text-[15px] font-semibold">Nuevo movimiento</h2>
-            <button onClick={() => setAbierto(false)} className="text-[13px]" style={{ color: 'var(--muted-foreground)' }}>
+            <button onClick={handleCerrarSheet} className="text-[13px]" style={{ color: 'var(--muted-foreground)' }}>
               Cancelar
             </button>
           </div>
 
-            <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-4">
+          {sheetPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />}
+          {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+            <PasoFirmaRegistro
+              modulo="M42"
+              ids={[pendienteFirmaId]}
+              descripcion={`Material de empaque del ${fmtFecha(form.fecha)}`}
+              obligatoria={obligatoria}
+              onFirmadoYPDF={async () => {
+                await generarMaterialEmpaquePDF(pendienteFirmaId, orgId, codigoClave)
+                handleCerrarSheet()
+                await refetchFirmas()
+              }}
+              onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+            />
+          )}
+          {sheetPaso === 'form' && <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-4">
               {/* Instalación */}
               <div>
                 <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
@@ -501,9 +555,9 @@ export function MaterialEmpaqueMovimientos() {
                 className="w-full py-3 rounded-xl text-[14px] font-semibold text-white"
                 style={{ backgroundColor: cargando || !form.rancho_id ? 'var(--muted-foreground)' : 'var(--primary)' }}
               >
-                {cargando ? 'Guardando...' : 'Guardar y descargar PDF'}
+                {cargando ? 'Guardando...' : 'Guardar'}
               </button>
-            </div>
+            </div>}
       </BottomSheet>
 
       {/* Consolidado */}

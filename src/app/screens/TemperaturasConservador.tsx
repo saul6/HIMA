@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { ChevronLeft, Thermometer, Download, Plus, FileText, AlertTriangle } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -14,6 +14,11 @@ import { generarTemperaturaConservadorConsolidadoPDF } from '@/lib/pdf/m41/gener
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 const HORAS = Array.from({ length: 24 }, (_, i) => i + 1)
@@ -51,12 +56,18 @@ export function TemperaturasConservador() {
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM41TemperaturaConservador()
+  const { obligatoria, tengoFirma } = useFirmaContext()
+
+  const todosIds = useMemo(() => registros.map(r => r.id), [registros])
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M41', todosIds)
 
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const orgId = profile?.org_id ?? ''
 
   const [abierto, setAbierto] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [cargando, setCargando] = useState(false)
   const [form, setForm] = useState<FormState>({ rancho_id: '', fecha: hoyMX(), temp_min: '', temp_max: '', observaciones: '' })
   const [lecturas, setLecturas] = useState<LecturasState>({})
@@ -69,13 +80,21 @@ export function TemperaturasConservador() {
   const [consolDesde, setConsolDesde] = useState('')
   const [consolHasta, setConsolHasta] = useState('')
 
+  function handleCerrarSheet() {
+    setAbierto(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
+
   const abrirFormulario = useCallback(() => {
     const hoy = hoyMX()
     setForm({ rancho_id: ranchoInicial ?? '', fecha: hoy, temp_min: '', temp_max: '', observaciones: '' })
     setLecturas({})
     setRegistroExistenteId(null)
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setAbierto(true)
-  }, [ranchoInicial])
+  }, [ranchoInicial, obligatoria, tengoFirma])
 
   const handleRanchoChange = useCallback(async (ranchoId: string, fecha: string) => {
     setForm(f => ({ ...f, rancho_id: ranchoId, temp_min: '', temp_max: '', observaciones: '' }))
@@ -201,11 +220,12 @@ export function TemperaturasConservador() {
       }
 
       await refetch()
-      setAbierto(false)
       toast.success('Registro guardado')
-      await generarTemperaturaConservadorPDF(regId, orgId, codigoClave)
+      setPendienteFirmaId(regId)
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
+      if (msg.includes('FIRMA_REQUERIDA')) { setSheetPaso('firma_gate'); return }
       if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
@@ -291,9 +311,20 @@ export function TemperaturasConservador() {
                     </span>
                   </div>
                 )}
+                {obligatoria && !firmas[r.id]?.realizo && (
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                    Pendiente de firma
+                  </span>
+                )}
               </div>
               <button
-                onClick={() => generarTemperaturaConservadorPDF(r.id, orgId).catch(e => toast.error(e.message))}
+                onClick={() => {
+                  if (obligatoria && !firmas[r.id]?.realizo) {
+                    toast.info('Firma este registro antes de descargar el PDF')
+                    return
+                  }
+                  generarTemperaturaConservadorPDF(r.id, orgId).catch(e => toast.error(e.message))
+                }}
                 className="p-2 rounded-lg flex-shrink-0"
                 style={{ color: 'var(--primary)' }}
                 title="Descargar PDF"
@@ -301,6 +332,14 @@ export function TemperaturasConservador() {
                 <FileText size={18} />
               </button>
             </div>
+            <FirmasRegistro
+              modulo="M41"
+              registroId={r.id}
+              fechaRegistro={r.fecha}
+              firma={firmas[r.id]}
+              loadingFirmas={loadingFirmas}
+              onFirmado={async () => { await refetch(); await refetchFirmas() }}
+            />
           </div>
         ))}
       </div>
@@ -309,7 +348,7 @@ export function TemperaturasConservador() {
             <Fab onClick={abrirFormulario} />
 
       {/* Formulario */}
-      <BottomSheet open={abierto} onClose={() => setAbierto(false)} height="85%">
+      <BottomSheet open={abierto} onClose={handleCerrarSheet} height="85%">
           <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
             <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
           </div>
@@ -317,12 +356,27 @@ export function TemperaturasConservador() {
             <h2 className="text-[15px] font-semibold">
               {registroExistenteId ? 'Actualizar registro' : 'Nuevo registro'}
             </h2>
-            <button onClick={() => setAbierto(false)} className="text-[13px]" style={{ color: 'var(--muted-foreground)' }}>
+            <button onClick={handleCerrarSheet} className="text-[13px]" style={{ color: 'var(--muted-foreground)' }}>
               Cancelar
             </button>
           </div>
 
-            <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-4">
+          {sheetPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />}
+          {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+            <PasoFirmaRegistro
+              modulo="M41"
+              ids={[pendienteFirmaId]}
+              descripcion={`Temperaturas del ${fmtFecha(form.fecha)}`}
+              obligatoria={obligatoria}
+              onFirmadoYPDF={async () => {
+                await generarTemperaturaConservadorPDF(pendienteFirmaId, orgId, codigoClave)
+                handleCerrarSheet()
+                await refetchFirmas()
+              }}
+              onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+            />
+          )}
+          {sheetPaso === 'form' && <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-4">
               {/* Instalación */}
               <div>
                 <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
@@ -468,9 +522,9 @@ export function TemperaturasConservador() {
                 className="w-full py-3 rounded-xl text-[14px] font-semibold text-white"
                 style={{ backgroundColor: cargando || !form.rancho_id ? 'var(--muted-foreground)' : 'var(--primary)' }}
               >
-                {cargando ? 'Guardando...' : registroExistenteId ? 'Actualizar y descargar PDF' : 'Guardar y descargar PDF'}
+                {cargando ? 'Guardando...' : registroExistenteId ? 'Actualizar' : 'Guardar'}
               </button>
-            </div>
+            </div>}
       </BottomSheet>
 
       {/* Consolidado */}

@@ -163,6 +163,12 @@ export function CalibracionBombas() {
     }
   }
 
+  function handleCerrarSheet() {
+    setSheetOpen(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
+
   async function exportarConsolidado() {
     if (!orgId) return
     setExportando(true)
@@ -279,11 +285,38 @@ export function CalibracionBombas() {
             <Fab onClick={abrirNuevo} aria-label="Nueva calibración" />
 
       {/* Formulario */}
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
-        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
-          <h2 className="text-base font-semibold">Nueva calibración de bomba</h2>
-          <button onClick={() => setSheetOpen(false)}><X className="w-5 h-5" /></button>
+      <BottomSheet open={sheetOpen} onClose={handleCerrarSheet} height="85%">
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div className="w-9 h-1 rounded-full bg-border" />
         </div>
+        <div className="flex items-center justify-between px-4 pb-3 border-b border-border flex-shrink-0">
+          <h2 className="text-base font-semibold">
+            {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nueva calibración de bomba'}
+          </h2>
+          <button onClick={handleCerrarSheet}><X className="w-5 h-5" /></button>
+        </div>
+
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+        )}
+
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M49"
+            ids={[pendienteFirmaId]}
+            descripcion={`Calibración del ${formatFecha(form.fecha)}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              await generarCalibracionBombasPDF(pendienteFirmaId, orgId!, codigoClave)
+              handleCerrarSheet()
+              await refetchFirmas()
+            }}
+            onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+          />
+        )}
+
+        {sheetPaso === 'form' && (
+          <>
         <div className="overflow-y-auto flex-1 px-4 pt-4 pb-8 space-y-4">
           <div>
             <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
@@ -420,7 +453,7 @@ export function CalibracionBombas() {
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
               value={form.realizo}
-              onChange={e => setForm(f => ({ ...f, realizo: e.target.value }))}
+              readOnly
             />
           </div>
           <div>
@@ -444,6 +477,8 @@ export function CalibracionBombas() {
             Guardar y generar PDF
           </button>
         </div>
+          </>
+        )}
       </BottomSheet>
 
       {/* Consolidado */}

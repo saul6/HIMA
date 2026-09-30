@@ -19,6 +19,11 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -71,6 +76,21 @@ export function PreparacionCloro() {
   // Tabla de referencia
   const [refTablaAbierta, setRefTablaAbierta] = useState(false)
 
+  const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = preparaciones.map(p => p.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M27', todosIds)
+
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+  const [pendientePDFArgs, setPendientePDFArgs] = useState<Parameters<typeof generarPreparacionCloroPDF>[0] | null>(null)
+
+  function handleCerrarSheet() {
+    setSheetAbierto(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+    setPendientePDFArgs(null)
+  }
+
   // PDF individual en lista
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null)
 
@@ -100,6 +120,8 @@ export function PreparacionCloro() {
     setRanchoId(ranchoInicial ?? ''); setFecha(hoy()); setArea(''); setLitrosAgua('')
     setResponsable(''); setObservaciones('')
     setErrRancho(false); setErrArea(false); setErrLitros(false)
+    setPendienteFirmaId(null); setPendientePDFArgs(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetAbierto(true)
   }
 
@@ -130,28 +152,27 @@ export function PreparacionCloro() {
       if (error) throw error
 
       toast.success('Registro guardado')
-      setSheetAbierto(false)
       await refetch()
 
       const rancho = ranchos.find((r) => r.id === ranchoId)
       if (rancho && insertado) {
-        try {
-          await generarPreparacionCloroPDF({
-            rancho: rancho.nombre,
-            orgNombre: orgNombre ?? null,
-            fecha,
-            area: area.trim(),
-            litros_agua: litrosNum,
-            ml_cloro: (insertado as any).ml_cloro ?? calcMlCloro(litrosNum),
-            responsable: responsable.trim() || null,
-            observaciones: observaciones.trim() || null,
-          })
-        } catch {
-          toast.warning('Registro guardado — el PDF no se pudo generar. Descárgalo desde el historial.')
+        const pdfArgs = {
+          rancho: rancho.nombre,
+          orgNombre: orgNombre ?? null,
+          fecha,
+          area: area.trim(),
+          litros_agua: litrosNum,
+          ml_cloro: (insertado as any).ml_cloro ?? calcMlCloro(litrosNum),
+          responsable: responsable.trim() || null,
+          observaciones: observaciones.trim() || null,
         }
+        setPendientePDFArgs(pdfArgs)
       }
+      setPendienteFirmaId((insertado as any).id)
+      setSheetPaso('firma_decision')
     } catch (err: unknown) {
       const mensaje = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
+      if (mensaje.includes('FIRMA_REQUERIDA')) { setSheetPaso('firma_gate'); return }
       if (mensaje.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy.')
       } else {
@@ -165,6 +186,10 @@ export function PreparacionCloro() {
   // ── PDF individual desde lista ──────────────────────────────────────────────
 
   async function handleDescargarPDF(prep: M27Preparacion) {
+    if (obligatoria && !firmas[prep.id]?.realizo) {
+      toast.info('Firma el registro antes de generar el PDF')
+      return
+    }
     setGenerandoPDF(prep.id)
     try {
       await generarPreparacionCloroPDF({
@@ -363,6 +388,19 @@ export function PreparacionCloro() {
                   )}
                 </div>
               )}
+              {obligatoria && !firmas[prep.id]?.realizo && (
+                <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-2 inline-block">
+                  Pendiente de firma
+                </span>
+              )}
+              <FirmasRegistro
+                modulo="M27"
+                registroId={prep.id}
+                fechaRegistro={prep.fecha}
+                firma={firmas[prep.id]}
+                loadingFirmas={loadingFirmas}
+                onFirmado={async () => { await refetch(); await refetchFirmas() }}
+              />
             </div>
           ))
         )}
@@ -453,7 +491,23 @@ export function PreparacionCloro() {
       </BottomSheet>
 
       {/* ── Bottom Sheet — Formulario ────────────────────────────────────────── */}
-      <BottomSheet open={sheetAbierto} onClose={() => setSheetAbierto(false)} height="85%">
+      <BottomSheet open={sheetAbierto} onClose={handleCerrarSheet} height="85%">
+        {sheetPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />}
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M27"
+            ids={[pendienteFirmaId]}
+            descripcion={`Preparación de cloro del ${formatFecha(fecha)}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              if (pendientePDFArgs) await generarPreparacionCloroPDF(pendientePDFArgs)
+              handleCerrarSheet()
+              await refetchFirmas()
+            }}
+            onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+          />
+        )}
+        {sheetPaso === 'form' && (<>
         <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
           <div className="w-10 h-1 rounded-full bg-border" />
         </div>
@@ -461,7 +515,7 @@ export function PreparacionCloro() {
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             Nueva preparación de cloro
           </h2>
-          <button onClick={() => setSheetAbierto(false)} className="p-1">
+          <button onClick={handleCerrarSheet} className="p-1">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
@@ -623,9 +677,10 @@ export function PreparacionCloro() {
             style={{ fontWeight: 600 }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar registro
+            Guardar
           </button>
         </div>
+        </>)}
       </BottomSheet>
 
     </div>

@@ -19,6 +19,11 @@ import { generarManifiestoEmbarqueConsolidadoPDF } from '@/lib/pdf/m38/generarMa
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -158,8 +163,14 @@ export function ManifiestoEmbarque() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { manifiestos, loading, error, refetch } = useM38Manifiestos()
   const orgNombre = useOrganizacion(orgId)
+  const { obligatoria, tengoFirma } = useFirmaContext()
+
+  const todosIds = useMemo(() => manifiestos.map(m => m.id), [manifiestos])
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M38', todosIds)
 
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const [form, setForm] = useState<FormState>({ ...FORM_BASE, fecha: hoyMX() })
   const [lineas, setLineas] = useState<LineaForm[]>([nuevaLinea()])
@@ -168,9 +179,17 @@ export function ManifiestoEmbarque() {
   const [consolidadoForm, setConsolidadoForm] = useState({ rancho_id: '', desde: hoyMX(), hasta: hoyMX() })
   const [exportando, setExportando] = useState(false)
 
+  function handleCerrarSheet() {
+    setSheetOpen(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
+
   function abrirNuevo() {
     setForm({ ...FORM_BASE, rancho_id: ranchoInicial ?? '', fecha: hoyMX() })
     setLineas([nuevaLinea()])
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetOpen(true)
   }
 
@@ -273,17 +292,13 @@ export function ManifiestoEmbarque() {
         if (eLineas) throw eLineas
       }
 
-      setSheetOpen(false)
-      await refetch()
       toast.success('Manifiesto registrado')
-
-      try {
-        await generarManifiestoEmbarquePDF(manifiestoId, orgId, codigoClave)
-      } catch {
-        toast.error('PDF no generado')
-      }
+      await refetch()
+      setPendienteFirmaId(manifiestoId)
+      setSheetPaso('firma_decision')
     } catch (e: any) {
       const msg: string = e?.message ?? 'Error al guardar'
+      if (msg.includes('FIRMA_REQUERIDA')) { setSheetPaso('firma_gate'); return }
       if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
@@ -296,6 +311,10 @@ export function ManifiestoEmbarque() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (obligatoria && !firmas[id]?.realizo) {
+      toast.info('Firma este registro antes de descargar el PDF')
+      return
+    }
     setPdfLoading(id)
     try {
       await generarManifiestoEmbarquePDF(id, orgId, codigoClave)
@@ -414,6 +433,11 @@ export function ManifiestoEmbarque() {
                       </span>
                     </div>
                   )}
+                  {obligatoria && !firmas[m.id]?.realizo && (
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                      Pendiente de firma
+                    </span>
+                  )}
                 </div>
                 <button
                   onClick={() => descargarPDF(m.id)}
@@ -426,6 +450,14 @@ export function ManifiestoEmbarque() {
                   }
                 </button>
               </div>
+              <FirmasRegistro
+                modulo="M38"
+                registroId={m.id}
+                fechaRegistro={m.fecha}
+                firma={firmas[m.id]}
+                loadingFirmas={loadingFirmas}
+                onFirmado={async () => { await refetch(); await refetchFirmas() }}
+              />
             </div>
           ))
         )}
@@ -435,17 +467,34 @@ export function ManifiestoEmbarque() {
             <Fab onClick={abrirNuevo} aria-label="Nuevo manifiesto" />
 
       {/* ═══ SHEET: FORMULARIO ══════════════════════════════════════════════════ */}
-      <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) setSheetOpen(false) }} height="85%">
+      <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) handleCerrarSheet() }} height="85%">
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-9 h-1 rounded-full bg-border" />
         </div>
         <div className="flex items-center justify-between px-4 pb-3">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nuevo manifiesto</h2>
-          <button type="button" onClick={() => { if (!guardando) setSheetOpen(false) }}>
+          <button type="button" onClick={() => { if (!guardando) handleCerrarSheet() }}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
+        {sheetPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />}
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M38"
+            ids={[pendienteFirmaId]}
+            descripcion={`Manifiesto del ${formatFecha(form.fecha)}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              await generarManifiestoEmbarquePDF(pendienteFirmaId, orgId!, codigoClave)
+              setSheetOpen(false)
+              setSheetPaso('form')
+              await refetchFirmas()
+            }}
+            onDespues={!obligatoria ? () => { setSheetOpen(false); setSheetPaso('form') } : undefined}
+          />
+        )}
+        {sheetPaso === 'form' && (<>
         <div className="overflow-y-auto px-4 pb-6 space-y-6" style={{ flex: 1 }}>
 
           {/* ── Sección: datos del embarque ── */}
@@ -767,9 +816,10 @@ export function ManifiestoEmbarque() {
             style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            {guardando ? 'Guardando…' : 'Guardar y generar PDF'}
+            {guardando ? 'Guardando…' : 'Guardar'}
           </button>
         </div>
+        </>)}
       </BottomSheet>
 
       {/* ═══ SHEET: CONSOLIDADO ═════════════════════════════════════════════════ */}

@@ -1,4 +1,4 @@
-﻿import { useState, useCallback } from 'react'
+﻿import { useState, useCallback, useMemo } from 'react'
 import { Link } from 'react-router'
 import { ChevronLeft, Wrench, Plus, FileText, Loader2, AlertTriangle, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
@@ -16,6 +16,11 @@ import { generarOrdenMantenimientoPDF } from '@/lib/pdf/m44/generarOrdenMantenim
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -114,6 +119,10 @@ export function OrdenMantenimiento() {
   const { ranchos }       = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { ordenes, loading, error, refetch } = useM44OrdenesMantenimiento()
+  const { obligatoria, tengoFirma } = useFirmaContext()
+
+  const todosIds = useMemo(() => ordenes.map(o => o.id), [ordenes])
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M44', todosIds)
 
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
@@ -122,17 +131,27 @@ export function OrdenMantenimiento() {
 
   // ── Formulario ──
   const [abierto,   setAbierto]   = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [cargando,  setCargando]  = useState(false)
   const [form,      setForm]      = useState<FormState>(formInicial)
   const [errRancho, setErrRancho] = useState(false)
 
   const setF = (patch: Partial<FormState>) => setForm((f) => ({ ...f, ...patch }))
 
+  function handleCerrarModal() {
+    setAbierto(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
+
   const abrirFormulario = useCallback(() => {
     setForm({ ...formInicial(), rancho_id: ranchoInicial ?? '' })
     setErrRancho(false)
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setAbierto(true)
-  }, [ranchoInicial])
+  }, [ranchoInicial, obligatoria, tengoFirma])
 
   const guardar = useCallback(async () => {
     if (!orgId) return
@@ -192,11 +211,12 @@ export function OrdenMantenimiento() {
       }
 
       await refetch()
-      setAbierto(false)
       toast.success('Orden de mantenimiento guardada')
-      await generarOrdenMantenimientoPDF(ordenId, orgId, codigoClave)
+      setPendienteFirmaId(ordenId)
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
+      if (msg.includes('FIRMA_REQUERIDA')) { setSheetPaso('firma_gate'); return }
       if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
@@ -212,6 +232,10 @@ export function OrdenMantenimiento() {
 
   async function handlePDF(orden: M44Orden) {
     if (!orgId) return
+    if (obligatoria && !firmas[orden.id]?.realizo) {
+      toast.info('Firma este registro antes de descargar el PDF')
+      return
+    }
     setGenerandoPDF(orden.id)
     try {
       await generarOrdenMantenimientoPDF(orden.id, orgId, codigoClave)
@@ -313,6 +337,11 @@ export function OrdenMantenimiento() {
                       </span>
                     </div>
                   )}
+                  {obligatoria && !firmas[o.id]?.realizo && (
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                      Pendiente de firma
+                    </span>
+                  )}
                 </div>
                 <button
                   onClick={() => handlePDF(o)}
@@ -328,6 +357,14 @@ export function OrdenMantenimiento() {
                   )}
                 </button>
               </div>
+              <FirmasRegistro
+                modulo="M44"
+                registroId={o.id}
+                fechaRegistro={o.fecha}
+                firma={firmas[o.id]}
+                loadingFirmas={loadingFirmas}
+                onFirmado={async () => { await refetch(); await refetchFirmas() }}
+              />
             </div>
           ))
         )}
@@ -336,11 +373,11 @@ export function OrdenMantenimiento() {
       {/* FAB */}
             <Fab onClick={abrirFormulario} aria-label="Nueva orden" />
 
-      {/* ── Sheet: nueva orden ─────────────────────────────────────────── */}
+      {/* ── Modal: nueva orden ─────────────────────────────────────────── */}
       {abierto && (
         <div
           className="fixed inset-0 z-50 flex flex-col justify-end"
-          onClick={(e) => { if (e.target === e.currentTarget) setAbierto(false) }}
+          onClick={(e) => { if (e.target === e.currentTarget) handleCerrarModal() }}
         >
           <div className="absolute inset-0 bg-black/40" />
           <div
@@ -353,7 +390,23 @@ export function OrdenMantenimiento() {
                 Nueva Orden de Mantenimiento
               </h2>
             </div>
-            <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-4">
+
+            {sheetPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />}
+            {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+              <PasoFirmaRegistro
+                modulo="M44"
+                ids={[pendienteFirmaId]}
+                descripcion={`Orden del ${form.fecha}`}
+                obligatoria={obligatoria}
+                onFirmadoYPDF={async () => {
+                  await generarOrdenMantenimientoPDF(pendienteFirmaId, orgId, codigoClave)
+                  handleCerrarModal()
+                  await refetchFirmas()
+                }}
+                onDespues={!obligatoria ? () => handleCerrarModal() : undefined}
+              />
+            )}
+            {sheetPaso === 'form' && <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-4">
 
               {/* Instalación */}
               <div>
@@ -532,7 +585,7 @@ export function OrdenMantenimiento() {
                   </span>
                 ) : 'Guardar orden'}
               </button>
-            </div>
+            </div>}
           </div>
         </div>
       )}
