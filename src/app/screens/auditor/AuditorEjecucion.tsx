@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
 import { guardarLastWorkspace } from '@/hooks/useContinuarTrabajo'
 import { ahora, ms, segundos, emitirEvento, consumeResumeMetrics } from '@/lib/telemetria'
@@ -14,6 +14,7 @@ import type { ScoreMatrixKey } from '@/lib/scoring/matriz'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorAuditoria } from '@/hooks/useAuditorAuditoria'
+import { GuardadoIncompleto } from '@/hooks/useAuditorAuditoria'
 import type { AudComentarioEsquema, AudPregunta, AudRespuesta, AudHallazgo, AudHallazgoClasificacion, AudHallazgoEstado, AudAccionCorrectivaCAPA, AudAcVersion, AudInternalStatus, AudExternalStatus, AudExternalWorkflow, AudExternalObservedStatus } from '@/types/database.types'
 import { generarAuditorReportePDF } from '@/lib/pdf/auditor/generarAuditorReportePDF'
 import { supabase } from '@/lib/supabase'
@@ -1392,6 +1393,8 @@ function PanelM9({
 function PanelValidacion({
   issues,
   validando,
+  reviewLoadError,
+  onReintentar,
   descartandoId,
   motivoDescarte,
   onDescartarClick,
@@ -1401,6 +1404,8 @@ function PanelValidacion({
 }: {
   issues: ReviewIssue[]
   validando: boolean
+  reviewLoadError: boolean
+  onReintentar: () => void
   descartandoId: string | null
   motivoDescarte: string
   onDescartarClick: (id: string) => void
@@ -1409,7 +1414,7 @@ function PanelValidacion({
   onMotivoChange: (v: string) => void
 }) {
   const [abierto, setAbierto] = useState(true)
-  const tieneBlockers = issues.some(i => i.severidad === 'BLOCKER')
+  const tieneBlockers = !reviewLoadError && issues.some(i => i.severidad === 'BLOCKER')
 
   function scrollToPreg(pregId: string) {
     const el = document.getElementById(`preg-${pregId}`)
@@ -1420,9 +1425,9 @@ function PanelValidacion({
     <div
       className="rounded-xl border overflow-hidden"
       style={{
-        backgroundColor: tieneBlockers ? 'var(--agro-danger-fill)' : 'var(--card)',
-        borderColor: tieneBlockers ? 'var(--agro-red)' : 'var(--border)',
-        borderWidth: tieneBlockers ? '1.5px' : '1px',
+        backgroundColor: reviewLoadError ? 'var(--agro-danger-fill)' : tieneBlockers ? 'var(--agro-danger-fill)' : 'var(--card)',
+        borderColor: reviewLoadError ? 'var(--agro-red)' : tieneBlockers ? 'var(--agro-red)' : 'var(--border)',
+        borderWidth: (reviewLoadError || tieneBlockers) ? '1.5px' : '1px',
       }}
     >
       {/* Header colapsable */}
@@ -1433,6 +1438,8 @@ function PanelValidacion({
         <div className="flex items-center gap-2 min-w-0 flex-wrap">
           {validando ? (
             <Loader size={14} className="animate-spin flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+          ) : reviewLoadError ? (
+            <XCircle size={15} className="flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
           ) : (
             <ShieldCheck
               size={15}
@@ -1442,16 +1449,18 @@ function PanelValidacion({
           )}
           <span
             className="text-xs font-semibold"
-            style={{ color: tieneBlockers ? 'var(--agro-danger-text)' : 'var(--foreground)' }}
+            style={{ color: (reviewLoadError || tieneBlockers) ? 'var(--agro-danger-text)' : 'var(--foreground)' }}
           >
             {validando
               ? 'Analizando respuestas…'
-              : issues.length === 0
-                ? 'Sin observaciones de validación'
-                : `${issues.length} observación${issues.length !== 1 ? 'es' : ''} encontrada${issues.length !== 1 ? 's' : ''}`
+              : reviewLoadError
+                ? 'No se pudo comprobar la revisión'
+                : issues.length === 0
+                  ? 'Sin observaciones de validación'
+                  : `${issues.length} observación${issues.length !== 1 ? 'es' : ''} encontrada${issues.length !== 1 ? 's' : ''}`
             }
           </span>
-          {!validando && issues.length > 0 && (
+          {!validando && !reviewLoadError && issues.length > 0 && (
             <div className="flex gap-1">
               {SEV_ORDER.map(sev => {
                 const count = issues.filter(i => i.severidad === sev).length
@@ -1483,6 +1492,22 @@ function PanelValidacion({
             <div className="flex items-center justify-center gap-2 py-6">
               <Loader size={14} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
               <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Analizando respuestas…</span>
+            </div>
+          ) : reviewLoadError ? (
+            <div className="flex flex-col items-start gap-3 px-4 py-4">
+              <div className="flex items-center gap-2">
+                <XCircle size={15} style={{ color: 'var(--agro-danger-text)' }} />
+                <span className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>
+                  No se pudo verificar las validaciones. Reintenta antes de continuar.
+                </span>
+              </div>
+              <button
+                onClick={onReintentar}
+                className="text-[11px] font-semibold px-3 py-1.5 rounded-lg"
+                style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', border: '1px solid var(--agro-red)' }}
+              >
+                Reintentar
+              </button>
             </div>
           ) : issues.length === 0 ? (
             <div className="flex items-center gap-2 px-4 py-4">
@@ -1587,6 +1612,9 @@ function PanelValidacion({
 
 // ── Panel de scoring en vivo (F8) ────────────────────────────────────────────
 
+// COR-08: estado tipado para el scoring
+type ScoringEstado = 'cargando' | 'vigente' | 'desactualizado' | 'error'
+
 function PanelScoring({
   auditoriaId,
   version,
@@ -1595,32 +1623,49 @@ function PanelScoring({
   version: number
 }) {
   const [calculo, setCalculo]  = useState<CalculoPuntaje | null>(null)
-  const [cargando, setCargando] = useState(false)
+  const [scoringEstado, setScoringEstado] = useState<ScoringEstado>('cargando')
   const [abierto, setAbierto]  = useState(false)
+  const ultimaVersionRef = useRef<number>(0)
+  // Versión interna para reintentar sin incrementar la externa
+  const [reintento, setReintento] = useState(0)
 
   useEffect(() => {
     if (!auditoriaId) return
+    // COR-08: marcar desactualizado si ya había datos
+    if (calculo !== null) {
+      setScoringEstado('desactualizado')
+    }
+    const versionActual = version + reintento
+    ultimaVersionRef.current = versionActual
     let cancelado = false
-    setCargando(true)
     ;(async () => {
       try {
         const { data, error } = await supabase.rpc('aud_calcular_puntaje', { p_auditoria_id: auditoriaId })
-        if (error) { console.error('[PanelScoring] aud_calcular_puntaje', error); return }
-        if (!cancelado) setCalculo(data as CalculoPuntaje)
+        if (cancelado) return
+        if (ultimaVersionRef.current !== versionActual) return  // respuesta vieja, ignorar
+        if (error) {
+          console.error('[PanelScoring] aud_calcular_puntaje', error)
+          setScoringEstado('error')
+          return
+        }
+        setCalculo(data as CalculoPuntaje)
+        setScoringEstado('vigente')
       } catch (e) {
-        console.error('[PanelScoring] aud_calcular_puntaje', e)
-      } finally {
-        if (!cancelado) setCargando(false)
+        if (!cancelado) {
+          console.error('[PanelScoring] aud_calcular_puntaje', e)
+          setScoringEstado('error')
+        }
       }
     })()
     return () => { cancelado = true }
-  }, [auditoriaId, version])
+  }, [auditoriaId, version, reintento]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const cargando = scoringEstado === 'cargando' || scoringEstado === 'desactualizado'
   const estado = calculo?.estado
   const fallaActiva = calculo?.falla_automatica_activa ?? false
 
   function tituloPrincipal(): string {
-    if (cargando && !calculo) return 'Calculando…'
+    if (scoringEstado === 'cargando' && !calculo) return 'Calculando…'
     if (!calculo) return 'Scoring en vivo'
     if (estado === 'BLOCKED_MISSING_MAX') return 'Scoring en vivo — máximos pendientes'
     if (estado === 'IN_PROGRESS') {
@@ -1641,16 +1686,34 @@ function PanelScoring({
         onClick={() => setAbierto(v => !v)}
         className="w-full flex items-center justify-between px-4 py-3 text-left"
       >
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           <BarChart2
             size={15}
             className="flex-shrink-0"
             style={{ color: fallaActiva ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }}
           />
-          <span className="text-xs font-semibold" style={{ color: fallaActiva ? 'var(--agro-danger-text)' : 'var(--foreground)' }}>
+          <span className="text-xs font-semibold flex-1 min-w-0" style={{ color: fallaActiva ? 'var(--agro-danger-text)' : 'var(--foreground)' }}>
             {tituloPrincipal()}
           </span>
-          {cargando && <Loader size={12} className="animate-spin flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />}
+          {/* COR-08: indicadores de estado en el header */}
+          {scoringEstado === 'cargando' && (
+            <Loader size={12} className="animate-spin flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+          )}
+          {scoringEstado === 'desactualizado' && (
+            <span className="flex items-center gap-1 text-[10px] flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
+              <Loader size={10} className="animate-spin" /> Actualizando…
+            </span>
+          )}
+          {scoringEstado === 'error' && calculo && (
+            <span className="text-[10px] flex-shrink-0" style={{ color: 'var(--agro-warning-text)' }}>
+              Cálculo anterior (no actualizado)
+            </span>
+          )}
+          {scoringEstado === 'error' && !calculo && (
+            <span className="text-[10px] flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }}>
+              No se pudo calcular
+            </span>
+          )}
         </div>
         {abierto
           ? <ChevronUp size={14} style={{ color: 'var(--muted-foreground)' }} />
@@ -1855,7 +1918,39 @@ function PanelScoring({
             </div>
           )}
 
-          {!calculo && !cargando && (
+          {/* COR-08: estado error con botón reintentar */}
+          {scoringEstado === 'error' && !calculo && (
+            <div className="flex flex-col gap-2 pt-3">
+              <p className="text-[11px]" style={{ color: 'var(--agro-danger-text)' }}>
+                No se pudo calcular el puntaje.
+              </p>
+              <button
+                onClick={() => setReintento(v => v + 1)}
+                className="self-start text-[11px] font-semibold px-3 py-1.5 rounded-lg"
+                style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+              >
+                Reintentar
+              </button>
+            </div>
+          )}
+          {scoringEstado === 'error' && calculo && (
+            <div className="flex flex-col gap-2 pt-3">
+              <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
+                <AlertCircle size={13} style={{ color: 'var(--agro-warning-text)' }} />
+                <p className="text-[11px]" style={{ color: 'var(--agro-warning-text)' }}>
+                  Mostrando cálculo anterior — no refleja los últimos cambios.
+                </p>
+              </div>
+              <button
+                onClick={() => setReintento(v => v + 1)}
+                className="self-start text-[11px] font-semibold px-3 py-1.5 rounded-lg"
+                style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+              >
+                Reintentar
+              </button>
+            </div>
+          )}
+          {!calculo && scoringEstado !== 'error' && !cargando && (
             <p className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
               No se pudo obtener el cálculo. Recarga la pantalla.
             </p>
@@ -2020,7 +2115,9 @@ export function AuditorEjecucion() {
     ajustesMap, setAjustesMap,
     estadoAplicabilidadMap,
     cargando, errorMsg,
-    guardarRespuesta, cambiarEstado, refetch,
+    // COR-07
+    esquemaCargaEstado, obsCargaEstado,
+    guardarRespuesta, guardarComentarios, cambiarEstado, refetch,
   } = hook
 
   const reglasHook = useReglasRama(auditoriaId)
@@ -2037,6 +2134,8 @@ export function AuditorEjecucion() {
 
   const [reviewIssues, setReviewIssues] = useState<ReviewIssue[]>([])
   const [validando, setValidando] = useState(false)
+  // COR-01: estado de error al cargar issues
+  const [reviewLoadError, setReviewLoadError] = useState(false)
   const [panelValidacionVisible, setPanelValidacionVisible] = useState(false)
   const [descartandoId, setDescartandoId] = useState<string | null>(null)
   const [motivoDescarte, setMotivoDescarte] = useState('')
@@ -2201,6 +2300,89 @@ export function AuditorEjecucion() {
 
   const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
 
+  // COR-02: coordinador de guardado para flushear antes de validar/cerrar/descargar
+  type PregSaveState = {
+    status: 'pendiente' | 'enCurso' | 'ok' | 'error'
+    version: number
+    pendingTimer: ReturnType<typeof setTimeout> | null
+    pendingPromise: Promise<void> | null
+    pendingArgs: { resp: AudRespuesta; vals: Map<string, string>; obs: string | undefined; obsExistia: boolean } | null
+  }
+  const saveCoordinator = useRef<Map<string, PregSaveState>>(new Map())
+  // Trigger re-render cuando cambia el estado del coordinador
+  const [saveCoordVersion, setSaveCoordVersion] = useState(0)
+
+  function getOrCreateCoordState(pregId: string): PregSaveState {
+    if (!saveCoordinator.current.has(pregId)) {
+      saveCoordinator.current.set(pregId, {
+        status: 'ok', version: 0, pendingTimer: null, pendingPromise: null, pendingArgs: null,
+      })
+    }
+    return saveCoordinator.current.get(pregId)!
+  }
+
+  async function ejecutarSave(pregId: string, args: { resp: AudRespuesta; vals: Map<string, string>; obs: string | undefined; obsExistia: boolean }): Promise<void> {
+    const state = getOrCreateCoordState(pregId)
+    state.version += 1
+    const myVersion = state.version
+    state.status = 'enCurso'
+    setSaveCoordVersion(v => v + 1)
+    const allPregs = modulosData.flatMap(m => m.preguntas)
+    const preg = allPregs.find(p => p.id === pregId)
+
+    const promise = guardarRespuesta({
+      preguntaId: pregId,
+      respuesta: args.resp,
+      trigger: preg?.trigger_falla_automatica ?? 'ninguno',
+      valoresMap: args.vals,
+      observacion: args.obs,
+      obsExistia: args.obsExistia,
+    }).then(() => {
+      if (state.version !== myVersion) return  // versión vieja, ignorar
+      state.status = 'ok'
+      state.pendingPromise = null
+      setSavingMap(prev => ({ ...prev, [pregId]: 'saved' }))
+      setSaveErrMap(prev => { const n = { ...prev }; delete n[pregId]; return n })
+      setTimeout(() => setSavingMap(prev => ({ ...prev, [pregId]: 'idle' })), 2500)
+      setScoringVersion(v => v + 1)
+      setSaveCoordVersion(v => v + 1)
+    }).catch((err: unknown) => {
+      if (state.version !== myVersion) return
+      const errorMsg = err instanceof GuardadoIncompleto
+        ? `Guardado incompleto: ${err.etapa}`
+        : traducirError(err)
+      state.status = 'error'
+      state.pendingPromise = null
+      setSavingMap(prev => ({ ...prev, [pregId]: 'error' }))
+      setSaveErrMap(prev => ({ ...prev, [pregId]: errorMsg }))
+      setSaveCoordVersion(v => v + 1)
+      console.error('[AuditorEjecucion] ejecutarSave:', err)
+    })
+
+    state.pendingPromise = promise
+    return promise
+  }
+
+  const flushPendientes = useCallback(async (): Promise<boolean> => {
+    const promises: Promise<void>[] = []
+    for (const [pregId, state] of saveCoordinator.current.entries()) {
+      if (state.pendingTimer !== null) {
+        clearTimeout(state.pendingTimer)
+        state.pendingTimer = null
+      }
+      if (state.status === 'pendiente' && state.pendingArgs) {
+        const args = state.pendingArgs
+        state.pendingArgs = null
+        const p = ejecutarSave(pregId, args)
+        promises.push(p)
+      } else if (state.status === 'enCurso' && state.pendingPromise) {
+        promises.push(state.pendingPromise)
+      }
+    }
+    const results = await Promise.allSettled(promises)
+    return results.some(r => r.status === 'rejected')
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const loadStartRef      = useRef(ahora())
   const loadEmittedRef    = useRef(false)
   const openedAtRef       = useRef(new Map<string, number>())
@@ -2267,33 +2449,29 @@ export function AuditorEjecucion() {
   function dispatchSave(pregId: string, forceResp?: AudRespuesta) {
     const resp = forceResp ?? respuestasRef.current.get(pregId)
     if (!resp || !auditoriaId) return
-    const allPregs = modulosData.flatMap(m => m.preguntas)
-    const preg = allPregs.find(p => p.id === pregId)
     const vals  = valoresRef.current.get(pregId) ?? new Map<string, string>()
     const obs   = observacionesRef.current.get(pregId)
+    const obsExistia = !!observacionesMap.get(pregId)
 
     const t0 = ahora()
     setSavingMap(prev => ({ ...prev, [pregId]: 'saving' }))
     setSaveErrMap(prev => { const n = { ...prev }; delete n[pregId]; return n })
-    guardarRespuesta({
-      preguntaId: pregId,
-      respuesta: resp,
-      trigger: preg?.trigger_falla_automatica ?? 'ninguno',
-      valoresMap: vals,
-      observacion: obs,
+
+    // COR-02: registrar en coordinador y ejecutar
+    const state = getOrCreateCoordState(pregId)
+    if (state.pendingTimer !== null) {
+      clearTimeout(state.pendingTimer)
+      state.pendingTimer = null
+    }
+    state.status = 'pendiente'
+    state.pendingArgs = { resp, vals, obs, obsExistia }
+    setSaveCoordVersion(v => v + 1)
+
+    ejecutarSave(pregId, { resp, vals, obs, obsExistia }).then(() => {
+      emitirEvento('lat_autosave', ms(t0), { auditoriaId: auditoriaId ?? null, preguntaId: pregId })
+    }).catch(() => {
+      // handled inside ejecutarSave
     })
-      .then(() => {
-        emitirEvento('lat_autosave', ms(t0), { auditoriaId: auditoriaId ?? null, preguntaId: pregId })
-        setSavingMap(prev => ({ ...prev, [pregId]: 'saved' }))
-        setSaveErrMap(prev => { const n = { ...prev }; delete n[pregId]; return n })
-        setTimeout(() => setSavingMap(prev => ({ ...prev, [pregId]: 'idle' })), 2500)
-        setScoringVersion(v => v + 1)
-      })
-      .catch((err: unknown) => {
-        console.error('[AuditorEjecucion] guardarRespuesta:', err)
-        setSavingMap(prev => ({ ...prev, [pregId]: 'error' }))
-        setSaveErrMap(prev => ({ ...prev, [pregId]: traducirError(err) }))
-      })
   }
 
   function handleRespuesta(pregId: string, resp: AudRespuesta) {
@@ -2348,36 +2526,72 @@ export function AuditorEjecucion() {
 
   function handleBlur(pregId: string) {
     clearTimeout(debounceTimers.current[pregId])
-    debounceTimers.current[pregId] = setTimeout(() => dispatchSave(pregId), 400)
+    const tieneRespuesta = !!respuestasRef.current.get(pregId)
+    if (tieneRespuesta) {
+      // flujo normal: guardar respuesta + comentarios juntos
+      debounceTimers.current[pregId] = setTimeout(() => dispatchSave(pregId), 400)
+    } else {
+      // COR-06: sin respuesta aún — guardar solo comentarios sin tocar aplicabilidad
+      debounceTimers.current[pregId] = setTimeout(() => {
+        const vals = valoresRef.current.get(pregId) ?? new Map<string, string>()
+        const obs = observacionesRef.current.get(pregId)
+        const obsExistia = !!observacionesMap.get(pregId)
+        if (vals.size === 0 && obs === undefined) return  // nada que guardar
+        setSavingMap(prev => ({ ...prev, [pregId]: 'saving' }))
+        guardarComentarios({
+          preguntaId: pregId,
+          valoresMap: vals,
+          observacion: obs,
+          obsExistia,
+        }).then(() => {
+          setSavingMap(prev => ({ ...prev, [pregId]: 'saved' }))
+          setSaveErrMap(prev => { const n = { ...prev }; delete n[pregId]; return n })
+          setTimeout(() => setSavingMap(prev => ({ ...prev, [pregId]: 'idle' })), 2500)
+        }).catch((err: unknown) => {
+          console.error('[AuditorEjecucion] guardarComentarios:', err)
+          setSavingMap(prev => ({ ...prev, [pregId]: 'error' }))
+          setSaveErrMap(prev => ({ ...prev, [pregId]: traducirError(err) }))
+        })
+      }, 400)
+    }
   }
 
   async function handleCambiarEstado(nuevoEstado: 'preliminar' | 'cerrada') {
     if (!auditoria?.id) return
     const accion = nuevoEstado === 'cerrada' ? 'cerrar' : 'marcar como preliminar'
 
+    // COR-02: flush pendientes antes de validar/cerrar
+    const hayErrores = await flushPendientes()
+    if (hayErrores) {
+      toast.error('Hay cambios sin guardar. Corrígelos antes de continuar.')
+      return
+    }
+
     // Validar primero — bloquear si hay BLOCKERs
     setValidando(true)
     setPanelValidacionVisible(true)
-    let issues: ReviewIssue[] = []
+    setReviewLoadError(false)
     try {
       const { error: revErr } = await supabase.rpc('aud_run_review', { p_auditoria_id: auditoria.id })
       if (revErr) {
         console.error('[handleCambiarEstado] aud_run_review', revErr)
-        toast.error('No se pudo validar la auditoría. Reintenta.')
+        setReviewLoadError(true)
         return
       }
-      issues = await loadReviewIssues()
-      setReviewIssues(issues)
+      const result = await loadReviewIssues()
+      if (!result.ok) {
+        setReviewLoadError(true)
+        return
+      }
+      setReviewIssues(result.issues)
+      setReviewLoadError(false)
+      const blockers = result.issues.filter(i => i.severidad === 'BLOCKER')
+      if (blockers.length > 0) {
+        toast.warning(`Resuelve ${blockers.length} bloqueo${blockers.length !== 1 ? 's' : ''} antes de ${accion}`)
+        return
+      }
     } finally {
       setValidando(false)
-    }
-
-    const blockers = issues.filter(i => i.severidad === 'BLOCKER')
-    if (blockers.length > 0) {
-      toast.warning(
-        `Resuelve ${blockers.length} bloqueo${blockers.length !== 1 ? 's' : ''} antes de ${accion}`
-      )
-      return
     }
 
     const msg = nuevoEstado === 'cerrada'
@@ -2390,7 +2604,18 @@ export function AuditorEjecucion() {
       toast.success(`Auditoría ${accion === 'cerrar' ? 'cerrada' : 'marcada como preliminar'}`)
     } catch (e: unknown) {
       console.error('[handleCambiarEstado]', e)
-      toast.error(`No se pudo ${accion}. Reintenta.`)
+      const errMsg = (e as { message?: string })?.message ?? ''
+      if (errMsg.includes('CIERRE_BLOQUEADO')) {
+        // Recargar issues para mostrar qué falta
+        const result = await loadReviewIssues()
+        if (result.ok) setReviewIssues(result.issues)
+        setPanelValidacionVisible(true)
+        toast.error(errMsg.split(': ').slice(1).join(': ') || 'No se pudo cerrar la auditoría.')
+      } else if (errMsg.includes('AUDITORIA_CERRADA')) {
+        toast.error(errMsg.split(': ').slice(1).join(': ') || 'La auditoría ya está cerrada.')
+      } else {
+        toast.error(`No se pudo ${accion}. Reintenta.`)
+      }
     } finally {
       setCambiando(false)
     }
@@ -2465,6 +2690,8 @@ export function AuditorEjecucion() {
 
   async function handleDescargarPDF() {
     if (!auditoria) return
+    // COR-02: esperar guardados pendientes antes de generar el PDF (no bloquea si hay errores)
+    await flushPendientes()
     setDescargando(true)
     try {
       await generarAuditorReportePDF({
@@ -2484,8 +2711,9 @@ export function AuditorEjecucion() {
     }
   }
 
-  async function loadReviewIssues(): Promise<ReviewIssue[]> {
-    if (!auditoriaId) return []
+  // COR-01: retorna ok/error para que el llamador distinga "vacío" de "falló"
+  async function loadReviewIssues(): Promise<{ ok: true; issues: ReviewIssue[] } | { ok: false }> {
+    if (!auditoriaId) return { ok: false }
     const { data, error } = await supabase
       .from('aud_review_issues')
       .select('*')
@@ -2494,32 +2722,38 @@ export function AuditorEjecucion() {
       .order('severidad')
     if (error) {
       console.error('[loadReviewIssues]', error)
-      return []
+      return { ok: false }
     }
-    return (data ?? []) as ReviewIssue[]
+    return { ok: true, issues: (data ?? []) as ReviewIssue[] }
   }
 
   async function handleValidar() {
     if (!auditoria?.id) return
     setValidando(true)
+    setReviewLoadError(false)
     setPanelValidacionVisible(true)
     try {
       const { error } = await supabase.rpc('aud_run_review', { p_auditoria_id: auditoria.id })
       if (error) {
         console.error('[handleValidar] aud_run_review', error)
-        toast.error('No se pudo ejecutar la validación. Reintenta.')
+        setReviewLoadError(true)
         return
       }
-      const issues = await loadReviewIssues()
-      setReviewIssues(issues)
-      if (issues.length === 0) {
+      const result = await loadReviewIssues()
+      if (!result.ok) {
+        setReviewLoadError(true)
+        return
+      }
+      setReviewIssues(result.issues)
+      setReviewLoadError(false)
+      if (result.issues.length === 0) {
         toast.success('Sin observaciones — la auditoría pasó todas las validaciones')
       } else {
-        const nBlock = issues.filter(i => i.severidad === 'BLOCKER').length
+        const nBlock = result.issues.filter(i => i.severidad === 'BLOCKER').length
         if (nBlock > 0) {
           toast.warning(`${nBlock} bloqueo${nBlock !== 1 ? 's' : ''} encontrado${nBlock !== 1 ? 's' : ''}`)
         } else {
-          toast.info(`${issues.length} observación${issues.length !== 1 ? 'es' : ''} de validación`)
+          toast.info(`${result.issues.length} observación${result.issues.length !== 1 ? 'es' : ''} de validación`)
         }
       }
     } finally {
@@ -2806,6 +3040,16 @@ export function AuditorEjecucion() {
     }
   }
 
+  // COR-02: para deshabilitar botones Validar/Cerrar mientras hay saves pendientes
+  // saveCoordVersion hace que esto se recalcule cuando cambia el coordinador
+  void saveCoordVersion
+  const haySavePending = Array.from(saveCoordinator.current.values()).some(
+    s => s.status === 'pendiente' || s.status === 'enCurso'
+  )
+
+  // COR-07: deshabilitar Validar/Cerrar si hay error de carga de esquema
+  const hayErrorCargaEsquema = esquemaCargaEstado === 'error' || obsCargaEstado === 'error'
+
   return (
     <div className="flex flex-col min-h-screen bg-background pb-8">
       <header className="sticky top-0 z-10 bg-card border-b border-border flex items-center gap-3 px-4 py-3">
@@ -2849,6 +3093,59 @@ export function AuditorEjecucion() {
           </p>
         ) : (
           <>
+            {/* COR-02: indicador global de guardado */}
+            {(() => {
+              const states = Array.from(saveCoordinator.current.values())
+              const hayGuardando = states.some(s => s.status === 'pendiente' || s.status === 'enCurso')
+              const hayErrorGuardado = states.some(s => s.status === 'error')
+              const nError = states.filter(s => s.status === 'error').length
+              if (hayGuardando) return (
+                <div className="flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-lg self-start" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                  <Loader size={11} className="animate-spin" /> Guardando…
+                </div>
+              )
+              if (hayErrorGuardado) return (
+                <div className="flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-lg self-start" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
+                  <XCircle size={11} /> Error al guardar ({nError})
+                </div>
+              )
+              return null
+            })()}
+
+            {/* COR-07: banners de error de carga */}
+            {esquemaCargaEstado === 'error' && (
+              <div className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
+                <XCircle size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
+                <div className="flex-1">
+                  <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>No se pudieron cargar los campos de comentario</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--agro-danger-text)' }}>Reintenta antes de continuar.</p>
+                </div>
+                <button
+                  onClick={refetch}
+                  className="text-[11px] font-semibold px-2 py-1 rounded flex-shrink-0"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.1)', color: 'var(--agro-danger-text)' }}
+                >
+                  Reintentar
+                </button>
+              </div>
+            )}
+            {obsCargaEstado === 'error' && (
+              <div className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}>
+                <AlertCircle size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+                <div className="flex-1">
+                  <p className="text-xs font-semibold" style={{ color: 'var(--agro-warning-text)' }}>No se pudieron cargar las observaciones guardadas</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--agro-warning-text)' }}>Es posible que algunas observaciones no se muestren.</p>
+                </div>
+                <button
+                  onClick={refetch}
+                  className="text-[11px] font-semibold px-2 py-1 rounded flex-shrink-0"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.1)', color: 'var(--agro-warning-text)' }}
+                >
+                  Reintentar
+                </button>
+              </div>
+            )}
+
             {/* Botón descargar reporte PDF */}
             {auditoria && allPreguntas.length > 0 && (
               <button
@@ -2885,6 +3182,8 @@ export function AuditorEjecucion() {
               <PanelValidacion
                 issues={reviewIssues}
                 validando={validando}
+                reviewLoadError={reviewLoadError}
+                onReintentar={handleValidar}
                 descartandoId={descartandoId}
                 motivoDescarte={motivoDescarte}
                 onDescartarClick={id => { setDescartandoId(id); setMotivoDescarte('') }}
@@ -3078,7 +3377,7 @@ export function AuditorEjecucion() {
                 {canAuditReview && (
                   <button
                     onClick={handleValidar}
-                    disabled={validando || cambiando}
+                    disabled={validando || cambiando || haySavePending || hayErrorCargaEsquema}
                     className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
                     style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                   >
@@ -3092,7 +3391,7 @@ export function AuditorEjecucion() {
                 {auditoria?.estado !== 'preliminar' && (
                   <button
                     onClick={() => handleCambiarEstado('preliminar')}
-                    disabled={cambiando || validando}
+                    disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
                     className="w-full h-11 rounded-xl text-sm font-semibold disabled:opacity-50"
                     style={{ backgroundColor: 'var(--card)', color: 'var(--primary)', border: '1.5px solid var(--primary)' }}
                   >
@@ -3101,7 +3400,7 @@ export function AuditorEjecucion() {
                 )}
                 <button
                   onClick={() => handleCambiarEstado('cerrada')}
-                  disabled={cambiando || validando}
+                  disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
                   className="w-full h-11 rounded-xl text-sm font-semibold disabled:opacity-50"
                   style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
                 >

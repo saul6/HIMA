@@ -12,6 +12,14 @@ const tbl = (name: string) => (supabase as any).from(name)
 
 export type EstadoAuditoria = AudEstado | 'preliminar'
 
+// COR-03: error tipado para guardado incompleto
+export class GuardadoIncompleto extends Error {
+  constructor(public readonly etapa: 'valores' | 'observacion', message: string) {
+    super(message)
+    this.name = 'GuardadoIncompleto'
+  }
+}
+
 export interface AuditorAuditoriaDetalle {
   id: string
   org_id: string
@@ -59,10 +67,17 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
   const [cargando, setCargando] = useState(true)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
+  // COR-07: estados de carga separados para esquema y observaciones
+  const [esquemaCargaEstado, setEsquemaCargaEstado] = useState<'ok' | 'error'>('ok')
+  const [obsCargaEstado, setObsCargaEstado] = useState<'ok' | 'error'>('ok')
+
   const cargar = useCallback(async () => {
     if (!auditoriaId) return
     setCargando(true)
     setErrorMsg(null)
+    // COR-07: resetear estados de carga al inicio
+    setEsquemaCargaEstado('ok')
+    setObsCargaEstado('ok')
     try {
       const { data: audData, error: audErr } = await tbl('aud_auditorias')
         .select(`
@@ -128,12 +143,27 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
       const allPreguntas: AudPregunta[] = prRes.data ?? []
       const pregIds = allPreguntas.map(p => p.id)
 
+      // COR-07: paginación de aud_comentario_esquema para no asumir que todo cabe en 1 query
       let eqData: AudComentarioEsquema[] = []
       if (pregIds.length > 0) {
-        const { data: eqRaw, error: eqErr } = await tbl('aud_comentario_esquema')
-          .select('*').in('pregunta_id', pregIds).order('orden_render')
-        if (eqErr) console.error('[useAuditorAuditoria] aud_comentario_esquema', eqErr)
-        eqData = eqRaw ?? []
+        const PAGE_SIZE = 1000
+        let eqOffset = 0
+        let eqDone = false
+        while (!eqDone) {
+          const { data: page, error: eqErr } = await tbl('aud_comentario_esquema')
+            .select('*')
+            .in('pregunta_id', pregIds)
+            .order('orden_render')
+            .range(eqOffset, eqOffset + PAGE_SIZE - 1)
+          if (eqErr) {
+            console.error('[useAuditorAuditoria] aud_comentario_esquema', eqErr)
+            setEsquemaCargaEstado('error')
+            break
+          }
+          eqData = eqData.concat(page ?? [])
+          if ((page?.length ?? 0) < PAGE_SIZE) eqDone = true
+          else eqOffset += PAGE_SIZE
+        }
       }
       const eqMap = new Map<string, AudComentarioEsquema[]>()
       for (const e of eqData) {
@@ -209,7 +239,11 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
           const texto = val.valor_texto ?? (Array.isArray(val.valor_opciones) ? val.valor_opciones.join(', ') : '')
           vm.get(pregId)!.set(val.esquema_id, texto)
         }
-        if (obsRes.error) console.error('[useAuditorAuditoria] aud_observaciones', obsRes.error)
+        // COR-07: si falla la carga de observaciones, marcar error pero no bloquear todo
+        if (obsRes.error) {
+          console.error('[useAuditorAuditoria] aud_observaciones', obsRes.error)
+          setObsCargaEstado('error')
+        }
         for (const obs of (obsRes.data ?? []) as { instancia_id: string; observacion: string | null }[]) {
           const pregId = instIdToPreg.get(obs.instancia_id)
           if (pregId && obs.observacion) om.set(pregId, obs.observacion)
@@ -234,7 +268,8 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
     respuesta: AudRespuesta
     trigger: AudTriggerFalla
     valoresMap: Map<string, string>
-    observacion?: string
+    observacion?: string   // undefined = no tocar; '' = borrar si existía; texto = upsert
+    obsExistia: boolean    // COR-04: true si había observación cargada antes
   }): Promise<void> {
     if (!auditoriaId) throw new Error('Sin auditoría activa')
     const orgId = auditoria?.org_id
@@ -261,6 +296,7 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
     const instanciaId = (instData as { id: string }).id
     setInstanciasMap(prev => new Map(prev).set(params.preguntaId, instanciaId))
 
+    // COR-03: lanzar GuardadoIncompleto en lugar de throw genérico
     if (params.valoresMap.size > 0) {
       const valores = Array.from(params.valoresMap.entries()).map(([esquemaId, valor]) => ({
         instancia_id: instanciaId,
@@ -271,10 +307,13 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
       }))
       const { error: valErr } = await tbl('aud_instancia_valores')
         .upsert(valores, { onConflict: 'instancia_id,esquema_id' })
-      if (valErr) throw valErr
+      if (valErr) throw new GuardadoIncompleto('valores', valErr.message)
     }
 
-    if (params.observacion !== undefined) {
+    // COR-04: manejar borrado de observación cuando el usuario la vacía
+    if (params.observacion === undefined) {
+      // no tocar
+    } else {
       const texto = params.observacion.trim()
       if (texto) {
         const { error: obsErr } = await tbl('aud_observaciones')
@@ -288,22 +327,88 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
             },
             { onConflict: 'instancia_id' },
           )
-        if (obsErr) throw obsErr
+        if (obsErr) throw new GuardadoIncompleto('observacion', obsErr.message)
+      } else if (params.obsExistia) {
+        // el usuario borró la observación y había una → delete
+        const { error: delErr } = await tbl('aud_observaciones').delete().eq('instancia_id', instanciaId)
+        if (delErr) throw new GuardadoIncompleto('observacion', delErr.message)
+        setObservacionesMap(prev => { const n = new Map(prev); n.delete(params.preguntaId); return n })
       }
     }
   }
 
+  // COR-06: guardar solo comentarios/valores sin tocar la respuesta/aplicabilidad
+  async function guardarComentarios(params: {
+    preguntaId: string
+    valoresMap: Map<string, string>
+    observacion: string | undefined
+    obsExistia: boolean
+  }): Promise<void> {
+    if (!auditoriaId) throw new Error('Sin auditoría activa')
+    const orgId = auditoria?.org_id
+    if (!orgId) throw new Error('No se pudo identificar la empresa auditada')
+
+    // Asegurar que exista la instancia (sin cambiar respuesta ni aplicabilidad)
+    const { data: instData, error: instErr } = await tbl('aud_instancia_pregunta')
+      .upsert(
+        { org_id: orgId, auditoria_id: auditoriaId, pregunta_id: params.preguntaId },
+        { onConflict: 'auditoria_id,pregunta_id', ignoreDuplicates: true }
+      )
+      .select('id')
+      .single()
+
+    // Si no existe todavía (ignoreDuplicates no devuelve data), buscarlo
+    let instanciaId: string | undefined = (instData as { id: string } | null)?.id
+    if (instErr || !instanciaId) {
+      const { data: existente } = await tbl('aud_instancia_pregunta')
+        .select('id')
+        .eq('auditoria_id', auditoriaId)
+        .eq('pregunta_id', params.preguntaId)
+        .single()
+      instanciaId = (existente as { id: string } | null)?.id
+    }
+    if (!instanciaId) throw new Error('No se pudo obtener la instancia')
+
+    // Valores
+    if (params.valoresMap.size > 0) {
+      const valores = Array.from(params.valoresMap.entries()).map(([esquemaId, valor]) => ({
+        instancia_id: instanciaId!,
+        esquema_id: esquemaId,
+        valor_texto: valor || null,
+        valor_opciones: null,
+        fuente: 'capturado',
+      }))
+      const { error: valErr } = await tbl('aud_instancia_valores')
+        .upsert(valores, { onConflict: 'instancia_id,esquema_id' })
+      if (valErr) throw new GuardadoIncompleto('valores', valErr.message)
+    }
+
+    // Observación
+    if (params.observacion !== undefined) {
+      const texto = params.observacion.trim()
+      if (texto) {
+        const { error: obsErr } = await tbl('aud_observaciones')
+          .upsert({ instancia_id: instanciaId, org_id: orgId, observacion: texto, modo_confirmacion: 'visual', capturado_por: profile?.id }, { onConflict: 'instancia_id' })
+        if (obsErr) throw new GuardadoIncompleto('observacion', obsErr.message)
+      } else if (params.obsExistia) {
+        const { error: delErr } = await tbl('aud_observaciones').delete().eq('instancia_id', instanciaId)
+        if (delErr) throw new GuardadoIncompleto('observacion', delErr.message)
+        setObservacionesMap(prev => { const n = new Map(prev); n.delete(params.preguntaId); return n })
+      }
+    }
+
+    // Actualizar mapa local de instancias
+    setInstanciasMap(prev => new Map(prev).set(params.preguntaId, instanciaId!))
+  }
+
+  // COR-03: ELIMINAR el bloque que hace update({ estado: 'cerrada' }) en aud_auditoria_modulos
+  // (esa columna no existe y fallaba en silencio). Solo update de aud_auditorias.
   async function cambiarEstado(nuevoEstado: EstadoAuditoria): Promise<void> {
     if (!auditoriaId) throw new Error('Sin auditoría')
     const { error: err } = await tbl('aud_auditorias')
       .update({ estado: nuevoEstado })
       .eq('id', auditoriaId)
     if (err) throw err
-    if (nuevoEstado === 'cerrada') {
-      await tbl('aud_auditoria_modulos')
-        .update({ estado: 'cerrada' })
-        .eq('auditoria_id', auditoriaId)
-    }
     setAuditoria(prev => prev ? { ...prev, estado: nuevoEstado } : prev)
   }
 
@@ -323,7 +428,11 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
     estadoAplicabilidadMap,
     cargando,
     errorMsg,
+    // COR-07: exportar estados de carga de esquema y observaciones
+    esquemaCargaEstado,
+    obsCargaEstado,
     guardarRespuesta,
+    guardarComentarios,
     cambiarEstado,
     refetch: cargar,
   }
