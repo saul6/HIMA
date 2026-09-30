@@ -27,6 +27,11 @@ import { supabase } from '@/lib/supabase'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmaContext } from '@/context/FirmaContext'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -134,6 +139,10 @@ export function AlmacenEmpaqueGG() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM75AlmacenEmpaqueGG()
   const { items, loading: loadingItems } = useM75ItemsCatalogo()
+
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M75', todosIds)
+  const { obligatoria, tengoFirma } = useFirmaContext()
 
   const termino = terminosSitio.singular
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }))
@@ -275,6 +284,9 @@ export function AlmacenEmpaqueGG() {
   const [nErrRancho, setNErrRancho] = useState(false)
   const [nYaExiste, setNYaExiste] = useState(false)
   const [nGuardando, setNGuardando] = useState(false)
+  const [sheetNuevoPaso, setSheetNuevoPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+  const [pendienteDetalle, setPendienteDetalle] = useState<M75RegistroResumen | null>(null)
 
   useEffect(() => {
     if (!sheetNuevo) { setNYaExiste(false); return }
@@ -311,10 +323,6 @@ export function AlmacenEmpaqueGG() {
         .single()
       if (e) throw e
 
-      toast.success('Registro creado')
-      setSheetNuevo(false)
-      await refetch()
-
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const r = data as any
       const nuevo: M75RegistroResumen = {
@@ -328,7 +336,11 @@ export function AlmacenEmpaqueGG() {
         creado_por: r.creado_por ?? null,
         created_at: r.created_at,
       }
-      abrirDetalle(nuevo)
+      await refetch()
+      toast.success('Registro creado')
+      setPendienteFirmaId(r.id)
+      setPendienteDetalle(nuevo)
+      setSheetNuevoPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
       if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
@@ -428,45 +440,56 @@ export function AlmacenEmpaqueGG() {
           ) : (
             <div className="space-y-3">
               {registros.map((reg) => (
-                <button
+                <div
                   key={reg.id}
-                  onClick={() => abrirDetalle(reg)}
-                  className="w-full text-left rounded-xl p-4 border"
+                  className="rounded-xl border overflow-hidden"
                   style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span
-                          className="text-xs px-2 py-0.5 rounded"
-                          style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
-                        >
-                          {formatMesLabel(reg.mes)}
-                        </span>
-                        {reg.cultivo && (
+                  <button
+                    onClick={() => abrirDetalle(reg)}
+                    className="w-full text-left p-4"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
                           <span
                             className="text-xs px-2 py-0.5 rounded"
-                            style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                            style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
                           >
-                            {reg.cultivo}
+                            {formatMesLabel(reg.mes)}
                           </span>
+                          {reg.cultivo && (
+                            <span
+                              className="text-xs px-2 py-0.5 rounded"
+                              style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                            >
+                              {reg.cultivo}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                          {reg.rancho_nombre}
+                        </span>
+                        {reg.realizo && (
+                          <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                            Realizó: {reg.realizo}
+                          </div>
                         )}
                       </div>
-                      <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
-                        {reg.rancho_nombre}
-                      </span>
-                      {reg.realizo && (
-                        <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                          Realizó: {reg.realizo}
-                        </div>
-                      )}
+                      <ChevronLeft
+                        className="w-4 h-4 flex-shrink-0 mt-0.5 rotate-180"
+                        style={{ color: 'var(--muted-foreground)' }}
+                      />
                     </div>
-                    <ChevronLeft
-                      className="w-4 h-4 flex-shrink-0 mt-0.5 rotate-180"
-                      style={{ color: 'var(--muted-foreground)' }}
-                    />
-                  </div>
-                </button>
+                  </button>
+                  <FirmasRegistro
+                    modulo="M75"
+                    registroId={reg.id}
+                    firmas={firmas}
+                    loading={loadingFirmas}
+                    fechaRegistro={reg.mes}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -683,104 +706,147 @@ export function AlmacenEmpaqueGG() {
 
       {/* FAB — solo en lista */}
       {vista === 'lista' && (
-                <Fab onClick={() => {
-              setNRanchoId(ranchoInicial ?? '')
-              setNMes(mesActual())
-              setNCultivo('')
-              setNRealizo(profile?.nombre_completo ?? '')
-              setNObservaciones('')
-              setNErrRancho(false)
-              setNYaExiste(false)
-              setSheetNuevo(true)
-            }} aria-label="Nuevo registro mensual" />
+        <Fab onClick={() => {
+          setNRanchoId(ranchoInicial ?? '')
+          setNMes(mesActual())
+          setNCultivo('')
+          setNRealizo(profile?.nombre_completo ?? '')
+          setNObservaciones('')
+          setNErrRancho(false)
+          setNYaExiste(false)
+          setPendienteFirmaId(null)
+          setPendienteDetalle(null)
+          setSheetNuevoPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
+          setSheetNuevo(true)
+        }} aria-label="Nuevo registro mensual" />
       )}
 
       {/* Sheet nuevo registro */}
-      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
+      <BottomSheet open={sheetNuevo} onClose={() => {
+        setSheetNuevo(false)
+        setSheetNuevoPaso('form')
+        setPendienteFirmaId(null)
+        if (pendienteDetalle) { const d = pendienteDetalle; setPendienteDetalle(null); abrirDetalle(d) }
+      }} height="85%">
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
         </div>
         <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nuevo registro mensual</h2>
-          <button onClick={() => setSheetNuevo(false)}>
+          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+            {sheetNuevoPaso === 'firma_decision' ? 'Firmar registro' : sheetNuevoPaso === 'firma_gate' ? 'Firma requerida' : 'Nuevo registro mensual'}
+          </h2>
+          <button onClick={() => {
+            setSheetNuevo(false)
+            setSheetNuevoPaso('form')
+            setPendienteFirmaId(null)
+            if (pendienteDetalle) { const d = pendienteDetalle; setPendienteDetalle(null); abrirDetalle(d) }
+          }}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
-          {/* Rancho */}
-          <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
-              {termino.toUpperCase()} *
-            </label>
-            <select
-              value={nRanchoId}
-              onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
-              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border)', backgroundColor: 'var(--input-background)' }}
-            >
-              <option value="">Selecciona {termino.toLowerCase()}…</option>
-              {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-            {nErrRancho && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>}
-          </div>
+        {sheetNuevoPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetNuevoPaso('form')} />
+        )}
+        {sheetNuevoPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M75"
+            ids={[pendienteFirmaId]}
+            descripcion={pendienteDetalle ? `Inspección Almacén de Empaque · ${formatMesLabel(pendienteDetalle.mes)} · ${pendienteDetalle.rancho_nombre}` : 'Inspección Almacén de Empaque'}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              setSheetNuevo(false)
+              setSheetNuevoPaso('form')
+              setPendienteFirmaId(null)
+              await refetchFirmas()
+              if (pendienteDetalle) { const d = pendienteDetalle; setPendienteDetalle(null); abrirDetalle(d) }
+            }}
+            onDespues={!obligatoria ? () => {
+              setSheetNuevo(false)
+              setSheetNuevoPaso('form')
+              setPendienteFirmaId(null)
+              if (pendienteDetalle) { const d = pendienteDetalle; setPendienteDetalle(null); abrirDetalle(d) }
+            } : undefined}
+          />
+        )}
+        {sheetNuevoPaso === 'form' && (
+          <>
+            <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
+              {/* Rancho */}
+              <div className="space-y-1">
+                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                  {termino.toUpperCase()} *
+                </label>
+                <select
+                  value={nRanchoId}
+                  onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
+                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                  style={{ borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                >
+                  <option value="">Selecciona {termino.toLowerCase()}…</option>
+                  {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+                {nErrRancho && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>}
+              </div>
 
-          {/* Mes */}
-          <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>MES DE REGISTRO *</label>
-            <input type="month" value={nMes} onChange={(e) => setNMes(e.target.value)}
-              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
-          </div>
+              {/* Mes */}
+              <div className="space-y-1">
+                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>MES DE REGISTRO *</label>
+                <input type="month" value={nMes} onChange={(e) => setNMes(e.target.value)}
+                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+              </div>
 
-          {/* Cultivo */}
-          <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>CULTIVO</label>
-            <input type="text" value={nCultivo} onChange={(e) => setNCultivo(e.target.value)} placeholder="Ej: Zarzamora"
-              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
-          </div>
+              {/* Cultivo */}
+              <div className="space-y-1">
+                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>CULTIVO</label>
+                <input type="text" value={nCultivo} onChange={(e) => setNCultivo(e.target.value)} placeholder="Ej: Zarzamora"
+                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+              </div>
 
-          {/* Realizó */}
-          <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>REALIZÓ</label>
-            <input type="text" value={nRealizo} onChange={(e) => setNRealizo(e.target.value)} placeholder="Nombre del responsable"
-              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
-          </div>
+              {/* Realizó */}
+              <div className="space-y-1">
+                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>REALIZÓ</label>
+                <input type="text" value={nRealizo} onChange={(e) => setNRealizo(e.target.value)} placeholder="Nombre del responsable"
+                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+              </div>
 
-          {/* Observaciones */}
-          <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
-            <textarea value={nObservaciones} onChange={(e) => setNObservaciones(e.target.value)} rows={2}
-              placeholder="Observaciones generales…"
-              className="w-full rounded-xl border px-3 py-2 text-sm focus:outline-none resize-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
-          </div>
+              {/* Observaciones */}
+              <div className="space-y-1">
+                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
+                <textarea value={nObservaciones} onChange={(e) => setNObservaciones(e.target.value)} rows={2}
+                  placeholder="Observaciones generales…"
+                  className="w-full rounded-xl border px-3 py-2 text-sm focus:outline-none resize-none"
+                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+              </div>
 
-          {nYaExiste && (
-            <div
-              className="flex items-start gap-2 rounded-xl p-3"
-              style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}
-            >
-              <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-              <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
-                Ya existe un registro para este mes y {termino.toLowerCase()}.
-              </p>
+              {nYaExiste && (
+                <div
+                  className="flex items-start gap-2 rounded-xl p-3"
+                  style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}
+                >
+                  <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+                  <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                    Ya existe un registro para este mes y {termino.toLowerCase()}.
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
-          <button
-            onClick={handleCrearRegistro}
-            disabled={nGuardando || nYaExiste || !nRanchoId}
-            className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-          >
-            {nGuardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Creando…</> : 'Crear registro'}
-          </button>
-        </div>
+            <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
+              <button
+                onClick={handleCrearRegistro}
+                disabled={nGuardando || nYaExiste || !nRanchoId}
+                className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
+                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+              >
+                {nGuardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Creando…</> : 'Crear registro'}
+              </button>
+            </div>
+          </>
+        )}
       </BottomSheet>
     </div>
   )

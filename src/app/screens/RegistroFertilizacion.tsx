@@ -25,6 +25,11 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmaContext } from '@/context/FirmaContext'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -348,6 +353,9 @@ export function RegistroFertilizacion() {
   const { saldos, loading: saldosLoading, refetch: refetchSaldos } = useInventarioFertilizantes()
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
+  const todosIds = registros.map(r => r.fertilizantes[0]?.id).filter(Boolean) as string[]
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M8', todosIds)
+  const { obligatoria, tengoFirma } = useFirmaContext()
 
   // ── Tab ─────────────────────────────────────────────────────────────────
   const [tab, setTab] = useState<'registros' | 'inventario'>('registros')
@@ -362,6 +370,9 @@ export function RegistroFertilizacion() {
   const [errRancho, setErrRancho] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null)
+  const [sheetNuevoPaso, setSheetNuevoPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+  const [pendientePdfProps, setPendientePdfProps] = useState<FertilizacionPDFProps | null>(null)
 
   // ── Estado consolidado ───────────────────────────────────────────────────
   const [sheetConsolidadoAbierto, setSheetConsolidadoAbierto] = useState(false)
@@ -421,7 +432,14 @@ export function RegistroFertilizacion() {
     setFilas([filaVacia()])
     setErrFilas([{ nombre: false, superficie: false, dosis: false }])
     setErrRancho(false)
+    setSheetNuevoPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
+    setPendienteFirmaId(null)
+    setPendientePdfProps(null)
     setSheetNuevoAbierto(true)
+  }
+
+  function handleCerrarSheetNuevo() {
+    setSheetNuevoAbierto(false); setSheetNuevoPaso('form'); setPendienteFirmaId(null); setPendientePdfProps(null)
   }
 
   function updateFila(idx: number, f: FilaFertilizante) {
@@ -544,13 +562,12 @@ export function RegistroFertilizacion() {
         }
       }
 
-      toast.success('Registro guardado')
-      setSheetNuevoAbierto(false)
       await refetchRegistros()
       await refetchSaldos()
       await refetchCatalogo()
+      toast.success('Registro guardado')
 
-      // 5. Generar PDF automáticamente
+      // 5. Preparar PDF props para paso firma
       const rancho = ranchos.find((r) => r.id === ranchoId)
       if (rancho && m8Data) {
         const folio = ((m8Data as any[])[0]?.id as string)?.slice(0, 8).toUpperCase() ?? '—'
@@ -571,12 +588,11 @@ export function RegistroFertilizacion() {
             cantidad_total: parseFloat(f.cantidad || calcCantidad(f.superficie, f.dosis) || '0'),
           })),
         }
-        try {
-          await generarFertilizacionPDF(pdfProps, rancho.nombre, fecha)
-        } catch {
-          toast.warning('Registro guardado — el PDF no se pudo generar. Descárgalo desde el historial.')
-        }
+        setPendientePdfProps(pdfProps)
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setPendienteFirmaId((m8Data as any[])[0].id)
+      setSheetNuevoPaso('firma_decision')
     } catch (err: unknown) {
       const mensaje = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
       if (mensaje.includes('FECHA_SOLO_HOY')) {
@@ -910,6 +926,9 @@ export function RegistroFertilizacion() {
                         </div>
                       ))}
                     </div>
+                    {reg.fertilizantes[0] && (
+                      <FirmasRegistro modulo="M8" registroId={reg.fertilizantes[0].id} firmas={firmas} loading={loadingFirmas} fechaRegistro={reg.fecha} />
+                    )}
                   </div>
                 )
               })
@@ -981,112 +1000,144 @@ export function RegistroFertilizacion() {
             <Fab onClick={tab === 'registros' ? abrirSheetNuevo : abrirSheetMov} aria-label={tab === 'registros' ? 'Nuevo registro' : 'Movimiento de inventario'} icon={tab === 'inventario' ? TrendingDown : Plus} />
 
       {/* ── Sheet: Nuevo registro ─────────────────────────────────────────────── */}
-      <BottomSheet open={sheetNuevoAbierto} onClose={() => !guardando && setSheetNuevoAbierto(false)} height="85%">
+      <BottomSheet open={sheetNuevoAbierto} onClose={() => !guardando && handleCerrarSheetNuevo()} height="85%">
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
             <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nuevo registro</h2>
-              <button onClick={() => !guardando && setSheetNuevoAbierto(false)} className="p-1">
+              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                {sheetNuevoPaso === 'firma_decision' ? 'Firmar registro' : sheetNuevoPaso === 'firma_gate' ? 'Firma requerida' : 'Nuevo registro'}
+              </h2>
+              <button onClick={() => !guardando && handleCerrarSheetNuevo()} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-              {/* Rancho */}
-              <div>
-                <label
-                  className="text-xs text-muted-foreground mb-1 block"
-                  style={{ fontWeight: 600 }}
-                >
-                  {terminosSitio.singular} *
-                </label>
-                <select
-                  value={ranchoId}
-                  onChange={(e) => { setRanchoId(e.target.value); setErrRancho(false) }}
-                  className="w-full h-10 px-3 rounded-lg bg-card border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                  style={errRancho ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border)' }}
-                >
-                  <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
-                  {ranchos.map((r) => (
-                    <option key={r.id} value={r.id}>{r.nombre}</option>
-                  ))}
-                </select>
-                {errRancho && (
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--agro-red)' }}>{terminosSitio.singular} requerido{terminosSitio.genero === 'f' ? 'a' : ''}</p>
-                )}
-              </div>
+            {sheetNuevoPaso === 'firma_gate' && (
+              <FirmaGatePaso onFirmaGuardada={() => setSheetNuevoPaso('form')} />
+            )}
 
-              {/* Fecha + Sector */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
-                    Fecha *
-                  </label>
-                  <input
-                    type="date"
-                    value={fecha}
-                    min={puedeEditarFecha ? undefined : hoy()}
-                    max={puedeEditarFecha ? undefined : hoy()}
-                    onChange={(e) => { if (puedeEditarFecha) setFecha(e.target.value) }}
-                    className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
-                    Sector
-                  </label>
-                  <input
-                    type="text"
-                    value={sector}
-                    onChange={(e) => setSector(e.target.value)}
-                    placeholder="Ej. Bloque A"
-                    className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
-                  />
-                </div>
-              </div>
+            {sheetNuevoPaso === 'firma_decision' && pendienteFirmaId && (
+              <PasoFirmaRegistro
+                modulo="M8"
+                ids={[pendienteFirmaId]}
+                descripcion={pendientePdfProps ? `Registro de Fertilización · ${pendientePdfProps.fecha} · ${pendientePdfProps.rancho}` : 'Registro de Fertilización'}
+                obligatoria={obligatoria}
+                onFirmadoYPDF={async () => {
+                  handleCerrarSheetNuevo()
+                  await refetchFirmas()
+                  if (pendientePdfProps) {
+                    try {
+                      await generarFertilizacionPDF(pendientePdfProps, pendientePdfProps.rancho, pendientePdfProps.fecha)
+                    } catch {
+                      toast.warning('Registro guardado — el PDF no se pudo generar. Descárgalo desde el historial.')
+                    }
+                    setPendientePdfProps(null)
+                  }
+                }}
+                onDespues={!obligatoria ? () => handleCerrarSheetNuevo() : undefined}
+              />
+            )}
 
-              {/* Filas de fertilizantes */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
-                    Fertilizantes ({filas.length})
-                  </p>
-                </div>
-                {filas.map((fila, idx) => (
-                  <FilaFertilizanteForm
-                    key={idx}
-                    fila={fila}
-                    errores={errFilas[idx] ?? { nombre: false, superficie: false, dosis: false }}
-                    catalogo={catalogo}
-                    puedeEliminar={filas.length > 1}
-                    onChange={(f) => updateFila(idx, f)}
-                    onRemove={() => eliminarFila(idx)}
-                  />
-                ))}
-                <button
-                  type="button"
-                  onClick={agregarFila}
-                  className="w-full h-9 border border-dashed rounded-xl text-sm flex items-center justify-center gap-1.5 transition-colors hover:bg-muted"
-                  style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
-                >
-                  <Plus className="w-4 h-4" />
-                  Agregar fertilizante
-                </button>
-              </div>
-            </div>
+            {sheetNuevoPaso === 'form' && (
+              <>
+                <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+                  {/* Rancho */}
+                  <div>
+                    <label
+                      className="text-xs text-muted-foreground mb-1 block"
+                      style={{ fontWeight: 600 }}
+                    >
+                      {terminosSitio.singular} *
+                    </label>
+                    <select
+                      value={ranchoId}
+                      onChange={(e) => { setRanchoId(e.target.value); setErrRancho(false) }}
+                      className="w-full h-10 px-3 rounded-lg bg-card border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                      style={errRancho ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border)' }}
+                    >
+                      <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
+                      {ranchos.map((r) => (
+                        <option key={r.id} value={r.id}>{r.nombre}</option>
+                      ))}
+                    </select>
+                    {errRancho && (
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--agro-red)' }}>{terminosSitio.singular} requerido{terminosSitio.genero === 'f' ? 'a' : ''}</p>
+                    )}
+                  </div>
 
-            <div className="px-4 py-4 border-t border-border flex-shrink-0">
-              <button
-                onClick={handleGuardar}
-                disabled={guardando}
-                className="w-full h-11 rounded-xl text-white text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-colors"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
-                {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-                {guardando ? 'Guardando...' : 'Guardar y generar PDF'}
-              </button>
-            </div>
+                  {/* Fecha + Sector */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
+                        Fecha *
+                      </label>
+                      <input
+                        type="date"
+                        value={fecha}
+                        min={puedeEditarFecha ? undefined : hoy()}
+                        max={puedeEditarFecha ? undefined : hoy()}
+                        onChange={(e) => { if (puedeEditarFecha) setFecha(e.target.value) }}
+                        className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
+                        Sector
+                      </label>
+                      <input
+                        type="text"
+                        value={sector}
+                        onChange={(e) => setSector(e.target.value)}
+                        placeholder="Ej. Bloque A"
+                        className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Filas de fertilizantes */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                        Fertilizantes ({filas.length})
+                      </p>
+                    </div>
+                    {filas.map((fila, idx) => (
+                      <FilaFertilizanteForm
+                        key={idx}
+                        fila={fila}
+                        errores={errFilas[idx] ?? { nombre: false, superficie: false, dosis: false }}
+                        catalogo={catalogo}
+                        puedeEliminar={filas.length > 1}
+                        onChange={(f) => updateFila(idx, f)}
+                        onRemove={() => eliminarFila(idx)}
+                      />
+                    ))}
+                    <button
+                      type="button"
+                      onClick={agregarFila}
+                      className="w-full h-9 border border-dashed rounded-xl text-sm flex items-center justify-center gap-1.5 transition-colors hover:bg-muted"
+                      style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                    >
+                      <Plus className="w-4 h-4" />
+                      Agregar fertilizante
+                    </button>
+                  </div>
+                </div>
+
+                <div className="px-4 py-4 border-t border-border flex-shrink-0">
+                  <button
+                    onClick={handleGuardar}
+                    disabled={guardando}
+                    className="w-full h-11 rounded-xl text-white text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-colors"
+                    style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+                  >
+                    {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {guardando ? 'Guardando...' : 'Guardar y generar PDF'}
+                  </button>
+                </div>
+              </>
+            )}
       </BottomSheet>
 
       {/* ── Sheet: Exportar consolidado ───────────────────────────────────────── */}

@@ -28,6 +28,9 @@ import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -158,6 +161,7 @@ export function LimpiezaCampo() {
 
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M71', todosIds)
+  const { obligatoria, tengoFirma } = useFirmaContext()
 
   // ── Navegación interna ──
   const [vista, setVista] = useState<Vista>('lista')
@@ -267,6 +271,9 @@ export function LimpiezaCampo() {
 
   // ── Sheet: nuevo registro ──
   const [sheetNuevo, setSheetNuevo]             = useState(false)
+  const [sheetNuevoPaso, setSheetNuevoPaso]     = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+  const [pendienteDetalle, setPendienteDetalle] = useState<M71RegistroResumen | null>(null)
   const [sheetConsolidado, setSheetConsolidado] = useState(false)
 
   const [nRanchoId, setNRanchoId]           = useState('')
@@ -311,11 +318,6 @@ export function LimpiezaCampo() {
         .single()
       if (e) throw e
 
-      toast.success('Registro creado')
-      setSheetNuevo(false)
-      await refetch()
-      await refetchFirmas()
-
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const r = data as any
       const nuevo: M71RegistroResumen = {
@@ -327,7 +329,11 @@ export function LimpiezaCampo() {
         observaciones: r.observaciones ?? null,
         created_at: r.created_at,
       }
-      abrirDetalle(nuevo)
+      await refetch()
+      toast.success('Registro creado')
+      setPendienteFirmaId(r.id)
+      setPendienteDetalle(nuevo)
+      setSheetNuevoPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
       if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
@@ -778,25 +784,55 @@ export function LimpiezaCampo() {
               setNObservaciones('')
               setNErrRancho(false)
               setNYaExiste(false)
+              setPendienteFirmaId(null)
+              setPendienteDetalle(null)
+              setSheetNuevoPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
               setSheetNuevo(true)
             }} aria-label="Nuevo registro mensual" />
       )}
 
       {/* ═══ SHEET: NUEVO REGISTRO ═══════════════════════════════════════ */}
-      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
+      <BottomSheet open={sheetNuevo} onClose={() => { setSheetNuevo(false); setSheetNuevoPaso('form'); setPendienteFirmaId(null); setPendienteDetalle(null); if (pendienteDetalle) abrirDetalle(pendienteDetalle) }} height="85%">
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
         </div>
-        <div className="px-4 pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
-              Nuevo registro mensual
-            </h2>
-            <button onClick={() => setSheetNuevo(false)}>
-              <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
-            </button>
-          </div>
+        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+            {sheetNuevoPaso === 'firma_gate' ? 'Registra tu firma' : sheetNuevoPaso === 'firma_decision' ? 'Firmar registro' : 'Nuevo registro mensual'}
+          </h2>
+          <button onClick={() => { setSheetNuevo(false); setSheetNuevoPaso('form'); if (pendienteDetalle) { setPendienteDetalle(null); abrirDetalle(pendienteDetalle) } }}>
+            <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
+          </button>
+        </div>
 
+        {sheetNuevoPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetNuevoPaso('form')} />
+        )}
+
+        {sheetNuevoPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M71"
+            ids={[pendienteFirmaId]}
+            descripcion={`Registro mensual · ${nMes}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => {
+              setSheetNuevo(false)
+              setSheetNuevoPaso('form')
+              setPendienteFirmaId(null)
+              await refetchFirmas()
+              if (pendienteDetalle) { setPendienteDetalle(null); abrirDetalle(pendienteDetalle) }
+            }}
+            onDespues={!obligatoria ? () => {
+              setSheetNuevo(false)
+              setSheetNuevoPaso('form')
+              setPendienteFirmaId(null)
+              if (pendienteDetalle) { setPendienteDetalle(null); abrirDetalle(pendienteDetalle) }
+            } : undefined}
+          />
+        )}
+
+        {sheetNuevoPaso === 'form' && (
+        <div className="px-4 pb-4 pt-4">
           <div className="space-y-4">
             {/* Rancho */}
             <div className="space-y-1">
@@ -898,6 +934,7 @@ export function LimpiezaCampo() {
             </button>
           </div>
         </div>
+        )}
       </BottomSheet>
 
       {/* ═══ SHEET: CONSOLIDADO ══════════════════════════════════════════ */}

@@ -23,6 +23,11 @@ import { supabase } from '@/lib/supabase'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmaContext } from '@/context/FirmaContext'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -60,6 +65,10 @@ export function BotiquinGG() {
   const { registros, loading, error, refetch } = useM73BotiquinGG()
   const { items: catalogo, loading: loadingCatalogo } = useM73Catalogo()
 
+  const todosIds = registros.map(r => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M73', todosIds)
+  const { obligatoria, tengoFirma } = useFirmaContext()
+
   const termino = terminosSitio.singular
 
   // Sheet estado
@@ -71,6 +80,8 @@ export function BotiquinGG() {
   const [nObservaciones, setNObservaciones] = useState('')
   const [nErrRancho, setNErrRancho] = useState(false)
   const [nGuardando, setNGuardando] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
 
   // Filas de materiales del catálogo + filas extras
   const [filasCatalogo, setFilasCatalogo] = useState<FilaMaterial[]>([])
@@ -86,8 +97,16 @@ export function BotiquinGG() {
     // Inicializar filas con el catálogo
     setFilasCatalogo(catalogo.map((c) => filaVacia(c.id, c.nombre)))
     setFilasExtra([])
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
+    setPendienteFirmaId(null)
     setSheetNuevo(true)
-  }, [catalogo, profile?.nombre_completo])
+  }, [catalogo, profile?.nombre_completo, obligatoria, tengoFirma])
+
+  function handleCerrarSheet() {
+    setSheetNuevo(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
 
   function actualizarFilaCatalogo(idx: number, campo: keyof FilaMaterial, valor: string) {
     setFilasCatalogo((prev) => prev.map((f, i) => i === idx ? { ...f, [campo]: valor } : f))
@@ -152,9 +171,10 @@ export function BotiquinGG() {
         if (e2) throw e2
       }
 
-      toast.success('Registro guardado')
-      setSheetNuevo(false)
       await refetch()
+      toast.success('Registro guardado')
+      setPendienteFirmaId(registroId)
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
       if (msg.includes('FECHA_SOLO_HOY')) {
@@ -295,6 +315,13 @@ export function BotiquinGG() {
                       </button>
                     )}
                   </div>
+                  <FirmasRegistro
+                    modulo="M73"
+                    registroId={reg.id}
+                    firmas={firmas}
+                    loading={loadingFirmas}
+                    fechaRegistro={reg.fecha}
+                  />
                 </div>
               )
             })}
@@ -306,19 +333,34 @@ export function BotiquinGG() {
             <Fab onClick={abrirSheet} aria-label="Nuevo registro" />
 
       {/* Sheet nuevo registro */}
-      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
+      <BottomSheet open={sheetNuevo} onClose={handleCerrarSheet} height="85%">
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
         </div>
         <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
-            Nuevo registro de botiquín
+            {sheetPaso === 'firma_decision' ? 'Firmar registro' : sheetPaso === 'firma_gate' ? 'Firma requerida' : 'Nuevo registro de botiquín'}
           </h2>
-          <button onClick={() => setSheetNuevo(false)}>
+          <button onClick={handleCerrarSheet}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
 
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+        )}
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M73"
+            ids={[pendienteFirmaId]}
+            descripcion={`Inventario de Material de Curación · ${nFecha}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => { handleCerrarSheet(); await refetchFirmas() }}
+            onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+          />
+        )}
+        {sheetPaso === 'form' && (
+          <>
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
           {/* Rancho */}
           <div className="space-y-1">
@@ -539,6 +581,8 @@ export function BotiquinGG() {
             )}
           </button>
         </div>
+          </>
+        )}
       </BottomSheet>
     </div>
   )

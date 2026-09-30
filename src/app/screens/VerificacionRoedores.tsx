@@ -14,6 +14,9 @@ import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -89,16 +92,27 @@ export function VerificacionRoedores() {
 
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M70', todosIds)
+  const { obligatoria, tengoFirma } = useFirmaContext()
 
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const [form, setForm] = useState<FormState>(FORM_VACIO)
   const [filas, setFilas] = useState<FilaTrampa[]>([filaVacia()])
   const [guardando, setGuardando] = useState(false)
 
+  function handleCerrarSheet() {
+    setSheetOpen(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+  }
+
   function abrirNuevo() {
     setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX() })
     setFilas([filaVacia()])
+    setPendienteFirmaId(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setSheetOpen(true)
   }
 
@@ -142,13 +156,13 @@ export function VerificacionRoedores() {
         creado_por: user?.id,
       }))
 
-      const { error: err } = await tbl('m70_verificacion_roedores').insert(batch)
+      const { data: inserted, error: err } = await tbl('m70_verificacion_roedores').insert(batch).select('id')
       if (err) throw err
 
-      setSheetOpen(false)
       await refetch()
-      await refetchFirmas()
       toast.success(`${filasValidas.length} trampa${filasValidas.length > 1 ? 's' : ''} registrada${filasValidas.length > 1 ? 's' : ''}`)
+      setPendienteFirmaId((inserted as any[])[0].id)
+      setSheetPaso('firma_decision')
     } catch (e: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const msg: string = (e as any)?.message ?? 'Error al guardar'
@@ -264,17 +278,33 @@ export function VerificacionRoedores() {
             <Fab onClick={abrirNuevo} aria-label="Nueva verificación" />
 
       {/* Sheet — nuevo registro */}
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} height="85%">
+      <BottomSheet open={sheetOpen} onClose={handleCerrarSheet} height="85%">
         <div
           className="flex items-center justify-between px-4 pt-4 pb-3 border-b"
           style={{ borderColor: 'var(--border)' }}
         >
-          <h2 className="text-base font-semibold">Nueva verificación</h2>
-          <button onClick={() => setSheetOpen(false)}>
-            <X className="w-5 h-5" />
-          </button>
+          <h2 className="text-base font-semibold">
+            {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nueva verificación'}
+          </h2>
+          <button onClick={handleCerrarSheet}><X className="w-5 h-5" /></button>
         </div>
 
+        {sheetPaso === 'firma_gate' && (
+          <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+        )}
+
+        {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+          <PasoFirmaRegistro
+            modulo="M70"
+            ids={[pendienteFirmaId]}
+            descripcion={`Verificación del ${formatFecha(form.fecha)}`}
+            obligatoria={obligatoria}
+            onFirmadoYPDF={async () => { handleCerrarSheet(); await refetchFirmas() }}
+            onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+          />
+        )}
+
+        {sheetPaso === 'form' && (<>
         <div className="overflow-y-auto flex-1 px-4 pt-4 pb-8 space-y-4">
           {/* Rancho */}
           <div>
@@ -422,6 +452,7 @@ export function VerificacionRoedores() {
             Guardar
           </button>
         </div>
+        </>)}
       </BottomSheet>
 
       {/* Sheet — consolidado */}

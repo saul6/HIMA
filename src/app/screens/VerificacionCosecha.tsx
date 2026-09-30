@@ -28,6 +28,9 @@ import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmaContext } from '@/context/FirmaContext'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -158,6 +161,7 @@ export function VerificacionCosecha() {
 
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M69', todosIds)
+  const { obligatoria, tengoFirma } = useFirmaContext()
 
   // ── Navegación interna ──
   const [vista, setVista] = useState<Vista>('lista')
@@ -277,6 +281,9 @@ export function VerificacionCosecha() {
 
   // ── Sheet: nuevo registro ──
   const [sheetNuevo, setSheetNuevo]             = useState(false)
+  const [sheetNuevoPaso, setSheetNuevoPaso]     = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+  const [pendienteDetalle, setPendienteDetalle] = useState<M69RegistroResumen | null>(null)
   const [sheetConsolidado, setSheetConsolidado] = useState(false)
 
   const [nRanchoId, setNRanchoId]       = useState('')
@@ -325,11 +332,6 @@ export function VerificacionCosecha() {
         .single()
       if (e) throw e
 
-      toast.success('Registro creado')
-      setSheetNuevo(false)
-      await refetch()
-      await refetchFirmas()
-
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const r = data as any
       const nuevo: M69RegistroResumen = {
@@ -343,7 +345,11 @@ export function VerificacionCosecha() {
         observaciones: r.observaciones ?? null,
         created_at: r.created_at,
       }
-      abrirDetalle(nuevo)
+      await refetch()
+      toast.success('Registro creado')
+      setPendienteFirmaId(r.id)
+      setPendienteDetalle(nuevo)
+      setSheetNuevoPaso('firma_decision')
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
       if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
@@ -842,155 +848,194 @@ export function VerificacionCosecha() {
               setNObservaciones('')
               setNErrRancho(false)
               setNYaExiste(false)
+              setPendienteFirmaId(null)
+              setPendienteDetalle(null)
+              setSheetNuevoPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
               setSheetNuevo(true)
             }} aria-label="Nuevo registro mensual" />
       )}
 
       {/* ═══ SHEET: NUEVO REGISTRO ═══════════════════════════════════════ */}
-      <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
+      <BottomSheet open={sheetNuevo} onClose={() => {
+        setSheetNuevo(false)
+        setSheetNuevoPaso('form')
+        setPendienteFirmaId(null)
+        if (pendienteDetalle) { const d = pendienteDetalle; setPendienteDetalle(null); abrirDetalle(d) }
+      }} height="85%">
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
         </div>
         <div className="px-4 pb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
-              Nuevo registro mensual
+              {sheetNuevoPaso === 'firma_decision' ? 'Firmar registro' : sheetNuevoPaso === 'firma_gate' ? 'Firma requerida' : 'Nuevo registro mensual'}
             </h2>
-            <button onClick={() => setSheetNuevo(false)}>
+            <button onClick={() => {
+              setSheetNuevo(false)
+              setSheetNuevoPaso('form')
+              setPendienteFirmaId(null)
+              if (pendienteDetalle) { const d = pendienteDetalle; setPendienteDetalle(null); abrirDetalle(d) }
+            }}>
               <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
             </button>
           </div>
 
-          <div className="space-y-4">
-            {/* Rancho */}
-            <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
-                {termino} *
-              </label>
-              <select
-                value={nRanchoId}
-                onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                style={{
-                  borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border)',
-                  backgroundColor: 'var(--input-background)',
-                }}
-              >
-                <option value="">Selecciona {termino.toLowerCase()}…</option>
-                {ranchoOptions.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-              {nErrRancho && (
-                <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>
-              )}
-            </div>
-
-            {/* Mes */}
-            <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
-                Mes de registro *
-              </label>
-              <input
-                type="month"
-                value={nMes}
-                onChange={(e) => setNMes(e.target.value)}
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
-              />
-            </div>
-
-            {/* Código */}
-            <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
-                Código
-              </label>
-              <input
-                type="text"
-                value={nCodigo}
-                onChange={(e) => setNCodigo(e.target.value)}
-                placeholder="REG-13-..."
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
-              />
-            </div>
-
-            {/* Cultivo */}
-            <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
-                Cultivo
-              </label>
-              <input
-                type="text"
-                value={nCultivo}
-                onChange={(e) => setNCultivo(e.target.value)}
-                placeholder="Ej. Zarzamora"
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
-              />
-            </div>
-
-            {/* Realizó */}
-            <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
-                ¿Quién realizó?
-              </label>
-              <input
-                type="text"
-                value={nRealizo}
-                onChange={(e) => setNRealizo(e.target.value)}
-                placeholder="Nombre del responsable"
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
-              />
-            </div>
-
-            {/* Observaciones */}
-            <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
-                Observaciones
-              </label>
-              <textarea
-                value={nObservaciones}
-                onChange={(e) => setNObservaciones(e.target.value)}
-                rows={2}
-                placeholder="Observaciones generales…"
-                className="w-full rounded-xl border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
-              />
-            </div>
-
-            {nYaExiste && (
-              <div
-                className="flex items-start gap-2 rounded-xl p-3"
-                style={{
-                  backgroundColor: 'var(--agro-warning-fill)',
-                  border: '1px solid var(--agro-amber)',
-                }}
-              >
-                <TriangleAlert
-                  className="w-4 h-4 flex-shrink-0 mt-0.5"
-                  style={{ color: 'var(--agro-warning-text)' }}
-                />
-                <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
-                  Ya existe un registro para este mes y {termino.toLowerCase()}.
-                </p>
+          {sheetNuevoPaso === 'firma_gate' && (
+            <FirmaGatePaso onFirmaGuardada={() => setSheetNuevoPaso('form')} />
+          )}
+          {sheetNuevoPaso === 'firma_decision' && pendienteFirmaId && (
+            <PasoFirmaRegistro
+              modulo="M69"
+              ids={[pendienteFirmaId]}
+              descripcion={pendienteDetalle ? `Verificación Diaria de Cosecha · ${formatMesLabel(pendienteDetalle.mes)} · ${pendienteDetalle.rancho_nombre}` : 'Verificación Diaria de Cosecha'}
+              obligatoria={obligatoria}
+              onFirmadoYPDF={async () => {
+                setSheetNuevo(false)
+                setSheetNuevoPaso('form')
+                setPendienteFirmaId(null)
+                await refetchFirmas()
+                if (pendienteDetalle) { const d = pendienteDetalle; setPendienteDetalle(null); abrirDetalle(d) }
+              }}
+              onDespues={!obligatoria ? () => {
+                setSheetNuevo(false)
+                setSheetNuevoPaso('form')
+                setPendienteFirmaId(null)
+                if (pendienteDetalle) { const d = pendienteDetalle; setPendienteDetalle(null); abrirDetalle(d) }
+              } : undefined}
+            />
+          )}
+          {sheetNuevoPaso === 'form' && (
+            <div className="space-y-4">
+              {/* Rancho */}
+              <div className="space-y-1">
+                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                  {termino} *
+                </label>
+                <select
+                  value={nRanchoId}
+                  onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
+                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
+                  style={{
+                    borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border)',
+                    backgroundColor: 'var(--input-background)',
+                  }}
+                >
+                  <option value="">Selecciona {termino.toLowerCase()}…</option>
+                  {ranchoOptions.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+                {nErrRancho && (
+                  <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>
+                )}
               </div>
-            )}
 
-            <button
-              onClick={handleCrearRegistro}
-              disabled={nGuardando || nYaExiste || !nRanchoId}
-              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
-              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-            >
-              {nGuardando ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Creando…</>
-              ) : (
-                'Crear registro'
+              {/* Mes */}
+              <div className="space-y-1">
+                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                  Mes de registro *
+                </label>
+                <input
+                  type="month"
+                  value={nMes}
+                  onChange={(e) => setNMes(e.target.value)}
+                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
+                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                />
+              </div>
+
+              {/* Código */}
+              <div className="space-y-1">
+                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                  Código
+                </label>
+                <input
+                  type="text"
+                  value={nCodigo}
+                  onChange={(e) => setNCodigo(e.target.value)}
+                  placeholder="REG-13-..."
+                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
+                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                />
+              </div>
+
+              {/* Cultivo */}
+              <div className="space-y-1">
+                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                  Cultivo
+                </label>
+                <input
+                  type="text"
+                  value={nCultivo}
+                  onChange={(e) => setNCultivo(e.target.value)}
+                  placeholder="Ej. Zarzamora"
+                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
+                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                />
+              </div>
+
+              {/* Realizó */}
+              <div className="space-y-1">
+                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                  ¿Quién realizó?
+                </label>
+                <input
+                  type="text"
+                  value={nRealizo}
+                  onChange={(e) => setNRealizo(e.target.value)}
+                  placeholder="Nombre del responsable"
+                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
+                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                />
+              </div>
+
+              {/* Observaciones */}
+              <div className="space-y-1">
+                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                  Observaciones
+                </label>
+                <textarea
+                  value={nObservaciones}
+                  onChange={(e) => setNObservaciones(e.target.value)}
+                  rows={2}
+                  placeholder="Observaciones generales…"
+                  className="w-full rounded-xl border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                />
+              </div>
+
+              {nYaExiste && (
+                <div
+                  className="flex items-start gap-2 rounded-xl p-3"
+                  style={{
+                    backgroundColor: 'var(--agro-warning-fill)',
+                    border: '1px solid var(--agro-amber)',
+                  }}
+                >
+                  <TriangleAlert
+                    className="w-4 h-4 flex-shrink-0 mt-0.5"
+                    style={{ color: 'var(--agro-warning-text)' }}
+                  />
+                  <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                    Ya existe un registro para este mes y {termino.toLowerCase()}.
+                  </p>
+                </div>
               )}
-            </button>
-          </div>
+
+              <button
+                onClick={handleCrearRegistro}
+                disabled={nGuardando || nYaExiste || !nRanchoId}
+                className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
+                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+              >
+                {nGuardando ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Creando…</>
+                ) : (
+                  'Crear registro'
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </BottomSheet>
 

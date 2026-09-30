@@ -19,6 +19,11 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useFirmaContext } from '@/context/FirmaContext'
+import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
+import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -108,6 +113,10 @@ export function RegistroLimpiezaBanos() {
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
 
+  const todosIds = jornadas.map(j => j.banos[0]?.id).filter(Boolean) as string[]
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M12', todosIds)
+  const { obligatoria, tengoFirma } = useFirmaContext()
+
   // Form principal
   const [sheetAbierto, setSheetAbierto] = useState(false)
   const [ranchoId, setRanchoId]   = useState('')
@@ -132,6 +141,9 @@ export function RegistroLimpiezaBanos() {
 
   // PDF en lista
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null)
+  const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
+  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+  const [pendientePdfProps, setPendientePdfProps] = useState<LimpiezaBanosPaginaProps | null>(null)
 
   // ── Prevención proactiva del límite semanal ─────────────────────────────────
 
@@ -177,7 +189,17 @@ export function RegistroLimpiezaBanos() {
     setBanos([{ ...BANO_INICIAL }])
     setErrRancho(false)
     setLimiteInfo(null)
+    setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
+    setPendienteFirmaId(null)
+    setPendientePdfProps(null)
     setSheetAbierto(true)
+  }
+
+  function handleCerrarSheet() {
+    setSheetAbierto(false)
+    setSheetPaso('form')
+    setPendienteFirmaId(null)
+    setPendientePdfProps(null)
   }
 
   function agregarBano() {
@@ -237,15 +259,13 @@ export function RegistroLimpiezaBanos() {
         realizado_por_id: profile.id,
       }))
 
-      const { error } = await supabase.from('m12_limpieza_banos').insert(rows)
+      const { data: insertedRows, error } = await supabase.from('m12_limpieza_banos').insert(rows).select('id')
       if (error) throw error
 
-      toast.success('Registro guardado')
-      setSheetAbierto(false)
       if (tareaId) setRegistroGuardado(true)
       await refetch()
+      toast.success('Registro guardado')
 
-      // Generar PDF automáticamente
       const rancho = ranchos.find((r) => r.id === ranchoId)
       if (rancho) {
         const pdfProps: LimpiezaBanosPaginaProps = {
@@ -262,12 +282,11 @@ export function RegistroLimpiezaBanos() {
             succion: b.succion,
           })),
         }
-        try {
-          await generarLimpiezaBanosPDF(pdfProps)
-        } catch {
-          toast.warning('Registro guardado — el PDF no se pudo generar. Descárgalo desde el historial.')
-        }
+        setPendientePdfProps(pdfProps)
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setPendienteFirmaId((insertedRows as any[])[0].id)
+      setSheetPaso('firma_decision')
     } catch (err: unknown) {
       const mensaje = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
       if (mensaje.includes('FECHA_SOLO_HOY')) {
@@ -478,6 +497,15 @@ export function RegistroLimpiezaBanos() {
                     </div>
                   ))}
                 </div>
+                {jornada.banos[0] && (
+                  <FirmasRegistro
+                    modulo="M12"
+                    registroId={jornada.banos[0].id}
+                    firmas={firmas}
+                    loading={loadingFirmas}
+                    fechaRegistro={jornada.fecha}
+                  />
+                )}
               </div>
             )
           })
@@ -565,19 +593,45 @@ export function RegistroLimpiezaBanos() {
       </BottomSheet>
 
       {/* ── Bottom Sheet — Formulario ────────────────────────────────────────── */}
-      <BottomSheet open={sheetAbierto} onClose={() => setSheetAbierto(false)} height="85%">
+      <BottomSheet open={sheetAbierto} onClose={handleCerrarSheet} height="85%">
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
             <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
-                Nueva limpieza de baños
+                {sheetPaso === 'firma_decision' ? 'Firmar registro' : sheetPaso === 'firma_gate' ? 'Firma requerida' : 'Nueva limpieza de baños'}
               </h2>
-              <button onClick={() => setSheetAbierto(false)} className="p-1">
+              <button onClick={handleCerrarSheet} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
+            {sheetPaso === 'firma_gate' && (
+              <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
+            )}
+            {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+              <PasoFirmaRegistro
+                modulo="M12"
+                ids={[pendienteFirmaId]}
+                descripcion={`Limpieza y Desinfección de Baños · ${fecha}`}
+                obligatoria={obligatoria}
+                onFirmadoYPDF={async () => {
+                  handleCerrarSheet()
+                  await refetchFirmas()
+                  if (pendientePdfProps) {
+                    try {
+                      await generarLimpiezaBanosPDF(pendientePdfProps)
+                    } catch {
+                      toast.warning('Registro guardado — el PDF no se pudo generar. Descárgalo desde el historial.')
+                    }
+                    setPendientePdfProps(null)
+                  }
+                }}
+                onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
+              />
+            )}
+            {sheetPaso === 'form' && (
+              <>
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
 
               {/* Rancho */}
@@ -782,6 +836,8 @@ export function RegistroLimpiezaBanos() {
                 Guardar registro
               </button>
             </div>
+              </>
+            )}
       </BottomSheet>
     </div>
   )
