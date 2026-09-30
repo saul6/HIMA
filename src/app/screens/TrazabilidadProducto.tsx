@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import {
-  ChevronLeft, Plus, X, Loader2, Search, Printer, Eye, FileDown,
+  Plus, X, Loader2, Search, Printer, Eye, FileDown,
   Package, Truck, Layers, ArrowLeftRight, GitBranch,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -21,6 +21,7 @@ import {
 import { registrarYGenerarEtiqueta, registrarEImprimirEtiqueta } from '@/lib/pdf/m48/generarM48PDF'
 import QRCode from 'qrcode'
 import { Fab } from '@/app/components/Fab'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmaContext } from '@/context/FirmaContext'
@@ -480,17 +481,10 @@ export function TrazabilidadProducto() {
   return (
     <div className="min-h-full pb-safe-nav flex flex-col">
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4 flex items-center gap-3 flex-shrink-0">
-        <button onClick={() => navigate('/')} className="p-1 text-muted-foreground">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-foreground text-sm truncate" style={{ fontWeight: 600 }}>
-            Trazabilidad y Recuperacion del Producto
-          </h1>
-          <p className="text-xs text-muted-foreground">POE-COCO-CAL-13</p>
-        </div>
-      </header>
+      <ModuloHeader
+        tituloFallback="Trazabilidad y Recuperacion del Producto"
+        subtitulo="POE-COCO-CAL-13"
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Instalacion selector */}

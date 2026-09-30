@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Navigate } from 'react-router'
-import { ChevronLeft, AlertTriangle, CheckCircle, Loader, XCircle, AlertCircle } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Loader, XCircle, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditoriasPGFS } from '@/hooks/useAuditoriasPGFS'
 import type { AuditoriaDetalle } from '@/hooks/useAuditoriasPGFS'
 import type { AudBloque, AudPregunta, AudComentarioEsquema, AudRespuesta } from '@/types/database.types'
 import { LEYENDA_LEGAL_PGFS } from '@/lib/auditoriasPGFS'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 
 const ROLES_PERMITIDOS = ['auditor', 'admin_org', 'super_admin']
 
@@ -476,40 +477,33 @@ export function CapturaAuditoriaPGFS() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background pb-8">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-card border-b border-border flex items-center gap-3 px-4 py-3">
-        <button onClick={() => navigate(-1)} className="text-muted-foreground flex-shrink-0">
-          <ChevronLeft size={24} />
-        </button>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate" style={{ color: 'var(--foreground)' }}>
-            {auditoria ? auditoria.modulo_nombre : 'Cargando…'}
-          </p>
-          {auditoria && (
-            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-              {auditoria.rancho_nombre} · {formatFecha(auditoria.fecha)}
-            </p>
-          )}
-        </div>
-        {auditoria && (
-          <span
-            className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-            style={{ backgroundColor: estadoStyle.bg, color: estadoStyle.color }}
-          >
-            {ESTADO_LABELS[auditoria.estado] ?? auditoria.estado}
-          </span>
-        )}
-        {!cerrada && !cargando && (
-          <button
-            onClick={handleCompletar}
-            disabled={cerrando}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg flex-shrink-0 disabled:opacity-50"
-            style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-          >
-            {cerrando ? 'Cerrando…' : 'Completar'}
-          </button>
-        )}
-      </header>
+      <ModuloHeader
+        tituloFallback={auditoria ? auditoria.modulo_nombre : 'Cargando…'}
+        subtitulo={auditoria ? `${auditoria.rancho_nombre} · ${formatFecha(auditoria.fecha)}` : undefined}
+        onBack={() => navigate(-1)}
+        acciones={
+          <>
+            {auditoria && (
+              <span
+                className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: estadoStyle.bg, color: estadoStyle.color }}
+              >
+                {ESTADO_LABELS[auditoria.estado] ?? auditoria.estado}
+              </span>
+            )}
+            {!cerrada && !cargando && (
+              <button
+                onClick={handleCompletar}
+                disabled={cerrando}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg flex-shrink-0 disabled:opacity-50"
+                style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+              >
+                {cerrando ? 'Cerrando…' : 'Completar'}
+              </button>
+            )}
+          </>
+        }
+      />
 
       {/* Leyenda legal */}
       <div className="mx-4 mt-3 rounded-xl border border-border bg-card px-4 py-3 flex gap-3">

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, Plus, FileDown, X, Loader2, Crosshair, Files } from 'lucide-react'
+import { Plus, FileDown, X, Loader2, Files } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
@@ -12,6 +12,7 @@ import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { generarMipIntervencionPDF, generarMipIntervencionConsolidadoPDF } from '@/lib/pdf/m55/generarMipIntervencionPDF'
 import { Fab } from '@/app/components/Fab'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
@@ -247,16 +248,10 @@ export function MipIntervencion() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <div className="flex items-center gap-3 px-4 pt-12 pb-4">
-        <button onClick={() => navigate('/')} className="p-1 -ml-1">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold leading-tight">MIP · Técnicas de Intervención</h1>
-          <p className="text-xs text-muted-foreground">M55 · Por evento</p>
-        </div>
-        <Crosshair className="w-5 h-5 text-muted-foreground" />
-      </div>
+      <ModuloHeader
+        tituloFallback="MIP · Técnicas de Intervención"
+        subtitulo="M55 · Por evento"
+      />
 
       <BannerTareaOrigen tareaId={tareaId} />
 

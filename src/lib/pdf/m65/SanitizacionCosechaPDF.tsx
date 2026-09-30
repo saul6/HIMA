@@ -81,7 +81,7 @@ export function SanitizacionCosechaPDF({ rows, orgNombre, desde, hasta, codigoCl
         <PdfFooter moduloCodigo="M65" />
         <TopBar />
         <PdfHeader
-          titulo="SANITIZACION DE HERRAMIENTAS EN COSECHA"
+          titulo="SANITIZACIÓN DE HERRAMIENTAS EN COSECHA"
           subtitulo="Registro de sanitizacion de herramientas de cosecha"
           codigoFormato={codigoFmt}
           folio={periodo}

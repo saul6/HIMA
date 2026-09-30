@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import {
-  ChevronLeft, Plus, X, Loader2, Files, AlertTriangle,
+  Plus, X, Loader2, Files, AlertTriangle,
   Camera, Image, Trash2, ImageOff, ClipboardList, FileDown,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { toast } from 'sonner'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { useAuthContext } from '@/context/AuthContext'
@@ -773,25 +774,7 @@ export function ReporteIncidencias() {
     <div className="min-h-full pb-safe-nav">
 
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4 sticky top-0 z-20">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('/')}
-            className="p-1 text-muted-foreground flex-shrink-0"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-foreground truncate" style={{ fontWeight: 600 }}>
-              {TITULO_MODULO}
-            </h1>
-            <p className="text-xs text-muted-foreground">{CLAVE_MODULO}</p>
-          </div>
-          <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-            <ClipboardList className="w-5 h-5 text-primary" />
-          </div>
-        </div>
-      </header>
+      <ModuloHeader tituloFallback={TITULO_MODULO} subtitulo={CLAVE_MODULO} />
 
       <BannerTareaOrigen tareaId={tareaId} registroGuardado={registroGuardado} />
 

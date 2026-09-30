@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import { ChevronLeft, PackageOpen, Download, Plus, FileText, AlertTriangle } from 'lucide-react'
+import { Download, Plus, FileText, AlertTriangle } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -8,6 +8,7 @@ import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM42Movimientos } from '@/hooks/useM42Movimientos'
 import { useModulosContext } from '@/context/ModulosContext'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { supabase } from '@/lib/supabase'
 import { generarMaterialEmpaquePDF } from '@/lib/pdf/m42/generarMaterialEmpaquePDF'
 import { generarMaterialEmpaqueConsolidadoPDF } from '@/lib/pdf/m42/generarMaterialEmpaqueConsolidadoPDF'
@@ -249,21 +250,20 @@ export function MaterialEmpaqueMovimientos() {
   return (
     <div className="flex flex-col min-h-full" style={{ backgroundColor: 'var(--background)' }}>
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}>
-        <button onClick={() => navigate(-1)} className="p-1 -ml-1">
-          <ChevronLeft size={20} />
-        </button>
-        <PackageOpen size={18} style={{ color: 'var(--primary)' }} />
-        <h1 className="text-[15px] font-semibold flex-1">Material de Empaque</h1>
-        <button
-          onClick={() => setConsolAbierto(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border"
-          style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
-        >
-          <Download size={13} />
-          Consolidado
-        </button>
-      </div>
+      <ModuloHeader
+        tituloFallback="Entradas y Salidas de Material de Empaque"
+        onBack={() => navigate(-1)}
+        acciones={
+          <button
+            onClick={() => setConsolAbierto(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border"
+            style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+          >
+            <Download size={13} />
+            Consolidado
+          </button>
+        }
+      />
 
       <BannerTareaOrigen tareaId={tareaId} />
 

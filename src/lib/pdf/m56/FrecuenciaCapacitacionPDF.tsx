@@ -61,7 +61,7 @@ export function FrecuenciaCapacitacionPDF({ orgNombre, registros, anioFiltro }: 
         <View style={{ flex: 1, borderWidth: 1, borderColor: PC.border, borderRadius: 12, overflow: 'hidden' }}>
           <TopBar />
           <PdfHeader
-            titulo="Frecuencia de Capacitacion"
+            titulo="FRECUENCIA DE CAPACITACIÓN"
             subtitulo={orgNombre}
             codigoFormato="M56"
             folio={anioFiltro ? String(anioFiltro) : 'Todos'}

@@ -57,7 +57,7 @@ export function CronogramaCapacitacionPDF({ orgNombre, registros }: CronogramaCa
         <View style={{ flex: 1, borderWidth: 1, borderColor: PC.border, borderRadius: 12, overflow: 'hidden' }}>
           <TopBar />
           <PdfHeader
-            titulo="Cronograma de Capacitaciones"
+            titulo="CRONOGRAMA DE CAPACITACIONES"
             subtitulo={orgNombre}
             codigoFormato="M57"
             folio="Vigente"

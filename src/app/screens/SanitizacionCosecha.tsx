@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, Droplets, Plus, FileDown, X, Loader2, Files } from 'lucide-react'
+import { Plus, FileDown, X, Loader2, Files } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
@@ -12,6 +12,7 @@ import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { generarSanitizacionCosechaPDF, generarSanitizacionCosechaConsolidadoPDF } from '@/lib/pdf/m65/generarSanitizacionCosechaPDF'
 import { Fab } from '@/app/components/Fab'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
@@ -188,16 +189,11 @@ export function SanitizacionCosecha() {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-12 pb-4">
-        <button onClick={() => navigate(-1)} className="p-1 -ml-1">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold leading-tight">Sanitizacion de Herramientas en Cosecha</h1>
-          <p className="text-xs text-muted-foreground">M65 · Por evento</p>
-        </div>
-        <Droplets className="w-5 h-5 text-muted-foreground" />
-      </div>
+      <ModuloHeader
+        tituloFallback="Sanitización de Herramientas en Cosecha"
+        subtitulo="M65 · Por evento"
+        onBack={() => navigate(-1)}
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}

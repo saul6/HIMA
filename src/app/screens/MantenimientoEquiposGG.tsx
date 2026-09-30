@@ -6,10 +6,10 @@
 
 import { useState } from 'react'
 import {
-  ChevronLeft, Plus, X, Loader2, Wrench, TriangleAlert,
+  Plus, X, Loader2, Wrench, TriangleAlert,
 } from 'lucide-react'
-import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -210,28 +210,7 @@ export function MantenimientoEquiposGG() {
   return (
     <div className="min-h-full pb-safe-nav">
 
-      {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-3 sticky top-0 z-30">
-        <div className="flex items-center gap-3">
-          <Link to="/" className="p-1 -ml-1">
-            <ChevronLeft className="w-5 h-5 text-foreground" />
-          </Link>
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 12%, transparent)' }}
-          >
-            <Wrench className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
-              Verificación y Mantenimiento de Equipos
-            </h1>
-            <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-              M76 · REG-09 · Mantenimiento
-            </div>
-          </div>
-        </div>
-      </header>
+      <ModuloHeader tituloFallback="Verificación y Mantenimiento de Equipos" subtitulo="M76 · REG-09 · Mantenimiento" />
 
       <BannerTareaOrigen tareaId={tareaId} />
 

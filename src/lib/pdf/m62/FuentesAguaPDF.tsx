@@ -85,7 +85,7 @@ export function FuentesAguaPage({
         <PdfFooter moduloCodigo="M62" />
         <TopBar />
         <PdfHeader
-          titulo="INSPECCION DE FUENTES DE AGUA"
+          titulo="INSPECCIÓN DE FUENTES DE AGUA"
           subtitulo={`Inspeccion de fuente | ${rancho}`}
           codigoFormato="M62"
           folio={fmtFecha(fecha)}

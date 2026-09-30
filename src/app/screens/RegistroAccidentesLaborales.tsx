@@ -1,9 +1,10 @@
 ﻿import { useState, useRef, useEffect, useCallback } from 'react'
 import {
-  ChevronLeft, Plus, Loader2, Files, Camera, Trash2,
+  Plus, Loader2, Files, Camera, Trash2,
   AlertTriangle, FileDown, ShieldAlert, Image,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
@@ -33,7 +34,7 @@ import { useFirmaContext } from '@/context/FirmaContext'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
-const TITULO_MODULO = 'Accidentes Laborales'
+const TITULO_MODULO = 'Registro de Accidentes Laborales'
 const MAX_FOTO_BYTES = 5.5 * 1024 * 1024
 
 const ATENCIONES_UI = [
@@ -516,35 +517,27 @@ export function RegistroAccidentesLaborales() {
   return (
     <div className="flex flex-col h-full bg-background">
 
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-safe-top pt-4 pb-3 bg-card border-b border-border">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="p-1 -ml-1 text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Volver"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-semibold text-foreground truncate">{TITULO_MODULO}</h1>
-          <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-CAL-15', codigoClave)} · Cuarto Frío</p>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-[var(--primary)] shrink-0"
-          onClick={() => {
-            setConsolidadoRanchoId(ranchos[0]?.id ?? '')
-            setConsolidadoDesde('')
-            setConsolidadoHasta('')
-            setSheetConsolidado(true)
-          }}
-        >
-          <Files className="w-4 h-4 mr-1" />
-          Exportar
-        </Button>
-      </div>
+      <ModuloHeader
+        tituloFallback={TITULO_MODULO}
+        subtitulo={`${codigoFormato('F-FRUS-CAL-15', codigoClave)} · Cuarto Frío`}
+        onBack={() => navigate(-1)}
+        acciones={
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-[var(--primary)] shrink-0"
+            onClick={() => {
+              setConsolidadoRanchoId(ranchos[0]?.id ?? '')
+              setConsolidadoDesde('')
+              setConsolidadoHasta('')
+              setSheetConsolidado(true)
+            }}
+          >
+            <Files className="w-4 h-4 mr-1" />
+            Exportar
+          </Button>
+        }
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista */}

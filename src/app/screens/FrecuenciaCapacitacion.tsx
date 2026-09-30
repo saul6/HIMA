@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, GraduationCap, FileDown, Plus, X, Loader2, Pencil } from 'lucide-react'
+import { FileDown, Plus, X, Loader2, Pencil } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -9,6 +9,7 @@ import { useM56FrecuenciaCapacitacion } from '@/hooks/useM56FrecuenciaCapacitaci
 import { supabase } from '@/lib/supabase'
 import { generarFrecuenciaCapacitacionPDF } from '@/lib/pdf/m56/generarFrecuenciaCapacitacionPDF'
 import { Fab } from '@/app/components/Fab'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const ANIO_ACTUAL = new Date().getFullYear()
@@ -153,26 +154,23 @@ export function FrecuenciaCapacitacion() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <div className="flex items-center gap-3 px-4 pt-12 pb-4">
-        <button onClick={() => navigate(-1)} className="p-1 -ml-1">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold leading-tight">Frecuencia de Capacitación</h1>
-          <p className="text-xs text-muted-foreground">M56 · Org-level</p>
-        </div>
-        <button
-          onClick={exportarPDF}
-          disabled={pdfLoading}
-          className="p-2 rounded-lg border border-border"
-        >
-          {pdfLoading
-            ? <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--primary)' }} />
-            : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-          }
-        </button>
-        <GraduationCap className="w-5 h-5 text-muted-foreground" />
-      </div>
+      <ModuloHeader
+        tituloFallback="Frecuencia de Capacitación"
+        subtitulo="M56 · Org-level"
+        onBack={() => navigate(-1)}
+        acciones={
+          <button
+            onClick={exportarPDF}
+            disabled={pdfLoading}
+            className="p-2 rounded-lg border border-border"
+          >
+            {pdfLoading
+              ? <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--primary)' }} />
+              : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+            }
+          </button>
+        }
+      />
 
       <div className="px-4 mb-3 space-y-3">
         <div className="flex items-center gap-2 flex-wrap">

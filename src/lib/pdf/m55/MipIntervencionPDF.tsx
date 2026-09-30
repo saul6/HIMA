@@ -86,7 +86,7 @@ export function MipIntervencionPDFPage({
       <PdfFooter moduloCodigo="M55" />
       <TopBar />
       <PdfHeader
-        titulo="MIP - TECNICAS DE INTERVENCION"
+        titulo="MIP - TÉCNICAS DE INTERVENCIÓN"
         subtitulo={`Manejo Integrado de Plagas | ${rancho}`}
         codigoFormato="M55"
         folio={fmtFecha(fecha)}

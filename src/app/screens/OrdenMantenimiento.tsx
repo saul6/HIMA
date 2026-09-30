@@ -1,11 +1,11 @@
 ﻿import { useState, useCallback, useMemo } from 'react'
-import { Link } from 'react-router'
-import { ChevronLeft, Wrench, Plus, FileText, Loader2, AlertTriangle, TriangleAlert } from 'lucide-react'
+import { Wrench, Plus, FileText, Loader2, AlertTriangle, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useRanchos } from '@/hooks/useRanchos'
 import {
   useM44OrdenesMantenimiento,
@@ -255,22 +255,10 @@ export function OrdenMantenimiento() {
     <div className="min-h-full pb-safe-nav" style={{ backgroundColor: 'var(--background)' }}>
 
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-3 sticky top-0 z-30">
-        <div className="flex items-center gap-3">
-          <Link to="/" className="p-1 -ml-1">
-            <ChevronLeft className="w-5 h-5 text-foreground" />
-          </Link>
-          <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Wrench className="w-4 h-4 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
-              Orden de Mantenimiento
-            </h1>
-            <div className="text-xs text-muted-foreground">Cuarto Frío · Por evento</div>
-          </div>
-        </div>
-      </header>
+      <ModuloHeader
+        tituloFallback="Orden de Mantenimiento"
+        subtitulo="Cuarto Frío · Por evento"
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista */}

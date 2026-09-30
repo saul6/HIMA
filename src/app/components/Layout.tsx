@@ -10,6 +10,7 @@ import { useIntroTransition } from "@/context/IntroTransitionContext";
 import { MadyLogo } from "@/app/components/MadyLogo";
 import { BottomSheet, fabMenuItemVariants } from "@/app/components/BottomSheet";
 import { CampanaNotificaciones } from "@/app/components/CampanaNotificaciones";
+import { CATEGORIA_MAP } from "@/lib/categoriasModulos";
 
 const PATH_TITLES: Record<string, string> = {
   '/': 'Inicio',
@@ -102,6 +103,11 @@ export function Layout() {
   ];
 
   const pageTitle = getPageTitle(location.pathname);
+  const moduloActual = location.pathname.startsWith('/inocuidad/')
+    ? modulos.find(m => m.ruta === location.pathname)
+    : undefined;
+  const categoriaLabel = moduloActual?.categoria ? CATEGORIA_MAP[moduloActual.categoria]?.label : undefined;
+  const topbarTitulo = categoriaLabel ?? pageTitle;
   const ThemeIcon = theme === 'dark' ? Moon : Sun;
   const themeLabel = theme === 'dark' ? 'Oscuro' : 'Claro';
 
@@ -229,7 +235,7 @@ export function Layout() {
             <p className="text-sm" style={{ color: 'var(--foreground)', fontWeight: 600 }}>
               {isHome
                 ? `Hola, ${profile?.nombre_completo?.split(' ')[0] ?? '—'}`
-                : pageTitle}
+                : topbarTitulo}
             </p>
             <p className="text-xs text-muted-foreground">
               {terminosSitio.singular !== 'Rancho' ? 'Instalaciones' : 'Campo'} · M.A.D.Y

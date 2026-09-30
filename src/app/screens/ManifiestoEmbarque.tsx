@@ -1,15 +1,15 @@
 ﻿import { useState, useMemo } from 'react'
 import {
-  ChevronLeft, Plus, FileDown, X, Loader2, Truck, Minus,
+  Plus, FileDown, X, Loader2, Truck, Minus,
   Files, Bug, TriangleAlert,
 } from 'lucide-react'
-import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM38Manifiestos } from '@/hooks/useM38Manifiestos'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
@@ -354,21 +354,10 @@ export function ManifiestoEmbarque() {
     <div className="flex flex-col min-h-full bg-background pb-safe-nav">
 
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-3 sticky top-0 z-30">
-        <div className="flex items-center gap-3">
-          <Link to="/" className="p-1 -ml-1">
-            <ChevronLeft className="w-5 h-5 text-foreground" />
-          </Link>
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: 'var(--agro-success-fill)' }}>
-            <Truck className="w-4 h-4" style={{ color: 'var(--agro-success-text)' }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
-              Manifiesto de Embarque
-            </h1>
-            <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-PRO-01', codigoClave)} · Por evento</p>
-          </div>
+      <ModuloHeader
+        tituloFallback="Manifiesto de Embarque"
+        subtitulo={`${codigoFormato('F-FRUS-PRO-01', codigoClave)} · Por evento`}
+        acciones={
           <button
             onClick={() => setConsolidadoOpen(true)}
             className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border text-xs text-foreground flex-shrink-0"
@@ -377,8 +366,8 @@ export function ManifiestoEmbarque() {
             <Files className="w-3.5 h-3.5" />
             Consolidado
           </button>
-        </div>
-      </header>
+        }
+      />
 
       <BannerTareaOrigen tareaId={tareaId} />
 

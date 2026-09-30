@@ -110,7 +110,7 @@ export function RondinesVigilanciaPDF({
         <TopBar />
 
         <PdfHeader
-          titulo="BITACORA DE RONDINES DE VIGILANCIA"
+          titulo="BITÁCORA DE RONDINES DE VIGILANCIA"
           subtitulo={`Rondines | ${rancho} | ${fmtFecha(fecha)}`}
           codigoFormato={codigoFmt}
           folio={fmtFecha(fecha)}

@@ -1,9 +1,8 @@
 import { useState, useMemo } from 'react'
 import {
-  ChevronLeft, Plus, FileDown, X, Loader2, Users,
+  Plus, FileDown, X, Loader2, Users,
   Settings, TriangleAlert, Search, Pencil, ChevronDown, ChevronUp,
 } from 'lucide-react'
-import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -16,6 +15,7 @@ import { supabase } from '@/lib/supabase'
 import { useM47Trabajadores, useM47Items } from '@/hooks/useM47RegistroPersonal'
 import { generarRegistroPersonalPDF } from '@/lib/pdf/m47/generarRegistroPersonalPDF'
 import { Fab } from '@/app/components/Fab'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
@@ -377,37 +377,28 @@ export function RegistroPersonal() {
     <div className="flex flex-col min-h-full bg-background pb-safe-nav">
 
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-3 sticky top-0 z-30">
-        <div className="flex items-center gap-3">
-          <Link to="/" className="p-1 -ml-1">
-            <ChevronLeft className="w-5 h-5 text-foreground" />
-          </Link>
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: 'var(--agro-success-fill)' }}>
-            <Users className="w-4 h-4" style={{ color: 'var(--agro-success-text)' }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
-              Registro de Personal
-            </h1>
-            <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-ADM-04', codigoClave)} · Padrón</p>
-          </div>
-          <button
-            onClick={() => setPdfSheetOpen(true)}
-            className="p-2 rounded-lg border border-border"
-            aria-label="Descargar PDF"
-          >
-            <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-          </button>
-          <button
-            onClick={() => { setConfRanchoId(''); setConfigurarOpen(true) }}
-            className="p-2 rounded-lg border border-border"
-            aria-label="Configurar catálogo"
-          >
-            <Settings className="w-4 h-4 text-muted-foreground" />
-          </button>
-        </div>
-      </header>
+      <ModuloHeader
+        tituloFallback="Registro de Personal"
+        subtitulo={`${codigoFormato('F-FRUS-ADM-04', codigoClave)} · Padrón`}
+        acciones={
+          <>
+            <button
+              onClick={() => setPdfSheetOpen(true)}
+              className="p-2 rounded-lg border border-border"
+              aria-label="Descargar PDF"
+            >
+              <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+            </button>
+            <button
+              onClick={() => { setConfRanchoId(''); setConfigurarOpen(true) }}
+              className="p-2 rounded-lg border border-border"
+              aria-label="Configurar catálogo"
+            >
+              <Settings className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </>
+        }
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Filtros */}

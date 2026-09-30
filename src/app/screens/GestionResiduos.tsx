@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, Plus, FileDown, X, Loader2, Trash2, Files } from 'lucide-react'
+import { Plus, FileDown, X, Loader2, Files } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
@@ -13,6 +13,7 @@ import { supabase } from '@/lib/supabase'
 import { generarGestionResiduosPDF } from '@/lib/pdf/m61/generarGestionResiduosPDF'
 import { generarGestionResiduosConsolidadoPDF } from '@/lib/pdf/m61/generarGestionResiduosPDF'
 import { Fab } from '@/app/components/Fab'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
@@ -178,16 +179,10 @@ export function GestionResiduos() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <div className="flex items-center gap-3 px-4 pt-12 pb-4">
-        <button onClick={() => navigate('/')} className="p-1 -ml-1">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold leading-tight">Sistema de Gestión de Residuos</h1>
-          <p className="text-xs text-muted-foreground">M61 · Por evento</p>
-        </div>
-        <Trash2 className="w-5 h-5 text-muted-foreground" />
-      </div>
+      <ModuloHeader
+        tituloFallback="Sistema de Gestión de Residuos"
+        subtitulo="M61 · Por evento"
+      />
 
       <BannerTareaOrigen tareaId={tareaId} />
 

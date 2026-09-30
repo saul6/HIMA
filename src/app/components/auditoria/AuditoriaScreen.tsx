@@ -1,10 +1,11 @@
 import { useState, useMemo, type ReactNode } from 'react'
 import {
-  ChevronLeft, FileDown, X, Loader2, Files, ChevronDown, AlertTriangle,
+  FileDown, X, Loader2, Files, ChevronDown, AlertTriangle,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { Fab } from '@/app/components/Fab'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
@@ -292,22 +293,7 @@ export function AuditoriaScreen({
     <div className="min-h-full pb-safe-nav">
 
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4 sticky top-0 z-20">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/')} className="p-1 text-muted-foreground shrink-0">
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-foreground truncate" style={{ fontWeight: 600 }}>
-              {titulo}
-            </h1>
-            <p className="text-xs text-muted-foreground">{clave}</p>
-          </div>
-          <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 text-primary">
-            {icono}
-          </div>
-        </div>
-      </header>
+      <ModuloHeader tituloFallback={titulo} subtitulo={clave} />
 
       {/* Botón consolidado */}
       <div className="px-4 pt-3">

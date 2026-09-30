@@ -1,10 +1,11 @@
 import { Navigate, useNavigate } from 'react-router'
-import { ChevronLeft, Plus, ClipboardCheck, AlertCircle } from 'lucide-react'
+import { Plus, ClipboardCheck, AlertCircle } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditoriasPGFS } from '@/hooks/useAuditoriasPGFS'
 import type { AuditoriaListItem } from '@/hooks/useAuditoriasPGFS'
 import { LEYENDA_LEGAL_PGFS } from '@/lib/auditoriasPGFS'
 import { Fab } from '@/app/components/Fab'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 
 const ROLES_PERMITIDOS = ['auditor', 'admin_org', 'super_admin']
 
@@ -68,20 +69,7 @@ export default function AuditoriasPrimusGFS() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background pb-24">
-      <header
-        className="sticky top-0 z-10 bg-card border-b border-border flex items-center gap-3 px-4 py-3"
-      >
-        <button onClick={() => navigate(-1)} className="text-muted-foreground">
-          <ChevronLeft size={24} />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>
-            Auditorías PrimusGFS
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>v3.2</p>
-        </div>
-        <ClipboardCheck size={20} style={{ color: 'var(--muted-foreground)' }} />
-      </header>
+      <ModuloHeader tituloFallback="Auditorías PrimusGFS" subtitulo="v3.2" onBack={() => navigate(-1)} />
 
       {/* Leyenda legal */}
       <div className="mx-4 mt-4 rounded-xl border border-border bg-card px-4 py-3 flex gap-3">

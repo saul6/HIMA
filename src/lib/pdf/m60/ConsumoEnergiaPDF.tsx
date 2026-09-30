@@ -87,7 +87,7 @@ export function ConsumoEnergiaPDF({ rancho, orgNombre, desde, hasta, registros, 
         <PdfFooter moduloCodigo="M60" />
         <TopBar />
         <PdfHeader
-          titulo="CONSUMO DE COMBUSTIBLE Y ENERGIA"
+          titulo="CONSUMO DE COMBUSTIBLE Y ENERGÍA"
           subtitulo={`Registro de energia | ${rancho}`}
           codigoFormato="M60"
           folio={periodo}

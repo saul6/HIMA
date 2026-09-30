@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import {
-  ChevronLeft, Loader2, FileDown, Camera, Image, Trash2,
+  Loader2, FileDown, Camera, Image, Trash2,
   AlertTriangle, ClipboardCheck, CheckCircle,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
@@ -331,15 +332,10 @@ export function AccionesCorrectivas() {
 
   return (
     <div className="min-h-full pb-safe-nav">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-background border-b border-border">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-muted-foreground">
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <h1 className="flex-1 text-base text-foreground" style={{ fontWeight: 600 }}>
-            Acciones Correctivas
-          </h1>
+      <ModuloHeader
+        tituloFallback="Plan de Acciones Correctivas"
+        onBack={() => navigate(-1)}
+        acciones={
           <button
             onClick={handleExportarPDF}
             disabled={generandoPDF}
@@ -353,8 +349,8 @@ export function AccionesCorrectivas() {
             )}
             PDF
           </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Filter chips */}
       <div className="px-4 pt-4 pb-2 flex gap-2 flex-wrap">

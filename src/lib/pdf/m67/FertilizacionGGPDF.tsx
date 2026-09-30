@@ -99,7 +99,7 @@ export function FertilizacionGGPDF({ rancho, orgNombre, desde, hasta, registros,
         <PdfFooter moduloCodigo="M67" />
         <TopBar />
         <PdfHeader
-          titulo="APLICACION DE FERTILIZANTES"
+          titulo="APLICACIÓN DE FERTILIZANTES"
           subtitulo={`REG-18 · GlobalG.A.P. v6 | ${rancho}`}
           codigoFormato="REG-18"
           folio={periodo}

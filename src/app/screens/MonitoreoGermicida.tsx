@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { ChevronLeft, Plus, FileDown, X, Loader2, Droplets, Files } from 'lucide-react'
-import { useNavigate } from 'react-router'
+import { Plus, FileDown, X, Loader2, Files } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM36Monitoreos } from '@/hooks/useM36Monitoreos'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
@@ -51,7 +51,6 @@ const FORM_VACIO: FormState = {
 }
 
 export function MonitoreoGermicida() {
-  const navigate = useNavigate()
   const { profile, user, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
@@ -179,16 +178,10 @@ export function MonitoreoGermicida() {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-12 pb-4">
-        <button onClick={() => navigate('/')} className="p-1 -ml-1">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold leading-tight">Monitoreo de Solución Germicida</h1>
-          <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-SAN-14', codigoClave)} · Por evento</p>
-        </div>
-        <Droplets className="w-5 h-5 text-muted-foreground" />
-      </div>
+      <ModuloHeader
+        tituloFallback="Monitoreo de Solución Germicida"
+        subtitulo={`${codigoFormato('F-FRUS-SAN-14', codigoClave)} · Por evento`}
+      />
 
       <BannerTareaOrigen tareaId={tareaId} />
 

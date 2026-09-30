@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
-import { Link } from 'react-router'
 import {
-  ChevronLeft, Plus, FileDown, Loader2, TriangleAlert, Shield,
+  Plus, FileDown, Loader2, TriangleAlert, Shield,
   Settings, X, AlertCircle,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -24,6 +23,7 @@ import {
   generarRondinesVigilanciaConsolidadoPDF,
 } from '@/lib/pdf/m46/generarRondinesVigilanciaPDF'
 import { Fab } from '@/app/components/Fab'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
@@ -521,23 +521,11 @@ export function RondinesVigilancia() {
     <div className="min-h-full pb-safe-nav">
 
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-3 sticky top-0 z-30">
-        <div className="flex items-center gap-3">
-          <Link to="/" className="p-1 -ml-1">
-            <ChevronLeft className="w-5 h-5 text-foreground" />
-          </Link>
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-primary/10">
-            <Shield className="w-4 h-4 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
-              Bitácora de Rondines de Vigilancia
-            </h1>
-            <div className="text-xs text-muted-foreground">
-              {codigoFormato('F-FRUS-ADM-07', codigoClave)}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
+      <ModuloHeader
+        tituloFallback="Bitácora de Rondines de Vigilancia"
+        subtitulo={codigoFormato('F-FRUS-ADM-07', codigoClave)}
+        acciones={
+          <>
             <button
               onClick={() => { setConfRanchoId(''); setSheetConf(true) }}
               className="flex items-center gap-1 h-8 px-2.5 rounded-lg border border-border text-xs text-foreground"
@@ -553,9 +541,9 @@ export function RondinesVigilancia() {
               <FileDown className="w-3.5 h-3.5" />
               Consolidado
             </button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista */}

@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useNavigate, Navigate } from 'react-router'
-import { ChevronLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditoriasPGFS } from '@/hooks/useAuditoriasPGFS'
 import { useRanchosOrg } from '@/hooks/useRanchosOrg'
 import { hoyMX } from '@/lib/fecha'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 
 const ROLES_PERMITIDOS = ['auditor', 'admin_org', 'super_admin']
 
@@ -67,14 +67,7 @@ export function NuevaAuditoriaPGFS() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-card border-b border-border flex items-center gap-3 px-4 py-3">
-        <button onClick={() => navigate(-1)} className="text-muted-foreground">
-          <ChevronLeft size={24} />
-        </button>
-        <h1 className="text-base font-semibold flex-1" style={{ color: 'var(--foreground)' }}>
-          Nueva auditoría PrimusGFS
-        </h1>
-      </header>
+      <ModuloHeader tituloFallback="Nueva auditoría PrimusGFS" onBack={() => navigate(-1)} />
 
       <main className="flex-1 px-4 py-6 flex flex-col gap-5 max-w-lg mx-auto w-full">
         {cargando ? (

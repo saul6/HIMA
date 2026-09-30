@@ -75,7 +75,7 @@ export function GestionResiduosPDF({ rancho, orgNombre, desde, hasta, registros,
         <PdfFooter moduloCodigo="M61" />
         <TopBar />
         <PdfHeader
-          titulo="SISTEMA DE GESTION DE RESIDUOS"
+          titulo="SISTEMA DE GESTIÓN DE RESIDUOS"
           subtitulo={`Registro de residuos | ${rancho}`}
           codigoFormato="M61"
           folio={periodo}

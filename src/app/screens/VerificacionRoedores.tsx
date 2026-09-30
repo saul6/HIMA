@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ChevronLeft, Plus, X, Loader2, Bug, Files } from 'lucide-react'
+import { Plus, X, Loader2, Files } from 'lucide-react'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
@@ -195,17 +196,7 @@ export function VerificacionRoedores() {
 
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--background)' }}>
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-12 pb-4">
-        <button onClick={() => navigate('/')} className="p-1 -ml-1">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold leading-tight">Verificación de Trampas para Roedores</h1>
-          <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>M70 · REG-24 · Por evento</p>
-        </div>
-        <Bug className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
-      </div>
+      <ModuloHeader tituloFallback="Verificación de Trampas para Roedores" subtitulo="M70 · REG-24 · Por evento" />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Botón consolidado */}

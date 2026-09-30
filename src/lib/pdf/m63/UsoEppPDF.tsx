@@ -84,7 +84,7 @@ export function UsoEppPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoS
         <PdfFooter moduloCodigo="M63" />
         <TopBar />
         <PdfHeader
-          titulo="USO DE EQUIPO DE PROTECCION PERSONAL (EPP)"
+          titulo="USO DE EQUIPO DE PROTECCIÓN PERSONAL (EPP)"
           subtitulo="Registro de uso y estado del EPP"
           codigoFormato={codigoFmt}
           folio={periodo}

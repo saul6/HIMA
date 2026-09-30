@@ -3,8 +3,8 @@ import {
   ChevronLeft, Plus, FileDown, Loader2, Droplet,
   TriangleAlert, X, Settings, ChevronDown, ChevronUp, Bug,
 } from 'lucide-react'
-import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { ConsolidadoSheetLimpieza } from '@/app/components/ConsolidadoSheetLimpieza'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -620,41 +620,14 @@ export function LimpiezaCisterna() {
   return (
     <div className="min-h-full pb-safe-nav">
 
-      <header className="bg-card border-b border-border px-4 py-3 sticky top-0 z-30">
-        <div className="flex items-center gap-3">
-          {vista === 'detalle' ? (
-            <button onClick={volverALista} className="p-1 -ml-1">
-              <ChevronLeft className="w-5 h-5 text-foreground" />
-            </button>
-          ) : (
-            <Link to="/" className="p-1 -ml-1">
-              <ChevronLeft className="w-5 h-5 text-foreground" />
-            </Link>
-          )}
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: 'var(--agro-success-fill)' }}>
-            <Droplet className="w-4 h-4" style={{ color: 'var(--agro-success-text)' }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            {vista === 'lista' ? (
-              <>
-                <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
-                  Limpieza y Cloración de la Cisterna
-                </h1>
-                <div className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-SAN-15', codigoClave)}</div>
-              </>
-            ) : (
-              <>
-                <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
-                  {registroActivo ? formatMesLabel(registroActivo.anio, registroActivo.mes) : '—'}
-                </h1>
-                <div className="text-xs text-muted-foreground truncate">{registroActivo?.rancho_nombre ?? '—'}</div>
-              </>
-            )}
-          </div>
-
-          {vista === 'lista' && (
-            <div className="flex items-center gap-2">
+      <ModuloHeader
+        tituloFallback="Bitácora de Limpieza y Cloración de la Cisterna"
+        forzarTitulo={vista === 'detalle' ? (registroActivo ? formatMesLabel(registroActivo.anio, registroActivo.mes) : '—') : undefined}
+        subtitulo={vista === 'lista' ? codigoFormato('F-FRUS-SAN-15', codigoClave) : (registroActivo?.rancho_nombre ?? '—')}
+        onBack={vista === 'detalle' ? volverALista : undefined}
+        acciones={
+          vista === 'lista' ? (
+            <>
               <button
                 onClick={() => { setCatRanchoId(''); setCatNombre(''); setCatFrecuencia('diario'); setSheetConfigurar(true) }}
                 className="flex items-center gap-1 h-8 px-2.5 rounded-lg border border-border text-xs text-foreground"
@@ -669,11 +642,9 @@ export function LimpiezaCisterna() {
                 <FileDown className="w-3.5 h-3.5" />
                 Consolidado
               </button>
-            </div>
-          )}
-
-          {vista === 'detalle' && registroActivo && (
-            <div className="flex items-center gap-2">
+            </>
+          ) : vista === 'detalle' && registroActivo ? (
+            <>
               <button
                 onClick={abrirConfigurar}
                 className="flex items-center gap-1 h-8 px-2.5 rounded-lg border border-border text-xs text-foreground"
@@ -689,10 +660,10 @@ export function LimpiezaCisterna() {
                 {generandoPDF ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
                 PDF
               </button>
-            </div>
-          )}
-        </div>
-      </header>
+            </>
+          ) : undefined
+        }
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* ── LISTA ────────────────────────────────────────────────────────────── */}

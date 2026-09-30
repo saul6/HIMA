@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ChevronLeft, Plus, FileDown, X, Loader2, Gauge, Files } from 'lucide-react'
+import { Plus, FileDown, X, Loader2, Files } from 'lucide-react'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
@@ -178,16 +179,7 @@ export function Tensiometros() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <div className="flex items-center gap-3 px-4 pt-12 pb-4">
-        <button onClick={() => navigate('/')} className="p-1 -ml-1">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold leading-tight">Lectura de Tensiómetros</h1>
-          <p className="text-xs text-muted-foreground">M58 · Por evento</p>
-        </div>
-        <Gauge className="w-5 h-5 text-muted-foreground" />
-      </div>
+      <ModuloHeader tituloFallback="Lectura de Tensiómetros" subtitulo="M58 · Por evento" />
       <BannerTareaOrigen tareaId={tareaId} />
 
       <div className="px-4 mb-4">

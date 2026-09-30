@@ -83,7 +83,7 @@ export function PlanSueloPage({
       <PdfFooter moduloCodigo="M59" />
       <TopBar />
       <PdfHeader
-        titulo="PLAN Y GESTION DEL SUELO"
+        titulo="PLAN Y GESTIÓN DEL SUELO"
         subtitulo={`Inspeccion de suelo | ${rancho}`}
         codigoFormato="M59"
         folio={fmtFecha(fecha)}

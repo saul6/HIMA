@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ChevronLeft, Plus, FileDown, X, Loader2, Bug, Files, Check } from 'lucide-react'
+import { Plus, FileDown, X, Loader2, Files, Check } from 'lucide-react'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
@@ -298,16 +299,7 @@ export function MonitoreoRoedores() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <div className="flex items-center gap-3 px-4 pt-12 pb-4">
-        <button onClick={() => navigate('/')} className="p-1 -ml-1">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold leading-tight">Monitoreo de Trampas para Roedores</h1>
-          <p className="text-xs text-muted-foreground">M68 · REG-23 · Por evento</p>
-        </div>
-        <Bug className="w-5 h-5 text-muted-foreground" />
-      </div>
+      <ModuloHeader tituloFallback="Monitoreo de Trampas para Roedores" subtitulo="M68 · REG-23 · Por evento" />
       <BannerTareaOrigen tareaId={tareaId} />
 
       <div className="px-4 mb-4">

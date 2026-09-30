@@ -86,7 +86,7 @@ export function MipObservacionPDFPage({
       <PdfFooter moduloCodigo="M54" />
       <TopBar />
       <PdfHeader
-        titulo="MIP - OBSERVACION Y MONITOREO"
+        titulo="MIP - OBSERVACIÓN Y MONITOREO"
         subtitulo={`Manejo Integrado de Plagas | ${rancho}`}
         codigoFormato="M54"
         folio={fmtFecha(fecha)}

@@ -1,8 +1,9 @@
 ﻿import { useState, useEffect, useMemo } from 'react'
 import {
-  ChevronLeft, Plus, Settings, FileDown, X, Loader2, AlertTriangle,
+  Plus, Settings, FileDown, X, Loader2, AlertTriangle,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -170,25 +171,24 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
 
   return (
     <div className="min-h-full pb-[calc(72px+34px+80px)]">
-      <header className="bg-card border-b border-border px-4 py-3 flex items-center gap-3">
-        <button onClick={onBack} className="p-1 -ml-1 rounded-lg hover:bg-muted transition-colors">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-semibold truncate">{quimico.nombre}</h1>
-          <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{quimico.unidad} · {ranchoNombre}</p>
-        </div>
-        <button
-          onClick={exportarPDF}
-          disabled={pdfLoading}
-          className="p-2 rounded-lg hover:bg-muted transition-colors"
-          aria-label="Exportar PDF"
-        >
-          {pdfLoading
-            ? <Loader2 className="w-4 h-4 animate-spin" />
-            : <FileDown className="w-4 h-4" />}
-        </button>
-      </header>
+      <ModuloHeader
+        tituloFallback={quimico.nombre}
+        forzarTitulo={quimico.nombre}
+        subtitulo={`${quimico.unidad} · ${ranchoNombre}`}
+        onBack={onBack}
+        acciones={
+          <button
+            onClick={exportarPDF}
+            disabled={pdfLoading}
+            className="p-2 rounded-lg hover:bg-muted transition-colors"
+            aria-label="Exportar PDF"
+          >
+            {pdfLoading
+              ? <Loader2 className="w-4 h-4 animate-spin" />
+              : <FileDown className="w-4 h-4" />}
+          </button>
+        }
+      />
 
       <div className="p-4 space-y-4">
         {/* Saldo card */}
@@ -548,29 +548,31 @@ export function ControlInventarioQuimicos() {
 
   return (
     <div className="min-h-full pb-safe-nav">
-      <header className="bg-card border-b border-border px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="p-1 -ml-1 rounded-lg hover:bg-muted transition-colors">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <h1 className="flex-1 text-base font-semibold">Control de Inventario de Químicos</h1>
-        <button
-          onClick={() => {
-            setConsolidadoForm(f => ({ ...f, rancho_id: ranchoId }))
-            setConsolidadoOpen(true)
-          }}
-          className="p-2 rounded-lg hover:bg-muted transition-colors"
-          aria-label="Exportar consolidado"
-        >
-          <FileDown className="w-4 h-4" />
-        </button>
-        <button
-          onClick={() => setConfigurarOpen(true)}
-          className="p-2 rounded-lg hover:bg-muted transition-colors"
-          aria-label="Configurar químicos"
-        >
-          <Settings className="w-4 h-4" />
-        </button>
-      </header>
+      <ModuloHeader
+        tituloFallback="Control de Inventario de Químicos e Insumos"
+        onBack={() => navigate(-1)}
+        acciones={
+          <>
+            <button
+              onClick={() => {
+                setConsolidadoForm(f => ({ ...f, rancho_id: ranchoId }))
+                setConsolidadoOpen(true)
+              }}
+              className="p-2 rounded-lg hover:bg-muted transition-colors"
+              aria-label="Exportar consolidado"
+            >
+              <FileDown className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setConfigurarOpen(true)}
+              className="p-2 rounded-lg hover:bg-muted transition-colors"
+              aria-label="Configurar químicos"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+          </>
+        }
+      />
 
       <BannerTareaOrigen tareaId={tareaId} />
 

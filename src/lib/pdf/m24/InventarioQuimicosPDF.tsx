@@ -119,7 +119,7 @@ export function InventarioQuimicosPagina({
 
       <PdfPageFrame>
         <PdfHeader
-          titulo="CONTROL DE INVENTARIO DE QUIMICOS E INSUMOS"
+          titulo="CONTROL DE INVENTARIO DE QUÍMICOS E INSUMOS"
           subtitulo={`Formato operativo | ${instalacion}`}
           codigoFormato={codigoFmt}
           folio={emision}

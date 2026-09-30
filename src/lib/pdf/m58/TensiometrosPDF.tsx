@@ -75,7 +75,7 @@ export function TensiometrosPDF({ rancho, orgNombre, desde, hasta, registros, te
         <PdfFooter moduloCodigo="M58" />
         <TopBar />
         <PdfHeader
-          titulo="LECTURA DE TENSIOMETROS"
+          titulo="LECTURA DE TENSIÓMETROS"
           subtitulo={`Monitoreo de humedad del suelo | ${rancho}`}
           codigoFormato="M58"
           folio={periodo}

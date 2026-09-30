@@ -176,7 +176,7 @@ function MttoPreventivoPaginaContent({
           <Image src={LOGO_MADY_PDF} style={{ height: 28, width: 79, marginRight: 10 }} />
           <View style={{ flex: 1, alignItems: 'center' }}>
             <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 8.5, color: PC.titleNavy, textAlign: 'center' }}>
-              VERIFICACION, MANTENIMIENTO PREVENTIVO Y CORRECTIVO
+              VERIFICACIÓN, MANTENIMIENTO PREVENTIVO Y CORRECTIVO
             </Text>
             <Text style={{ fontSize: 5.5, color: PC.textSub, marginTop: 1, textAlign: 'center' }}>
               {`${codigoFmt}  |  ${instalacion}  |  ${mesLabel}`}

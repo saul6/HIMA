@@ -9,8 +9,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   ChevronLeft, Plus, FileDown, X, Loader2, ClipboardCheck, TriangleAlert,
 } from 'lucide-react'
-import { Link } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -389,57 +389,22 @@ export function VerificacionCosecha() {
   return (
     <div className="min-h-full pb-safe-nav">
 
-      {/* ── Header ─────────────────────────────────────────────────────── */}
-      <header className="bg-card border-b border-border px-4 py-3 sticky top-0 z-30">
-        <div className="flex items-center gap-3">
-          {vista === 'detalle' ? (
-            <button onClick={volverALista} className="p-1 -ml-1">
-              <ChevronLeft className="w-5 h-5 text-foreground" />
-            </button>
-          ) : (
-            <Link to="/" className="p-1 -ml-1">
-              <ChevronLeft className="w-5 h-5 text-foreground" />
-            </Link>
-          )}
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 12%, transparent)' }}
+      <ModuloHeader
+        tituloFallback="Verificación Diaria de Cosecha"
+        forzarTitulo={vista === 'detalle' ? (registroActivo ? formatMesLabel(registroActivo.mes) : '—') : undefined}
+        subtitulo={vista === 'lista' ? 'M69 · REG-13 · Gestión de campo' : (registroActivo?.rancho_nombre ?? '—')}
+        onBack={vista === 'detalle' ? volverALista : undefined}
+        acciones={vista === 'lista' ? (
+          <button
+            onClick={() => setSheetConsolidado(true)}
+            className="flex items-center gap-1.5 h-8 px-3 rounded-lg border text-xs text-foreground"
+            style={{ borderColor: 'var(--border)', fontWeight: 600 }}
           >
-            <ClipboardCheck className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            {vista === 'lista' ? (
-              <>
-                <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
-                  Verificación Diaria de Cosecha
-                </h1>
-                <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                  M69 · REG-13 · Gestión de campo
-                </div>
-              </>
-            ) : (
-              <>
-                <h1 className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
-                  {registroActivo ? formatMesLabel(registroActivo.mes) : '—'}
-                </h1>
-                <div className="text-xs truncate" style={{ color: 'var(--muted-foreground)' }}>
-                  {registroActivo?.rancho_nombre ?? '—'}
-                </div>
-              </>
-            )}
-          </div>
-          {vista === 'lista' && (
-            <button
-              onClick={() => setSheetConsolidado(true)}
-              className="flex items-center gap-1.5 h-8 px-3 rounded-lg border text-xs text-foreground"
-              style={{ borderColor: 'var(--border)', fontWeight: 600 }}
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              Consolidado
-            </button>
-          )}
-        </div>
-      </header>
+            <FileDown className="w-3.5 h-3.5" />
+            Consolidado
+          </button>
+        ) : undefined}
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* ── LISTA ──────────────────────────────────────────────────────── */}

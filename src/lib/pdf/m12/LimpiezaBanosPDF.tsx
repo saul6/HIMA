@@ -81,7 +81,7 @@ export function LimpiezaBanosPagina({
       <TopBar />
 
       <PdfHeader
-        titulo="LIMPIEZA Y DESINFECCION DE BANOS"
+        titulo="LIMPIEZA Y DESINFECCIÓN DE BAÑOS"
         subtitulo={`Registro de limpieza | ${rancho}`}
         codigoFormato="M.A.D.Y-F-SC-SIG-041.14"
         folio={formatFechaPDF(fecha)}

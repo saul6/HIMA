@@ -86,7 +86,7 @@ export function MipPreventivoPDFPage({
       <PdfFooter moduloCodigo="M53" />
       <TopBar />
       <PdfHeader
-        titulo="MIP - TECNICAS PREVENTIVAS"
+        titulo="MIP - TÉCNICAS PREVENTIVAS"
         subtitulo={`Manejo Integrado de Plagas | ${rancho}`}
         codigoFormato="M53"
         folio={fmtFecha(fecha)}

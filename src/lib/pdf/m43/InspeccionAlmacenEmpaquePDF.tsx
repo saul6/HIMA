@@ -121,7 +121,7 @@ export function InspeccionAlmacenEmpaquePagina({
       <TopBar />
 
       <PdfHeader
-        titulo="INSPECCION DE ALMACEN DE MATERIAL DE EMPAQUE"
+        titulo="INSPECCIÓN DE ALMACÉN DE MATERIAL DE EMPAQUE"
         subtitulo={`Inspeccion mensual | ${instalacion}`}
         codigoFormato={codigoFmt}
         folio={mesLabel}

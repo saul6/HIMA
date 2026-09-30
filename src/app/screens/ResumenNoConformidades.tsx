@@ -1,9 +1,9 @@
 ﻿import { useState } from 'react'
 import {
-  ChevronLeft, Plus, X, Loader2, ClipboardX, FileDown, Edit2,
+  Plus, X, Loader2, ClipboardX, FileDown, Edit2,
   Link2, Unlink2,
 } from 'lucide-react'
-import { useNavigate } from 'react-router'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -41,7 +41,6 @@ function formatFecha(iso: string): string {
 // ── Pantalla principal ────────────────────────────────────────────────────────
 
 export function ResumenNoConformidades() {
-  const navigate = useNavigate()
   const { profile, user } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
@@ -247,25 +246,10 @@ export function ResumenNoConformidades() {
     <div className="min-h-full pb-safe-nav">
 
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4 sticky top-0 z-20">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('/')}
-            className="p-1 text-muted-foreground flex-shrink-0"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-foreground truncate" style={{ fontWeight: 600 }}>
-              {TITULO_MODULO}
-            </h1>
-            <p className="text-xs text-muted-foreground">{CLAVE_MODULO}</p>
-          </div>
-          <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 text-primary">
-            <ClipboardX className="w-5 h-5" />
-          </div>
-        </div>
-      </header>
+      <ModuloHeader
+        tituloFallback={TITULO_MODULO}
+        subtitulo={CLAVE_MODULO}
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Lista de visitas */}

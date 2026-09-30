@@ -4,10 +4,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-  ChevronLeft, Plus, Loader2, Files, Bug, FileDown, Settings, Power,
+  Plus, Loader2, Files, Bug, FileDown, Settings, Power,
   AlertTriangle, X,
 } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -37,7 +38,7 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
-const TITULO_MODULO = 'Monitoreo de Plagas'
+const TITULO_MODULO = 'Revisión de Estaciones de Monitoreo de Plagas'
 
 const TIPO_TRAMPA_LABELS: Record<TipoTrampa, string> = {
   cebo: 'Con Cebo',
@@ -916,47 +917,41 @@ export function MonitoreoEstacionesPlagas() {
   return (
     <div className="flex flex-col h-full bg-background">
 
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-safe-top pt-4 pb-3 bg-card border-b border-border">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="p-1 -ml-1 text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Volver"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-semibold text-foreground truncate">{TITULO_MODULO}</h1>
-          <p className="text-xs text-muted-foreground">{codigoFormato('F-FRUS-CAL-19', codigoClave)} · Cuarto Frío</p>
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="shrink-0 text-muted-foreground"
-          onClick={() => {
-            setEstRanchoId(ranchos[0]?.id ?? '')
-            setSheetEstaciones(true)
-          }}
-          aria-label="Gestionar estaciones"
-        >
-          <Settings className="w-4 h-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-[var(--primary)] shrink-0"
-          onClick={() => {
-            setConsRanchoId(ranchos[0]?.id ?? '')
-            setConsDesde('')
-            setConsHasta('')
-            setSheetConsolidado(true)
-          }}
-        >
-          <Files className="w-4 h-4 mr-1" />
-          Exportar
-        </Button>
-      </div>
+      <ModuloHeader
+        tituloFallback={TITULO_MODULO}
+        subtitulo={`${codigoFormato('F-FRUS-CAL-19', codigoClave)} · Cuarto Frío`}
+        onBack={() => navigate(-1)}
+        acciones={
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="shrink-0 text-muted-foreground"
+              onClick={() => {
+                setEstRanchoId(ranchos[0]?.id ?? '')
+                setSheetEstaciones(true)
+              }}
+              aria-label="Gestionar estaciones"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-[var(--primary)] shrink-0"
+              onClick={() => {
+                setConsRanchoId(ranchos[0]?.id ?? '')
+                setConsDesde('')
+                setConsHasta('')
+                setSheetConsolidado(true)
+              }}
+            >
+              <Files className="w-4 h-4 mr-1" />
+              Exportar
+            </Button>
+          </>
+        }
+      />
 
       <BannerTareaOrigen tareaId={tareaId} />
 

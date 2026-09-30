@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, CalendarDays, FileDown, Plus, X, Loader2, Pencil } from 'lucide-react'
+import { FileDown, Plus, X, Loader2, Pencil } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -9,6 +9,7 @@ import { useM57CronogramaCapacitacion } from '@/hooks/useM57CronogramaCapacitaci
 import { supabase } from '@/lib/supabase'
 import { generarCronogramaCapacitacionPDF } from '@/lib/pdf/m57/generarCronogramaCapacitacionPDF'
 import { Fab } from '@/app/components/Fab'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 
 const PERIODICIDADES = ['Mensual', 'Bimestral', 'Trimestral', 'Semestral', 'Anual']
 
@@ -141,26 +142,23 @@ export function CronogramaCapacitacion() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <div className="flex items-center gap-3 px-4 pt-12 pb-4">
-        <button onClick={() => navigate(-1)} className="p-1 -ml-1">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold leading-tight">Cronograma de Capacitaciones</h1>
-          <p className="text-xs text-muted-foreground">M57 · Org-level</p>
-        </div>
-        <button
-          onClick={exportarPDF}
-          disabled={pdfLoading}
-          className="p-2 rounded-lg border border-border"
-        >
-          {pdfLoading
-            ? <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--primary)' }} />
-            : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-          }
-        </button>
-        <CalendarDays className="w-5 h-5 text-muted-foreground" />
-      </div>
+      <ModuloHeader
+        tituloFallback="Cronograma de Capacitaciones"
+        subtitulo="M57 · Org-level"
+        onBack={() => navigate(-1)}
+        acciones={
+          <button
+            onClick={exportarPDF}
+            disabled={pdfLoading}
+            className="p-2 rounded-lg border border-border"
+          >
+            {pdfLoading
+              ? <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--primary)' }} />
+              : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+            }
+          </button>
+        }
+      />
 
       <div className="px-4 mb-3">
         <button
