@@ -1,9 +1,10 @@
 import { useState, useMemo, type ReactNode } from 'react'
 import {
-  ChevronLeft, Plus, FileDown, X, Loader2, Files, ChevronDown, AlertTriangle,
+  ChevronLeft, FileDown, X, Loader2, Files, ChevronDown, AlertTriangle,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { Fab } from '@/app/components/Fab'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
@@ -288,7 +289,7 @@ export function AuditoriaScreen({
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-full pb-[calc(72px+34px)]">
+    <div className="min-h-full pb-safe-nav">
 
       {/* Header */}
       <header className="bg-card border-b border-border px-4 py-4 sticky top-0 z-20">
@@ -406,16 +407,7 @@ export function AuditoriaScreen({
         )}
       </div>
 
-      {/* FAB */}
-      <div className="fixed bottom-[calc(72px+34px+16px)] left-1/2 -translate-x-1/2 w-full max-w-[390px] flex justify-end px-4 pointer-events-none z-10">
-        <button
-          onClick={abrirNuevo}
-          className="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-lg pointer-events-auto hover:bg-agro-blue transition-colors"
-          aria-label="Nueva auditoría"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      </div>
+      <Fab onClick={abrirNuevo} aria-label="Nueva auditoría" />
 
       {/* Bottom Sheet — consolidado */}
       <BottomSheet open={sheetConsAbierto} onClose={() => setSheetConsAbierto(false)}>
