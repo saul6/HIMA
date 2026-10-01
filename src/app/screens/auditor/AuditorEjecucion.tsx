@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorAuditoria } from '@/hooks/useAuditorAuditoria'
 import { GuardadoIncompleto } from '@/hooks/useAuditorAuditoria'
+import type { HerenciaInfo } from '@/hooks/useAuditorAuditoria'
 import type { AudComentarioEsquema, AudPregunta, AudRespuesta, AudHallazgo, AudHallazgoClasificacion, AudHallazgoEstado, AudAccionCorrectivaCAPA, AudAcVersion, AudInternalStatus, AudExternalStatus, AudExternalWorkflow, AudExternalObservedStatus } from '@/types/database.types'
 import { generarAuditorReportePDF } from '@/lib/pdf/auditor/generarAuditorReportePDF'
 import { supabase } from '@/lib/supabase'
@@ -260,18 +261,21 @@ function formatFecha(f: string) {
 // ── Campo de esquema ─────────────────────────────────────────────────────────
 
 function CampoEsquema({
-  esquema, value, onChange, onBlur, disabled,
+  esquema, value, onChange, onBlur, disabled, herenciaEstado,
 }: {
   esquema: AudComentarioEsquema
   value: string
   onChange: (v: string) => void
   onBlur: () => void
   disabled: boolean
+  herenciaEstado?: 'sin_confirmar'
 }) {
   const base: React.CSSProperties = {
     width: '100%',
     borderRadius: 'var(--radius)',
-    border: '1px solid var(--border)',
+    border: herenciaEstado === 'sin_confirmar'
+      ? '1.5px dashed var(--agro-blue)'
+      : '1px solid var(--border)',
     backgroundColor: disabled ? 'var(--muted)' : 'var(--input-background)',
     color: 'var(--foreground)',
     padding: '0.375rem 0.625rem',
@@ -345,12 +349,38 @@ function PreguntaCard({
   onAplicarRegla?: (reglaId: string, explicacion: string, confirmaciones: Record<string, boolean>, forzar: boolean, eventId: string) => Promise<AplicarResultado>
   onRetirarRegla?: (reglaId: string, motivo: string, eventId: string) => Promise<RetirarResultado>
   onConfirmarRevision?: () => Promise<void>
+  herenciaMap?: Map<string, HerenciaInfo>
+  onConfirmarHerencia?: (valorId: string) => Promise<void>
+  onRechazarHerencia?: (valorId: string) => Promise<void>
+  onResolverHerencia?: (valorId: string, res: 'propio' | 'propuesto') => Promise<void>
 }) {
   const falla =
     respuesta &&
     respuesta !== 'na' &&
     ((pregunta.trigger_falla_automatica === 'cualquier_descuento' && respuesta !== 'cumplimiento_total') ||
       (pregunta.trigger_falla_automatica === 'solo_cero' && respuesta === 'no_conformidad'))
+
+  // ── Herencia state ──
+  const [herenciaAcciones, setHerenciaAcciones] = useState<Map<string, string>>(new Map())
+  const [escribiendoOtro, setEscribiendoOtro] = useState<Set<string>>(new Set())
+
+  // Limpiar escribiendoOtro cuando la herencia se resuelve
+  useEffect(() => {
+    if (!escribiendoOtro.size) return
+    setEscribiendoOtro(prev => {
+      const next = new Set(prev)
+      for (const eid of prev) {
+        const h = herenciaMap?.get(`${pregunta.id}:${eid}`)
+        if (!h || (h.estado !== 'sin_confirmar' && h.estado !== 'revalidar')) next.delete(eid)
+      }
+      return next.size === prev.size ? prev : next
+    })
+  }, [herenciaMap]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function fmtHerenciaTs(ts: string | null): string {
+    if (!ts) return ''
+    return new Date(ts).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
+  }
 
   // ── Ajuste manual state ──
   const [ajusteOpen, setAjusteOpen] = useState(false)
@@ -1216,16 +1246,209 @@ function PreguntaCard({
 
       {esquemas.length > 0 && (
         <div className="flex flex-col gap-2.5">
-          {esquemas.map(esq => (
-            <CampoEsquema
-              key={esq.id}
-              esquema={esq}
-              value={valores.get(esq.id) ?? ''}
-              onChange={v => onValor(esq.id, v)}
-              onBlur={onBlur}
-              disabled={cerrada}
-            />
-          ))}
+          {esquemas.map(esq => {
+            const h = herenciaMap?.get(`${pregunta.id}:${esq.id}`)
+            const ejec = herenciaAcciones.get(esq.id)
+            const esEscribiendoOtro = escribiendoOtro.has(esq.id)
+
+            if (!h || h.estado === 'rechazado' || esEscribiendoOtro) {
+              return (
+                <div key={esq.id} className="flex flex-col gap-1">
+                  <CampoEsquema
+                    esquema={esq}
+                    value={valores.get(esq.id) ?? ''}
+                    onChange={v => onValor(esq.id, v)}
+                    onBlur={onBlur}
+                    disabled={cerrada}
+                  />
+                  {h?.estado === 'rechazado' && (
+                    <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                      Propuesta de {h.origen_question_id ?? 'otra pregunta'} rechazada
+                    </p>
+                  )}
+                </div>
+              )
+            }
+
+            if (h.estado === 'sin_confirmar') {
+              return (
+                <div key={esq.id} className="flex flex-col gap-1.5">
+                  <CampoEsquema
+                    esquema={esq}
+                    value={valores.get(esq.id) ?? ''}
+                    onChange={v => onValor(esq.id, v)}
+                    onBlur={onBlur}
+                    disabled={cerrada}
+                    herenciaEstado="sin_confirmar"
+                  />
+                  <p className="text-[10px] font-medium" style={{ color: 'var(--agro-blue)' }}>
+                    Heredado de {h.origen_question_id ?? 'otra pregunta'}: sin confirmar
+                  </p>
+                  {!cerrada && (
+                    <div className="flex gap-1.5 flex-wrap">
+                      <button
+                        disabled={!!ejec}
+                        onClick={async () => {
+                          setHerenciaAcciones(prev => new Map(prev).set(esq.id, 'cargando'))
+                          try { await onConfirmarHerencia?.(h.valor_id) }
+                          finally { setHerenciaAcciones(prev => { const n = new Map(prev); n.delete(esq.id); return n }) }
+                        }}
+                        className="h-7 px-2.5 rounded-lg text-[10px] font-semibold disabled:opacity-50 flex items-center gap-1"
+                        style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                      >
+                        {ejec === 'cargando' ? <><Loader size={10} className="animate-spin" />…</> : 'Confirmar dato'}
+                      </button>
+                      <button
+                        disabled={!!ejec}
+                        onClick={() => setEscribiendoOtro(prev => new Set(prev).add(esq.id))}
+                        className="h-7 px-2.5 rounded-lg text-[10px] font-medium disabled:opacity-50"
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                      >
+                        Escribir otro dato
+                      </button>
+                      <button
+                        disabled={!!ejec}
+                        onClick={async () => {
+                          setHerenciaAcciones(prev => new Map(prev).set(esq.id, 'cargando'))
+                          try { await onRechazarHerencia?.(h.valor_id) }
+                          finally { setHerenciaAcciones(prev => { const n = new Map(prev); n.delete(esq.id); return n }) }
+                        }}
+                        className="h-7 px-2.5 rounded-lg text-[10px] disabled:opacity-50"
+                        style={{ color: 'var(--agro-danger-text)', border: '1px solid var(--agro-danger-text)' }}
+                      >
+                        Rechazar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )
+            }
+
+            if (h.estado === 'confirmado') {
+              return (
+                <div key={esq.id} className="flex flex-col gap-1">
+                  <CampoEsquema
+                    esquema={esq}
+                    value={valores.get(esq.id) ?? ''}
+                    onChange={v => onValor(esq.id, v)}
+                    onBlur={onBlur}
+                    disabled={cerrada}
+                  />
+                  <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                    Heredado de {h.origen_question_id ?? 'otra pregunta'}
+                    {(h.confirmado_por || h.confirmado_en) ? ` · confirmado${h.confirmado_por ? ` por ${h.confirmado_por}` : ''}${h.confirmado_en ? `, ${fmtHerenciaTs(h.confirmado_en)}` : ''}` : ''}
+                  </p>
+                </div>
+              )
+            }
+
+            if (h.estado === 'revalidar') {
+              return (
+                <div key={esq.id} className="flex flex-col gap-1.5">
+                  <CampoEsquema
+                    esquema={esq}
+                    value={valores.get(esq.id) ?? ''}
+                    onChange={v => onValor(esq.id, v)}
+                    onBlur={onBlur}
+                    disabled={cerrada}
+                  />
+                  <div className="rounded-lg px-3 py-2 flex flex-col gap-1.5" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
+                    <p className="text-[10px] font-semibold" style={{ color: 'var(--agro-warning-text)' }}>
+                      El dato cambió en {h.origen_question_id ?? 'otra pregunta'}
+                    </p>
+                    <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>
+                      Anterior: {h.valor ?? '—'} · Nuevo: {h.propuesto ?? '—'}
+                    </p>
+                    {!cerrada && (
+                      <div className="flex gap-1.5 flex-wrap">
+                        <button
+                          disabled={!!ejec}
+                          onClick={async () => {
+                            setHerenciaAcciones(prev => new Map(prev).set(esq.id, 'cargando'))
+                            try { await onResolverHerencia?.(h.valor_id, 'propuesto') }
+                            finally { setHerenciaAcciones(prev => { const n = new Map(prev); n.delete(esq.id); return n }) }
+                          }}
+                          className="h-7 px-2.5 rounded-lg text-[10px] font-semibold disabled:opacity-50 flex items-center gap-1"
+                          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                        >
+                          {ejec === 'cargando' ? <><Loader size={10} className="animate-spin" />…</> : 'Confirmar nuevo'}
+                        </button>
+                        <button
+                          disabled={!!ejec}
+                          onClick={() => setEscribiendoOtro(prev => new Set(prev).add(esq.id))}
+                          className="h-7 px-2.5 rounded-lg text-[10px] font-medium disabled:opacity-50"
+                          style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                        >
+                          Escribir otro dato
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            }
+
+            if (h.estado === 'conflicto') {
+              return (
+                <div key={esq.id} className="flex flex-col gap-1.5">
+                  <CampoEsquema
+                    esquema={esq}
+                    value={valores.get(esq.id) ?? ''}
+                    onChange={v => onValor(esq.id, v)}
+                    onBlur={onBlur}
+                    disabled={cerrada}
+                  />
+                  <div className="rounded-lg px-3 py-2 flex flex-col gap-1.5" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
+                    <p className="text-[10px] font-semibold" style={{ color: 'var(--agro-warning-text)' }}>
+                      Datos distintos en preguntas equivalentes
+                    </p>
+                    <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>
+                      Este: {h.valor ?? '—'} · En {h.origen_question_id ?? 'otra pregunta'}: {h.propuesto ?? '—'}
+                    </p>
+                    {!cerrada && (
+                      <div className="flex gap-1.5 flex-wrap">
+                        <button
+                          disabled={!!ejec}
+                          onClick={async () => {
+                            setHerenciaAcciones(prev => new Map(prev).set(esq.id, 'cargando'))
+                            try { await onResolverHerencia?.(h.valor_id, 'propio') }
+                            finally { setHerenciaAcciones(prev => { const n = new Map(prev); n.delete(esq.id); return n }) }
+                          }}
+                          className="h-7 px-2.5 rounded-lg text-[10px] font-semibold disabled:opacity-50 flex items-center gap-1"
+                          style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                        >
+                          {ejec === 'cargando' ? <><Loader size={10} className="animate-spin" />…</> : 'Conservar este'}
+                        </button>
+                        <button
+                          disabled={!!ejec}
+                          onClick={async () => {
+                            setHerenciaAcciones(prev => new Map(prev).set(esq.id, 'cargando'))
+                            try { await onResolverHerencia?.(h.valor_id, 'propuesto') }
+                            finally { setHerenciaAcciones(prev => { const n = new Map(prev); n.delete(esq.id); return n }) }
+                          }}
+                          className="h-7 px-2.5 rounded-lg text-[10px] font-semibold disabled:opacity-50 flex items-center gap-1"
+                          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                        >
+                          Usar el de {h.origen_question_id ?? 'otra pregunta'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            }
+
+            return (
+              <CampoEsquema
+                key={esq.id}
+                esquema={esq}
+                value={valores.get(esq.id) ?? ''}
+                onChange={v => onValor(esq.id, v)}
+                onBlur={onBlur}
+                disabled={cerrada}
+              />
+            )
+          })}
         </div>
       )}
 
@@ -1414,11 +1637,25 @@ function PanelValidacion({
   onMotivoChange: (v: string) => void
 }) {
   const [abierto, setAbierto] = useState(true)
+  const [herenciaCursorIdx, setHerenciaCursorIdx] = useState(0)
   const tieneBlockers = !reviewLoadError && issues.some(i => i.severidad === 'BLOCKER')
+
+  const herenciaIssues = issues.filter(i =>
+    i.estado === 'OPEN' &&
+    (i.codigo === 'HERENCIA_SIN_CONFIRMAR' || i.codigo === 'HERENCIA_CONFLICTO' || i.codigo === 'HERENCIA_REVALIDAR')
+  )
 
   function scrollToPreg(pregId: string) {
     const el = document.getElementById(`preg-${pregId}`)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+
+  function navSiguienteHerencia() {
+    if (!herenciaIssues.length) return
+    const idx = herenciaCursorIdx % herenciaIssues.length
+    const issue = herenciaIssues[idx]
+    if (issue.pregunta_id) scrollToPreg(issue.pregunta_id)
+    setHerenciaCursorIdx(idx + 1)
   }
 
   return (
@@ -1602,6 +1839,20 @@ function PanelValidacion({
                   </div>
                 )
               })}
+              {herenciaIssues.length > 0 && (
+                <div className="px-4 py-3 border-t border-border flex items-center justify-between gap-2">
+                  <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                    {herenciaIssues.length} herencia{herenciaIssues.length !== 1 ? 's' : ''} pendiente{herenciaIssues.length !== 1 ? 's' : ''}
+                  </span>
+                  <button
+                    onClick={navSiguienteHerencia}
+                    className="h-7 px-3 rounded-lg text-[10px] font-semibold"
+                    style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                  >
+                    Siguiente pendiente →
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -2117,8 +2368,26 @@ export function AuditorEjecucion() {
     cargando, errorMsg,
     // COR-07
     esquemaCargaEstado, obsCargaEstado,
+    herenciaMap, recargarHerencia,
     guardarRespuesta, guardarComentarios, cambiarEstado, refetch,
   } = hook
+
+  const herenciaMapRef = useRef<Map<string, HerenciaInfo>>(new Map())
+  const herenciaOriginSetRef = useRef<Set<string>>(new Set())
+  const recargarHerenciaRef = useRef(recargarHerencia)
+
+  useEffect(() => {
+    herenciaMapRef.current = herenciaMap
+    const origins = new Set<string>()
+    for (const h of herenciaMap.values()) {
+      if (h.origen_pregunta_id) origins.add(h.origen_pregunta_id)
+    }
+    herenciaOriginSetRef.current = origins
+  }, [herenciaMap])
+
+  useEffect(() => {
+    recargarHerenciaRef.current = recargarHerencia
+  }, [recargarHerencia])
 
   const reglasHook = useReglasRama(auditoriaId)
   const {
@@ -2346,6 +2615,9 @@ export function AuditorEjecucion() {
       setTimeout(() => setSavingMap(prev => ({ ...prev, [pregId]: 'idle' })), 2500)
       setScoringVersion(v => v + 1)
       setSaveCoordVersion(v => v + 1)
+      if (herenciaOriginSetRef.current.has(pregId)) {
+        recargarHerenciaRef.current().catch(e => console.error('[ejecutarSave] recargarHerencia', e))
+      }
     }).catch((err: unknown) => {
       if (state.version !== myVersion) return
       const errorMsg = err instanceof GuardadoIncompleto
@@ -2361,6 +2633,42 @@ export function AuditorEjecucion() {
 
     state.pendingPromise = promise
     return promise
+  }
+
+  async function handleConfirmarHerencia(valorId: string): Promise<void> {
+    try {
+      const { error } = await supabase.rpc('aud_herencia_confirmar', { p_valor_id: valorId })
+      if (error) throw error
+      await recargarHerenciaRef.current()
+      setScoringVersion(v => v + 1)
+    } catch (e) {
+      console.error('[handleConfirmarHerencia]', e)
+      toast.error('No se pudo confirmar. Reintenta.')
+    }
+  }
+
+  async function handleRechazarHerencia(valorId: string): Promise<void> {
+    try {
+      const { error } = await supabase.rpc('aud_herencia_rechazar', { p_valor_id: valorId })
+      if (error) throw error
+      await recargarHerenciaRef.current()
+      setScoringVersion(v => v + 1)
+    } catch (e) {
+      console.error('[handleRechazarHerencia]', e)
+      toast.error('No se pudo rechazar. Reintenta.')
+    }
+  }
+
+  async function handleResolverHerencia(valorId: string, res: 'propio' | 'propuesto'): Promise<void> {
+    try {
+      const { error } = await supabase.rpc('aud_herencia_resolver', { p_valor_id: valorId, p_resolucion: res })
+      if (error) throw error
+      await recargarHerenciaRef.current()
+      setScoringVersion(v => v + 1)
+    } catch (e) {
+      console.error('[handleResolverHerencia]', e)
+      toast.error('No se pudo resolver. Reintenta.')
+    }
   }
 
   const flushPendientes = useCallback(async (): Promise<boolean> => {
@@ -3348,6 +3656,10 @@ export function AuditorEjecucion() {
                             onAplicarRegla={!cerrada && can('audit.write') ? handleAplicarRegla : undefined}
                             onRetirarRegla={!cerrada && can('audit.write') ? handleRetirarRegla : undefined}
                             onConfirmarRevision={!cerrada ? () => handleConfirmarRevision(preg.id) : undefined}
+                            herenciaMap={herenciaMap}
+                            onConfirmarHerencia={!cerrada ? handleConfirmarHerencia : undefined}
+                            onRechazarHerencia={!cerrada ? handleRechazarHerencia : undefined}
+                            onResolverHerencia={!cerrada ? handleResolverHerencia : undefined}
                             onRegistrarHallazgo={() => {
                               const instId = instanciasMap.get(preg.id)
                               if (!instId) {

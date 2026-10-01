@@ -45,6 +45,22 @@ export interface ModuloConPreguntas {
   preguntas: AudPregunta[]
 }
 
+export interface HerenciaInfo {
+  valor_id: string
+  pregunta_id: string
+  esquema_id: string
+  campo: string
+  fuente: string
+  estado: 'sin_confirmar' | 'confirmado' | 'conflicto' | 'revalidar' | 'rechazado'
+  valor: string | null
+  propuesto: string | null
+  origen_question_id: string | null
+  origen_pregunta_id: string | null
+  relacion: string | null
+  confirmado_por: string | null
+  confirmado_en: string | null
+}
+
 export function useAuditorAuditoria(auditoriaId: string | undefined) {
   const { profile } = useAuthContext()
 
@@ -63,6 +79,7 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
     ajuste_en: string | null
   }>>(new Map())
   const [estadoAplicabilidadMap, setEstadoAplicabilidadMap] = useState<Map<string, string>>(new Map())
+  const [herenciaMap, setHerenciaMap] = useState<Map<string, HerenciaInfo>>(new Map())
 
   const [cargando, setCargando] = useState(true)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -252,6 +269,29 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
       setValoresMap(vm)
       setObservacionesMap(om)
 
+      // Herencia: sincronizar (solo si no cerrada) y luego cargar detalle
+      if (aud.estado !== 'cerrada') {
+        try {
+          await supabase.rpc('aud_herencia_sincronizar', { p_auditoria_id: auditoriaId })
+        } catch (e) {
+          console.error('[useAuditorAuditoria] aud_herencia_sincronizar', e)
+        }
+      }
+      try {
+        const { data: hData, error: hErr } = await supabase.rpc('aud_herencia_detalle', { p_auditoria_id: auditoriaId })
+        if (hErr) {
+          console.error('[useAuditorAuditoria] aud_herencia_detalle', hErr)
+        } else {
+          const hm = new Map<string, HerenciaInfo>()
+          for (const h of ((hData ?? []) as HerenciaInfo[])) {
+            hm.set(`${h.pregunta_id}:${h.esquema_id}`, h)
+          }
+          setHerenciaMap(hm)
+        }
+      } catch (e) {
+        console.error('[useAuditorAuditoria] aud_herencia_detalle', e)
+      }
+
     } catch (e: unknown) {
       console.error('[useAuditorAuditoria]', e)
       const msg = (e as { message?: string })?.message ?? 'Error al cargar auditoría'
@@ -401,6 +441,55 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
     setInstanciasMap(prev => new Map(prev).set(params.preguntaId, instanciaId!))
   }
 
+  async function recargarHerencia(): Promise<void> {
+    if (!auditoriaId) return
+    try {
+      const { data: hData, error: hErr } = await supabase.rpc('aud_herencia_detalle', { p_auditoria_id: auditoriaId })
+      if (hErr) {
+        console.error('[recargarHerencia] aud_herencia_detalle', hErr)
+        return
+      }
+      const hm = new Map<string, HerenciaInfo>()
+      const pregIds = new Set<string>()
+      for (const h of ((hData ?? []) as HerenciaInfo[])) {
+        hm.set(`${h.pregunta_id}:${h.esquema_id}`, h)
+        pregIds.add(h.pregunta_id)
+      }
+      setHerenciaMap(hm)
+      // Recargar valores de las preguntas afectadas
+      if (pregIds.size > 0) {
+        const instToPregMap = new Map<string, string>()
+        for (const [pid, iid] of instanciasMap.entries()) {
+          instToPregMap.set(iid, pid)
+        }
+        const instIds = [...pregIds].map(pid => instanciasMap.get(pid)).filter((id): id is string => !!id)
+        if (instIds.length > 0) {
+          const { data: vData, error: vErr } = await tbl('aud_instancia_valores')
+            .select('instancia_id, esquema_id, valor_texto, valor_opciones')
+            .in('instancia_id', instIds)
+          if (!vErr && vData) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            setValoresMap(prev => {
+              const next = new Map(prev)
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              for (const v of (vData as any[])) {
+                const pid = instToPregMap.get(v.instancia_id)
+                if (!pid) continue
+                const campos = new Map(next.get(pid) ?? [])
+                const texto = v.valor_texto ?? (Array.isArray(v.valor_opciones) ? v.valor_opciones.join(', ') : '')
+                campos.set(v.esquema_id, texto)
+                next.set(pid, campos)
+              }
+              return next
+            })
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[recargarHerencia]', e)
+    }
+  }
+
   // COR-03: ELIMINAR el bloque que hace update({ estado: 'cerrada' }) en aud_auditoria_modulos
   // (esa columna no existe y fallaba en silencio). Solo update de aud_auditorias.
   async function cambiarEstado(nuevoEstado: EstadoAuditoria): Promise<void> {
@@ -431,6 +520,8 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
     // COR-07: exportar estados de carga de esquema y observaciones
     esquemaCargaEstado,
     obsCargaEstado,
+    herenciaMap,
+    recargarHerencia,
     guardarRespuesta,
     guardarComentarios,
     cambiarEstado,
