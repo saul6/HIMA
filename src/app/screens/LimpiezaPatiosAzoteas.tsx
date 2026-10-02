@@ -596,14 +596,16 @@ export function LimpiezaPatiosAzoteas() {
                       <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />
                     </div>
                   </button>
-                  <FirmasRegistro
-                    modulo="M32"
-                    registroId={reg.id}
-                    fechaRegistro={`${reg.anio}-${String(reg.mes).padStart(2, '0')}-01`}
-                    firma={firmas[reg.id]}
-                    loadingFirmas={loadingFirmas}
-                    onFirmado={async () => { await refetch(); await refetchFirmas() }}
-                  />
+                  <div className="px-4 pb-4">
+                    <FirmasRegistro
+                      modulo="M32"
+                      registroId={reg.id}
+                      fechaRegistro={`${reg.anio}-${String(reg.mes).padStart(2, '0')}-01`}
+                      firma={firmas[reg.id]}
+                      loadingFirmas={loadingFirmas}
+                      onFirmado={async () => { await refetch(); await refetchFirmas() }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>

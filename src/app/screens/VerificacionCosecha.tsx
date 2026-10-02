@@ -498,13 +498,15 @@ export function VerificacionCosecha() {
                       />
                     </div>
                   </button>
-                  <FirmasRegistro
-                    modulo="M69"
-                    registroId={reg.id}
-                    firmas={firmas}
-                    loading={loadingFirmas}
-                    fechaRegistro={reg.mes}
-                  />
+                  <div className="px-4 pb-4">
+                    <FirmasRegistro
+                      modulo="M69"
+                      registroId={reg.id}
+                      firmas={firmas}
+                      loading={loadingFirmas}
+                      fechaRegistro={reg.mes}
+                    />
+                  </div>
                 </div>
               ))}
             </div>

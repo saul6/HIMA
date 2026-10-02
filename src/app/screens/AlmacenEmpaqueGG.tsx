@@ -447,13 +447,15 @@ export function AlmacenEmpaqueGG() {
                       />
                     </div>
                   </button>
-                  <FirmasRegistro
-                    modulo="M75"
-                    registroId={reg.id}
-                    firmas={firmas}
-                    loading={loadingFirmas}
-                    fechaRegistro={reg.mes}
-                  />
+                  <div className="px-4 pb-4">
+                    <FirmasRegistro
+                      modulo="M75"
+                      registroId={reg.id}
+                      firmas={firmas}
+                      loading={loadingFirmas}
+                      fechaRegistro={reg.mes}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
