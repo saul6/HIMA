@@ -3,6 +3,7 @@ import { Plus, X, Loader2, Files } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
@@ -200,15 +201,8 @@ export function MonitoreoPlaguasEnfermedades() {
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Botón consolidado */}
-      <div className="px-4 mb-4">
-        <button
-          onClick={() => setConsolidadoOpen(true)}
-          className="flex items-center gap-2 text-sm font-medium"
-          style={{ color: 'var(--primary)' }}
-        >
-          <Files className="w-4 h-4" />
-          Exportar consolidado
-        </button>
+      <div className="px-4 pt-3">
+        <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
       {/* Lista */}

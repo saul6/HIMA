@@ -6,10 +6,12 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   ChevronLeft, Plus, FileDown, Loader2, ClipboardCheck,
-  TriangleAlert, CalendarDays, X, AlertCircle, Settings,
+  TriangleAlert, CalendarDays, X, AlertCircle,
 } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { BotonConfigurar } from '@/app/components/BotonConfigurar'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { codigoFormato } from '@/lib/codigoFormato'
@@ -661,30 +663,12 @@ export function VerificacionInsumos() {
         onBack={vista === 'detalle' ? volverALista : undefined}
         acciones={
           vista === 'lista' ? (
-            <>
-              <button
-                onClick={() => { setCatRanchoId(''); setCatNuevaArea(''); setCatNuevoInsumo(''); setSheetCatalogo(true) }}
-                className="flex items-center gap-1 h-8 px-2.5 rounded-lg border border-border text-xs text-foreground"
-              >
-                <Settings className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => setSheetConsolidado(true)}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border text-xs text-foreground"
-                style={{ fontWeight: 600 }}
-              >
-                <FileDown className="w-3.5 h-3.5" />
-                Consolidado
-              </button>
-            </>
+            <BotonConfigurar
+              onClick={() => { setCatRanchoId(''); setCatNuevaArea(''); setCatNuevoInsumo(''); setSheetCatalogo(true) }}
+            />
           ) : vista === 'detalle' && registroActivo ? (
             <>
-              <button
-                onClick={abrirCatalogo}
-                className="flex items-center gap-1 h-8 px-2.5 rounded-lg border border-border text-xs text-foreground"
-              >
-                <Settings className="w-3.5 h-3.5" />
-              </button>
+              <BotonConfigurar onClick={abrirCatalogo} />
               <button
                 onClick={() => handlePDFIndividual(registroActivo.id)}
                 disabled={generandoPDF === registroActivo.id || dias.length === 0}
@@ -702,6 +686,12 @@ export function VerificacionInsumos() {
         }
       />
       <BannerTareaOrigen tareaId={tareaId} />
+
+      {vista === 'lista' && (
+        <div className="px-4 pt-3">
+          <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
+        </div>
+      )}
 
       {/* ── LISTA ── */}
       {vista === 'lista' && (

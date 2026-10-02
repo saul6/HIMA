@@ -6,6 +6,7 @@ import {
 import { useNavigate } from 'react-router'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { toast } from 'sonner'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { useAuthContext } from '@/context/AuthContext'
@@ -521,24 +522,19 @@ export function RegistroAccidentesLaborales() {
         tituloFallback={TITULO_MODULO}
         subtitulo={`${codigoFormato('F-FRUS-CAL-15', codigoClave)} · Cuarto Frío`}
         onBack={() => navigate(-1)}
-        acciones={
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-[var(--primary)] shrink-0"
-            onClick={() => {
-              setConsolidadoRanchoId(ranchos[0]?.id ?? '')
-              setConsolidadoDesde('')
-              setConsolidadoHasta('')
-              setSheetConsolidado(true)
-            }}
-          >
-            <Files className="w-4 h-4 mr-1" />
-            Exportar
-          </Button>
-        }
       />
       <BannerTareaOrigen tareaId={tareaId} />
+
+      <div className="px-4 pt-3">
+        <BotonExportarConsolidado
+          onClick={() => {
+            setConsolidadoRanchoId(ranchos[0]?.id ?? '')
+            setConsolidadoDesde('')
+            setConsolidadoHasta('')
+            setSheetConsolidado(true)
+          }}
+        />
+      </div>
 
       {/* Lista */}
       <div className="flex-1 overflow-y-auto">

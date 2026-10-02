@@ -1,11 +1,13 @@
 ﻿import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   ChevronLeft, Plus, FileDown, Loader2, UtensilsCrossed,
-  TriangleAlert, X, Settings, ChevronDown, ChevronUp,
+  TriangleAlert, X, ChevronDown, ChevronUp,
 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { ConsolidadoSheetLimpieza } from '@/app/components/ConsolidadoSheetLimpieza'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { BotonConfigurar } from '@/app/components/BotonConfigurar'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { codigoFormato } from '@/lib/codigoFormato'
@@ -550,30 +552,12 @@ export function LimpiezaComedor() {
         onBack={vista === 'detalle' ? volverALista : undefined}
         acciones={
           vista === 'lista' ? (
-            <>
-              <button
-                onClick={() => { setCatRanchoId(''); setCatNombre(''); setCatFrecuencia('diario'); setSheetConfigurar(true) }}
-                className="flex items-center gap-1 h-8 px-2.5 rounded-lg border border-border text-xs text-foreground"
-              >
-                <Settings className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => { setCRanchoId(''); setCErrRancho(false); setSheetConsolidado(true) }}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border text-xs text-foreground"
-                style={{ fontWeight: 600 }}
-              >
-                <FileDown className="w-3.5 h-3.5" />
-                Consolidado
-              </button>
-            </>
+            <BotonConfigurar
+              onClick={() => { setCatRanchoId(''); setCatNombre(''); setCatFrecuencia('diario'); setSheetConfigurar(true) }}
+            />
           ) : vista === 'detalle' && registroActivo ? (
             <>
-              <button
-                onClick={abrirConfigurar}
-                className="flex items-center gap-1 h-8 px-2.5 rounded-lg border border-border text-xs text-foreground"
-              >
-                <Settings className="w-3.5 h-3.5" />
-              </button>
+              <BotonConfigurar onClick={abrirConfigurar} />
               <button
                 onClick={handlePDFIndividual}
                 disabled={generandoPDF}
@@ -588,6 +572,14 @@ export function LimpiezaComedor() {
         }
       />
       <BannerTareaOrigen tareaId={tareaId} />
+
+      {vista === 'lista' && (
+        <div className="px-4 pt-3">
+          <BotonExportarConsolidado
+            onClick={() => { setCRanchoId(''); setCErrRancho(false); setSheetConsolidado(true) }}
+          />
+        </div>
+      )}
 
       {/* ── LISTA ────────────────────────────────────────────────────────────── */}
       {vista === 'lista' && (

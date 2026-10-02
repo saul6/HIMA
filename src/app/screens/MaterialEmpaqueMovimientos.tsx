@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import { Download, Plus, FileText, AlertTriangle } from 'lucide-react'
+import { Plus, FileText, AlertTriangle } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -9,6 +9,7 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { useM42Movimientos } from '@/hooks/useM42Movimientos'
 import { useModulosContext } from '@/context/ModulosContext'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { supabase } from '@/lib/supabase'
 import { generarMaterialEmpaquePDF } from '@/lib/pdf/m42/generarMaterialEmpaquePDF'
 import { generarMaterialEmpaqueConsolidadoPDF } from '@/lib/pdf/m42/generarMaterialEmpaqueConsolidadoPDF'
@@ -253,19 +254,13 @@ export function MaterialEmpaqueMovimientos() {
       <ModuloHeader
         tituloFallback="Entradas y Salidas de Material de Empaque"
         onBack={() => navigate(-1)}
-        acciones={
-          <button
-            onClick={() => setConsolAbierto(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border"
-            style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
-          >
-            <Download size={13} />
-            Consolidado
-          </button>
-        }
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
+
+      <div className="px-4 pt-3">
+        <BotonExportarConsolidado onClick={() => setConsolAbierto(true)} />
+      </div>
 
       {/* Lista */}
       <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 space-y-3">

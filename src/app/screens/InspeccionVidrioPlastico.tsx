@@ -4,12 +4,14 @@
 
 import { useState, useEffect } from 'react'
 import {
-  Plus, FileDown, X, Loader2, Eye, Files,
-  AlertTriangle, Trash2, Settings, PenLine,
+  Plus, FileDown, X, Loader2, Eye,
+  AlertTriangle, Trash2, PenLine,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { BotonConfigurar } from '@/app/components/BotonConfigurar'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
@@ -682,21 +684,17 @@ export function InspeccionVidrioPlastico() {
     <div className="min-h-full pb-safe-nav">
 
       {/* Header */}
-      <ModuloHeader tituloFallback={TITULO_MODULO} subtitulo={CLAVE_MODULO} />
+      <ModuloHeader
+        tituloFallback={TITULO_MODULO}
+        subtitulo={CLAVE_MODULO}
+        acciones={<BotonConfigurar onClick={() => abrirSheetConfig()} />}
+      />
 
       <BannerTareaOrigen tareaId={tareaId} registroGuardado={registroGuardado} />
 
-      {/* Botones de acción */}
-      <div className="px-4 pt-3 grid grid-cols-2 gap-2">
-        <button
-          onClick={() => abrirSheetConfig()}
-          className="h-10 flex items-center justify-center gap-1.5 rounded-xl border border-border text-foreground text-sm hover:bg-muted transition-colors"
-          style={{ fontWeight: 600 }}
-        >
-          <Settings className="w-4 h-4 text-muted-foreground" />
-          Configurar
-        </button>
-        <button
+      {/* Botón de exportar */}
+      <div className="px-4 pt-3">
+        <BotonExportarConsolidado
           onClick={() => {
             setConsRanchoId('')
             setConsDesde('')
@@ -705,12 +703,7 @@ export function InspeccionVidrioPlastico() {
             setErrConsFechas(false)
             setSheetConsolidadoAbierto(true)
           }}
-          className="h-10 flex items-center justify-center gap-1.5 rounded-xl border border-primary text-primary text-sm hover:bg-primary/5 transition-colors"
-          style={{ fontWeight: 600 }}
-        >
-          <Files className="w-4 h-4" />
-          Consolidado
-        </button>
+        />
       </div>
 
       {/* Historial */}

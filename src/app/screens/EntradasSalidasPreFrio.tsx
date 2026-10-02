@@ -1,7 +1,7 @@
 ﻿import { useState, useMemo } from 'react'
 import {
   Plus, FileDown, X, Loader2, ArrowLeftRight,
-  Files, TriangleAlert, Minus,
+  TriangleAlert, Minus,
 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
@@ -10,6 +10,7 @@ import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM40RegistrosPrefrio } from '@/hooks/useM40RegistrosPrefrio'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
@@ -239,19 +240,13 @@ export function EntradasSalidasPreFrio() {
       <ModuloHeader
         tituloFallback="Entradas y Salidas en Pre-enfriamiento"
         subtitulo={`${codigoFormato('F-FRUS-PRO-04', codigoClave)} · Por evento`}
-        acciones={
-          <button
-            onClick={() => setConsolidadoOpen(true)}
-            className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border text-xs text-foreground flex-shrink-0"
-            style={{ fontWeight: 600 }}
-          >
-            <Files className="w-3.5 h-3.5" />
-            Consolidado
-          </button>
-        }
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
+
+      <div className="px-4 pt-3">
+        <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
+      </div>
 
       {/* Lista */}
       <div className="p-4 space-y-3">

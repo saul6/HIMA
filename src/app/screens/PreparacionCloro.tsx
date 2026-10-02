@@ -1,9 +1,10 @@
 ﻿import { useState, useMemo } from 'react'
 import {
-  Plus, FileDown, Files, Loader2, FlaskConical,
+  Plus, FileDown, Loader2, FlaskConical,
   ChevronDown, ChevronUp, X,
 } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -250,18 +251,13 @@ export function PreparacionCloro() {
 
       {/* Exportar consolidado */}
       <div className="px-4 pt-3">
-        <button
+        <BotonExportarConsolidado
           onClick={() => {
             setConsRanchoId(''); setConsDesde(''); setConsHasta(hoy())
             setErrConsRancho(false); setErrConsFechas(false)
             setSheetConsAbierto(true)
           }}
-          className="w-full h-10 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary text-sm hover:bg-primary/5 transition-colors"
-          style={{ fontWeight: 600 }}
-        >
-          <Files className="w-4 h-4" />
-          Exportar consolidado
-        </button>
+        />
       </div>
 
       {/* Tabla de referencia plegable */}

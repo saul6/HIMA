@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react'
 import {
   Plus, FileDown, X, Loader2, Users,
-  Settings, TriangleAlert, Search, Pencil, ChevronDown, ChevronUp,
+  TriangleAlert, Search, Pencil, ChevronDown, ChevronUp,
 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { BotonConfigurar } from '@/app/components/BotonConfigurar'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
@@ -381,25 +383,18 @@ export function RegistroPersonal() {
         tituloFallback="Registro de Personal"
         subtitulo={`${codigoFormato('F-FRUS-ADM-04', codigoClave)} · Padrón`}
         acciones={
-          <>
-            <button
-              onClick={() => setPdfSheetOpen(true)}
-              className="p-2 rounded-lg border border-border"
-              aria-label="Descargar PDF"
-            >
-              <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-            </button>
-            <button
-              onClick={() => { setConfRanchoId(''); setConfigurarOpen(true) }}
-              className="p-2 rounded-lg border border-border"
-              aria-label="Configurar catálogo"
-            >
-              <Settings className="w-4 h-4 text-muted-foreground" />
-            </button>
-          </>
+          <BotonConfigurar
+            onClick={() => { setConfRanchoId(''); setConfigurarOpen(true) }}
+          />
         }
       />
       <BannerTareaOrigen tareaId={tareaId} />
+
+      <div className="px-4 pt-3">
+        <BotonExportarConsolidado
+          onClick={() => setPdfSheetOpen(true)}
+        />
+      </div>
 
       {/* Filtros */}
       <div className="px-4 pt-3 pb-2 space-y-2">

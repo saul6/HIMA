@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, FileDown, X, Loader2, Files } from 'lucide-react'
+import { Plus, FileDown, X, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
@@ -13,6 +13,7 @@ import { supabase } from '@/lib/supabase'
 import { generarFuentesAguaPDF } from '@/lib/pdf/m62/generarFuentesAguaPDF'
 import { generarFuentesAguaConsolidadoPDF } from '@/lib/pdf/m62/generarFuentesAguaPDF'
 import { Fab } from '@/app/components/Fab'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
@@ -213,14 +214,7 @@ export function FuentesAgua() {
       <BannerTareaOrigen tareaId={tareaId} />
 
       <div className="px-4 mb-4">
-        <button
-          onClick={() => setConsolidadoOpen(true)}
-          className="flex items-center gap-2 text-sm font-medium"
-          style={{ color: 'var(--primary)' }}
-        >
-          <Files className="w-4 h-4" />
-          Exportar consolidado
-        </button>
+        <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
       <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">

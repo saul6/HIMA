@@ -1,9 +1,10 @@
 import { useState, useMemo, useRef } from 'react'
 import {
   Plus, FileDown, X, Loader2, PackageOpen,
-  Files, TriangleAlert, Minus,
+  TriangleAlert, Minus,
 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
@@ -442,18 +443,12 @@ export function RecepcionFruta() {
       <ModuloHeader
         tituloFallback="Recepción Diaria de Fruta"
         subtitulo={`${codigoFormato('F-FRUS-PRO-02', codigoClave)} · Por evento`}
-        acciones={
-          <button
-            onClick={() => setConsolidadoOpen(true)}
-            className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border text-xs text-foreground flex-shrink-0"
-            style={{ fontWeight: 600 }}
-          >
-            <Files className="w-3.5 h-3.5" />
-            Consolidado
-          </button>
-        }
       />
       <BannerTareaOrigen tareaId={tareaId} />
+
+      <div className="px-4 pt-3">
+        <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
+      </div>
 
       {/* Lista */}
       <div className="p-4 space-y-3">

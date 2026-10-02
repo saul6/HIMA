@@ -23,6 +23,7 @@ import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -541,16 +542,7 @@ export function MantenimientoPreventivo() {
         subtitulo={vista === 'lista' ? `Cuarto Frío · Mensual · ${codigoFormato('F-FRUS-MTT-03', codigoClave)}` : (registroActivo?.rancho_nombre ?? '—')}
         onBack={vista === 'detalle' ? volverALista : undefined}
         acciones={
-          vista === 'lista' ? (
-            <button
-              onClick={() => setSheetConsolidado(true)}
-              className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border text-xs text-foreground"
-              style={{ fontWeight: 600 }}
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              Consolidado
-            </button>
-          ) : vista === 'detalle' && registroActivo ? (
+          vista === 'detalle' && registroActivo ? (
             <button
               onClick={() => handlePDFIndividual(registroActivo.id)}
               disabled={!!generandoPDF}
@@ -569,6 +561,12 @@ export function MantenimientoPreventivo() {
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
+
+      {vista === 'lista' && (
+        <div className="px-4 pt-3">
+          <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
+        </div>
+      )}
 
       {/* ── LISTA ──────────────────────────────────────────────────────── */}
       {vista === 'lista' && (

@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
 import {
-  Plus, X, Loader2, Files, AlertTriangle,
+  Plus, X, Loader2, AlertTriangle,
   Camera, Image, Trash2, ImageOff, ClipboardList, FileDown,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { toast } from 'sonner'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { useAuthContext } from '@/context/AuthContext'
@@ -780,7 +781,7 @@ export function ReporteIncidencias() {
 
       {/* Acción consolidado */}
       <div className="px-4 pt-3">
-        <button
+        <BotonExportarConsolidado
           onClick={() => {
             setConsRanchoId('')
             setConsDesde('')
@@ -788,12 +789,7 @@ export function ReporteIncidencias() {
             setErrConsFechas(false)
             setSheetConsolidadoAbierto(true)
           }}
-          className="w-full h-10 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary text-sm hover:bg-primary/5 transition-colors"
-          style={{ fontWeight: 600 }}
-        >
-          <Files className="w-4 h-4" />
-          Exportar consolidado
-        </button>
+        />
       </div>
 
       {/* Lista de reportes */}

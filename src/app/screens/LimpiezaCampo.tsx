@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -378,18 +379,14 @@ export function LimpiezaCampo() {
         forzarTitulo={vista === 'detalle' ? (registroActivo ? formatMesLabel(registroActivo.mes) : '—') : undefined}
         subtitulo={vista === 'lista' ? 'M71 · REG-10 · Gestión de campo' : (registroActivo?.rancho_nombre ?? '—')}
         onBack={vista === 'detalle' ? volverALista : undefined}
-        acciones={vista === 'lista' ? (
-          <button
-            onClick={() => setSheetConsolidado(true)}
-            className="flex items-center gap-1.5 h-8 px-3 rounded-lg border text-xs text-foreground"
-            style={{ borderColor: 'var(--border)', fontWeight: 600 }}
-          >
-            <FileDown className="w-3.5 h-3.5" />
-            Consolidado
-          </button>
-        ) : undefined}
       />
       <BannerTareaOrigen tareaId={tareaId} />
+
+      {vista === 'lista' && (
+        <div className="px-4 pt-3">
+          <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
+        </div>
+      )}
 
       {/* ── LISTA ──────────────────────────────────────────────────────── */}
       {vista === 'lista' && (

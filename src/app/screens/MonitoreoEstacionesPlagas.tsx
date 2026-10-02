@@ -4,12 +4,14 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Plus, Loader2, Files, Bug, FileDown, Settings, Power,
+  Plus, Loader2, Files, Bug, FileDown, Power,
   AlertTriangle, X,
 } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { BotonConfigurar } from '@/app/components/BotonConfigurar'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
@@ -922,38 +924,27 @@ export function MonitoreoEstacionesPlagas() {
         subtitulo={`${codigoFormato('F-FRUS-CAL-19', codigoClave)} · Cuarto Frío`}
         onBack={() => navigate(-1)}
         acciones={
-          <>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="shrink-0 text-muted-foreground"
-              onClick={() => {
-                setEstRanchoId(ranchos[0]?.id ?? '')
-                setSheetEstaciones(true)
-              }}
-              aria-label="Gestionar estaciones"
-            >
-              <Settings className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-[var(--primary)] shrink-0"
-              onClick={() => {
-                setConsRanchoId(ranchos[0]?.id ?? '')
-                setConsDesde('')
-                setConsHasta('')
-                setSheetConsolidado(true)
-              }}
-            >
-              <Files className="w-4 h-4 mr-1" />
-              Exportar
-            </Button>
-          </>
+          <BotonConfigurar
+            onClick={() => {
+              setEstRanchoId(ranchos[0]?.id ?? '')
+              setSheetEstaciones(true)
+            }}
+          />
         }
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
+
+      <div className="px-4 pt-3">
+        <BotonExportarConsolidado
+          onClick={() => {
+            setConsRanchoId(ranchos[0]?.id ?? '')
+            setConsDesde('')
+            setConsHasta('')
+            setSheetConsolidado(true)
+          }}
+        />
+      </div>
 
       {/* Lista */}
       <div className="flex-1 overflow-y-auto">

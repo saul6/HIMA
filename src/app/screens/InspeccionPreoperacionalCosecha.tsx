@@ -7,11 +7,12 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
-  ChevronLeft, Plus, FileDown, Loader2, ClipboardList,
+  ChevronLeft, FileDown, Loader2, ClipboardList,
   TriangleAlert, CalendarDays, X,
 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useRanchos } from '@/hooks/useRanchos'
@@ -522,16 +523,7 @@ export function InspeccionPreoperacionalCosecha() {
         subtitulo={vista === 'lista' ? 'Diaria' : (registroActivo?.rancho_nombre ?? '—')}
         onBack={vista === 'detalle' ? volverALista : undefined}
         acciones={
-          vista === 'lista' ? (
-            <button
-              onClick={() => setSheetConsolidado(true)}
-              className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border text-xs text-foreground"
-              style={{ fontWeight: 600 }}
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              Consolidado
-            </button>
-          ) : vista === 'detalle' && registroActivo ? (
+          vista === 'detalle' && registroActivo ? (
             <button
               onClick={() => handlePDFIndividual(registroActivo.id)}
               disabled={generandoPDF === registroActivo.id || dias.length === 0}
@@ -550,6 +542,12 @@ export function InspeccionPreoperacionalCosecha() {
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
+
+      {vista === 'lista' && (
+        <div className="px-4 pt-3">
+          <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
+        </div>
+      )}
 
       {/* ── LISTA ──────────────────────────────────────────────────────── */}
       {vista === 'lista' && (

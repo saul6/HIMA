@@ -1,11 +1,12 @@
 ﻿import { useState, useEffect } from 'react'
 import {
-  Plus, FileDown, X, Loader2, Package, Files,
+  Plus, FileDown, X, Loader2, Package,
   AlertTriangle, Trash2, PenLine,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
@@ -420,7 +421,7 @@ export function RegistroCosechaLiberacion() {
 
       {/* Exportar consolidado */}
       <div className="px-4 pt-3">
-        <button
+        <BotonExportarConsolidado
           onClick={() => {
             setConsRanchoId('')
             setConsDesde('')
@@ -429,12 +430,7 @@ export function RegistroCosechaLiberacion() {
             setErrConsFechas(false)
             setSheetConsAbierto(true)
           }}
-          className="w-full h-10 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary text-sm hover:bg-primary/5 transition-colors"
-          style={{ fontWeight: 600 }}
-        >
-          <Files className="w-4 h-4" />
-          Exportar consolidado
-        </button>
+        />
       </div>
 
       {/* Historial */}

@@ -1,7 +1,8 @@
 ﻿import { useState, useEffect } from 'react'
-import { Plus, FileDown, X, Loader2, Files } from 'lucide-react'
+import { Plus, FileDown, X, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -198,14 +199,8 @@ export function RegistroMuestrasLaboratorio() {
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}
-      <div className="px-4 mb-4">
-        <button
-          onClick={() => setConsolidadoOpen(true)}
-          className="flex items-center gap-2 text-sm text-primary font-medium"
-        >
-          <Files className="w-4 h-4" />
-          Exportar consolidado
-        </button>
+      <div className="px-4 pt-3">
+        <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
       {/* Lista */}

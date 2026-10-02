@@ -1,10 +1,12 @@
 ﻿import { useState, useEffect, useMemo } from 'react'
 import {
-  Plus, Settings, FileDown, X, Loader2, AlertTriangle,
+  Plus, FileDown, X, Loader2, AlertTriangle,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { BotonConfigurar } from '@/app/components/BotonConfigurar'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
@@ -552,29 +554,20 @@ export function ControlInventarioQuimicos() {
         tituloFallback="Control de Inventario de Químicos e Insumos"
         onBack={() => navigate(-1)}
         acciones={
-          <>
-            <button
-              onClick={() => {
-                setConsolidadoForm(f => ({ ...f, rancho_id: ranchoId }))
-                setConsolidadoOpen(true)
-              }}
-              className="p-2 rounded-lg hover:bg-muted transition-colors"
-              aria-label="Exportar consolidado"
-            >
-              <FileDown className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setConfigurarOpen(true)}
-              className="p-2 rounded-lg hover:bg-muted transition-colors"
-              aria-label="Configurar químicos"
-            >
-              <Settings className="w-4 h-4" />
-            </button>
-          </>
+          <BotonConfigurar onClick={() => setConfigurarOpen(true)} />
         }
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
+
+      <div className="px-4 pt-3">
+        <BotonExportarConsolidado
+          onClick={() => {
+            setConsolidadoForm(f => ({ ...f, rancho_id: ranchoId }))
+            setConsolidadoOpen(true)
+          }}
+        />
+      </div>
 
       <div className="p-4 space-y-4">
         {/* Selector de instalación */}

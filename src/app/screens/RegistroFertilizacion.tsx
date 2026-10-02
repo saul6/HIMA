@@ -5,11 +5,12 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   Plus, FileDown, X, Loader2, Sprout,
-  Files, AlertTriangle, Trash2, TrendingDown, Package,
+  AlertTriangle, Trash2, TrendingDown, Package,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
@@ -819,7 +820,7 @@ export function RegistroFertilizacion() {
         <>
           {/* Botón consolidado */}
           <div className="px-4 pt-3">
-            <button
+            <BotonExportarConsolidado
               onClick={() => {
                 setConsRanchoId('')
                 setConsDesde('')
@@ -828,12 +829,7 @@ export function RegistroFertilizacion() {
                 setErrConsFechas(false)
                 setSheetConsolidadoAbierto(true)
               }}
-              className="w-full h-10 flex items-center justify-center gap-1.5 rounded-xl border text-sm transition-colors"
-              style={{ borderColor: 'var(--primary)', color: 'var(--primary)', fontWeight: 600 }}
-            >
-              <Files className="w-4 h-4" />
-              Exportar consolidado
-            </button>
+            />
           </div>
 
           {/* Lista */}

@@ -1,8 +1,10 @@
 import { useState, useMemo, useCallback } from 'react'
 import {
   Plus, FileDown, Loader2, TriangleAlert, Shield,
-  Settings, X, AlertCircle,
+  X, AlertCircle,
 } from 'lucide-react'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { BotonConfigurar } from '@/app/components/BotonConfigurar'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
@@ -525,26 +527,16 @@ export function RondinesVigilancia() {
         tituloFallback="Bitácora de Rondines de Vigilancia"
         subtitulo={codigoFormato('F-FRUS-ADM-07', codigoClave)}
         acciones={
-          <>
-            <button
-              onClick={() => { setConfRanchoId(''); setSheetConf(true) }}
-              className="flex items-center gap-1 h-8 px-2.5 rounded-lg border border-border text-xs text-foreground"
-              aria-label="Configurar puntos"
-            >
-              <Settings className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => { setCRanchoId(''); setCErrRancho(false); setSheetConsolidado(true) }}
-              className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border text-xs text-foreground"
-              style={{ fontWeight: 600 }}
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              Consolidado
-            </button>
-          </>
+          <BotonConfigurar onClick={() => { setConfRanchoId(''); setSheetConf(true) }} />
         }
       />
       <BannerTareaOrigen tareaId={tareaId} />
+
+      <div className="px-4 pt-3">
+        <BotonExportarConsolidado
+          onClick={() => { setCRanchoId(''); setCErrRancho(false); setSheetConsolidado(true) }}
+        />
+      </div>
 
       {/* Lista */}
       <div className="p-4 space-y-4">

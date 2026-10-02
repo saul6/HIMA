@@ -1,7 +1,8 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import { Download, Plus, FileText, AlertTriangle } from 'lucide-react'
+import { Plus, FileText, AlertTriangle } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
@@ -261,18 +262,12 @@ export function TemperaturasConservador() {
       <ModuloHeader
         tituloFallback="Registro de Temperaturas del Conservador"
         onBack={() => navigate(-1)}
-        acciones={
-          <button
-            onClick={() => setConsolAbierto(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border"
-            style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
-          >
-            <Download size={13} />
-            Consolidado
-          </button>
-        }
       />
       <BannerTareaOrigen tareaId={tareaId} />
+
+      <div className="px-4 pt-3">
+        <BotonExportarConsolidado onClick={() => setConsolAbierto(true)} />
+      </div>
 
       {/* Lista */}
       <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 space-y-3">
