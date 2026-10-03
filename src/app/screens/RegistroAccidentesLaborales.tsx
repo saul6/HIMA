@@ -481,7 +481,7 @@ export function RegistroAccidentesLaborales() {
     if (!profile?.org_id) return
     setCargandoPDF(id)
     try {
-      await generarAccidenteLaboralPDF(id, profile.org_id)
+      await generarAccidenteLaboralPDF(id, profile.org_id, codigoClave ?? '')
     } catch {
       toast.error('No se pudo generar el PDF')
     } finally {
@@ -504,6 +504,7 @@ export function RegistroAccidentesLaborales() {
         profile.org_id,
         consolidadoDesde,
         consolidadoHasta,
+        codigoClave ?? '',
       )
       setSheetConsolidado(false)
     } catch (e: unknown) {
@@ -596,7 +597,7 @@ export function RegistroAccidentesLaborales() {
               descripcion={`Accidente laboral · ${form.fecha}`}
               obligatoria={obligatoria}
               onFirmadoYPDF={async () => {
-                if (profile?.org_id) await generarAccidenteLaboralPDF(pendienteFirma.ids[0], profile.org_id)
+                if (profile?.org_id) await generarAccidenteLaboralPDF(pendienteFirma.ids[0], profile.org_id, codigoClave ?? '')
                 handleCerrarSheet()
                 await refetchFirmas()
               }}

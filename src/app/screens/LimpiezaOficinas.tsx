@@ -447,7 +447,7 @@ export function LimpiezaOficinas() {
     setCGenerando(true)
     try {
       const instalacionNombre = ranchos.find((r) => r.id === cRanchoId)?.nombre ?? cRanchoId
-      await generarLimpiezaOficinasConsolidadoPDF(cRanchoId, instalacionNombre, orgId, cDesde, cHasta)
+      await generarLimpiezaOficinasConsolidadoPDF(cRanchoId, instalacionNombre, orgId, cDesde, cHasta, codigoClave ?? '')
       toast.success('PDF consolidado generado')
       setSheetConsolidado(false)
     } catch (e: unknown) {
@@ -475,7 +475,7 @@ export function LimpiezaOficinas() {
       for (const [k, v] of Object.entries(diasData)) {
         dd[Number(k)] = { realizo: v.realizo, aprobo: v.aprobo }
       }
-      await generarLimpiezaOficinasPDF(registroActivo, ranchoCodigo, pdfItems, res, dd)
+      await generarLimpiezaOficinasPDF(registroActivo, ranchoCodigo, pdfItems, res, dd, codigoClave ?? '')
       toast.success('PDF descargado')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al generar PDF')

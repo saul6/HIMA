@@ -315,7 +315,7 @@ export function MaterialEmpaqueMovimientos() {
                     toast.info('Firma este registro antes de descargar el PDF')
                     return
                   }
-                  generarMaterialEmpaquePDF(m.id, orgId).catch(e => toast.error(e.message))
+                  generarMaterialEmpaquePDF(m.id, orgId, codigoClave ?? '').catch(e => toast.error(e.message))
                 }}
                 className="p-2 rounded-lg flex-shrink-0"
                 style={{ color: 'var(--primary)' }}

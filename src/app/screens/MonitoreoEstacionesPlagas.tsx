@@ -879,7 +879,7 @@ export function MonitoreoEstacionesPlagas() {
     if (!profile?.org_id) return
     setCargandoPDF(id)
     try {
-      await generarMonitoreoEstacionesPDF(id, profile.org_id)
+      await generarMonitoreoEstacionesPDF(id, profile.org_id, codigoClave ?? '')
     } catch {
       toast.error('No se pudo generar el PDF')
     } finally {
@@ -907,6 +907,7 @@ export function MonitoreoEstacionesPlagas() {
         profile.org_id,
         consDesde,
         consHasta,
+        codigoClave ?? '',
       )
       setSheetConsolidado(false)
     } catch (e: unknown) {
@@ -1108,7 +1109,7 @@ export function MonitoreoEstacionesPlagas() {
               descripcion={`Monitoreo de Plagas · ${form.fecha} · ${ranchos.find(r => r.id === form.ranchoId)?.nombre ?? '—'}`}
               obligatoria={obligatoria}
               onFirmadoYPDF={async () => {
-                try { await generarMonitoreoEstacionesPDF(pendienteFirmaId!, profile!.org_id!) } catch {
+                try { await generarMonitoreoEstacionesPDF(pendienteFirmaId!, profile!.org_id!, codigoClave ?? '') } catch {
                   toast.warning('No se pudo generar el PDF automáticamente.')
                 }
                 setSheetNuevo(false)
@@ -1333,7 +1334,7 @@ export function MonitoreoEstacionesPlagas() {
             descripcion={`Monitoreo de Plagas · Trampa N.° ${nfcModal?.estacion?.numero ?? '—'} · ${hoy()}`}
             obligatoria={obligatoria}
             onFirmadoYPDF={async () => {
-              try { await generarMonitoreoEstacionesPDF(pendienteNfcFirmaId!, profile!.org_id!) } catch {
+              try { await generarMonitoreoEstacionesPDF(pendienteNfcFirmaId!, profile!.org_id!, codigoClave ?? '') } catch {
                 toast.warning('No se pudo generar el PDF automáticamente.')
               }
               setNfcModal(null)

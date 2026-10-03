@@ -611,7 +611,7 @@ export function VerificacionInsumos() {
     if (!orgId) return
     setGenerandoPDF(regId)
     try {
-      await generarVerificacionInsumosPDF(regId, orgId)
+      await generarVerificacionInsumosPDF(regId, orgId, codigoClave ?? '')
       toast.success('PDF descargado')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al generar PDF')
@@ -633,7 +633,7 @@ export function VerificacionInsumos() {
     setCGenerando(true)
     try {
       const instalacionNombre = ranchos.find((r) => r.id === cRanchoId)?.nombre ?? cRanchoId
-      await generarVerificacionInsumosConsolidadoPDF(cRanchoId, instalacionNombre, orgId, cDesde, cHasta)
+      await generarVerificacionInsumosConsolidadoPDF(cRanchoId, instalacionNombre, orgId, cDesde, cHasta, codigoClave ?? '')
       toast.success('PDF consolidado generado')
       setSheetConsolidado(false)
     } catch (e: unknown) {

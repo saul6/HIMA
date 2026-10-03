@@ -482,7 +482,7 @@ export function LimpiezaAduana() {
     setCGenerando(true)
     try {
       const instalacionNombre = ranchos.find((r) => r.id === cRanchoId)?.nombre ?? cRanchoId
-      await generarLimpiezaAduanaConsolidadoPDF(cRanchoId, instalacionNombre, orgId, cDesde, cHasta)
+      await generarLimpiezaAduanaConsolidadoPDF(cRanchoId, instalacionNombre, orgId, cDesde, cHasta, codigoClave ?? '')
       toast.success('PDF consolidado generado')
       setSheetConsolidado(false)
     } catch (e: unknown) {
@@ -517,7 +517,7 @@ export function LimpiezaAduana() {
           aprobo: v.aprobo,
         }
       }
-      await generarLimpiezaAduanaPDF(registroActivo, ranchoCodigo, pdfItems, res, dd)
+      await generarLimpiezaAduanaPDF(registroActivo, ranchoCodigo, pdfItems, res, dd, codigoClave ?? '')
       toast.success('PDF descargado')
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al generar PDF')
