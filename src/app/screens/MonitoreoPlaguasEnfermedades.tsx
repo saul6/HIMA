@@ -276,7 +276,7 @@ export function MonitoreoPlaguasEnfermedades() {
         </div>
 
         {sheetPaso === 'firma_gate' && (
-          <FirmaGatePaso onClose={handleCerrarSheet} />
+          <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
         )}
 
         {sheetPaso === 'firma_decision' && pendienteFirmaId && (

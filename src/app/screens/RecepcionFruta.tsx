@@ -552,7 +552,7 @@ export function RecepcionFruta() {
 
         {sheetPaso === 'firma_gate' && (
           <div className="px-4 pb-6">
-            <FirmaGatePaso onIrAFirmar={() => setSheetPaso('form')} />
+            <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
           </div>
         )}
 

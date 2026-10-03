@@ -928,7 +928,7 @@ export function LimpiezaBanosQuimicos() {
           </div>
 
           {sheetNuevoPaso === 'firma_gate' && (
-            <FirmaGatePaso onIrAFirmar={() => setSheetNuevoPaso('form')} />
+            <FirmaGatePaso onFirmaGuardada={() => setSheetNuevoPaso('form')} />
           )}
 
           {sheetNuevoPaso === 'firma_decision' && pendienteFirmaId && (

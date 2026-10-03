@@ -612,7 +612,7 @@ export function RondinesVigilancia() {
 
             {sheetPaso === 'firma_gate' && (
               <div className="flex-1 overflow-y-auto px-4 pb-6 pt-4">
-                <FirmaGatePaso onIrAFirmar={() => setSheetPaso('form')} />
+                <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
               </div>
             )}
 

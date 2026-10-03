@@ -745,7 +745,7 @@ export function MantenimientoPreventivo() {
 
             {sheetCrearPaso === 'firma_gate' && (
               <div className="flex-1 overflow-y-auto px-4 pb-6">
-                <FirmaGatePaso onIrAFirmar={() => setSheetCrearPaso('form')} />
+                <FirmaGatePaso onFirmaGuardada={() => setSheetCrearPaso('form')} />
               </div>
             )}
 
