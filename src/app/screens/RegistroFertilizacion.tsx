@@ -908,7 +908,7 @@ export function RegistroFertilizacion() {
                       ))}
                     </div>
                     {reg.fertilizantes[0] && (
-                      <FirmasRegistro modulo="M8" registroId={reg.fertilizantes[0].id} firmas={firmas} loading={loadingFirmas} fechaRegistro={reg.fecha} />
+                      <FirmasRegistro modulo="M8" registroId={reg.fertilizantes[0].id} firma={firmas[reg.fertilizantes[0].id]} loadingFirmas={loadingFirmas} fechaRegistro={reg.fecha} onFirmado={refetchFirmas} />
                     )}
                   </div>
                 )

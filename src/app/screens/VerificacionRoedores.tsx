@@ -248,9 +248,10 @@ export function VerificacionRoedores() {
                   <FirmasRegistro
                     modulo="M70"
                     registroId={t.id}
-                    firmas={firmas}
-                    loading={loadingFirmas}
+                    firma={firmas[t.id]}
+                    loadingFirmas={loadingFirmas}
                     fechaRegistro={t.fecha}
+                    onFirmado={refetchFirmas}
                   />
                 </div>
               ))}

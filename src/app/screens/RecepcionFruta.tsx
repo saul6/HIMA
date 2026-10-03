@@ -187,7 +187,7 @@ export function RecepcionFruta() {
   const esAlmacen = modulos.some(m => m.sector_clave === 'almacen')
 
   const todosIds = useMemo(() => recepciones.map(r => r.id), [recepciones])
-  const { firmas, refetch: refetchFirmas } = useFirmasRegistro('M39', todosIds)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M39', todosIds)
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
@@ -528,7 +528,7 @@ export function RecepcionFruta() {
                     }
                   </button>
                 </div>
-                <FirmasRegistro modulo="M39" registroId={r.id} orgId={orgId!} onFirmado={refetchFirmas} />
+                <FirmasRegistro modulo="M39" registroId={r.id} fechaRegistro={r.fecha} firma={firmas[r.id]} loadingFirmas={loadingFirmas} onFirmado={refetchFirmas} />
               </div>
             )
           })

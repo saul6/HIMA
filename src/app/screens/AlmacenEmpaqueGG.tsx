@@ -451,9 +451,10 @@ export function AlmacenEmpaqueGG() {
                     <FirmasRegistro
                       modulo="M75"
                       registroId={reg.id}
-                      firmas={firmas}
-                      loading={loadingFirmas}
+                      firma={firmas[reg.id]}
+                      loadingFirmas={loadingFirmas}
                       fechaRegistro={reg.mes}
+                      onFirmado={refetchFirmas}
                     />
                   </div>
                 </div>

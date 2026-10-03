@@ -483,9 +483,10 @@ export function RegistroLimpiezaBanos() {
                   <FirmasRegistro
                     modulo="M12"
                     registroId={jornada.banos[0].id}
-                    firmas={firmas}
-                    loading={loadingFirmas}
+                    firma={firmas[jornada.banos[0].id]}
+                    loadingFirmas={loadingFirmas}
                     fechaRegistro={jornada.fecha}
+                    onFirmado={refetchFirmas}
                   />
                 )}
               </div>

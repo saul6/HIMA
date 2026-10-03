@@ -263,8 +263,9 @@ export function UsoEpp() {
                   <FirmasRegistro
                     modulo="M63"
                     registroId={r.id}
-                    firmas={firmas[r.id]}
-                    loading={loadingFirmas}
+                    fechaRegistro={r.fecha}
+                    firma={firmas[r.id]}
+                    loadingFirmas={loadingFirmas}
                     onFirmado={refetchFirmas}
                   />
                 </div>

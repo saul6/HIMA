@@ -193,7 +193,7 @@ export function RondinesVigilancia() {
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }))
 
   const todosIds = useMemo(() => rondines.map(r => r.id), [rondines])
-  const { firmas, refetch: refetchFirmas } = useFirmasRegistro('M46', todosIds)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M46', todosIds)
 
   // ── PDF individual ──
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null)
@@ -581,7 +581,7 @@ export function RondinesVigilancia() {
                   onPDF={() => handlePDFIndividual(r)}
                   generando={generandoPDF === r.id}
                 />
-                <FirmasRegistro modulo="M46" registroId={r.id} orgId={orgId!} onFirmado={refetchFirmas} />
+                <FirmasRegistro modulo="M46" registroId={r.id} fechaRegistro={r.fecha} firma={firmas[r.id]} loadingFirmas={loadingFirmas} onFirmado={refetchFirmas} />
               </div>
             ))}
           </div>

@@ -779,7 +779,7 @@ export function InspeccionPreoperacionalCooler() {
             </span>
           </div>
 
-          <FirmasRegistro modulo="M19" registroId={registroActivo.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={registroActivo.mes} />
+          <FirmasRegistro modulo="M19" registroId={registroActivo.id} firma={firmas[registroActivo.id]} loadingFirmas={loadingFirmas} fechaRegistro={registroActivo.mes} onFirmado={refetchFirmas} />
 
           {numIncidenciasTotal > 0 && (
             <div

@@ -249,9 +249,10 @@ export function MonitoreoPlaguasEnfermedades() {
             <FirmasRegistro
               modulo="M72"
               registroId={r.id}
-              firmas={firmas}
-              loading={loadingFirmas}
+              firma={firmas[r.id]}
+              loadingFirmas={loadingFirmas}
               fechaRegistro={r.fecha}
+              onFirmado={refetchFirmas}
             />
           </div>
         ))}

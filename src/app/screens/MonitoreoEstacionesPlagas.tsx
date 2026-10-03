@@ -119,6 +119,7 @@ function RevisionCard({
   orgNombre,
   firmas,
   loadingFirmas,
+  onFirmado,
 }: {
   rev: M21RevisionConResultados
   onPDF: (id: string) => void
@@ -126,6 +127,7 @@ function RevisionCard({
   orgNombre: string | null
   firmas: MapaFirmas
   loadingFirmas: boolean
+  onFirmado?: () => void
 }) {
   const conHallazgo = rev.resultados.filter(r => r.incidencia_id).length
   const totalEst = rev.resultados.length
@@ -177,7 +179,7 @@ function RevisionCard({
       {rev.observaciones && (
         <p className="text-xs text-muted-foreground italic line-clamp-2">{rev.observaciones}</p>
       )}
-      <FirmasRegistro modulo="M21" registroId={rev.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={rev.fecha} />
+      <FirmasRegistro modulo="M21" registroId={rev.id} firma={firmas[rev.id]} loadingFirmas={loadingFirmas} fechaRegistro={rev.fecha} onFirmado={onFirmado} />
     </div>
   )
 }
@@ -973,6 +975,7 @@ export function MonitoreoEstacionesPlagas() {
               orgNombre={orgNombre}
               firmas={firmas}
               loadingFirmas={loadingFirmas}
+              onFirmado={refetchFirmas}
             />
           ))}
         </div>

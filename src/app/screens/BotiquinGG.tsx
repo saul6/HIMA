@@ -297,9 +297,10 @@ export function BotiquinGG() {
                   <FirmasRegistro
                     modulo="M73"
                     registroId={reg.id}
-                    firmas={firmas}
-                    loading={loadingFirmas}
+                    firma={firmas[reg.id]}
+                    loadingFirmas={loadingFirmas}
                     fechaRegistro={reg.fecha}
+                    onFirmado={refetchFirmas}
                   />
                 </div>
               )

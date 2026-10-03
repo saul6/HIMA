@@ -761,7 +761,7 @@ export function VerificacionInsumos() {
             </span>
           </div>
 
-          <FirmasRegistro modulo="M23" registroId={registroActivo.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={registroActivo.mes} />
+          <FirmasRegistro modulo="M23" registroId={registroActivo.id} firma={firmas[registroActivo.id]} loadingFirmas={loadingFirmas} fechaRegistro={registroActivo.mes} onFirmado={refetchFirmas} />
 
           {numIncidenciasTotal > 0 && (
             <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>

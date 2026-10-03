@@ -499,9 +499,10 @@ export function VerificacionCosecha() {
                     <FirmasRegistro
                       modulo="M69"
                       registroId={reg.id}
-                      firmas={firmas}
-                      loading={loadingFirmas}
+                      firma={firmas[reg.id]}
+                      loadingFirmas={loadingFirmas}
                       fechaRegistro={reg.mes}
+                      onFirmado={refetchFirmas}
                     />
                   </div>
                 </div>

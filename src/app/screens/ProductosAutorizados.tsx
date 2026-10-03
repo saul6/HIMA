@@ -312,6 +312,7 @@ export function ProductosAutorizados() {
             <FirmasRegistro
               modulo="M66"
               registroId={p.id}
+              fechaRegistro={p.created_at.slice(0, 10)}
               firma={firmas[p.id]}
               loadingFirmas={loadingFirmas}
               onFirmado={async () => { await refetch(); await refetchFirmas() }}

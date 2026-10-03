@@ -550,7 +550,7 @@ export function TrazabilidadProducto() {
                     </span>
                   )}
                 </div>
-                <FirmasRegistro modulo="M48" registroId={lr.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={lr.fecha} />
+                <FirmasRegistro modulo="M48" registroId={lr.id} firma={firmas[lr.id]} loadingFirmas={loadingFirmas} fechaRegistro={lr.fecha} onFirmado={refetchFirmas} />
               </div>
             ))}
           </div>
@@ -624,7 +624,7 @@ export function TrazabilidadProducto() {
                       Empacado: {lpt.cant_empacada} · Merma: {lpt.rechazo_merma ?? 0} · Pendiente: {lpt.pendiente_retenido ?? 0}
                     </p>
                   )}
-                  <FirmasRegistro modulo="M48" registroId={lpt.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={lpt.fecha_empaque} />
+                  <FirmasRegistro modulo="M48" registroId={lpt.id} firma={firmas[lpt.id]} loadingFirmas={loadingFirmas} fechaRegistro={lpt.fecha_empaque} onFirmado={refetchFirmas} />
                 </div>
               )
             })}
@@ -650,7 +650,7 @@ export function TrazabilidadProducto() {
                     </div>
                   ))}
                 </div>
-                <FirmasRegistro modulo="M48" registroId={lc.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={lc.fecha} />
+                <FirmasRegistro modulo="M48" registroId={lc.id} firma={firmas[lc.id]} loadingFirmas={loadingFirmas} fechaRegistro={lc.fecha} onFirmado={refetchFirmas} />
               </div>
             ))}
           </div>
@@ -679,7 +679,7 @@ export function TrazabilidadProducto() {
                     ))}
                   </div>
                 )}
-                <FirmasRegistro modulo="M48" registroId={fe.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={fe.fecha} />
+                <FirmasRegistro modulo="M48" registroId={fe.id} firma={firmas[fe.id]} loadingFirmas={loadingFirmas} fechaRegistro={fe.fecha} onFirmado={refetchFirmas} />
               </div>
             ))}
           </div>

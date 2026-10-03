@@ -637,7 +637,7 @@ export function InspeccionPreoperacionalCosecha() {
             </span>
           </div>
 
-          <FirmasRegistro modulo="M11" registroId={registroActivo.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={registroActivo.mes} />
+          <FirmasRegistro modulo="M11" registroId={registroActivo.id} firma={firmas[registroActivo.id]} loadingFirmas={loadingFirmas} fechaRegistro={registroActivo.mes} onFirmado={refetchFirmas} />
 
           {/* Observaciones */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">

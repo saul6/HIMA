@@ -904,7 +904,7 @@ export function ReporteIncidencias() {
                       ))}
                     </div>
                   )}
-                  <FirmasRegistro modulo="M13" registroId={r.id} firmas={firmas} loading={loadingFirmas} fechaRegistro={r.fecha} />
+                  <FirmasRegistro modulo="M13" registroId={r.id} firma={firmas[r.id]} loadingFirmas={loadingFirmas} fechaRegistro={r.fecha} onFirmado={refetchFirmas} />
                 </div>
               </div>
             )
