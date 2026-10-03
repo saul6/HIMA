@@ -199,7 +199,7 @@ export function RegistroMuestrasLaboratorio() {
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 pb-4">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 

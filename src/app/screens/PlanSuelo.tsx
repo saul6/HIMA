@@ -211,7 +211,7 @@ export function PlanSuelo() {
       <ModuloHeader tituloFallback="Plan y Gestión del Suelo" subtitulo="M59 · Por evento" />
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 pb-4">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 

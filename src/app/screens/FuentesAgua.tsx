@@ -213,7 +213,7 @@ export function FuentesAgua() {
 
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 mb-4">
+      <div className="px-4 pt-3 pb-4">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
