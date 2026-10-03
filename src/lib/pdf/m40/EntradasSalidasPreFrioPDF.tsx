@@ -25,6 +25,7 @@ export interface M40RegistroDataPDF {
   orgNombre: string
   instalacion: string
   fecha: string
+  folio?: string | null
   empresa: string | null
   observaciones: string | null
   lineas: M40LineaPDF[]
@@ -100,6 +101,7 @@ export function EntradasSalidasPreFrioPDF({
           titulo="ENTRADAS Y SALIDAS EN PRE-ENFRIAMIENTO"
           subtitulo={`${d.instalacion}${d.empresa ? ` | ${d.empresa}` : ''} | ${fmtFecha(d.fecha)}`}
           codigoFormato={codigoFmt}
+          folio={d.folio ?? '—'}
           fecha={d.fecha}
         />
 
@@ -150,8 +152,8 @@ export function EntradasSalidasPreFrioPDF({
         {/* Firmas */}
         <PdfSignatures
           signatures={[
-            { label: 'Responsable de la instalacion', firma: firmaRealizo ?? null },
-            { label: 'Responsable de la empresa', firma: firmaVerifico ?? null },
+            { label: 'Responsable de la instalacion', nombre: firmaRealizo?.firmante ?? '', caption: 'Firma del responsable', firma: firmaRealizo ?? null },
+            { label: 'Responsable de la empresa', nombre: firmaVerifico?.firmante ?? '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
           ]}
         />
 

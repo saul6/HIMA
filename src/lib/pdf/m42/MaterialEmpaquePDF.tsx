@@ -12,6 +12,7 @@ export interface M42MovimientoPDF {
   instalacion: string
   empresa: string | null
   fecha: string
+  folio?: string | null
   descripcion_material: string | null
   entrada: number | null
   salida: number | null
@@ -144,6 +145,7 @@ export function MaterialEmpaquePDF({
           titulo="ENTRADAS Y SALIDAS DE MATERIAL DE EMPAQUE"
           subtitulo={`${d.instalacion}${d.empresa ? ` | ${d.empresa}` : ''} | ${fmtFecha(d.fecha)}`}
           codigoFormato={codigoFmt}
+          folio={d.folio ?? '—'}
           fecha={d.fecha}
         />
 
@@ -187,8 +189,8 @@ export function MaterialEmpaquePDF({
         {/* Firmas */}
         <PdfSignatures
           signatures={[
-            { label: 'Responsable de la instalacion', firma: firmaRealizo ?? null },
-            { label: 'Responsable de la empresa', firma: firmaVerifico ?? null },
+            { label: 'Responsable de la instalacion', nombre: firmaRealizo?.firmante ?? '', caption: 'Firma del responsable', firma: firmaRealizo ?? null },
+            { label: 'Responsable de la empresa', nombre: firmaVerifico?.firmante ?? '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
           ]}
         />
 

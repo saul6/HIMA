@@ -294,9 +294,9 @@ export function ManifiestoEmbarquePDF({
         {/* Firmas */}
         <PdfSignatures
           signatures={[
-            { label: 'Responsable de la instalacion', firma: firmaRealizo ?? null },
-            { label: 'Responsable de la empresa', firma: firmaVerifico ?? null },
-            { label: 'Firma del chofer' },
+            { label: 'Responsable de la instalacion', nombre: firmaRealizo?.firmante ?? '', caption: 'Firma del responsable', firma: firmaRealizo ?? null },
+            { label: 'Responsable de la empresa', nombre: firmaVerifico?.firmante ?? '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
+            { label: 'Firma del chofer', nombre: '', caption: 'Firma del conductor' },
           ]}
         />
 

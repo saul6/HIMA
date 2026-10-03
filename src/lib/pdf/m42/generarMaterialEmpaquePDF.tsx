@@ -30,6 +30,7 @@ async function cargarDatos(id: string, orgId: string): Promise<M42MovimientoPDF>
     instalacion: r.ranchos?.nombre ?? '—',
     empresa: r.empresa ?? null,
     fecha: r.fecha,
+    folio: r.folio ?? null,
     descripcion_material: r.descripcion_material ?? null,
     entrada: r.entrada ?? null,
     salida: r.salida ?? null,

@@ -53,6 +53,7 @@ async function cargarDatos(id: string, orgId: string): Promise<M40RegistroDataPD
     orgNombre: orgRes.data?.nombre ?? '—',
     instalacion: r.ranchos?.nombre ?? '—',
     fecha: r.fecha,
+    folio: r.folio ?? null,
     empresa: r.empresa ?? null,
     observaciones: r.observaciones ?? null,
     lineas,
