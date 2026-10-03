@@ -63,7 +63,7 @@ export function CalibracionEquipos() {
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
-  const { ranchos } = useRanchos(orgId)
+  const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, refetch } = useM50CalibracionEquipos(orgId)
   const orgNombre = useOrganizacion(orgId)

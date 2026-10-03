@@ -59,7 +59,7 @@ export function RegistroMuestrasLaboratorio() {
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
-  const { ranchos } = useRanchos(orgId)
+  const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { muestras, loading, refetch } = useM22Muestras(orgId)
   const { microorganismos } = useM22Microorganismos()

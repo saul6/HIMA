@@ -58,7 +58,7 @@ export function MonitoreoGermicida() {
   const { terminosSitio } = useModulosContext()
   const { obligatoria, tengoFirma } = useFirmaContext()
   const orgId = profile?.org_id ?? null
-  const { ranchos } = useRanchos(orgId)
+  const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { monitoreos, loading, refetch } = useM36Monitoreos(orgId)
   const orgNombre = useOrganizacion(orgId)

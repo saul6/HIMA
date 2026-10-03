@@ -65,7 +65,7 @@ export function ConsumoEnergia() {
   const { profile, user, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const orgId = profile?.org_id ?? null
-  const { ranchos } = useRanchos(orgId)
+  const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, refetch } = useM60ConsumoEnergia(orgId)
   const orgNombre = useOrganizacion(orgId)
