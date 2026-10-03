@@ -560,6 +560,7 @@ export function ReporteIncidencias() {
         .select('id')
         .single()
       if (errReporte) throw errReporte
+      if (!reporteData) throw new Error('No se pudo guardar el reporte')
       reporteId = reporteData.id
 
       // PASO 2: INSERT todas las incidencias (texto, sin fotos — comentarios quedan guardados)
@@ -576,6 +577,7 @@ export function ReporteIncidencias() {
           .select('id')
           .single()
         if (errInc) throw errInc
+        if (!incData) throw new Error('No se pudo guardar la incidencia')
         incidenciaIds.push(incData.id)
         fotosSubidasPorIncidencia.push([])
       }
@@ -615,6 +617,7 @@ export function ReporteIncidencias() {
                 .select('id')
                 .single()
               if (errFoto) throw errFoto
+              if (!fotoData) throw new Error('No se pudo guardar la foto')
               pathsSubidos.push(path)
               fotosSubidasPorIncidencia[i].push({ id: fotoData.id, storage_path: path, orden: j + 1 })
               subida = true

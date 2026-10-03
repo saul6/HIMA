@@ -1,11 +1,14 @@
 import { type ReactNode } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { X } from 'lucide-react'
 
 interface BottomSheetProps {
   open: boolean
   onClose: () => void
   /** Fixed viewport height (e.g. '85%'). Omit for auto height (max 85 vh). */
   height?: string
+  /** When provided, renders a handle bar + title row with close button. */
+  title?: string
   children: ReactNode
   /**
    * Variante opt-in — NO cambia el comportamiento por defecto (omitir esta
@@ -49,10 +52,25 @@ export const fabMenuItemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] as const } },
 }
 
-function StaticSheet({ open, onClose, height, children, raised }: {
+function SheetHeader({ title, onClose }: { title: string; onClose: () => void }) {
+  return (
+    <>
+      <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+        <div className="w-9 h-1 rounded-full bg-border" />
+      </div>
+      <div className="flex items-center justify-between px-4 pb-3 border-b border-border flex-shrink-0">
+        <h2 className="text-base font-semibold">{title}</h2>
+        <button onClick={onClose}><X className="w-5 h-5" /></button>
+      </div>
+    </>
+  )
+}
+
+function StaticSheet({ open, onClose, height, title, children, raised }: {
   open: boolean
   onClose: () => void
   height?: string
+  title?: string
   children: ReactNode
   raised?: boolean
 }) {
@@ -64,6 +82,7 @@ function StaticSheet({ open, onClose, height, children, raised }: {
         className={`${PANEL_CLASS} ${raised ? 'bottom-3' : 'bottom-0'}`}
         style={height ? { height } : { maxHeight: '85vh' }}
       >
+        {title && <SheetHeader title={title} onClose={onClose} />}
         {children}
       </div>
     </>
@@ -74,17 +93,17 @@ function StaticSheet({ open, onClose, height, children, raised }: {
  * Móvil: panel anclado al fondo centrado en 390 px.
  * Escritorio (lg:): modal centrado en 560 px.
  */
-export function BottomSheet({ open, onClose, height, children, animateFrom }: BottomSheetProps) {
+export function BottomSheet({ open, onClose, height, title, children, animateFrom }: BottomSheetProps) {
   const reducedMotion = useReducedMotion()
 
   if (!animateFrom) {
     // Comportamiento por defecto — idéntico al de siempre, sin motion.
-    return <StaticSheet open={open} onClose={onClose} height={height}>{children}</StaticSheet>
+    return <StaticSheet open={open} onClose={onClose} height={height} title={title}>{children}</StaticSheet>
   }
 
   if (reducedMotion) {
     // Misma variante visual (bottom-3), pero sin animación.
-    return <StaticSheet open={open} onClose={onClose} height={height} raised>{children}</StaticSheet>
+    return <StaticSheet open={open} onClose={onClose} height={height} title={title} raised>{children}</StaticSheet>
   }
 
   return (

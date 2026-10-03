@@ -125,7 +125,7 @@ function FirmaPreview({ firmaInfo }: { firmaInfo: { trazos?: any; firma_png?: st
       <FirmaSvg
         trazos={trazos}
         className="h-20 w-auto"
-        style={{ color: 'var(--foreground)' } as any}
+        style={{ color: 'var(--foreground)' }}
       />
     )
   }

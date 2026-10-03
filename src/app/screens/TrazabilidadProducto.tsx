@@ -226,6 +226,7 @@ export function TrazabilidadProducto() {
       }
       const { data, error } = await tbl('m48_lotes_recepcion').insert(payload).select().single()
       if (error) throw error
+      if (!data) throw new Error('No se pudo guardar el registro')
       toast.success(`LR registrado: ${data.codigo}`)
       refetchLR()
       await refetchFirmas()
@@ -270,6 +271,7 @@ export function TrazabilidadProducto() {
       }
       const { data, error } = await tbl('m48_lotes_producto').insert(payload).select().single()
       if (error) throw error
+      if (!data) throw new Error('No se pudo guardar el registro')
       toast.success(`LPT registrado: ${data.codigo}`)
       refetchLPT()
       await refetchFirmas()
@@ -294,6 +296,7 @@ export function TrazabilidadProducto() {
         observaciones: formLC.observaciones.trim() || null,
       }).select().single()
       if (error) throw error
+      if (!lc) throw new Error('No se pudo guardar el registro')
       // Insert relations
       const rels = formLC.lr_ids.map(lr_id => ({ lc_id: lc.id, lr_id }))
       const { error: relErr } = await tbl('m48_lc_lr').insert(rels)
@@ -332,6 +335,7 @@ export function TrazabilidadProducto() {
         observaciones: formFE.observaciones.trim() || null,
       }).select().single()
       if (error) throw error
+      if (!fe) throw new Error('No se pudo guardar el registro')
       const rels = lineasValidas.map(l => ({
         fe_id: fe.id, lpt_id: l.lpt_id,
         numero_tarima: l.numero_tarima ? parseInt(l.numero_tarima) : null,

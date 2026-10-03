@@ -1,11 +1,14 @@
+import type { CSSProperties } from 'react'
+
 interface Punto { x: number; y: number }
 
 interface FirmaSvgProps {
   trazos: Punto[][]
   className?: string
+  style?: CSSProperties
 }
 
-export function FirmaSvg({ trazos, className }: FirmaSvgProps) {
+export function FirmaSvg({ trazos, className, style }: FirmaSvgProps) {
   const allPts = trazos.flat()
   if (allPts.length === 0) return null
 
@@ -20,6 +23,7 @@ export function FirmaSvg({ trazos, className }: FirmaSvgProps) {
   return (
     <svg
       className={className}
+      style={style}
       viewBox={`${minX} ${minY} ${vw} ${vh}`}
       xmlns="http://www.w3.org/2000/svg"
       preserveAspectRatio="xMidYMid meet"

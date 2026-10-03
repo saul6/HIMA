@@ -247,7 +247,7 @@ export function Perfil() {
                   <FirmaSvg
                     trazos={firmaExistente.trazos}
                     className="h-20 w-auto mx-auto"
-                    style={{ color: 'var(--foreground)' } as any}
+                    style={{ color: 'var(--foreground)' }}
                   />
                 ) : firmaExistente?.firma_png ? (
                   <img

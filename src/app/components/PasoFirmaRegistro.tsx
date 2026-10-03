@@ -167,7 +167,7 @@ export function PasoFirmaRegistro({
               <FirmaSvg
                 trazos={miFirma.trazos}
                 className="h-20 w-auto"
-                style={{ color: 'var(--foreground)' } as any}
+                style={{ color: 'var(--foreground)' }}
               />
             ) : miFirma.firma_png ? (
               <img

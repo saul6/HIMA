@@ -902,7 +902,7 @@ export function BotiquinPrimerosAuxilios() {
                         <FirmaSvg
                           trazos={miFirmaDecision.trazos}
                           className="h-20 w-auto"
-                          style={{ color: 'var(--foreground)' } as any}
+                          style={{ color: 'var(--foreground)' }}
                         />
                       ) : miFirmaDecision.firma_png ? (
                         <img
