@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Navigate } from 'react-router'
 import {
   Building2, ChevronRight, Plus,
-  AlertCircle, Calendar, CheckCircle2, RefreshCw, PlayCircle,
+  AlertCircle, Calendar, CheckCircle2, RefreshCw, PlayCircle, Layers,
 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorAsignaciones } from '@/hooks/useAuditorAsignaciones'
+import { useAuditorJornada } from '@/hooks/useAuditorJornada'
 import { supabase } from '@/lib/supabase'
 import { hoyMX } from '@/lib/fecha'
 import { useLastWorkspace } from '@/hooks/useContinuarTrabajo'
@@ -152,6 +153,7 @@ export function AuditorHome() {
   const navigate = useNavigate()
   const { orgs, loading: loadingOrgs } = useAuditorAsignaciones()
   const { workspace } = useLastWorkspace()
+  const { jornadas: todasJornadas, cargarJornadas } = useAuditorJornada()
 
   const [cola, setCola] = useState<WorkQueueItem[]>([])
   const [resumen, setResumen] = useState<DashboardResumen | null>(null)
@@ -160,6 +162,7 @@ export function AuditorHome() {
   const [filtro, setFiltro] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const [showSheet, setShowSheet] = useState(false)
+  const jornadasAbiertas = todasJornadas.filter(j => j.estado === 'abierta')
 
   const clicksBeforeResumeRef = useRef(0)
 
@@ -193,6 +196,7 @@ export function AuditorHome() {
         setCola(colaRes.data ?? [])
         setResumen((resRes.data as DashboardResumen) ?? null)
         emitirEvento('lat_dashboard', ms(t0))
+        cargarJornadas().catch(e => console.error('[AuditorHome] jornadas', e))
       } catch (e) {
         if (!cancelled) {
           console.error('[AuditorHome] dashboard', e)
@@ -385,6 +389,64 @@ export function AuditorHome() {
             </div>
           </section>
         )}
+
+        {/* ── Jornadas abiertas + Auditar por bloque ─────────────────── */}
+        <section>
+          <div className="flex items-center justify-between mb-2.5">
+            <p
+              className="text-[11px] font-semibold uppercase tracking-wide"
+              style={{ color: 'var(--muted-foreground)' }}
+            >
+              Captura por bloque
+            </p>
+            <button
+              onClick={() => navigate('/auditor/jornada/nueva')}
+              className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg"
+              style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+            >
+              <Layers size={11} />
+              Auditar por bloque
+            </button>
+          </div>
+          {jornadasAbiertas.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              {jornadasAbiertas.map(j => (
+                <button
+                  key={j.jornada_id}
+                  onClick={() => navigate(`/auditor/jornada/${j.jornada_id}`)}
+                  className="w-full text-left bg-card rounded-xl border border-border p-3 flex items-center gap-3 active:opacity-70 transition-opacity"
+                >
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: 'var(--agro-success-fill)' }}
+                  >
+                    <Layers size={15} style={{ color: 'var(--agro-success-text)' }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>
+                      {j.nombre}
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                      {j.operaciones.length} {j.operaciones.length === 1 ? 'operación' : 'operaciones'}
+                      {' · '}{j.fecha.split('-').reverse().join('/')}
+                    </p>
+                  </div>
+                  <ChevronRight size={15} style={{ color: 'var(--muted-foreground)' }} />
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div
+              className="rounded-xl border border-dashed border-border p-4 flex items-center gap-3"
+              style={{ borderStyle: 'dashed' }}
+            >
+              <Layers size={16} style={{ color: 'var(--muted-foreground)', opacity: 0.5 }} />
+              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                Sin jornadas abiertas. Usa «Auditar por bloque» para iniciar una.
+              </p>
+            </div>
+          )}
+        </section>
 
         {/* ── Cola de trabajo ────────────────────────────────────────── */}
         <section>
