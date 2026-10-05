@@ -431,6 +431,19 @@ button:not(:disabled):active:not(.no-press),
   }
 }
 
+/* Brillo temporal en una tarjeta de Accesos rápidos cuando su módulo se fijó
+   desde la hoja de categoría recién cerrada (ver Home.tsx `brillantes`).
+   Solo border-color — sin sombra ni cambio de grosor. */
+.pin-brillo {
+  border-color: var(--secondary) !important;
+  transition: border-color 1.2s var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pin-brillo {
+    transition: none;
+  }
+}
+
 /* Esqueletos de carga — el brillo de Tailwind (`animate-pulse`) ignora
    prefers-reduced-motion por defecto; esto lo vuelve estático. */
 @media (prefers-reduced-motion: reduce) {

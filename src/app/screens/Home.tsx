@@ -24,6 +24,7 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import type { ModuloVisible } from '@/hooks/useMisModulos'
 import { CATEGORIA_MAP } from '@/lib/categoriasModulos'
 import { ordenarAlfabetico } from '@/lib/ordenAlfabetico'
+import { SPRING_SUAVE } from '@/lib/motion'
 
 const MAX_PINNED = 4
 const DURACION_CONTADOR_S = 1.1
@@ -404,10 +405,19 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
                         onClick={e => {
                           e.preventDefault()
                           e.stopPropagation()
+                          const vaAFijar = !esFijado
                           toggleFijar(modulo.codigo)
                           if (!prefersReducedMotion) {
                             const svg = e.currentTarget.querySelector('svg')
-                            if (svg) animate(svg, { scale: [1, 1.15, 1] }, { duration: 0.3, ease: [0.22, 1, 0.36, 1] })
+                            if (svg) {
+                              animate(
+                                svg,
+                                vaAFijar
+                                  ? { scale: [1, 1.25, 1], rotate: [0, -20, 0] }
+                                  : { scale: [1, 1.25, 1], rotate: [0, 20, 0] },
+                                SPRING_SUAVE,
+                              )
+                            }
                           }
                         }}
                         className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors hover:bg-accent"
@@ -543,6 +553,11 @@ export function Home() {
   const [categoriaAbierta, setCategoriaAbierta] = useState<string | null>(null)
   const btnRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
 
+  // Ids fijados durante la sesión actual de la hoja abierta — al cerrarla,
+  // sus tarjetas en Accesos rápidos se resaltan brevemente (ver `brillantes`).
+  const recienFijadosRef = useRef<Set<string>>(new Set())
+  const [brillantes, setBrillantes] = useState<Set<string>>(new Set())
+
   if (profile !== null && profile.rol === 'auditor') {
     return <Navigate to="/auditor" replace />
   }
@@ -597,13 +612,18 @@ export function Home() {
   )
 
   function toggleFijar(codigo: string) {
-    setModulosFijados(prev =>
-      prev.includes(codigo)
+    setModulosFijados(prev => {
+      const yaFijado = prev.includes(codigo)
+      if (categoriaAbierta) {
+        if (yaFijado) recienFijadosRef.current.delete(codigo)
+        else recienFijadosRef.current.add(codigo)
+      }
+      return yaFijado
         ? prev.filter(c => c !== codigo)
         : prev.length >= MAX_PINNED
           ? prev
-          : [...prev, codigo],
-    )
+          : [...prev, codigo]
+    })
   }
 
   function abrirCategoria(key: string) {
@@ -613,6 +633,13 @@ export function Home() {
   function cerrarCategoria() {
     const key = categoriaAbierta
     setCategoriaAbierta(null)
+    // Brillo en Accesos rápidos para lo recién fijado en esta hoja
+    if (recienFijadosRef.current.size > 0) {
+      const ids = new Set(recienFijadosRef.current)
+      recienFijadosRef.current.clear()
+      setBrillantes(ids)
+      setTimeout(() => setBrillantes(new Set()), 1200)
+    }
     // Restaurar foco al botón que abrió el popup
     setTimeout(() => {
       if (key) btnRefs.current.get(key)?.focus()
@@ -960,6 +987,7 @@ export function Home() {
                     const Icon = resolverIcono(modulo.icono)
                     const bloqueado = !modulo.desbloqueado
                     const esCascadaInicial = !reducedMotion && primeraCargaModulosRef.current
+                    const brillante = brillantes.has(modulo.codigo)
                     return (
                       <motion.div
                         key={modulo.codigo}
@@ -983,7 +1011,7 @@ export function Home() {
                         {bloqueado ? (
                           <button
                             onClick={() => setModuloBloqueadoUpsell(modulo)}
-                            className="w-full flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card transition-colors"
+                            className={`w-full flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card transition-colors ${brillante ? 'pin-brillo' : ''}`}
                             style={{ opacity: 0.55 }}
                           >
                             <div
@@ -1003,7 +1031,7 @@ export function Home() {
                         ) : (
                           <Link
                             to={modulo.ruta}
-                            className="hover-lift flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card"
+                            className={`hover-lift flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card ${brillante ? 'pin-brillo' : ''}`}
                           >
                             <div
                               className="w-9 h-9 rounded-xl flex items-center justify-center"
