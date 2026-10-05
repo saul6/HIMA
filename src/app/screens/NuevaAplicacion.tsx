@@ -27,6 +27,7 @@ import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { SPRING_SUAVE, SPRING_SUAVE_SIN_REBOTE } from '@/lib/motion'
 
 // Redondea a máximo 4 decimales (evita notación científica y floats infinitos en BD y PDF)
 const r4 = (n: number) => parseFloat(n.toFixed(4));
@@ -367,33 +368,36 @@ export function NuevaAplicacion() {
             {/* Línea de fondo */}
             <div className="absolute left-[6px] right-[6px] top-1/2 -translate-y-1/2 h-0.5 rounded-full bg-muted-foreground/20" />
             {/* Línea de progreso */}
-            <div
+            <motion.div
               className="absolute left-[6px] top-1/2 -translate-y-1/2 h-0.5 rounded-full bg-primary origin-left"
-              style={{
-                width: "calc(100% - 12px)",
-                transform: `scaleX(${(currentStep - 1) / 3})`,
-                transition: reducedMotion ? "none" : "transform var(--motion-base) var(--ease-out)",
-              }}
+              style={{ width: "calc(100% - 12px)" }}
+              animate={{ scaleX: (currentStep - 1) / 3 }}
+              transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE_SIN_REBOTE}
             />
             {[1, 2, 3, 4].map((step) => {
               const active = step === currentStep;
               return (
-                <motion.button
+                <button
                   key={step}
-                  layout={!reducedMotion}
                   onClick={() => { if (currentStep < 5) setCurrentStep(step) }}
                   aria-label={`Ir al paso ${step}`}
                   aria-current={active ? "step" : undefined}
-                  transition={reducedMotion ? { duration: 0 } : STEP_TRANSITION}
-                  className={`relative z-10 h-3 rounded-full transition-colors duration-[var(--motion-fast)] ${
+                  className={`relative z-10 h-3 w-3 rounded-full transition-colors duration-[var(--motion-fast)] ${
                     active
-                      ? "bg-primary"
+                      ? ""
                       : step < currentStep
                       ? "bg-primary/40"
                       : "bg-muted-foreground/30"
                   }`}
-                  style={{ width: active ? 24 : 12 }}
-                />
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="step-pill"
+                      className="absolute -left-1.5 inset-y-0 w-6 rounded-full bg-primary"
+                      transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
+                    />
+                  )}
+                </button>
               );
             })}
           </div>
