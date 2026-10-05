@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, X, Loader2, Files } from 'lucide-react'
+import { Plus, X, Loader2, Files, FileDown } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -22,6 +22,10 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import {
+  generarMonitoreoPlaguasPDF,
+  generarMonitoreoPlaguasConsolidadoPDF,
+} from '@/lib/pdf/m72/generarMonitoreoPlaguasPDF'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -87,11 +91,47 @@ export function MonitoreoPlaguasEnfermedades() {
     setPendienteFirmaId(null)
   }
 
+  async function descargarPDF(id: string) {
+    if (!orgId) return
+    setPdfLoading(id)
+    try {
+      await generarMonitoreoPlaguasPDF(id, orgId)
+    } catch {
+      toast.error('Error al generar PDF')
+    } finally {
+      setPdfLoading(null)
+    }
+  }
+
+  async function exportarConsolidado() {
+    if (!orgId) return
+    setExportandoConsolidado(true)
+    try {
+      const ranchoNombre = ranchos.find(r => r.id === consolidadoForm.rancho_id)?.nombre ?? 'Todos'
+      await generarMonitoreoPlaguasConsolidadoPDF(
+        orgId,
+        consolidadoForm.rancho_id || null,
+        consolidadoForm.desde,
+        consolidadoForm.hasta,
+        ranchoNombre,
+      )
+      setConsolidadoOpen(false)
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al exportar consolidado')
+    } finally {
+      setExportandoConsolidado(false)
+    }
+  }
+
   const [sheetOpen, setSheetOpen] = useState(false)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
   const [form, setForm] = useState<FormEncabezado>(FORM_VACIO)
   const [filas, setFilas] = useState<FilaPlanta[]>([filaPlantaVacia(), filaPlantaVacia()])
   const [guardando, setGuardando] = useState(false)
+  const [pdfLoading, setPdfLoading] = useState<string | null>(null)
+  const [exportandoConsolidado, setExportandoConsolidado] = useState(false)
+  const hoyStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
+  const [consolidadoForm, setConsolidadoForm] = useState({ rancho_id: '', desde: hoyStr(), hasta: hoyStr() })
 
   function abrirNuevo() {
     setForm({ ...FORM_VACIO, rancho_id: ranchoInicial ?? '', fecha: hoyMX(), realizo: profile?.nombre_completo ?? '' })
@@ -229,11 +269,15 @@ export function MonitoreoPlaguasEnfermedades() {
                 <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{formatFecha(r.fecha)}</p>
               </div>
               <button
-                onClick={() => toast.info('Detalle próximamente')}
-                className="text-xs font-medium px-2.5 py-1 rounded-[0.625rem] border shrink-0"
-                style={{ color: 'var(--primary)', borderColor: 'var(--border)' }}
+                onClick={(e) => { e.stopPropagation(); descargarPDF(r.id) }}
+                disabled={pdfLoading === r.id}
+                className="p-2 rounded-lg border shrink-0"
+                style={{ borderColor: 'var(--border)' }}
               >
-                Ver detalle
+                {pdfLoading === r.id
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                }
               </button>
             </div>
             {r.etapa_fenologica && (
@@ -282,13 +326,15 @@ export function MonitoreoPlaguasEnfermedades() {
         {sheetPaso === 'firma_decision' && pendienteFirmaId && (
           <PasoFirmaRegistro
             modulo="M72"
-            registroId={pendienteFirmaId}
+            ids={[pendienteFirmaId]}
             descripcion={`Monitoreo plagas · ${form.fecha}`}
+            obligatoria={obligatoria}
             onFirmadoYPDF={async () => {
+              await generarMonitoreoPlaguasPDF(pendienteFirmaId, orgId ?? '')
               handleCerrarSheet()
               await refetchFirmas()
             }}
-            onOmitir={handleCerrarSheet}
+            onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
           />
         )}
 
@@ -518,27 +564,57 @@ export function MonitoreoPlaguasEnfermedades() {
       </BottomSheet>
 
       {/* Sheet — consolidado */}
-      <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}>
-        <div
-          className="flex items-center justify-between px-4 pt-4 pb-3 border-b"
-          style={{ borderColor: 'var(--border)' }}
-        >
-          <h2 className="text-base font-semibold">Exportar consolidado</h2>
+      <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)} height="85%">
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
+        </div>
+        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
           <button onClick={() => setConsolidadoOpen(false)}>
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
-        <div className="px-4 pt-6 pb-8 flex flex-col items-center gap-4 text-center">
-          <Files className="w-10 h-10" style={{ color: 'var(--muted-foreground)' }} />
-          <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-            La exportación consolidada estará disponible próximamente.
-          </p>
+        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
+          <div className="space-y-1">
+            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+              {terminosSitio.singular.toUpperCase()} (opcional)
+            </label>
+            <select
+              value={consolidadoForm.rancho_id}
+              onChange={(e) => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+            >
+              <option value="">{terminosSitio.plural}</option>
+              {ranchos.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DESDE</label>
+            <input type="date" value={consolidadoForm.desde}
+              onChange={(e) => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA</label>
+            <input type="date" value={consolidadoForm.hasta}
+              onChange={(e) => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+          </div>
+        </div>
+        <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
           <button
-            onClick={() => { setConsolidadoOpen(false); toast.info('Consolidado próximamente') }}
-            className="h-11 px-6 rounded-[0.625rem] text-white font-semibold text-sm"
-            style={{ backgroundColor: 'var(--primary)' }}
+            onClick={exportarConsolidado}
+            disabled={exportandoConsolidado}
+            className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
+            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
           >
-            Entendido
+            {exportandoConsolidado
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> Generando PDF…</>
+              : <><FileDown className="w-4 h-4" /> Descargar PDF consolidado</>
+            }
           </button>
         </div>
       </BottomSheet>

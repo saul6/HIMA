@@ -6,7 +6,7 @@
 
 import { useState } from 'react'
 import {
-  Plus, X, Loader2, FlaskConical, TriangleAlert,
+  Plus, X, Loader2, FlaskConical, TriangleAlert, FileDown,
 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
@@ -24,6 +24,11 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import {
+  generarGermicidaGGPDF,
+  generarGermicidaGGConsolidadoPDF,
+} from '@/lib/pdf/m74/generarGermicidaGGPDF'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -86,11 +91,52 @@ export function GermicidaGG() {
   const [form, setForm] = useState<FormState>(formInicial)
   const [errRancho, setErrRancho] = useState(false)
   const [guardando, setGuardando] = useState(false)
+  const [pdfLoading, setPdfLoading] = useState<string | null>(null)
+  const [consolidadoOpen, setConsolidadoOpen] = useState(false)
+  const [exportandoConsolidado, setExportandoConsolidado] = useState(false)
+  const hoyStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
+  const [consolidadoForm, setConsolidadoForm] = useState({ rancho_id: '', desde: hoyStr(), hasta: hoyStr() })
 
   function handleCerrarSheet() {
     setSheetNuevo(false)
     setSheetPaso('form')
     setPendienteFirmaId(null)
+  }
+
+  async function descargarPDF(id: string) {
+    if (!profile?.org_id) return
+    if (obligatoria && !firmas[id]?.realizo) {
+      toast.info('Firma este registro antes de descargar el PDF')
+      return
+    }
+    setPdfLoading(id)
+    try {
+      await generarGermicidaGGPDF(id, profile.org_id)
+    } catch {
+      toast.error('Error al generar PDF')
+    } finally {
+      setPdfLoading(null)
+    }
+  }
+
+  async function exportarConsolidado() {
+    if (!profile?.org_id) return
+    setExportandoConsolidado(true)
+    try {
+      const ranchoNombre = ranchos.find(r => r.id === consolidadoForm.rancho_id)?.nombre ?? 'Todos'
+      await generarGermicidaGGConsolidadoPDF(
+        profile.org_id,
+        consolidadoForm.rancho_id || null,
+        consolidadoForm.desde,
+        consolidadoForm.hasta,
+        ranchoNombre,
+      )
+      setConsolidadoOpen(false)
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al exportar consolidado')
+    } finally {
+      setExportandoConsolidado(false)
+    }
   }
 
   const set = (campo: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -159,6 +205,10 @@ export function GermicidaGG() {
 
       <BannerTareaOrigen tareaId={tareaId} />
 
+      <div className="px-4 pt-3 pb-0">
+        <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
+      </div>
+
       {/* Lista */}
       <div className="p-4 space-y-3">
         {error && (
@@ -206,21 +256,34 @@ export function GermicidaGG() {
                 className="rounded-xl p-4 border"
                 style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
               >
-                <div className="flex items-start gap-2 mb-1">
-                  <span
-                    className="text-xs px-2 py-0.5 rounded"
-                    style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
-                  >
-                    {formatFecha(reg.fecha)}
-                  </span>
-                  {reg.sector && (
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span
                       className="text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                      style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
                     >
-                      {reg.sector}
+                      {formatFecha(reg.fecha)}
                     </span>
-                  )}
+                    {reg.sector && (
+                      <span
+                        className="text-xs px-2 py-0.5 rounded"
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                      >
+                        {reg.sector}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); descargarPDF(reg.id) }}
+                    disabled={pdfLoading === reg.id}
+                    className="p-2 rounded-lg border shrink-0"
+                    style={{ borderColor: 'var(--border)' }}
+                  >
+                    {pdfLoading === reg.id
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                    }
+                  </button>
                 </div>
                 <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</span>
                 {reg.producto && (
@@ -288,7 +351,13 @@ export function GermicidaGG() {
             ids={[pendienteFirmaId]}
             descripcion={`Monitoreo germicida · ${form.fecha}`}
             obligatoria={obligatoria}
-            onFirmadoYPDF={async () => { handleCerrarSheet(); await refetchFirmas() }}
+            onFirmadoYPDF={async () => {
+              if (pendienteFirmaId && profile?.org_id) {
+                await generarGermicidaGGPDF(pendienteFirmaId, profile.org_id)
+              }
+              handleCerrarSheet()
+              await refetchFirmas()
+            }}
             onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
           />
         )}
@@ -417,6 +486,62 @@ export function GermicidaGG() {
           </button>
         </div>
         </>)}
+      </BottomSheet>
+
+      {/* Sheet consolidado */}
+      <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)} height="85%">
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
+        </div>
+        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+          <button onClick={() => setConsolidadoOpen(false)}>
+            <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
+          <div className="space-y-1">
+            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+              {termino.toUpperCase()} (opcional)
+            </label>
+            <select
+              value={consolidadoForm.rancho_id}
+              onChange={(e) => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+            >
+              <option value="">Todos los {termino.toLowerCase()}s</option>
+              {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DESDE</label>
+            <input type="date" value={consolidadoForm.desde}
+              onChange={(e) => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA</label>
+            <input type="date" value={consolidadoForm.hasta}
+              onChange={(e) => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+          </div>
+        </div>
+        <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
+          <button
+            onClick={exportarConsolidado}
+            disabled={exportandoConsolidado}
+            className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
+            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+          >
+            {exportandoConsolidado
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> Generando PDF…</>
+              : <><FileDown className="w-4 h-4" /> Descargar PDF consolidado</>
+            }
+          </button>
+        </div>
       </BottomSheet>
     </div>
   )

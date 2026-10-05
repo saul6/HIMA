@@ -59,12 +59,15 @@ import { generarBlobControlHerramientas } from './m64/generarControlHerramientas
 import { generarBlobSanitizacionCosecha } from './m65/generarSanitizacionCosechaPDF'
 import { generarBlobNotaTrazabilidad } from './m78/generarNotaTrazabilidadPDF'
 import { generarBlobVerificacionCosecha } from './m69/generarVerificacionCosechaPDF'
+import { generarBlobVerificacionRoedores } from './m70/generarVerificacionRoedoresPDF'
 import { generarBlobLimpiezaCampo } from './m71/generarLimpiezaCampoPDF'
+import { generarBlobMonitoreoPlaguasGG } from './m72/generarMonitoreoPlaguasPDF'
+import { generarBlobGermicidaGG } from './m74/generarGermicidaGGPDF'
 import { generarBlobInspeccionAlmacenEmpaqueGG } from './m75/generarInspeccionAlmacenEmpaqueGGPDF'
 
 // ── Tipos públicos ────────────────────────────────────────────────────────────
 
-export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18' | 'M19' | 'M20' | 'M21' | 'M22' | 'M23' | 'M24' | 'M25' | 'M26' | 'M27' | 'M28' | 'M29' | 'M30' | 'M31' | 'M32' | 'M33' | 'M34' | 'M35' | 'M36' | 'M37' | 'M38' | 'M39' | 'M40' | 'M41' | 'M42' | 'M43' | 'M44' | 'M45' | 'M46' | 'M53' | 'M54' | 'M55' | 'M60' | 'M61' | 'M62' | 'M63' | 'M64' | 'M65' | 'M69' | 'M71' | 'M75' | 'M78'
+export type ModuloKey = 'M1' | 'M6' | 'M7' | 'M8' | 'M9' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15' | 'M16' | 'M17' | 'M18' | 'M19' | 'M20' | 'M21' | 'M22' | 'M23' | 'M24' | 'M25' | 'M26' | 'M27' | 'M28' | 'M29' | 'M30' | 'M31' | 'M32' | 'M33' | 'M34' | 'M35' | 'M36' | 'M37' | 'M38' | 'M39' | 'M40' | 'M41' | 'M42' | 'M43' | 'M44' | 'M45' | 'M46' | 'M53' | 'M54' | 'M55' | 'M60' | 'M61' | 'M62' | 'M63' | 'M64' | 'M65' | 'M69' | 'M70' | 'M71' | 'M72' | 'M74' | 'M75' | 'M78'
 
 export type PDFRef =
   | { tipo: 'M1'; id: string }
@@ -110,7 +113,10 @@ export type PDFRef =
   | { tipo: 'M64'; id: string }
   | { tipo: 'M65'; id: string }
   | { tipo: 'M69'; id: string }
+  | { tipo: 'M70'; ranchoId: string; fecha: string }
   | { tipo: 'M71'; id: string }
+  | { tipo: 'M72'; id: string }
+  | { tipo: 'M74'; id: string }
   | { tipo: 'M75'; id: string }
   | { tipo: 'M78'; id: string }
 
@@ -409,7 +415,10 @@ export async function generarBlobParaRef(ref: PDFRef, orgId: string, codigoClave
     case 'M64': return generarBlobControlHerramientas(ref.id, orgId, codigoClave)
     case 'M65': return generarBlobSanitizacionCosecha(ref.id, orgId, codigoClave)
     case 'M69': return generarBlobVerificacionCosecha(ref.id, orgId, codigoClave)
+    case 'M70': return generarBlobVerificacionRoedores(orgId, ref.ranchoId, ref.fecha, codigoClave)
     case 'M71': return generarBlobLimpiezaCampo(ref.id, orgId, codigoClave)
+    case 'M72': return generarBlobMonitoreoPlaguasGG(ref.id, orgId, codigoClave)
+    case 'M74': return generarBlobGermicidaGG(ref.id, orgId, codigoClave)
     case 'M75': return generarBlobInspeccionAlmacenEmpaqueGG(ref.id, orgId, codigoClave)
     case 'M78': return generarBlobNotaTrazabilidad(ref.id, orgId, codigoClave)
   }
