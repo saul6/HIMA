@@ -69,7 +69,7 @@ export function SeccionAccordion({
         </div>
       </button>
 
-      {abierto && (
+      <div className={`accordion-rows ${abierto ? 'is-open' : ''}`}>
         <div className="px-4 border-t border-border">
           {preguntas.map((p) => (
             <PreguntaItem
@@ -82,7 +82,7 @@ export function SeccionAccordion({
             />
           ))}
         </div>
-      )}
+      </div>
     </div>
   )
 }

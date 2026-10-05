@@ -4,7 +4,6 @@ import {
   Search,
   Plus,
   ChevronDown,
-  ChevronUp,
   X,
   ExternalLink,
   FileText,
@@ -650,20 +649,17 @@ export function Inventario() {
                         className="mt-2 flex items-center gap-1 text-sm text-primary"
                         style={{ fontWeight: 600 }}
                       >
-                        {expanded ? (
-                          <><ChevronUp className="w-4 h-4" />Ocultar historial</>
-                        ) : (
-                          <><ChevronDown className="w-4 h-4" />Ver historial</>
-                        )}
+                        <ChevronDown className={`accordion-arrow w-4 h-4 ${expanded ? 'is-open' : ''}`} />
+                        {expanded ? 'Ocultar historial' : 'Ver historial'}
                       </button>
                     </div>
-                    {expanded && (
+                    <div className={`accordion-rows ${expanded ? 'is-open' : ''}`}>
                       <HistorialInline
                         movimientos={historialCache[key] ?? []}
                         loading={loadingHistorial === key}
                         ranchoVisible={false}
                       />
-                    )}
+                    </div>
                   </div>
                 )
               })
@@ -699,20 +695,17 @@ export function Inventario() {
                         className="mt-2 flex items-center gap-1 text-sm text-primary"
                         style={{ fontWeight: 600 }}
                       >
-                        {expanded ? (
-                          <><ChevronUp className="w-4 h-4" />Ocultar historial</>
-                        ) : (
-                          <><ChevronDown className="w-4 h-4" />Ver historial</>
-                        )}
+                        <ChevronDown className={`accordion-arrow w-4 h-4 ${expanded ? 'is-open' : ''}`} />
+                        {expanded ? 'Ocultar historial' : 'Ver historial'}
                       </button>
                     </div>
-                    {expanded && (
+                    <div className={`accordion-rows ${expanded ? 'is-open' : ''}`}>
                       <HistorialInline
                         movimientos={historialCache[key] ?? []}
                         loading={loadingHistorial === key}
                         ranchoVisible
                       />
-                    )}
+                    </div>
                   </div>
                 )
               })

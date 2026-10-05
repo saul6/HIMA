@@ -79,7 +79,7 @@ function StaticSheet({ open, onClose, height, title, children, raised }: {
     <>
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
       <div
-        className={`${PANEL_CLASS} ${raised ? 'bottom-3' : 'bottom-0'}`}
+        className={`${PANEL_CLASS} ${raised ? 'bottom-3' : 'bottom-0'} sheet-desktop-fade`}
         style={height ? { height } : { maxHeight: '85vh' }}
       >
         {title && <SheetHeader title={title} onClose={onClose} />}

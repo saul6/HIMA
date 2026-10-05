@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
-import { CheckCircle2, AlertTriangle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, ChevronDown, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -415,16 +415,12 @@ export function FirmasRegistro({
         className="flex items-center gap-1 text-xs transition-colors"
         style={{ color: 'var(--muted-foreground)' }}
       >
-        {mostrarHistorial ? (
-          <ChevronUp className="w-3 h-3" />
-        ) : (
-          <ChevronDown className="w-3 h-3" />
-        )}
+        <ChevronDown className={`accordion-arrow w-3 h-3 ${mostrarHistorial ? 'is-open' : ''}`} />
         {mostrarHistorial ? 'Ocultar historial' : 'Ver historial de firmas'}
       </button>
 
       {/* Historial */}
-      {mostrarHistorial && (
+      <div className={`accordion-rows ${mostrarHistorial ? 'is-open' : ''}`}>
         <div className="mt-2 space-y-2">
           {cargandoHistorial ? (
             <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--muted-foreground)' }} />
@@ -479,7 +475,7 @@ export function FirmasRegistro({
             ))
           )}
         </div>
-      )}
+      </div>
     </div>
   )
 }

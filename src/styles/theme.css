@@ -467,6 +467,56 @@ button:not(:disabled):active:not(.no-press),
   }
 }
 
+/* Desplegables existentes (historial de firmas, historial de Inventario,
+   acordeones de auditoría) — altura real vía grid-template-rows 0fr↔1fr.
+   El hijo directo necesita overflow:hidden para poder encogerse a 0fr. */
+.accordion-rows {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--motion-base) var(--ease-out);
+}
+.accordion-rows.is-open {
+  grid-template-rows: 1fr;
+}
+.accordion-rows > * {
+  overflow: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .accordion-rows {
+    transition: none;
+  }
+}
+
+/* Flecha de desplegable — gira 180° en vez de intercambiar ícono. */
+.accordion-arrow {
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+.accordion-arrow.is-open {
+  transform: rotate(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .accordion-arrow {
+    transition: none;
+  }
+}
+
+/* BottomSheet por defecto (sin animateFrom, ~68 usos) — en escritorio entra
+   con fade + escala desde 0.96; en móvil queda igual (sin animación). */
+@keyframes sheetDesktopIn {
+  from { opacity: 0; transform: translateY(-50%) scale(0.96); }
+  to { opacity: 1; transform: translateY(-50%) scale(1); }
+}
+@media (min-width: 768px) {
+  .sheet-desktop-fade {
+    animation: sheetDesktopIn var(--motion-base) var(--ease-out) both;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheet-desktop-fade {
+    animation: none;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
