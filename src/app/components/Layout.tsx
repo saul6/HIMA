@@ -224,10 +224,17 @@ export function Layout() {
               {initials}
             </div>
             <div className="hidden lg:block min-w-0">
-              <p className="text-sm truncate" style={{ color: 'var(--foreground)', fontWeight: 600 }}>
+              <p
+                className="text-sm truncate"
+                style={{ color: 'var(--foreground)', fontWeight: 600 }}
+                title={profile?.nombre_completo ?? undefined}
+              >
                 {profile?.nombre_completo ?? '—'}
               </p>
-              <p className="text-xs text-muted-foreground truncate">
+              <p
+                className="text-xs text-muted-foreground truncate"
+                title={ROL_LABELS[profile?.rol ?? ''] ?? profile?.rol ?? undefined}
+              >
                 {ROL_LABELS[profile?.rol ?? ''] ?? profile?.rol ?? '—'}
               </p>
             </div>
@@ -359,10 +366,17 @@ export function Layout() {
               {initials}
             </div>
             <div className="min-w-0">
-              <p className="text-sm truncate font-semibold" style={{ color: 'var(--foreground)' }}>
+              <p
+                className="text-sm truncate font-semibold"
+                style={{ color: 'var(--foreground)' }}
+                title={profile?.nombre_completo ?? undefined}
+              >
                 {profile?.nombre_completo ?? '—'}
               </p>
-              <p className="text-xs truncate text-muted-foreground">
+              <p
+                className="text-xs truncate text-muted-foreground"
+                title={ROL_LABELS[profile?.rol ?? ''] ?? profile?.rol ?? undefined}
+              >
                 {ROL_LABELS[profile?.rol ?? ''] ?? profile?.rol ?? '—'}
               </p>
             </div>

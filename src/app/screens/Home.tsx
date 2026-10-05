@@ -28,6 +28,8 @@ import { SPRING_SUAVE } from '@/lib/motion'
 
 const MAX_PINNED = 4
 const DURACION_CONTADOR_S = 1.1
+// Foco visible por teclado — nunca `ring-*` (usa box-shadow, prohibido).
+const FOCUS_RING = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -212,7 +214,7 @@ function HallazgosCard({
     return (
       <Link
         to="/inocuidad/acciones-correctivas"
-        className="block rounded-xl p-4 border"
+        className={`block rounded-xl p-4 border ${FOCUS_RING}`}
         style={{
           backgroundColor: 'var(--agro-warning-fill)',
           borderColor: 'var(--agro-amber)',
@@ -251,6 +253,7 @@ interface CategoriaPopupProps {
 
 function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloqueado }: CategoriaPopupProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
+  const listaRef = useRef<HTMLDivElement>(null)
   const GrupoIcon = resolverIcono(grupo.icono)
   const prefersReducedMotion =
     typeof window !== 'undefined' &&
@@ -264,6 +267,16 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
     const id = setTimeout(() => setAnimating(false), totalMs)
     return () => clearTimeout(id)
   }, [animating, grupo.modulos.length])
+
+  // Borde de la cabecera: transparente hasta que la lista tenga scroll
+  const [listaConScroll, setListaConScroll] = useState(false)
+  useEffect(() => {
+    const el = listaRef.current
+    if (!el) return
+    function onScroll() { setListaConScroll(el!.scrollTop > 0) }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [])
 
   // Foco inicial + trampa de foco + Esc
   useEffect(() => {
@@ -313,8 +326,12 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
           />
         </div>
 
-        {/* Cabecera */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
+        {/* Cabecera — borde inferior transparente hasta que la lista haga scroll */}
+        <div
+          className={`flex items-center gap-3 px-4 py-3 border-b transition-colors duration-[var(--motion-fast)] ${
+            listaConScroll ? 'border-border' : 'border-transparent'
+          }`}
+        >
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{ backgroundColor: 'var(--agro-success-fill)' }}
@@ -342,7 +359,7 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-muted flex-shrink-0"
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-muted flex-shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             aria-label="Cerrar"
           >
             <X className="w-4 h-4 text-muted-foreground" />
@@ -351,6 +368,7 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
 
         {/* Lista de módulos — overflow oculto mientras dura el stagger */}
         <div
+          ref={listaRef}
           className="no-scrollbar"
           style={{ maxHeight: 'calc(85vh - 9rem)', overflowY: animating ? 'hidden' : 'auto' }}
         >
@@ -371,7 +389,7 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
                 {esBloqueado ? (
                   <button
                     onClick={() => onBloqueado(modulo)}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 transition-colors text-left"
+                    className={`w-full flex items-center gap-3 px-4 py-3.5 transition-colors text-left ${FOCUS_RING}`}
                     style={{ opacity: 0.55 }}
                   >
                     <div
@@ -389,7 +407,7 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
                   <Link
                     to={modulo.ruta}
                     onClick={onClose}
-                    className="flex items-center gap-3 px-4 py-3.5 hover:bg-muted transition-colors"
+                    className={`group flex items-center gap-3 px-4 py-3.5 hover:bg-muted transition-colors ${FOCUS_RING}`}
                   >
                     <div
                       className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -420,7 +438,7 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
                             }
                           }
                         }}
-                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors hover:bg-accent"
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors hover:bg-accent ${FOCUS_RING}`}
                         aria-label={esFijado ? 'Quitar de accesos rápidos' : 'Fijar en accesos rápidos'}
                         title={esFijado ? 'Quitar' : 'Fijar'}
                       >
@@ -433,7 +451,7 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
                         />
                       </button>
                     )}
-                    <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform duration-[var(--motion-fast)] group-hover:translate-x-0.5" />
                   </Link>
                 )}
               </div>
@@ -480,14 +498,14 @@ function UpsellModal({ modulo, onClose }: { modulo: ModuloVisible | null; onClos
           </div>
           <a
             href={mailtoHref}
-            className="h-9 px-6 rounded-lg text-sm inline-flex items-center justify-center w-full max-w-xs"
+            className={`h-9 px-6 rounded-lg text-sm inline-flex items-center justify-center w-full max-w-xs ${FOCUS_RING}`}
             style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
           >
             Contactar para activarlo
           </a>
           <button
             onClick={onClose}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className={`text-xs text-muted-foreground hover:text-foreground transition-colors ${FOCUS_RING}`}
           >
             Cerrar
           </button>
@@ -665,7 +683,7 @@ export function Home() {
           <Link
             to="/"
             aria-label="Ir al inicio"
-            className="flex-shrink-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
+            className="flex-shrink-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             <MadyLogo theme={resolvedTheme} className="h-8 w-auto" />
           </Link>
@@ -679,11 +697,22 @@ export function Home() {
           </div>
           <button
             onClick={e => cycleTheme(e.currentTarget as HTMLElement)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary flex-shrink-0"
+            className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden transition-colors hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring flex-shrink-0"
             aria-label={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
             title={themeLabel}
           >
-            <ThemeIcon className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={theme}
+                className="flex"
+                initial={reducedMotion ? false : { rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={reducedMotion ? undefined : { rotate: 90, opacity: 0 }}
+                transition={reducedMotion ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <ThemeIcon className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
+              </motion.span>
+            </AnimatePresence>
           </button>
         </div>
       </header>
@@ -732,7 +761,7 @@ export function Home() {
                 <Link
                   key={m.modulo}
                   to={m.ruta}
-                  className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg"
+                  className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg ${FOCUS_RING}`}
                   style={{
                     backgroundColor: 'rgba(153,60,29,0.12)',
                     color: 'var(--agro-danger-text)',
@@ -776,7 +805,7 @@ export function Home() {
             placeholder="Buscar formato…"
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
-            className="w-full h-9 pl-9 pr-4 rounded-lg text-sm outline-none transition-colors"
+            className="w-full h-9 pl-9 pr-4 rounded-lg text-sm outline-none transition-colors placeholder:text-muted-foreground"
             style={{
               backgroundColor: 'var(--input-background)',
               border: '1px solid var(--border)',
@@ -806,7 +835,7 @@ export function Home() {
                       <button
                         key={modulo.codigo}
                         onClick={() => { setBusqueda(''); setModuloBloqueadoUpsell(modulo) }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[var(--agro-background)] border-[var(--border)] text-[var(--muted-foreground)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[var(--agro-background)] border-[var(--border)] text-[var(--muted-foreground)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                         style={{ opacity: 0.55, fontWeight: 500, ...searchCascadeStyle(index, !reducedMotion) }}
                       >
                         <Lock className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
@@ -819,7 +848,7 @@ export function Home() {
                       key={modulo.codigo}
                       to={modulo.ruta}
                       onClick={() => setBusqueda('')}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[var(--agro-background)] border-[var(--border)] text-[var(--foreground)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--accent)] hover:border-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[var(--agro-background)] border-[var(--border)] text-[var(--foreground)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--accent)] hover:border-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                       style={{ fontWeight: 500, ...searchCascadeStyle(index, !reducedMotion) }}
                     >
                       <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--primary)' }} />
@@ -875,7 +904,7 @@ export function Home() {
         ) && (
           <Link
             to="/inocuidad/agenda"
-            className="hover-lift flex items-center gap-3 rounded-xl p-3 border"
+            className={`hover-lift flex items-center gap-3 rounded-xl p-3 border ${FOCUS_RING}`}
             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
           >
             <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--agro-success-fill)' }}>
@@ -1011,7 +1040,7 @@ export function Home() {
                         {bloqueado ? (
                           <button
                             onClick={() => setModuloBloqueadoUpsell(modulo)}
-                            className={`w-full flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card transition-colors ${brillante ? 'pin-brillo' : ''}`}
+                            className={`w-full flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card transition-colors ${brillante ? 'pin-brillo' : ''} ${FOCUS_RING}`}
                             style={{ opacity: 0.55 }}
                           >
                             <div
@@ -1031,7 +1060,7 @@ export function Home() {
                         ) : (
                           <Link
                             to={modulo.ruta}
-                            className={`hover-lift flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card ${brillante ? 'pin-brillo' : ''}`}
+                            className={`hover-lift flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card ${brillante ? 'pin-brillo' : ''} ${FOCUS_RING}`}
                           >
                             <div
                               className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -1049,7 +1078,7 @@ export function Home() {
                         )}
                         <button
                           onClick={() => toggleFijar(modulo.codigo)}
-                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                          className={`absolute top-1.5 right-1.5 w-6 h-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors ${FOCUS_RING}`}
                           aria-label="Quitar de accesos rápidos"
                           title="Quitar"
                         >
@@ -1067,7 +1096,7 @@ export function Home() {
             {esAdmin && !loading && terminosSitio.singular === 'Rancho' && (
               <Link
                 to="/equipo/actividad"
-                className="hover-lift flex items-center gap-3 bg-card border border-border rounded-xl p-4"
+                className={`hover-lift flex items-center gap-3 bg-card border border-border rounded-xl p-4 ${FOCUS_RING}`}
               >
                 <div
                   className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -1121,7 +1150,7 @@ export function Home() {
                       </p>
                       <Link
                         to="/nueva-aplicacion"
-                        className="inline-block mt-3 h-8 px-4 rounded-lg text-sm transition-colors"
+                        className={`inline-block mt-3 h-8 px-4 rounded-lg text-sm transition-colors ${FOCUS_RING}`}
                         style={{
                           lineHeight: '32px',
                           fontWeight: 600,
@@ -1139,7 +1168,7 @@ export function Home() {
                       </p>
                       <Link
                         to="/historial"
-                        className="inline-block mt-3 h-8 px-4 rounded-lg text-sm transition-colors"
+                        className={`inline-block mt-3 h-8 px-4 rounded-lg text-sm transition-colors ${FOCUS_RING}`}
                         style={{
                           lineHeight: '32px',
                           fontWeight: 600,
@@ -1165,7 +1194,7 @@ export function Home() {
                       <Link
                         key={app.id}
                         to={`/historial/${app.id}`}
-                        className="flex items-center gap-3 px-4 py-3 hover:opacity-80 transition-opacity"
+                        className={`group flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors ${FOCUS_RING}`}
                         style={cascadeStyle(index, !reducedMotion && primeraCargaDashboardRef.current)}
                       >
                         <div
@@ -1180,14 +1209,14 @@ export function Home() {
                           </p>
                           <p className="text-xs text-muted-foreground">{formatFechaCorta(app.fecha)}</p>
                         </div>
-                        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 transition-transform duration-[var(--motion-fast)] group-hover:translate-x-0.5" />
                       </Link>
                     )
                   })}
                   {recientes.length > 5 && (
                     <Link
                       to="/historial"
-                      className="flex items-center justify-center gap-1 py-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      className={`flex items-center justify-center gap-1 py-3 text-xs text-muted-foreground hover:text-foreground transition-colors ${FOCUS_RING}`}
                     >
                       Ver todo el historial <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
@@ -1223,7 +1252,7 @@ export function Home() {
                 <TriangleAlert className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
                 <p className="text-xs flex-1" style={{ color: 'var(--agro-danger-text)' }}>
                   Error al cargar módulos.{' '}
-                  <button className="underline" onClick={refetchModulos}>
+                  <button className={`underline ${FOCUS_RING}`} onClick={refetchModulos}>
                     Reintentar
                   </button>
                 </p>
@@ -1244,7 +1273,7 @@ export function Home() {
                           else btnRefs.current.delete(grupo.key)
                         }}
                         onClick={() => abrirCategoria(grupo.key)}
-                        className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border bg-card transition-all duration-150 hover:border-secondary hover:-translate-y-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-1"
+                        className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border bg-card transition-all duration-[var(--motion-fast)] hover:-translate-y-[2px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                         style={cascadeStyle(index, !reducedMotion && primeraCargaModulosRef.current)}
                       >
                         <div
