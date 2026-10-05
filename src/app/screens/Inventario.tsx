@@ -1,5 +1,5 @@
 ﻿import { useState, useCallback, useMemo, useRef, useEffect } from "react"
-import { motion, useReducedMotion } from "motion/react"
+import { useReducedMotion } from "motion/react"
 import {
   Search,
   Plus,
@@ -27,6 +27,7 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { Portal } from '@/app/components/Portal'
+import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 
 const LOW_STOCK = 5
 
@@ -559,28 +560,7 @@ export function Inventario() {
 
         {/* Filtros por categoría */}
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {categorias.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveFilter(cat)}
-              className={`relative flex-shrink-0 px-4 h-9 rounded-full whitespace-nowrap text-sm ${
-                activeFilter === cat
-                  ? "text-white"
-                  : "bg-card border border-border text-foreground transition-colors"
-              }`}
-              style={{ fontWeight: 600 }}
-            >
-              {activeFilter === cat && (
-                <motion.span
-                  layoutId="inventario-filtro-activo"
-                  className="absolute inset-0 rounded-full bg-primary"
-                  style={{ zIndex: -1 }}
-                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                />
-              )}
-              {cat}
-            </button>
-          ))}
+          <FiltroPildoras options={categorias} value={activeFilter} onChange={setActiveFilter} />
         </div>
 
         {/* Estado de carga / error */}

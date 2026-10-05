@@ -637,10 +637,11 @@ export function EjecucionJornada() {
                 <button
                   key={m}
                   onClick={() => setModuloActivo(m)}
-                  className="flex-shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors"
+                  aria-pressed={moduloActivo === m}
+                  className="flex-shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                   style={{
-                    backgroundColor: moduloActivo === m ? 'var(--primary)' : 'var(--muted)',
-                    color: moduloActivo === m ? '#fff' : 'var(--muted-foreground)',
+                    backgroundColor: moduloActivo === m ? 'var(--accent)' : 'var(--muted)',
+                    color: moduloActivo === m ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
                   }}
                 >
                   {m}

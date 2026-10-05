@@ -8,6 +8,7 @@ import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { FotoEvidencia } from '@/app/components/FotoEvidencia'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { toast } from 'sonner'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { useAuthContext } from '@/context/AuthContext'
@@ -356,27 +357,16 @@ export function AccionesCorrectivas() {
 
       {/* Filter chips */}
       <div className="px-4 pt-4 pb-2 flex gap-2 flex-wrap">
-        {(
-          [
-            ['todas', 'Todas', items.length],
-            ['pendientes', 'Pendientes', conteos.pendientes],
-            ['cerradas', 'Cerradas', conteos.cerradas],
-          ] as [FiltroEstado, string, number][]
-        ).map(([key, label, count]) => (
-          <button
-            key={key}
-            onClick={() => setFiltro(key)}
-            className="flex items-center gap-1.5 h-8 px-3 rounded-full text-sm transition-colors"
-            style={{
-              backgroundColor: filtro === key ? 'var(--primary)' : 'var(--muted)',
-              color: filtro === key ? '#fff' : 'var(--muted-foreground)',
-              fontWeight: 600,
-            }}
-          >
-            {label}
-            <span className="text-xs opacity-75">({count})</span>
-          </button>
-        ))}
+        <FiltroPildoras<FiltroEstado>
+          options={[
+            { value: 'todas', label: <>Todas <span className="text-xs opacity-75">({items.length})</span></> },
+            { value: 'pendientes', label: <>Pendientes <span className="text-xs opacity-75">({conteos.pendientes})</span></> },
+            { value: 'cerradas', label: <>Cerradas <span className="text-xs opacity-75">({conteos.cerradas})</span></> },
+          ]}
+          value={filtro}
+          onChange={setFiltro}
+          inactiveClassName="bg-muted border-transparent text-muted-foreground hover:bg-card"
+        />
       </div>
 
       {/* Content */}
