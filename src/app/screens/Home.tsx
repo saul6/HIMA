@@ -88,9 +88,11 @@ function resaltarCoincidencia(nombre: string, query: string): ReactNode {
 
 // ── Sub-componentes locales ────────────────────────────────────────────────────
 
-/** Contador animado 0 → valor final, una sola vez por montaje (ver
- * `animatedOnceRef`). `format` decide el texto exacto (mismos decimales/
- * unidades que hoy); si `value` es null no anima — solo pinta el fallback. */
+/** Contador animado: en cada montaje cuenta desde 0; si el valor cambia con
+ * el componente ya montado (ver `prevValorRef`), anima del valor anterior al
+ * nuevo en vez de saltar directo. `format` decide el texto exacto (mismos
+ * decimales/unidades que hoy); si `value` es null no anima — solo pinta el
+ * fallback. */
 function AnimatedNumber({
   value,
   format,
@@ -101,27 +103,30 @@ function AnimatedNumber({
   reducedMotion: boolean
 }) {
   const spanRef = useRef<HTMLSpanElement>(null)
-  const animatedOnceRef = useRef(false)
+  const prevValorRef = useRef<number | null>(null)
 
   useEffect(() => {
     const node = spanRef.current
     if (!node || value === null) return
-    if (reducedMotion || animatedOnceRef.current) {
+    const anterior = prevValorRef.current
+    if (reducedMotion || anterior === value) {
       node.textContent = format(value)
+      prevValorRef.current = value
       return
     }
-    animatedOnceRef.current = true
-    const controls = animate(0, value, {
+    const desde = anterior ?? 0
+    const controls = animate(desde, value, {
       duration: DURACION_CONTADOR_S,
       ease: [0.22, 1, 0.36, 1],
       onUpdate: (latest) => {
         node.textContent = format(latest)
       },
     })
+    prevValorRef.current = value
     return () => controls.stop()
   }, [value, reducedMotion, format])
 
-  return <span ref={spanRef}>{value === null ? '—' : format(value)}</span>
+  return <span ref={spanRef} className="tabular-nums">{value === null ? '—' : format(value)}</span>
 }
 
 function MetricCard({
