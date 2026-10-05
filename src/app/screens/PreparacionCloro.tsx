@@ -24,6 +24,7 @@ import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useFirmaContext } from '@/context/FirmaContext'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -299,9 +300,7 @@ export function PreparacionCloro() {
       {/* Lista de preparaciones */}
       <div className="p-4 space-y-3">
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          </div>
+          <ListaSkeleton />
         ) : preparaciones.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <FlaskConical className="w-10 h-10 text-muted-foreground mx-auto mb-2" />

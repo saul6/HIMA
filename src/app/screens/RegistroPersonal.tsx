@@ -22,6 +22,7 @@ import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useFirmaContext } from '@/context/FirmaContext'
 
 const tbl = (name: string) => (supabase as any).from(name)
@@ -429,9 +430,7 @@ export function RegistroPersonal() {
         )}
 
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-6 h-6 text-primary animate-spin" />
-          </div>
+          <ListaSkeleton />
         ) : listaTrabajadores.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <Users className="w-8 h-8 text-muted-foreground mx-auto mb-3" />

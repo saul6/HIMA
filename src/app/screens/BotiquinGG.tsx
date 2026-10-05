@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -272,9 +273,7 @@ export function BotiquinGG() {
         )}
 
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin" style={{ color: 'var(--primary)' }} />
-          </div>
+          <ListaSkeleton />
         ) : registros.length === 0 ? (
           <div
             className="border rounded-xl p-6 text-center"

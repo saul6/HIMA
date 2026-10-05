@@ -9,6 +9,7 @@ import { useActividadEquipo } from '@/hooks/useActividadEquipo'
 import type { ActividadItem } from '@/hooks/useActividadEquipo'
 import { marcarCorreccion } from '@/lib/queries'
 import { Portal } from '@/app/components/Portal'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -318,9 +319,7 @@ export function ActividadEquipo() {
 
         {/* Lista */}
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          </div>
+          <ListaSkeleton />
         ) : error ? (
           <div
             className="flex items-start gap-2 rounded-xl p-3"

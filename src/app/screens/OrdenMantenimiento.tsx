@@ -6,6 +6,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useRanchos } from '@/hooks/useRanchos'
 import {
   useM44OrdenesMantenimiento,
@@ -277,9 +278,7 @@ export function OrdenMantenimiento() {
         )}
 
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-6 h-6 text-primary animate-spin" />
-          </div>
+          <ListaSkeleton />
         ) : ordenes.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <Wrench className="w-8 h-8 text-muted-foreground mx-auto mb-3" />

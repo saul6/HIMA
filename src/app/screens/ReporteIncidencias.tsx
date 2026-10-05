@@ -9,6 +9,7 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { FotoEvidencia } from '@/app/components/FotoEvidencia'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { toast } from 'sonner'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { useAuthContext } from '@/context/AuthContext'
@@ -812,9 +813,7 @@ export function ReporteIncidencias() {
       {/* Lista de reportes */}
       <div className="p-4 space-y-3">
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          </div>
+          <ListaSkeleton />
         ) : reportes.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <ClipboardList className="w-10 h-10 text-muted-foreground mx-auto mb-2" />

@@ -4,6 +4,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
 import { codigoFormato } from '@/lib/codigoFormato'
@@ -585,9 +586,7 @@ export function MantenimientoPreventivo() {
           )}
 
           {loading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="w-6 h-6 text-primary animate-spin" />
-            </div>
+            <ListaSkeleton />
           ) : registros.length === 0 ? (
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <Settings className="w-8 h-8 text-muted-foreground mx-auto mb-3" />

@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
@@ -255,9 +256,7 @@ export function ResumenNoConformidades() {
       {/* Lista de visitas */}
       <div className="p-4 space-y-3">
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          </div>
+          <ListaSkeleton />
         ) : error ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <ClipboardX className="w-10 h-10 text-muted-foreground mx-auto mb-2" />

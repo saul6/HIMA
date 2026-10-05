@@ -32,6 +32,7 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -835,9 +836,7 @@ export function RegistroFertilizacion() {
           {/* Lista */}
           <div className="p-4 space-y-3">
             {loading ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
-              </div>
+              <ListaSkeleton />
             ) : registros.length === 0 ? (
               <div className="bg-card border border-border rounded-xl p-6 text-center">
                 <Sprout className="w-10 h-10 mx-auto mb-2" style={{ color: 'var(--muted-foreground)' }} />

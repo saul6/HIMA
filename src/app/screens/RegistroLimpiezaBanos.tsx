@@ -26,6 +26,7 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -385,9 +386,7 @@ export function RegistroLimpiezaBanos() {
       {/* Historial */}
       <div className="p-4 space-y-3">
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          </div>
+          <ListaSkeleton />
         ) : jornadas.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <Droplets className="w-10 h-10 text-muted-foreground mx-auto mb-2" />

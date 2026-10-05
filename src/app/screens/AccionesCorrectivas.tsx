@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { FotoEvidencia } from '@/app/components/FotoEvidencia'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { toast } from 'sonner'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { useAuthContext } from '@/context/AuthContext'
@@ -381,9 +382,7 @@ export function AccionesCorrectivas() {
       {/* Content */}
       <div className="px-4 pb-4">
         {loading && (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-6 h-6 text-primary animate-spin" />
-          </div>
+          <ListaSkeleton />
         )}
         {!loading && error && (
           <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--agro-danger-fill)' }}>

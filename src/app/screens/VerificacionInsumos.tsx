@@ -12,6 +12,7 @@ import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { BotonConfigurar } from '@/app/components/BotonConfigurar'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { codigoFormato } from '@/lib/codigoFormato'
@@ -703,9 +704,7 @@ export function VerificacionInsumos() {
             </div>
           )}
           {loading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="w-6 h-6 text-primary animate-spin" />
-            </div>
+            <ListaSkeleton />
           ) : registros.length === 0 ? (
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <ClipboardCheck className="w-8 h-8 text-muted-foreground mx-auto mb-3" />

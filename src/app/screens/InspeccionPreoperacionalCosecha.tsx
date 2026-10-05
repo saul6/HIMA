@@ -31,6 +31,7 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -566,9 +567,7 @@ export function InspeccionPreoperacionalCosecha() {
           )}
 
           {loading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="w-6 h-6 text-primary animate-spin" />
-            </div>
+            <ListaSkeleton />
           ) : registros.length === 0 ? (
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <ClipboardList className="w-8 h-8 text-muted-foreground mx-auto mb-3" />

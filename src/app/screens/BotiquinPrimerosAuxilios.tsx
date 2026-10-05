@@ -27,6 +27,7 @@ import type { BotiquinPDFProps } from '@/lib/pdf/m6/BotiquinPDF'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import {
   useFirmasRegistro,
   obtenerFirmasParaPdf,
@@ -536,9 +537,7 @@ export function BotiquinPrimerosAuxilios() {
       {/* Historial */}
       <div className="p-4 space-y-3">
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          </div>
+          <ListaSkeleton />
         ) : registros.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <Shield className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
