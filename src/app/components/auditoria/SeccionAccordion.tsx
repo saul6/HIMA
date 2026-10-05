@@ -40,6 +40,7 @@ export function SeccionAccordion({
       <button
         type="button"
         onClick={() => setAbierto((a) => !a)}
+        aria-expanded={abierto}
         className="w-full px-4 py-3 flex items-center gap-3 text-left"
       >
         <div className="flex-1 min-w-0">
@@ -69,7 +70,11 @@ export function SeccionAccordion({
         </div>
       </button>
 
-      <div className={`accordion-rows ${abierto ? 'is-open' : ''}`}>
+      <div
+        className={`accordion-rows ${abierto ? 'is-open' : ''}`}
+        aria-hidden={!abierto}
+        inert={!abierto ? true : undefined}
+      >
         <div className="px-4 border-t border-border">
           {preguntas.map((p) => (
             <PreguntaItem

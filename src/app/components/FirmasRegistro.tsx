@@ -412,6 +412,7 @@ export function FirmasRegistro({
       {/* Toggle historial */}
       <button
         onClick={toggleHistorial}
+        aria-expanded={mostrarHistorial}
         className="flex items-center gap-1 text-xs transition-colors"
         style={{ color: 'var(--muted-foreground)' }}
       >
@@ -420,7 +421,11 @@ export function FirmasRegistro({
       </button>
 
       {/* Historial */}
-      <div className={`accordion-rows ${mostrarHistorial ? 'is-open' : ''}`}>
+      <div
+        className={`accordion-rows ${mostrarHistorial ? 'is-open' : ''}`}
+        aria-hidden={!mostrarHistorial}
+        inert={!mostrarHistorial ? true : undefined}
+      >
         <div className="mt-2 space-y-2">
           {cargandoHistorial ? (
             <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--muted-foreground)' }} />

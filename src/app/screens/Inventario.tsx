@@ -627,6 +627,7 @@ export function Inventario() {
                       )}
                       <button
                         onClick={() => toggleHistorial(key, item.producto_id, item.rancho_id)}
+                        aria-expanded={expanded}
                         className="mt-2 flex items-center gap-1 text-sm text-primary"
                         style={{ fontWeight: 600 }}
                       >
@@ -634,7 +635,11 @@ export function Inventario() {
                         {expanded ? 'Ocultar historial' : 'Ver historial'}
                       </button>
                     </div>
-                    <div className={`accordion-rows ${expanded ? 'is-open' : ''}`}>
+                    <div
+                      className={`accordion-rows ${expanded ? 'is-open' : ''}`}
+                      aria-hidden={!expanded}
+                      inert={!expanded ? true : undefined}
+                    >
                       <HistorialInline
                         movimientos={historialCache[key] ?? []}
                         loading={loadingHistorial === key}
@@ -673,6 +678,7 @@ export function Inventario() {
                       )}
                       <button
                         onClick={() => toggleHistorial(key, item.producto_id)}
+                        aria-expanded={expanded}
                         className="mt-2 flex items-center gap-1 text-sm text-primary"
                         style={{ fontWeight: 600 }}
                       >
@@ -680,7 +686,11 @@ export function Inventario() {
                         {expanded ? 'Ocultar historial' : 'Ver historial'}
                       </button>
                     </div>
-                    <div className={`accordion-rows ${expanded ? 'is-open' : ''}`}>
+                    <div
+                      className={`accordion-rows ${expanded ? 'is-open' : ''}`}
+                      aria-hidden={!expanded}
+                      inert={!expanded ? true : undefined}
+                    >
                       <HistorialInline
                         movimientos={historialCache[key] ?? []}
                         loading={loadingHistorial === key}
