@@ -167,7 +167,7 @@ export function RondinesVigilanciaPDF({
                   const bg = idx % 2 === 1 ? ROW_ALT : PC.white
                   return (
                     <View key={item.id} style={{ flexDirection: 'row', backgroundColor: bg }}>
-                      <View style={[tdStyle, { width: COL_PUNTO, justifyContent: 'center', backgroundColor: bg }]}>
+                      <View style={[tdStyle, { width: COL_PUNTO, backgroundColor: bg }]}>
                         <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{item.nombre}</Text>
                       </View>
                       {RONDAS.map((n) => {

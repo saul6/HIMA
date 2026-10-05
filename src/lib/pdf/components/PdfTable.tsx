@@ -97,7 +97,7 @@ export function PdfTableCell({ children, width, align = 'center' }: PdfTableCell
         paddingBottom: 3,
         paddingLeft: 3,
         paddingRight: 3,
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
       }}
     >
       <Text

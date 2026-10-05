@@ -78,7 +78,6 @@ const tdStyle = {
   borderRightColor: PC.border,
   borderBottomWidth: 1,
   borderBottomColor: PC.border,
-  justifyContent: 'center' as const,
   alignItems: 'flex-start' as const,
   padding: 3,
 }

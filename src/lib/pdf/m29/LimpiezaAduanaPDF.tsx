@@ -86,7 +86,7 @@ function valorDisplay(v: ValorM29PDF | undefined): { text: string; color: string
 // ── Estilos de celda inline ───────────────────────────────────────────────────
 
 const thStyle = { padding: 3, borderRightWidth: 1, borderRightColor: '#5599CC', borderBottomWidth: 1, borderBottomColor: '#5599CC', justifyContent: 'center', alignItems: 'center' } as const
-const tdStyle = { borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, justifyContent: 'center', alignItems: 'center', padding: 1 } as const
+const tdStyle = { borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, padding: 1 } as const
 
 // ── LimpiezaAduanaPagina ──────────────────────────────────────────────────────
 
@@ -153,7 +153,7 @@ export function LimpiezaAduanaPagina({
           const bg = idx % 2 === 1 ? ROW_ALT : PC.white
           return (
             <View key={item.id} style={{ flexDirection: 'row', backgroundColor: bg }}>
-              <View style={{ width: ITEM_COL_W, padding: 3, borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, justifyContent: 'center', backgroundColor: bg }}>
+              <View style={{ width: ITEM_COL_W, padding: 3, borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, backgroundColor: bg }}>
                 <Text style={{ fontSize: 6, color: PC.fieldValue }}>{item.nombre}</Text>
                 <Text style={{ fontSize: 5.5, color: PC.textSub, marginTop: 0.5 }}>Frec: {item.frecuencia}</Text>
               </View>

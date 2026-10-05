@@ -163,7 +163,7 @@ export function InspeccionAlmacenEmpaquePagina({
           const bg = idx % 2 === 1 ? ROW_ALT : PC.white
           return (
             <View key={punto.id} style={{ flexDirection: 'row', backgroundColor: bg }}>
-              <View style={{ width: PUNTO_COL, padding: 3, borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, justifyContent: 'center', backgroundColor: bg }}>
+              <View style={{ width: PUNTO_COL, padding: 3, borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, backgroundColor: bg }}>
                 <Text style={{ fontSize: 5.5, color: PC.fieldValue }}>{punto.orden}. {punto.texto}</Text>
               </View>
               {todosLosDias.map((d) => {

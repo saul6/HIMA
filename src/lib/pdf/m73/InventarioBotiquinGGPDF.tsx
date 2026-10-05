@@ -52,7 +52,7 @@ function HC({ w, children, right = true }: { w: number; children?: React.ReactNo
 
 function DC({ w, children, bg, right = true, left = false }: { w: number; children?: React.ReactNode; bg?: string; right?: boolean; left?: boolean }) {
   return (
-    <View style={{ width: w, minWidth: w, padding: '3px 4px', backgroundColor: bg ?? PC.white, justifyContent: 'center', borderRightWidth: right ? 1 : 0, borderRightColor: PC.border, alignItems: left ? 'flex-start' : 'center' }}>
+    <View style={{ width: w, minWidth: w, padding: '3px 4px', backgroundColor: bg ?? PC.white, borderRightWidth: right ? 1 : 0, borderRightColor: PC.border, alignItems: left ? 'flex-start' : 'center' }}>
       <Text style={{ fontSize: 7.5, color: PC.fieldValue, textAlign: left ? 'left' : 'center' }}>{children ?? ''}</Text>
     </View>
   )

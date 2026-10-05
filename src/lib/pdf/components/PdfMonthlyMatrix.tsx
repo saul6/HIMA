@@ -108,7 +108,7 @@ export function PdfMonthlyMatrix({
                   width: itemColW,
                   borderWidth: 1, borderColor: PC.border,
                   paddingVertical: 2, paddingHorizontal: 4,
-                  justifyContent: 'center',
+                  justifyContent: 'flex-start',
                   backgroundColor: bg,
                 }}>
                   <Text style={{ fontSize: 5.5, color: PC.fieldValue }}>{item.item}</Text>

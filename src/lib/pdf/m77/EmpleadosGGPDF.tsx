@@ -66,7 +66,7 @@ function TablaEmpleados({ empleados }: { empleados: EmpleadoGGFilaPDF[] }) {
         const h = 24
         return (
           <View key={emp.id} style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: PC.border, minHeight: h }}>
-            <View style={{ width: COL.nombre, padding: '4px', backgroundColor: bg, justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
+            <View style={{ width: COL.nombre, padding: '4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
               <Text style={{ fontSize: 7.5, color: PC.fieldValue, fontFamily: 'Helvetica-Bold' }}>{emp.nombre}</Text>
             </View>
             <View style={{ width: COL.fecha, padding: '4px', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
@@ -75,10 +75,10 @@ function TablaEmpleados({ empleados }: { empleados: EmpleadoGGFilaPDF[] }) {
             <View style={{ width: COL.telefono, padding: '4px', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
               <Text style={{ fontSize: 7, color: PC.fieldValue }}>{emp.telefono ?? ''}</Text>
             </View>
-            <View style={{ width: COL.domicilio, padding: '4px', backgroundColor: bg, justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
+            <View style={{ width: COL.domicilio, padding: '4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
               <Text style={{ fontSize: 7, color: PC.fieldValue }}>{emp.domicilio ?? ''}</Text>
             </View>
-            <View style={{ width: COL.contacto, padding: '4px', backgroundColor: bg, justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
+            <View style={{ width: COL.contacto, padding: '4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
               <Text style={{ fontSize: 7, color: PC.fieldValue }}>{emp.persona_contacto ?? ''}</Text>
             </View>
             {/* Firma — blank for physical signature */}

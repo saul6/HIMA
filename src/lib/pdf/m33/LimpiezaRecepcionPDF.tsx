@@ -65,7 +65,7 @@ function valorDisplay(v: ValorM33PDF | undefined) {
 }
 
 const thStyle = { padding: 3, borderRightWidth: 1, borderRightColor: '#5599CC', borderBottomWidth: 1, borderBottomColor: '#5599CC', justifyContent: 'center', alignItems: 'center' } as const
-const tdStyle = { borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, justifyContent: 'center', alignItems: 'center', padding: 1 } as const
+const tdStyle = { borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, padding: 1 } as const
 
 export function LimpiezaRecepcionPagina({
   instalacion, instalacionCodigo, anio, mes, items, resultados, diasData,

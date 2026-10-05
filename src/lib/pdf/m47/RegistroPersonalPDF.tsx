@@ -257,13 +257,13 @@ export function RegistroPersonalPDF({
                 <View style={[tdStyle, { width: COL_NO, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue, textAlign: 'center' }}>{w.numero}</Text>
                 </View>
-                <View style={[tdStyle, { width: COL_PUESTO, backgroundColor: bg, justifyContent: 'center' }]}>
+                <View style={[tdStyle, { width: COL_PUESTO, backgroundColor: bg }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.puesto)}</Text>
                 </View>
-                <View style={[tdStyle, { width: COL_NOMBRE, backgroundColor: bg, justifyContent: 'center' }]}>
+                <View style={[tdStyle, { width: COL_NOMBRE, backgroundColor: bg }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue, fontFamily: 'Helvetica-Bold' }}>{w.nombre}</Text>
                 </View>
-                <View style={[tdStyle, { width: COL_DIR, backgroundColor: bg, justifyContent: 'center' }]}>
+                <View style={[tdStyle, { width: COL_DIR, backgroundColor: bg }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.direccion)}</Text>
                 </View>
                 <View style={[tdStyle, { width: COL_TCASA, backgroundColor: bg, justifyContent: 'center' }]}>
@@ -275,7 +275,7 @@ export function RegistroPersonalPDF({
                 <View style={[tdStyle, { width: COL_FNAC, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue, textAlign: 'center' }}>{fmtFecha(w.fecha_nacimiento)}</Text>
                 </View>
-                <View style={[tdStyle, { width: COL_EM_NOM, backgroundColor: bg, justifyContent: 'center' }]}>
+                <View style={[tdStyle, { width: COL_EM_NOM, backgroundColor: bg }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.emergencia_nombre)}</Text>
                 </View>
                 <View style={[tdStyle, { width: COL_EM_PAR, backgroundColor: bg, justifyContent: 'center' }]}>
@@ -298,7 +298,7 @@ export function RegistroPersonalPDF({
                     </Text>
                   </View>
                 ))}
-                <View style={[tdStyle, { width: COL_OBS, backgroundColor: bg, justifyContent: 'center', borderRightWidth: 0 }]}>
+                <View style={[tdStyle, { width: COL_OBS, backgroundColor: bg, borderRightWidth: 0 }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.observaciones)}</Text>
                 </View>
               </View>

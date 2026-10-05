@@ -50,7 +50,6 @@ const tdStyle = {
   borderRightColor: PC.border,
   borderBottomWidth: 1,
   borderBottomColor: PC.border,
-  justifyContent: 'center' as const,
   alignItems: 'center' as const,
   padding: 3,
 }

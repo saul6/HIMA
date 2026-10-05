@@ -98,7 +98,6 @@ const s = StyleSheet.create({
     paddingBottom: 8,
     paddingLeft: 8,
     paddingRight: 8,
-    justifyContent: 'center',
   },
   foto: {
     width: COL_EVIDENCIA - 12,

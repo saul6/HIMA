@@ -67,7 +67,6 @@ export function MonitoreoRoedoresPage({
     borderRightColor: PC.border,
     borderBottomWidth: 1,
     borderBottomColor: PC.border,
-    justifyContent: 'center',
     alignItems: 'center',
     padding: 2,
   } as const

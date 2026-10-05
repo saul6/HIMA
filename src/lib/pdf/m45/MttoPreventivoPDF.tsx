@@ -116,7 +116,6 @@ const itemCellStyle = {
   paddingTop: 2,
   paddingBottom: 2,
   paddingLeft: 3,
-  justifyContent: 'center',
 } as const
 
 const frecCellStyle = {

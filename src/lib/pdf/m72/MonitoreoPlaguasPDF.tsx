@@ -59,8 +59,8 @@ function HC({ w, children, right = true, last = false }: { w: number; children?:
 
 function DC({ w, children, bg, right = true }: { w: number; children?: React.ReactNode; bg?: string; right?: boolean }) {
   return (
-    <View style={{ width: w, minWidth: w, padding: '3px 3px', backgroundColor: bg ?? PC.white, alignItems: 'center', justifyContent: 'center', borderRightWidth: right ? 1 : 0, borderRightColor: PC.border }}>
-      <Text style={{ fontSize: 6.5, color: PC.fieldValue, textAlign: 'center' }}>{children ?? ''}</Text>
+    <View style={{ width: w, minWidth: w, padding: '3px 3px', backgroundColor: bg ?? PC.white, borderRightWidth: right ? 1 : 0, borderRightColor: PC.border }}>
+      <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{children ?? ''}</Text>
     </View>
   )
 }

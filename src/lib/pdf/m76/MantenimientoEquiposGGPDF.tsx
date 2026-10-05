@@ -237,10 +237,10 @@ export function MantenimientoEquiposGGConsolidadoPDF({ filas, orgNombre }: {
                 <View style={{ width: COL.fecha, padding: '3px 4px', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{formatFechaCorta(f.fecha)}</Text>
                 </View>
-                <View style={{ width: COL.rancho, padding: '3px 4px', backgroundColor: bg, justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
+                <View style={{ width: COL.rancho, padding: '3px 4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.rancho}</Text>
                 </View>
-                <View style={{ width: COL.equipo, padding: '3px 4px', backgroundColor: bg, justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
+                <View style={{ width: COL.equipo, padding: '3px 4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.equipo ?? '—'}</Text>
                 </View>
                 <View style={{ width: COL.actividad, padding: '3px 4px', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
@@ -254,10 +254,10 @@ export function MantenimientoEquiposGGConsolidadoPDF({ filas, orgNombre }: {
                     </View>
                   )
                 })}
-                <View style={{ width: COL.realizo, padding: '3px 4px', backgroundColor: bg, justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
+                <View style={{ width: COL.realizo, padding: '3px 4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.realizo ?? '—'}</Text>
                 </View>
-                <View style={{ flex: 1, padding: '3px 4px', backgroundColor: bg, justifyContent: 'center' }}>
+                <View style={{ flex: 1, padding: '3px 4px', backgroundColor: bg }}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.descripcion_trabajo ?? ''}</Text>
                 </View>
               </View>

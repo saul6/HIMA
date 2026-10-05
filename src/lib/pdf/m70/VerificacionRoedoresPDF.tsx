@@ -88,8 +88,8 @@ function BoolCell({ val, bg }: { val: boolean; bg: string }) {
 
 function DC({ w, children, bg, right = true }: { w: number; children?: React.ReactNode; bg?: string; right?: boolean }) {
   return (
-    <View style={{ width: w, minWidth: w, padding: '3px 4px', backgroundColor: bg ?? PC.white, alignItems: 'center', justifyContent: 'center', borderRightWidth: right ? 1 : 0, borderRightColor: PC.border }}>
-      <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{children ?? ''}</Text>
+    <View style={{ width: w, minWidth: w, padding: '3px 4px', backgroundColor: bg ?? PC.white, borderRightWidth: right ? 1 : 0, borderRightColor: PC.border }}>
+      <Text style={{ fontSize: 7, color: PC.fieldValue }}>{children ?? ''}</Text>
     </View>
   )
 }

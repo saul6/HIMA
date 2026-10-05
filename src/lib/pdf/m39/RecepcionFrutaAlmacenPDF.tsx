@@ -62,7 +62,6 @@ const TD = {
   padding: 3,
   borderRightWidth: 1,
   borderRightColor: PC.border,
-  justifyContent: 'center',
 } as const
 
 export function RecepcionFrutaAlmacenPDF({
