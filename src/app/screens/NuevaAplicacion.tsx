@@ -1,5 +1,6 @@
-﻿import { useState, useMemo, useEffect } from "react";
+﻿import { useState, useMemo, useEffect, useRef } from "react";
 import { ChevronLeft, AlertTriangle } from "lucide-react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useAuthContext } from "@/context/AuthContext";
@@ -30,10 +31,28 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 // Redondea a máximo 4 decimales (evita notación científica y floats infinitos en BD y PDF)
 const r4 = (n: number) => parseFloat(n.toFixed(4));
 
+// Mismo timing/curva que el resto de la app (ver Layout.tsx) — constante
+// local para no repetir el array de easing en cada transición de este archivo.
+const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
+const STEP_TRANSITION = { duration: 0.22, ease: EASE_OUT };
+
 export function NuevaAplicacion() {
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
+  const reducedMotion = useReducedMotion();
+
+  // Dirección de la transición entre pasos — compara contra el paso anterior
+  // para decidir si el contenido entra desde la derecha (avanzar) o la
+  // izquierda (retroceder), incluyendo saltos directos al hacer clic en un punto.
+  const pasoAnteriorRef = useRef(currentStep);
+  const [direccion, setDireccion] = useState<1 | -1>(1);
+  useEffect(() => {
+    if (currentStep !== pasoAnteriorRef.current) {
+      setDireccion(currentStep > pasoAnteriorRef.current ? 1 : -1);
+      pasoAnteriorRef.current = currentStep;
+    }
+  }, [currentStep]);
   const { profile, productor, asesorProfile, responsableProfile, user } = useAuthContext();
   const { terminosSitio } = useModulosContext();
   const esCampo = terminosSitio.singular === 'Rancho';
@@ -343,20 +362,41 @@ export function NuevaAplicacion() {
         </div>
 
         {/* Indicador de paso */}
-        <div className="flex items-center justify-center gap-2 mt-4">
-          {[1, 2, 3, 4].map((step) => (
-            <button
-              key={step}
-              onClick={() => { if (currentStep < 5) setCurrentStep(step) }}
-              className={`w-3 h-3 rounded-full transition-colors ${
-                step === currentStep
-                  ? "bg-primary"
-                  : step < currentStep
-                  ? "bg-primary/40"
-                  : "bg-muted-foreground/30"
-              }`}
+        <div className="mt-4 flex justify-center">
+          <div className="relative inline-flex items-center gap-2">
+            {/* Línea de fondo */}
+            <div className="absolute left-[6px] right-[6px] top-1/2 -translate-y-1/2 h-0.5 rounded-full bg-muted-foreground/20" />
+            {/* Línea de progreso */}
+            <div
+              className="absolute left-[6px] top-1/2 -translate-y-1/2 h-0.5 rounded-full bg-primary origin-left"
+              style={{
+                width: "calc(100% - 12px)",
+                transform: `scaleX(${(currentStep - 1) / 3})`,
+                transition: reducedMotion ? "none" : "transform var(--motion-base) var(--ease-out)",
+              }}
             />
-          ))}
+            {[1, 2, 3, 4].map((step) => {
+              const active = step === currentStep;
+              return (
+                <motion.button
+                  key={step}
+                  layout={!reducedMotion}
+                  onClick={() => { if (currentStep < 5) setCurrentStep(step) }}
+                  aria-label={`Ir al paso ${step}`}
+                  aria-current={active ? "step" : undefined}
+                  transition={reducedMotion ? { duration: 0 } : STEP_TRANSITION}
+                  className={`relative z-10 h-3 rounded-full transition-colors duration-[var(--motion-fast)] ${
+                    active
+                      ? "bg-primary"
+                      : step < currentStep
+                      ? "bg-primary/40"
+                      : "bg-muted-foreground/30"
+                  }`}
+                  style={{ width: active ? 24 : 12 }}
+                />
+              );
+            })}
+          </div>
         </div>
       </header>
       <BannerTareaOrigen tareaId={tareaId} />
@@ -374,42 +414,76 @@ export function NuevaAplicacion() {
       )}
 
       {/* Pasos del formulario */}
-      <div className="p-4">
-        {currentStep === 1 && (
-          <Step1ParcelaYCultivo
-            formData={formData}
-            updateFormData={updateFormData}
-            onNext={nextStep}
-            esCampo={esCampo}
-          />
-        )}
-        {currentStep === 2 && (
-          <Step2Productos
-            formData={formData}
-            updateFormData={updateFormData}
-            onNext={nextStep}
-            onBack={prevStep}
-            productosEnInventario={productosEnInventario}
-          />
-        )}
-        {currentStep === 3 && (
-          <Step3AplicacionYAgua
-            formData={formData}
-            updateFormData={updateFormData}
-            onNext={nextStep}
-            onBack={prevStep}
-            esCampo={esCampo}
-          />
-        )}
-        {currentStep === 4 && (
-          <Step4CierreYObservaciones
-            formData={formData}
-            updateFormData={updateFormData}
-            onSave={handleSave}
-            onBack={prevStep}
-            saving={saving}
-          />
-        )}
+      <div className="p-4 overflow-hidden">
+        <AnimatePresence mode="wait" initial={false}>
+          {currentStep === 1 && (
+            <motion.div
+              key={1}
+              initial={reducedMotion ? false : { opacity: 0, x: direccion * 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={reducedMotion ? undefined : { opacity: 0, x: -direccion * 24 }}
+              transition={reducedMotion ? { duration: 0 } : STEP_TRANSITION}
+            >
+              <Step1ParcelaYCultivo
+                formData={formData}
+                updateFormData={updateFormData}
+                onNext={nextStep}
+                esCampo={esCampo}
+              />
+            </motion.div>
+          )}
+          {currentStep === 2 && (
+            <motion.div
+              key={2}
+              initial={reducedMotion ? false : { opacity: 0, x: direccion * 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={reducedMotion ? undefined : { opacity: 0, x: -direccion * 24 }}
+              transition={reducedMotion ? { duration: 0 } : STEP_TRANSITION}
+            >
+              <Step2Productos
+                formData={formData}
+                updateFormData={updateFormData}
+                onNext={nextStep}
+                onBack={prevStep}
+                productosEnInventario={productosEnInventario}
+              />
+            </motion.div>
+          )}
+          {currentStep === 3 && (
+            <motion.div
+              key={3}
+              initial={reducedMotion ? false : { opacity: 0, x: direccion * 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={reducedMotion ? undefined : { opacity: 0, x: -direccion * 24 }}
+              transition={reducedMotion ? { duration: 0 } : STEP_TRANSITION}
+            >
+              <Step3AplicacionYAgua
+                formData={formData}
+                updateFormData={updateFormData}
+                onNext={nextStep}
+                onBack={prevStep}
+                esCampo={esCampo}
+              />
+            </motion.div>
+          )}
+          {currentStep === 4 && (
+            <motion.div
+              key={4}
+              initial={reducedMotion ? false : { opacity: 0, x: direccion * 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={reducedMotion ? undefined : { opacity: 0, x: -direccion * 24 }}
+              transition={reducedMotion ? { duration: 0 } : STEP_TRANSITION}
+            >
+              <Step4CierreYObservaciones
+                formData={formData}
+                updateFormData={updateFormData}
+                onSave={handleSave}
+                onBack={prevStep}
+                saving={saving}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {currentStep === 5 && aplicacionGuardada && (
