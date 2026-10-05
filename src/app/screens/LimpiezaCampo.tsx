@@ -32,6 +32,10 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import {
+  generarLimpiezaCampoPDF,
+  generarLimpiezaCampoConsolidadoPDF,
+} from '@/lib/pdf/m71/generarLimpiezaCampoPDF'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -351,6 +355,24 @@ export function LimpiezaCampo() {
   const [cRanchoId, setCRanchoId] = useState('')
   const [cDesde, setCDesde]       = useState(mesActual)
   const [cHasta, setCHasta]       = useState(mesActual)
+  const [pdfLoading, setPdfLoading] = useState<string | null>(null)
+  const [exportandoConsolidado, setExportandoConsolidado] = useState(false)
+
+  async function descargarPDF(id: string) {
+    if (!profile?.org_id) return
+    if (obligatoria && !firmas[id]?.realizo) {
+      toast.info('Firma este registro antes de descargar el PDF')
+      return
+    }
+    setPdfLoading(id)
+    try {
+      await generarLimpiezaCampoPDF(id, profile.org_id)
+    } catch {
+      toast.error('Error al generar PDF')
+    } finally {
+      setPdfLoading(null)
+    }
+  }
 
   // ── Agrupación de ítems por sección ──
   const seccionesAgrupadas = useMemo(() => {
@@ -462,10 +484,23 @@ export function LimpiezaCampo() {
                           </div>
                         )}
                       </div>
-                      <ChevronLeft
-                        className="w-4 h-4 flex-shrink-0 mt-0.5 rotate-180"
-                        style={{ color: 'var(--muted-foreground)' }}
-                      />
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); descargarPDF(reg.id) }}
+                          disabled={pdfLoading === reg.id}
+                          className="p-2 rounded-lg border"
+                          style={{ borderColor: 'var(--border)' }}
+                        >
+                          {pdfLoading === reg.id
+                            ? <Loader2 className="w-4 h-4 animate-spin" />
+                            : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                          }
+                        </button>
+                        <ChevronLeft
+                          className="w-4 h-4 flex-shrink-0 mt-0.5 rotate-180"
+                          style={{ color: 'var(--muted-foreground)' }}
+                        />
+                      </div>
                     </div>
                   </button>
                   <div className="px-4 pb-4">
@@ -781,6 +816,9 @@ export function LimpiezaCampo() {
             descripcion={`Registro mensual · ${nMes}`}
             obligatoria={obligatoria}
             onFirmadoYPDF={async () => {
+              if (pendienteFirmaId && profile?.org_id) {
+                await generarLimpiezaCampoPDF(pendienteFirmaId, profile.org_id)
+              }
               setSheetNuevo(false)
               setSheetNuevoPaso('form')
               setPendienteFirmaId(null)
@@ -963,15 +1001,30 @@ export function LimpiezaCampo() {
             </div>
 
             <button
-              onClick={() => {
-                toast.info('Consolidado próximamente')
-                setSheetConsolidado(false)
+              onClick={async () => {
+                if (!profile?.org_id) return
+                setExportandoConsolidado(true)
+                try {
+                  const rancho = ranchos.find(r => r.id === cRanchoId)
+                  await generarLimpiezaCampoConsolidadoPDF(
+                    profile.org_id,
+                    cRanchoId || null,
+                    cDesde + '-01',
+                    cHasta + '-01',
+                    rancho?.nombre ?? terminosSitio.plural,
+                  )
+                  setSheetConsolidado(false)
+                } catch (e: unknown) {
+                  toast.error(e instanceof Error ? e.message : 'Error al exportar')
+                } finally {
+                  setExportandoConsolidado(false)
+                }
               }}
-              className="w-full h-11 rounded-xl text-sm text-white transition-colors flex items-center justify-center gap-2"
+              disabled={exportandoConsolidado}
+              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
               style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
             >
-              <FileDown className="w-4 h-4" />
-              Descargar PDF
+              {exportandoConsolidado ? <><Loader2 className="w-4 h-4 animate-spin" /> Exportando…</> : <><FileDown className="w-4 h-4" /> Descargar PDF</>}
             </button>
           </div>
         </div>

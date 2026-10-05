@@ -32,6 +32,10 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import {
+  generarVerificacionCosechaPDF,
+  generarVerificacionCosechaConsolidadoPDF,
+} from '@/lib/pdf/m69/generarVerificacionCosechaPDF'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -286,6 +290,10 @@ export function VerificacionCosecha() {
   const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [pendienteDetalle, setPendienteDetalle] = useState<M69RegistroResumen | null>(null)
   const [sheetConsolidado, setSheetConsolidado] = useState(false)
+  const [pdfLoading, setPdfLoading] = useState<string | null>(null)
+  const [exportandoConsolidado, setExportandoConsolidado] = useState(false)
+  const hoyStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
+  const [consolidadoForm, setConsolidadoForm] = useState({ rancho_id: '', desde: hoyStr(), hasta: hoyStr() })
 
   const [nRanchoId, setNRanchoId]       = useState('')
   const [nMes, setNMes]                 = useState(mesActual)
@@ -384,6 +392,42 @@ export function VerificacionCosecha() {
 
   const termino = terminosSitio.singular
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }))
+
+  async function descargarPDF(id: string) {
+    if (!profile?.org_id) return
+    if (obligatoria && !firmas[id]?.realizo) {
+      toast.info('Firma este registro antes de descargar el PDF')
+      return
+    }
+    setPdfLoading(id)
+    try {
+      await generarVerificacionCosechaPDF(id, profile.org_id)
+    } catch {
+      toast.error('Error al generar PDF')
+    } finally {
+      setPdfLoading(null)
+    }
+  }
+
+  async function exportarConsolidadoPDF() {
+    if (!profile?.org_id) return
+    setExportandoConsolidado(true)
+    try {
+      const rancho = ranchos.find(r => r.id === consolidadoForm.rancho_id)
+      await generarVerificacionCosechaConsolidadoPDF(
+        profile.org_id,
+        consolidadoForm.rancho_id || null,
+        consolidadoForm.desde,
+        consolidadoForm.hasta,
+        rancho?.nombre ?? terminosSitio.plural,
+      )
+      setSheetConsolidado(false)
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al exportar')
+    } finally {
+      setExportandoConsolidado(false)
+    }
+  }
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -489,10 +533,23 @@ export function VerificacionCosecha() {
                           </div>
                         )}
                       </div>
-                      <ChevronLeft
-                        className="w-4 h-4 flex-shrink-0 mt-0.5 rotate-180"
-                        style={{ color: 'var(--muted-foreground)' }}
-                      />
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); descargarPDF(reg.id) }}
+                          disabled={pdfLoading === reg.id}
+                          className="p-2 rounded-lg border"
+                          style={{ borderColor: 'var(--border)' }}
+                        >
+                          {pdfLoading === reg.id
+                            ? <Loader2 className="w-4 h-4 animate-spin" />
+                            : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                          }
+                        </button>
+                        <ChevronLeft
+                          className="w-4 h-4 flex-shrink-0 mt-0.5 rotate-180"
+                          style={{ color: 'var(--muted-foreground)' }}
+                        />
+                      </div>
                     </div>
                   </button>
                   <div className="px-4 pb-4">
@@ -855,6 +912,9 @@ export function VerificacionCosecha() {
               descripcion={pendienteDetalle ? `Verificación Diaria de Cosecha · ${formatMesLabel(pendienteDetalle.mes)} · ${pendienteDetalle.rancho_nombre}` : 'Verificación Diaria de Cosecha'}
               obligatoria={obligatoria}
               onFirmadoYPDF={async () => {
+                if (pendienteFirmaId && profile?.org_id) {
+                  await generarVerificacionCosechaPDF(pendienteFirmaId, profile.org_id)
+                }
                 setSheetNuevo(false)
                 setSheetNuevoPaso('form')
                 setPendienteFirmaId(null)
@@ -1065,15 +1125,30 @@ export function VerificacionCosecha() {
             </div>
 
             <button
-              onClick={() => {
-                toast.info('Consolidado próximamente')
-                setSheetConsolidado(false)
+              onClick={async () => {
+                if (!profile?.org_id) return
+                setExportandoConsolidado(true)
+                try {
+                  const rancho = ranchos.find(r => r.id === cRanchoId)
+                  await generarVerificacionCosechaConsolidadoPDF(
+                    profile.org_id,
+                    cRanchoId || null,
+                    cDesde + '-01',
+                    cHasta + '-01',
+                    rancho?.nombre ?? terminosSitio.plural,
+                  )
+                  setSheetConsolidado(false)
+                } catch (e: unknown) {
+                  toast.error(e instanceof Error ? e.message : 'Error al exportar')
+                } finally {
+                  setExportandoConsolidado(false)
+                }
               }}
-              className="w-full h-11 rounded-xl text-sm text-white transition-colors flex items-center justify-center gap-2"
+              disabled={exportandoConsolidado}
+              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
               style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
             >
-              <FileDown className="w-4 h-4" />
-              Descargar PDF
+              {exportandoConsolidado ? <><Loader2 className="w-4 h-4 animate-spin" /> Exportando…</> : <><FileDown className="w-4 h-4" /> Descargar PDF</>}
             </button>
           </div>
         </div>

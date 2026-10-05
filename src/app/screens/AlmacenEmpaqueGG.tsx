@@ -32,6 +32,11 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import {
+  generarInspeccionAlmacenEmpaqueGGPDF,
+  generarInspeccionAlmacenEmpaqueGGConsolidadoPDF,
+} from '@/lib/pdf/m75/generarInspeccionAlmacenEmpaqueGGPDF'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -287,6 +292,47 @@ export function AlmacenEmpaqueGG() {
   const [sheetNuevoPaso, setSheetNuevoPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
   const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [pendienteDetalle, setPendienteDetalle] = useState<M75RegistroResumen | null>(null)
+  const [pdfLoading, setPdfLoading] = useState<string | null>(null)
+  const [sheetConsolidado, setSheetConsolidado] = useState(false)
+  const [exportandoConsolidado, setExportandoConsolidado] = useState(false)
+  const hoyStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
+  const [consolidadoForm, setConsolidadoForm] = useState({ rancho_id: '', desde: hoyStr(), hasta: hoyStr() })
+
+  async function descargarPDF(id: string) {
+    if (!profile?.org_id) return
+    if (obligatoria && !firmas[id]?.realizo) {
+      toast.info('Firma este registro antes de descargar el PDF')
+      return
+    }
+    setPdfLoading(id)
+    try {
+      await generarInspeccionAlmacenEmpaqueGGPDF(id, profile.org_id)
+    } catch {
+      toast.error('Error al generar PDF')
+    } finally {
+      setPdfLoading(null)
+    }
+  }
+
+  async function exportarConsolidado() {
+    if (!profile?.org_id) return
+    setExportandoConsolidado(true)
+    try {
+      const ranchoNombre = ranchos.find(r => r.id === consolidadoForm.rancho_id)?.nombre ?? 'Todos'
+      await generarInspeccionAlmacenEmpaqueGGConsolidadoPDF(
+        profile.org_id,
+        consolidadoForm.rancho_id || null,
+        consolidadoForm.desde,
+        consolidadoForm.hasta,
+        ranchoNombre,
+      )
+      setSheetConsolidado(false)
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al exportar consolidado')
+    } finally {
+      setExportandoConsolidado(false)
+    }
+  }
 
   useEffect(() => {
     if (!sheetNuevo) { setNYaExiste(false); return }
@@ -363,7 +409,7 @@ export function AlmacenEmpaqueGG() {
         onBack={vista === 'detalle' ? volverALista : undefined}
         acciones={vista === 'lista' ? (
           <button
-            onClick={() => toast.info('PDF próximamente')}
+            onClick={() => setSheetConsolidado(true)}
             className="flex items-center gap-1.5 h-8 px-3 rounded-lg border text-xs text-foreground"
             style={{ borderColor: 'var(--border)', fontWeight: 600 }}
           >
@@ -441,10 +487,23 @@ export function AlmacenEmpaqueGG() {
                           </div>
                         )}
                       </div>
-                      <ChevronLeft
-                        className="w-4 h-4 flex-shrink-0 mt-0.5 rotate-180"
-                        style={{ color: 'var(--muted-foreground)' }}
-                      />
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); descargarPDF(reg.id) }}
+                          disabled={pdfLoading === reg.id}
+                          className="p-2 rounded-lg border"
+                          style={{ borderColor: 'var(--border)' }}
+                        >
+                          {pdfLoading === reg.id
+                            ? <Loader2 className="w-4 h-4 animate-spin" />
+                            : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                          }
+                        </button>
+                        <ChevronLeft
+                          className="w-4 h-4 flex-shrink-0 mt-0.5 rotate-180"
+                          style={{ color: 'var(--muted-foreground)' }}
+                        />
+                      </div>
                     </div>
                   </button>
                   <div className="px-4 pb-4">
@@ -723,6 +782,9 @@ export function AlmacenEmpaqueGG() {
             descripcion={pendienteDetalle ? `Inspección Almacén de Empaque · ${formatMesLabel(pendienteDetalle.mes)} · ${pendienteDetalle.rancho_nombre}` : 'Inspección Almacén de Empaque'}
             obligatoria={obligatoria}
             onFirmadoYPDF={async () => {
+              if (pendienteFirmaId && profile?.org_id) {
+                await generarInspeccionAlmacenEmpaqueGGPDF(pendienteFirmaId, profile.org_id)
+              }
               setSheetNuevo(false)
               setSheetNuevoPaso('form')
               setPendienteFirmaId(null)
@@ -815,6 +877,68 @@ export function AlmacenEmpaqueGG() {
             </div>
           </>
         )}
+      </BottomSheet>
+
+      {/* Sheet consolidado */}
+      <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="85%">
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
+        </div>
+        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+          <button onClick={() => setSheetConsolidado(false)}>
+            <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
+          <div className="space-y-1">
+            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+              {termino.toUpperCase()} (opcional)
+            </label>
+            <select
+              value={consolidadoForm.rancho_id}
+              onChange={(e) => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+            >
+              <option value="">Todos los {termino.toLowerCase()}s</option>
+              {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DESDE (mes)</label>
+            <input
+              type="month"
+              value={consolidadoForm.desde.slice(0, 7)}
+              onChange={(e) => setConsolidadoForm(f => ({ ...f, desde: e.target.value + '-01' }))}
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA (mes)</label>
+            <input
+              type="month"
+              value={consolidadoForm.hasta.slice(0, 7)}
+              onChange={(e) => setConsolidadoForm(f => ({ ...f, hasta: e.target.value + '-01' }))}
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+            />
+          </div>
+        </div>
+        <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
+          <button
+            onClick={exportarConsolidado}
+            disabled={exportandoConsolidado}
+            className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
+            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+          >
+            {exportandoConsolidado
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> Generando PDF…</>
+              : <><FileDown className="w-4 h-4" /> Descargar PDF consolidado</>
+            }
+          </button>
+        </div>
       </BottomSheet>
     </div>
   )
