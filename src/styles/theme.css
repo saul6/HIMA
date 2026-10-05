@@ -154,6 +154,13 @@
   --scrollbar-track: var(--muted);
   --scrollbar-thumb: color-mix(in srgb, var(--muted-foreground) 40%, transparent);
   --scrollbar-thumb-hover: color-mix(in srgb, var(--muted-foreground) 60%, transparent);
+
+  /* Tokens de movimiento — microanimaciones de presión/hover/entrada en toda
+     la app. Mismos valores en claro y oscuro (no son colores). */
+  --motion-fast: 150ms;
+  --motion-base: 220ms;
+  --motion-slow: 300ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   color-scheme: light;
 }
 
@@ -381,6 +388,40 @@
 }
 *::-webkit-scrollbar-thumb:hover {
   background-color: var(--scrollbar-thumb-hover);
+}
+
+/* Microinteracción de presión — global. `.no-press` excluye elementos que ya
+   animan su propio transform (FAB, menú del isotipo, dots del carrusel de
+   login) para no pisar su animación existente. */
+button:not(:disabled):active:not(.no-press),
+[role="button"]:active:not(.no-press) {
+  transform: scale(0.97);
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled):active:not(.no-press),
+  [role="button"]:active:not(.no-press) {
+    transform: none;
+  }
+}
+
+/* Hover de elevación para tarjetas que son botón/enlace completo (categorías
+   y módulos de Inicio, tarjetas de lista que abren detalle). Sin sombra —
+   CLAUDE.md prohíbe box-shadow/gradientes; la elevación es solo borde +
+   translateY. */
+.hover-lift {
+  transition: transform var(--motion-base) var(--ease-out), border-color var(--motion-fast) ease-out;
+}
+@media (hover: hover) {
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--primary) 35%, var(--border) 65%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hover-lift:hover {
+    transform: none;
+  }
 }
 
 @layer base {

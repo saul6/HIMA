@@ -31,7 +31,7 @@ const BUTTON_CLASS = [
   // `transition` (no el sufijo -colors/-transform) cubre color Y transform
   // en una sola declaración — dos utilidades transition-* por separado se
   // pisarían entre sí (cada una fija su propio transition-property).
-  'shadow-lg transition hover:bg-agro-blue motion-safe:active:scale-95',
+  'shadow-lg transition hover:bg-agro-blue motion-safe:active:scale-95 no-press',
   'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
   'disabled:bg-muted-foreground disabled:hover:bg-muted-foreground',
 ].join(' ')

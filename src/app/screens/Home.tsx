@@ -739,7 +739,7 @@ export function Home() {
         ) && (
           <Link
             to="/inocuidad/agenda"
-            className="flex items-center gap-3 rounded-xl p-3 border transition-colors hover:border-primary/40"
+            className="hover-lift flex items-center gap-3 rounded-xl p-3 border"
             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
           >
             <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--agro-success-fill)' }}>
@@ -862,7 +862,7 @@ export function Home() {
                         ) : (
                           <Link
                             to={modulo.ruta}
-                            className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card hover:border-secondary transition-colors"
+                            className="hover-lift flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-card"
                           >
                             <div
                               className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -897,7 +897,7 @@ export function Home() {
             {esAdmin && !loading && terminosSitio.singular === 'Rancho' && (
               <Link
                 to="/equipo/actividad"
-                className="flex items-center gap-3 bg-card border border-border rounded-xl p-4 hover:border-secondary transition-colors"
+                className="hover-lift flex items-center gap-3 bg-card border border-border rounded-xl p-4"
               >
                 <div
                   className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"

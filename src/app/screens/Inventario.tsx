@@ -1,4 +1,5 @@
 ﻿import { useState, useCallback, useMemo } from "react"
+import { motion } from "motion/react"
 import {
   Search,
   Plus,
@@ -547,13 +548,21 @@ export function Inventario() {
             <button
               key={cat}
               onClick={() => setActiveFilter(cat)}
-              className={`flex-shrink-0 px-4 h-9 rounded-full transition-all whitespace-nowrap text-sm ${
+              className={`relative flex-shrink-0 px-4 h-9 rounded-full whitespace-nowrap text-sm ${
                 activeFilter === cat
-                  ? "bg-primary text-white"
-                  : "bg-card border border-border text-foreground"
+                  ? "text-white"
+                  : "bg-card border border-border text-foreground transition-colors"
               }`}
               style={{ fontWeight: 600 }}
             >
+              {activeFilter === cat && (
+                <motion.span
+                  layoutId="inventario-filtro-activo"
+                  className="absolute inset-0 rounded-full bg-primary"
+                  style={{ zIndex: -1 }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                />
+              )}
               {cat}
             </button>
           ))}

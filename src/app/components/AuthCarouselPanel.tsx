@@ -128,6 +128,7 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
                 type="button"
                 aria-label={`Slide ${i + 1}`}
                 onClick={() => setActive(i)}
+                className="no-press"
                 style={{
                   width: 8,
                   height: 8,

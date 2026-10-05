@@ -294,7 +294,7 @@ export function Layout() {
       {/* ── Mobile FAB isotipo ───────────────────────────────────────────── */}
       <button
         onClick={() => setMenuAbierto(true)}
-        className="md:hidden fixed bottom-safe-fab left-4 w-14 h-14 rounded-full flex items-center justify-center z-40 bg-card border border-border active:scale-95 transition-transform"
+        className="md:hidden fixed bottom-safe-fab left-4 w-14 h-14 rounded-full flex items-center justify-center z-40 bg-card border border-border active:scale-95 transition-transform no-press"
         style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
         aria-label="Abrir menú"
       >
