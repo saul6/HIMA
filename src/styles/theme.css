@@ -293,6 +293,13 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Entrada de resultados del buscador (chips de Home) — desplazamiento menor
+   que slideUpFade porque son elementos pequeños en una fila, no tarjetas. */
+@keyframes searchResultFade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* Disable default crossfade so the JS clip-path reveal animation takes over */
 ::view-transition-old(root),
 ::view-transition-new(root) {

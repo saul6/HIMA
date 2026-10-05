@@ -61,6 +61,31 @@ function cascadeStyle(index: number, enabled: boolean) {
   }
 }
 
+// Entrada de chips del buscador — stagger de 20ms, solo primeros 6.
+function searchCascadeStyle(index: number, enabled: boolean) {
+  if (!enabled) return undefined
+  return {
+    animation: 'searchResultFade var(--motion-fast) var(--ease-out) both',
+    animationDelay: `${Math.min(index, 5) * 20}ms`,
+  }
+}
+
+// Envuelve la parte de `nombre` que coincide con `query` (misma comparación
+// que el filtro: lowercase, sin normalizar acentos) en un span más grueso.
+function resaltarCoincidencia(nombre: string, query: string): ReactNode {
+  const q = query.trim().toLowerCase()
+  if (!q) return nombre
+  const idx = nombre.toLowerCase().indexOf(q)
+  if (idx === -1) return nombre
+  return (
+    <>
+      {nombre.slice(0, idx)}
+      <span style={{ fontWeight: 700 }}>{nombre.slice(idx, idx + q.length)}</span>
+      {nombre.slice(idx + q.length)}
+    </>
+  )
+}
+
 // ── Sub-componentes locales ────────────────────────────────────────────────────
 
 /** Contador animado 0 → valor final, una sola vez por montaje (ver
@@ -725,12 +750,16 @@ export function Home() {
         {busqueda.trim() && (
           <div className="rounded-xl border border-border bg-card overflow-hidden">
             {modulosFiltrados.length === 0 ? (
-              <p className="text-sm text-muted-foreground px-4 py-3">
+              <p
+                key={busqueda}
+                className="text-sm text-muted-foreground px-4 py-3"
+                style={searchCascadeStyle(0, !reducedMotion)}
+              >
                 Sin resultados para "{busqueda}"
               </p>
             ) : (
               <div className="flex flex-wrap gap-2 p-3">
-                {modulosFiltrados.map(modulo => {
+                {modulosFiltrados.map((modulo, index) => {
                   const Icon = resolverIcono(modulo.icono)
                   const bloqueado = !modulo.desbloqueado
                   if (bloqueado) {
@@ -738,17 +767,11 @@ export function Home() {
                       <button
                         key={modulo.codigo}
                         onClick={() => { setBusqueda(''); setModuloBloqueadoUpsell(modulo) }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border"
-                        style={{
-                          backgroundColor: 'var(--agro-background)',
-                          borderColor: 'var(--border)',
-                          color: 'var(--muted-foreground)',
-                          fontWeight: 600,
-                          opacity: 0.55,
-                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[var(--agro-background)] border-[var(--border)] text-[var(--muted-foreground)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
+                        style={{ opacity: 0.55, fontWeight: 500, ...searchCascadeStyle(index, !reducedMotion) }}
                       >
                         <Lock className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
-                        {modulo.nombre}
+                        {resaltarCoincidencia(modulo.nombre, busqueda)}
                       </button>
                     )
                   }
@@ -757,16 +780,11 @@ export function Home() {
                       key={modulo.codigo}
                       to={modulo.ruta}
                       onClick={() => setBusqueda('')}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border transition-colors hover:border-secondary"
-                      style={{
-                        backgroundColor: 'var(--agro-background)',
-                        borderColor: 'var(--border)',
-                        color: 'var(--foreground)',
-                        fontWeight: 600,
-                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[var(--agro-background)] border-[var(--border)] text-[var(--foreground)] transition-colors duration-[var(--motion-fast)] hover:bg-[var(--accent)] hover:border-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
+                      style={{ fontWeight: 500, ...searchCascadeStyle(index, !reducedMotion) }}
                     >
                       <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--primary)' }} />
-                      {modulo.nombre}
+                      {resaltarCoincidencia(modulo.nombre, busqueda)}
                     </Link>
                   )
                 })}
