@@ -25,6 +25,7 @@ import type { ModuloVisible } from '@/hooks/useMisModulos'
 import { CATEGORIA_MAP } from '@/lib/categoriasModulos'
 
 const MAX_PINNED = 4
+const DURACION_CONTADOR_S = 1.1
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -86,7 +87,7 @@ function AnimatedNumber({
     }
     animatedOnceRef.current = true
     const controls = animate(0, value, {
-      duration: 0.6,
+      duration: DURACION_CONTADOR_S,
       ease: [0.22, 1, 0.36, 1],
       onUpdate: (latest) => {
         node.textContent = format(latest)

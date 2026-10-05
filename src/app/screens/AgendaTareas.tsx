@@ -19,6 +19,7 @@ import { useAgendaTareas } from '@/hooks/useAgendaTareas'
 import type { TareaListada, TareaDetalle, PrioridadTarea, EstadoTarea, AcuseDetalle } from '@/hooks/useAgendaTareas'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { subirEvidencia, getSignedUrlsEvidencia } from '@/lib/storage/agendaStorage'
+import { Portal } from '@/app/components/Portal'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -1771,6 +1772,7 @@ export function AgendaTareas() {
 
       {/* FAB (solo admin) */}
       {esAdmin && (
+        <Portal>
         <button
           onClick={() => { setSheetNueva(true); hook.cargarColaboradores() }}
           className="fixed bottom-safe-fab right-4 w-14 h-14 rounded-full flex items-center justify-center z-40 transition-transform active:scale-95"
@@ -1779,6 +1781,7 @@ export function AgendaTareas() {
         >
           <Plus className="w-6 h-6" />
         </button>
+        </Portal>
       )}
 
       {/* Sheet nueva tarea */}

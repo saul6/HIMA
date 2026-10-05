@@ -13,6 +13,7 @@
 import type { LucideIcon } from 'lucide-react'
 import { Plus } from 'lucide-react'
 import { Link } from 'react-router'
+import { Portal } from '@/app/components/Portal'
 
 interface FabProps {
   onClick?: () => void
@@ -41,15 +42,19 @@ export function Fab({ onClick, to, 'aria-label': ariaLabel, icon: Icon = Plus, d
 
   if (to) {
     return (
-      <Link to={to} aria-label={ariaLabel} className={BUTTON_CLASS}>
-        {iconEl}
-      </Link>
+      <Portal>
+        <Link to={to} aria-label={ariaLabel} className={BUTTON_CLASS}>
+          {iconEl}
+        </Link>
+      </Portal>
     )
   }
 
   return (
-    <button type="button" onClick={onClick} disabled={disabled} aria-label={ariaLabel} className={BUTTON_CLASS}>
-      {iconEl}
-    </button>
+    <Portal>
+      <button type="button" onClick={onClick} disabled={disabled} aria-label={ariaLabel} className={BUTTON_CLASS}>
+        {iconEl}
+      </button>
+    </Portal>
   )
 }

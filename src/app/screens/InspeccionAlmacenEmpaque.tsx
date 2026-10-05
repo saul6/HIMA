@@ -27,6 +27,7 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { Portal } from '@/app/components/Portal'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -774,6 +775,7 @@ export function InspeccionAlmacenEmpaque() {
 
       {/* ── Sheet: crear registro ──────────────────────────────────────── */}
       {sheetCrear && (
+        <Portal>
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={handleCerrarSheetCrear} />
           <div
@@ -881,10 +883,12 @@ export function InspeccionAlmacenEmpaque() {
             </>)}
           </div>
         </div>
+        </Portal>
       )}
 
       {/* ── Sheet: agregar día ─────────────────────────────────────────── */}
       {sheetDia && (
+        <Portal>
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={() => setSheetDia(false)} />
           <div
@@ -974,10 +978,12 @@ export function InspeccionAlmacenEmpaque() {
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
       {/* ── Sheet: consolidado ─────────────────────────────────────────── */}
       {sheetConsolidado && (
+        <Portal>
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={() => setSheetConsolidado(false)} />
           <div
@@ -1051,6 +1057,7 @@ export function InspeccionAlmacenEmpaque() {
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
     </div>

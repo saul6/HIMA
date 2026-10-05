@@ -31,6 +31,7 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { Portal } from '@/app/components/Portal'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -1008,6 +1009,7 @@ export function ReporteIncidencias() {
 
       {/* Diálogo confirmación borrador */}
       {confirmDraftVisible && (
+        <Portal>
         <div
           className="fixed inset-0 z-50 flex items-end justify-center p-4"
           style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
@@ -1042,6 +1044,7 @@ export function ReporteIncidencias() {
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
       {/* Bottom Sheet — formulario */}

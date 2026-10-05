@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { useActividadEquipo } from '@/hooks/useActividadEquipo'
 import type { ActividadItem } from '@/hooks/useActividadEquipo'
 import { marcarCorreccion } from '@/lib/queries'
+import { Portal } from '@/app/components/Portal'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -355,7 +356,7 @@ export function ActividadEquipo() {
 
       {/* Bottom Sheet — marcar/desmarcar corrección */}
       {itemSeleccionado && (
-        <>
+        <Portal>
           <div className="fixed inset-0 bg-black/40 z-30" onClick={cerrarSheet} />
           <div
             className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
@@ -461,7 +462,7 @@ export function ActividadEquipo() {
               )}
             </div>
           </div>
-        </>
+        </Portal>
       )}
     </div>
   )

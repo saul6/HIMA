@@ -33,6 +33,7 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { Portal } from '@/app/components/Portal'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -593,6 +594,7 @@ export function RondinesVigilancia() {
 
       {/* ═══ SHEET: NUEVO RONDÍN ══════════════════════════════════════════════ */}
       {sheetNuevo && (
+        <Portal>
         <div
           className="fixed inset-0 z-50 flex flex-col justify-end"
           onClick={(e) => { if (e.target === e.currentTarget && !nGuardando) handleCerrarSheetNuevo() }}
@@ -875,10 +877,12 @@ export function RondinesVigilancia() {
             )}
           </div>
         </div>
+        </Portal>
       )}
 
       {/* ═══ SHEET: CONFIGURAR CATÁLOGO ══════════════════════════════════════ */}
       {sheetConf && (
+        <Portal>
         <div
           className="fixed inset-0 z-50 flex flex-col justify-end"
           onClick={(e) => { if (e.target === e.currentTarget) setSheetConf(false) }}
@@ -998,10 +1002,12 @@ export function RondinesVigilancia() {
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
       {/* ═══ SHEET: CONSOLIDADO ══════════════════════════════════════════════ */}
       {sheetConsolidado && (
+        <Portal>
         <div
           className="fixed inset-0 z-50 flex flex-col justify-end"
           onClick={(e) => { if (e.target === e.currentTarget) setSheetConsolidado(false) }}
@@ -1064,6 +1070,7 @@ export function RondinesVigilancia() {
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
     </div>

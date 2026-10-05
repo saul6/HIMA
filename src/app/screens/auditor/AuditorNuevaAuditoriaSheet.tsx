@@ -6,6 +6,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { hoyMX } from '@/lib/fecha'
 import { ModulosSelectorStep } from './ModulosSelectorStep'
+import { Portal } from '@/app/components/Portal'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -163,7 +164,7 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
   }
 
   return (
-    <>
+    <Portal>
       {/* Fondo */}
       <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
 
@@ -345,6 +346,6 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
           )}
         </div>
       </div>
-    </>
+    </Portal>
   )
 }

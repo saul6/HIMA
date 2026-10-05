@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { useAuditorJornada } from '@/hooks/useAuditorJornada'
 import type { JornadaCandidataFila } from '@/hooks/useAuditorJornada'
 import { hoyMX } from '@/lib/fecha'
+import { Portal } from '@/app/components/Portal'
 
 const MODULO_LABELS: Record<number, string> = {
   1: 'M1', 2: 'M2', 3: 'M3', 4: 'M4', 5: 'M5', 6: 'M6', 7: 'M7',
@@ -267,6 +268,7 @@ export function NuevaJornada() {
 
       {/* Footer fijo — resumen + botón */}
       {seleccionados.size > 0 && (
+        <Portal>
         <div
           className="fixed bottom-0 left-0 right-0 z-20 border-t border-border px-4 py-4 flex flex-col gap-3"
           style={{ backgroundColor: 'var(--card)' }}
@@ -298,6 +300,7 @@ export function NuevaJornada() {
             }
           </button>
         </div>
+        </Portal>
       )}
     </div>
   )

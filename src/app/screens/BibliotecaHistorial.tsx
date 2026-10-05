@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
+import { Portal } from '@/app/components/Portal'
 import {
   type ModuloKey,
   type RegistroHistorial,
@@ -1227,6 +1228,7 @@ export function BibliotecaHistorial() {
 
       {/* Overlay de progreso */}
       {generandoPaquete && (
+        <Portal>
         <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.55)' }}>
           <div className="bg-card rounded-2xl p-6 mx-4 w-full max-w-xs text-center space-y-4">
             <Loader2 className="w-8 h-8 animate-spin mx-auto" style={{ color: 'var(--primary)' }} />
@@ -1247,6 +1249,7 @@ export function BibliotecaHistorial() {
             </div>
           </div>
         </div>
+        </Portal>
       )}
     </div>
   )

@@ -24,6 +24,7 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { Portal } from '@/app/components/Portal'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -734,6 +735,7 @@ export function MantenimientoPreventivo() {
 
       {/* ── Sheet: crear registro ──────────────────────────────────────── */}
       {sheetCrear && (
+        <Portal>
         <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={(e) => { if (e.target === e.currentTarget) handleCerrarSheetCrear() }}>
           <div className="absolute inset-0 bg-black/40" />
           <div className="relative bg-card rounded-t-[10px] flex flex-col" style={{ maxHeight: '85dvh' }}>
@@ -809,10 +811,12 @@ export function MantenimientoPreventivo() {
             )}
           </div>
         </div>
+        </Portal>
       )}
 
       {/* ── Sheet: capturar día ───────────────────────────────────────── */}
       {sheetDia && registroActivo && (
+        <Portal>
         <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={(e) => { if (e.target === e.currentTarget) setSheetDia(false) }}>
           <div className="absolute inset-0 bg-black/40" />
           <div className="relative bg-card rounded-t-[10px] flex flex-col" style={{ maxHeight: '85dvh' }}>
@@ -919,10 +923,12 @@ export function MantenimientoPreventivo() {
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
       {/* ── Sheet: acciones del mes ────────────────────────────────────── */}
       {sheetAcciones && registroActivo && (
+        <Portal>
         <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={(e) => { if (e.target === e.currentTarget) setSheetAcciones(false) }}>
           <div className="absolute inset-0 bg-black/40" />
           <div className="relative bg-card rounded-t-[10px] flex flex-col" style={{ maxHeight: '85dvh' }}>
@@ -992,10 +998,12 @@ export function MantenimientoPreventivo() {
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
       {/* ── Sheet: consolidado ─────────────────────────────────────────── */}
       {sheetConsolidado && (
+        <Portal>
         <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={(e) => { if (e.target === e.currentTarget) setSheetConsolidado(false) }}>
           <div className="absolute inset-0 bg-black/40" />
           <div className="relative bg-card rounded-t-[10px] flex flex-col" style={{ maxHeight: '85dvh' }}>
@@ -1057,6 +1065,7 @@ export function MantenimientoPreventivo() {
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
     </div>

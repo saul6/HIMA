@@ -23,6 +23,7 @@ import {
 } from '@/lib/queries'
 import type { Organizacion, Rancho } from '@/types/database.types'
 import { Fab } from '@/app/components/Fab'
+import { Portal } from '@/app/components/Portal'
 
 const CULTIVOS = ['Zarzamora', 'Frambuesa', 'Fresa', 'Mora azul', 'Coco']
 const CULTIVO_OTRO = '__otro__'
@@ -554,7 +555,7 @@ export function MiOrganizacion() {
 
       {/* Bottom Sheet — crear/editar rancho */}
       {sheetAbierto && (
-        <>
+        <Portal>
           <div
             className="fixed inset-0 bg-black/40 z-30"
             onClick={cerrarSheet}
@@ -688,12 +689,12 @@ export function MiOrganizacion() {
               </button>
             </div>
           </div>
-        </>
+        </Portal>
       )}
 
       {/* Bottom Sheet — asignar sitios a operario */}
       {empleadoSeleccionado && (
-        <>
+        <Portal>
           <div
             className="fixed inset-0 bg-black/40 z-30"
             onClick={() => setEmpleadoSeleccionado(null)}
@@ -780,7 +781,7 @@ export function MiOrganizacion() {
               )}
             </div>
           </div>
-        </>
+        </Portal>
       )}
     </div>
   )

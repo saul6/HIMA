@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { X } from 'lucide-react'
+import { Portal } from '@/app/components/Portal'
 
 interface BottomSheetProps {
   open: boolean
@@ -76,7 +77,7 @@ function StaticSheet({ open, onClose, height, title, children, raised }: {
 }) {
   if (!open) return null
   return (
-    <>
+    <Portal>
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
       <div
         className={`${PANEL_CLASS} ${raised ? 'bottom-3' : 'bottom-0'} sheet-desktop-fade`}
@@ -85,7 +86,7 @@ function StaticSheet({ open, onClose, height, title, children, raised }: {
         {title && <SheetHeader title={title} onClose={onClose} />}
         {children}
       </div>
-    </>
+    </Portal>
   )
 }
 
@@ -107,6 +108,7 @@ export function BottomSheet({ open, onClose, height, title, children, animateFro
   }
 
   return (
+    <Portal>
     <AnimatePresence>
       {open && (
         <>
@@ -141,5 +143,6 @@ export function BottomSheet({ open, onClose, height, title, children, animateFro
         </>
       )}
     </AnimatePresence>
+    </Portal>
   )
 }

@@ -26,6 +26,7 @@ import type { TipoMovimiento, InventarioSaldoRancho, InventarioSaldoProductor, R
 import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { Portal } from '@/app/components/Portal'
 
 const LOW_STOCK = 5
 
@@ -360,7 +361,7 @@ function ExportarReg01Sheet({ onClose, ranchoOptions, ranchos, orgId }: ExportSh
   }
 
   return (
-    <>
+    <Portal>
       <div className="fixed inset-0 bg-black/40 z-30" onClick={onClose} />
       <div
         className="fixed bottom-0 left-0 right-0 z-40 bg-card overflow-y-auto"
@@ -413,7 +414,7 @@ function ExportarReg01Sheet({ onClose, ranchoOptions, ranchos, orgId }: ExportSh
           </button>
         </div>
       </div>
-    </>
+    </Portal>
   )
 }
 

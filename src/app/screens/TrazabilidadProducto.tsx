@@ -29,6 +29,7 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { Portal } from '@/app/components/Portal'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -1055,6 +1056,7 @@ export function TrazabilidadProducto() {
 
       {/* ── Modal: Vista previa de etiqueta 4x8 ─────────────────────────── */}
       {previewInfo && (
+        <Portal>
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: 'rgba(0,0,0,0.7)' }}
@@ -1078,6 +1080,7 @@ export function TrazabilidadProducto() {
             </p>
           </div>
         </div>
+        </Portal>
       )}
 
 
@@ -1140,7 +1143,7 @@ function SaveBtn({ loading, onClick, label, secondary, icon }: { loading: boolea
 
 function BottomSheet({ title, onClose, children, noContentPad }: { title: string; onClose: () => void; children: React.ReactNode; noContentPad?: boolean }) {
   return (
-    <>
+    <Portal>
       <div className="fixed inset-0 bg-black/40 z-30" onClick={onClose} />
       <div
         className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col overflow-hidden"
@@ -1155,7 +1158,7 @@ function BottomSheet({ title, onClose, children, noContentPad }: { title: string
         </div>
         {noContentPad ? children : <div className="flex-1 overflow-y-auto p-4 space-y-4">{children}</div>}
       </div>
-    </>
+    </Portal>
   )
 }
 

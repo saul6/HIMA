@@ -9,6 +9,7 @@ import { formatFenologia } from "@/lib/fenologia";
 import { useAuthContext } from "@/context/AuthContext";
 import { useModulosContext } from "@/context/ModulosContext";
 import type { AplicacionRica } from "@/types/database.types";
+import { Portal } from "@/app/components/Portal";
 
 export function DetalleAplicacion() {
   const navigate = useNavigate();
@@ -226,6 +227,7 @@ export function DetalleAplicacion() {
       </div>
 
       {/* Sticky Footer */}
+      <Portal>
       <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-white border-t border-black/10 p-4 flex gap-3">
         <button
           onClick={handleExportExcel}
@@ -249,6 +251,7 @@ export function DetalleAplicacion() {
           PDF
         </button>
       </div>
+      </Portal>
     </div>
   );
 }

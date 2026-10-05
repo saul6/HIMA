@@ -21,6 +21,7 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { Portal } from '@/app/components/Portal'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -363,6 +364,7 @@ export function OrdenMantenimiento() {
 
       {/* ── Modal: nueva orden ─────────────────────────────────────────── */}
       {abierto && (
+        <Portal>
         <div
           className="fixed inset-0 z-50 flex flex-col justify-end"
           onClick={(e) => { if (e.target === e.currentTarget) handleCerrarModal() }}
@@ -576,6 +578,7 @@ export function OrdenMantenimiento() {
             </div>}
           </div>
         </div>
+        </Portal>
       )}
     </div>
   )
