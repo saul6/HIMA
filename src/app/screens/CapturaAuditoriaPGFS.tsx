@@ -293,7 +293,7 @@ function PreguntaCard({
         )}
         {saveStatus === 'error' && (
           <>
-            <span className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--agro-danger-text)' }}>
+            <span className="field-error-shake flex items-center gap-1 text-[10px]" style={{ color: 'var(--agro-danger-text)' }}>
               <XCircle size={11} /> {saveErrorMsg ?? 'No se pudo guardar. Reintenta.'}
             </span>
             <button

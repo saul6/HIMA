@@ -1740,7 +1740,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               </>
             )}
             {saveStatus === 'error' && (
-              <div className="flex items-center gap-2 w-full">
+              <div className="field-error-shake flex items-center gap-2 w-full">
                 <span className="flex items-center gap-1 text-[11px] flex-1 min-w-0" style={{ color: 'var(--agro-danger-text)' }}>
                   <XCircle size={12} className="flex-shrink-0" />
                   <span className="line-clamp-2">{saveMessage || 'No se pudo guardar. Reintenta.'}</span>

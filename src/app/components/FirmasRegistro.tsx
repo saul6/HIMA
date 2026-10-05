@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
 import { CheckCircle2, AlertTriangle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -69,6 +70,21 @@ function formatFirmaFecha(isoStr: string): string {
 // ── Sub-componente: chip de estado de firma ───────────────────────────────────
 
 function FirmaEstadoChip({ firma, label }: { firma: FirmaDetalle | null | undefined; label: string }) {
+  const reducedMotion = useReducedMotion()
+  const [resaltado, setResaltado] = useState(false)
+  const firmaVigenteRef = useRef(firma?.estado === 'vigente')
+
+  useEffect(() => {
+    const vigenteAhora = firma?.estado === 'vigente'
+    const recienFirmado = !firmaVigenteRef.current && vigenteAhora
+    firmaVigenteRef.current = vigenteAhora
+    if (recienFirmado && !reducedMotion) {
+      setResaltado(true)
+      const id = setTimeout(() => setResaltado(false), 600)
+      return () => clearTimeout(id)
+    }
+  }, [firma?.estado, reducedMotion])
+
   if (!firma) {
     return (
       <div>
@@ -97,7 +113,12 @@ function FirmaEstadoChip({ firma, label }: { firma: FirmaDetalle | null | undefi
   }
 
   return (
-    <div>
+    <motion.div
+      className="rounded-md -mx-1 px-1 -my-0.5 py-0.5"
+      initial={false}
+      animate={{ backgroundColor: resaltado ? 'var(--agro-success-fill)' : 'rgba(0,0,0,0)' }}
+      transition={{ duration: resaltado ? 0.15 : 0.6, ease: [0.22, 1, 0.36, 1] }}
+    >
       <p className="text-[10px] mb-1" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
         {label}
       </p>
@@ -110,7 +131,7 @@ function FirmaEstadoChip({ firma, label }: { firma: FirmaDetalle | null | undefi
       <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
         {formatFirmaFecha(firma.firmado_en)}
       </p>
-    </div>
+    </motion.div>
   )
 }
 

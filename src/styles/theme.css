@@ -432,6 +432,41 @@ button:not(:disabled):active:not(.no-press),
   }
 }
 
+/* Toasts (sonner) — mismo timing/curva que el resto de la app en las
+   transiciones de entrada/salida (transform, opacity). `height` y
+   `box-shadow` quedan con el timing propio de sonner (necesario para su
+   lógica de apilado). */
+[data-sonner-toast].mady-toast {
+  transition-duration: var(--motion-base), var(--motion-base), 400ms, 200ms;
+  transition-timing-function: var(--ease-out), var(--ease-out), ease, ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-sonner-toast].mady-toast {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}
+
+/* Error de campo corto (shake) — solo donde ya existe un mensaje de error
+   bajo el campo (ver CapturaAuditoriaPGFS/CapturaPreguntaAuditoria). */
+@keyframes fieldShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+@keyframes fieldErrorFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.field-error-shake {
+  animation: fieldShake 220ms var(--ease-out), fieldErrorFadeIn 150ms var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .field-error-shake {
+    animation: none;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
