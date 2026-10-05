@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { ChevronLeft } from 'lucide-react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { useLocation, useNavigate } from 'react-router'
 import { useModulosContext } from '@/context/ModulosContext'
 
@@ -25,6 +26,7 @@ export function ModuloHeader({ tituloFallback, forzarTitulo, subtitulo, onBack, 
   const { modulos } = useModulosContext()
   const modulo = modulos.find(m => m.ruta === location.pathname)
   const titulo = forzarTitulo ?? modulo?.nombre ?? tituloFallback
+  const reducedMotion = useReducedMotion()
 
   return (
     <header className="bg-card border-b border-border px-4 py-4 sticky top-0 z-20">
@@ -37,9 +39,19 @@ export function ModuloHeader({ tituloFallback, forzarTitulo, subtitulo, onBack, 
           <ChevronLeft className="w-5 h-5" />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-foreground truncate" style={{ fontWeight: 600 }}>
-            {titulo}
-          </h1>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.h1
+              key={titulo}
+              initial={reducedMotion ? false : { opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reducedMotion ? undefined : { opacity: 0, y: -4 }}
+              transition={reducedMotion ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              className="text-foreground truncate"
+              style={{ fontWeight: 600 }}
+            >
+              {titulo}
+            </motion.h1>
+          </AnimatePresence>
           {subtitulo && <p className="text-xs text-muted-foreground">{subtitulo}</p>}
         </div>
         {acciones && (

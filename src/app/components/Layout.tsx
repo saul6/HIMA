@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, Link } from "react-router";
-import { motion, useReducedMotion } from "motion/react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck, X, Calendar, ListChecks } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
@@ -161,19 +161,26 @@ export function Layout() {
                 key={path}
                 to={path}
                 title={label}
-                className="flex items-center justify-center lg:justify-start gap-0 lg:gap-3 px-0 lg:px-3 py-2.5 rounded-lg text-sm transition-colors"
+                className="relative flex items-center justify-center lg:justify-start gap-0 lg:gap-3 px-0 lg:px-3 py-2.5 rounded-lg text-sm transition-colors"
                 style={{
-                  backgroundColor: active ? 'var(--accent)' : undefined,
                   color: active ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
                   fontWeight: active ? 600 : 400,
                 }}
               >
+                {active && (
+                  <motion.span
+                    layoutId="sidebarActiveIndicator"
+                    className="absolute inset-0 rounded-lg"
+                    style={{ backgroundColor: 'var(--accent)' }}
+                    transition={reducedMotion ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                )}
                 <Icon
-                  className="w-5 h-5 lg:w-4 lg:h-4 flex-shrink-0"
+                  className="relative z-10 w-5 h-5 lg:w-4 lg:h-4 flex-shrink-0"
                   style={{ color: active ? 'var(--primary)' : 'currentColor' }}
                   strokeWidth={active ? 2 : 1.5}
                 />
-                <span className="hidden lg:inline">{label}</span>
+                <span className="relative z-10 hidden lg:inline">{label}</span>
               </Link>
             );
           })}
@@ -233,11 +240,21 @@ export function Layout() {
         <header className="hidden md:grid md:grid-cols-[auto_1fr_auto] items-center gap-4 h-14 lg:h-16 px-6 border-b border-border bg-card flex-shrink-0">
           {/* Left: page title or greeting on home */}
           <div className="min-w-0">
-            <p className="text-sm" style={{ color: 'var(--foreground)', fontWeight: 600 }}>
-              {isHome
-                ? `Hola, ${profile?.nombre_completo?.split(' ')[0] ?? '—'}`
-                : topbarTitulo}
-            </p>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.p
+                key={isHome ? 'home-greeting' : topbarTitulo}
+                initial={reducedMotion ? false : { opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reducedMotion ? undefined : { opacity: 0, y: -4 }}
+                transition={reducedMotion ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                className="text-sm"
+                style={{ color: 'var(--foreground)', fontWeight: 600 }}
+              >
+                {isHome
+                  ? `Hola, ${profile?.nombre_completo?.split(' ')[0] ?? '—'}`
+                  : topbarTitulo}
+              </motion.p>
+            </AnimatePresence>
             <p className="text-xs text-muted-foreground">
               {terminosSitio.singular !== 'Rancho' ? 'Instalaciones' : 'Campo'} · M.A.D.Y
             </p>
