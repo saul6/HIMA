@@ -23,6 +23,7 @@ import { MadyLogo } from '@/app/components/MadyLogo'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import type { ModuloVisible } from '@/hooks/useMisModulos'
 import { CATEGORIA_MAP } from '@/lib/categoriasModulos'
+import { ordenarAlfabetico } from '@/lib/ordenAlfabetico'
 
 const MAX_PINNED = 4
 const DURACION_CONTADOR_S = 1.1
@@ -549,7 +550,10 @@ export function Home() {
   const esAdmin = profile?.rol === 'admin_org'
   const tieneAplicaciones = modulos.some(m => m.clave === 'aplicaciones')
 
-  // Grupos por categoría temática
+  // Grupos por categoría temática — categorías y módulos dentro de cada una
+  // en orden alfabético por su texto visible (ver CLAUDE.md: aprobado por
+  // Saúl). CATEGORIA_MAP.orden se conserva intacto: lo siguen usando otras
+  // partes de la app (Layout, header).
   const modulosAgrupados = useMemo(() => {
     const visibles = modulos.filter(m => m.mostrar_en_menu)
     const catMap = new Map<string, typeof modulos>()
@@ -558,18 +562,16 @@ export function Home() {
       if (!catMap.has(cat)) catMap.set(cat, [])
       catMap.get(cat)!.push(m)
     }
-    return Array.from(catMap.entries())
-      .map(([cat, mods]) => {
-        const config = CATEGORIA_MAP[cat]
-        return {
-          key: cat,
-          label: config?.label ?? 'Otros',
-          orden: config?.orden ?? 99,
-          icono: config?.icono ?? 'layout-grid',
-          modulos: mods.sort((a, b) => a.orden - b.orden),
-        }
-      })
-      .sort((a, b) => a.orden - b.orden)
+    const grupos = Array.from(catMap.entries()).map(([cat, mods]) => {
+      const config = CATEGORIA_MAP[cat]
+      return {
+        key: cat,
+        label: config?.label ?? 'Otros',
+        icono: config?.icono ?? 'layout-grid',
+        modulos: ordenarAlfabetico(mods, m => m.nombre),
+      }
+    })
+    return ordenarAlfabetico(grupos, g => g.label)
   }, [modulos])
 
   // Limpiar búsqueda al desmontar
@@ -577,11 +579,12 @@ export function Home() {
     return () => setBusqueda('')
   }, [setBusqueda])
 
-  // Resultados de búsqueda en vivo
+  // Resultados de búsqueda en vivo — orden alfabético por nombre visible
   const modulosFiltrados = useMemo(() => {
     if (!busqueda.trim()) return []
     const q = busqueda.toLowerCase()
-    return modulos.filter(m => m.mostrar_en_menu && m.nombre.toLowerCase().includes(q))
+    const encontrados = modulos.filter(m => m.mostrar_en_menu && m.nombre.toLowerCase().includes(q))
+    return ordenarAlfabetico(encontrados, m => m.nombre)
   }, [modulos, busqueda])
 
   // Objetos de módulos fijados
