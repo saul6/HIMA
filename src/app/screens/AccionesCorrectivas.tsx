@@ -6,6 +6,7 @@ import {
 import { useNavigate } from 'react-router'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { FotoEvidencia } from '@/app/components/FotoEvidencia'
 import { toast } from 'sonner'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { useAuthContext } from '@/context/AuthContext'
@@ -118,7 +119,7 @@ function GaleriaGuardadas({
               <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
             </div>
           ) : urls[f.storage_path] ? (
-            <img
+            <FotoEvidencia
               src={urls[f.storage_path]}
               alt="Evidencia"
               className="w-14 h-14 object-cover rounded-lg flex-shrink-0 border border-border"
@@ -620,7 +621,7 @@ export function AccionesCorrectivas() {
                     key={fp.uid}
                     className="flex items-center gap-3 p-2 rounded-xl border border-border bg-muted"
                   >
-                    <img
+                    <FotoEvidencia
                       src={fp.preview}
                       alt=""
                       className="w-14 h-14 object-cover rounded-lg flex-shrink-0"

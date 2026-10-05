@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { FormField } from "../FormField";
 import { FormSelect } from "../FormSelect";
 import { ProductoCombobox } from "./ProductoCombobox";
@@ -60,6 +61,7 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
   const { productos, loading: loadingCatalogo } = useCatalogoProductos();
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<typeof emptyProduct>({ ...emptyProduct });
+  const reducedMotion = useReducedMotion();
 
   const handleProductSelect = (productId: string) => {
     const selected = productos.find((p) => p.id === productId);
@@ -91,7 +93,9 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
 
   const addProduct = () => {
     if (!currentProduct.productId) return;
-    updateFormData({ products: [...formData.products, currentProduct] });
+    // `uid` solo identifica la fila en pantalla (key estable para la lista
+    // animada) — no se guarda en BD, el insert mapea campos explícitos.
+    updateFormData({ products: [...formData.products, { ...currentProduct, uid: crypto.randomUUID() }] });
     setCurrentProduct({ ...emptyProduct });
     setIsAddingProduct(false);
   };
@@ -114,41 +118,51 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
       {/* Lista de productos agregados */}
       {formData.products.length > 0 && (
         <div className="space-y-3">
-          {formData.products.map((product: any, index: number) => {
-            const barrilVivo = calcularDosisBarril(product.dosePerHa, formData.totalWater, formData.surface)
-            const totalVivo = calcularTotal(product.dosePerHa, formData.surface)
-            return (
-              <div key={index} className="bg-card border border-border rounded-xl p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <div className="text-sm mb-1" style={{ fontWeight: 600 }}>
-                      {product.commercialName}
+          <AnimatePresence initial={false}>
+            {formData.products.map((product: any, index: number) => {
+              const barrilVivo = calcularDosisBarril(product.dosePerHa, formData.totalWater, formData.surface)
+              const totalVivo = calcularTotal(product.dosePerHa, formData.surface)
+              return (
+                <motion.div
+                  key={product.uid ?? index}
+                  layout={!reducedMotion}
+                  initial={reducedMotion ? false : { opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reducedMotion ? undefined : { opacity: 0, y: -8 }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  className="bg-card border border-border rounded-xl p-4"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <div className="text-sm mb-1" style={{ fontWeight: 600 }}>
+                        {product.commercialName}
+                      </div>
+                      <div className="text-xs text-muted-foreground">{product.activeIngredient}</div>
                     </div>
-                    <div className="text-xs text-muted-foreground">{product.activeIngredient}</div>
+                    <button
+                      onClick={() => removeProduct(index)}
+                      className="p-1 text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => removeProduct(index)}
-                    className="p-1 text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                  <span>Dosis/ha: {product.dosePerHa || '—'}</span>
-                  <span>·</span>
-                  <span>Barril: {barrilVivo || '—'}</span>
-                  <span>·</span>
-                  <span>Total: {totalVivo || '—'}</span>
-                  {product.infestationLevel && (
-                    <>
-                      <span>·</span>
-                      <span className="px-2 py-1 bg-muted rounded">{product.infestationLevel}</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            )
-          })}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                    <span>Dosis/ha: {product.dosePerHa || '—'}</span>
+                    <span>·</span>
+                    <span>Barril: {barrilVivo || '—'}</span>
+                    <span>·</span>
+                    <span>Total: {totalVivo || '—'}</span>
+                    {product.infestationLevel && (
+                      <>
+                        <span>·</span>
+                        <span className="px-2 py-1 bg-muted rounded">{product.infestationLevel}</span>
+                      </>
+                    )}
+                  </div>
+                </motion.div>
+              )
+            })}
+          </AnimatePresence>
         </div>
       )}
 

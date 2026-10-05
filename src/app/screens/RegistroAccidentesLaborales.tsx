@@ -3,9 +3,11 @@ import {
   Plus, Loader2, Files, Camera, Trash2,
   AlertTriangle, FileDown, ShieldAlert, Image,
 } from 'lucide-react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { useNavigate } from 'react-router'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { FotoEvidencia } from '@/app/components/FotoEvidencia'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { toast } from 'sonner'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
@@ -123,7 +125,7 @@ function GaleriaFotos({ paths }: { paths: string[] }) {
             <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
           </div>
         ) : urls[p] ? (
-          <img
+          <FotoEvidencia
             key={p}
             src={urls[p]}
             alt="Evidencia"
@@ -291,6 +293,7 @@ export function RegistroAccidentesLaborales() {
   const { profile, user, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
+  const reducedMotion = useReducedMotion()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
@@ -771,9 +774,18 @@ export function RegistroAccidentesLaborales() {
 
               {fotosLocal.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {fotosLocal.map((f) => (
-                    <div key={f.uid} className="relative w-20 h-20">
-                      <img
+                  <AnimatePresence initial={false}>
+                    {fotosLocal.map((f) => (
+                    <motion.div
+                      key={f.uid}
+                      layout={!reducedMotion}
+                      initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={reducedMotion ? undefined : { opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                      className="relative w-20 h-20"
+                    >
+                      <FotoEvidencia
                         src={f.preview}
                         alt="Evidencia"
                         className="w-full h-full object-cover rounded-lg border border-border"
@@ -786,8 +798,9 @@ export function RegistroAccidentesLaborales() {
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
-                    </div>
-                  ))}
+                    </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </div>
               )}
 

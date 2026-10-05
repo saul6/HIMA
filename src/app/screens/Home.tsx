@@ -2,7 +2,7 @@
 import type { ReactNode } from 'react'
 import { Link, Navigate } from 'react-router'
 import { animate } from 'motion'
-import { useReducedMotion } from 'motion/react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import {
   TriangleAlert, Clock3,
   Users, AlertTriangle, ChevronRight, ClipboardList, BarChart2,
@@ -399,6 +399,10 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
                           e.preventDefault()
                           e.stopPropagation()
                           toggleFijar(modulo.codigo)
+                          if (!prefersReducedMotion) {
+                            const svg = e.currentTarget.querySelector('svg')
+                            if (svg) animate(svg, { scale: [1, 1.15, 1] }, { duration: 0.3, ease: [0.22, 1, 0.36, 1] })
+                          }
                         }}
                         className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors hover:bg-accent"
                         aria-label={esFijado ? 'Quitar de accesos rápidos' : 'Fijar en accesos rápidos'}
@@ -943,14 +947,30 @@ export function Home() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
+                  <AnimatePresence initial={false}>
                   {modulosFijadosObjs.map((modulo, index) => {
                     const Icon = resolverIcono(modulo.icono)
                     const bloqueado = !modulo.desbloqueado
+                    const esCascadaInicial = !reducedMotion && primeraCargaModulosRef.current
                     return (
-                      <div
+                      <motion.div
                         key={modulo.codigo}
+                        layout={!reducedMotion}
                         className="relative"
-                        style={cascadeStyle(index, !reducedMotion && primeraCargaModulosRef.current)}
+                        initial={
+                          reducedMotion
+                            ? false
+                            : esCascadaInicial
+                              ? { opacity: 0, y: 12 }
+                              : { opacity: 0, scale: 0.96 }
+                        }
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={reducedMotion ? undefined : { opacity: 0, scale: 0.96 }}
+                        transition={
+                          esCascadaInicial
+                            ? { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: Math.min(index, 7) * 0.035 }
+                            : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }
+                        }
                       >
                         {bloqueado ? (
                           <button
@@ -999,9 +1019,10 @@ export function Home() {
                         >
                           <span className="text-base leading-none select-none">×</span>
                         </button>
-                      </div>
+                      </motion.div>
                     )
                   })}
+                  </AnimatePresence>
                 </div>
               )}
             </section>

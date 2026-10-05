@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { CSSProperties } from 'react'
-import { useReducedMotion } from 'motion/react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import {
   ChevronLeft, Plus, Loader2, AlertTriangle,
   Calendar, MapPin, FileText, ChevronDown, ChevronUp, ExternalLink,
@@ -9,6 +9,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { FotoEvidencia } from '@/app/components/FotoEvidencia'
 import { FirmaPad } from '@/app/components/FirmaPad'
 import type { FirmaPadRef } from '@/app/components/FirmaPad'
 import { FirmaSvg } from '@/app/components/FirmaSvg'
@@ -209,23 +210,34 @@ function FotoMiniaturas({
   fotos: FotoLocal[]
   onRemove: (uid: string) => void
 }) {
+  const reducedMotion = useReducedMotion()
   if (fotos.length === 0) return null
   return (
     <div className="flex flex-wrap gap-2">
-      {fotos.map(f => (
-        <div key={f.uid} className="relative w-16 h-16 rounded-lg overflow-hidden border border-border">
-          <img src={f.preview} alt="" className="w-full h-full object-cover" />
-          <button
-            type="button"
-            onClick={() => onRemove(f.uid)}
-            className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: 'var(--agro-red)', color: 'var(--primary-foreground)' }}
-            aria-label="Quitar foto"
+      <AnimatePresence initial={false}>
+        {fotos.map(f => (
+          <motion.div
+            key={f.uid}
+            layout={!reducedMotion}
+            initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={reducedMotion ? undefined : { opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            className="relative w-16 h-16 rounded-lg overflow-hidden border border-border"
           >
-            <Trash2 className="w-3 h-3" />
-          </button>
-        </div>
-      ))}
+            <FotoEvidencia src={f.preview} alt="" className="w-full h-full object-cover" />
+            <button
+              type="button"
+              onClick={() => onRemove(f.uid)}
+              className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: 'var(--agro-red)', color: 'var(--primary-foreground)' }}
+              aria-label="Quitar foto"
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   )
 }
@@ -746,7 +758,7 @@ function DetalleSheet({
                   <div key={ev.storage_path} className="w-16 h-16 rounded-lg border border-border overflow-hidden bg-muted flex items-center justify-center">
                     {url ? (
                       <a href={url} target="_blank" rel="noopener noreferrer">
-                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <FotoEvidencia src={url} alt="" className="w-full h-full object-cover" />
                       </a>
                     ) : (
                       <Image className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />

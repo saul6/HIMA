@@ -3,9 +3,11 @@ import {
   Plus, X, Loader2, AlertTriangle,
   Camera, Image, Trash2, ImageOff, ClipboardList, FileDown,
 } from 'lucide-react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { FotoEvidencia } from '@/app/components/FotoEvidencia'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { toast } from 'sonner'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
@@ -108,7 +110,7 @@ function GaleriaFotos({ paths }: { paths: string[] }) {
             <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
           </div>
         ) : urls[p] ? (
-          <img
+          <FotoEvidencia
             key={p}
             src={urls[p]}
             alt="Evidencia"
@@ -145,6 +147,7 @@ function IncidenciaForm({
   const inputCamaraRef = useRef<HTMLInputElement>(null)
   const inputGaleriaRef = useRef<HTMLInputElement>(null)
   const atLimit = totalFotosReporte >= MAX_FOTOS_REPORTE
+  const reducedMotion = useReducedMotion()
 
   useEffect(() => {
     return () => { inc.fotos.forEach((f) => URL.revokeObjectURL(f.preview)) }
@@ -257,22 +260,32 @@ function IncidenciaForm({
       {/* Previews */}
       {inc.fotos.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {inc.fotos.map((f) => (
-            <div key={f.uid} className="relative">
-              <img
-                src={f.preview}
-                alt="Preview"
-                className="w-16 h-16 object-cover rounded-lg border border-border"
-              />
-              <button
-                type="button"
-                onClick={() => quitarFoto(f.uid)}
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-agro-red text-white rounded-full flex items-center justify-center"
+          <AnimatePresence initial={false}>
+            {inc.fotos.map((f) => (
+              <motion.div
+                key={f.uid}
+                layout={!reducedMotion}
+                initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={reducedMotion ? undefined : { opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                className="relative"
               >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          ))}
+                <FotoEvidencia
+                  src={f.preview}
+                  alt="Preview"
+                  className="w-16 h-16 object-cover rounded-lg border border-border"
+                />
+                <button
+                  type="button"
+                  onClick={() => quitarFoto(f.uid)}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-agro-red text-white rounded-full flex items-center justify-center"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       )}
 
