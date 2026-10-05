@@ -6,7 +6,7 @@
 
 import { useState } from 'react'
 import {
-  Plus, X, Loader2, Wrench, TriangleAlert,
+  Plus, X, Loader2, Wrench, TriangleAlert, FileDown,
 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
@@ -24,6 +24,8 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { generarMantenimientoEquiposGGPDF, generarMantenimientoEquiposGGConsolidadoPDF } from '@/lib/pdf/m76/generarMantenimientoEquiposGGPDF'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -139,6 +141,47 @@ export function MantenimientoEquiposGG() {
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M76', todosIds)
 
   const termino = terminosSitio.singular
+  const [pdfLoading, setPdfLoading] = useState<string | null>(null)
+  const [sheetConsolidado, setSheetConsolidado] = useState(false)
+  const [exportandoConsolidado, setExportandoConsolidado] = useState(false)
+  const [consolidadoForm, setConsolidadoForm] = useState({ ranchoId: '', desde: '', hasta: '' })
+
+  async function descargarPDF(id: string) {
+    if (!profile?.org_id) return
+    setPdfLoading(id)
+    try {
+      await generarMantenimientoEquiposGGPDF(id, profile.org_id)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error al generar PDF')
+    } finally {
+      setPdfLoading(null)
+    }
+  }
+
+  async function exportarConsolidado() {
+    if (!profile?.org_id) return
+    if (!consolidadoForm.desde || !consolidadoForm.hasta) {
+      toast.warning('Selecciona el rango de fechas')
+      return
+    }
+    setExportandoConsolidado(true)
+    try {
+      const ranchoNombre = ranchos.find(r => r.id === consolidadoForm.ranchoId)?.nombre ?? ''
+      await generarMantenimientoEquiposGGConsolidadoPDF(
+        profile.org_id,
+        consolidadoForm.ranchoId || null,
+        consolidadoForm.desde,
+        consolidadoForm.hasta,
+        ranchoNombre,
+      )
+      setSheetConsolidado(false)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error al exportar')
+    } finally {
+      setExportandoConsolidado(false)
+    }
+  }
+
   const [sheetNuevo, setSheetNuevo] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
   const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
@@ -213,6 +256,7 @@ export function MantenimientoEquiposGG() {
       <ModuloHeader tituloFallback="Verificación y Mantenimiento de Equipos" subtitulo="M76 · REG-09 · Mantenimiento" />
 
       <BannerTareaOrigen tareaId={tareaId} />
+      <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
 
       {/* Lista */}
       <div className="p-4 space-y-3">
@@ -252,19 +296,32 @@ export function MantenimientoEquiposGG() {
                   className="rounded-xl p-4 border"
                   style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
                 >
-                  <div className="flex items-start gap-2 mb-1">
-                    <span
-                      className="text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span
+                        className="text-xs px-2 py-0.5 rounded"
+                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+                      >
+                        {formatFecha(reg.fecha)}
+                      </span>
+                      <span
+                        className="text-xs px-2 py-0.5 rounded"
+                        style={{ backgroundColor: cols.fill, color: cols.text, fontWeight: 600 }}
+                      >
+                        {TIPO_LABELS[tipo]}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => descargarPDF(reg.id)}
+                      className="p-1 flex-shrink-0"
+                      style={{ color: 'var(--primary)' }}
+                      title="Descargar PDF"
+                      disabled={pdfLoading === reg.id}
                     >
-                      {formatFecha(reg.fecha)}
-                    </span>
-                    <span
-                      className="text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: cols.fill, color: cols.text, fontWeight: 600 }}
-                    >
-                      {TIPO_LABELS[tipo]}
-                    </span>
+                      {pdfLoading === reg.id
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : <FileDown className="w-4 h-4" />}
+                    </button>
                   </div>
                   <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</span>
                   {reg.equipo && (
@@ -324,13 +381,17 @@ export function MantenimientoEquiposGG() {
         {sheetPaso === 'firma_decision' && pendienteFirmaId && (
           <PasoFirmaRegistro
             modulo="M76"
-            registroId={pendienteFirmaId}
+            ids={[pendienteFirmaId]}
             descripcion={`Equipo: ${form.equipo || 'Registro'} · ${form.fecha}`}
+            obligatoria={obligatoria}
             onFirmadoYPDF={async () => {
               handleCerrarSheet()
               await refetchFirmas()
+              if (profile?.org_id) {
+                try { await generarMantenimientoEquiposGGPDF(pendienteFirmaId, profile.org_id) } catch { /* silent */ }
+              }
             }}
-            onOmitir={handleCerrarSheet}
+            onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
           />
         )}
 
@@ -453,6 +514,55 @@ export function MantenimientoEquiposGG() {
           </div>
         </div>
         )}
+      </BottomSheet>
+
+      {/* Consolidado sheet */}
+      <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="60%">
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
+        </div>
+        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+          <button onClick={() => setSheetConsolidado(false)}>
+            <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
+          <div className="space-y-1">
+            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>{termino.toUpperCase()} (opcional)</label>
+            <select
+              value={consolidadoForm.ranchoId}
+              onChange={(e) => setConsolidadoForm((f) => ({ ...f, ranchoId: e.target.value }))}
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+            >
+              <option value="">{terminosSitio.plural}</option>
+              {ranchos.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DESDE</label>
+              <input type="date" value={consolidadoForm.desde} onChange={(e) => setConsolidadoForm((f) => ({ ...f, desde: e.target.value }))}
+                className="w-full h-11 px-3 rounded-xl border text-sm focus:outline-none"
+                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA</label>
+              <input type="date" value={consolidadoForm.hasta} onChange={(e) => setConsolidadoForm((f) => ({ ...f, hasta: e.target.value }))}
+                className="w-full h-11 px-3 rounded-xl border text-sm focus:outline-none"
+                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+            </div>
+          </div>
+          <button
+            onClick={exportarConsolidado}
+            disabled={exportandoConsolidado || !consolidadoForm.desde || !consolidadoForm.hasta}
+            className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
+            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+          >
+            {exportandoConsolidado ? <><Loader2 className="w-4 h-4 animate-spin" /> Generando…</> : 'Descargar PDF consolidado'}
+          </button>
+        </div>
       </BottomSheet>
     </div>
   )

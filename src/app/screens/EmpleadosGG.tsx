@@ -6,7 +6,7 @@
 
 import { useState } from 'react'
 import {
-  Plus, X, Loader2, Users, TriangleAlert, Trash2,
+  Plus, X, Loader2, Users, TriangleAlert, Trash2, FileDown,
 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
@@ -24,6 +24,8 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { generarEmpleadosGGPDF, generarEmpleadosGGConsolidadoPDF } from '@/lib/pdf/m77/generarEmpleadosGGPDF'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -75,6 +77,36 @@ export function EmpleadosGG() {
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M77', todosIds)
 
   const termino = terminosSitio.singular
+  const [pdfLoading, setPdfLoading] = useState<string | null>(null)
+  const [sheetConsolidado, setSheetConsolidado] = useState(false)
+  const [exportandoConsolidado, setExportandoConsolidado] = useState(false)
+  const [consolidadoRanchoId, setConsolidadoRanchoId] = useState('')
+
+  async function descargarPDF(id: string) {
+    if (!profile?.org_id) return
+    setPdfLoading(id)
+    try {
+      await generarEmpleadosGGPDF(id, profile.org_id)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error al generar PDF')
+    } finally {
+      setPdfLoading(null)
+    }
+  }
+
+  async function exportarConsolidado() {
+    if (!profile?.org_id) return
+    setExportandoConsolidado(true)
+    try {
+      await generarEmpleadosGGConsolidadoPDF(profile.org_id, consolidadoRanchoId || null)
+      setSheetConsolidado(false)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error al exportar')
+    } finally {
+      setExportandoConsolidado(false)
+    }
+  }
+
   const [sheetNuevo, setSheetNuevo] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
   const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
@@ -166,6 +198,7 @@ export function EmpleadosGG() {
       <ModuloHeader tituloFallback="Identificación de Empleados" subtitulo="M77 · REG-ASIP-26 · Seguridad" />
 
       <BannerTareaOrigen tareaId={tareaId} />
+      <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
 
       {/* Lista */}
       <div className="p-4 space-y-3">
@@ -233,16 +266,29 @@ export function EmpleadosGG() {
                         </span>
                       )}
                     </div>
-                    {(esAdmin || esMio) && (
+                    <div className="flex items-center gap-1 flex-shrink-0">
                       <button
-                        onClick={() => handleEliminar(reg)}
-                        className="p-2 flex-shrink-0"
-                        style={{ color: 'var(--muted-foreground)' }}
-                        title="Eliminar empleado"
+                        onClick={() => descargarPDF(reg.id)}
+                        className="p-2"
+                        style={{ color: 'var(--primary)' }}
+                        title="Descargar PDF"
+                        disabled={pdfLoading === reg.id}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        {pdfLoading === reg.id
+                          ? <Loader2 className="w-4 h-4 animate-spin" />
+                          : <FileDown className="w-4 h-4" />}
                       </button>
-                    )}
+                      {(esAdmin || esMio) && (
+                        <button
+                          onClick={() => handleEliminar(reg)}
+                          className="p-2"
+                          style={{ color: 'var(--muted-foreground)' }}
+                          title="Eliminar empleado"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <FirmasRegistro
                     modulo="M77"
@@ -286,7 +332,13 @@ export function EmpleadosGG() {
             ids={[pendienteFirmaId]}
             descripcion={`Empleado: ${form.nombre}`}
             obligatoria={obligatoria}
-            onFirmadoYPDF={async () => { handleCerrarSheet(); await refetchFirmas() }}
+            onFirmadoYPDF={async () => {
+              handleCerrarSheet()
+              await refetchFirmas()
+              if (pendienteFirmaId && profile?.org_id) {
+                try { await generarEmpleadosGGPDF(pendienteFirmaId, profile.org_id) } catch { /* silent */ }
+              }
+            }}
             onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
           />
         )}
@@ -386,6 +438,41 @@ export function EmpleadosGG() {
           </button>
         </div>
         </>)}
+      </BottomSheet>
+
+      {/* Consolidado sheet */}
+      <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="50%">
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
+        </div>
+        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar directorio</h2>
+          <button onClick={() => setSheetConsolidado(false)}>
+            <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
+          <div className="space-y-1">
+            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>{termino.toUpperCase()} (opcional)</label>
+            <select
+              value={consolidadoRanchoId}
+              onChange={(e) => setConsolidadoRanchoId(e.target.value)}
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+            >
+              <option value="">{terminosSitio.plural}</option>
+              {ranchos.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
+            </select>
+          </div>
+          <button
+            onClick={exportarConsolidado}
+            disabled={exportandoConsolidado}
+            className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
+            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+          >
+            {exportandoConsolidado ? <><Loader2 className="w-4 h-4 animate-spin" /> Generando…</> : 'Descargar PDF empleados'}
+          </button>
+        </div>
       </BottomSheet>
     </div>
   )
