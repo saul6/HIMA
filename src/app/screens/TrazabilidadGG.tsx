@@ -6,10 +6,11 @@
 
 import { useState } from 'react'
 import {
-  Plus, X, Loader2, Truck, TriangleAlert,
+  Plus, X, Loader2, Truck, TriangleAlert, FileDown,
 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -24,6 +25,11 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import {
+  generarNotaTrazabilidadPDF,
+  generarNotaTrazabilidadConsolidadoPDF,
+} from '@/lib/pdf/m78/generarNotaTrazabilidadPDF'
+import { useOrganizacion } from '@/hooks/useOrganizacion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -92,11 +98,12 @@ export function TrazabilidadGG() {
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM78TrazabilidadGG()
-
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M78', todosIds)
 
+  const orgId = profile?.org_id
+  const orgNombre = useOrganizacion(orgId)
   const termino = terminosSitio.singular
   const [sheetNuevo, setSheetNuevo] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
@@ -104,11 +111,54 @@ export function TrazabilidadGG() {
   const [form, setForm] = useState<FormState>(formInicial)
   const [errRancho, setErrRancho] = useState(false)
   const [guardando, setGuardando] = useState(false)
+  const [pdfLoading, setPdfLoading] = useState<string | null>(null)
+  const [consolidadoOpen, setConsolidadoOpen] = useState(false)
+  const [exportando, setExportando] = useState(false)
+  const hoyStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
+  const [consolidadoForm, setConsolidadoForm] = useState({ rancho_id: '', desde: hoyStr(), hasta: hoyStr() })
 
   function handleCerrarSheet() {
     setSheetNuevo(false)
     setSheetPaso('form')
     setPendienteFirmaId(null)
+  }
+
+  async function descargarPDF(id: string) {
+    if (!orgId) return
+    if (obligatoria && !firmas[id]?.realizo) {
+      toast.info('Firma este registro antes de descargar el PDF')
+      return
+    }
+    setPdfLoading(id)
+    try {
+      await generarNotaTrazabilidadPDF(id, orgId)
+    } catch {
+      toast.error('Error al generar PDF')
+    } finally {
+      setPdfLoading(null)
+    }
+  }
+
+  async function exportarConsolidado() {
+    if (!orgId) return
+    setExportando(true)
+    try {
+      const rancho = ranchos.find(r => r.id === consolidadoForm.rancho_id)
+      const ranchoNombre = rancho?.nombre ?? terminosSitio.plural
+      await generarNotaTrazabilidadConsolidadoPDF(
+        orgId,
+        consolidadoForm.rancho_id || null,
+        consolidadoForm.desde,
+        consolidadoForm.hasta,
+        ranchoNombre,
+        orgNombre,
+      )
+      setConsolidadoOpen(false)
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error al exportar')
+    } finally {
+      setExportando(false)
+    }
   }
 
   const setF = (k: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
@@ -178,8 +228,13 @@ export function TrazabilidadGG() {
       <ModuloHeader tituloFallback="Nota de Trazabilidad" subtitulo="M78 · Salida de producto · GlobalGAP" />
       <BannerTareaOrigen tareaId={tareaId} />
 
+      {/* Exportar consolidado */}
+      <div className="px-4 pt-3 pb-4">
+        <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
+      </div>
+
       {/* Lista */}
-      <div className="p-4 space-y-3">
+      <div className="px-4 pb-32 space-y-3">
         {error && (
           <div
             className="flex items-start gap-2 rounded-xl p-3"
@@ -213,52 +268,67 @@ export function TrazabilidadGG() {
                 className="rounded-xl p-4 border"
                 style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
               >
-                <div className="flex items-start gap-2 mb-1 flex-wrap">
-                  <span
-                    className="text-xs px-2 py-0.5 rounded"
-                    style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start gap-2 mb-1 flex-wrap">
+                      <span
+                        className="text-xs px-2 py-0.5 rounded"
+                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+                      >
+                        {formatFecha(reg.fecha)}
+                      </span>
+                      {reg.folio && (
+                        <span
+                          className="text-xs px-2 py-0.5 rounded font-mono"
+                          style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', fontWeight: 600 }}
+                        >
+                          {reg.folio}
+                        </span>
+                      )}
+                      {reg.presentacion && (
+                        <span
+                          className="text-xs px-2 py-0.5 rounded"
+                          style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                        >
+                          {reg.presentacion === 'Otro' ? reg.otro_presentacion || 'Otro' : reg.presentacion}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</span>
+                    {reg.cultivo && (
+                      <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                        Cultivo: {reg.cultivo}
+                      </div>
+                    )}
+                    {reg.peso_neto !== null && (
+                      <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                        Peso neto: <span style={{ fontWeight: 600, color: 'var(--foreground)' }}>{reg.peso_neto} Ton</span>
+                      </div>
+                    )}
+                    {reg.chofer && (
+                      <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                        Chofer: {reg.chofer}
+                      </div>
+                    )}
+                    {obligatoria && !firmas[reg.id]?.realizo && (
+                      <span className="text-xs px-2 py-0.5 rounded font-medium mt-2 inline-block"
+                        style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
+                        Pendiente de firma
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => descargarPDF(reg.id)}
+                    disabled={pdfLoading === reg.id}
+                    className="p-2 rounded-lg border shrink-0"
+                    style={{ borderColor: 'var(--border)' }}
                   >
-                    {formatFecha(reg.fecha)}
-                  </span>
-                  {reg.folio && (
-                    <span
-                      className="text-xs px-2 py-0.5 rounded font-mono"
-                      style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', fontWeight: 600 }}
-                    >
-                      {reg.folio}
-                    </span>
-                  )}
-                  {reg.presentacion && (
-                    <span
-                      className="text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
-                    >
-                      {reg.presentacion === 'Otro' ? reg.otro_presentacion || 'Otro' : reg.presentacion}
-                    </span>
-                  )}
+                    {pdfLoading === reg.id
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                    }
+                  </button>
                 </div>
-                <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</span>
-                {reg.cultivo && (
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                    Cultivo: {reg.cultivo}
-                  </div>
-                )}
-                {reg.peso_neto !== null && (
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                    Peso neto: <span style={{ fontWeight: 600, color: 'var(--foreground)' }}>{reg.peso_neto} Ton</span>
-                  </div>
-                )}
-                {reg.chofer && (
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                    Chofer: {reg.chofer}
-                  </div>
-                )}
-                {obligatoria && !firmas[reg.id]?.realizo && (
-                  <span className="text-xs px-2 py-0.5 rounded font-medium mt-2 inline-block"
-                    style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
-                    Pendiente de firma
-                  </span>
-                )}
                 <FirmasRegistro
                   modulo="M78"
                   registroId={reg.id}
@@ -300,7 +370,11 @@ export function TrazabilidadGG() {
             ids={[pendienteFirmaId]}
             descripcion={`Nota de trazabilidad · ${form.fecha}`}
             obligatoria={obligatoria}
-            onFirmadoYPDF={async () => { handleCerrarSheet(); await refetchFirmas() }}
+            onFirmadoYPDF={async () => {
+              if (orgId) await generarNotaTrazabilidadPDF(pendienteFirmaId!, orgId)
+              handleCerrarSheet()
+              await refetchFirmas()
+            }}
             onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
           />
         )}
@@ -477,6 +551,56 @@ export function TrazabilidadGG() {
           </button>
         </div>
         </>)}
+      </BottomSheet>
+
+      {/* Sheet — Exportar consolidado */}
+      <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}>
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
+          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+          <button onClick={() => setConsolidadoOpen(false)}>
+            <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4 space-y-4">
+          <div className="space-y-1">
+            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+              {termino.toUpperCase()} (opcional)
+            </label>
+            <select
+              value={consolidadoForm.rancho_id}
+              onChange={(e) => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+            >
+              <option value="">Todos los {terminosSitio.plural.toLowerCase()}</option>
+              {ranchos.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DESDE</label>
+              <input type="date" value={consolidadoForm.desde}
+                onChange={(e) => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
+                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA</label>
+              <input type="date" value={consolidadoForm.hasta}
+                onChange={(e) => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
+                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+            </div>
+          </div>
+          <button
+            onClick={exportarConsolidado}
+            disabled={exportando}
+            className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
+            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+          >
+            {exportando ? <><Loader2 className="w-4 h-4 animate-spin" /> Exportando…</> : 'Exportar PDF'}
+          </button>
+        </div>
       </BottomSheet>
     </div>
   )
