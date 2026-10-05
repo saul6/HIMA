@@ -143,6 +143,7 @@ import { MantenimientoEquiposGG } from "./screens/MantenimientoEquiposGG"
 import { EmpleadosGG } from "./screens/EmpleadosGG"
 import { TrazabilidadGG } from "./screens/TrazabilidadGG"
 import { AgendaTareas } from "./screens/AgendaTareas"
+import { Metricas } from "./screens/Metricas"
 import { AuditorHome } from "./screens/auditor/AuditorHome"
 import { AuditorOrgDetalle } from "./screens/auditor/AuditorOrgDetalle"
 import { AuditorNuevaAuditoria } from "./screens/auditor/AuditorNuevaAuditoria"
@@ -213,6 +214,7 @@ export const router = createBrowserRouter([
               { path: "perfil", Component: Perfil },
               { path: "perfil/mi-organizacion", Component: MiOrganizacion },
               { path: "equipo/actividad", Component: ActividadEquipo },
+              { path: "metricas", Component: Metricas },
               { path: "inocuidad/auditorias-primusgfs", Component: AuditoriasPrimusGFS },
               { path: "inocuidad/auditorias-primusgfs/nueva", Component: NuevaAuditoriaPGFS },
               { path: "inocuidad/auditorias-primusgfs/:auditoriaId", Component: CapturaAuditoriaPGFS },

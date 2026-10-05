@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, Link } from "react-router";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
-import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck, X, Calendar, ListChecks } from "lucide-react";
+import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck, X, Calendar, ListChecks, BarChart3 } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
 import { useHomeSearch } from "@/context/HomeSearchContext";
@@ -21,6 +21,7 @@ const PATH_TITLES: Record<string, string> = {
   '/inocuidad/agenda': 'Agenda',
   '/perfil': 'Perfil',
   '/perfil/mi-organizacion': 'Mi organización',
+  '/metricas': 'Métricas',
 }
 
 function getPageTitle(pathname: string): string {
@@ -81,6 +82,7 @@ export function Layout() {
   const mostrarActividadEquipo = !esAuditor && (loadingModulos || (esAdmin && terminosSitio.singular !== 'Rancho'));
   const mostrarAuditorias      = !esAuditor && ['admin_org', 'super_admin'].includes(profile?.rol ?? '');
   const mostrarAgendaTareas    = !esAuditor && !loadingModulos && modulos.some(m => m.clave === "agenda_tareas" && m.desbloqueado);
+  const mostrarMetricas        = !esAuditor;
 
   const homeItem = esAuditor
     ? { path: "/auditor",  icon: Home, label: "Inicio" }
@@ -95,6 +97,7 @@ export function Layout() {
     ...(esAuditor              ? [] : [{ path: "/historial",                icon: History,        label: "Historial"        }]),
     ...(mostrarActividadEquipo ? [{ path: "/equipo/actividad",              icon: Users,          label: "Actividad"        }] : []),
     ...(mostrarAuditorias      ? [{ path: "/inocuidad/auditorias-primusgfs", icon: ClipboardCheck, label: "Auditorías"       }] : []),
+    ...(mostrarMetricas        ? [{ path: "/metricas",                        icon: BarChart3,      label: "Métricas"         }] : []),
   ];
 
   // Todas las opciones para el menú del isotipo (navItems completos + Perfil)
