@@ -1393,15 +1393,7 @@ export function AuditorEjecucion() {
     await flushPendientes()
     setDescargando(true)
     try {
-      await generarAuditorReportePDF({
-        auditoria,
-        modulosData,
-        esquemaMap,
-        respuestasMap,
-        valoresMap,
-        observacionesMap,
-        reviewIssues: reviewIssues.filter(i => i.estado === 'OPEN'),
-      })
+      await generarAuditorReportePDF({ auditoria })
     } catch (e: unknown) {
       console.error('[AuditorEjecucion] generarAuditorReportePDF:', e)
       toast.error('No se pudo generar el PDF. Reintenta.')

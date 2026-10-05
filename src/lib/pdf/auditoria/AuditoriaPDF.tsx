@@ -18,7 +18,7 @@ interface PreguntaRow { id: string; seccion_id: string; codigo: string; texto: s
 interface RespuestaRow { pregunta_id: string; respuesta: string; comentario: string | null; puntos_otorgados: number }
 
 export interface AuditoriaPaginaProps {
-  modulo: ModuloAuditoria
+  modulo?: ModuloAuditoria
   auditoriaId: string
   ranchoNombre: string
   ranchoCodigo: string
@@ -33,6 +33,14 @@ export interface AuditoriaPaginaProps {
   respuestas: RespuestaRow[]
   codigoClave?: string
   terminoSitio?: string
+  // Props opcionales para el motor aud_* (portal del auditor)
+  titulo?: string
+  subtitulo?: string
+  moduloCodigo?: string
+  firmas?: string[]
+  notaFinal?: string
+  esBorrador?: boolean
+  tipoAuditoria?: string
 }
 
 // ── Config por módulo ─────────────────────────────────────────────────────────
@@ -105,7 +113,15 @@ function calcSeccion(pregs: PreguntaRow[], respsMap: Map<string, RespuestaRow>) 
     const r = respsMap.get(p.id)
     if (!r || r.respuesta === 'na') continue
     pos += p.puntos
-    if (r.respuesta === 'cumple') obt += p.puntos
+    // Motor aud_* (cumplimiento_total/deficiencia_*): usa puntos_otorgados precalculados
+    if (r.respuesta === 'cumplimiento_total' || r.respuesta === 'deficiencia_menor' ||
+        r.respuesta === 'deficiencia_mayor' || r.respuesta === 'no_conformidad') {
+      obt += r.puntos_otorgados
+    } else if (r.respuesta === 'cumple') {
+      // Motor legacy M14–M18: cumple = puntos completos
+      obt += p.puntos
+    }
+    // 'no_cumple' legacy: obt += 0
   }
   const pct = pos > 0 ? Math.round(obt / pos * 10000) / 100 : 0
   return { obt, pos, pct }
@@ -276,11 +292,19 @@ export function AuditoriaPagina({
   puntos_obtenidos, puntos_posibles, porcentaje, portada,
   secciones, preguntas, respuestas,
   codigoClave = 'MXA', terminoSitio = 'Rancho',
+  titulo: tituloOpt, subtitulo: subtituloOpt,
+  moduloCodigo: moduloCodigoOpt,
+  firmas: firmasOpt, notaFinal, esBorrador = false,
+  tipoAuditoria: tipoAuditoriaOpt,
 }: AuditoriaPaginaProps) {
-  const config    = MODULO_CONFIG[modulo]
-  const fechaFmt  = formatFechaPDF(fecha)
-  const codigoFmt = `${codigoClave}-F-SC-SIG`
-  const folioDsp  = auditoriaId.slice(0, 8).toUpperCase()
+  const config      = modulo ? MODULO_CONFIG[modulo] : null
+  const tituloFinal = tituloOpt ?? config?.titulo ?? '—'
+  const subFinal    = subtituloOpt ?? config?.subtitulo ?? ''
+  const fechaFmt    = formatFechaPDF(fecha)
+  const codigoFmt   = moduloCodigoOpt ?? `${codigoClave}-F-SC-SIG`
+  const folioDsp    = auditoriaId.slice(0, 8).toUpperCase()
+  const firmaLabels = firmasOpt ?? ['Responsable de Inocuidad — Firma']
+  const tipoAudit   = tipoAuditoriaOpt ?? 'Auditoria interna'
 
   const respsMap = new Map<string, RespuestaRow>()
   for (const r of respuestas) respsMap.set(r.pregunta_id, r)
@@ -305,10 +329,10 @@ export function AuditoriaPagina({
           </View>
           <View style={{ flex: 6, alignItems: 'center' }}>
             <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 10, color: PC.titleNavy, textAlign: 'center' }}>
-              {config.titulo}
+              {tituloFinal}
             </Text>
             <Text style={{ fontSize: 7, color: PC.textSub, marginTop: 2, textAlign: 'center' }}>
-              {config.subtitulo}
+              {subFinal}
             </Text>
           </View>
           <View style={{ flex: 2, alignItems: 'flex-end' }}>
@@ -321,7 +345,7 @@ export function AuditoriaPagina({
         </View>
         {/* Meta bar: tipo, sitio, auditor */}
         <View style={{ borderTopWidth: 1, borderTopColor: PC.border, flexDirection: 'row', gap: 14, paddingTop: 3, paddingBottom: 4, paddingLeft: 50, paddingRight: 50 }}>
-          <Text style={{ fontSize: 7, color: PC.textSub }}>Auditoría interna</Text>
+          <Text style={{ fontSize: 7, color: PC.textSub }}>{tipoAudit}</Text>
           <Text style={{ fontSize: 7, color: PC.textSub }}>
             {terminoSitio}: {ranchoNombre}{ranchoCodigo ? ` (${ranchoCodigo})` : ''}
           </Text>
@@ -332,7 +356,16 @@ export function AuditoriaPagina({
       </View>
 
       {/* ── Footer fijo ──────────────────────────────────────────────────── */}
-      <PdfFooter moduloCodigo={modulo.toUpperCase()} />
+      <PdfFooter moduloCodigo={moduloCodigoOpt ?? modulo?.toUpperCase() ?? 'AUD'} />
+
+      {/* ── Borrador ─────────────────────────────────────────────────────── */}
+      {esBorrador && (
+        <View style={{ backgroundColor: '#FAEEDA', borderLeftWidth: 3, borderLeftColor: '#F5A623', borderLeftStyle: 'solid', paddingVertical: 4, paddingHorizontal: 8, marginBottom: 10 }}>
+          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#854F0B' }}>
+            BORRADOR - auditoria en proceso
+          </Text>
+        </View>
+      )}
 
       {/* ── Resumen de puntaje ────────────────────────────────────────────── */}
       <View style={s.scoreSummary}>
@@ -340,7 +373,7 @@ export function AuditoriaPagina({
           <Text style={s.scorePct}>
             {puntos_posibles > 0 ? `${porcentaje}%` : 'N/D'}
           </Text>
-          <Text style={s.scoreLabel}>Cumplimiento{'\n'}global</Text>
+          <Text style={s.scoreLabel}>Cumplimiento{'\n'}global{esBorrador ? '\n(preliminar)' : ''}</Text>
           <Text style={s.scorePts}>
             {puntos_obtenidos} / {puntos_posibles} pts
           </Text>
@@ -447,19 +480,21 @@ export function AuditoriaPagina({
         })}
       </View>
 
-      {/* ── Firma (en blanco — nunca rellenar programáticamente) ─────────── */}
-      <View style={s.firmaSection}>
-        <View style={s.firmaBox}>
-          <View style={s.firmaLinea}>
-            <Text style={s.firmaLabel}>Responsable de Inocuidad — Firma</Text>
+      {/* ── Firmas ─────────────────────────────────────────────────────────── */}
+      <View style={[s.firmaSection, firmaLabels.length > 1 ? { flexDirection: 'row', gap: 30 } : {}]}>
+        {firmaLabels.map((label, i) => (
+          <View key={i} style={s.firmaBox}>
+            <View style={s.firmaLinea}>
+              <Text style={s.firmaLabel}>{label}</Text>
+            </View>
           </View>
-        </View>
+        ))}
       </View>
 
-      {/* ── Aviso legal ───────────────────────────────────────────────────── */}
-      <View style={{ marginTop: 20, borderTopWidth: 1, borderTopColor: PC.border, paddingTop: 6 }}>
+      {/* ── Nota final / aviso legal ─────────────────────────────────────── */}
+      <View style={{ marginTop: 20, borderTopWidth: 1, borderTopColor: PC.border, borderTopStyle: 'solid', paddingTop: 6 }}>
         <Text style={{ fontSize: 6, color: PC.textSub, textAlign: 'center' }}>
-          INFORME INTERNO DE PREPARACION. M.A.D.Y. no certifica, no sustituye al auditor autorizado ni al organismo de certificacion.
+          {notaFinal ?? 'INFORME INTERNO DE PREPARACION. M.A.D.Y. no certifica, no sustituye al auditor autorizado ni al organismo de certificacion.'}
         </Text>
       </View>
 
@@ -470,14 +505,16 @@ export function AuditoriaPagina({
 // ── AuditoriaPDF — documento individual ──────────────────────────────────────
 
 export function AuditoriaPDF(props: AuditoriaPaginaProps) {
-  const cfg = MODULO_CONFIG[props.modulo]
+  const cfg = props.modulo ? MODULO_CONFIG[props.modulo] : null
+  const titulo = props.titulo ?? cfg?.titulo ?? 'Auditoria'
+  const subtitulo = props.subtitulo ?? cfg?.subtitulo ?? ''
   return (
     <Document
-      title={`${cfg.titulo} — ${props.ranchoNombre} ${props.fecha}`}
+      title={`${titulo} — ${props.ranchoNombre} ${props.fecha}`}
       author="M.A.D.Y."
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
-      subject={cfg.subtitulo}
+      subject={subtitulo}
       keywords="MADY, inocuidad, auditoria"
     >
       <AuditoriaPagina {...props} />
