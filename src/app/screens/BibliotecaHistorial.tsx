@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useReducedMotion } from 'motion/react'
 import { ChevronLeft, FileText, Package, Loader2, FilterX } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
@@ -77,6 +78,16 @@ function formatFecha(iso: string): string {
 
 function slugify(s: string): string {
   return s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+}
+
+// Entrada en cascada — solo en la carga inicial (ver primeraCargaRef). Máx. 8
+// ítems escalonados, 35ms entre cada uno.
+function cascadeStyle(index: number, enabled: boolean) {
+  if (!enabled) return undefined
+  return {
+    animation: 'slideUpFade var(--motion-base) var(--ease-out) both',
+    animationDelay: `${Math.min(index, 7) * 35}ms`,
+  }
 }
 
 // ── Cargador de índice (8 consultas en paralelo) ──────────────────────────────
@@ -901,6 +912,11 @@ export function BibliotecaHistorial() {
   const [registros, setRegistros] = useState<RegistroHistorial[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const reducedMotion = useReducedMotion()
+  const primeraCargaRef = useRef(true)
+  useEffect(() => {
+    if (!loading) primeraCargaRef.current = false
+  }, [loading])
 
   // PDF state
   const [descargandoPDF, setDescargandoPDF] = useState<string | null>(null)
@@ -1124,13 +1140,25 @@ export function BibliotecaHistorial() {
 
           {/* Lista de registros */}
           {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-6 h-6 animate-spin" style={{ color: 'var(--primary)' }} />
+            <div className="space-y-2">
+              {[0, 1, 2, 3].map(i => (
+                <div key={i} className="bg-card rounded-xl border border-border p-3.5 flex items-start gap-3 animate-pulse">
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="h-4 rounded-full w-16" style={{ backgroundColor: 'var(--muted)' }} />
+                    <div className="h-3 rounded w-2/3" style={{ backgroundColor: 'var(--muted)' }} />
+                    <div className="h-2.5 rounded w-1/3" style={{ backgroundColor: 'var(--muted)' }} />
+                  </div>
+                  <div className="flex-shrink-0 w-9 h-9 rounded-lg" style={{ backgroundColor: 'var(--muted)' }} />
+                </div>
+              ))}
             </div>
           ) : error ? (
             <div className="py-8 text-center text-sm text-red-600">{error}</div>
           ) : filtrados.length === 0 ? (
-            <div className="py-14 text-center space-y-2">
+            <div
+              className="py-14 text-center space-y-2"
+              style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
+            >
               <FilterX className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
               <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                 Sin registros en este periodo
@@ -1141,10 +1169,11 @@ export function BibliotecaHistorial() {
             </div>
           ) : (
             <div className="space-y-2">
-              {filtrados.map((reg) => (
+              {filtrados.map((reg, index) => (
                 <div
                   key={reg.key}
                   className="bg-card rounded-xl border border-border p-3.5 flex items-start gap-3"
+                  style={cascadeStyle(index, !reducedMotion && primeraCargaRef.current)}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1.5">

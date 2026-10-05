@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, Link } from "react-router";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck, X, Calendar, ListChecks } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
@@ -58,6 +58,7 @@ export function Layout() {
   const isHome = location.pathname === '/';
   const [menuAbierto, setMenuAbierto] = useState(false);
   const { markAppReady } = useIntroTransition();
+  const reducedMotion = useReducedMotion();
 
   // Señal determinística para el overlay de bienvenida (ver
   // IntroTransitionContext/LoginTransition): Layout es el shell común a
@@ -285,9 +286,15 @@ export function Layout() {
 
         {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto">
-          <div className="w-full max-w-[390px] mx-auto md:max-w-none">
+          <motion.div
+            key={location.pathname}
+            initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full max-w-[390px] mx-auto md:max-w-none"
+          >
             <Outlet />
-          </div>
+          </motion.div>
         </div>
       </div>
 

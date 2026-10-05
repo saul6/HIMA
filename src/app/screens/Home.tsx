@@ -1,8 +1,10 @@
 ﻿import { useState, useMemo, useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { Link, Navigate } from 'react-router'
+import { animate } from 'motion'
+import { useReducedMotion } from 'motion/react'
 import {
-  Loader2, TriangleAlert, Clock3,
+  TriangleAlert, Clock3,
   Users, AlertTriangle, ChevronRight, ClipboardList, BarChart2,
   FileCheck, ShieldAlert, Search, Pin, X, Sun, Moon, Lock, ListChecks,
 } from 'lucide-react'
@@ -48,17 +50,70 @@ function formatDias(dias: number | null): string {
   return `${dias} días`
 }
 
+// Entrada en cascada — solo en la carga inicial de cada lista (ver refs
+// `primeraCarga*Ref` más abajo). Máx. 8 ítems escalonados, 35ms entre cada uno.
+function cascadeStyle(index: number, enabled: boolean) {
+  if (!enabled) return undefined
+  return {
+    animation: 'slideUpFade var(--motion-base) var(--ease-out) both',
+    animationDelay: `${Math.min(index, 7) * 35}ms`,
+  }
+}
+
 // ── Sub-componentes locales ────────────────────────────────────────────────────
+
+/** Contador animado 0 → valor final, una sola vez por montaje (ver
+ * `animatedOnceRef`). `format` decide el texto exacto (mismos decimales/
+ * unidades que hoy); si `value` es null no anima — solo pinta el fallback. */
+function AnimatedNumber({
+  value,
+  format,
+  reducedMotion,
+}: {
+  value: number | null
+  format: (n: number) => string
+  reducedMotion: boolean
+}) {
+  const spanRef = useRef<HTMLSpanElement>(null)
+  const animatedOnceRef = useRef(false)
+
+  useEffect(() => {
+    const node = spanRef.current
+    if (!node || value === null) return
+    if (reducedMotion || animatedOnceRef.current) {
+      node.textContent = format(value)
+      return
+    }
+    animatedOnceRef.current = true
+    const controls = animate(0, value, {
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1],
+      onUpdate: (latest) => {
+        node.textContent = format(latest)
+      },
+    })
+    return () => controls.stop()
+  }, [value, reducedMotion, format])
+
+  return <span ref={spanRef}>{value === null ? '—' : format(value)}</span>
+}
 
 function MetricCard({
   loading,
   icon,
   value,
+  numericValue,
+  format,
+  reducedMotion,
   label,
 }: {
   loading: boolean
   icon?: ReactNode
   value: string
+  /** Si se da junto con `format`, el valor anima de 0 al final (una vez). */
+  numericValue?: number | null
+  format?: (n: number) => string
+  reducedMotion?: boolean
   label: string
 }) {
   return (
@@ -67,11 +122,15 @@ function MetricCard({
       style={{ backgroundColor: 'var(--agro-background)' }}
     >
       {loading ? (
-        <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-2" />
+        <div className="animate-pulse mb-2">
+          <div className="h-7 rounded w-12" style={{ backgroundColor: 'var(--muted)' }} />
+        </div>
       ) : (
         <div className="text-3xl tracking-tight mb-1 flex items-end gap-1.5" style={{ fontWeight: 600 }}>
           {icon}
-          {value}
+          {numericValue !== undefined && format
+            ? <AnimatedNumber value={numericValue} format={format} reducedMotion={!!reducedMotion} />
+            : value}
         </div>
       )}
       <div className="text-xs text-muted-foreground">{label}</div>
@@ -79,15 +138,22 @@ function MetricCard({
   )
 }
 
-function HallazgosCard({ loading, value }: { loading: boolean; value: number }) {
+function HallazgosCard({
+  loading,
+  value,
+  reducedMotion,
+}: {
+  loading: boolean
+  value: number
+  reducedMotion?: boolean
+}) {
   const alerta = value > 0
   const inner = (
     <>
       {loading ? (
-        <Loader2
-          className="w-5 h-5 animate-spin mb-1"
-          style={{ color: alerta ? 'var(--agro-warning-text)' : 'var(--muted-foreground)' }}
-        />
+        <div className="animate-pulse mb-1">
+          <div className="h-7 rounded w-8" style={{ backgroundColor: alerta ? 'var(--agro-amber)' : 'var(--muted)', opacity: 0.4 }} />
+        </div>
       ) : (
         <div
           className="text-3xl tracking-tight mb-1 flex items-end gap-1.5"
@@ -97,7 +163,7 @@ function HallazgosCard({ loading, value }: { loading: boolean; value: number }) 
             className="w-4 h-4 mb-1 flex-shrink-0"
             style={{ color: alerta ? 'var(--agro-warning-text)' : 'var(--muted-foreground)' }}
           />
-          {value}
+          <AnimatedNumber value={value} format={(n) => String(Math.round(n))} reducedMotion={!!reducedMotion} />
         </div>
       )}
       <div
@@ -416,6 +482,18 @@ export function Home() {
     refetch: refetchModulos, terminosSitio,
   } = useModulosContext()
   const { busqueda, setBusqueda } = useHomeSearch()
+  const reducedMotion = useReducedMotion()
+
+  // Cascada de entrada — solo la primera vez que cada lista tiene datos
+  // reales (no en interacciones posteriores como fijar/desfijar o filtrar).
+  const primeraCargaModulosRef = useRef(true)
+  const primeraCargaDashboardRef = useRef(true)
+  useEffect(() => {
+    if (!loadingModulos) primeraCargaModulosRef.current = false
+  }, [loadingModulos])
+  useEffect(() => {
+    if (!loading) primeraCargaDashboardRef.current = false
+  }, [loading])
 
   // Módulos fijados (accesos rápidos)
   // TODO: persistir por usuario — añadir columna `pinned_modules jsonb` a tabla `profiles`
@@ -765,17 +843,17 @@ export function Home() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {loadingModulos ? (
             [0, 1, 2, 3].map(i => (
-              <div key={i} className="rounded-xl p-4 border border-border" style={{ backgroundColor: 'var(--agro-background)' }}>
-                <Loader2 className="w-5 h-5 text-muted-foreground animate-spin mb-2" />
+              <div key={i} className="rounded-xl p-4 border border-border animate-pulse" style={{ backgroundColor: 'var(--agro-background)' }}>
+                <div className="h-5 w-5 rounded mb-2" style={{ backgroundColor: 'var(--muted)' }} />
                 <div className="h-2.5 rounded w-2/3" style={{ backgroundColor: 'var(--muted)' }} />
               </div>
             ))
           ) : tieneAplicaciones ? (
             <>
-              <MetricCard loading={loading} value={String(metricas.appsMes)} label="Aplicaciones este mes" />
-              <MetricCard loading={loading} value={String(metricas.productosDistintos)} label="Productos distintos" />
-              <MetricCard loading={loading} value={formatDias(metricas.diasDesdeUltimaApp)} label="Desde última aplicación" />
-              <MetricCard loading={loading} value={`${formatHa(metricas.superficieHa)} ha`} label="Superficie activa" />
+              <MetricCard loading={loading} value={String(metricas.appsMes)} numericValue={metricas.appsMes} format={(n) => String(Math.round(n))} reducedMotion={reducedMotion} label="Aplicaciones este mes" />
+              <MetricCard loading={loading} value={String(metricas.productosDistintos)} numericValue={metricas.productosDistintos} format={(n) => String(Math.round(n))} reducedMotion={reducedMotion} label="Productos distintos" />
+              <MetricCard loading={loading} value={formatDias(metricas.diasDesdeUltimaApp)} numericValue={metricas.diasDesdeUltimaApp} format={(n) => formatDias(Math.round(n))} reducedMotion={reducedMotion} label="Desde última aplicación" />
+              <MetricCard loading={loading} value={`${formatHa(metricas.superficieHa)} ha`} numericValue={metricas.superficieHa} format={(n) => `${formatHa(n)} ha`} reducedMotion={reducedMotion} label="Superficie activa" />
             </>
           ) : (
             <>
@@ -783,6 +861,9 @@ export function Home() {
                 loading={resumenLoading}
                 icon={<ClipboardList className="w-4 h-4 text-primary flex-shrink-0" />}
                 value={String(resumen?.formatos_hoy ?? 0)}
+                numericValue={resumen?.formatos_hoy ?? 0}
+                format={(n) => String(Math.round(n))}
+                reducedMotion={reducedMotion}
                 label="Formatos llenados hoy"
               />
               <MetricCard
@@ -793,15 +874,21 @@ export function Home() {
                     ? `${Math.round(resumen.cumplimiento_promedio)}%`
                     : '—'
                 }
+                numericValue={resumen?.cumplimiento_promedio ?? null}
+                format={(n) => `${Math.round(n)}%`}
+                reducedMotion={reducedMotion}
                 label="Cumplimiento promedio"
               />
               <MetricCard
                 loading={resumenLoading}
                 icon={<FileCheck className="w-4 h-4 text-primary flex-shrink-0" />}
                 value={String(resumen?.formatos_mes ?? 0)}
+                numericValue={resumen?.formatos_mes ?? 0}
+                format={(n) => String(Math.round(n))}
+                reducedMotion={reducedMotion}
                 label="Formatos este mes"
               />
-              <HallazgosCard loading={resumenLoading} value={resumen?.hallazgos_por_corregir ?? 0} />
+              <HallazgosCard loading={resumenLoading} value={resumen?.hallazgos_por_corregir ?? 0} reducedMotion={reducedMotion} />
             </>
           )}
         </div>
@@ -826,7 +913,10 @@ export function Home() {
               </div>
 
               {modulosFijadosObjs.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-border p-5 text-center">
+                <div
+                  className="rounded-xl border border-dashed border-border p-5 text-center"
+                  style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
+                >
                   <Pin className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     Fija los módulos que más usas. Toca el ícono de pin en cualquier módulo.
@@ -834,11 +924,15 @@ export function Home() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
-                  {modulosFijadosObjs.map(modulo => {
+                  {modulosFijadosObjs.map((modulo, index) => {
                     const Icon = resolverIcono(modulo.icono)
                     const bloqueado = !modulo.desbloqueado
                     return (
-                      <div key={modulo.codigo} className="relative">
+                      <div
+                        key={modulo.codigo}
+                        className="relative"
+                        style={cascadeStyle(index, !reducedMotion && primeraCargaModulosRef.current)}
+                      >
                         {bloqueado ? (
                           <button
                             onClick={() => setModuloBloqueadoUpsell(modulo)}
@@ -924,11 +1018,22 @@ export function Home() {
               </h2>
 
               {loading ? (
-                <div className="flex justify-center py-6">
-                  <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
+                  {[0, 1, 2].map(i => (
+                    <div key={i} className="flex items-center gap-3 px-4 py-3 animate-pulse">
+                      <div className="w-8 h-8 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--muted)' }} />
+                      <div className="flex-1 min-w-0 space-y-1.5">
+                        <div className="h-3 rounded w-1/2" style={{ backgroundColor: 'var(--muted)' }} />
+                        <div className="h-2.5 rounded w-1/4" style={{ backgroundColor: 'var(--muted)' }} />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : recientes.length === 0 ? (
-                <div className="bg-card border border-border rounded-xl p-5 text-center">
+                <div
+                  className="bg-card border border-border rounded-xl p-5 text-center"
+                  style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
+                >
                   <p className="text-sm text-muted-foreground" style={{ fontWeight: 600 }}>
                     Sin actividad aún
                   </p>
@@ -973,7 +1078,7 @@ export function Home() {
                 </div>
               ) : (
                 <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
-                  {recientes.slice(0, 5).map(app => {
+                  {recientes.slice(0, 5).map((app, index) => {
                     const productosTexto =
                       app.productos.length === 0
                         ? 'Sin productos'
@@ -985,6 +1090,7 @@ export function Home() {
                         key={app.id}
                         to={`/historial/${app.id}`}
                         className="flex items-center gap-3 px-4 py-3 hover:opacity-80 transition-opacity"
+                        style={cascadeStyle(index, !reducedMotion && primeraCargaDashboardRef.current)}
                       >
                         <div
                           className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
@@ -1052,7 +1158,7 @@ export function Home() {
                   Inocuidad y BPAs
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {modulosAgrupados.map(grupo => {
+                  {modulosAgrupados.map((grupo, index) => {
                     const GrupoIcon = resolverIcono(grupo.icono)
                     return (
                       <button
@@ -1063,6 +1169,7 @@ export function Home() {
                         }}
                         onClick={() => abrirCategoria(grupo.key)}
                         className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border bg-card transition-all duration-150 hover:border-secondary hover:-translate-y-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-1"
+                        style={cascadeStyle(index, !reducedMotion && primeraCargaModulosRef.current)}
                       >
                         <div
                           className="w-9 h-9 rounded-lg flex items-center justify-center"

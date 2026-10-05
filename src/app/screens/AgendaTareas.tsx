@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import type { CSSProperties } from 'react'
+import { useReducedMotion } from 'motion/react'
 import {
   ChevronLeft, Plus, Loader2, AlertTriangle,
   Calendar, MapPin, FileText, ChevronDown, ChevronUp, ExternalLink,
@@ -33,6 +35,16 @@ function formatFechaCorta(iso: string): string {
     return new Date(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })
   } catch {
     return iso
+  }
+}
+
+// Entrada en cascada — solo en la carga inicial (ver primeraCargaRef). Máx. 8
+// ítems escalonados, 35ms entre cada uno.
+function cascadeStyle(index: number, enabled: boolean): CSSProperties | undefined {
+  if (!enabled) return undefined
+  return {
+    animation: 'slideUpFade var(--motion-base) var(--ease-out) both',
+    animationDelay: `${Math.min(index, 7) * 35}ms`,
   }
 }
 
@@ -106,14 +118,17 @@ function TareaCard({
   tarea,
   esAdmin,
   onClick,
+  style,
 }: {
   tarea: TareaListada
   esAdmin: boolean
   onClick: () => void
+  style?: CSSProperties
 }) {
   return (
     <button
       onClick={onClick}
+      style={style}
       className="w-full text-left rounded-xl border border-border bg-card p-4 flex flex-col gap-2 transition-colors hover:border-primary/30 active:scale-[0.99]"
     >
       {tarea.regresada && (
@@ -1386,6 +1401,11 @@ export function AgendaTareas() {
   const { modulos, terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const hook = useAgendaTareas()
+  const reducedMotion = useReducedMotion()
+  const primeraCargaRef = useRef(true)
+  useEffect(() => {
+    if (!hook.loading) primeraCargaRef.current = false
+  }, [hook.loading])
 
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
   const esSuperAdmin = profile?.rol === 'super_admin'
@@ -1509,8 +1529,13 @@ export function AgendaTareas() {
       <div className="p-4 space-y-4 max-w-[390px] mx-auto md:max-w-2xl">
 
         {hook.loading && !hook.tareas.length ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-6 h-6 animate-spin" style={{ color: 'var(--primary)' }} />
+          <div className="space-y-2">
+            {[0, 1, 2].map(i => (
+              <div key={i} className="rounded-xl border border-border bg-card p-4 flex flex-col gap-2 animate-pulse">
+                <div className="h-4 rounded w-2/3" style={{ backgroundColor: 'var(--muted)' }} />
+                <div className="h-3 rounded w-1/3" style={{ backgroundColor: 'var(--muted)' }} />
+              </div>
+            ))}
           </div>
         ) : esAdmin ? (
           /* ── VISTA ADMIN ── */
@@ -1609,12 +1634,24 @@ export function AgendaTareas() {
             {/* Lista de tareas */}
             <div className="space-y-2">
               {tareasTab.length === 0 ? (
-                <p className="text-sm text-center py-8" style={{ color: 'var(--muted-foreground)' }}>
+                <p
+                  className="text-sm text-center py-8"
+                  style={{
+                    color: 'var(--muted-foreground)',
+                    ...(reducedMotion ? {} : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }),
+                  }}
+                >
                   Sin tareas
                 </p>
               ) : (
-                tareasTab.map(t => (
-                  <TareaCard key={t.id} tarea={t} esAdmin={esAdmin} onClick={() => abrirDetalle(t.id)} />
+                tareasTab.map((t, index) => (
+                  <TareaCard
+                    key={t.id}
+                    tarea={t}
+                    esAdmin={esAdmin}
+                    onClick={() => abrirDetalle(t.id)}
+                    style={cascadeStyle(index, !reducedMotion && primeraCargaRef.current)}
+                  />
                 ))
               )}
             </div>
@@ -1668,8 +1705,14 @@ export function AgendaTareas() {
             {misPendientes.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs font-semibold px-1" style={{ color: 'var(--muted-foreground)' }}>Por hacer</p>
-                {misPendientes.map(t => (
-                  <TareaCard key={t.id} tarea={t} esAdmin={false} onClick={() => abrirDetalle(t.id)} />
+                {misPendientes.map((t, index) => (
+                  <TareaCard
+                    key={t.id}
+                    tarea={t}
+                    esAdmin={false}
+                    onClick={() => abrirDetalle(t.id)}
+                    style={cascadeStyle(index, !reducedMotion && primeraCargaRef.current)}
+                  />
                 ))}
               </div>
             )}
@@ -1678,8 +1721,14 @@ export function AgendaTareas() {
             {misRevisión.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs font-semibold px-1" style={{ color: 'var(--muted-foreground)' }}>En revisión</p>
-                {misRevisión.map(t => (
-                  <TareaCard key={t.id} tarea={t} esAdmin={false} onClick={() => abrirDetalle(t.id)} />
+                {misRevisión.map((t, index) => (
+                  <TareaCard
+                    key={t.id}
+                    tarea={t}
+                    esAdmin={false}
+                    onClick={() => abrirDetalle(t.id)}
+                    style={cascadeStyle(index, !reducedMotion && primeraCargaRef.current)}
+                  />
                 ))}
               </div>
             )}
@@ -1706,7 +1755,13 @@ export function AgendaTareas() {
             )}
 
             {misPendientes.length === 0 && misRevisión.length === 0 && misTerminadas.length === 0 && (
-              <p className="text-sm text-center py-10" style={{ color: 'var(--muted-foreground)' }}>
+              <p
+                className="text-sm text-center py-10"
+                style={{
+                  color: 'var(--muted-foreground)',
+                  ...(reducedMotion ? {} : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }),
+                }}
+              >
                 No tienes tareas asignadas
               </p>
             )}

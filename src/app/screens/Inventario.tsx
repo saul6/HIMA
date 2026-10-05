@@ -1,5 +1,5 @@
-﻿import { useState, useCallback, useMemo } from "react"
-import { motion } from "motion/react"
+﻿import { useState, useCallback, useMemo, useRef, useEffect } from "react"
+import { motion, useReducedMotion } from "motion/react"
 import {
   Search,
   Plus,
@@ -34,6 +34,16 @@ type Vista = "rancho" | "productor"
 
 function fmtSaldo(saldo: number): string {
   return Number.isInteger(saldo) ? String(saldo) : saldo.toFixed(2)
+}
+
+// Entrada en cascada — solo en la carga inicial (ver primeraCargaRef). Máx. 8
+// ítems escalonados, 35ms entre cada uno.
+function cascadeStyle(index: number, enabled: boolean) {
+  if (!enabled) return undefined
+  return {
+    animation: 'slideUpFade var(--motion-base) var(--ease-out) both',
+    animationDelay: `${Math.min(index, 7) * 35}ms`,
+  }
 }
 
 function StatusBadge({ saldo, unidad }: { saldo: number; unidad: string | null }) {
@@ -418,6 +428,11 @@ export function Inventario() {
   const { saldosRancho, saldosProductor, loading, error, refetch } = useInventario(
     productor?.id ?? null,
   )
+  const reducedMotion = useReducedMotion()
+  const primeraCargaRef = useRef(true)
+  useEffect(() => {
+    if (!loading) primeraCargaRef.current = false
+  }, [loading])
 
   const esOperario = profile?.rol === 'operario'
   const esCampo = terminosSitio.singular === 'Rancho'
@@ -570,9 +585,19 @@ export function Inventario() {
 
         {/* Estado de carga / error */}
         {loading && (
-          <p className="text-sm text-muted-foreground text-center py-8">
-            Cargando inventario…
-          </p>
+          <div className="space-y-3">
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} className="bg-card border border-border rounded-xl p-4 animate-pulse">
+                <div className="flex items-start justify-between mb-1">
+                  <div className="flex-1 min-w-0 pr-2 space-y-1.5">
+                    <div className="h-3.5 rounded w-2/3" style={{ backgroundColor: 'var(--muted)' }} />
+                    <div className="h-2.5 rounded w-1/2" style={{ backgroundColor: 'var(--muted)' }} />
+                  </div>
+                  <div className="h-5 w-14 rounded-full" style={{ backgroundColor: 'var(--muted)' }} />
+                </div>
+              </div>
+            ))}
+          </div>
         )}
         {error && (
           <div className="p-4 rounded-xl bg-agro-danger-fill text-agro-danger-text text-sm">
@@ -584,15 +609,22 @@ export function Inventario() {
         {!loading && !error && (
           <div className="space-y-3">
             {filtered.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">
+              <p
+                className="text-sm text-muted-foreground text-center py-8"
+                style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
+              >
                 {searchQuery ? "Sin resultados para esta búsqueda." : "Sin productos en inventario."}
               </p>
             ) : vista === "rancho" ? (
-              (filtered as InventarioSaldoRancho[]).map((item) => {
+              (filtered as InventarioSaldoRancho[]).map((item, index) => {
                 const key = `${item.rancho_id}||${item.producto_id}`
                 const expanded = expandedKey === key
                 return (
-                  <div key={key} className="bg-card border border-border rounded-xl overflow-hidden">
+                  <div
+                    key={key}
+                    className="bg-card border border-border rounded-xl overflow-hidden"
+                    style={cascadeStyle(index, !reducedMotion && primeraCargaRef.current)}
+                  >
                     <div className="p-4">
                       <div className="flex items-start justify-between mb-1">
                         <div className="flex-1 min-w-0 pr-2">
@@ -636,11 +668,15 @@ export function Inventario() {
                 )
               })
             ) : (
-              (filtered as InventarioSaldoProductor[]).map((item) => {
+              (filtered as InventarioSaldoProductor[]).map((item, index) => {
                 const key = item.producto_id
                 const expanded = expandedKey === key
                 return (
-                  <div key={key} className="bg-card border border-border rounded-xl overflow-hidden">
+                  <div
+                    key={key}
+                    className="bg-card border border-border rounded-xl overflow-hidden"
+                    style={cascadeStyle(index, !reducedMotion && primeraCargaRef.current)}
+                  >
                     <div className="p-4">
                       <div className="flex items-start justify-between mb-1">
                         <div className="flex-1 min-w-0 pr-2">

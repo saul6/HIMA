@@ -424,6 +424,14 @@ button:not(:disabled):active:not(.no-press),
   }
 }
 
+/* Esqueletos de carga — el brillo de Tailwind (`animate-pulse`) ignora
+   prefers-reduced-motion por defecto; esto lo vuelve estático. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse {
+    animation: none;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
