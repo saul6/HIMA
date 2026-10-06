@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { useReducedMotion } from 'motion/react'
-import { ChevronLeft, ChevronDown, X, Check, FileText, Package, Loader2, FilterX } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
+import { ChevronLeft, ChevronDown, Search, X, Check, FileText, Package, Loader2, FilterX } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { Portal } from '@/app/components/Portal'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { SPRING_SUAVE } from '@/lib/motion'
+import { ordenarAlfabetico } from '@/lib/ordenAlfabetico'
 import {
   type ModuloKey,
   type RegistroHistorial,
@@ -80,6 +83,31 @@ function formatFecha(iso: string): string {
 
 function slugify(s: string): string {
   return s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+}
+
+// Ignora acentos/mayúsculas para el buscador de la ventana de módulos (los
+// índices se conservan 1:1 frente al texto original: NFD descompone cada
+// vocal/ñ acentuada en base + marca combinante, y aquí solo se quita la marca).
+const DIACRITICOS = new RegExp('[\\u0300-\\u036f]', 'g')
+function normalizarBusqueda(s: string): string {
+  return s.normalize('NFD').replace(DIACRITICOS, '').toLowerCase()
+}
+
+// Resalta la coincidencia dentro del texto original (con sus acentos intactos)
+// aunque la búsqueda ignore acentos. Color --primary en vez de --secondary
+// (menta): menta sobre bg-card no llega a 4.5:1 en ninguno de los dos temas.
+function resaltarCoincidenciaModulo(texto: string, query: string): ReactNode {
+  const q = normalizarBusqueda(query.trim())
+  if (!q) return texto
+  const idx = normalizarBusqueda(texto).indexOf(q)
+  if (idx === -1) return texto
+  return (
+    <>
+      {texto.slice(0, idx)}
+      <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{texto.slice(idx, idx + q.length)}</span>
+      {texto.slice(idx + q.length)}
+    </>
+  )
 }
 
 // Entrada en cascada — solo en la carga inicial (ver primeraCargaRef). Máx. 8
@@ -910,9 +938,52 @@ export function BibliotecaHistorial() {
 
   const [filtroRancho, setFiltroRancho] = useState<string>('todos')
 
-  // Ventana de módulos — estado de interfaz local, no afecta la selección
+  // Ventana de módulos — estados de interfaz locales, no afectan la selección
   const [modulosSheetOpen, setModulosSheetOpen] = useState(false)
+  const [busquedaModulos, setBusquedaModulos] = useState('')
+  const buscadorModulosRef = useRef<HTMLInputElement>(null)
+
+  function cerrarModulosSheet() {
+    setModulosSheetOpen(false)
+    setBusquedaModulos('')
+  }
+
+  // Única acción nueva permitida: volver a seleccionar todos (mismo setter y
+  // mismo valor con el que se inicializa filtroModulos hoy)
+  function seleccionarTodosModulos() {
+    setFiltroModulos(new Set(modulosDisponibles))
+  }
+
+  useEffect(() => {
+    if (!modulosSheetOpen) return
+    if (typeof window === 'undefined' || !window.matchMedia('(min-width: 768px)').matches) return
+    const id = requestAnimationFrame(() => buscadorModulosRef.current?.focus())
+    return () => cancelAnimationFrame(id)
+  }, [modulosSheetOpen])
+
+  // Nombres completos por módulo (de misModulos, no de MODULO_META)
+  const mapaNombres = useMemo(() => new Map(misModulos.map(m => [m.codigo, m.nombre])), [misModulos])
+  const nombreModulo = useCallback(
+    (m: ModuloKey) => mapaNombres.get(m) ?? MODULO_META[m].label,
+    [mapaNombres],
+  )
+
   const todosSeleccionados = filtroModulos.size === modulosDisponibles.length
+
+  const modulosOrdenados = useMemo(
+    () => ordenarAlfabetico(modulosDisponibles, nombreModulo),
+    [modulosDisponibles, nombreModulo],
+  )
+
+  const modulosVisiblesSheet = useMemo(() => {
+    const q = normalizarBusqueda(busquedaModulos.trim())
+    if (!q) return modulosOrdenados
+    return modulosOrdenados.filter((m) => {
+      const nombre = normalizarBusqueda(nombreModulo(m))
+      const codigo = normalizarBusqueda(m)
+      return nombre.includes(q) || codigo.includes(q)
+    })
+  }, [modulosOrdenados, busquedaModulos, nombreModulo])
 
   // Datos
   const [registros, setRegistros] = useState<RegistroHistorial[]>([])
@@ -1253,50 +1324,132 @@ export function BibliotecaHistorial() {
       )}
 
       {/* Ventana de módulos */}
-      <BottomSheet open={modulosSheetOpen} onClose={() => setModulosSheetOpen(false)} height="85%">
+      <BottomSheet open={modulosSheetOpen} onClose={cerrarModulosSheet} height="85%">
         <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
           <div className="w-10 h-1 rounded-full bg-border" />
         </div>
 
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Módulos</h2>
-          <button type="button" onClick={() => setModulosSheetOpen(false)} className="p-1" aria-label="Cerrar">
-            <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
-          </button>
+        <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border flex-shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Módulos</h2>
+            <motion.span
+              key={filtroModulos.size}
+              initial={reducedMotion ? false : { scale: 0.7 }}
+              animate={{ scale: 1 }}
+              transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
+              className="px-2 py-0.5 rounded-full text-[11px]"
+              style={{ backgroundColor: 'rgba(42, 173, 149, 0.16)', color: 'var(--primary)', fontWeight: 700 }}
+            >
+              {filtroModulos.size}
+            </motion.span>
+          </div>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {!todosSeleccionados && (
+              <button
+                type="button"
+                onClick={seleccionarTodosModulos}
+                className="text-xs"
+                style={{ color: 'var(--primary)', fontWeight: 600 }}
+              >
+                Todos
+              </button>
+            )}
+            <button type="button" onClick={cerrarModulosSheet} className="p-1" aria-label="Cerrar">
+              <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
+            </button>
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-2 py-2">
-          {modulosDisponibles.map((m) => {
-            const active = filtroModulos.has(m)
-            return (
-              <button
-                key={m}
-                type="button"
-                role="checkbox"
-                aria-checked={active}
-                onClick={() => toggleModulo(m)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left hover:bg-muted transition-colors"
-                style={{
-                  backgroundColor: active ? 'var(--accent)' : undefined,
-                  transitionDuration: 'var(--motion-fast)',
-                }}
-              >
-                <span
-                  className="flex-shrink-0 w-4 h-4 rounded-[4px] border flex items-center justify-center"
-                  style={{
-                    backgroundColor: active ? 'var(--primary)' : 'var(--input-background)',
-                    borderColor: active ? 'var(--primary)' : 'var(--border)',
-                  }}
-                >
-                  {active && <Check className="w-3 h-3" style={{ color: 'var(--primary-foreground)' }} />}
-                </span>
-                <span className="flex-1 min-w-0 text-sm truncate" style={{ fontWeight: active ? 600 : 400 }}>
-                  {MODULO_META[m].label}
-                </span>
-                <span className="text-xs flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>{m}</span>
-              </button>
-            )
-          })}
+        <div className="px-4 py-3 flex-shrink-0">
+          <div className="relative">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+              style={{ color: 'var(--muted-foreground)' }}
+            />
+            <input
+              ref={buscadorModulosRef}
+              type="text"
+              value={busquedaModulos}
+              onChange={(e) => setBusquedaModulos(e.target.value)}
+              placeholder="Buscar módulo por nombre o código"
+              aria-label="Buscar módulo por nombre o código"
+              className="w-full h-10 pl-9 pr-3 rounded-lg text-sm border outline-none"
+              style={{ background: 'var(--input-background)', borderColor: 'var(--ring)', color: 'var(--foreground)' }}
+            />
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-2 pb-2">
+          {modulosVisiblesSheet.length === 0 ? (
+            <div
+              key={busquedaModulos}
+              className="py-10 text-center space-y-2"
+              style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
+            >
+              <Search className="w-8 h-8 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
+              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                Ningún módulo coincide con &quot;{busquedaModulos}&quot;
+              </p>
+            </div>
+          ) : (
+            <AnimatePresence initial={false}>
+              {modulosVisiblesSheet.map((m) => {
+                const active = filtroModulos.has(m)
+                const esUltimo = active && filtroModulos.size === 1
+                return (
+                  <motion.div
+                    key={m}
+                    layout={modulosVisiblesSheet.length <= 50 || undefined}
+                    initial={reducedMotion ? false : { opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={reducedMotion ? undefined : { opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked={active}
+                      aria-disabled={esUltimo}
+                      onClick={() => toggleModulo(m)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left hover:bg-muted transition-colors"
+                      style={{
+                        backgroundColor: active ? 'var(--accent)' : undefined,
+                        transitionDuration: 'var(--motion-fast)',
+                      }}
+                    >
+                      <span
+                        className="flex-shrink-0 w-4 h-4 rounded-[4px] border flex items-center justify-center"
+                        style={{
+                          backgroundColor: active ? 'var(--primary)' : 'var(--input-background)',
+                          borderColor: active ? 'var(--primary)' : 'var(--border)',
+                        }}
+                      >
+                        {active && (
+                          <motion.span
+                            initial={reducedMotion ? false : { scale: 0.6 }}
+                            animate={{ scale: 1 }}
+                            transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
+                            className="flex items-center justify-center"
+                          >
+                            <Check className="w-3 h-3" style={{ color: 'var(--primary-foreground)' }} />
+                          </motion.span>
+                        )}
+                      </span>
+                      <span className="flex-1 min-w-0 text-sm truncate" style={{ fontWeight: active ? 600 : 400 }}>
+                        {resaltarCoincidenciaModulo(nombreModulo(m), busquedaModulos)}
+                      </span>
+                      <span className="text-xs flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>{m}</span>
+                    </button>
+                    {esUltimo && (
+                      <p className="px-3 pb-1 text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+                        Debe quedar al menos uno
+                      </p>
+                    )}
+                  </motion.div>
+                )
+              })}
+            </AnimatePresence>
+          )}
         </div>
 
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-t border-border flex-shrink-0">
@@ -1305,7 +1458,7 @@ export function BibliotecaHistorial() {
           </p>
           <button
             type="button"
-            onClick={() => setModulosSheetOpen(false)}
+            onClick={cerrarModulosSheet}
             className="h-9 px-5 rounded-lg text-sm"
             style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
           >
