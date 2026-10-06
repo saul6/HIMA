@@ -10,6 +10,7 @@ import { Portal } from '@/app/components/Portal'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { SPRING_SUAVE } from '@/lib/motion'
 import { ordenarAlfabetico } from '@/lib/ordenAlfabetico'
+import { useContadorAnimado } from '@/hooks/useContadorAnimado'
 import {
   type ModuloKey,
   type RegistroHistorial,
@@ -110,14 +111,11 @@ function resaltarCoincidenciaModulo(texto: string, query: string): ReactNode {
   )
 }
 
-// Entrada en cascada — solo en la carga inicial (ver primeraCargaRef). Máx. 8
-// ítems escalonados, 35ms entre cada uno.
-function cascadeStyle(index: number, enabled: boolean) {
-  if (!enabled) return undefined
-  return {
-    animation: 'slideUpFade var(--motion-base) var(--ease-out) both',
-    animationDelay: `${Math.min(index, 7) * 35}ms`,
-  }
+// Número de resultados del botón Exportar — cuenta del valor anterior al
+// nuevo con el mismo contador animado de Inicio (ver useContadorAnimado).
+function ContadorRegistros({ value, reducedMotion }: { value: number; reducedMotion: boolean }) {
+  const spanRef = useContadorAnimado(value, (n) => String(Math.round(n)), reducedMotion)
+  return <span ref={spanRef} className="tabular-nums">{value}</span>
 }
 
 // ── Cargador de índice (8 consultas en paralelo) ──────────────────────────────
@@ -989,10 +987,12 @@ export function BibliotecaHistorial() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const reducedMotion = useReducedMotion()
-  const primeraCargaRef = useRef(true)
+  // true solo durante el render provocado por una búsqueda recién terminada
+  // (ver cargar()) — decide si las filas entran escalonadas o solo con fade.
+  const freshSearchRef = useRef(false)
   useEffect(() => {
-    if (!loading) primeraCargaRef.current = false
-  }, [loading])
+    freshSearchRef.current = false
+  })
 
   // PDF state
   const [descargandoPDF, setDescargandoPDF] = useState<string | null>(null)
@@ -1004,6 +1004,7 @@ export function BibliotecaHistorial() {
   // forzar la consulta aunque las fechas no cambien.
   const [busquedaN, setBusquedaN] = useState(0)
   const [avisoModulos, setAvisoModulos] = useState(false)
+  const [avisoShakeKey, setAvisoShakeKey] = useState(0)
   useEffect(() => {
     if (filtroModulos.size > 0) setAvisoModulos(false)
   }, [filtroModulos])
@@ -1014,6 +1015,7 @@ export function BibliotecaHistorial() {
     setError(null)
     try {
       const data = await cargarTodo(orgId, buscarDesde, buscarHasta)
+      freshSearchRef.current = true
       setRegistros(data)
     } catch (e: unknown) {
       console.error(e instanceof Error ? e.message : e)
@@ -1030,6 +1032,7 @@ export function BibliotecaHistorial() {
   function handleBuscar() {
     if (filtroModulos.size === 0) {
       setAvisoModulos(true)
+      setAvisoShakeKey((k) => k + 1)
       return
     }
     setBuscarDesde(inputDesde)
@@ -1188,20 +1191,26 @@ export function BibliotecaHistorial() {
                 aria-haspopup="dialog"
                 aria-describedby={avisoModulos ? 'historial-modulos-aviso' : undefined}
                 onClick={() => setModulosSheetOpen(true)}
-                className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border flex items-center justify-between gap-2"
+                className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border"
                 style={{
                   background: 'var(--input-background)',
                   borderColor: avisoModulos ? 'var(--destructive)' : todosSeleccionados ? 'var(--border)' : 'var(--ring)',
                 }}
               >
-                <span className="truncate">
-                  {filtroModulos.size === 0
-                    ? 'Selecciona módulos'
-                    : todosSeleccionados
-                      ? 'Todos los módulos'
-                      : `${filtroModulos.size} de ${modulosDisponibles.length} módulos`}
+                <span
+                  key={avisoShakeKey}
+                  className="flex items-center justify-between gap-2 w-full"
+                  style={avisoModulos && !reducedMotion ? { animation: 'fieldShake 220ms var(--ease-out)' } : undefined}
+                >
+                  <span className="truncate">
+                    {filtroModulos.size === 0
+                      ? 'Selecciona módulos'
+                      : todosSeleccionados
+                        ? 'Todos los módulos'
+                        : `${filtroModulos.size} de ${modulosDisponibles.length} módulos`}
+                  </span>
+                  <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
                 </span>
-                <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
               </button>
               {avisoModulos && (
                 <p
@@ -1282,113 +1291,168 @@ export function BibliotecaHistorial() {
             style={{ fontWeight: 600 }}
           >
             {generandoPaquete ? <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" /> : <Package className="w-4 h-4 flex-shrink-0" />}
-            <span className="text-center leading-snug">Exportar paquete PDF ({filtrados.length} registros)</span>
+            <span className="text-center leading-snug">
+              Exportar paquete PDF (<ContadorRegistros value={filtrados.length} reducedMotion={!!reducedMotion} /> registros)
+            </span>
           </button>
         )}
 
-        {/* Lista de registros */}
-        {loading ? (
-          <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
-            {[0, 1, 2, 3].map(i => (
-              <div key={i} className="flex items-center gap-3 px-4 py-3 animate-pulse">
-                <div className="flex-1 min-w-0 space-y-2">
-                  <div className="h-4 rounded-full w-16" style={{ backgroundColor: 'var(--muted)' }} />
-                  <div className="h-3 rounded w-2/3" style={{ backgroundColor: 'var(--muted)' }} />
-                  <div className="h-2.5 rounded w-1/3" style={{ backgroundColor: 'var(--muted)' }} />
-                </div>
-                <div className="flex-shrink-0 w-9 h-9 rounded-lg" style={{ backgroundColor: 'var(--muted)' }} />
-              </div>
-            ))}
-          </div>
-        ) : error ? (
-          <div className="py-8 text-center text-sm" style={{ color: 'var(--destructive)' }}>{error}</div>
-        ) : busquedaN === 0 ? (
-          <div
-            className="py-14 text-center space-y-2"
-            style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
-          >
-            <Filter className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-              Elige los módulos y presiona Buscar
-            </p>
-          </div>
-        ) : filtroModulos.size === 0 ? (
-          <div
-            className="py-14 text-center space-y-2"
-            style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
-          >
-            <FilterX className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-              Elige al menos un módulo para ver resultados
-            </p>
-          </div>
-        ) : filtrados.length === 0 ? (
-          <div
-            className="py-14 text-center space-y-2"
-            style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
-          >
-            <FilterX className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-              Sin registros en este periodo
-            </p>
-            <p className="text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
-              Prueba un rango de fechas más amplio
-            </p>
-          </div>
-        ) : (
-          <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
-            {filtrados.map((reg, index) => (
-              <div
-                key={reg.key}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors"
-                style={{ transitionDuration: 'var(--motion-fast)', ...cascadeStyle(index, !reducedMotion && primeraCargaRef.current) }}
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span
-                      className="px-2 py-0.5 rounded-full text-[10px] text-white"
-                      style={{ backgroundColor: MODULO_META[reg.modulo].color, fontWeight: 700 }}
-                    >
-                      {reg.modulo}
-                    </span>
-                    <span className="text-[11px] truncate" style={{ color: 'var(--muted-foreground)' }}>
-                      {MODULO_META[reg.modulo].label}
-                    </span>
+        {/* Lista de registros — crossfade rápido entre estados (cargando,
+            vacíos, lista) al buscar; ver AnimatePresence interno para el
+            stagger de las filas. */}
+        <AnimatePresence initial={false}>
+          {loading ? (
+            <motion.div
+              key="cargando"
+              exit={reducedMotion ? undefined : { opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border"
+            >
+              {[0, 1, 2, 3, 4].map(i => (
+                <div key={i} className="flex items-center gap-3 px-4 py-3 animate-pulse">
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-10 rounded-full" style={{ backgroundColor: 'var(--muted)' }} />
+                      <div className="h-3 w-24 rounded" style={{ backgroundColor: 'var(--muted)' }} />
+                    </div>
+                    <div className="h-3.5 rounded w-1/2" style={{ backgroundColor: 'var(--muted)' }} />
+                    <div className="h-2.5 rounded w-1/3" style={{ backgroundColor: 'var(--muted)' }} />
+                    <div className="h-2.5 rounded w-2/3" style={{ backgroundColor: 'var(--muted)' }} />
                   </div>
-                  <p
-                    className="text-[13px] truncate"
-                    style={{ fontWeight: 600, overflowWrap: 'anywhere' }}
-                    title={reg.rancho_nombre}
-                  >
-                    {reg.rancho_nombre}
-                  </p>
-                  <p className="text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
-                    {formatFecha(reg.fecha)}
-                  </p>
-                  <p
-                    className="text-[11px] mt-0.5 line-clamp-2"
-                    style={{ color: 'var(--muted-foreground)', overflowWrap: 'anywhere' }}
-                    title={reg.resumen}
-                  >
-                    {reg.resumen}
-                  </p>
+                  <div className="flex-shrink-0 w-9 h-9 rounded-lg" style={{ backgroundColor: 'var(--muted)' }} />
                 </div>
-                <button
-                  onClick={() => handleDescargarPDF(reg)}
-                  disabled={descargandoPDF === reg.key || generandoPaquete}
-                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border disabled:opacity-40"
-                  style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
-                  title="Descargar PDF"
-                >
-                  {descargandoPDF === reg.key
-                    ? <Loader2 className="w-4 h-4 animate-spin" />
-                    : <FileText className="w-4 h-4" />
-                  }
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </motion.div>
+          ) : error ? (
+            <motion.div
+              key="error"
+              exit={reducedMotion ? undefined : { opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="py-8 text-center text-sm"
+              style={{ color: 'var(--destructive)' }}
+            >
+              {error}
+            </motion.div>
+          ) : busquedaN === 0 ? (
+            <motion.div
+              key="sin-buscar"
+              exit={reducedMotion ? undefined : { opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="py-14 text-center space-y-2"
+              style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
+            >
+              <Filter className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
+              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                Elige los módulos y presiona Buscar
+              </p>
+            </motion.div>
+          ) : filtroModulos.size === 0 ? (
+            <motion.div
+              key="sin-modulos"
+              exit={reducedMotion ? undefined : { opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="py-14 text-center space-y-2"
+              style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
+            >
+              <FilterX className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
+              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                Elige al menos un módulo para ver resultados
+              </p>
+            </motion.div>
+          ) : filtrados.length === 0 ? (
+            <motion.div
+              key="sin-resultados"
+              exit={reducedMotion ? undefined : { opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="py-14 text-center space-y-2"
+              style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
+            >
+              <FilterX className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
+              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                Sin registros en este periodo
+              </p>
+              <p className="text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
+                Prueba un rango de fechas más amplio
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="lista"
+              exit={reducedMotion ? undefined : { opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border"
+            >
+              <AnimatePresence initial={false}>
+                {filtrados.map((reg, index) => {
+                  const escalonado = !reducedMotion && freshSearchRef.current
+                  return (
+                    <motion.div
+                      key={reg.key}
+                      layout
+                      initial={
+                        reducedMotion ? false : escalonado ? { opacity: 0, y: 8 } : { opacity: 0 }
+                      }
+                      animate={escalonado ? { opacity: 1, y: 0 } : { opacity: 1 }}
+                      exit={reducedMotion ? undefined : { opacity: 0 }}
+                      transition={
+                        reducedMotion
+                          ? { duration: 0 }
+                          : escalonado
+                            ? { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: Math.min(index, 7) * 0.03 }
+                            : { duration: 0.15, ease: [0.22, 1, 0.36, 1] }
+                      }
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors"
+                      style={{ transitionDuration: 'var(--motion-fast)' }}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span
+                            className="px-2 py-0.5 rounded-full text-[10px] text-white"
+                            style={{ backgroundColor: MODULO_META[reg.modulo].color, fontWeight: 700 }}
+                          >
+                            {reg.modulo}
+                          </span>
+                          <span className="text-[11px] truncate" style={{ color: 'var(--muted-foreground)' }}>
+                            {MODULO_META[reg.modulo].label}
+                          </span>
+                        </div>
+                        <p
+                          className="text-[13px] truncate"
+                          style={{ fontWeight: 600, overflowWrap: 'anywhere' }}
+                          title={reg.rancho_nombre}
+                        >
+                          {reg.rancho_nombre}
+                        </p>
+                        <p className="text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
+                          {formatFecha(reg.fecha)}
+                        </p>
+                        <p
+                          className="text-[11px] mt-0.5 line-clamp-2"
+                          style={{ color: 'var(--muted-foreground)', overflowWrap: 'anywhere' }}
+                          title={reg.resumen}
+                        >
+                          {reg.resumen}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleDescargarPDF(reg)}
+                        disabled={descargandoPDF === reg.key || generandoPaquete}
+                        className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border disabled:opacity-40"
+                        style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
+                        title="Descargar PDF"
+                      >
+                        {descargandoPDF === reg.key
+                          ? <Loader2 className="w-4 h-4 animate-spin" />
+                          : <FileText className="w-4 h-4" />
+                        }
+                      </button>
+                    </motion.div>
+                  )
+                })}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </div>
 

@@ -18,6 +18,7 @@ import { useAgendaResumen } from '@/hooks/useAgendaResumen'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useHomeSearch } from '@/context/HomeSearchContext'
 import { useTheme } from '@/context/ThemeContext'
+import { useContadorAnimado } from '@/hooks/useContadorAnimado'
 import { resolverIcono } from '@/app/components/iconos-modulos'
 import { MadyLogo } from '@/app/components/MadyLogo'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -27,7 +28,6 @@ import { ordenarAlfabetico } from '@/lib/ordenAlfabetico'
 import { SPRING_SUAVE } from '@/lib/motion'
 
 const MAX_PINNED = 4
-const DURACION_CONTADOR_S = 1.1
 // Foco visible por teclado — nunca `ring-*` (usa box-shadow, prohibido).
 const FOCUS_RING = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring'
 
@@ -106,30 +106,7 @@ function AnimatedNumber({
   format: (n: number) => string
   reducedMotion: boolean
 }) {
-  const spanRef = useRef<HTMLSpanElement>(null)
-  const prevValorRef = useRef<number | null>(null)
-
-  useEffect(() => {
-    const node = spanRef.current
-    if (!node || value === null) return
-    const anterior = prevValorRef.current
-    if (reducedMotion || anterior === value) {
-      node.textContent = format(value)
-      prevValorRef.current = value
-      return
-    }
-    const desde = anterior ?? 0
-    const controls = animate(desde, value, {
-      duration: DURACION_CONTADOR_S,
-      ease: [0.22, 1, 0.36, 1],
-      onUpdate: (latest) => {
-        node.textContent = format(latest)
-      },
-    })
-    prevValorRef.current = value
-    return () => controls.stop()
-  }, [value, reducedMotion, format])
-
+  const spanRef = useContadorAnimado(value, format, reducedMotion)
   return <span ref={spanRef} className="tabular-nums">{value === null ? '—' : format(value)}</span>
 }
 
