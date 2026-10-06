@@ -90,7 +90,7 @@ export interface MetCumplimiento {
   internas: AuditoriaInterna[] | null
   internas_promedio: Record<string, number> | null
   externas: AuditoriaExterna[] | null
-  incidencias: { reportes: number; incidencias: number; por_mes: Record<string, number> } | null
+  incidencias: { reportes: number; incidencias: number; por_mes: { mes: string; reportes: number; incidencias: number }[] } | null
   fallas_recurrentes: FallaRecurrente[] | null
 }
 

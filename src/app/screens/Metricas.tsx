@@ -410,15 +410,117 @@ function TabAgenda({ datos }: { datos: MetAgenda }) {
   )
 }
 
+// ── Gráfica de barras por mes (reutilizable) ─────────────────────────────────
+
+function GraficaBarrasMes({
+  series,
+  meses,
+  ariaLabel,
+}: {
+  series: { label: string; color: string; valores: number[] }[]
+  meses: string[]
+  ariaLabel: string
+}) {
+  const cruzaAnio = new Set(meses.map(m => m.slice(0, 4))).size > 1
+  const todosValores = series.flatMap(s => s.valores)
+  const maxVal = Math.max(...todosValores, 1)
+  const ALTO = 72
+  const BAR_W = 22
+  const OVERHEAD = 20
+  const scrollable = meses.length > 8
+  const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  const etiqueta = (mes: string) => {
+    const nombres = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
+    const [anio, m] = mes.split('-')
+    const nombre = nombres[parseInt(m) - 1]
+    return cruzaAnio ? `${nombre} ${anio.slice(2)}` : nombre
+  }
+
+  const groupMinW = series.length * (BAR_W + 4) + 8
+
+  return (
+    <div>
+      {series.length > 1 && (
+        <div className="flex items-center gap-4 mb-3 flex-wrap">
+          {series.map(s => (
+            <div key={s.label} className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: s.color }} />
+              <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{s.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      <div
+        role="img"
+        aria-label={ariaLabel}
+        className={scrollable ? 'overflow-x-auto' : ''}
+      >
+        <div
+          className="flex gap-2"
+          style={{ minWidth: scrollable ? `${meses.length * (groupMinW + 8)}px` : undefined }}
+        >
+          {meses.map((mes, mi) => (
+            <div
+              key={mes}
+              className="flex flex-col items-center"
+              style={{
+                flex: scrollable ? 'none' : '1',
+                minWidth: scrollable ? `${groupMinW}px` : undefined,
+              }}
+            >
+              <div className="flex gap-1" style={{ height: `${ALTO + OVERHEAD}px` }}>
+                {series.map((s, si) => {
+                  const val = s.valores[mi] ?? 0
+                  const ratio = val / maxVal
+                  return (
+                    <div
+                      key={si}
+                      className="relative flex-shrink-0"
+                      style={{ width: `${BAR_W}px`, height: `${ALTO + OVERHEAD}px` }}
+                    >
+                      <span
+                        className="absolute text-[10px] tabular-nums text-center w-full"
+                        style={{
+                          color: 'var(--muted-foreground)',
+                          bottom: `${Math.round(ALTO * ratio) + 2}px`,
+                        }}
+                      >
+                        {val}
+                      </span>
+                      <div
+                        className="absolute bottom-0 w-full rounded-sm"
+                        style={{
+                          height: `${ALTO}px`,
+                          backgroundColor: val > 0 ? s.color : 'transparent',
+                          transform: `scaleY(${ratio})`,
+                          transformOrigin: 'bottom',
+                          transition: reducedMotion ? undefined : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)',
+                        }}
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="w-full h-px" style={{ backgroundColor: 'var(--border)' }} />
+              <span className="text-[10px] text-muted-foreground text-center mt-1">
+                {etiqueta(mes)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Pestaña Cumplimiento ──────────────────────────────────────────────────────
 
 function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
   const internas = datos.internas ?? []
   const externas = datos.externas ?? []
   const fallas = datos.fallas_recurrentes ?? []
-  const porMes = datos.incidencias?.por_mes ?? {}
-  const meses = Object.keys(porMes).sort()
-  const maxVal = Math.max(...Object.values(porMes), 1)
+  const porMes = datos.incidencias?.por_mes ?? []
 
   if (internas.length === 0 && externas.length === 0 && fallas.length === 0) {
     return <Vacio />
@@ -503,38 +605,35 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
       )}
 
       {/* Incidencias M13 por mes */}
-      {meses.length > 0 && (
+      {datos.incidencias && porMes.length > 0 && (
         <section>
           <p className="text-xs font-semibold mb-1" style={{ color: 'var(--muted-foreground)' }}>
             INCIDENCIAS M13 POR MES
           </p>
-          {datos.incidencias && (
-            <p className="text-xs text-muted-foreground mb-3">
-              {datos.incidencias.reportes} reportes · {datos.incidencias.incidencias} incidencias
-            </p>
+          {porMes.length <= 1 ? (
+            <div className="space-y-2 mt-3">
+              <div className="grid grid-cols-2 gap-3">
+                <TarjetaResumen label="Reportes" valor={datos.incidencias.reportes} />
+                <TarjetaResumen label="Incidencias" valor={datos.incidencias.incidencias} />
+              </div>
+              <p className="text-xs text-muted-foreground">Un reporte puede tener varias incidencias</p>
+            </div>
+          ) : (
+            <div className="mt-3">
+              <GraficaBarrasMes
+                series={[
+                  { label: 'Reportes', color: 'var(--primary)', valores: porMes.map(p => p.reportes) },
+                  { label: 'Incidencias', color: 'var(--secondary)', valores: porMes.map(p => p.incidencias) },
+                ]}
+                meses={porMes.map(p => p.mes)}
+                ariaLabel={porMes.map(p => {
+                  const mo = parseInt(p.mes.split('-')[1]) - 1
+                  const ns = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
+                  return `${ns[mo]}: ${p.reportes} reportes, ${p.incidencias} incidencias`
+                }).join('; ')}
+              />
+            </div>
           )}
-          <div className="flex items-end gap-2 h-24">
-            {meses.map(mes => {
-              const n = porMes[mes] ?? 0
-              const h = Math.max((n / maxVal) * 80, n > 0 ? 4 : 0)
-              return (
-                <div key={mes} className="flex flex-col items-center gap-1 flex-1 min-w-0">
-                  <span className="text-xs tabular-nums" style={{ color: 'var(--muted-foreground)' }}>{n}</span>
-                  <div
-                    className="w-full rounded-sm"
-                    style={{
-                      height: `${h}px`,
-                      backgroundColor: 'var(--primary)',
-                      opacity: 0.7,
-                    }}
-                  />
-                  <span className="text-[10px] text-muted-foreground truncate w-full text-center">
-                    {mes.slice(5)}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
         </section>
       )}
 
@@ -622,8 +721,6 @@ function TabCampo({ datos }: { datos: MetCampo }) {
   const productosTop = datos.productos_top ?? []
   const cosechasEnIntervalo = datos.cosechas_en_intervalo ?? []
 
-  const maxAplicaciones = Math.max(...meses.map(m => porMes[m]?.aplicaciones ?? 0), 1)
-
   if (meses.length === 0 && productosTop.length === 0) return <Vacio />
 
   return (
@@ -634,28 +731,24 @@ function TabCampo({ datos }: { datos: MetCampo }) {
           <p className="text-xs font-semibold mb-3" style={{ color: 'var(--muted-foreground)' }}>
             APLICACIONES POR MES
           </p>
-          <div className="flex items-end gap-2 h-28">
-            {meses.map(mes => {
-              const apl = porMes[mes]?.aplicaciones ?? 0
-              const ha = porMes[mes]?.ha ?? 0
-              const h = Math.max((apl / maxAplicaciones) * 96, apl > 0 ? 4 : 0)
-              return (
-                <div key={mes} className="flex flex-col items-center gap-1 flex-1 min-w-0">
-                  <span className="text-[10px] tabular-nums" style={{ color: 'var(--muted-foreground)' }}>{apl}</span>
-                  <div
-                    className="w-full rounded-sm"
-                    style={{ height: `${h}px`, backgroundColor: 'var(--primary)', opacity: 0.8 }}
-                  />
-                  <span className="text-[10px] text-muted-foreground truncate w-full text-center">
-                    {mes.slice(5)}
-                  </span>
-                  {ha > 0 && (
-                    <span className="text-[9px] tabular-nums text-muted-foreground">{ha.toFixed(1)} ha</span>
-                  )}
-                </div>
-              )
-            })}
-          </div>
+          {meses.length <= 1 ? (
+            <div className="grid grid-cols-2 gap-3">
+              <TarjetaResumen label="Aplicaciones" valor={porMes[meses[0]]?.aplicaciones ?? 0} />
+              <TarjetaResumen label="Hectáreas" valor={(porMes[meses[0]]?.ha ?? 0).toFixed(1)} />
+            </div>
+          ) : (
+            <GraficaBarrasMes
+              series={[
+                { label: 'Aplicaciones', color: 'var(--primary)', valores: meses.map(m => porMes[m]?.aplicaciones ?? 0) },
+              ]}
+              meses={meses}
+              ariaLabel={meses.map(m => {
+                const mo = parseInt(m.split('-')[1]) - 1
+                const ns = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
+                return `${ns[mo]}: ${porMes[m]?.aplicaciones ?? 0} aplicaciones`
+              }).join('; ')}
+            />
+          )}
         </section>
       )}
 
