@@ -6,13 +6,15 @@ export interface ColaboradorProductividad {
   profile_id: string
   nombre: string
   rol: string
+  activo: boolean
+  posicion: number
   registros: number
   dias_matriz: number
   capturas: number
   correcciones: number
-  pct_correccion: number
+  pct_correccion: number | null
   sin_firma: number
-  por_modulo: Record<string, number>
+  por_modulo: Record<string, number> | null
 }
 
 export interface VerificacionProductividad {
@@ -26,6 +28,8 @@ export interface MetProductividad {
   es_admin: boolean
   colaboradores: ColaboradorProductividad[] | null
   verificacion: VerificacionProductividad | null
+  total_colaboradores: number
+  colaboradores_con_capturas: number
 }
 
 export interface ColaboradorAgenda {

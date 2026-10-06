@@ -135,7 +135,8 @@ function TabProductividad({
 
   const maxCapturas = Math.max(...colaboradores.map(c => c.capturas), 1)
   const totalCapturas = colaboradores.reduce((s, c) => s + c.capturas, 0)
-  const activos = colaboradores.filter(c => c.capturas > 0).length
+  const colConCapturas = datos.colaboradores_con_capturas ?? colaboradores.filter(c => c.capturas > 0).length
+  const totalCol = datos.total_colaboradores ?? colaboradores.length
   const totalCorrecciones = colaboradores.reduce((s, c) => s + c.correcciones, 0)
   const pctCorreccion = totalCapturas > 0 ? (totalCorrecciones / totalCapturas) * 100 : 0
   const v = datos.verificacion
@@ -145,7 +146,10 @@ function TabProductividad({
       {/* Tarjetas resumen */}
       <div className="grid grid-cols-2 gap-3 px-4 pt-4">
         <TarjetaResumen label="Total capturas" valor={totalCapturas.toLocaleString('es-MX')} />
-        <TarjetaResumen label="Colaboradores activos" valor={activos} />
+        <TarjetaResumen
+          label="Colaboradores con capturas"
+          valor={`${colConCapturas} de ${totalCol}`}
+        />
         <TarjetaResumen
           label="Con corrección"
           valor={`${pctCorreccion.toFixed(1)}%`}
@@ -163,42 +167,65 @@ function TabProductividad({
       {/* Ranking */}
       <div className="px-4">
         <p className="text-xs font-semibold mb-2" style={{ color: 'var(--muted-foreground)' }}>
-          RANKING POR CAPTURAS
+          RANKING DE COLABORADORES
         </p>
         <div className="space-y-2">
           {colaboradores.map((c: ColaboradorProductividad) => {
-            const abierto = expandido === c.profile_id
+            const tieneDesglose = c.por_modulo !== null && Object.keys(c.por_modulo).length > 0
+            const abierto = expandido === c.profile_id && tieneDesglose
             const pct = (c.capturas / maxCapturas) * 100
-            const porModuloEntries = Object.entries(c.por_modulo ?? {})
-              .sort((a, b) => b[1] - a[1])
-            return (
-              <div
-                key={c.profile_id}
-                className="rounded-xl border border-border bg-card overflow-hidden"
-              >
-                <button
-                  className="w-full text-left px-4 py-3"
-                  onClick={() => setExpandido(abierto ? null : c.profile_id)}
-                  aria-expanded={abierto}
+            const porModuloEntries = tieneDesglose
+              ? Object.entries(c.por_modulo!).sort((a, b) => b[1] - a[1])
+              : []
+
+            // Posición — acento para los 3 primeros con capturas > 0
+            const esPodio = c.capturas > 0 && c.posicion <= 3
+            let posBg = 'transparent'
+            let posColor = 'var(--muted-foreground)'
+            if (esPodio) {
+              if (c.posicion === 1) { posBg = 'var(--primary)'; posColor = '#fff' }
+              else if (c.posicion === 2) { posBg = 'var(--agro-warning-fill)'; posColor = 'var(--agro-warning-text)' }
+              else { posBg = 'var(--muted)'; posColor = 'var(--foreground)' }
+            }
+
+            const rowInner = (
+              <div className="flex items-start gap-2">
+                {/* Posición */}
+                <span
+                  className="text-xs tabular-nums font-bold px-1.5 py-0.5 rounded-md flex-shrink-0 text-center mt-0.5"
+                  style={{ backgroundColor: posBg, color: posColor, minWidth: '2rem' }}
                 >
+                  #{c.posicion}
+                </span>
+
+                {/* Contenido */}
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1.5">
-                    <div className="min-w-0">
-                      <span className="text-sm font-semibold truncate" style={{ color: 'var(--foreground)' }}>
+                    <div className="min-w-0 flex items-baseline gap-1.5 flex-wrap">
+                      <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
                         {c.nombre}
                       </span>
-                      <span className="ml-2 text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         {ROL_LABELS[c.rol] ?? c.rol}
                       </span>
+                      {!c.activo && (
+                        <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                          Inactivo
+                        </span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                       <span className="text-sm tabular-nums font-semibold" style={{ color: 'var(--primary)' }}>
                         {c.capturas.toLocaleString('es-MX')}
                       </span>
-                      {abierto
-                        ? <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                        : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                      {tieneDesglose && (
+                        abierto
+                          ? <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                          : <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                      )}
                     </div>
                   </div>
+
                   {/* Barra horizontal */}
                   <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--muted)' }}>
                     <div
@@ -210,15 +237,46 @@ function TabProductividad({
                       }}
                     />
                   </div>
+
                   <div className="flex gap-3 mt-1.5 text-xs text-muted-foreground">
-                    <span>{c.correcciones > 0 ? `${c.pct_correccion.toFixed(1)}% corrección` : 'Sin correcciones'}</span>
-                    {c.sin_firma > 0 && (
-                      <span style={{ color: 'var(--agro-warning-text)' }}>
-                        {c.sin_firma} sin firma
-                      </span>
+                    {c.capturas > 0 ? (
+                      <>
+                        <span>
+                          {c.correcciones > 0
+                            ? `${(c.pct_correccion ?? 0).toFixed(1)}% corrección`
+                            : 'Sin correcciones'}
+                        </span>
+                        {c.sin_firma > 0 && (
+                          <span style={{ color: 'var(--agro-warning-text)' }}>
+                            {c.sin_firma} sin firma
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span>Sin capturas en este periodo</span>
                     )}
                   </div>
-                </button>
+                </div>
+              </div>
+            )
+
+            return (
+              <div
+                key={c.profile_id}
+                className="rounded-xl border border-border bg-card overflow-hidden"
+                style={!c.activo ? { opacity: 0.6 } : undefined}
+              >
+                {tieneDesglose ? (
+                  <button
+                    className="w-full text-left px-4 py-3"
+                    onClick={() => setExpandido(abierto ? null : c.profile_id)}
+                    aria-expanded={abierto}
+                  >
+                    {rowInner}
+                  </button>
+                ) : (
+                  <div className="px-4 py-3">{rowInner}</div>
+                )}
 
                 {/* Desglose por módulo */}
                 {abierto && porModuloEntries.length > 0 && (
@@ -244,11 +302,6 @@ function TabProductividad({
                         )
                       })}
                     </div>
-                  </div>
-                )}
-                {abierto && porModuloEntries.length === 0 && (
-                  <div className="px-4 pb-3 pt-2 border-t border-border">
-                    <p className="text-xs text-muted-foreground">Sin desglose disponible</p>
                   </div>
                 )}
               </div>
