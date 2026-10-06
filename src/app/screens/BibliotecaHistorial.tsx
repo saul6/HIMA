@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useReducedMotion } from 'motion/react'
-import { ChevronLeft, FileText, Package, Loader2, FilterX } from 'lucide-react'
+import { ChevronLeft, ChevronDown, X, Check, FileText, Package, Loader2, FilterX } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { Portal } from '@/app/components/Portal'
+import { BottomSheet } from '@/app/components/BottomSheet'
 import {
   type ModuloKey,
   type RegistroHistorial,
@@ -909,6 +910,10 @@ export function BibliotecaHistorial() {
 
   const [filtroRancho, setFiltroRancho] = useState<string>('todos')
 
+  // Ventana de módulos — estado de interfaz local, no afecta la selección
+  const [modulosSheetOpen, setModulosSheetOpen] = useState(false)
+  const todosSeleccionados = filtroModulos.size === modulosDisponibles.length
+
   // Datos
   const [registros, setRegistros] = useState<RegistroHistorial[]>([])
   const [loading, setLoading] = useState(true)
@@ -933,7 +938,8 @@ export function BibliotecaHistorial() {
       const data = await cargarTodo(orgId, buscarDesde, buscarHasta)
       setRegistros(data)
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al cargar los registros')
+      console.error(e instanceof Error ? e.message : e)
+      setError('No se pudieron cargar los registros')
     } finally {
       setLoading(false)
     }
@@ -1023,7 +1029,7 @@ export function BibliotecaHistorial() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
+    <div className="min-h-full pb-safe-nav">
 
       {/* Header — mismo patrón que Inventario: arriba a la izquierda, a todo lo ancho, con línea inferior */}
       <header className="bg-card border-b border-border px-4 py-4">
@@ -1032,92 +1038,87 @@ export function BibliotecaHistorial() {
         </h1>
       </header>
 
-      <div className="max-w-[390px] mx-auto">
+      <div className="p-4 space-y-4">
 
-        <div className="p-4 space-y-4 pb-28">
-
-          {/* Rango de fechas */}
-          <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
-              Periodo
-            </p>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <label className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Desde</label>
+          {/* Barra de filtros — Desde | Hasta | Sitio | Módulos | Buscar */}
+          <div className="bg-card rounded-xl border border-border p-4">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-5 md:items-end">
+              <div className="min-w-0">
+                <label htmlFor="historial-desde" className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+                  Desde
+                </label>
                 <input
+                  id="historial-desde"
                   type="date"
                   value={inputDesde}
                   onChange={(e) => setInputDesde(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 rounded-lg text-sm border"
+                  className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border appearance-none [&::-webkit-date-and-time-value]:text-left"
                   style={{ background: 'var(--input-background)', borderColor: 'var(--border)' }}
                 />
               </div>
-              <div className="flex-1">
-                <label className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Hasta</label>
+              <div className="min-w-0">
+                <label htmlFor="historial-hasta" className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+                  Hasta
+                </label>
                 <input
+                  id="historial-hasta"
                   type="date"
                   value={inputHasta}
                   onChange={(e) => setInputHasta(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 rounded-lg text-sm border"
+                  className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border appearance-none [&::-webkit-date-and-time-value]:text-left"
                   style={{ background: 'var(--input-background)', borderColor: 'var(--border)' }}
                 />
               </div>
-            </div>
-            <button
-              onClick={() => { setBuscarDesde(inputDesde); setBuscarHasta(inputHasta) }}
-              disabled={loading}
-              className="w-full h-9 rounded-lg text-sm text-white disabled:opacity-50"
-              style={{ background: 'var(--primary)', fontWeight: 600 }}
-            >
-              {loading ? 'Buscando...' : 'Buscar'}
-            </button>
-          </div>
 
-          {/* Filtros */}
-          <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
-              Filtros
-            </p>
+              <div className="col-span-2 md:col-span-1 min-w-0">
+                <label htmlFor="historial-sitio" className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+                  {terminosSitio.singular}
+                </label>
+                <select
+                  id="historial-sitio"
+                  value={filtroRancho}
+                  onChange={(e) => setFiltroRancho(e.target.value)}
+                  className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border"
+                  style={{ background: 'var(--input-background)', borderColor: 'var(--border)' }}
+                >
+                  <option value="todos">{terminosSitio.plural}</option>
+                  {ranchos.map(([id, nombre]) => (
+                    <option key={id} value={id}>{nombre}</option>
+                  ))}
+                </select>
+              </div>
 
-            {/* Rancho */}
-            <div>
-              <label className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>{terminosSitio.singular}</label>
-              <select
-                value={filtroRancho}
-                onChange={(e) => setFiltroRancho(e.target.value)}
-                className="w-full mt-1 px-3 py-2 rounded-lg text-sm border"
-                style={{ background: 'var(--input-background)', borderColor: 'var(--border)' }}
-              >
-                <option value="todos">{terminosSitio.plural}</option>
-                {ranchos.map(([id, nombre]) => (
-                  <option key={id} value={id}>{nombre}</option>
-                ))}
-              </select>
-            </div>
+              <div className="col-span-2 md:col-span-1 min-w-0">
+                <span id="historial-modulos-label" className="text-[11px] block" style={{ color: 'var(--muted-foreground)' }}>
+                  Módulos
+                </span>
+                <button
+                  type="button"
+                  aria-labelledby="historial-modulos-label"
+                  aria-haspopup="dialog"
+                  onClick={() => setModulosSheetOpen(true)}
+                  className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border flex items-center justify-between gap-2"
+                  style={{
+                    background: 'var(--input-background)',
+                    borderColor: todosSeleccionados ? 'var(--border)' : 'var(--ring)',
+                  }}
+                >
+                  <span className="truncate">
+                    {todosSeleccionados ? 'Todos los módulos' : `${filtroModulos.size} de ${modulosDisponibles.length} módulos`}
+                  </span>
+                  <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+                </button>
+              </div>
 
-            {/* Módulos */}
-            <div>
-              <label className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Módulos</label>
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {modulosDisponibles.map((m) => {
-                  const active = filtroModulos.has(m)
-                  return (
-                    <button
-                      key={m}
-                      onClick={() => toggleModulo(m)}
-                      className="px-2.5 py-1 rounded-full text-[11px] border transition-all"
-                      style={{
-                        backgroundColor: active ? MODULO_META[m].color : 'transparent',
-                        color: active ? '#fff' : MODULO_META[m].color,
-                        borderColor: MODULO_META[m].color,
-                        fontWeight: 600,
-                        opacity: active ? 1 : 0.55,
-                      }}
-                    >
-                      {m}
-                    </button>
-                  )
-                })}
+              <div className="col-span-2 md:col-span-1 min-w-0">
+                <button
+                  onClick={() => { setBuscarDesde(inputDesde); setBuscarHasta(inputHasta) }}
+                  disabled={loading}
+                  className="w-full h-9 md:mt-[23px] rounded-lg text-sm disabled:opacity-50"
+                  style={{ background: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
+                >
+                  {loading ? 'Buscando...' : 'Buscar'}
+                </button>
               </div>
             </div>
           </div>
@@ -1154,7 +1155,7 @@ export function BibliotecaHistorial() {
               ))}
             </div>
           ) : error ? (
-            <div className="py-8 text-center text-sm text-red-600">{error}</div>
+            <div className="py-8 text-center text-sm" style={{ color: 'var(--destructive)' }}>{error}</div>
           ) : filtrados.length === 0 ? (
             <div
               className="py-14 text-center space-y-2"
@@ -1223,7 +1224,6 @@ export function BibliotecaHistorial() {
             </div>
           )}
 
-        </div>
       </div>
 
       {/* Overlay de progreso */}
@@ -1251,6 +1251,68 @@ export function BibliotecaHistorial() {
         </div>
         </Portal>
       )}
+
+      {/* Ventana de módulos */}
+      <BottomSheet open={modulosSheetOpen} onClose={() => setModulosSheetOpen(false)} height="85%">
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div className="w-10 h-1 rounded-full bg-border" />
+        </div>
+
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Módulos</h2>
+          <button type="button" onClick={() => setModulosSheetOpen(false)} className="p-1" aria-label="Cerrar">
+            <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-2 py-2">
+          {modulosDisponibles.map((m) => {
+            const active = filtroModulos.has(m)
+            return (
+              <button
+                key={m}
+                type="button"
+                role="checkbox"
+                aria-checked={active}
+                onClick={() => toggleModulo(m)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left hover:bg-muted transition-colors"
+                style={{
+                  backgroundColor: active ? 'var(--accent)' : undefined,
+                  transitionDuration: 'var(--motion-fast)',
+                }}
+              >
+                <span
+                  className="flex-shrink-0 w-4 h-4 rounded-[4px] border flex items-center justify-center"
+                  style={{
+                    backgroundColor: active ? 'var(--primary)' : 'var(--input-background)',
+                    borderColor: active ? 'var(--primary)' : 'var(--border)',
+                  }}
+                >
+                  {active && <Check className="w-3 h-3" style={{ color: 'var(--primary-foreground)' }} />}
+                </span>
+                <span className="flex-1 min-w-0 text-sm truncate" style={{ fontWeight: active ? 600 : 400 }}>
+                  {MODULO_META[m].label}
+                </span>
+                <span className="text-xs flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>{m}</span>
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-t border-border flex-shrink-0">
+          <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+            {filtroModulos.size} de {modulosDisponibles.length} módulos
+          </p>
+          <button
+            type="button"
+            onClick={() => setModulosSheetOpen(false)}
+            className="h-9 px-5 rounded-lg text-sm"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
+          >
+            Listo
+          </button>
+        </div>
+      </BottomSheet>
     </div>
   )
 }
