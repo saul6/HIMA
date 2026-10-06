@@ -1232,60 +1232,58 @@ export function BibliotecaHistorial() {
           </div>
         </div>
 
-        {/* Etiquetas de módulos filtrados + Exportar paquete */}
-        {(!todosSeleccionados || filtrados.length > 0) && (
-          <div className="flex flex-wrap items-center gap-2">
-            {!todosSeleccionados && (
-              <>
-                <AnimatePresence initial={false}>
-                  {modulosSeleccionadosOrdenados.map((m) => (
-                    <motion.span
-                      key={m}
-                      layout
-                      initial={reducedMotion ? false : { opacity: 0, scale: 0.85 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={reducedMotion ? undefined : { opacity: 0, scale: 0.85 }}
-                      transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
-                      className="inline-flex items-center gap-1.5 pl-3 pr-2 h-7 rounded-full text-xs"
-                      style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)', fontWeight: 600 }}
-                    >
-                      {nombreModulo(m)}
-                      {filtroModulos.size > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => toggleModulo(m)}
-                          aria-label={`Quitar ${nombreModulo(m)}`}
-                          className="rounded-full hover:opacity-70"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      )}
-                    </motion.span>
-                  ))}
-                </AnimatePresence>
-                <button
-                  type="button"
-                  onClick={seleccionarTodosModulos}
-                  className="text-xs"
-                  style={{ color: 'var(--primary)', fontWeight: 600 }}
+        {/* Resumen de módulos filtrados — solo escritorio (ver móvil abajo) */}
+        {!todosSeleccionados && (
+          <div className="hidden md:flex flex-wrap items-center gap-2">
+            <AnimatePresence initial={false}>
+              {modulosSeleccionadosOrdenados.map((m) => (
+                <motion.span
+                  key={m}
+                  layout
+                  initial={reducedMotion ? false : { opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={reducedMotion ? undefined : { opacity: 0, scale: 0.85 }}
+                  transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
+                  className="inline-flex items-center gap-1.5 pl-3 pr-2 h-7 rounded-full text-xs"
+                  style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)', fontWeight: 600 }}
                 >
-                  Todos
-                </button>
-              </>
-            )}
-
-            {filtrados.length > 0 && (
+                  {nombreModulo(m)}
+                  <button
+                    type="button"
+                    onClick={() => toggleModulo(m)}
+                    aria-label={`Quitar ${nombreModulo(m)}`}
+                    className="rounded-full hover:opacity-70"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </motion.span>
+              ))}
+            </AnimatePresence>
+            {filtroModulos.size > 0 && (
               <button
-                onClick={handleExportarPaquete}
-                disabled={generandoPaquete || !!descargandoPDF}
-                className="w-full md:w-auto md:ml-auto h-10 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary text-sm hover:bg-primary/5 active:scale-[0.98] transition-[background-color,transform] duration-150 ease-out disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-                style={{ fontWeight: 600 }}
+                type="button"
+                onClick={limpiarModulos}
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors ml-4"
+                style={{ transitionDuration: 'var(--motion-fast)' }}
               >
-                {generandoPaquete ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />}
-                Exportar paquete PDF ({filtrados.length} registros)
+                <FilterX className="w-3.5 h-3.5" />
+                Limpiar
               </button>
             )}
           </div>
+        )}
+
+        {/* Exportar paquete PDF — fila propia, a todo lo ancho */}
+        {filtrados.length > 0 && (
+          <button
+            onClick={handleExportarPaquete}
+            disabled={generandoPaquete || !!descargandoPDF}
+            className="w-full min-h-10 py-2 px-3 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary text-sm hover:bg-primary/5 active:scale-[0.98] transition-[background-color,transform] duration-150 ease-out disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+            style={{ fontWeight: 600 }}
+          >
+            {generandoPaquete ? <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" /> : <Package className="w-4 h-4 flex-shrink-0" />}
+            <span className="text-center leading-snug">Exportar paquete PDF ({filtrados.length} registros)</span>
+          </button>
         )}
 
         {/* Lista de registros */}
@@ -1441,16 +1439,22 @@ export function BibliotecaHistorial() {
             </motion.span>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
-            {!todosSeleccionados && (
-              <button
-                type="button"
-                onClick={seleccionarTodosModulos}
-                className="text-xs"
-                style={{ color: 'var(--primary)', fontWeight: 600 }}
-              >
-                Todos
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={seleccionarTodosModulos}
+              className="text-xs"
+              style={{ color: 'var(--primary)', fontWeight: 600, opacity: todosSeleccionados ? 0.4 : 1 }}
+            >
+              Seleccionar todos
+            </button>
+            <button
+              type="button"
+              onClick={limpiarModulos}
+              className="text-xs"
+              style={{ color: 'var(--primary)', fontWeight: 600, opacity: filtroModulos.size === 0 ? 0.4 : 1 }}
+            >
+              Limpiar
+            </button>
             <button type="button" onClick={cerrarModulosSheet} className="p-1" aria-label="Cerrar">
               <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
             </button>
@@ -1492,7 +1496,6 @@ export function BibliotecaHistorial() {
             <AnimatePresence initial={false}>
               {modulosVisiblesSheet.map((m) => {
                 const active = filtroModulos.has(m)
-                const esUltimo = active && filtroModulos.size === 1
                 return (
                   <motion.div
                     key={m}
@@ -1506,7 +1509,6 @@ export function BibliotecaHistorial() {
                       type="button"
                       role="checkbox"
                       aria-checked={active}
-                      aria-disabled={esUltimo}
                       onClick={() => toggleModulo(m)}
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left hover:bg-muted transition-colors"
                       style={{
@@ -1537,11 +1539,6 @@ export function BibliotecaHistorial() {
                       </span>
                       <span className="text-xs flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>{m}</span>
                     </button>
-                    {esUltimo && (
-                      <p className="px-3 pb-1 text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
-                        Debe quedar al menos uno
-                      </p>
-                    )}
                   </motion.div>
                 )
               })}
