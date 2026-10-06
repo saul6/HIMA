@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
+import { useRanchos } from '@/hooks/useRanchos'
 import { Portal } from '@/app/components/Portal'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { SPRING_SUAVE } from '@/lib/motion'
@@ -1048,16 +1049,23 @@ export function BibliotecaHistorial() {
     cargar()
   }, [buscarDesde, buscarHasta, filtroModulos.size, cargar])
 
-  // Ranchos únicos presentes en los resultados
+  // Sitios para el filtro: los disponibles para el usuario (useRanchos, ya
+  // respeta RLS: admin/asesor ven todos los de la org, operario solo los
+  // asignados), unidos con los presentes en los resultados cargados (por si
+  // alguno no viniera del hook) — sin duplicados por id
+  const { ranchos: ranchosDisponibles } = useRanchos()
   const ranchos = useMemo(() => {
     const map = new Map<string, string>()
+    for (const r of ranchosDisponibles) {
+      map.set(r.id, r.nombre)
+    }
     for (const r of registros) {
       if (r.rancho_id && !map.has(r.rancho_id)) {
         map.set(r.rancho_id, r.rancho_nombre)
       }
     }
-    return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]))
-  }, [registros])
+    return ordenarAlfabetico(Array.from(map.entries()), ([, nombre]) => nombre)
+  }, [ranchosDisponibles, registros])
 
   // Filtrado client-side
   const filtrados = useMemo(() => {
