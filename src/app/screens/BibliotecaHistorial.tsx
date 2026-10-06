@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
-import { ChevronLeft, ChevronDown, Search, X, Check, FileText, Package, Loader2, FilterX } from 'lucide-react'
+import { ChevronLeft, ChevronDown, Search, X, Check, FileText, Package, Loader2, FilterX, Filter } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
@@ -924,17 +924,9 @@ export function BibliotecaHistorial() {
   const [buscarDesde, setBuscarDesde] = useState(inicioRango)
   const [buscarHasta, setBuscarHasta] = useState(hoy)
 
-  // Filtros client-side: inicializados con todos los módulos del usuario
-  const [filtroModulos, setFiltroModulos] = useState<Set<ModuloKey>>(
-    () => new Set(modulosDisponibles),
-  )
-  const modulosSyncedRef = useRef(false)
-  useEffect(() => {
-    if (!modulosSyncedRef.current && modulosDisponibles.length > 0) {
-      modulosSyncedRef.current = true
-      setFiltroModulos(new Set(modulosDisponibles))
-    }
-  }, [modulosDisponibles])
+  // Filtros client-side: arranca vacío — el usuario elige módulos antes de
+  // poder buscar (ver busquedaN/handleBuscar más abajo)
+  const [filtroModulos, setFiltroModulos] = useState<Set<ModuloKey>>(() => new Set())
 
   const [filtroRancho, setFiltroRancho] = useState<string>('todos')
 
@@ -948,10 +940,12 @@ export function BibliotecaHistorial() {
     setBusquedaModulos('')
   }
 
-  // Única acción nueva permitida: volver a seleccionar todos (mismo setter y
-  // mismo valor con el que se inicializa filtroModulos hoy)
   function seleccionarTodosModulos() {
     setFiltroModulos(new Set(modulosDisponibles))
+  }
+
+  function limpiarModulos() {
+    setFiltroModulos(new Set())
   }
 
   useEffect(() => {
@@ -992,7 +986,7 @@ export function BibliotecaHistorial() {
 
   // Datos
   const [registros, setRegistros] = useState<RegistroHistorial[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const reducedMotion = useReducedMotion()
   const primeraCargaRef = useRef(true)
@@ -1005,6 +999,14 @@ export function BibliotecaHistorial() {
   const [generandoPaquete, setGenerandoPaquete] = useState(false)
   const [progresoActual, setProgresoActual] = useState(0)
   const [progresoTotal, setProgresoTotal] = useState(0)
+
+  // 0 = aún no se buscó (arranque). Se incrementa en cada Buscar válido para
+  // forzar la consulta aunque las fechas no cambien.
+  const [busquedaN, setBusquedaN] = useState(0)
+  const [avisoModulos, setAvisoModulos] = useState(false)
+  useEffect(() => {
+    if (filtroModulos.size > 0) setAvisoModulos(false)
+  }, [filtroModulos])
 
   const cargar = useCallback(async () => {
     if (!orgId) return
@@ -1021,7 +1023,19 @@ export function BibliotecaHistorial() {
     }
   }, [orgId, buscarDesde, buscarHasta])
 
-  useEffect(() => { cargar() }, [cargar])
+  useEffect(() => {
+    if (busquedaN > 0) cargar()
+  }, [busquedaN, cargar])
+
+  function handleBuscar() {
+    if (filtroModulos.size === 0) {
+      setAvisoModulos(true)
+      return
+    }
+    setBuscarDesde(inputDesde)
+    setBuscarHasta(inputHasta)
+    setBusquedaN((n) => n + 1)
+  }
 
   // Ranchos únicos presentes en los resultados
   const ranchos = useMemo(() => {
@@ -1045,7 +1059,7 @@ export function BibliotecaHistorial() {
     setFiltroModulos((prev) => {
       const next = new Set(prev)
       if (next.has(m)) {
-        if (next.size > 1) next.delete(m)
+        next.delete(m)
       } else {
         next.add(m)
       }
@@ -1172,23 +1186,42 @@ export function BibliotecaHistorial() {
                 type="button"
                 aria-labelledby="historial-modulos-label"
                 aria-haspopup="dialog"
+                aria-describedby={avisoModulos ? 'historial-modulos-aviso' : undefined}
                 onClick={() => setModulosSheetOpen(true)}
                 className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border flex items-center justify-between gap-2"
                 style={{
                   background: 'var(--input-background)',
-                  borderColor: todosSeleccionados ? 'var(--border)' : 'var(--ring)',
+                  borderColor: avisoModulos ? 'var(--destructive)' : todosSeleccionados ? 'var(--border)' : 'var(--ring)',
                 }}
               >
                 <span className="truncate">
-                  {todosSeleccionados ? 'Todos los módulos' : `${filtroModulos.size} de ${modulosDisponibles.length} módulos`}
+                  {filtroModulos.size === 0
+                    ? 'Selecciona módulos'
+                    : todosSeleccionados
+                      ? 'Todos los módulos'
+                      : `${filtroModulos.size} de ${modulosDisponibles.length} módulos`}
                 </span>
                 <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
               </button>
+              {avisoModulos && (
+                <p
+                  id="historial-modulos-aviso"
+                  role="status"
+                  aria-live="polite"
+                  className="text-[11px] mt-1"
+                  style={{
+                    color: 'var(--destructive)',
+                    ...(reducedMotion ? {} : { animation: 'fieldErrorFadeIn 150ms var(--ease-out)' }),
+                  }}
+                >
+                  Selecciona al menos un módulo
+                </p>
+              )}
             </div>
 
             <div className="col-span-2 md:col-span-1 min-w-0">
               <button
-                onClick={() => { setBuscarDesde(inputDesde); setBuscarHasta(inputHasta) }}
+                onClick={handleBuscar}
                 disabled={loading}
                 className="w-full h-9 md:mt-[23px] rounded-lg text-sm disabled:opacity-50"
                 style={{ background: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
@@ -1271,6 +1304,26 @@ export function BibliotecaHistorial() {
           </div>
         ) : error ? (
           <div className="py-8 text-center text-sm" style={{ color: 'var(--destructive)' }}>{error}</div>
+        ) : busquedaN === 0 ? (
+          <div
+            className="py-14 text-center space-y-2"
+            style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
+          >
+            <Filter className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
+            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+              Elige los módulos y presiona Buscar
+            </p>
+          </div>
+        ) : filtroModulos.size === 0 ? (
+          <div
+            className="py-14 text-center space-y-2"
+            style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
+          >
+            <FilterX className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
+            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+              Elige al menos un módulo para ver resultados
+            </p>
+          </div>
         ) : filtrados.length === 0 ? (
           <div
             className="py-14 text-center space-y-2"
