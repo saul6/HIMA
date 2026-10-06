@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router'
-import { BarChart3, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, Clock, TrendingUp } from 'lucide-react'
+import { BarChart3, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, AlertCircle, XCircle, CircleDashed, Clock, TrendingUp } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
@@ -13,7 +13,10 @@ import type {
   MetConstancia,
   MetCampo,
   ColaboradorProductividad,
+  AuditoriaInterna,
+  InternaResumen,
 } from '@/hooks/useMetricas'
+import { bandaCumplimiento, type BandaCumplimiento } from '@/lib/metricas/bandaCumplimiento'
 
 // ── Helpers de fechas ────────────────────────────────────────────────────────
 
@@ -514,6 +517,140 @@ function GraficaBarrasMes({
   )
 }
 
+// ── Helpers de auditorías internas ────────────────────────────────────────────
+
+function formatFechaAuditoria(fecha: string): string {
+  const [anio, mes, dia] = fecha.split('-')
+  const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+  return `${parseInt(dia)} ${meses[parseInt(mes) - 1]} ${anio}`
+}
+
+function estilosBanda(banda: BandaCumplimiento): { color: string; bg: string } {
+  switch (banda) {
+    case 'aprobatoria':  return { color: 'var(--agro-success-text)', bg: 'var(--agro-success-fill)' }
+    case 'parcial':      return { color: 'var(--agro-warning-text)', bg: 'var(--agro-warning-fill)' }
+    case 'reprobatoria': return { color: 'var(--agro-danger-text)',  bg: 'var(--agro-danger-fill)' }
+    case 'sin_puntaje':  return { color: 'var(--muted-foreground)',   bg: 'var(--muted)' }
+  }
+}
+
+const BANDA_CONFIG: Record<BandaCumplimiento, {
+  label: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Icon: any
+  defaultOpen: boolean
+  nota?: string
+}> = {
+  aprobatoria:  { label: 'Aprobatorias',  Icon: CheckCircle2, defaultOpen: true },
+  parcial:      { label: 'Parciales',     Icon: AlertCircle,  defaultOpen: true },
+  reprobatoria: { label: 'Reprobatorias', Icon: XCircle,      defaultOpen: true },
+  sin_puntaje:  { label: 'Sin puntaje',   Icon: CircleDashed, defaultOpen: false, nota: '0 puntos posibles, no cuentan en el promedio' },
+}
+
+function GrupoAuditoriasInternas({
+  banda,
+  auditorias,
+}: {
+  banda: BandaCumplimiento
+  auditorias: AuditoriaInterna[]
+}) {
+  const cfg = BANDA_CONFIG[banda]
+  const { color, bg } = estilosBanda(banda)
+  const [abierto, setAbierto] = useState(cfg.defaultOpen)
+  const reducido = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  const sorted = [...auditorias].sort((a, b) => {
+    if (b.porcentaje !== a.porcentaje) return b.porcentaje - a.porcentaje
+    return b.fecha.localeCompare(a.fecha)
+  })
+
+  return (
+    <div className="rounded-xl border border-border overflow-hidden">
+      <button
+        type="button"
+        className="w-full flex items-center gap-2 px-4 py-3 text-left"
+        style={{ backgroundColor: 'var(--card)' }}
+        onClick={() => setAbierto(a => !a)}
+        aria-expanded={abierto}
+      >
+        <cfg.Icon className="w-4 h-4 flex-shrink-0" style={{ color }} />
+        <span className="flex-1 text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+          {cfg.label}
+        </span>
+        <span
+          className="text-xs tabular-nums px-2 py-0.5 rounded-full font-semibold flex-shrink-0"
+          style={{ color, backgroundColor: bg }}
+        >
+          {auditorias.length}
+        </span>
+        <ChevronDown
+          className="w-4 h-4 flex-shrink-0 transition-transform"
+          style={{
+            color: 'var(--muted-foreground)',
+            transform: abierto ? 'rotate(180deg)' : 'rotate(0deg)',
+            transitionDuration: reducido ? '0ms' : '200ms',
+          }}
+        />
+      </button>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateRows: abierto ? '1fr' : '0fr',
+          overflow: 'hidden',
+          transition: reducido ? undefined : 'grid-template-rows 220ms ease',
+        }}
+      >
+        <div style={{ minHeight: 0 }}>
+          {cfg.nota && !abierto && (
+            // La nota se lee aunque el grupo esté cerrado vía attr, pero el
+            // texto solo es visible en abierto porque está dentro del grid
+            null
+          )}
+          <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+            {cfg.nota && (
+              <p className="px-4 py-2 text-xs" style={{ color: 'var(--muted-foreground)', backgroundColor: 'var(--muted)' }}>
+                {cfg.nota}
+              </p>
+            )}
+            {sorted.map((a, i) => {
+              const b = bandaCumplimiento(a.porcentaje, a.posibles)
+              const { color: bc, bg: bbg } = estilosBanda(b)
+              return (
+                <div key={i} className="flex items-center justify-between gap-3 px-4 py-3" style={{ backgroundColor: 'var(--card)' }}>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>{a.nombre}</p>
+                    <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                      {a.rancho} · {formatFechaAuditoria(a.fecha)}
+                    </p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    {a.posibles > 0 ? (
+                      <>
+                        <span
+                          className="text-sm tabular-nums font-semibold px-2 py-0.5 rounded-md"
+                          style={{ color: bc, backgroundColor: bbg }}
+                        >
+                          {a.porcentaje.toFixed(1)}%
+                        </span>
+                        <p className="text-xs tabular-nums mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                          {a.puntos}/{a.posibles} pts
+                        </p>
+                      </>
+                    ) : (
+                      <span className="text-xs tabular-nums" style={{ color: 'var(--muted-foreground)' }}>0/0 pts</span>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Pestaña Cumplimiento ──────────────────────────────────────────────────────
 
 function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
@@ -534,39 +671,86 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
           <p className="text-xs font-semibold mb-3" style={{ color: 'var(--muted-foreground)' }}>
             AUDITORÍAS INTERNAS
           </p>
-          {/* Promedios */}
-          {datos.internas_promedio && Object.keys(datos.internas_promedio).length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-3">
-              {Object.entries(datos.internas_promedio).map(([mod, pct]) => (
-                <div key={mod} className="flex items-center gap-1.5 text-xs">
-                  <span className="text-muted-foreground">{mod}:</span>
-                  <ChipPct pct={pct as number} />
+
+          {/* Tarjetas de promedio por módulo */}
+          {datos.internas_resumen && datos.internas_resumen.length > 0 && (() => {
+            const resumen = datos.internas_resumen!
+            return (
+              <>
+                <div
+                  className="gap-3 mb-3"
+                  style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}
+                >
+                  {resumen.map(r => {
+                    const banda = r.promedio != null
+                      ? bandaCumplimiento(r.promedio, r.con_puntaje > 0 ? 1 : 0)
+                      : 'sin_puntaje'
+                    const { color, bg } = estilosBanda(banda)
+                    return (
+                      <div
+                        key={r.modulo}
+                        className="rounded-xl border border-border bg-card p-3 flex flex-col gap-1.5"
+                      >
+                        <p
+                          className="text-xs line-clamp-2"
+                          style={{ color: 'var(--muted-foreground)' }}
+                          title={r.nombre}
+                        >
+                          {r.nombre}
+                        </p>
+                        <span
+                          className="text-2xl tabular-nums font-bold self-start px-2 py-0.5 rounded-lg"
+                          style={{ color, backgroundColor: bg }}
+                        >
+                          {r.promedio != null ? `${r.promedio.toFixed(1)}%` : '—'}
+                        </span>
+                        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                          {r.auditorias} auditoría{r.auditorias !== 1 ? 's' : ''}
+                          {r.sin_puntaje > 0 && ` · ${r.sin_puntaje} sin puntaje`}
+                        </p>
+                      </div>
+                    )
+                  })}
                 </div>
-              ))}
-            </div>
-          )}
-          <div className="space-y-2">
-            {internas.map((a, i) => {
-              const pct = a.porcentaje
-              let color = 'var(--foreground)'
-              if (pct < 70) color = 'var(--agro-danger-text)'
-              else if (pct < 80) color = 'var(--agro-warning-text)'
-              return (
-                <div key={i} className="rounded-xl border border-border bg-card p-3 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>{a.nombre}</p>
-                    <p className="text-xs text-muted-foreground">{a.rancho} · {a.fecha}</p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-sm tabular-nums font-semibold" style={{ color }}>
-                      {pct.toFixed(1)}%
-                    </p>
-                    <p className="text-xs text-muted-foreground">{a.puntos}/{a.posibles} pts</p>
-                  </div>
+
+                {/* Leyenda */}
+                <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-4">
+                  {(['aprobatoria', 'parcial', 'reprobatoria'] as BandaCumplimiento[]).map(b => {
+                    const { color, bg } = estilosBanda(b)
+                    const labels: Record<string, string> = {
+                      aprobatoria: 'Aprobatoria ≥ 80%',
+                      parcial: 'Parcial 70–79%',
+                      reprobatoria: 'Reprobatoria < 70%',
+                    }
+                    return (
+                      <span key={b} className="flex items-center gap-1.5 text-xs" style={{ color }}>
+                        <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: bg }} />
+                        {labels[b]}
+                      </span>
+                    )
+                  })}
                 </div>
-              )
-            })}
-          </div>
+              </>
+            )
+          })()}
+
+          {/* Grupos por banda */}
+          {(() => {
+            const porBanda: Record<BandaCumplimiento, AuditoriaInterna[]> = {
+              aprobatoria: [], parcial: [], reprobatoria: [], sin_puntaje: [],
+            }
+            internas.forEach(a => {
+              porBanda[bandaCumplimiento(a.porcentaje, a.posibles)].push(a)
+            })
+            const bandas: BandaCumplimiento[] = ['aprobatoria', 'parcial', 'reprobatoria', 'sin_puntaje']
+            return (
+              <div className="space-y-2">
+                {bandas.map(b => porBanda[b].length > 0 && (
+                  <GrupoAuditoriasInternas key={b} banda={b} auditorias={porBanda[b]} />
+                ))}
+              </div>
+            )
+          })()}
         </section>
       )}
 

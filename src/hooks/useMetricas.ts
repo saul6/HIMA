@@ -85,10 +85,20 @@ export interface FallaRecurrente {
   veces: number
 }
 
+export interface InternaResumen {
+  modulo: string
+  nombre: string
+  promedio: number | null
+  auditorias: number
+  con_puntaje: number
+  sin_puntaje: number
+}
+
 export interface MetCumplimiento {
   permitido: boolean
   internas: AuditoriaInterna[] | null
   internas_promedio: Record<string, number> | null
+  internas_resumen: InternaResumen[] | null
   externas: AuditoriaExterna[] | null
   incidencias: { reportes: number; incidencias: number; por_mes: { mes: string; reportes: number; incidencias: number }[] } | null
   fallas_recurrentes: FallaRecurrente[] | null
