@@ -985,6 +985,11 @@ export function BibliotecaHistorial() {
     })
   }, [modulosOrdenados, busquedaModulos, nombreModulo])
 
+  const modulosSeleccionadosOrdenados = useMemo(
+    () => modulosOrdenados.filter((m) => filtroModulos.has(m)),
+    [modulosOrdenados, filtroModulos],
+  )
+
   // Datos
   const [registros, setRegistros] = useState<RegistroHistorial[]>([])
   const [loading, setLoading] = useState(true)
@@ -1111,189 +1116,228 @@ export function BibliotecaHistorial() {
 
       <div className="p-4 space-y-4">
 
-          {/* Barra de filtros — Desde | Hasta | Sitio | Módulos | Buscar */}
-          <div className="bg-card rounded-xl border border-border p-4">
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-5 md:items-end">
-              <div className="min-w-0">
-                <label htmlFor="historial-desde" className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
-                  Desde
-                </label>
-                <input
-                  id="historial-desde"
-                  type="date"
-                  value={inputDesde}
-                  onChange={(e) => setInputDesde(e.target.value)}
-                  className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border appearance-none [&::-webkit-date-and-time-value]:text-left"
-                  style={{ background: 'var(--input-background)', borderColor: 'var(--border)' }}
-                />
-              </div>
-              <div className="min-w-0">
-                <label htmlFor="historial-hasta" className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
-                  Hasta
-                </label>
-                <input
-                  id="historial-hasta"
-                  type="date"
-                  value={inputHasta}
-                  onChange={(e) => setInputHasta(e.target.value)}
-                  className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border appearance-none [&::-webkit-date-and-time-value]:text-left"
-                  style={{ background: 'var(--input-background)', borderColor: 'var(--border)' }}
-                />
-              </div>
+        {/* Barra de filtros */}
+        <div className="bg-card rounded-xl border border-border p-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-5 md:items-end">
+            <div className="min-w-0">
+              <label htmlFor="historial-desde" className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+                Desde
+              </label>
+              <input
+                id="historial-desde"
+                type="date"
+                value={inputDesde}
+                onChange={(e) => setInputDesde(e.target.value)}
+                className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border appearance-none [&::-webkit-date-and-time-value]:text-left"
+                style={{ background: 'var(--input-background)', borderColor: 'var(--border)' }}
+              />
+            </div>
+            <div className="min-w-0">
+              <label htmlFor="historial-hasta" className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+                Hasta
+              </label>
+              <input
+                id="historial-hasta"
+                type="date"
+                value={inputHasta}
+                onChange={(e) => setInputHasta(e.target.value)}
+                className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border appearance-none [&::-webkit-date-and-time-value]:text-left"
+                style={{ background: 'var(--input-background)', borderColor: 'var(--border)' }}
+              />
+            </div>
 
-              <div className="col-span-2 md:col-span-1 min-w-0">
-                <label htmlFor="historial-sitio" className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
-                  {terminosSitio.singular}
-                </label>
-                <select
-                  id="historial-sitio"
-                  value={filtroRancho}
-                  onChange={(e) => setFiltroRancho(e.target.value)}
-                  className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border"
-                  style={{ background: 'var(--input-background)', borderColor: 'var(--border)' }}
-                >
-                  <option value="todos">{terminosSitio.plural}</option>
-                  {ranchos.map(([id, nombre]) => (
-                    <option key={id} value={id}>{nombre}</option>
-                  ))}
-                </select>
-              </div>
+            <div className="col-span-2 md:col-span-1 min-w-0">
+              <label htmlFor="historial-sitio" className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+                {terminosSitio.singular}
+              </label>
+              <select
+                id="historial-sitio"
+                value={filtroRancho}
+                onChange={(e) => setFiltroRancho(e.target.value)}
+                className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border"
+                style={{ background: 'var(--input-background)', borderColor: 'var(--border)' }}
+              >
+                <option value="todos">{terminosSitio.plural}</option>
+                {ranchos.map(([id, nombre]) => (
+                  <option key={id} value={id}>{nombre}</option>
+                ))}
+              </select>
+            </div>
 
-              <div className="col-span-2 md:col-span-1 min-w-0">
-                <span id="historial-modulos-label" className="text-[11px] block" style={{ color: 'var(--muted-foreground)' }}>
-                  Módulos
+            <div className="col-span-2 md:col-span-1 min-w-0">
+              <span id="historial-modulos-label" className="text-[11px] block" style={{ color: 'var(--muted-foreground)' }}>
+                Módulos
+              </span>
+              <button
+                type="button"
+                aria-labelledby="historial-modulos-label"
+                aria-haspopup="dialog"
+                onClick={() => setModulosSheetOpen(true)}
+                className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border flex items-center justify-between gap-2"
+                style={{
+                  background: 'var(--input-background)',
+                  borderColor: todosSeleccionados ? 'var(--border)' : 'var(--ring)',
+                }}
+              >
+                <span className="truncate">
+                  {todosSeleccionados ? 'Todos los módulos' : `${filtroModulos.size} de ${modulosDisponibles.length} módulos`}
                 </span>
-                <button
-                  type="button"
-                  aria-labelledby="historial-modulos-label"
-                  aria-haspopup="dialog"
-                  onClick={() => setModulosSheetOpen(true)}
-                  className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border flex items-center justify-between gap-2"
-                  style={{
-                    background: 'var(--input-background)',
-                    borderColor: todosSeleccionados ? 'var(--border)' : 'var(--ring)',
-                  }}
-                >
-                  <span className="truncate">
-                    {todosSeleccionados ? 'Todos los módulos' : `${filtroModulos.size} de ${modulosDisponibles.length} módulos`}
-                  </span>
-                  <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
-                </button>
-              </div>
+                <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+              </button>
+            </div>
 
-              <div className="col-span-2 md:col-span-1 min-w-0">
-                <button
-                  onClick={() => { setBuscarDesde(inputDesde); setBuscarHasta(inputHasta) }}
-                  disabled={loading}
-                  className="w-full h-9 md:mt-[23px] rounded-lg text-sm disabled:opacity-50"
-                  style={{ background: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
-                >
-                  {loading ? 'Buscando...' : 'Buscar'}
-                </button>
-              </div>
+            <div className="col-span-2 md:col-span-1 min-w-0">
+              <button
+                onClick={() => { setBuscarDesde(inputDesde); setBuscarHasta(inputHasta) }}
+                disabled={loading}
+                className="w-full h-9 md:mt-[23px] rounded-lg text-sm disabled:opacity-50"
+                style={{ background: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
+              >
+                {loading ? 'Buscando...' : 'Buscar'}
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* Exportar paquete */}
-          {filtrados.length > 0 && (
-            <button
-              onClick={handleExportarPaquete}
-              disabled={generandoPaquete || !!descargandoPDF}
-              className="w-full h-11 rounded-xl text-sm flex items-center justify-center gap-2 border disabled:opacity-50"
-              style={{
-                borderColor: 'var(--primary)',
-                color: 'var(--primary)',
-                fontWeight: 600,
-              }}
-            >
-              <Package className="w-4 h-4" />
-              Exportar paquete PDF ({filtrados.length} registros)
-            </button>
-          )}
-
-          {/* Lista de registros */}
-          {loading ? (
-            <div className="space-y-2">
-              {[0, 1, 2, 3].map(i => (
-                <div key={i} className="bg-card rounded-xl border border-border p-3.5 flex items-start gap-3 animate-pulse">
-                  <div className="flex-1 min-w-0 space-y-2">
-                    <div className="h-4 rounded-full w-16" style={{ backgroundColor: 'var(--muted)' }} />
-                    <div className="h-3 rounded w-2/3" style={{ backgroundColor: 'var(--muted)' }} />
-                    <div className="h-2.5 rounded w-1/3" style={{ backgroundColor: 'var(--muted)' }} />
-                  </div>
-                  <div className="flex-shrink-0 w-9 h-9 rounded-lg" style={{ backgroundColor: 'var(--muted)' }} />
-                </div>
-              ))}
-            </div>
-          ) : error ? (
-            <div className="py-8 text-center text-sm" style={{ color: 'var(--destructive)' }}>{error}</div>
-          ) : filtrados.length === 0 ? (
-            <div
-              className="py-14 text-center space-y-2"
-              style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
-            >
-              <FilterX className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
-              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                Sin registros en este periodo
-              </p>
-              <p className="text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
-                Prueba un rango de fechas más amplio
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {filtrados.map((reg, index) => (
-                <div
-                  key={reg.key}
-                  className="bg-card rounded-xl border border-border p-3.5 flex items-start gap-3"
-                  style={cascadeStyle(index, !reducedMotion && primeraCargaRef.current)}
+        {/* Etiquetas de módulos filtrados + Exportar paquete */}
+        {(!todosSeleccionados || filtrados.length > 0) && (
+          <div className="flex flex-wrap items-center gap-2">
+            {!todosSeleccionados && (
+              <>
+                <AnimatePresence initial={false}>
+                  {modulosSeleccionadosOrdenados.map((m) => (
+                    <motion.span
+                      key={m}
+                      layout
+                      initial={reducedMotion ? false : { opacity: 0, scale: 0.85 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={reducedMotion ? undefined : { opacity: 0, scale: 0.85 }}
+                      transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
+                      className="inline-flex items-center gap-1.5 pl-3 pr-2 h-7 rounded-full text-xs"
+                      style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)', fontWeight: 600 }}
+                    >
+                      {nombreModulo(m)}
+                      {filtroModulos.size > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => toggleModulo(m)}
+                          aria-label={`Quitar ${nombreModulo(m)}`}
+                          className="rounded-full hover:opacity-70"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </motion.span>
+                  ))}
+                </AnimatePresence>
+                <button
+                  type="button"
+                  onClick={seleccionarTodosModulos}
+                  className="text-xs"
+                  style={{ color: 'var(--primary)', fontWeight: 600 }}
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span
-                        className="px-2 py-0.5 rounded-full text-[10px] text-white"
-                        style={{ backgroundColor: MODULO_META[reg.modulo].color, fontWeight: 700 }}
-                      >
-                        {reg.modulo}
-                      </span>
-                      <span className="text-[11px] truncate" style={{ color: 'var(--muted-foreground)' }}>
-                        {MODULO_META[reg.modulo].label}
-                      </span>
-                    </div>
-                    <p
-                      className="text-[13px] truncate"
-                      style={{ fontWeight: 600, overflowWrap: 'anywhere' }}
-                      title={reg.rancho_nombre}
-                    >
-                      {reg.rancho_nombre}
-                    </p>
-                    <p className="text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
-                      {formatFecha(reg.fecha)}
-                    </p>
-                    <p
-                      className="text-[11px] mt-0.5 line-clamp-2"
-                      style={{ color: 'var(--muted-foreground)', overflowWrap: 'anywhere' }}
-                      title={reg.resumen}
-                    >
-                      {reg.resumen}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleDescargarPDF(reg)}
-                    disabled={descargandoPDF === reg.key || generandoPaquete}
-                    className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border disabled:opacity-40"
-                    style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
-                    title="Descargar PDF"
-                  >
-                    {descargandoPDF === reg.key
-                      ? <Loader2 className="w-4 h-4 animate-spin" />
-                      : <FileText className="w-4 h-4" />
-                    }
-                  </button>
+                  Todos
+                </button>
+              </>
+            )}
+
+            {filtrados.length > 0 && (
+              <button
+                onClick={handleExportarPaquete}
+                disabled={generandoPaquete || !!descargandoPDF}
+                className="w-full md:w-auto md:ml-auto h-10 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary text-sm hover:bg-primary/5 active:scale-[0.98] transition-[background-color,transform] duration-150 ease-out disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+                style={{ fontWeight: 600 }}
+              >
+                {generandoPaquete ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />}
+                Exportar paquete PDF ({filtrados.length} registros)
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Lista de registros */}
+        {loading ? (
+          <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3 animate-pulse">
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="h-4 rounded-full w-16" style={{ backgroundColor: 'var(--muted)' }} />
+                  <div className="h-3 rounded w-2/3" style={{ backgroundColor: 'var(--muted)' }} />
+                  <div className="h-2.5 rounded w-1/3" style={{ backgroundColor: 'var(--muted)' }} />
                 </div>
-              ))}
-            </div>
-          )}
+                <div className="flex-shrink-0 w-9 h-9 rounded-lg" style={{ backgroundColor: 'var(--muted)' }} />
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="py-8 text-center text-sm" style={{ color: 'var(--destructive)' }}>{error}</div>
+        ) : filtrados.length === 0 ? (
+          <div
+            className="py-14 text-center space-y-2"
+            style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
+          >
+            <FilterX className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
+            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+              Sin registros en este periodo
+            </p>
+            <p className="text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
+              Prueba un rango de fechas más amplio
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
+            {filtrados.map((reg, index) => (
+              <div
+                key={reg.key}
+                className="flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors"
+                style={{ transitionDuration: 'var(--motion-fast)', ...cascadeStyle(index, !reducedMotion && primeraCargaRef.current) }}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span
+                      className="px-2 py-0.5 rounded-full text-[10px] text-white"
+                      style={{ backgroundColor: MODULO_META[reg.modulo].color, fontWeight: 700 }}
+                    >
+                      {reg.modulo}
+                    </span>
+                    <span className="text-[11px] truncate" style={{ color: 'var(--muted-foreground)' }}>
+                      {MODULO_META[reg.modulo].label}
+                    </span>
+                  </div>
+                  <p
+                    className="text-[13px] truncate"
+                    style={{ fontWeight: 600, overflowWrap: 'anywhere' }}
+                    title={reg.rancho_nombre}
+                  >
+                    {reg.rancho_nombre}
+                  </p>
+                  <p className="text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
+                    {formatFecha(reg.fecha)}
+                  </p>
+                  <p
+                    className="text-[11px] mt-0.5 line-clamp-2"
+                    style={{ color: 'var(--muted-foreground)', overflowWrap: 'anywhere' }}
+                    title={reg.resumen}
+                  >
+                    {reg.resumen}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleDescargarPDF(reg)}
+                  disabled={descargandoPDF === reg.key || generandoPaquete}
+                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border disabled:opacity-40"
+                  style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
+                  title="Descargar PDF"
+                >
+                  {descargandoPDF === reg.key
+                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                    : <FileText className="w-4 h-4" />
+                  }
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
       </div>
 
