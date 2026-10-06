@@ -124,9 +124,11 @@ function TarjetaResumen({ label, valor, sub }: { label: string; valor: string | 
 function TabProductividad({
   datos,
   modulos,
+  esAdmin,
 }: {
   datos: MetProductividad
   modulos: { codigo: string; nombre: string }[]
+  esAdmin: boolean
 }) {
   const [expandido, setExpandido] = useState<string | null>(null)
 
@@ -134,27 +136,52 @@ function TabProductividad({
   if (colaboradores.length === 0) return <Vacio />
 
   const maxCapturas = Math.max(...colaboradores.map(c => c.capturas), 1)
-  const totalCapturas = colaboradores.reduce((s, c) => s + c.capturas, 0)
-  const colConCapturas = datos.colaboradores_con_capturas ?? colaboradores.filter(c => c.capturas > 0).length
   const totalCol = datos.total_colaboradores ?? colaboradores.length
-  const totalCorrecciones = colaboradores.reduce((s, c) => s + c.correcciones, 0)
-  const pctCorreccion = totalCapturas > 0 ? (totalCorrecciones / totalCapturas) * 100 : 0
   const v = datos.verificacion
+
+  // Totales para tarjetas admin
+  const totalCapturas = colaboradores.reduce((s, c) => s + c.capturas, 0)
+  const totalCorrecciones = colaboradores.reduce((s, c) => s + (c.correcciones ?? 0), 0)
+  const pctCorreccion = totalCapturas > 0 ? (totalCorrecciones / totalCapturas) * 100 : 0
+  const colConCapturas = datos.colaboradores_con_capturas ?? colaboradores.filter(c => c.capturas > 0).length
+
+  // Datos propios para tarjetas no-admin
+  const mr = datos.mi_resumen
+  const miPosicion = colaboradores.find(c => c.es_yo)?.posicion
 
   return (
     <div className="space-y-4 pb-8">
       {/* Tarjetas resumen */}
       <div className="grid grid-cols-2 gap-3 px-4 pt-4">
-        <TarjetaResumen label="Total capturas" valor={totalCapturas.toLocaleString('es-MX')} />
-        <TarjetaResumen
-          label="Colaboradores con capturas"
-          valor={`${colConCapturas} de ${totalCol}`}
-        />
-        <TarjetaResumen
-          label="Con corrección"
-          valor={`${pctCorreccion.toFixed(1)}%`}
-          sub={`${totalCorrecciones} registros`}
-        />
+        {esAdmin ? (
+          <>
+            <TarjetaResumen label="Total capturas" valor={totalCapturas.toLocaleString('es-MX')} />
+            <TarjetaResumen
+              label="Colaboradores con capturas"
+              valor={`${colConCapturas} de ${totalCol}`}
+            />
+            <TarjetaResumen
+              label="Con corrección"
+              valor={`${pctCorreccion.toFixed(1)}%`}
+              sub={`${totalCorrecciones} registros`}
+            />
+          </>
+        ) : (
+          <>
+            <TarjetaResumen
+              label="Mis capturas"
+              valor={(mr?.capturas ?? 0).toLocaleString('es-MX')}
+            />
+            <TarjetaResumen
+              label="Mi posición"
+              valor={miPosicion != null ? `#${miPosicion} de ${totalCol}` : '—'}
+            />
+            <TarjetaResumen
+              label="Con corrección"
+              valor={mr?.pct_correccion != null ? `${mr.pct_correccion.toFixed(1)}%` : '—'}
+            />
+          </>
+        )}
         {v && (
           <TarjetaResumen
             label="Verificados"
@@ -171,7 +198,8 @@ function TabProductividad({
         </p>
         <div className="space-y-2">
           {colaboradores.map((c: ColaboradorProductividad) => {
-            const tieneDesglose = c.por_modulo !== null && Object.keys(c.por_modulo).length > 0
+            const tieneDetalle = c.detalle_visible
+            const tieneDesglose = tieneDetalle && c.por_modulo != null && Object.keys(c.por_modulo).length > 0
             const abierto = expandido === c.profile_id && tieneDesglose
             const pct = (c.capturas / maxCapturas) * 100
             const porModuloEntries = tieneDesglose
@@ -205,6 +233,14 @@ function TabProductividad({
                       <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
                         {c.nombre}
                       </span>
+                      {c.es_yo && (
+                        <span
+                          className="text-xs font-semibold px-1 py-0.5 rounded"
+                          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                        >
+                          Tú
+                        </span>
+                      )}
                       <span className="text-xs text-muted-foreground">
                         {ROL_LABELS[c.rol] ?? c.rol}
                       </span>
@@ -238,24 +274,27 @@ function TabProductividad({
                     />
                   </div>
 
-                  <div className="flex gap-3 mt-1.5 text-xs text-muted-foreground">
-                    {c.capturas > 0 ? (
-                      <>
-                        <span>
-                          {c.correcciones > 0
-                            ? `${(c.pct_correccion ?? 0).toFixed(1)}% corrección`
-                            : 'Sin correcciones'}
-                        </span>
-                        {c.sin_firma > 0 && (
-                          <span style={{ color: 'var(--agro-warning-text)' }}>
-                            {c.sin_firma} sin firma
+                  {/* Detalles — solo si visible */}
+                  {tieneDetalle && (
+                    <div className="flex gap-3 mt-1.5 text-xs text-muted-foreground">
+                      {c.capturas > 0 ? (
+                        <>
+                          <span>
+                            {(c.correcciones ?? 0) > 0
+                              ? `${(c.pct_correccion ?? 0).toFixed(1)}% corrección`
+                              : 'Sin correcciones'}
                           </span>
-                        )}
-                      </>
-                    ) : (
-                      <span>Sin capturas en este periodo</span>
-                    )}
-                  </div>
+                          {(c.sin_firma ?? 0) > 0 && (
+                            <span style={{ color: 'var(--agro-warning-text)' }}>
+                              {c.sin_firma} sin firma
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span>Sin capturas en este periodo</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )
@@ -263,8 +302,11 @@ function TabProductividad({
             return (
               <div
                 key={c.profile_id}
-                className="rounded-xl border border-border bg-card overflow-hidden"
-                style={!c.activo ? { opacity: 0.6 } : undefined}
+                className="rounded-xl border border-border overflow-hidden"
+                style={{
+                  backgroundColor: c.es_yo ? 'var(--agro-success-fill)' : 'var(--card)',
+                  opacity: !c.activo ? 0.6 : undefined,
+                }}
               >
                 {tieneDesglose ? (
                   <button
@@ -880,7 +922,7 @@ export function Metricas() {
 
     if (pestanaActiva === 'productividad') {
       if (!datosProd) return <Vacio />
-      return <TabProductividad datos={datosProd} modulos={modulosParaDesglose} />
+      return <TabProductividad datos={datosProd} modulos={modulosParaDesglose} esAdmin={esAdmin} />
     }
     if (pestanaActiva === 'agenda') {
       if (!datosAgenda) return <Vacio />

@@ -8,13 +8,16 @@ export interface ColaboradorProductividad {
   rol: string
   activo: boolean
   posicion: number
-  registros: number
-  dias_matriz: number
   capturas: number
-  correcciones: number
-  pct_correccion: number | null
-  sin_firma: number
-  por_modulo: Record<string, number> | null
+  es_yo: boolean
+  detalle_visible: boolean
+  // Solo presentes cuando detalle_visible === true
+  registros?: number
+  dias_matriz?: number
+  correcciones?: number
+  pct_correccion?: number | null
+  sin_firma?: number
+  por_modulo?: Record<string, number> | null
 }
 
 export interface VerificacionProductividad {
@@ -24,12 +27,21 @@ export interface VerificacionProductividad {
   por_verificador: Record<string, number>
 }
 
+export interface MiResumenProductividad {
+  capturas: number
+  registros: number
+  correcciones: number
+  sin_firma: number
+  pct_correccion: number | null
+}
+
 export interface MetProductividad {
   es_admin: boolean
   colaboradores: ColaboradorProductividad[] | null
   verificacion: VerificacionProductividad | null
   total_colaboradores: number
   colaboradores_con_capturas: number
+  mi_resumen: MiResumenProductividad | null
 }
 
 export interface ColaboradorAgenda {
