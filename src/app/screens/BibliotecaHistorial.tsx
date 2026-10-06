@@ -916,14 +916,15 @@ export function BibliotecaHistorial() {
       .map(m => m.codigo as ModuloKey)
   }, [misModulos])
 
-  // Rango de búsqueda (se actualiza al presionar Buscar)
+  // Rango de búsqueda — se confirma solo ~400ms después del último cambio en
+  // Desde/Hasta (debounce, ver efecto más abajo); no hay botón Buscar
   const [inputDesde, setInputDesde] = useState(inicioRango)
   const [inputHasta, setInputHasta] = useState(hoy)
   const [buscarDesde, setBuscarDesde] = useState(inicioRango)
   const [buscarHasta, setBuscarHasta] = useState(hoy)
 
-  // Filtros client-side: arranca vacío — el usuario elige módulos antes de
-  // poder buscar (ver busquedaN/handleBuscar más abajo)
+  // Filtros client-side: arranca vacío — el usuario elige módulos para ver
+  // resultados (la consulta solo depende del rango de fechas, ver cargar())
   const [filtroModulos, setFiltroModulos] = useState<Set<ModuloKey>>(() => new Set())
 
   const [filtroRancho, setFiltroRancho] = useState<string>('todos')
@@ -1000,45 +1001,52 @@ export function BibliotecaHistorial() {
   const [progresoActual, setProgresoActual] = useState(0)
   const [progresoTotal, setProgresoTotal] = useState(0)
 
-  // 0 = aún no se buscó (arranque). Se incrementa en cada Buscar válido para
-  // forzar la consulta aunque las fechas no cambien.
-  const [busquedaN, setBusquedaN] = useState(0)
-  const [avisoModulos, setAvisoModulos] = useState(false)
-  const [avisoShakeKey, setAvisoShakeKey] = useState(0)
-  useEffect(() => {
-    if (filtroModulos.size > 0) setAvisoModulos(false)
-  }, [filtroModulos])
+  // Fechas válidas: ambas presentes y Desde <= Hasta (comparación lexicográfica
+  // válida porque los inputs type="date" siempre entregan 'YYYY-MM-DD')
+  const fechasValidas = !!inputDesde && !!inputHasta && inputDesde <= inputHasta
 
+  // Descarta respuestas de consultas viejas si una más nueva ya se disparó
+  const requestIdRef = useRef(0)
   const cargar = useCallback(async () => {
     if (!orgId) return
+    const id = ++requestIdRef.current
     setLoading(true)
     setError(null)
     try {
       const data = await cargarTodo(orgId, buscarDesde, buscarHasta)
+      if (requestIdRef.current !== id) return
       freshSearchRef.current = true
       setRegistros(data)
     } catch (e: unknown) {
+      if (requestIdRef.current !== id) return
       console.error(e instanceof Error ? e.message : e)
       setError('No se pudieron cargar los registros')
     } finally {
-      setLoading(false)
+      if (requestIdRef.current === id) setLoading(false)
     }
   }, [orgId, buscarDesde, buscarHasta])
 
+  // Confirma el rango ~400ms después del último cambio en Desde/Hasta
   useEffect(() => {
-    if (busquedaN > 0) cargar()
-  }, [busquedaN, cargar])
+    if (!fechasValidas) return
+    const id = setTimeout(() => {
+      setBuscarDesde(inputDesde)
+      setBuscarHasta(inputHasta)
+    }, 400)
+    return () => clearTimeout(id)
+  }, [inputDesde, inputHasta, fechasValidas])
 
-  function handleBuscar() {
-    if (filtroModulos.size === 0) {
-      setAvisoModulos(true)
-      setAvisoShakeKey((k) => k + 1)
-      return
-    }
-    setBuscarDesde(inputDesde)
-    setBuscarHasta(inputHasta)
-    setBusquedaN((n) => n + 1)
-  }
+  // Consulta automática: solo con al menos 1 módulo elegido, y solo si el
+  // rango confirmado es distinto al de la última consulta exitosa
+  const ultimoRangoRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (filtroModulos.size === 0) return
+    if (!buscarDesde || !buscarHasta || buscarDesde > buscarHasta) return
+    const rango = `${buscarDesde}|${buscarHasta}`
+    if (ultimoRangoRef.current === rango) return
+    ultimoRangoRef.current = rango
+    cargar()
+  }, [buscarDesde, buscarHasta, filtroModulos.size, cargar])
 
   // Ranchos únicos presentes en los resultados
   const ranchos = useMemo(() => {
@@ -1135,7 +1143,7 @@ export function BibliotecaHistorial() {
 
         {/* Barra de filtros */}
         <div className="bg-card rounded-xl border border-border p-4">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-5 md:items-end">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:items-end">
             <div className="min-w-0">
               <label htmlFor="historial-desde" className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
                 Desde
@@ -1189,19 +1197,14 @@ export function BibliotecaHistorial() {
                 type="button"
                 aria-labelledby="historial-modulos-label"
                 aria-haspopup="dialog"
-                aria-describedby={avisoModulos ? 'historial-modulos-aviso' : undefined}
                 onClick={() => setModulosSheetOpen(true)}
                 className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border"
                 style={{
                   background: 'var(--input-background)',
-                  borderColor: avisoModulos ? 'var(--destructive)' : todosSeleccionados ? 'var(--border)' : 'var(--ring)',
+                  borderColor: todosSeleccionados ? 'var(--border)' : 'var(--ring)',
                 }}
               >
-                <span
-                  key={avisoShakeKey}
-                  className="flex items-center justify-between gap-2 w-full"
-                  style={avisoModulos && !reducedMotion ? { animation: 'fieldShake 220ms var(--ease-out)' } : undefined}
-                >
+                <span className="flex items-center justify-between gap-2 w-full">
                   <span className="truncate">
                     {filtroModulos.size === 0
                       ? 'Selecciona módulos'
@@ -1212,33 +1215,18 @@ export function BibliotecaHistorial() {
                   <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
                 </span>
               </button>
-              {avisoModulos && (
-                <p
-                  id="historial-modulos-aviso"
-                  role="status"
-                  aria-live="polite"
-                  className="text-[11px] mt-1"
-                  style={{
-                    color: 'var(--destructive)',
-                    ...(reducedMotion ? {} : { animation: 'fieldErrorFadeIn 150ms var(--ease-out)' }),
-                  }}
-                >
-                  Selecciona al menos un módulo
-                </p>
-              )}
-            </div>
-
-            <div className="col-span-2 md:col-span-1 min-w-0">
-              <button
-                onClick={handleBuscar}
-                disabled={loading}
-                className="w-full h-9 md:mt-[23px] rounded-lg text-sm disabled:opacity-50"
-                style={{ background: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
-              >
-                {loading ? 'Buscando...' : 'Buscar'}
-              </button>
             </div>
           </div>
+
+          {!fechasValidas ? (
+            <p role="status" aria-live="polite" className="text-[11px] mt-2" style={{ color: 'var(--destructive)' }}>
+              La fecha inicial debe ser anterior o igual a la final
+            </p>
+          ) : loading ? (
+            <p role="status" aria-live="polite" className="text-[11px] mt-2" style={{ color: 'var(--muted-foreground)' }}>
+              Buscando…
+            </p>
+          ) : null}
         </div>
 
         {/* Resumen de módulos filtrados — solo escritorio (ver móvil abajo) */}
@@ -1333,19 +1321,6 @@ export function BibliotecaHistorial() {
             >
               {error}
             </motion.div>
-          ) : busquedaN === 0 ? (
-            <motion.div
-              key="sin-buscar"
-              exit={reducedMotion ? undefined : { opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="py-14 text-center space-y-2"
-              style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
-            >
-              <Filter className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
-              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                Elige los módulos y presiona Buscar
-              </p>
-            </motion.div>
           ) : filtroModulos.size === 0 ? (
             <motion.div
               key="sin-modulos"
@@ -1354,9 +1329,9 @@ export function BibliotecaHistorial() {
               className="py-14 text-center space-y-2"
               style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
             >
-              <FilterX className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
+              <Filter className="w-10 h-10 mx-auto" style={{ color: 'var(--muted-foreground)' }} />
               <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                Elige al menos un módulo para ver resultados
+                Elige los módulos para ver los registros
               </p>
             </motion.div>
           ) : filtrados.length === 0 ? (
