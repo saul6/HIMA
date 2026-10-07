@@ -34,7 +34,7 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
-import { Portal } from '@/app/components/Portal'
+import { BottomSheet } from '@/app/components/BottomSheet'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -592,18 +592,10 @@ export function RondinesVigilancia() {
       <Fab onClick={abrirNuevo} aria-label="Nuevo rondín" />
 
       {/* ═══ SHEET: NUEVO RONDÍN ══════════════════════════════════════════════ */}
-      {sheetNuevo && (
-        <Portal>
-        <div
-          className="fixed inset-0 z-50 flex flex-col justify-end"
-          onClick={(e) => { if (e.target === e.currentTarget && !nGuardando) handleCerrarSheetNuevo() }}
-        >
-          <div className="absolute inset-0 bg-black/40" />
-          <div
-            className="relative bg-card flex flex-col"
-            style={{ borderRadius: '10px 10px 0 0', maxHeight: '92dvh' }}
-          >
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-1 flex-shrink-0" />
+      <BottomSheet open={sheetNuevo} onClose={() => { if (!nGuardando) handleCerrarSheetNuevo() }}>
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1 bg-border rounded-full" />
+            </div>
             <div className="px-4 py-3 flex items-center justify-between flex-shrink-0 border-b border-border">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Nuevo rondín</h2>
               <button onClick={() => { if (!nGuardando) handleCerrarSheetNuevo() }}>
@@ -874,24 +866,13 @@ export function RondinesVigilancia() {
               </button>
             </div>
             )}
-          </div>
-        </div>
-        </Portal>
-      )}
+      </BottomSheet>
 
       {/* ═══ SHEET: CONFIGURAR CATÁLOGO ══════════════════════════════════════ */}
-      {sheetConf && (
-        <Portal>
-        <div
-          className="fixed inset-0 z-50 flex flex-col justify-end"
-          onClick={(e) => { if (e.target === e.currentTarget) setSheetConf(false) }}
-        >
-          <div className="absolute inset-0 bg-black/40" />
-          <div
-            className="relative bg-card flex flex-col"
-            style={{ borderRadius: '10px 10px 0 0', maxHeight: '92dvh' }}
-          >
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-1 flex-shrink-0" />
+      <BottomSheet open={sheetConf} onClose={() => setSheetConf(false)}>
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1 bg-border rounded-full" />
+            </div>
             <div className="px-4 py-3 flex items-center justify-between flex-shrink-0 border-b border-border">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Configurar puntos</h2>
               <button onClick={() => setSheetConf(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
@@ -999,24 +980,13 @@ export function RondinesVigilancia() {
                 </>
               )}
             </div>
-          </div>
-        </div>
-        </Portal>
-      )}
+      </BottomSheet>
 
       {/* ═══ SHEET: CONSOLIDADO ══════════════════════════════════════════════ */}
-      {sheetConsolidado && (
-        <Portal>
-        <div
-          className="fixed inset-0 z-50 flex flex-col justify-end"
-          onClick={(e) => { if (e.target === e.currentTarget) setSheetConsolidado(false) }}
-        >
-          <div className="absolute inset-0 bg-black/40" />
-          <div
-            className="relative bg-card flex flex-col"
-            style={{ borderRadius: '10px 10px 0 0', maxHeight: '85dvh' }}
-          >
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-1 flex-shrink-0" />
+      <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)}>
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1 bg-border rounded-full" />
+            </div>
             <div className="px-4 py-3 flex items-center justify-between flex-shrink-0 border-b border-border">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Exportar consolidado</h2>
               <button onClick={() => setSheetConsolidado(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
@@ -1067,10 +1037,7 @@ export function RondinesVigilancia() {
                   : 'Descargar PDF'}
               </button>
             </div>
-          </div>
-        </div>
-        </Portal>
-      )}
+      </BottomSheet>
 
     </div>
   )
