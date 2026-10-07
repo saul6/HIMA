@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { CSSProperties } from 'react'
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
+import { motion, AnimatePresence, useReducedMotion, LayoutGroup } from 'motion/react'
 import {
   ChevronLeft, Plus, Loader2, AlertTriangle,
   Calendar, MapPin, FileText, ChevronDown, ChevronUp, ExternalLink,
@@ -21,6 +21,10 @@ import type { TareaListada, TareaDetalle, PrioridadTarea, EstadoTarea, AcuseDeta
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { subirEvidencia, getSignedUrlsEvidencia } from '@/lib/storage/agendaStorage'
 import { Portal } from '@/app/components/Portal'
+import { SPRING_SUAVE } from '@/lib/motion'
+import { useContadorAnimado } from '@/hooks/useContadorAnimado'
+import { Skeleton } from '@/app/components/ui/skeleton'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -49,6 +53,8 @@ function cascadeStyle(index: number, enabled: boolean): CSSProperties | undefine
     animationDelay: `${Math.min(index, 7) * 35}ms`,
   }
 }
+
+type FiltroAgenda = 'pendientes' | 'por_firmar' | 'realizadas' | 'aceptadas'
 
 const PRIORIDAD_LABELS: Record<PrioridadTarea, string> = {
   alta: 'Alta',
@@ -191,6 +197,67 @@ function TareaCard({
           </span>
         )}
       </div>
+    </button>
+  )
+}
+
+// ── TarjetaFiltroAgenda ──────────────────────────────────────────────────────
+
+// Tarjeta de resumen/filtro de la Agenda del colaborador — mismo resaltado
+// deslizante (layoutId + SPRING_SUAVE) que el ítem activo del sidebar /
+// FiltroPildoras. `resaltar` es exclusivo de la tarjeta "Por firmar" con
+// conteo > 0 (punto menta + número en --primary) para no perder la señal de
+// firma pendiente al quitar el aviso y las etiquetas de arriba.
+function TarjetaFiltroAgenda({
+  active, label, count, resaltar, onClick, reducedMotion,
+}: {
+  active: boolean
+  label: string
+  count: number
+  resaltar?: boolean
+  onClick: () => void
+  reducedMotion: boolean
+}) {
+  const spanRef = useContadorAnimado(count, (n) => String(Math.round(n)), reducedMotion)
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={[
+        'relative rounded-xl p-4 border flex flex-col items-start text-left transition-colors',
+        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+        active ? 'border-transparent' : 'border-border bg-card hover:bg-muted',
+      ].join(' ')}
+      style={{ transitionDuration: 'var(--motion-fast)' }}
+    >
+      {active && (
+        <motion.span
+          layoutId="agenda-filtro-activa"
+          className="absolute inset-0 rounded-xl"
+          style={{ backgroundColor: 'var(--accent)', zIndex: 0 }}
+          transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
+        />
+      )}
+      <span
+        ref={spanRef}
+        className="relative z-10 text-2xl tracking-tight tabular-nums"
+        style={{
+          fontWeight: 600,
+          color: resaltar ? 'var(--primary)' : active ? 'var(--accent-foreground)' : 'var(--foreground)',
+        }}
+      >
+        {count}
+      </span>
+      <span
+        className="relative z-10 text-xs mt-0.5 flex items-center gap-1.5"
+        style={{ color: active ? 'var(--accent-foreground)' : 'var(--muted-foreground)' }}
+      >
+        {resaltar && (
+          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--secondary)' }} />
+        )}
+        {label}
+      </span>
     </button>
   )
 }
@@ -1425,10 +1492,10 @@ export function AgendaTareas() {
 
   // Estado de UI
   const [tabAdmin, setTabAdmin] = useState<'verificar' | 'abiertas' | 'cerradas' | 'canceladas'>('verificar')
+  const [filtroActivo, setFiltroActivo] = useState<FiltroAgenda>('pendientes')
   const [filtroColaborador, setFiltroColaborador] = useState('')
   const [cerradasAbiertas, setCerradasAbiertas] = useState(false)
   const [canceladasAbiertas, setCanceladasAbiertas] = useState(false)
-  const [terminadasAbiertas, setTerminadasAbiertas] = useState(false)
 
   // Sheet nueva tarea
   const [sheetNueva, setSheetNueva] = useState(false)
@@ -1507,8 +1574,17 @@ export function AgendaTareas() {
   const { resumen } = hook
 
   const misPendientes = hook.tareas.filter(t => t.estado === 'pendiente' || t.estado === 'en_progreso')
+  const misPorFirmar  = hook.tareas.filter(t => t.acuse_estado === 'pendiente' || t.acuse_estado === 'desactualizado')
   const misRevisión   = hook.tareas.filter(t => t.estado === 'por_verificar')
   const misTerminadas = hook.tareas.filter(t => t.estado === 'cerrada')
+
+  const filtrosAgenda: { key: FiltroAgenda; label: string; lista: TareaListada[]; vacio: string }[] = [
+    { key: 'pendientes', label: 'Pendientes', lista: misPendientes, vacio: 'No tienes tareas pendientes' },
+    { key: 'por_firmar', label: 'Por firmar', lista: misPorFirmar, vacio: 'No tienes tareas por firmar' },
+    { key: 'realizadas', label: 'Realizadas', lista: misRevisión, vacio: 'No tienes tareas en revisión' },
+    { key: 'aceptadas', label: 'Aceptadas', lista: misTerminadas, vacio: 'Aún no tienes tareas aceptadas' },
+  ]
+  const filtroSeleccionado = filtrosAgenda.find(f => f.key === filtroActivo) ?? filtrosAgenda[0]
 
   const adminVerificar  = hook.tareas.filter(t => t.estado === 'por_verificar')
   const adminAbiertas   = hook.tareas.filter(t => t.estado === 'pendiente' || t.estado === 'en_progreso')
@@ -1539,9 +1615,10 @@ export function AgendaTareas() {
         </div>
       </header>
 
-      <div className="p-4 space-y-4 max-w-[390px] mx-auto md:max-w-2xl">
+      <div className={esAdmin ? 'p-4 space-y-4 max-w-[390px] mx-auto md:max-w-2xl' : 'p-4 space-y-4'}>
 
-        {hook.loading && !hook.tareas.length ? (
+        {esAdmin ? (
+        hook.loading && !hook.tareas.length ? (
           <div className="space-y-2">
             {[0, 1, 2].map(i => (
               <div key={i} className="rounded-xl border border-border bg-card p-4 flex flex-col gap-2 animate-pulse">
@@ -1550,7 +1627,7 @@ export function AgendaTareas() {
               </div>
             ))}
           </div>
-        ) : esAdmin ? (
+        ) : (
           /* ── VISTA ADMIN ── */
           <>
             {/* Resumen */}
@@ -1669,116 +1746,76 @@ export function AgendaTareas() {
               )}
             </div>
           </>
+        )
         ) : (
+          hook.loading && !hook.tareas.length ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[0, 1, 2, 3].map(i => (
+                  <div key={i} className="rounded-xl p-4 border border-border bg-card space-y-2">
+                    <Skeleton className="h-7 w-10" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                ))}
+              </div>
+              <ListaSkeleton rows={4} />
+            </div>
+          ) : (
           /* ── VISTA COLABORADOR ── */
           <>
-            {/* Aviso firma pendiente (primero y más visible) */}
-            {resumen && (resumen.mis_sin_firmar ?? 0) > 0 && (
-              <div
-                className="rounded-xl p-3 flex items-center gap-3"
-                style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
-              >
-                <PenLine className="w-4 h-4 flex-shrink-0" />
-                <p className="text-sm font-semibold">
-                  Tienes {resumen.mis_sin_firmar} {(resumen.mis_sin_firmar ?? 0) === 1 ? 'tarea nueva por firmar' : 'tareas nuevas por firmar'}
-                </p>
-              </div>
-            )}
-
-            {/* Chips resumen */}
-            {resumen && (
-              <div className="flex gap-2 flex-wrap">
-                {(resumen.mis_sin_firmar ?? 0) > 0 && (
-                  <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold" style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
-                    <PenLine className="w-3 h-3" />
-                    {resumen.mis_sin_firmar} por firmar
-                  </span>
-                )}
-                {resumen.mis_pendientes > 0 && (
-                  <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold" style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
-                    {resumen.mis_pendientes} pendiente{resumen.mis_pendientes !== 1 ? 's' : ''}
-                  </span>
-                )}
-                {resumen.mis_vencidas > 0 && (
-                  <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
-                    <AlertTriangle className="w-3 h-3" />
-                    {resumen.mis_vencidas} vencida{resumen.mis_vencidas !== 1 ? 's' : ''}
-                  </span>
-                )}
-                {resumen.mis_regresadas > 0 && (
-                  <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold" style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
-                    <RotateCcw className="w-3 h-3" />
-                    {resumen.mis_regresadas} regresada{resumen.mis_regresadas !== 1 ? 's' : ''}
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* Por hacer */}
-            {misPendientes.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs font-semibold px-1" style={{ color: 'var(--muted-foreground)' }}>Por hacer</p>
-                {misPendientes.map((t, index) => (
-                  <TareaCard
-                    key={t.id}
-                    tarea={t}
-                    esAdmin={false}
-                    onClick={() => abrirDetalle(t.id)}
-                    style={cascadeStyle(index, !reducedMotion && primeraCargaRef.current)}
+            {/* Tarjetas de resumen / filtro */}
+            <LayoutGroup>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {filtrosAgenda.map(f => (
+                  <TarjetaFiltroAgenda
+                    key={f.key}
+                    active={filtroActivo === f.key}
+                    label={f.label}
+                    count={f.lista.length}
+                    resaltar={f.key === 'por_firmar' && f.lista.length > 0}
+                    onClick={() => setFiltroActivo(f.key)}
+                    reducedMotion={!!reducedMotion}
                   />
                 ))}
               </div>
-            )}
+            </LayoutGroup>
 
-            {/* En revisión */}
-            {misRevisión.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs font-semibold px-1" style={{ color: 'var(--muted-foreground)' }}>En revisión</p>
-                {misRevisión.map((t, index) => (
-                  <TareaCard
-                    key={t.id}
-                    tarea={t}
-                    esAdmin={false}
-                    onClick={() => abrirDetalle(t.id)}
-                    style={cascadeStyle(index, !reducedMotion && primeraCargaRef.current)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Terminadas (plegado) */}
-            {misTerminadas.length > 0 && (
-              <div>
-                <button
-                  onClick={() => setTerminadasAbiertas(o => !o)}
-                  className="flex items-center gap-2 px-1 py-1 text-xs font-semibold w-full"
-                  style={{ color: 'var(--muted-foreground)' }}
-                >
-                  {terminadasAbiertas ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  Terminadas ({misTerminadas.length})
-                </button>
-                {terminadasAbiertas && (
-                  <div className="space-y-2 mt-2">
-                    {misTerminadas.map(t => (
-                      <TareaCard key={t.id} tarea={t} esAdmin={false} onClick={() => abrirDetalle(t.id)} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {misPendientes.length === 0 && misRevisión.length === 0 && misTerminadas.length === 0 && (
-              <p
-                className="text-sm text-center py-10"
-                style={{
-                  color: 'var(--muted-foreground)',
-                  ...(reducedMotion ? {} : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }),
-                }}
-              >
-                No tienes tareas asignadas
+            {/* Lista de tareas del filtro activo */}
+            <div className="space-y-2">
+              <p className="text-xs font-semibold px-1" style={{ color: 'var(--muted-foreground)' }}>
+                {filtroSeleccionado.label}
               </p>
-            )}
+              <AnimatePresence mode="popLayout" initial={false}>
+                {filtroSeleccionado.lista.length === 0 ? (
+                  <motion.p
+                    key="vacio"
+                    initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0, transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] } }}
+                    exit={reducedMotion ? undefined : { opacity: 0, transition: { duration: 0.15 } }}
+                    className="text-sm text-center py-10"
+                    style={{ color: 'var(--muted-foreground)' }}
+                  >
+                    {filtroSeleccionado.vacio}
+                  </motion.p>
+                ) : (
+                  filtroSeleccionado.lista.map((t, index) => (
+                    <motion.div
+                      key={t.id}
+                      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+                      animate={{
+                        opacity: 1, y: 0,
+                        transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: Math.min(index, 7) * 0.035 },
+                      }}
+                      exit={reducedMotion ? undefined : { opacity: 0, transition: { duration: 0.15, ease: [0.22, 1, 0.36, 1] } }}
+                    >
+                      <TareaCard tarea={t} esAdmin={false} onClick={() => abrirDetalle(t.id)} />
+                    </motion.div>
+                  ))
+                )}
+              </AnimatePresence>
+            </div>
           </>
+          )
         )}
       </div>
 
