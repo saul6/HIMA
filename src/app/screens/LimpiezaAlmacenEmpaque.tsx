@@ -675,7 +675,7 @@ export function LimpiezaAlmacenEmpaque() {
                       <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />
                     </div>
                   </button>
-                  <div className="px-4 pb-4">
+                  <div className="pt-4 px-4 pb-4">
                     <FirmasRegistro
                       modulo="M35"
                       registroId={reg.id}
@@ -1016,7 +1016,6 @@ export function LimpiezaAlmacenEmpaque() {
 
       {/* ═══ SHEET: DAÑO MONTACARGAS ════════════════════════════════════════════ */}
       <BottomSheet open={incSheet} onClose={() => { if (!incSaving) setIncSheet(false) }} height="85%">
-        <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
         <div className="px-4 pb-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -1063,8 +1062,7 @@ export function LimpiezaAlmacenEmpaque() {
 
       {/* ═══ SHEET: NUEVO REGISTRO ══════════════════════════════════════════════ */}
       <BottomSheet open={sheetNuevo} onClose={handleCerrarSheet} height="85%">
-        <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
-        <div className="flex items-center justify-between px-4 pb-3 border-b border-border flex-shrink-0">
+        <div className="pt-4 flex items-center justify-between px-4 pb-3 border-b border-border flex-shrink-0">
           <h2 className="text-base font-semibold">
             {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nuevo registro mensual'}
           </h2>
@@ -1144,8 +1142,7 @@ export function LimpiezaAlmacenEmpaque() {
 
       {/* ═══ SHEET: CONFIGURAR CATÁLOGO ══════════════════════════════════════════ */}
       <BottomSheet open={sheetConfigurar} onClose={() => setSheetConfigurar(false)} height="85%">
-        <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
-        <div className="px-4 pb-4 overflow-y-auto h-full">
+        <div className="pt-4 px-4 pb-4 overflow-y-auto h-full">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Configurar ítems</h2>
             <button type="button" onClick={() => setSheetConfigurar(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
