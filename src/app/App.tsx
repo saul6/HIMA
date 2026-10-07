@@ -8,6 +8,8 @@ import { FirmaProvider } from '@/context/FirmaContext'
 import { HomeSearchProvider } from '@/context/HomeSearchContext'
 import { ThemeProvider } from '@/context/ThemeContext'
 import { IntroTransitionProvider } from '@/context/IntroTransitionContext'
+import { PwaUpdatePrompt } from '@/app/components/PwaUpdatePrompt'
+import { SyncManager } from '@/app/components/SyncManager'
 
 export default function App() {
   // Limpia el navy inline que theme-init.js pinta en <html> antes de montar
@@ -27,6 +29,8 @@ export default function App() {
               <RouterProvider router={router} />
             </IntroTransitionProvider>
             <Toaster position="top-center" richColors />
+            <PwaUpdatePrompt />
+            <SyncManager />
           </HomeSearchProvider>
           </FirmaProvider>
         </ModulosProvider>
