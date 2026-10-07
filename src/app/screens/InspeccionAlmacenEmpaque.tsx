@@ -28,7 +28,7 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
-import { Portal } from '@/app/components/Portal'
+import { BottomSheet } from '@/app/components/BottomSheet'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -773,14 +773,7 @@ export function InspeccionAlmacenEmpaque() {
         }} aria-label="Agregar" />
 
       {/* ── Sheet: crear registro ──────────────────────────────────────── */}
-      {sheetCrear && (
-        <Portal>
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/40" onClick={handleCerrarSheetCrear} />
-          <div
-            className="relative bg-card rounded-t-[10px] flex flex-col"
-            style={{ maxHeight: '85dvh' }}
-          >
+      <BottomSheet open={sheetCrear} onClose={handleCerrarSheetCrear}>
             {sheetCrearPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetCrearPaso('form')} />}
             {sheetCrearPaso === 'firma_decision' && pendienteFirmaId && (
               <PasoFirmaRegistro
@@ -797,7 +790,9 @@ export function InspeccionAlmacenEmpaque() {
               />
             )}
             {sheetCrearPaso === 'form' && (<>
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-4 flex-shrink-0" />
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1 bg-border rounded-full" />
+            </div>
             <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>
                 Nuevo registro mensual
@@ -880,21 +875,13 @@ export function InspeccionAlmacenEmpaque() {
               </button>
             </div>
             </>)}
-          </div>
-        </div>
-        </Portal>
-      )}
+      </BottomSheet>
 
       {/* ── Sheet: agregar día ─────────────────────────────────────────── */}
-      {sheetDia && (
-        <Portal>
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setSheetDia(false)} />
-          <div
-            className="relative bg-card rounded-t-[10px] flex flex-col"
-            style={{ maxHeight: '85dvh' }}
-          >
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-4 flex-shrink-0" />
+      <BottomSheet open={sheetDia} onClose={() => setSheetDia(false)}>
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1 bg-border rounded-full" />
+            </div>
             <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>
                 Registrar día de inspección
@@ -975,21 +962,13 @@ export function InspeccionAlmacenEmpaque() {
                 {dGuardando ? 'Guardando…' : 'Guardar día'}
               </button>
             </div>
-          </div>
-        </div>
-        </Portal>
-      )}
+      </BottomSheet>
 
       {/* ── Sheet: consolidado ─────────────────────────────────────────── */}
-      {sheetConsolidado && (
-        <Portal>
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setSheetConsolidado(false)} />
-          <div
-            className="relative bg-card rounded-t-[10px] flex flex-col"
-            style={{ maxHeight: '85dvh' }}
-          >
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-4 flex-shrink-0" />
+      <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)}>
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1 bg-border rounded-full" />
+            </div>
             <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>
                 Exportar PDF consolidado
@@ -1054,10 +1033,7 @@ export function InspeccionAlmacenEmpaque() {
                 ) : 'Generar PDF consolidado'}
               </button>
             </div>
-          </div>
-        </div>
-        </Portal>
-      )}
+      </BottomSheet>
 
     </div>
   )
