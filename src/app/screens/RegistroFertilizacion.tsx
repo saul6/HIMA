@@ -981,10 +981,7 @@ export function RegistroFertilizacion() {
 
       {/* ── Sheet: Nuevo registro ─────────────────────────────────────────────── */}
       <BottomSheet open={sheetNuevoAbierto} onClose={() => !guardando && handleCerrarSheetNuevo()} height="85%">
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 rounded-full bg-border" />
-            </div>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+            <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 {sheetNuevoPaso === 'firma_decision' ? 'Firmar registro' : sheetNuevoPaso === 'firma_gate' ? 'Firma requerida' : 'Nuevo registro'}
               </h2>
@@ -1122,10 +1119,7 @@ export function RegistroFertilizacion() {
 
       {/* ── Sheet: Exportar consolidado ───────────────────────────────────────── */}
       <BottomSheet open={sheetConsolidadoAbierto} onClose={() => !generandoConsolidado && setSheetConsolidadoAbierto(false)} height="85%">
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 rounded-full bg-border" />
-            </div>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+            <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
               <button
                 onClick={() => !generandoConsolidado && setSheetConsolidadoAbierto(false)}
@@ -1205,10 +1199,7 @@ export function RegistroFertilizacion() {
 
       {/* ── Sheet: Movimiento manual de inventario ───────────────────────────── */}
       <BottomSheet open={sheetMovAbierto} onClose={() => !guardandoMov && setSheetMovAbierto(false)} height="85%">
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 rounded-full bg-border" />
-            </div>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+            <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 Movimiento de inventario
               </h2>

@@ -492,10 +492,7 @@ export function RegistroPersonal() {
 
       {/* ═══ SHEET: FORMULARIO ══════════════════════════════════════════════════ */}
       <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) handleCerrarSheet() }} height="85%">
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-9 h-1 rounded-full bg-border" />
-        </div>
-        <div className="flex items-center justify-between px-4 pb-3">
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             {editingId ? 'Editar trabajador' : 'Nuevo trabajador'}
           </h2>
@@ -761,10 +758,7 @@ export function RegistroPersonal() {
 
       {/* ═══ SHEET: CONFIGURAR ══════════════════════════════════════════════════ */}
       <BottomSheet open={configurarOpen} onClose={() => setConfigurarOpen(false)} height="85%">
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-9 h-1 rounded-full bg-border" />
-        </div>
-        <div className="flex items-center justify-between px-4 pb-3">
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Configurar catálogo</h2>
           <button type="button" onClick={() => setConfigurarOpen(false)}>
             <X className="w-5 h-5 text-muted-foreground" />
@@ -922,10 +916,7 @@ export function RegistroPersonal() {
 
       {/* ═══ SHEET: PDF ═════════════════════════════════════════════════════════ */}
       <BottomSheet open={pdfSheetOpen} onClose={() => setPdfSheetOpen(false)} height="85%">
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-9 h-1 rounded-full bg-border" />
-        </div>
-        <div className="flex items-center justify-between px-4 pb-3">
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Descargar PDF</h2>
           <button type="button" onClick={() => setPdfSheetOpen(false)}>
             <X className="w-5 h-5 text-muted-foreground" />

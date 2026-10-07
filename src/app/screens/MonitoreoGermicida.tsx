@@ -264,10 +264,7 @@ export function MonitoreoGermicida() {
 
       {/* Bottom sheet — Formulario / firma */}
       <BottomSheet open={sheetOpen} onClose={handleCerrarSheet} height="85%">
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-9 h-1 rounded-full bg-border" />
-        </div>
-        <div className="flex items-center justify-between px-4 pb-3 border-b border-border flex-shrink-0">
+        <div className="pt-4 flex items-center justify-between px-4 pb-3 border-b border-border flex-shrink-0">
           <h2 className="text-base font-semibold">
             {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nuevo monitoreo'}
           </h2>

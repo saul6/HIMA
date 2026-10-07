@@ -993,10 +993,7 @@ export function MonitoreoEstacionesPlagas() {
 
       {/* ── Sheet: Gestionar Estaciones ──────────────────────────────────────── */}
       <BottomSheet open={sheetEstaciones} onClose={() => setSheetEstaciones(false)} height="85%">
-          <div className="flex justify-center pt-3 pb-1 shrink-0">
-            <div className="w-10 h-1 rounded-full bg-muted" />
-          </div>
-          <div className="px-4 pb-2 shrink-0">
+          <div className="pt-4 px-4 pb-2 shrink-0">
             <h2 className="text-base font-semibold text-foreground">Gestionar Estaciones</h2>
             <p className="text-xs text-muted-foreground">Catálogo de trampas por {terminosSitio.singular.toLowerCase()}</p>
           </div>
@@ -1089,10 +1086,7 @@ export function MonitoreoEstacionesPlagas() {
 
       {/* ── Sheet: Nueva Revisión ─────────────────────────────────────────────── */}
       <BottomSheet open={sheetNuevo} onClose={() => { setSheetNuevo(false); setSheetNuevoPaso('form'); setPendienteFirmaId(null) }} height="90%">
-          <div className="flex justify-center pt-3 pb-1 shrink-0">
-            <div className="w-10 h-1 rounded-full bg-muted" />
-          </div>
-          <div className="px-4 pb-2 shrink-0">
+          <div className="pt-4 px-4 pb-2 shrink-0">
             <h2 className="text-base font-semibold text-foreground">
               {sheetNuevoPaso === 'firma_decision' ? 'Firmar revisión' : sheetNuevoPaso === 'firma_gate' ? 'Registra tu firma' : 'Nueva revisión'}
             </h2>
@@ -1248,10 +1242,7 @@ export function MonitoreoEstacionesPlagas() {
 
       {/* ── Sheet: Exportar consolidado ───────────────────────────────────────── */}
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)}>
-          <div className="flex justify-center pt-3 pb-1">
-            <div className="w-10 h-1 rounded-full bg-muted" />
-          </div>
-          <div className="px-4 pb-2">
+          <div className="pt-4 px-4 pb-2">
             <h2 className="text-base font-semibold text-foreground">Exportar consolidado</h2>
             <p className="text-xs text-muted-foreground">Todas las revisiones en el rango</p>
           </div>
@@ -1305,10 +1296,7 @@ export function MonitoreoEstacionesPlagas() {
 
       {/* ── Sheet: Modal NFC (trampa individual) ─────────────────────────────── */}
       <BottomSheet open={!!nfcModal} onClose={() => { setNfcModal(null); setNfcPaso('form'); setPendienteNfcFirmaId(null) }} height="85%">
-        <div className="flex justify-center pt-3 pb-1 shrink-0">
-          <div className="w-10 h-1 rounded-full bg-muted" />
-        </div>
-        <div className="px-4 pb-2 shrink-0 flex items-start gap-2">
+        <div className="pt-4 px-4 pb-2 shrink-0 flex items-start gap-2">
           <div className="flex-1 min-w-0">
             <h2 className="text-base font-semibold text-foreground">
               {nfcPaso === 'firma_decision' ? 'Firmar revisión' : nfcModal?.estacion

@@ -578,11 +578,7 @@ export function RegistroAccidentesLaborales() {
 
       {/* Sheet: Nuevo registro ─────────────────────────────────────────────── */}
       <BottomSheet open={sheetNuevo} onClose={handleCerrarSheet} height="85%">
-          {/* Handle bar */}
-          <div className="flex justify-center pt-3 pb-1 shrink-0">
-            <div className="w-10 h-1 rounded-full bg-muted" />
-          </div>
-          <div className="px-4 pb-2 shrink-0">
+          <div className="pt-4 px-4 pb-2 shrink-0">
             <h2 className="text-base font-semibold text-foreground">
               {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Registrar accidente'}
             </h2>
@@ -862,10 +858,7 @@ export function RegistroAccidentesLaborales() {
 
       {/* Sheet: Exportar consolidado ─────────────────────────────────────────── */}
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)}>
-          <div className="flex justify-center pt-3 pb-1">
-            <div className="w-10 h-1 rounded-full bg-muted" />
-          </div>
-          <div className="px-4 pb-2">
+          <div className="pt-4 px-4 pb-2">
             <h2 className="text-base font-semibold text-foreground">Exportar consolidado</h2>
             <p className="text-xs text-muted-foreground">Todos los accidentes en el rango</p>
           </div>
