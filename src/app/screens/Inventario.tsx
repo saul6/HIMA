@@ -26,7 +26,6 @@ import type { TipoMovimiento, InventarioSaldoRancho, InventarioSaldoProductor, R
 import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
 import { BottomSheet } from '@/app/components/BottomSheet'
-import { Portal } from '@/app/components/Portal'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 
 const LOW_STOCK = 5
@@ -362,21 +361,11 @@ function ExportarReg01Sheet({ onClose, ranchoOptions, ranchos, orgId }: ExportSh
   }
 
   return (
-    <Portal>
-      <div className="fixed inset-0 bg-black/40 z-30" onClick={onClose} />
-      <div
-        className="fixed bottom-0 left-0 right-0 z-40 bg-card overflow-y-auto"
-        style={{
-          height: "70%",
-          borderRadius: "0.625rem 0.625rem 0 0",
-          maxWidth: 390,
-          margin: "0 auto",
-        }}
-      >
-        <div className="flex justify-center pt-3 pb-1">
+    <BottomSheet open onClose={onClose}>
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
           <div className="w-10 h-1 rounded-full bg-border" />
         </div>
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             Exportar REG-01
           </h2>
@@ -384,7 +373,7 @@ function ExportarReg01Sheet({ onClose, ranchoOptions, ranchos, orgId }: ExportSh
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
-        <div className="p-4 space-y-4 pb-8">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-8">
           <FormSelect
             label="Rancho"
             value={ranchoId}
@@ -414,8 +403,7 @@ function ExportarReg01Sheet({ onClose, ranchoOptions, ranchos, orgId }: ExportSh
             {generando ? "Generando…" : "Generar PDF"}
           </button>
         </div>
-      </div>
-    </Portal>
+    </BottomSheet>
   )
 }
 
