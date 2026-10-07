@@ -1,7 +1,7 @@
-﻿import { useState, useEffect, useMemo } from 'react'
+﻿import { useState, useEffect } from 'react'
 import {
   Plus, FileDown, X, Loader2, Droplets,
-  AlertTriangle, Trash2, WifiOff,
+  Trash2, WifiOff,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -27,9 +27,12 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
-import { encolarLote } from '@/lib/offline/outbox'
 import { useConexion } from '@/hooks/useConexion'
-import { useOutbox } from '@/hooks/useOutbox'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { useLimiteProactivo } from '@/hooks/useLimiteProactivo'
+import { ChipOffline } from '@/app/components/ChipOffline'
+import { BannerLimiteOffline } from '@/app/components/BannerLimiteOffline'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -123,7 +126,8 @@ export function RegistroLimpiezaBanos() {
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M12', todosIds)
   const { obligatoria, tengoFirma } = useFirmaContext()
   const { online } = useConexion()
-  const { lotes: lotesOffline } = useOutbox('M12')
+  const { lotes: lotesOffline } = usePendientesModulo('M12')
+  const { guardar: guardarOffline } = useGuardarOffline('M12')
 
   // Form principal
   const [sheetAbierto, setSheetAbierto] = useState(false)
@@ -136,22 +140,18 @@ export function RegistroLimpiezaBanos() {
   const [banos, setBanos]         = useState<FilaBano[]>([{ ...BANO_INICIAL }])
   const [guardando, setGuardando] = useState(false)
   const [errRancho, setErrRancho] = useState(false)
-  const [limiteInfo, setLimiteInfo] = useState<{ proxima: string } | null>(null)
 
-  const hayLoteOfflineConflicto = useMemo(() => {
-    if (!ranchoId || !sheetAbierto) return false
-    const fechaLimite = new Date(fecha + 'T12:00:00')
-    const semanaAtras = new Date(fechaLimite)
-    semanaAtras.setDate(semanaAtras.getDate() - 6)
-    return lotesOffline.some(l => {
-      if (l.estado === 'sincronizado') return false
-      const meta = l.metadatos as { rancho_id?: string; fecha?: string } | undefined
-      if (meta?.rancho_id !== ranchoId) return false
-      if (!meta?.fecha) return false
-      const lf = new Date(meta.fecha + 'T12:00:00')
-      return lf >= semanaAtras && lf <= fechaLimite
-    })
-  }, [ranchoId, fecha, sheetAbierto, lotesOffline])
+  const { limiteInfo, hayConflictoOffline: hayLoteOfflineConflicto } = useLimiteProactivo({
+    modulo: 'M12',
+    orgId: profile?.org_id ?? null,
+    ranchoId,
+    fecha,
+    activo: true,
+    tabla: 'm12_limpieza_banos',
+    campoFecha: 'fecha',
+    ventanaDias: 7,
+    sheetAbierto,
+  })
 
   // Consolidado
   const [sheetConsAbierto, setSheetConsAbierto] = useState(false)
@@ -168,41 +168,7 @@ export function RegistroLimpiezaBanos() {
   const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
   const [pendientePdfProps, setPendientePdfProps] = useState<LimpiezaBanosPaginaProps | null>(null)
 
-  // ── Prevención proactiva del límite semanal ─────────────────────────────────
-
-  useEffect(() => {
-    if (!sheetAbierto || !ranchoId || !fecha || !profile?.org_id) {
-      setLimiteInfo(null)
-      return
-    }
-    let cancelado = false
-    const fechaDate = new Date(fecha + 'T12:00:00')
-    const inicio = new Date(fechaDate)
-    inicio.setDate(inicio.getDate() - 6)
-    const inicioStr = inicio.toISOString().split('T')[0]
-
-    supabase
-      .from('m12_limpieza_banos')
-      .select('fecha')
-      .eq('org_id', profile.org_id)
-      .eq('rancho_id', ranchoId)
-      .gte('fecha', inicioStr)
-      .lte('fecha', fecha)
-      .order('fecha', { ascending: false })
-      .limit(1)
-      .then(({ data }) => {
-        if (cancelado) return
-        if (data && data.length > 0) {
-          const ultimaDate = new Date(data[0].fecha + 'T12:00:00')
-          const proximaDate = new Date(ultimaDate)
-          proximaDate.setDate(proximaDate.getDate() + 7)
-          setLimiteInfo({ proxima: formatFecha(proximaDate.toISOString().split('T')[0]) })
-        } else {
-          setLimiteInfo(null)
-        }
-      })
-    return () => { cancelado = true }
-  }, [sheetAbierto, ranchoId, fecha, profile?.org_id])
+  // useLimiteProactivo maneja la consulta al servidor y conflictos offline
 
   // ── Helpers del formulario ─────────────────────────────────────────────────
 
@@ -211,7 +177,6 @@ export function RegistroLimpiezaBanos() {
     setFecha(hoy())
     setBanos([{ ...BANO_INICIAL }])
     setErrRancho(false)
-    setLimiteInfo(null)
     setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
     setPendienteFirmaId(null)
     setPendientePdfProps(null)
@@ -271,31 +236,31 @@ export function RegistroLimpiezaBanos() {
       const rancho = ranchos.find((r) => r.id === ranchoId)
 
       if (!online) {
-        const rowsOffline = banos.map((b, i) => ({
-          id: crypto.randomUUID(),
-          rancho_id: ranchoId,
-          org_id: profile.org_id!,
-          fecha,
-          bano_numero: b.bano_numero || String(i + 1),
-          limpieza: b.limpieza,
-          desinfeccion: b.desinfeccion,
-          concentracion_ppm: parseInt(b.concentracion_ppm, 10) || 200,
-          sustancias: b.sustancias,
-          abasto_papel: b.abasto_papel,
-          succion: b.succion,
-          realizado_por_id: profile.id,
-        }))
-        await encolarLote({
-          userId: user.id,
-          orgId: profile.org_id!,
-          modulo: 'M12',
+        const ok = await guardarOffline({
           descripcion: `Limpieza y Desinfección de Baños · ${rancho?.nombre ?? ''} · ${fecha}`,
           metadatos: { rancho_id: ranchoId, rancho_nombre: rancho?.nombre, fecha, banos_count: banos.length },
-          operaciones: rowsOffline.map(row => ({ tabla: 'm12_limpieza_banos', tipo: 'insert' as const, fila: row as Record<string, unknown> })),
+          operaciones: banos.map((b, i) => ({
+            tabla: 'm12_limpieza_banos',
+            tipo: 'insert' as const,
+            fila: {
+              id: crypto.randomUUID(),
+              rancho_id: ranchoId,
+              fecha,
+              bano_numero: b.bano_numero || String(i + 1),
+              limpieza: b.limpieza,
+              desinfeccion: b.desinfeccion,
+              concentracion_ppm: parseInt(b.concentracion_ppm, 10) || 200,
+              sustancias: b.sustancias,
+              abasto_papel: b.abasto_papel,
+              succion: b.succion,
+              realizado_por_id: profile.id,
+            },
+          })),
         })
-        if (tareaId) setRegistroGuardado(true)
-        toast.success('Guardado sin conexión — se subirá al recuperar señal')
-        handleCerrarSheet()
+        if (ok) {
+          if (tareaId) setRegistroGuardado(true)
+          handleCerrarSheet()
+        }
         return
       }
 
@@ -436,7 +401,7 @@ export function RegistroLimpiezaBanos() {
       {/* Historial */}
       <div className="p-4 space-y-3">
         {/* Lotes sin conexión */}
-        {lotesOffline.filter(l => l.estado !== 'sincronizado').map(lote => {
+        {lotesOffline.map(lote => {
           const meta = lote.metadatos as { rancho_nombre?: string; fecha?: string; banos_count?: number } | undefined
           return (
             <div key={lote.id} className="bg-card border border-border rounded-xl p-4 opacity-80">
@@ -454,17 +419,7 @@ export function RegistroLimpiezaBanos() {
                   </div>
                   <p className="text-xs text-muted-foreground">{meta?.fecha ? formatFecha(meta.fecha) : '—'}</p>
                 </div>
-                <span
-                  className="text-[10px] px-2 py-0.5 rounded flex-shrink-0 flex items-center gap-1"
-                  style={{
-                    backgroundColor: lote.estado === 'rechazado' ? 'var(--agro-danger-fill)' : 'var(--agro-warning-fill)',
-                    color: lote.estado === 'rechazado' ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)',
-                    fontWeight: 600,
-                  }}
-                >
-                  <WifiOff className="w-3 h-3" />
-                  {lote.estado === 'rechazado' ? 'Error al subir' : 'Sin subir'}
-                </span>
+                <ChipOffline lote={lote} />
               </div>
               {lote.estado === 'rechazado' && lote.error && (
                 <p className="text-xs mt-1" style={{ color: 'var(--agro-danger-text)' }}>{lote.error}</p>
@@ -474,7 +429,7 @@ export function RegistroLimpiezaBanos() {
         })}
         {loading ? (
           <ListaSkeleton />
-        ) : jornadas.length === 0 && lotesOffline.filter(l => l.estado !== 'sincronizado').length === 0 ? (
+        ) : jornadas.length === 0 && lotesOffline.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <Droplets className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Sin registros aún</p>
@@ -733,23 +688,13 @@ export function RegistroLimpiezaBanos() {
               </div>
 
               {/* Banner límite semanal */}
-              {(limiteInfo || hayLoteOfflineConflicto) && (
-                <div
-                  className="flex items-start gap-2 px-3 py-3 rounded-lg"
-                  style={{
-                    backgroundColor: 'var(--agro-warning-fill)',
-                    color: 'var(--agro-warning-text)',
-                  }}
-                >
-                  <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <div className="text-xs" style={{ fontWeight: 600 }}>
-                    {hayLoteOfflineConflicto && !limiteInfo
-                      ? `Ya tienes una limpieza pendiente de subir esta semana para ${terminosSitio.genero === 'f' ? 'esta' : 'este'} ${terminosSitio.singular.toLowerCase()}.`
-                      : `Ya existe una limpieza registrada esta semana para ${terminosSitio.genero === 'f' ? 'esta' : 'este'} ${terminosSitio.singular.toLowerCase()}.${limiteInfo ? ` Próxima disponible: ${limiteInfo.proxima}` : ''}`
-                    }
-                  </div>
-                </div>
-              )}
+              <BannerLimiteOffline
+                limiteInfo={limiteInfo}
+                hayConflictoOffline={hayLoteOfflineConflicto}
+                terminoSingular={terminosSitio.singular}
+                terminoGenero={terminosSitio.genero}
+                descripcionLimite={`Ya existe una limpieza registrada esta semana para ${terminosSitio.genero === 'f' ? 'esta' : 'este'} ${terminosSitio.singular.toLowerCase()}.`}
+              />
 
               {/* Lista de baños */}
               <div>

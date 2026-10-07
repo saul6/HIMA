@@ -31,10 +31,11 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
-import { encolarLote } from '@/lib/offline/outbox'
 import { leerConCache } from '@/lib/offline/cacheLectura'
 import { useConexion } from '@/hooks/useConexion'
-import { useOutbox } from '@/hooks/useOutbox'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -179,7 +180,8 @@ export function InspeccionPerimetral() {
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M9', todosIds)
   const { obligatoria, tengoFirma } = useFirmaContext()
   const { online } = useConexion()
-  const { lotes: lotesOffline } = useOutbox('M9')
+  const { lotes: lotesOffline } = usePendientesModulo('M9')
+  const { guardar: guardarOffline } = useGuardarOffline('M9')
 
   // ── Navegación interna ──
   const [vista, setVista] = useState<Vista>('lista')
@@ -344,10 +346,7 @@ export function InspeccionPerimetral() {
 
       if (!online) {
         const localId = crypto.randomUUID()
-        await encolarLote({
-          userId: user.id,
-          orgId: profile.org_id!,
-          modulo: 'M9',
+        const ok = await guardarOffline({
           descripcion: `Monitoreo Perimetral · ${rancho?.nombre ?? ''} · ${nMes}`,
           metadatos: { rancho_id: nRanchoId, rancho_nombre: rancho?.nombre, mes: nMes + '-01', tipo: 'cabecera' },
           operaciones: [{
@@ -364,8 +363,7 @@ export function InspeccionPerimetral() {
             },
           }],
         })
-        toast.success('Registro mensual guardado sin conexión — se subirá al recuperar señal')
-        setSheetNuevo(false)
+        if (ok) setSheetNuevo(false)
         return
       }
 
@@ -478,39 +476,15 @@ export function InspeccionPerimetral() {
     try {
       if (!online) {
         const diaId = crypto.randomUUID()
-        const rowsDia = {
-          id: diaId,
-          registro_id: registroActivo.id,
-          org_id: profile.org_id!,
-          fecha: dFecha,
-        }
-        const rowsResultados = itemsVisibles.map(item => ({
-          id: crypto.randomUUID(),
-          dia_id: diaId,
-          item_id: item.id,
-          org_id: profile.org_id!,
-          valor: dValores[item.id] ?? item.default_valor,
-        }))
-        await encolarLote({
-          userId: user.id,
-          orgId: profile.org_id!,
-          modulo: 'M9',
+        const ok = await guardarOffline({
           descripcion: `Monitoreo Perimetral · Inspección ${dFecha} · ${registroActivo.rancho_nombre}`,
-          metadatos: {
-            registro_id: registroActivo.id,
-            rancho_nombre: registroActivo.rancho_nombre,
-            mes: registroActivo.mes,
-            fecha: dFecha,
-            tipo: 'dia',
-            items_count: itemsVisibles.length,
-          },
+          metadatos: { registro_id: registroActivo.id, rancho_nombre: registroActivo.rancho_nombre, mes: registroActivo.mes, fecha: dFecha, tipo: 'dia', items_count: itemsVisibles.length },
           operaciones: [
-            { tabla: 'm9_dias_inspeccion', tipo: 'insert' as const, fila: rowsDia as Record<string, unknown> },
-            ...rowsResultados.map(r => ({ tabla: 'm9_resultados', tipo: 'insert' as const, fila: r as Record<string, unknown> })),
+            { tabla: 'm9_dias_inspeccion', tipo: 'insert' as const, fila: { id: diaId, registro_id: registroActivo.id, org_id: profile.org_id!, fecha: dFecha } },
+            ...itemsVisibles.map(item => ({ tabla: 'm9_resultados', tipo: 'insert' as const, fila: { id: crypto.randomUUID(), dia_id: diaId, item_id: item.id, org_id: profile.org_id!, valor: dValores[item.id] ?? item.default_valor } })),
           ],
         })
-        toast.success('Día de inspección guardado sin conexión — se subirá al recuperar señal')
-        handleCerrarSheetDia()
+        if (ok) handleCerrarSheetDia()
         return
       }
 
@@ -647,7 +621,7 @@ export function InspeccionPerimetral() {
           )}
 
           {/* Cabeceras pendientes offline */}
-          {lotesOffline.filter(l => l.estado !== 'sincronizado' && (l.metadatos as any)?.tipo === 'cabecera').map(lote => {
+          {lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').map(lote => {
             const meta = lote.metadatos as { rancho_nombre?: string; mes?: string } | undefined
             return (
               <div key={lote.id} className="bg-card border border-border rounded-xl p-4 opacity-80">
@@ -660,14 +634,7 @@ export function InspeccionPerimetral() {
                     </div>
                     <div className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>{meta?.rancho_nombre ?? '—'}</div>
                   </div>
-                  <span className="text-[10px] px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0" style={{
-                    backgroundColor: lote.estado === 'rechazado' ? 'var(--agro-danger-fill)' : 'var(--agro-warning-fill)',
-                    color: lote.estado === 'rechazado' ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)',
-                    fontWeight: 600,
-                  }}>
-                    <WifiOff className="w-3 h-3" />
-                    {lote.estado === 'rechazado' ? 'Error al subir' : 'Sin subir'}
-                  </span>
+                  <ChipOffline lote={lote} />
                 </div>
                 {lote.estado === 'rechazado' && lote.error && (
                   <p className="text-xs mt-1" style={{ color: 'var(--agro-danger-text)' }}>{lote.error}</p>
@@ -677,7 +644,7 @@ export function InspeccionPerimetral() {
           })}
           {loading ? (
             <ListaSkeleton />
-          ) : registros.length === 0 && lotesOffline.filter(l => l.estado !== 'sincronizado' && (l.metadatos as any)?.tipo === 'cabecera').length === 0 ? (
+          ) : registros.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').length === 0 ? (
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <Navigation className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
               <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
@@ -828,7 +795,7 @@ export function InspeccionPerimetral() {
             </h2>
 
             {/* Días pendientes offline */}
-            {lotesOffline.filter(l => l.estado !== 'sincronizado' && (l.metadatos as any)?.tipo === 'dia' && (l.metadatos as any)?.registro_id === registroActivo.id).map(lote => {
+            {lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'dia' && (l.metadatos as any)?.registro_id === registroActivo.id).map(lote => {
               const meta = lote.metadatos as { fecha?: string; items_count?: number } | undefined
               return (
                 <div key={lote.id} className="bg-card border border-border rounded-xl p-4 mb-3 opacity-80">
@@ -842,14 +809,7 @@ export function InspeccionPerimetral() {
                         <span className="text-xs text-muted-foreground">({meta.items_count} ítems)</span>
                       )}
                     </div>
-                    <span className="text-[10px] px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0" style={{
-                      backgroundColor: lote.estado === 'rechazado' ? 'var(--agro-danger-fill)' : 'var(--agro-warning-fill)',
-                      color: lote.estado === 'rechazado' ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)',
-                      fontWeight: 600,
-                    }}>
-                      <WifiOff className="w-3 h-3" />
-                      {lote.estado === 'rechazado' ? 'Error' : 'Sin subir'}
-                    </span>
+                    <ChipOffline lote={lote} />
                   </div>
                   {lote.estado === 'rechazado' && lote.error && (
                     <p className="text-xs mt-1" style={{ color: 'var(--agro-danger-text)' }}>{lote.error}</p>
@@ -862,7 +822,7 @@ export function InspeccionPerimetral() {
               <div className="flex justify-center py-6">
                 <Loader2 className="w-5 h-5 text-primary animate-spin" />
               </div>
-            ) : dias.length === 0 && lotesOffline.filter(l => l.estado !== 'sincronizado' && (l.metadatos as any)?.tipo === 'dia' && (l.metadatos as any)?.registro_id === registroActivo.id).length === 0 ? (
+            ) : dias.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'dia' && (l.metadatos as any)?.registro_id === registroActivo.id).length === 0 ? (
               <div className="bg-card border border-border rounded-xl p-6 text-center">
                 <CalendarDays className="w-7 h-7 text-muted-foreground mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground">

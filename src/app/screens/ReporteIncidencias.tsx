@@ -26,9 +26,11 @@ import {
   guardarBorrador, cargarBorrador, borrarBorrador, limpiarBorradoresViejos,
   type M13DraftData,
 } from '@/lib/idb/m13DraftStore'
-import { encolarLote, type AdjuntoOutbox } from '@/lib/offline/outbox'
+import type { AdjuntoOutbox } from '@/lib/offline/tipos'
 import { useConexion } from '@/hooks/useConexion'
-import { useOutbox } from '@/hooks/useOutbox'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
@@ -359,7 +361,8 @@ export function ReporteIncidencias() {
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M13', todosIds)
   const { obligatoria, tengoFirma } = useFirmaContext()
   const { online } = useConexion()
-  const { lotes: lotesOffline } = useOutbox('M13')
+  const { lotes: lotesOffline } = usePendientesModulo('M13')
+  const { guardar: guardarOffline } = useGuardarOffline('M13')
 
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
   const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
@@ -612,26 +615,17 @@ export function ReporteIncidencias() {
           }
         }
 
-        await encolarLote({
-          userId: user.id,
-          orgId,
-          modulo: 'M13',
+        const ok = await guardarOffline({
           descripcion: `Reporte de Incidencias · ${rancho?.nombre ?? ''} · ${fecha}`,
-          metadatos: {
-            rancho_id: ranchoId,
-            rancho_nombre: rancho?.nombre,
-            fecha,
-            incidencias_count: incidencias.length,
-            fotos_count: totalFotosASubir,
-          },
+          metadatos: { rancho_id: ranchoId, rancho_nombre: rancho?.nombre, fecha, incidencias_count: incidencias.length, fotos_count: totalFotosASubir },
           operaciones,
           adjuntos: adjuntosParaEncolar,
         })
-
-        if (tareaId) setRegistroGuardado(true)
-        if (draftKey) { borrarBorrador(draftKey).catch(() => {}); setHayBorrador(false) }
-        toast.success(`Reporte guardado sin conexión — se subirá con ${totalFotosASubir} foto${totalFotosASubir !== 1 ? 's' : ''} al recuperar señal`)
-        handleCerrarSheet()
+        if (ok) {
+          if (tareaId) setRegistroGuardado(true)
+          if (draftKey) { borrarBorrador(draftKey).catch(() => {}); setHayBorrador(false) }
+          handleCerrarSheet()
+        }
         return
       } catch (err: unknown) {
         toast.error(err instanceof Error ? err.message : 'No se pudo guardar el reporte offline')
@@ -902,7 +896,7 @@ export function ReporteIncidencias() {
       {/* Lista de reportes */}
       <div className="p-4 space-y-3">
         {/* Reportes pendientes offline */}
-        {lotesOffline.filter(l => l.estado !== 'sincronizado').map(lote => {
+        {lotesOffline.map(lote => {
           const meta = lote.metadatos as { rancho_nombre?: string; fecha?: string; incidencias_count?: number; fotos_count?: number } | undefined
           return (
             <div key={lote.id} className="bg-card border border-border rounded-xl p-4 opacity-80">
@@ -925,14 +919,7 @@ export function ReporteIncidencias() {
                   </div>
                   <p className="text-xs text-muted-foreground">{meta?.fecha ? formatFecha(meta.fecha) : '—'}</p>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0" style={{
-                  backgroundColor: lote.estado === 'rechazado' ? 'var(--agro-danger-fill)' : 'var(--agro-warning-fill)',
-                  color: lote.estado === 'rechazado' ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)',
-                  fontWeight: 600,
-                }}>
-                  <WifiOff className="w-3 h-3" />
-                  {lote.estado === 'rechazado' ? 'Error al subir' : 'Sin subir'}
-                </span>
+                <ChipOffline lote={lote} />
               </div>
               {lote.estado === 'rechazado' && lote.error && (
                 <p className="text-xs mt-1" style={{ color: 'var(--agro-danger-text)' }}>{lote.error}</p>
@@ -942,7 +929,7 @@ export function ReporteIncidencias() {
         })}
         {loading ? (
           <ListaSkeleton />
-        ) : reportes.length === 0 && lotesOffline.filter(l => l.estado !== 'sincronizado').length === 0 ? (
+        ) : reportes.length === 0 && lotesOffline.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <ClipboardList className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Sin reportes aún</p>

@@ -1,6 +1,6 @@
 export interface OperacionSync {
   tabla: string
-  tipo?: 'insert' | 'update'
+  tipo?: 'insert' | 'update' | 'upsert'
   fila: Record<string, unknown>
   conflicto?: string[]
 }
