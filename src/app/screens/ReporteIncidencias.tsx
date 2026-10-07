@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import {
   Plus, X, Loader2, AlertTriangle,
-  Camera, Image, Trash2, ImageOff, ClipboardList, FileDown,
+  Camera, Image, Trash2, ImageOff, ClipboardList, FileDown, WifiOff,
 } from 'lucide-react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { useNavigate } from 'react-router'
@@ -26,6 +26,9 @@ import {
   guardarBorrador, cargarBorrador, borrarBorrador, limpiarBorradoresViejos,
   type M13DraftData,
 } from '@/lib/idb/m13DraftStore'
+import { encolarLote, type AdjuntoOutbox } from '@/lib/offline/outbox'
+import { useConexion } from '@/hooks/useConexion'
+import { useOutbox } from '@/hooks/useOutbox'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
@@ -355,6 +358,8 @@ export function ReporteIncidencias() {
   const todosIds = reportes.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M13', todosIds)
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = useOutbox('M13')
 
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
   const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
@@ -549,10 +554,94 @@ export function ReporteIncidencias() {
 
   async function handleGuardar() {
     if (!validarFormulario()) return
+    if (!user?.id) { toast.error('Sin sesión activa'); return }
     const orgId = profile!.org_id!
+    const totalFotosASubir = incidencias.reduce((sum, inc) => sum + inc.fotos.length, 0)
+
+    if (!online) {
+      setGuardando(true)
+      try {
+        const localReporteId = crypto.randomUUID()
+        const rancho = ranchos.find(r => r.id === ranchoId)
+        const adjuntosParaEncolar: Omit<AdjuntoOutbox, 'loteId'>[] = []
+        const operaciones = []
+
+        operaciones.push({
+          tabla: 'm13_reportes',
+          tipo: 'insert' as const,
+          fila: {
+            id: localReporteId,
+            org_id: orgId,
+            rancho_id: ranchoId,
+            fecha,
+            auditor_nombre: auditorNombre.trim() || null,
+            realizado_por_id: profile!.id,
+          } as Record<string, unknown>,
+        })
+
+        for (let i = 0; i < incidencias.length; i++) {
+          const inc = incidencias[i]
+          const localIncId = crypto.randomUUID()
+          operaciones.push({
+            tabla: 'm13_incidencias',
+            tipo: 'insert' as const,
+            fila: {
+              id: localIncId,
+              reporte_id: localReporteId,
+              org_id: orgId,
+              orden: i + 1,
+              descripcion: inc.descripcion.trim(),
+            } as Record<string, unknown>,
+          })
+          for (let j = 0; j < inc.fotos.length; j++) {
+            const foto = inc.fotos[j]
+            const fotoUid = crypto.randomUUID()
+            const path = `${orgId}/${localReporteId}/${localIncId}/${fotoUid}.jpg`
+            adjuntosParaEncolar.push({ uid: fotoUid, blob: foto.file, path, bucket: 'incidencias' })
+            operaciones.push({
+              tabla: 'm13_incidencia_fotos',
+              tipo: 'insert' as const,
+              fila: {
+                id: fotoUid,
+                incidencia_id: localIncId,
+                org_id: orgId,
+                storage_path: path,
+                orden: j + 1,
+              } as Record<string, unknown>,
+            })
+          }
+        }
+
+        await encolarLote({
+          userId: user.id,
+          orgId,
+          modulo: 'M13',
+          descripcion: `Reporte de Incidencias · ${rancho?.nombre ?? ''} · ${fecha}`,
+          metadatos: {
+            rancho_id: ranchoId,
+            rancho_nombre: rancho?.nombre,
+            fecha,
+            incidencias_count: incidencias.length,
+            fotos_count: totalFotosASubir,
+          },
+          operaciones,
+          adjuntos: adjuntosParaEncolar,
+        })
+
+        if (tareaId) setRegistroGuardado(true)
+        if (draftKey) { borrarBorrador(draftKey).catch(() => {}); setHayBorrador(false) }
+        toast.success(`Reporte guardado sin conexión — se subirá con ${totalFotosASubir} foto${totalFotosASubir !== 1 ? 's' : ''} al recuperar señal`)
+        handleCerrarSheet()
+        return
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : 'No se pudo guardar el reporte offline')
+        return
+      } finally {
+        setGuardando(false)
+      }
+    }
 
     setGuardando(true)
-    const totalFotosASubir = incidencias.reduce((sum, inc) => sum + inc.fotos.length, 0)
     setProgreso({ total: totalFotosASubir, procesadas: 0, fallidas: 0 })
 
     const pathsSubidos: string[] = []
@@ -812,9 +901,48 @@ export function ReporteIncidencias() {
 
       {/* Lista de reportes */}
       <div className="p-4 space-y-3">
+        {/* Reportes pendientes offline */}
+        {lotesOffline.filter(l => l.estado !== 'sincronizado').map(lote => {
+          const meta = lote.metadatos as { rancho_nombre?: string; fecha?: string; incidencias_count?: number; fotos_count?: number } | undefined
+          return (
+            <div key={lote.id} className="bg-card border border-border rounded-xl p-4 opacity-80">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                      {meta?.rancho_nombre ?? '—'}
+                    </span>
+                    {meta?.incidencias_count && (
+                      <span className="text-[11px] px-2 py-0.5 rounded bg-muted text-muted-foreground" style={{ fontWeight: 600 }}>
+                        {meta.incidencias_count} incidencia{meta.incidencias_count !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                    {meta?.fotos_count && (
+                      <span className="text-[11px] px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                        {meta.fotos_count} foto{meta.fotos_count !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{meta?.fecha ? formatFecha(meta.fecha) : '—'}</p>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0" style={{
+                  backgroundColor: lote.estado === 'rechazado' ? 'var(--agro-danger-fill)' : 'var(--agro-warning-fill)',
+                  color: lote.estado === 'rechazado' ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)',
+                  fontWeight: 600,
+                }}>
+                  <WifiOff className="w-3 h-3" />
+                  {lote.estado === 'rechazado' ? 'Error al subir' : 'Sin subir'}
+                </span>
+              </div>
+              {lote.estado === 'rechazado' && lote.error && (
+                <p className="text-xs mt-1" style={{ color: 'var(--agro-danger-text)' }}>{lote.error}</p>
+              )}
+            </div>
+          )
+        })}
         {loading ? (
           <ListaSkeleton />
-        ) : reportes.length === 0 ? (
+        ) : reportes.length === 0 && lotesOffline.filter(l => l.estado !== 'sincronizado').length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <ClipboardList className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Sin reportes aún</p>
@@ -1253,11 +1381,15 @@ export function ReporteIncidencias() {
                   style={{ fontWeight: 600 }}
                 >
                   {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {!guardando && !online && <WifiOff className="w-4 h-4" />}
                   {guardando
                     ? progreso
                       ? `Subiendo ${progreso.procesadas} / ${progreso.total} fotos...`
                       : 'Guardando...'
-                    : 'Guardar reporte'}
+                    : online
+                      ? 'Guardar reporte'
+                      : `Guardar sin conexión (${totalFotos} foto${totalFotos !== 1 ? 's' : ''})`
+                  }
                 </button>
               </div>
             </div>
