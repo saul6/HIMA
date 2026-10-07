@@ -551,7 +551,7 @@ export function VerificacionCosecha() {
                       </div>
                     </div>
                   </button>
-                  <div className="px-4 pb-4">
+                  <div className="pt-4 px-4 pb-4">
                     <FirmasRegistro
                       modulo="M69"
                       registroId={reg.id}
@@ -883,10 +883,7 @@ export function VerificacionCosecha() {
         setPendienteFirmaId(null)
         if (pendienteDetalle) { const d = pendienteDetalle; setPendienteDetalle(null); abrirDetalle(d) }
       }} height="85%">
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
-        </div>
-        <div className="px-4 pb-4">
+        <div className="pt-4 px-4 pb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
               {sheetNuevoPaso === 'firma_decision' ? 'Firmar registro' : sheetNuevoPaso === 'firma_gate' ? 'Firma requerida' : 'Nuevo registro mensual'}
@@ -1065,9 +1062,6 @@ export function VerificacionCosecha() {
 
       {/* ═══ SHEET: CONSOLIDADO ══════════════════════════════════════════ */}
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="55%">
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
-        </div>
         <div className="px-4 pb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>

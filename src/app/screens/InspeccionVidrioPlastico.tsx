@@ -796,10 +796,7 @@ export function InspeccionVidrioPlastico() {
 
       {/* ── Sheet: configurar materiales ───────────────────────────────────── */}
       <BottomSheet open={sheetConfigAbierto} onClose={() => setSheetConfigAbierto(false)} height="85%">
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 rounded-full bg-border" />
-            </div>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+            <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Configurar materiales</h2>
               <button onClick={() => setSheetConfigAbierto(false)} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
@@ -945,10 +942,7 @@ export function InspeccionVidrioPlastico() {
 
       {/* ── Sheet: exportar consolidado ────────────────────────────────────── */}
       <BottomSheet open={sheetConsolidadoAbierto} onClose={() => setSheetConsolidadoAbierto(false)}>
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 rounded-full bg-border" />
-            </div>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+            <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
               <button onClick={() => setSheetConsolidadoAbierto(false)} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
@@ -1020,10 +1014,7 @@ export function InspeccionVidrioPlastico() {
 
       {/* ── Sheet: nueva inspección ────────────────────────────────────────── */}
       <BottomSheet open={sheetInspeccionAbierto} onClose={handleCerrarSheetInspeccion} height="85%">
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 rounded-full bg-border" />
-            </div>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+            <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 {sheetInspeccionPaso === 'firma_gate' ? 'Registra tu firma' : sheetInspeccionPaso === 'firma_decision' ? 'Firmar registro' : 'Nueva inspección'}
               </h2>

@@ -835,8 +835,7 @@ export function VerificacionInsumos() {
 
       {/* ═══ SHEET: NUEVO REGISTRO MENSUAL ═══════════════════════════════════════ */}
       <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
-            <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
-            <div className="px-4 pb-4">
+            <div className="pt-4 px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nuevo registro mensual</h2>
                 <button onClick={() => setSheetNuevo(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
@@ -893,8 +892,7 @@ export function VerificacionInsumos() {
 
       {/* ═══ SHEET: AGREGAR DÍA DE VERIFICACIÓN ═════════════════════════════════ */}
       <BottomSheet open={sheetDia && !!registroActivo} onClose={() => !dGuardando && handleCerrarSheetDia()} height="85%">
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0"><div className="w-9 h-1 rounded-full bg-border" /></div>
-            <div className="px-4 pb-2 flex-shrink-0">
+            <div className="pt-4 px-4 pb-2 flex-shrink-0">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                   {sheetDiaPaso === 'firma_decision' ? 'Firmar registro' : sheetDiaPaso === 'firma_gate' ? 'Firma requerida' : 'Agregar día de verificación'}
@@ -999,8 +997,7 @@ export function VerificacionInsumos() {
 
       {/* ═══ SHEET: CATÁLOGO DE INSUMOS ══════════════════════════════════════════ */}
       <BottomSheet open={sheetCatalogo} onClose={() => setSheetCatalogo(false)} height="92%">
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0"><div className="w-9 h-1 rounded-full bg-border" /></div>
-            <div className="px-4 pb-3 flex-shrink-0 border-b border-border">
+            <div className="pt-4 px-4 pb-3 flex-shrink-0 border-b border-border">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Catálogo de insumos</h2>
                 <button onClick={() => setSheetCatalogo(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
@@ -1100,8 +1097,7 @@ export function VerificacionInsumos() {
 
       {/* ═══ SHEET: EXPORTAR CONSOLIDADO ═════════════════════════════════════════ */}
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="55%">
-            <div className="flex justify-center pt-3 pb-1"><div className="w-9 h-1 rounded-full bg-border" /></div>
-            <div className="px-4 pb-4">
+            <div className="pt-4 px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
                 <button onClick={() => setSheetConsolidado(false)}><X className="w-5 h-5 text-muted-foreground" /></button>

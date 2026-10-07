@@ -705,11 +705,8 @@ export function InspeccionPreoperacionalCosecha() {
 
       {/* ═══ SHEET: NUEVO REGISTRO MENSUAL ═══════════════════════════════ */}
       <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-9 h-1 rounded-full bg-border" />
-            </div>
 
-            <div className="px-4 pb-4">
+            <div className="pt-4 px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                   Nuevo registro mensual
@@ -795,11 +792,8 @@ export function InspeccionPreoperacionalCosecha() {
 
       {/* ═══ SHEET: AGREGAR DÍA DE INSPECCIÓN ═══════════════════════════ */}
       <BottomSheet open={sheetDia && !!registroActivo} onClose={() => !dGuardando && handleCerrarSheetDia()} height="85%">
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-9 h-1 rounded-full bg-border" />
-            </div>
 
-            <div className="px-4 pb-2 flex-shrink-0">
+            <div className="pt-4 px-4 pb-2 flex-shrink-0">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                   {sheetDiaPaso === 'firma_decision' ? 'Firmar registro' : sheetDiaPaso === 'firma_gate' ? 'Firma requerida' : 'Agregar día de inspección'}
@@ -918,10 +912,7 @@ export function InspeccionPreoperacionalCosecha() {
 
       {/* ═══ SHEET: EXPORTAR CONSOLIDADO ═════════════════════════════════ */}
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="55%">
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-9 h-1 rounded-full bg-border" />
-            </div>
-            <div className="px-4 pb-4">
+            <div className="pt-4 px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                   Exportar consolidado

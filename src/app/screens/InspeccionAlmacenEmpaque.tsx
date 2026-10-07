@@ -790,10 +790,7 @@ export function InspeccionAlmacenEmpaque() {
               />
             )}
             {sheetCrearPaso === 'form' && (<>
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 bg-border rounded-full" />
-            </div>
-            <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between">
+            <div className="pt-4 px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>
                 Nuevo registro mensual
               </h2>
@@ -879,10 +876,7 @@ export function InspeccionAlmacenEmpaque() {
 
       {/* ── Sheet: agregar día ─────────────────────────────────────────── */}
       <BottomSheet open={sheetDia} onClose={() => setSheetDia(false)}>
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 bg-border rounded-full" />
-            </div>
-            <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between">
+            <div className="pt-4 px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>
                 Registrar día de inspección
               </h2>
@@ -966,10 +960,7 @@ export function InspeccionAlmacenEmpaque() {
 
       {/* ── Sheet: consolidado ─────────────────────────────────────────── */}
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)}>
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 bg-border rounded-full" />
-            </div>
-            <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between">
+            <div className="pt-4 px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>
                 Exportar PDF consolidado
               </h2>
