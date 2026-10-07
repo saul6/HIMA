@@ -30,6 +30,7 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { Portal } from '@/app/components/Portal'
+import { BottomSheet as SheetEstandar } from '@/app/components/BottomSheet'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -1143,22 +1144,9 @@ function SaveBtn({ loading, onClick, label, secondary, icon }: { loading: boolea
 
 function BottomSheet({ title, onClose, children, noContentPad }: { title: string; onClose: () => void; children: React.ReactNode; noContentPad?: boolean }) {
   return (
-    <Portal>
-      <div className="fixed inset-0 bg-black/40 z-30" onClick={onClose} />
-      <div
-        className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col overflow-hidden"
-        style={{ height: '85%', borderRadius: '0.625rem 0.625rem 0 0', maxWidth: 390, margin: '0 auto' }}
-      >
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-10 h-1 rounded-full bg-border" />
-        </div>
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>{title}</h2>
-          <button onClick={onClose} className="p-1"><X className="w-5 h-5 text-muted-foreground" /></button>
-        </div>
-        {noContentPad ? children : <div className="flex-1 overflow-y-auto p-4 space-y-4">{children}</div>}
-      </div>
-    </Portal>
+    <SheetEstandar open onClose={onClose} title={title}>
+      {noContentPad ? children : <div className="flex-1 overflow-y-auto p-4 space-y-4">{children}</div>}
+    </SheetEstandar>
   )
 }
 
