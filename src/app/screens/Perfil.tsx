@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { FirmaPad, type FirmaPadRef } from '@/app/components/FirmaPad'
 import { FirmaSvg } from '@/app/components/FirmaSvg'
 import { contarPendientes } from '@/lib/offline/outbox'
+import { isUpdateDisponible, UPDATE_DISPONIBLE_EVENT, ejecutarActualizacion } from '@/lib/offline/actualizacionSegura'
 
 const ROL_LABEL: Record<string, string> = {
   super_admin: 'Super Admin',
@@ -49,6 +50,28 @@ export function Perfil() {
   const firmaPadRef = useRef<FirmaPadRef>(null)
 
   const esAuditor = profile?.rol === 'auditor'
+
+  const [updateDisponible, setUpdateDisponible] = useState(isUpdateDisponible())
+  useEffect(() => {
+    const h = () => setUpdateDisponible(isUpdateDisponible())
+    window.addEventListener(UPDATE_DISPONIBLE_EVENT, h)
+    return () => window.removeEventListener(UPDATE_DISPONIBLE_EVENT, h)
+  }, [])
+
+  const fechaBuild = (() => {
+    try {
+      return new Date(__APP_BUILD__).toLocaleString('es-MX', {
+        timeZone: 'America/Mexico_City',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    } catch {
+      return __APP_BUILD__
+    }
+  })()
 
   useEffect(() => {
     let cancelled = false
@@ -316,7 +339,23 @@ export function Perfil() {
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="text-center">
             <div className="text-sm mb-1" style={{ fontWeight: 600 }}><MadyLogo theme={resolvedTheme} className="h-80 mx-auto" /></div>
-            <div className="text-xs text-muted-foreground mb-1">Versión 2.1.0</div>
+            <div className="text-xs text-muted-foreground mb-1">
+              Versión {__APP_VERSION__} · {fechaBuild}
+            </div>
+            {updateDisponible && (
+              <div className="flex items-center justify-center gap-2 mt-1 mb-1">
+                <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                  Actualización pendiente
+                </span>
+                <button
+                  onClick={ejecutarActualizacion}
+                  className="text-xs px-2.5 py-1 rounded-lg"
+                  style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
+                >
+                  Actualizar ahora
+                </button>
+              </div>
+            )}
             <div className="text-xs text-muted-foreground">
               © 2026 M.A.D.Y
             </div>

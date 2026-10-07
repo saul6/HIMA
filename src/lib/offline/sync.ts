@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { obtenerLotes, obtenerLote, actualizarLote, eliminarLote, obtenerAdjuntosLote } from './outbox'
 import type { LoteOutbox } from './tipos'
+import { setSincronizando } from './actualizacionSegura'
 
 export const SYNC_OK_EVENT = 'mady:lote-sincronizado'
 export const SYNC_RECHAZADO_EVENT = 'mady:lote-rechazado'
@@ -190,6 +191,7 @@ async function procesarCola(userId: string): Promise<void> {
   if (sincronizando) return
   if (!navigator.onLine) return
   sincronizando = true
+  setSincronizando(true)
   try {
     const lotes = await obtenerLotes(userId)
     const pendientes = lotes.filter(l => l.estado === 'pendiente')
@@ -204,6 +206,7 @@ async function procesarCola(userId: string): Promise<void> {
     }
   } finally {
     sincronizando = false
+    setSincronizando(false)
   }
 }
 

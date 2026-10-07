@@ -19,4 +19,6 @@ if (typeof Node !== 'undefined') {
   }
 }
 
+console.info('[M.A.D.Y] versión', __APP_VERSION__, __APP_BUILD__)
+
 createRoot(document.getElementById("root")!).render(<App />);

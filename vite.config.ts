@@ -1,9 +1,21 @@
 import { defineConfig } from 'vite'
 import path from 'path'
+import { execSync } from 'child_process'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import { VitePWA } from 'vite-plugin-pwa'
+
+function getGitSha(): string {
+  if (process.env.VERCEL_GIT_COMMIT_SHA) {
+    return process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7)
+  }
+  try {
+    return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim()
+  } catch {
+    return 'dev'
+  }
+}
 
 export default defineConfig({
   plugins: [
@@ -55,6 +67,8 @@ export default defineConfig({
   // ExcelJS needs global and Buffer available in browser bundles
   define: {
     global: 'globalThis',
+    __APP_VERSION__: JSON.stringify(getGitSha()),
+    __APP_BUILD__: JSON.stringify(new Date().toISOString()),
   },
 
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.

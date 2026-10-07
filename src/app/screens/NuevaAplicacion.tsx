@@ -28,6 +28,7 @@ import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { SPRING_SUAVE, SPRING_SUAVE_SIN_REBOTE } from '@/lib/motion'
+import { marcarCapturaEnCurso } from '@/lib/offline/actualizacionSegura'
 
 // Redondea a máximo 4 decimales (evita notación científica y floats infinitos en BD y PDF)
 const r4 = (n: number) => parseFloat(n.toFixed(4));
@@ -112,6 +113,12 @@ export function NuevaAplicacion() {
     proximaCosecha: "",
     metodoAplicacionGg: "",
   });
+
+  // Bloquea actualización automática del SW mientras el formulario esté abierto
+  useEffect(() => {
+    marcarCapturaEnCurso(true)
+    return () => marcarCapturaEnCurso(false)
+  }, [])
 
   // Preselecciona rancho si se viene desde una tarea de agenda
   useEffect(() => {

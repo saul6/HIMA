@@ -1,7 +1,8 @@
-import { type ReactNode } from 'react'
+import { type ReactNode, useEffect } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { X } from 'lucide-react'
 import { Portal } from '@/app/components/Portal'
+import { sumarVentana, restarVentana } from '@/lib/offline/actualizacionSegura'
 
 interface BottomSheetProps {
   open: boolean
@@ -96,6 +97,13 @@ function StaticSheet({ open, onClose, height, title, children, raised }: {
  */
 export function BottomSheet({ open, onClose, height, title, children, animateFrom }: BottomSheetProps) {
   const reducedMotion = useReducedMotion()
+
+  // Cuenta cuántas ventanas están abiertas para saber si es seguro actualizar el SW
+  useEffect(() => {
+    if (!open) return
+    sumarVentana()
+    return () => restarVentana()
+  }, [open])
 
   if (!animateFrom) {
     // Comportamiento por defecto — idéntico al de siempre, sin motion.

@@ -1,5 +1,10 @@
 // IndexedDB: mady_offline
 // stores: cache, lotes, adjuntos
+//
+// Al incrementar DB_VERSION para añadir stores nuevos, el patrón
+// if (!db.objectStoreNames.contains(...)) { db.createObjectStore(...) }
+// en onupgradeneeded preserva los stores existentes — los lotes y adjuntos
+// pendientes de subir nunca se borran en una actualización de versión.
 
 const DB_NAME = 'mady_offline'
 const DB_VERSION = 1
