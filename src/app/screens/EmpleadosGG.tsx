@@ -199,7 +199,9 @@ export function EmpleadosGG() {
       <ModuloHeader tituloFallback="Identificación de Empleados" subtitulo="M77 · REG-ASIP-26 · Seguridad" />
 
       <BannerTareaOrigen tareaId={tareaId} />
-      <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
+      <div className="px-4 pt-3">
+        <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
+      </div>
 
       {/* Lista */}
       <div className="p-4 space-y-3">

@@ -258,7 +258,9 @@ export function BotiquinGG() {
       <ModuloHeader tituloFallback="Inventario de Material de Curación" subtitulo="M73 · Botiquín GlobalGAP · Seguridad" />
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
+      <div className="px-4 pt-3">
+        <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
+      </div>
 
       {/* Lista */}
       <div className="p-4 space-y-3">

@@ -257,7 +257,9 @@ export function MantenimientoEquiposGG() {
       <ModuloHeader tituloFallback="Verificación y Mantenimiento de Equipos" subtitulo="M76 · REG-09 · Mantenimiento" />
 
       <BannerTareaOrigen tareaId={tareaId} />
-      <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
+      <div className="px-4 pt-3">
+        <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
+      </div>
 
       {/* Lista */}
       <div className="p-4 space-y-3">
