@@ -23,7 +23,7 @@ import {
 } from '@/lib/queries'
 import type { Organizacion, Rancho } from '@/types/database.types'
 import { Fab } from '@/app/components/Fab'
-import { Portal } from '@/app/components/Portal'
+import { BottomSheet } from '@/app/components/BottomSheet'
 
 const CULTIVOS = ['Zarzamora', 'Frambuesa', 'Fresa', 'Mora azul', 'Coco']
 const CULTIVO_OTRO = '__otro__'
@@ -554,21 +554,7 @@ export function MiOrganizacion() {
       )}
 
       {/* Bottom Sheet — crear/editar rancho */}
-      {sheetAbierto && (
-        <Portal>
-          <div
-            className="fixed inset-0 bg-black/40 z-30"
-            onClick={cerrarSheet}
-          />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col overflow-hidden"
-            style={{
-              height: '85%',
-              borderRadius: '0.625rem 0.625rem 0 0',
-              maxWidth: 390,
-              margin: '0 auto',
-            }}
-          >
+      <BottomSheet open={sheetAbierto} onClose={cerrarSheet}>
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
@@ -688,26 +674,10 @@ export function MiOrganizacion() {
                 {ranchoEditando ? 'Guardar cambios' : `Crear ${sTerminoL}`}
               </button>
             </div>
-          </div>
-        </Portal>
-      )}
+      </BottomSheet>
 
       {/* Bottom Sheet — asignar sitios a operario */}
-      {empleadoSeleccionado && (
-        <Portal>
-          <div
-            className="fixed inset-0 bg-black/40 z-30"
-            onClick={() => setEmpleadoSeleccionado(null)}
-          />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col overflow-hidden"
-            style={{
-              height: '85%',
-              borderRadius: '0.625rem 0.625rem 0 0',
-              maxWidth: 390,
-              margin: '0 auto',
-            }}
-          >
+      <BottomSheet open={!!empleadoSeleccionado} onClose={() => setEmpleadoSeleccionado(null)}>
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
             </div>
@@ -780,9 +750,7 @@ export function MiOrganizacion() {
                 </div>
               )}
             </div>
-          </div>
-        </Portal>
-      )}
+      </BottomSheet>
     </div>
   )
 }
