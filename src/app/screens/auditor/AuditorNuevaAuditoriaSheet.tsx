@@ -177,13 +177,8 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
           maxHeight: '85vh',
         }}
       >
-        {/* Handle bar */}
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
-        </div>
-
         {/* Cabecera */}
-        <div className="flex items-center gap-3 px-4 pb-3 flex-shrink-0 border-b border-border">
+        <div className="flex items-center gap-3 px-4 pt-4 pb-3 flex-shrink-0 border-b border-border">
           {paso === 2 ? (
             <button onClick={() => setPaso(1)} className="flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
               <ChevronLeft size={22} />

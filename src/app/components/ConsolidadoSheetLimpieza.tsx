@@ -36,10 +36,7 @@ export function ConsolidadoSheetLimpieza({
 }: ConsolidadoSheetLimpiezaProps) {
   return (
     <BottomSheet open={open} onClose={onClose} height="85%">
-      <div className="flex justify-center pt-3 pb-1">
-        <div className="w-9 h-1 rounded-full bg-border" />
-      </div>
-      <div className="px-4 pb-4">
+      <div className="pt-4 px-4 pb-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
           <button type="button" onClick={onClose}>

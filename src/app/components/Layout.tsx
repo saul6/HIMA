@@ -357,13 +357,8 @@ export function Layout() {
 
       {/* ── Mobile Menu Sheet ─────────────────────────────────────────────── */}
       <BottomSheet open={menuAbierto} onClose={() => setMenuAbierto(false)} animateFrom="bottom-left">
-        {/* Handle bar */}
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
-        </div>
-
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <div className="flex items-center gap-2">
             <MadyLogo theme={resolvedTheme} className="h-6 w-auto" />
           </div>
