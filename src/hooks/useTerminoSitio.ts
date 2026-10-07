@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface TerminosSitio {
   singular: string      // "Rancho" | "Instalación" | "Sitio"
@@ -33,7 +34,7 @@ export function resolverTerminos(termino: string): TerminosSitio {
   }
 }
 
-export function useTerminoSitio() {
+export function useTerminoSitio(userId?: string, orgId?: string) {
   const [termino, setTermino] = useState<string>('Rancho')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -42,16 +43,30 @@ export function useTerminoSitio() {
     setLoading(true)
     setError(null)
     try {
-      const { data, error: rpcError } = await supabase.rpc('get_mi_termino_sitio')
-      if (rpcError) throw rpcError
-      setTermino((data as string) ?? 'Rancho')
+      if (userId && orgId) {
+        const resultado = await leerConCache<string>(
+          'termino_sitio',
+          userId,
+          orgId,
+          async () => {
+            const { data, error: rpcError } = await supabase.rpc('get_mi_termino_sitio')
+            if (rpcError) throw rpcError
+            return (data as string) ?? 'Rancho'
+          },
+        )
+        setTermino(resultado.datos)
+      } else {
+        const { data, error: rpcError } = await supabase.rpc('get_mi_termino_sitio')
+        if (rpcError) throw rpcError
+        setTermino((data as string) ?? 'Rancho')
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar término de sitio')
       setTermino('Rancho')
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [userId, orgId])
 
   const clear = useCallback(() => {
     setTermino('Rancho')

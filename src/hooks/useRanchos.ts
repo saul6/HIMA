@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuthContext } from '@/context/AuthContext'
 import { getRanchos } from '@/lib/queries'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 import type { Rancho } from '@/types/database.types'
 
 interface UseRanchosResult {
@@ -17,18 +18,23 @@ export function useRanchos(): UseRanchosResult {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!profile?.org_id) {
+    if (!profile?.id || !profile?.org_id) {
       setLoading(false)
       return
     }
 
+    const userId = profile.id
+    const orgId  = profile.org_id
+
     setLoading(true)
-    // Sin filtro de productor_id: la RLS se encarga.
-    // admin_org/asesor_tecnico → todos los ranchos de la org.
-    // operario → solo los ranchos asignados vía rancho_asignaciones.
-    getRanchos()
-      .then(setRanchos)
-      .catch((err: Error) => setError(err.message))
+    leerConCache<Rancho[]>(
+      'ranchos',
+      userId,
+      orgId,
+      () => getRanchos(),
+    )
+      .then(resultado => setRanchos(resultado.datos))
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Error al cargar sitios'))
       .finally(() => setLoading(false))
   }, [profile?.id, profile?.org_id])
 

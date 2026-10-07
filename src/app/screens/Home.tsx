@@ -6,7 +6,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import {
   TriangleAlert, Clock3,
   Users, AlertTriangle, ChevronRight, ClipboardList, BarChart2,
-  FileCheck, ShieldAlert, Search, Pin, X, Sun, Moon, Lock, ListChecks,
+  FileCheck, ShieldAlert, Search, Pin, X, Sun, Moon, Lock, ListChecks, WifiOff,
 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useFirmaContext } from '@/context/FirmaContext'
@@ -26,6 +26,8 @@ import type { ModuloVisible } from '@/hooks/useMisModulos'
 import { CATEGORIA_MAP } from '@/lib/categoriasModulos'
 import { ordenarAlfabetico } from '@/lib/ordenAlfabetico'
 import { SPRING_SUAVE } from '@/lib/motion'
+import { useConexion } from '@/hooks/useConexion'
+import { MODULOS_OFFLINE, type CodigoOffline } from '@/lib/offline/modulosOffline'
 
 const MAX_PINNED = 4
 // Foco visible por teclado — nunca `ring-*` (usa box-shadow, prohibido).
@@ -226,9 +228,10 @@ interface CategoriaPopupProps {
   toggleFijar: (codigo: string) => void
   onClose: () => void
   onBloqueado: (modulo: ModuloVisible) => void
+  online: boolean
 }
 
-function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloqueado }: CategoriaPopupProps) {
+function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloqueado, online }: CategoriaPopupProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const listaRef = useRef<HTMLDivElement>(null)
   const GrupoIcon = resolverIcono(grupo.icono)
@@ -395,6 +398,18 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
                     <span className="flex-1 text-sm text-foreground" style={{ fontWeight: 600 }}>
                       {modulo.nombre}
                     </span>
+                    {!online && !MODULOS_OFFLINE.includes(modulo.codigo as CodigoOffline) && (
+                      <span
+                        className="text-[10px] px-1.5 py-0.5 rounded flex-shrink-0"
+                        style={{
+                          backgroundColor: 'var(--muted)',
+                          color: 'var(--muted-foreground)',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Sin red
+                      </span>
+                    )}
                     {puedeFijar && (
                       <button
                         onClick={e => {
@@ -521,7 +536,9 @@ export function Home() {
   const {
     modulos, loading: loadingModulos, error: errorModulos,
     refetch: refetchModulos, terminosSitio,
+    desdeCache: modulosDesdeCache, guardadoEn: modulosGuardadoEn,
   } = useModulosContext()
+  const { online } = useConexion()
   const { busqueda, setBusqueda } = useHomeSearch()
   const reducedMotion = useReducedMotion()
 
@@ -758,8 +775,8 @@ export function Home() {
           </div>
         )}
 
-        {/* Error de carga */}
-        {error && !loading && (
+        {/* Error de carga — solo cuando hay red (sin red los valores muestran "—") */}
+        {error && !loading && online && (
           <div
             className="flex items-start gap-2 rounded-xl p-3 border"
             style={{ backgroundColor: 'var(--agro-danger-fill)', borderColor: 'var(--agro-red)' }}
@@ -1222,20 +1239,44 @@ export function Home() {
                 ))}
               </div>
             ) : errorModulos ? (
-              <div
-                className="flex items-center gap-2 rounded-xl p-3 border"
-                style={{ backgroundColor: 'var(--agro-danger-fill)', borderColor: 'var(--agro-red)' }}
-              >
-                <TriangleAlert className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
-                <p className="text-xs flex-1" style={{ color: 'var(--agro-danger-text)' }}>
-                  Error al cargar módulos.{' '}
-                  <button className={`underline ${FOCUS_RING}`} onClick={refetchModulos}>
-                    Reintentar
-                  </button>
-                </p>
-              </div>
+              !online ? (
+                <div
+                  className="flex items-start gap-2 rounded-xl p-3 border"
+                  style={{ backgroundColor: 'var(--agro-warning-fill)', borderColor: 'var(--agro-amber)' }}
+                >
+                  <WifiOff className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+                  <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                    Abre la app con internet al menos una vez para usarla sin conexión.
+                  </p>
+                </div>
+              ) : (
+                <div
+                  className="flex items-center gap-2 rounded-xl p-3 border"
+                  style={{ backgroundColor: 'var(--agro-danger-fill)', borderColor: 'var(--agro-red)' }}
+                >
+                  <TriangleAlert className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
+                  <p className="text-xs flex-1" style={{ color: 'var(--agro-danger-text)' }}>
+                    Error al cargar módulos.{' '}
+                    <button className={`underline ${FOCUS_RING}`} onClick={refetchModulos}>
+                      Reintentar
+                    </button>
+                  </p>
+                </div>
+              )
             ) : modulosAgrupados.length === 0 ? null : (
               <>
+                {modulosDesdeCache && (
+                  <div
+                    className="flex items-center gap-1.5 rounded-lg px-3 py-2 mb-2"
+                    style={{ backgroundColor: 'var(--muted)' }}
+                  >
+                    <WifiOff className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+                    <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                      Sin conexión · datos guardados
+                      {modulosGuardadoEn ? ` del ${new Date(modulosGuardadoEn).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}` : ''}
+                    </p>
+                  </div>
+                )}
                 <h2 className="mb-2 text-sm text-foreground" style={{ fontWeight: 600 }}>
                   Inocuidad y BPAs
                 </h2>
@@ -1296,6 +1337,7 @@ export function Home() {
           toggleFijar={toggleFijar}
           onClose={cerrarCategoria}
           onBloqueado={handleBloqueadoEnPopup}
+          online={online}
         />
       )}
 

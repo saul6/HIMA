@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M12FilaBano {
   id: string
@@ -32,28 +33,37 @@ export function useM12LimpiezaBanos() {
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id) { setLoading(false); return }
+    if (!profile?.id || !profile?.org_id) { setLoading(false); return }
+    const userId = profile.id
+    const orgId  = profile.org_id
     setLoading(true)
     setError(null)
     try {
-      const { data, error: err } = await supabase
-        .from('m12_limpieza_banos')
-        .select('*, ranchos(nombre, codigo)')
-        .eq('org_id', profile.org_id)
-        .order('fecha', { ascending: false })
-        .order('created_at', { ascending: true })
-        .limit(500)
-      if (err) throw err
+      const resultado = await leerConCache(
+        'm12_jornadas',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await supabase
+            .from('m12_limpieza_banos')
+            .select('*, ranchos(nombre, codigo)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: true })
+            .limit(500)
+          if (err) throw err
+          return data ?? []
+        },
+      )
 
-      // Agrupar filas por rancho_id + fecha para formar jornadas
       const grouped = new Map<string, M12Jornada>()
-      for (const row of (data ?? [])) {
+      for (const row of (resultado.datos as any[])) {
         const key = `${row.rancho_id}|${row.fecha}`
         if (!grouped.has(key)) {
           grouped.set(key, {
             rancho_id: row.rancho_id,
-            rancho_nombre: (row as any).ranchos?.nombre ?? '—',
-            rancho_codigo: (row as any).ranchos?.codigo ?? '—',
+            rancho_nombre: row.ranchos?.nombre ?? '—',
+            rancho_codigo: row.ranchos?.codigo ?? '—',
             fecha: row.fecha,
             realizado_por_id: row.realizado_por_id,
             banos: [],
@@ -76,7 +86,7 @@ export function useM12LimpiezaBanos() {
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.id, profile?.org_id])
 
   useEffect(() => { cargar() }, [cargar])
 

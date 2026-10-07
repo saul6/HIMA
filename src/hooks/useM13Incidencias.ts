@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M13FotoInfo {
   id: string
@@ -41,29 +42,39 @@ export function useM13Incidencias() {
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id) { setLoading(false); return }
+    if (!profile?.id || !profile?.org_id) { setLoading(false); return }
+    const userId = profile.id
+    const orgId  = profile.org_id
     setLoading(true)
     setError(null)
     try {
-      const { data, error: err } = await supabase
-        .from('m13_reportes')
-        .select(`
-          *,
-          ranchos(nombre, codigo),
-          creador:profiles!creado_por(nombre_completo),
-          m13_incidencias(
-            id, orden, descripcion,
-            m13_incidencia_fotos(id, storage_path, orden)
-          )
-        `)
-        .eq('org_id', profile.org_id)
-        .order('fecha', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(100)
-      if (err) throw err
+      const resultado = await leerConCache(
+        'm13_reportes',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await supabase
+            .from('m13_reportes')
+            .select(`
+              *,
+              ranchos(nombre, codigo),
+              creador:profiles!creado_por(nombre_completo),
+              m13_incidencias(
+                id, orden, descripcion,
+                m13_incidencia_fotos(id, storage_path, orden)
+              )
+            `)
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+            .limit(100)
+          if (err) throw err
+          return data ?? []
+        },
+      )
 
       setReportes(
-        (data ?? []).map((r: any) => ({
+        (resultado.datos as any[]).map((r) => ({
           ...r,
           rancho_nombre: r.ranchos?.nombre ?? '—',
           rancho_codigo: r.ranchos?.codigo ?? '—',
@@ -94,7 +105,7 @@ export function useM13Incidencias() {
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.id, profile?.org_id])
 
   useEffect(() => { cargar() }, [cargar])
 

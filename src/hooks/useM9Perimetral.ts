@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M9RegistroResumen {
   id: string
@@ -31,19 +32,29 @@ export function useM9Perimetral() {
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id) { setLoading(false); return }
+    if (!profile?.id || !profile?.org_id) { setLoading(false); return }
+    const userId = profile.id
+    const orgId  = profile.org_id
     setLoading(true)
     setError(null)
     try {
-      const { data, error: err } = await supabase
-        .from('m9_registro_mensual')
-        .select('*, ranchos(nombre, codigo)')
-        .eq('org_id', profile.org_id)
-        .order('mes', { ascending: false })
-        .order('created_at', { ascending: false })
-      if (err) throw err
+      const resultado = await leerConCache(
+        'm9_registros',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await supabase
+            .from('m9_registro_mensual')
+            .select('*, ranchos(nombre, codigo)')
+            .eq('org_id', orgId)
+            .order('mes', { ascending: false })
+            .order('created_at', { ascending: false })
+          if (err) throw err
+          return data ?? []
+        },
+      )
 
-      const lista: M9RegistroResumen[] = ((data ?? []) as any[]).map((r) => ({
+      const lista: M9RegistroResumen[] = (resultado.datos as any[]).map((r) => ({
         id: r.id,
         rancho_id: r.rancho_id,
         rancho_nombre: r.ranchos?.nombre ?? '—',
@@ -62,7 +73,7 @@ export function useM9Perimetral() {
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.id, profile?.org_id])
 
   useEffect(() => { cargar() }, [cargar])
 

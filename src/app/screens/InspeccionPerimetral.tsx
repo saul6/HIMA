@@ -32,6 +32,7 @@ import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { encolarLote } from '@/lib/offline/outbox'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 import { useConexion } from '@/hooks/useConexion'
 import { useOutbox } from '@/hooks/useOutbox'
 
@@ -189,17 +190,30 @@ export function InspeccionPerimetral() {
   const [loadingItems, setLoadingItems] = useState(false)
 
   useEffect(() => {
+    if (!profile?.id || !profile?.org_id) return
     let cancelado = false
     setLoadingItems(true)
-    supabase
-      .from('m9_items_catalogo')
-      .select('*')
-      .order('orden')
-      .then(({ data }) => {
-        if (!cancelado) { setItems((data ?? []) as M9ItemCatalogo[]); setLoadingItems(false) }
+    leerConCache<M9ItemCatalogo[]>(
+      'm9_items_catalogo',
+      profile.id,
+      profile.org_id,
+      async () => {
+        const { data, error } = await supabase
+          .from('m9_items_catalogo')
+          .select('*')
+          .order('orden')
+        if (error) throw error
+        return (data ?? []) as M9ItemCatalogo[]
+      },
+    )
+      .then(resultado => {
+        if (!cancelado) { setItems(resultado.datos); setLoadingItems(false) }
+      })
+      .catch(() => {
+        if (!cancelado) setLoadingItems(false)
       })
     return () => { cancelado = true }
-  }, [])
+  }, [profile?.id, profile?.org_id])
 
   // ── Datos del detalle ──
   const [dias, setDias] = useState<M9DiaConResultados[]>([])
