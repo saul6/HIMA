@@ -355,13 +355,9 @@ export function ActividadEquipo() {
 
       {/* Bottom Sheet — marcar/desmarcar corrección */}
       <BottomSheet open={!!itemSeleccionado} onClose={cerrarSheet}>
-            {/* Handle */}
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 rounded-full bg-border" />
-            </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+            <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <div className="flex-1 min-w-0">
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                   {itemSeleccionado.requiere_correccion ? 'Gestionar corrección' : 'Marcar para corrección'}

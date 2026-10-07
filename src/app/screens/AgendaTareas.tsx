@@ -608,7 +608,7 @@ function DetalleSheet({
   return (
     <div className="flex flex-col h-full overflow-y-auto">
       {/* Header */}
-      <div className="px-4 pt-2 pb-3 border-b border-border flex-shrink-0">
+      <div className="px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
         <div className="flex items-start justify-between gap-2 mb-2">
           <p className="text-base font-semibold leading-tight" style={{ color: 'var(--foreground)' }}>
             {tarea.titulo}
@@ -1835,10 +1835,7 @@ export function AgendaTareas() {
 
       {/* Sheet nueva tarea */}
       <BottomSheet open={sheetNueva} onClose={() => setSheetNueva(false)} height="85%">
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
-        </div>
-        <div className="px-4 py-3 border-b border-border flex-shrink-0">
+        <div className="px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
           <p className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>Nueva tarea</p>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
@@ -1857,9 +1854,6 @@ export function AgendaTareas() {
 
       {/* Sheet detalle */}
       <BottomSheet open={!!tareaSeleccionada} onClose={cerrarDetalle} height="85%">
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
-        </div>
         {tareaSeleccionada && profile?.org_id && (
           <DetalleSheet
             tareaId={tareaSeleccionada}

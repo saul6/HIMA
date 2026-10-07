@@ -453,10 +453,7 @@ export function AccionesCorrectivas() {
 
       {/* Bottom Sheet — Detalle / Captura */}
       <BottomSheet open={sheetAbierto} onClose={cerrarSheet} height="95%">
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-9 h-1 rounded-full bg-border" />
-        </div>
-        <div className="flex items-start justify-between px-4 py-3 border-b border-border flex-shrink-0">
+        <div className="flex items-start justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
           <div className="flex-1 min-w-0 pr-2">
             <p className="text-xs text-muted-foreground mb-0.5" style={{ fontWeight: 600 }}>
               {selectedItem?.modulo_label} · {selectedItem?.codigo_pregunta}

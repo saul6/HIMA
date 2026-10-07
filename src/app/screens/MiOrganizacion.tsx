@@ -555,11 +555,8 @@ export function MiOrganizacion() {
 
       {/* Bottom Sheet — crear/editar rancho */}
       <BottomSheet open={sheetAbierto} onClose={cerrarSheet}>
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 rounded-full bg-border" />
-            </div>
 
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+            <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 {ranchoEditando ? `Editar ${sTerminoL}` : `Nuevo ${sTerminoL}`}
               </h2>
@@ -678,11 +675,8 @@ export function MiOrganizacion() {
 
       {/* Bottom Sheet — asignar sitios a operario */}
       <BottomSheet open={!!empleadoSeleccionado} onClose={() => setEmpleadoSeleccionado(null)}>
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 rounded-full bg-border" />
-            </div>
 
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+            <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <div className="min-w-0 flex-1">
                 <h2 className="text-base text-foreground truncate" style={{ fontWeight: 600 }}>
                   {empleadoSeleccionado.nombre_completo}

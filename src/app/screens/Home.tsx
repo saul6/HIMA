@@ -298,17 +298,10 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
         aria-modal="true"
         aria-labelledby="cat-popup-title"
       >
-        {/* Handle bar — solo móvil */}
-        <div className="flex justify-center pt-3 pb-1 md:hidden">
-          <div
-            className="w-10 h-1 rounded-full"
-            style={{ backgroundColor: 'var(--muted-foreground)', opacity: 0.3 }}
-          />
-        </div>
 
         {/* Cabecera — borde inferior transparente hasta que la lista haga scroll */}
         <div
-          className={`flex items-center gap-3 px-4 py-3 border-b transition-colors duration-[var(--motion-fast)] ${
+          className={`flex items-center gap-3 px-4 pt-4 pb-3 border-b transition-colors duration-[var(--motion-fast)] ${
             listaConScroll ? 'border-border' : 'border-transparent'
           }`}
         >
@@ -464,9 +457,6 @@ function UpsellModal({ modulo, onClose }: { modulo: ModuloVisible | null; onClos
   return (
     <BottomSheet open onClose={onClose}>
       <div>
-        <div className="flex justify-center pt-3 pb-1 md:hidden">
-          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--muted-foreground)', opacity: 0.3 }} />
-        </div>
         <div className="px-6 py-6 flex flex-col items-center text-center gap-4">
           <div className="relative">
             <div

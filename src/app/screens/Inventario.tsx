@@ -221,12 +221,8 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
 
   return (
     <BottomSheet open onClose={onClose} height="85%">
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-10 h-1 rounded-full bg-border" />
-        </div>
 
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             Registrar movimiento
           </h2>
@@ -362,10 +358,7 @@ function ExportarReg01Sheet({ onClose, ranchoOptions, ranchos, orgId }: ExportSh
 
   return (
     <BottomSheet open onClose={onClose}>
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-10 h-1 rounded-full bg-border" />
-        </div>
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             Exportar REG-01
           </h2>
