@@ -314,10 +314,7 @@ export function EntradasSalidasPreFrio() {
 
       {/* ═══ SHEET: FORMULARIO ══════════════════════════════════════════════════ */}
       <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) handleCerrarSheet() }} height="85%">
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-9 h-1 rounded-full bg-border" />
-        </div>
-        <div className="flex items-center justify-between px-4 pb-3">
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nuevo registro</h2>
           <button type="button" onClick={() => { if (!guardando) handleCerrarSheet() }}>
             <X className="w-5 h-5 text-muted-foreground" />
@@ -563,10 +560,7 @@ export function EntradasSalidasPreFrio() {
 
       {/* ═══ SHEET: CONSOLIDADO ═════════════════════════════════════════════════ */}
       <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)} height="85%">
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-9 h-1 rounded-full bg-border" />
-        </div>
-        <div className="flex items-center justify-between px-4 pb-3">
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
           <button type="button" onClick={() => setConsolidadoOpen(false)}>
             <X className="w-5 h-5 text-muted-foreground" />

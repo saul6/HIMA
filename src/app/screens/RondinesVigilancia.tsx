@@ -593,10 +593,7 @@ export function RondinesVigilancia() {
 
       {/* ═══ SHEET: NUEVO RONDÍN ══════════════════════════════════════════════ */}
       <BottomSheet open={sheetNuevo} onClose={() => { if (!nGuardando) handleCerrarSheetNuevo() }}>
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 bg-border rounded-full" />
-            </div>
-            <div className="px-4 py-3 flex items-center justify-between flex-shrink-0 border-b border-border">
+            <div className="px-4 pt-4 pb-3 flex items-center justify-between flex-shrink-0 border-b border-border">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Nuevo rondín</h2>
               <button onClick={() => { if (!nGuardando) handleCerrarSheetNuevo() }}>
                 <X className="w-5 h-5 text-muted-foreground" />
@@ -870,10 +867,7 @@ export function RondinesVigilancia() {
 
       {/* ═══ SHEET: CONFIGURAR CATÁLOGO ══════════════════════════════════════ */}
       <BottomSheet open={sheetConf} onClose={() => setSheetConf(false)}>
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 bg-border rounded-full" />
-            </div>
-            <div className="px-4 py-3 flex items-center justify-between flex-shrink-0 border-b border-border">
+            <div className="px-4 pt-4 pb-3 flex items-center justify-between flex-shrink-0 border-b border-border">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Configurar puntos</h2>
               <button onClick={() => setSheetConf(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
             </div>
@@ -984,10 +978,7 @@ export function RondinesVigilancia() {
 
       {/* ═══ SHEET: CONSOLIDADO ══════════════════════════════════════════════ */}
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)}>
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 bg-border rounded-full" />
-            </div>
-            <div className="px-4 py-3 flex items-center justify-between flex-shrink-0 border-b border-border">
+            <div className="px-4 pt-4 pb-3 flex items-center justify-between flex-shrink-0 border-b border-border">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Exportar consolidado</h2>
               <button onClick={() => setSheetConsolidado(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
             </div>

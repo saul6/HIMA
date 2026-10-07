@@ -341,11 +341,8 @@ export function MaterialEmpaqueMovimientos() {
 
       {/* Formulario */}
       <BottomSheet open={abierto} onClose={handleCerrarSheet} height="85%">
-          <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
-            <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
-          </div>
-          <div className="flex items-center justify-between px-5 pb-3 flex-shrink-0">
-            <h2 className="text-[15px] font-semibold">Nuevo movimiento</h2>
+          <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
+            <h2 className="text-base font-semibold">Nuevo movimiento</h2>
             <button onClick={handleCerrarSheet} className="text-[13px]" style={{ color: 'var(--muted-foreground)' }}>
               Cancelar
             </button>
@@ -557,11 +554,8 @@ export function MaterialEmpaqueMovimientos() {
 
       {/* Consolidado */}
       <BottomSheet open={consolAbierto} onClose={() => setConsolAbierto(false)} height="52%">
-          <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
-            <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
-          </div>
-          <div className="flex items-center justify-between px-5 pb-3 flex-shrink-0">
-            <h2 className="text-[15px] font-semibold">Exportar consolidado</h2>
+          <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
+            <h2 className="text-base font-semibold">Exportar consolidado</h2>
             <button onClick={() => setConsolAbierto(false)} className="text-[13px]" style={{ color: 'var(--muted-foreground)' }}>
               Cancelar
             </button>

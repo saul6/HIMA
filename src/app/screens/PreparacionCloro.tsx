@@ -393,10 +393,7 @@ export function PreparacionCloro() {
 
       {/* ── Bottom Sheet — Consolidado ───────────────────────────────────────── */}
       <BottomSheet open={sheetConsAbierto} onClose={() => setSheetConsAbierto(false)}>
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-10 h-1 rounded-full bg-border" />
-        </div>
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             Exportar consolidado
           </h2>
@@ -490,10 +487,7 @@ export function PreparacionCloro() {
           />
         )}
         {sheetPaso === 'form' && (<>
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-10 h-1 rounded-full bg-border" />
-        </div>
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             Nueva preparación de cloro
           </h2>
