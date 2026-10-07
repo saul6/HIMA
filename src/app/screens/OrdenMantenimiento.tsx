@@ -363,10 +363,7 @@ export function OrdenMantenimiento() {
 
       {/* ── Modal: nueva orden ─────────────────────────────────────────── */}
       <BottomSheet open={abierto} onClose={handleCerrarModal}>
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 bg-border rounded-full" />
-            </div>
-            <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between">
+            <div className="pt-4 px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>
                 Nueva Orden de Mantenimiento
               </h2>

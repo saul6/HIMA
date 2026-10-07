@@ -734,10 +734,7 @@ export function MantenimientoPreventivo() {
 
       {/* ── Sheet: crear registro ──────────────────────────────────────── */}
       <BottomSheet open={sheetCrear} onClose={handleCerrarSheetCrear}>
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 bg-border rounded-full" />
-            </div>
-            <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between">
+            <div className="pt-4 px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Nuevo registro mensual</h2>
               <button type="button" onClick={handleCerrarSheetCrear}><X className="w-5 h-5 text-muted-foreground" /></button>
             </div>
@@ -810,10 +807,7 @@ export function MantenimientoPreventivo() {
 
       {/* ── Sheet: capturar día ───────────────────────────────────────── */}
       <BottomSheet open={sheetDia && !!registroActivo} onClose={() => setSheetDia(false)}>
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 bg-border rounded-full" />
-            </div>
-            <div className="px-4 pb-2 flex-shrink-0">
+            <div className="pt-4 px-4 pb-2 flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Capturar día</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Toca cada elemento para cambiar su estado. Se guarda con UPSERT (sobrescribe si ya existe).
@@ -919,10 +913,7 @@ export function MantenimientoPreventivo() {
 
       {/* ── Sheet: acciones del mes ────────────────────────────────────── */}
       <BottomSheet open={sheetAcciones && !!registroActivo} onClose={() => setSheetAcciones(false)}>
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 bg-border rounded-full" />
-            </div>
-            <div className="px-4 pb-2 flex-shrink-0">
+            <div className="pt-4 px-4 pb-2 flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Acciones del mes</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Rev.Gral · Cam.Aceites · Cam.Piezas · Rev.Eléctrico
@@ -989,10 +980,7 @@ export function MantenimientoPreventivo() {
 
       {/* ── Sheet: consolidado ─────────────────────────────────────────── */}
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)}>
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 bg-border rounded-full" />
-            </div>
-            <div className="px-4 pb-2 flex-shrink-0">
+            <div className="pt-4 px-4 pb-2 flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Exportar PDF consolidado</h2>
             </div>
             <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-4">

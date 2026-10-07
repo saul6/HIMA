@@ -363,10 +363,7 @@ export function MantenimientoEquiposGG() {
 
       {/* Sheet */}
       <BottomSheet open={sheetNuevo} onClose={handleCerrarSheet} height="85%">
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
-        </div>
-        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             {sheetPaso === 'firma_decision' ? 'Registro guardado' : 'Nuevo registro de equipos'}
           </h2>
@@ -519,10 +516,7 @@ export function MantenimientoEquiposGG() {
 
       {/* Consolidado sheet */}
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="60%">
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
-        </div>
-        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
           <button onClick={() => setSheetConsolidado(false)}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
