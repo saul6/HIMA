@@ -24,6 +24,8 @@ export default defineConfig({
         runtimeCaching: [],
         // Excluir rutas de auth del navigateFallback
         navigateFallbackDenylist: [/^\/nfc\//],
+        // El bundle principal de esta app supera el límite por defecto de 2 MiB
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
       },
       manifest: {
         name: 'M.A.D.Y',

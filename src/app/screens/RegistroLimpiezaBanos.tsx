@@ -1,7 +1,7 @@
-﻿import { useState, useEffect } from 'react'
+﻿import { useState, useEffect, useMemo } from 'react'
 import {
   Plus, FileDown, X, Loader2, Droplets,
-  AlertTriangle, Trash2,
+  AlertTriangle, Trash2, WifiOff,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -27,6 +27,9 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { encolarLote } from '@/lib/offline/outbox'
+import { useConexion } from '@/hooks/useConexion'
+import { useOutbox } from '@/hooks/useOutbox'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -119,6 +122,8 @@ export function RegistroLimpiezaBanos() {
   const todosIds = jornadas.map(j => j.banos[0]?.id).filter(Boolean) as string[]
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M12', todosIds)
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = useOutbox('M12')
 
   // Form principal
   const [sheetAbierto, setSheetAbierto] = useState(false)
@@ -132,6 +137,21 @@ export function RegistroLimpiezaBanos() {
   const [guardando, setGuardando] = useState(false)
   const [errRancho, setErrRancho] = useState(false)
   const [limiteInfo, setLimiteInfo] = useState<{ proxima: string } | null>(null)
+
+  const hayLoteOfflineConflicto = useMemo(() => {
+    if (!ranchoId || !sheetAbierto) return false
+    const fechaLimite = new Date(fecha + 'T12:00:00')
+    const semanaAtras = new Date(fechaLimite)
+    semanaAtras.setDate(semanaAtras.getDate() - 6)
+    return lotesOffline.some(l => {
+      if (l.estado === 'sincronizado') return false
+      const meta = l.metadatos as { rancho_id?: string; fecha?: string } | undefined
+      if (meta?.rancho_id !== ranchoId) return false
+      if (!meta?.fecha) return false
+      const lf = new Date(meta.fecha + 'T12:00:00')
+      return lf >= semanaAtras && lf <= fechaLimite
+    })
+  }, [ranchoId, fecha, sheetAbierto, lotesOffline])
 
   // Consolidado
   const [sheetConsAbierto, setSheetConsAbierto] = useState(false)
@@ -243,16 +263,47 @@ export function RegistroLimpiezaBanos() {
 
   async function handleGuardar() {
     if (!ranchoId) { setErrRancho(true); return }
-    if (!profile?.org_id) { toast.error('Sin organización activa'); return }
+    if (!profile?.org_id || !user?.id) { toast.error('Sin organización activa'); return }
     if (banos.length === 0) { toast.warning('Agrega al menos un baño'); return }
 
     setGuardando(true)
     try {
-      const rows = banos.map((b) => ({
+      const rancho = ranchos.find((r) => r.id === ranchoId)
+
+      if (!online) {
+        const rowsOffline = banos.map((b, i) => ({
+          id: crypto.randomUUID(),
+          rancho_id: ranchoId,
+          org_id: profile.org_id!,
+          fecha,
+          bano_numero: b.bano_numero || String(i + 1),
+          limpieza: b.limpieza,
+          desinfeccion: b.desinfeccion,
+          concentracion_ppm: parseInt(b.concentracion_ppm, 10) || 200,
+          sustancias: b.sustancias,
+          abasto_papel: b.abasto_papel,
+          succion: b.succion,
+          realizado_por_id: profile.id,
+        }))
+        await encolarLote({
+          userId: user.id,
+          orgId: profile.org_id!,
+          modulo: 'M12',
+          descripcion: `Limpieza y Desinfección de Baños · ${rancho?.nombre ?? ''} · ${fecha}`,
+          metadatos: { rancho_id: ranchoId, rancho_nombre: rancho?.nombre, fecha, banos_count: banos.length },
+          operaciones: rowsOffline.map(row => ({ tabla: 'm12_limpieza_banos', tipo: 'insert' as const, fila: row as Record<string, unknown> })),
+        })
+        if (tareaId) setRegistroGuardado(true)
+        toast.success('Guardado sin conexión — se subirá al recuperar señal')
+        handleCerrarSheet()
+        return
+      }
+
+      const rows = banos.map((b, i) => ({
         rancho_id: ranchoId,
         org_id: profile.org_id,
         fecha,
-        bano_numero: b.bano_numero || String(banos.indexOf(b) + 1),
+        bano_numero: b.bano_numero || String(i + 1),
         limpieza: b.limpieza,
         desinfeccion: b.desinfeccion,
         concentracion_ppm: parseInt(b.concentracion_ppm, 10) || 200,
@@ -269,14 +320,13 @@ export function RegistroLimpiezaBanos() {
       await refetch()
       toast.success('Registro guardado')
 
-      const rancho = ranchos.find((r) => r.id === ranchoId)
       if (rancho) {
         const pdfProps: LimpiezaBanosPaginaProps = {
           rancho: rancho.nombre,
           ranchoCodigo: rancho.codigo,
           fecha,
-          banos: banos.map((b) => ({
-            bano_numero: b.bano_numero || String(banos.indexOf(b) + 1),
+          banos: banos.map((b, i) => ({
+            bano_numero: b.bano_numero || String(i + 1),
             limpieza: b.limpieza,
             desinfeccion: b.desinfeccion,
             concentracion_ppm: parseInt(b.concentracion_ppm, 10) || 200,
@@ -385,9 +435,46 @@ export function RegistroLimpiezaBanos() {
 
       {/* Historial */}
       <div className="p-4 space-y-3">
+        {/* Lotes sin conexión */}
+        {lotesOffline.filter(l => l.estado !== 'sincronizado').map(lote => {
+          const meta = lote.metadatos as { rancho_nombre?: string; fecha?: string; banos_count?: number } | undefined
+          return (
+            <div key={lote.id} className="bg-card border border-border rounded-xl p-4 opacity-80">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                      {meta?.rancho_nombre ?? '—'}
+                    </span>
+                    {meta?.banos_count && (
+                      <span className="text-[11px] px-2 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0" style={{ fontWeight: 600 }}>
+                        {meta.banos_count} {meta.banos_count === 1 ? 'baño' : 'baños'}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{meta?.fecha ? formatFecha(meta.fecha) : '—'}</p>
+                </div>
+                <span
+                  className="text-[10px] px-2 py-0.5 rounded flex-shrink-0 flex items-center gap-1"
+                  style={{
+                    backgroundColor: lote.estado === 'rechazado' ? 'var(--agro-danger-fill)' : 'var(--agro-warning-fill)',
+                    color: lote.estado === 'rechazado' ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)',
+                    fontWeight: 600,
+                  }}
+                >
+                  <WifiOff className="w-3 h-3" />
+                  {lote.estado === 'rechazado' ? 'Error al subir' : 'Sin subir'}
+                </span>
+              </div>
+              {lote.estado === 'rechazado' && lote.error && (
+                <p className="text-xs mt-1" style={{ color: 'var(--agro-danger-text)' }}>{lote.error}</p>
+              )}
+            </div>
+          )
+        })}
         {loading ? (
           <ListaSkeleton />
-        ) : jornadas.length === 0 ? (
+        ) : jornadas.length === 0 && lotesOffline.filter(l => l.estado !== 'sincronizado').length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <Droplets className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Sin registros aún</p>
@@ -652,7 +739,7 @@ export function RegistroLimpiezaBanos() {
               </div>
 
               {/* Banner límite semanal */}
-              {limiteInfo && (
+              {(limiteInfo || hayLoteOfflineConflicto) && (
                 <div
                   className="flex items-start gap-2 px-3 py-3 rounded-lg"
                   style={{
@@ -662,8 +749,10 @@ export function RegistroLimpiezaBanos() {
                 >
                   <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                   <div className="text-xs" style={{ fontWeight: 600 }}>
-                    Ya existe una limpieza registrada esta semana para {terminosSitio.genero === 'f' ? 'esta' : 'este'} {terminosSitio.singular.toLowerCase()}.
-                    Próxima disponible: {limiteInfo.proxima}
+                    {hayLoteOfflineConflicto && !limiteInfo
+                      ? `Ya tienes una limpieza pendiente de subir esta semana para ${terminosSitio.genero === 'f' ? 'esta' : 'este'} ${terminosSitio.singular.toLowerCase()}.`
+                      : `Ya existe una limpieza registrada esta semana para ${terminosSitio.genero === 'f' ? 'esta' : 'este'} ${terminosSitio.singular.toLowerCase()}.${limiteInfo ? ` Próxima disponible: ${limiteInfo.proxima}` : ''}`
+                    }
                   </div>
                 </div>
               )}
@@ -810,12 +899,13 @@ export function RegistroLimpiezaBanos() {
             <div className="px-4 pb-6 pt-4 border-t border-border flex-shrink-0">
               <button
                 onClick={handleGuardar}
-                disabled={guardando || !!limiteInfo}
+                disabled={guardando || !!limiteInfo || hayLoteOfflineConflicto}
                 className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
                 style={{ fontWeight: 600 }}
               >
                 {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-                Guardar registro
+                {!online && !guardando && <WifiOff className="w-4 h-4" />}
+                {online ? 'Guardar registro' : 'Guardar sin conexión'}
               </button>
             </div>
               </>
