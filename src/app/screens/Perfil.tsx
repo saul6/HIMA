@@ -9,6 +9,7 @@ import { MadyLogo } from '@/app/components/MadyLogo'
 import { supabase } from '@/lib/supabase'
 import { FirmaPad, type FirmaPadRef } from '@/app/components/FirmaPad'
 import { FirmaSvg } from '@/app/components/FirmaSvg'
+import { contarPendientes } from '@/lib/offline/outbox'
 
 const ROL_LABEL: Record<string, string> = {
   super_admin: 'Super Admin',
@@ -109,6 +110,13 @@ export function Perfil() {
   }
 
   async function handleCerrarSesion() {
+    const n = user?.id ? await contarPendientes(user.id).catch(() => 0) : 0
+    if (n > 0) {
+      const ok = window.confirm(
+        `Tienes ${n} registro${n !== 1 ? 's' : ''} sin subir. Si cierras sesión se perderán. ¿Continuar?`
+      )
+      if (!ok) return
+    }
     try {
       await signOut()
     } finally {
@@ -314,6 +322,16 @@ export function Perfil() {
             </div>
           </div>
         </div>
+
+        {/* Sincronización */}
+        <button
+          onClick={() => navigate('/sincronizacion')}
+          className="w-full h-12 bg-card border border-border rounded-xl flex items-center gap-3 px-4 hover:bg-muted transition-colors"
+          style={{ fontWeight: 500 }}
+        >
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm text-foreground flex-1 text-left">Sincronización offline</span>
+        </button>
 
         {/* Cerrar sesión */}
         <button

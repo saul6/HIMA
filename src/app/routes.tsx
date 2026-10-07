@@ -155,6 +155,7 @@ import { AuditorAgenda } from "./screens/auditor/AuditorAgenda"
 import { AuditorModoAzzule } from "./screens/auditor/AuditorModoAzzule"
 import { NuevaJornada } from "./screens/auditor/NuevaJornada"
 import { EjecucionJornada } from "./screens/auditor/EjecucionJornada"
+import { Sincronizacion } from "./screens/Sincronizacion"
 
 export const router = createBrowserRouter([
   {
@@ -212,6 +213,7 @@ export const router = createBrowserRouter([
               { path: "historial", Component: BibliotecaHistorial },
               { path: "historial/:id", Component: DetalleAplicacion },
               { path: "perfil", Component: Perfil },
+              { path: "sincronizacion", Component: Sincronizacion },
               { path: "perfil/mi-organizacion", Component: MiOrganizacion },
               { path: "equipo/actividad", Component: ActividadEquipo },
               { path: "metricas", Component: Metricas },

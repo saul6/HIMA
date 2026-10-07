@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, Link } from "react-router";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
-import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck, X, Calendar, ListChecks, BarChart3 } from "lucide-react";
+import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck, X, Calendar, ListChecks, BarChart3, CloudUpload, WifiOff } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
 import { useHomeSearch } from "@/context/HomeSearchContext";
@@ -11,6 +11,8 @@ import { MadyLogo } from "@/app/components/MadyLogo";
 import { BottomSheet, fabMenuItemVariants } from "@/app/components/BottomSheet";
 import { CampanaNotificaciones } from "@/app/components/CampanaNotificaciones";
 import { CATEGORIA_MAP } from "@/lib/categoriasModulos";
+import { useConexion } from "@/hooks/useConexion";
+import { useOutbox } from "@/hooks/useOutbox";
 
 const PATH_TITLES: Record<string, string> = {
   '/': 'Inicio',
@@ -70,6 +72,8 @@ export function Layout() {
     markAppReady()
   }, [markAppReady]);
 
+  const { online } = useConexion();
+  const { totalPendientes } = useOutbox();
   const esAuditor = profile?.rol === 'auditor';
   const esAdmin   = profile?.rol === 'admin_org';
   const initials  = profile?.nombre_completo ? getInitials(profile.nombre_completo) : '—';
@@ -294,9 +298,25 @@ export function Layout() {
             )}
           </div>
 
-          {/* Right: campana + theme toggle + date */}
+          {/* Right: campana + sync + theme toggle + date */}
           <div className="flex items-center gap-3">
             <CampanaNotificaciones />
+            {/* Indicador de sincronización / conexión */}
+            {(!online || totalPendientes > 0) && (
+              <Link
+                to="/sincronizacion"
+                className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg"
+                style={{
+                  backgroundColor: !online ? 'var(--agro-danger-fill)' : 'var(--agro-warning-fill)',
+                  color: !online ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)',
+                  fontWeight: 600,
+                }}
+                title={!online ? 'Sin conexión' : `${totalPendientes} pendientes de subir`}
+              >
+                {!online ? <WifiOff className="w-3.5 h-3.5" /> : <CloudUpload className="w-3.5 h-3.5" />}
+                {!online ? 'Sin conexión' : `${totalPendientes}`}
+              </Link>
+            )}
             <button
               onClick={e => cycleTheme(e.currentTarget as HTMLElement)}
               className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
@@ -417,6 +437,22 @@ export function Layout() {
           <CampanaNotificaciones />
           <span className="text-sm" style={{ color: 'var(--foreground)' }}>Notificaciones</span>
         </div>
+
+        {/* Sincronización (solo si hay pendientes o sin conexión) */}
+        {(!online || totalPendientes > 0) && (
+          <Link
+            to="/sincronizacion"
+            onClick={() => setMenuAbierto(false)}
+            className="flex items-center gap-4 px-4 py-3 border-t border-border"
+          >
+            {!online
+              ? <WifiOff className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
+              : <CloudUpload className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--agro-warning-text)' }} />}
+            <span className="text-sm" style={{ color: !online ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)', fontWeight: 600 }}>
+              {!online ? 'Sin conexión' : `${totalPendientes} pendiente${totalPendientes !== 1 ? 's' : ''} de subir`}
+            </span>
+          </Link>
+        )}
 
         {/* Switch de tema */}
         <div className="px-4 py-3 border-t border-border">
