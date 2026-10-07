@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router'
-import { BarChart3, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, AlertCircle, XCircle, CircleDashed, Clock, TrendingUp } from 'lucide-react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
+import { BarChart3, ChevronDown, AlertTriangle, CheckCircle2, AlertCircle, XCircle, CircleDashed, Clock, TrendingUp } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useMetricas } from '@/hooks/useMetricas'
+import { useContadorAnimado } from '@/hooks/useContadorAnimado'
 import { hoyMX } from '@/lib/fecha'
+import { SPRING_SUAVE, SPRING_SUAVE_SIN_REBOTE } from '@/lib/motion'
 import type {
   MetProductividad,
   MetAgenda,
@@ -17,6 +20,11 @@ import type {
   InternaResumen,
 } from '@/hooks/useMetricas'
 import { bandaCumplimiento, type BandaCumplimiento } from '@/lib/metricas/bandaCumplimiento'
+
+// Mismo timing/curva que el resto de la app (ver NuevaAplicacion.tsx) — constante
+// local para no repetir el array de easing en cada transición de este archivo.
+const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1]
+const TAB_TRANSITION = { duration: 0.22, ease: EASE_OUT }
 
 // ── Helpers de fechas ────────────────────────────────────────────────────────
 
@@ -108,9 +116,42 @@ function Vacio({ mensaje = 'Sin datos en este periodo' }: { mensaje?: string }) 
   )
 }
 
+// ── Contador animado (mismo patrón que Home.tsx `AnimatedNumber`) ────────────
+
+function AnimatedNumber({
+  value, format, reducedMotion,
+}: { value: number | null; format: (n: number) => string; reducedMotion: boolean }) {
+  const spanRef = useContadorAnimado(value, format, reducedMotion)
+  return <span ref={spanRef}>{value === null ? '—' : format(value)}</span>
+}
+
+// ── Entrada escalonada reutilizable (tarjetas y filas de listas) ─────────────
+
+function EntradaEscalonada({
+  index, reducedMotion, children, className, style,
+}: {
+  index: number
+  reducedMotion: boolean
+  children: React.ReactNode
+  className?: string
+  style?: React.CSSProperties
+}) {
+  return (
+    <motion.div
+      className={className}
+      style={style}
+      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={reducedMotion ? { duration: 0 } : { duration: 0.22, ease: EASE_OUT, delay: Math.min(index * 0.04, 0.4) }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
 // ── Tarjeta resumen ───────────────────────────────────────────────────────────
 
-function TarjetaResumen({ label, valor, sub }: { label: string; valor: string | number; sub?: string }) {
+function TarjetaResumen({ label, valor, sub }: { label: string; valor: React.ReactNode; sub?: string }) {
   return (
     <div className="rounded-xl p-4 border border-border bg-card flex flex-col gap-1">
       <p className="text-xs text-muted-foreground">{label}</p>
@@ -135,6 +176,7 @@ function TabProductividad({
 }) {
   const [expandido, setExpandido] = useState<string | null>(null)
 
+  const reducedMotion = useReducedMotion()
   const colaboradores = datos.colaboradores ?? []
   if (colaboradores.length === 0) return <Vacio />
 
@@ -158,39 +200,66 @@ function TabProductividad({
       <div className="grid grid-cols-2 gap-3 px-4 pt-4">
         {esAdmin ? (
           <>
-            <TarjetaResumen label="Total capturas" valor={totalCapturas.toLocaleString('es-MX')} />
-            <TarjetaResumen
-              label="Colaboradores con capturas"
-              valor={`${colConCapturas} de ${totalCol}`}
-            />
-            <TarjetaResumen
-              label="Con corrección"
-              valor={`${pctCorreccion.toFixed(1)}%`}
-              sub={`${totalCorrecciones} registros`}
-            />
+            <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
+              <TarjetaResumen
+                label="Total capturas"
+                valor={<AnimatedNumber value={totalCapturas} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />}
+              />
+            </EntradaEscalonada>
+            <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
+              <TarjetaResumen
+                label="Colaboradores con capturas"
+                valor={<>
+                  <AnimatedNumber value={colConCapturas} format={n => String(Math.round(n))} reducedMotion={reducedMotion} /> de{' '}
+                  <AnimatedNumber value={totalCol} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
+                </>}
+              />
+            </EntradaEscalonada>
+            <EntradaEscalonada index={2} reducedMotion={reducedMotion}>
+              <TarjetaResumen
+                label="Con corrección"
+                valor={<AnimatedNumber value={pctCorreccion} format={n => `${n.toFixed(1)}%`} reducedMotion={reducedMotion} />}
+                sub={`${totalCorrecciones} registros`}
+              />
+            </EntradaEscalonada>
           </>
         ) : (
           <>
-            <TarjetaResumen
-              label="Mis capturas"
-              valor={(mr?.capturas ?? 0).toLocaleString('es-MX')}
-            />
-            <TarjetaResumen
-              label="Mi posición"
-              valor={miPosicion != null ? `#${miPosicion} de ${totalCol}` : '—'}
-            />
-            <TarjetaResumen
-              label="Con corrección"
-              valor={mr?.pct_correccion != null ? `${mr.pct_correccion.toFixed(1)}%` : '—'}
-            />
+            <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
+              <TarjetaResumen
+                label="Mis capturas"
+                valor={<AnimatedNumber value={mr?.capturas ?? 0} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />}
+              />
+            </EntradaEscalonada>
+            <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
+              <TarjetaResumen
+                label="Mi posición"
+                valor={miPosicion != null ? (
+                  <>
+                    #<AnimatedNumber value={miPosicion} format={n => String(Math.round(n))} reducedMotion={reducedMotion} /> de{' '}
+                    <AnimatedNumber value={totalCol} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
+                  </>
+                ) : '—'}
+              />
+            </EntradaEscalonada>
+            <EntradaEscalonada index={2} reducedMotion={reducedMotion}>
+              <TarjetaResumen
+                label="Con corrección"
+                valor={mr?.pct_correccion != null ? (
+                  <AnimatedNumber value={mr.pct_correccion} format={n => `${n.toFixed(1)}%`} reducedMotion={reducedMotion} />
+                ) : '—'}
+              />
+            </EntradaEscalonada>
           </>
         )}
         {v && (
-          <TarjetaResumen
-            label="Verificados"
-            valor={v.verificados}
-            sub={`${v.pendientes_verificar} pendientes${v.horas_promedio != null ? ` · ${v.horas_promedio.toFixed(1)} h prom.` : ''}`}
-          />
+          <EntradaEscalonada index={3} reducedMotion={reducedMotion}>
+            <TarjetaResumen
+              label="Verificados"
+              valor={<AnimatedNumber value={v.verificados} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />}
+              sub={`${v.pendientes_verificar} pendientes${v.horas_promedio != null ? ` · ${v.horas_promedio.toFixed(1)} h prom.` : ''}`}
+            />
+          </EntradaEscalonada>
         )}
       </div>
 
@@ -200,7 +269,7 @@ function TabProductividad({
           RANKING DE COLABORADORES
         </p>
         <div className="space-y-2">
-          {colaboradores.map((c: ColaboradorProductividad) => {
+          {colaboradores.map((c: ColaboradorProductividad, i: number) => {
             const tieneDetalle = c.detalle_visible
             const tieneDesglose = tieneDetalle && c.por_modulo != null && Object.keys(c.por_modulo).length > 0
             const abierto = expandido === c.profile_id && tieneDesglose
@@ -208,6 +277,10 @@ function TabProductividad({
             const porModuloEntries = tieneDesglose
               ? Object.entries(c.por_modulo!).sort((a, b) => b[1] - a[1])
               : []
+            // Entrada escalonada solo en las primeras 10 filas; de ahí en
+            // adelante (y con prefers-reduced-motion) aparecen directo.
+            const animarEntrada = !reducedMotion && i < 10
+            const delayFila = animarEntrada ? Math.min(i * 0.04, 0.4) : 0
 
             // Posición — acento para los 3 primeros con capturas > 0
             const esPodio = c.capturas > 0 && c.posicion <= 3
@@ -221,13 +294,16 @@ function TabProductividad({
 
             const rowInner = (
               <div className="flex items-start gap-2">
-                {/* Posición */}
-                <span
+                {/* Posición — "pop" leve al entrar */}
+                <motion.span
                   className="text-xs tabular-nums font-bold px-1.5 py-0.5 rounded-md flex-shrink-0 text-center mt-0.5"
                   style={{ backgroundColor: posBg, color: posColor, minWidth: '2rem' }}
+                  initial={animarEntrada ? { opacity: 0, scale: 0.6 } : false}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={animarEntrada ? { ...SPRING_SUAVE, delay: delayFila } : { duration: 0 }}
                 >
                   #{c.posicion}
-                </span>
+                </motion.span>
 
                 {/* Contenido */}
                 <div className="flex-1 min-w-0">
@@ -255,25 +331,25 @@ function TabProductividad({
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                       <span className="text-sm tabular-nums font-semibold" style={{ color: 'var(--primary)' }}>
-                        {c.capturas.toLocaleString('es-MX')}
+                        <AnimatedNumber value={c.capturas} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />
                       </span>
                       {tieneDesglose && (
-                        abierto
-                          ? <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                          : <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                        <ChevronDown
+                          className="w-4 h-4 text-muted-foreground transition-transform"
+                          style={{ transform: abierto ? 'rotate(180deg)' : 'rotate(0deg)', transitionDuration: 'var(--motion-fast)' }}
+                        />
                       )}
                     </div>
                   </div>
 
                   {/* Barra horizontal */}
                   <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--muted)' }}>
-                    <div
+                    <motion.div
                       className="h-full rounded-full origin-left"
-                      style={{
-                        backgroundColor: 'var(--primary)',
-                        transform: `scaleX(${pct / 100})`,
-                        transition: 'transform 0.4s cubic-bezier(0.22,1,0.36,1)',
-                      }}
+                      style={{ backgroundColor: 'var(--primary)' }}
+                      initial={reducedMotion ? false : { scaleX: 0 }}
+                      animate={{ scaleX: pct / 100 }}
+                      transition={reducedMotion ? { duration: 0 } : { ...SPRING_SUAVE_SIN_REBOTE, delay: animarEntrada ? delayFila + 0.1 : 0 }}
                     />
                   </div>
 
@@ -303,17 +379,19 @@ function TabProductividad({
             )
 
             return (
-              <div
+              <motion.div
                 key={c.profile_id}
+                layout
+                initial={animarEntrada ? { opacity: 0, y: 8 } : false}
+                animate={{ opacity: c.activo ? 1 : 0.6, y: 0 }}
+                transition={animarEntrada ? { duration: 0.22, ease: EASE_OUT, delay: delayFila } : { duration: 0 }}
                 className="rounded-xl border border-border overflow-hidden"
-                style={{
-                  backgroundColor: c.es_yo ? 'var(--agro-success-fill)' : 'var(--card)',
-                  opacity: !c.activo ? 0.6 : undefined,
-                }}
+                style={{ backgroundColor: c.es_yo ? 'var(--agro-success-fill)' : 'var(--card)' }}
               >
                 {tieneDesglose ? (
                   <button
-                    className="w-full text-left px-4 py-3"
+                    className="w-full text-left px-4 py-3 transition-colors hover:bg-muted"
+                    style={{ transitionDuration: 'var(--motion-fast)' }}
                     onClick={() => setExpandido(abierto ? null : c.profile_id)}
                     aria-expanded={abierto}
                   >
@@ -323,33 +401,37 @@ function TabProductividad({
                   <div className="px-4 py-3">{rowInner}</div>
                 )}
 
-                {/* Desglose por módulo */}
-                {abierto && porModuloEntries.length > 0 && (
-                  <div
-                    className="px-4 pb-3 pt-0 border-t border-border"
-                    style={{ backgroundColor: 'var(--muted)' }}
-                  >
-                    <p className="text-xs font-semibold mt-2 mb-2" style={{ color: 'var(--muted-foreground)' }}>
-                      DESGLOSE POR MÓDULO
-                    </p>
-                    <div className="space-y-1">
-                      {porModuloEntries.map(([codigo, n]) => {
-                        const mod = modulos.find(m => m.codigo === codigo)
-                        return (
-                          <div key={codigo} className="flex items-center justify-between text-sm">
-                            <span style={{ color: 'var(--foreground)' }}>
-                              {mod ? mod.nombre : codigo}
-                            </span>
-                            <span className="tabular-nums" style={{ color: 'var(--primary)', fontWeight: 600 }}>
-                              {(n as number).toLocaleString('es-MX')}
-                            </span>
-                          </div>
-                        )
-                      })}
+                {/* Desglose por módulo — mismo patrón de desplegable (accordion-rows) */}
+                {tieneDesglose && (
+                  <div className={`accordion-rows ${abierto ? 'is-open' : ''}`}>
+                    <div>
+                      <div
+                        className="px-4 pb-3 pt-0 border-t border-border"
+                        style={{ backgroundColor: 'var(--muted)' }}
+                      >
+                        <p className="text-xs font-semibold mt-2 mb-2" style={{ color: 'var(--muted-foreground)' }}>
+                          DESGLOSE POR MÓDULO
+                        </p>
+                        <div className="space-y-1">
+                          {porModuloEntries.map(([codigo, n]) => {
+                            const mod = modulos.find(m => m.codigo === codigo)
+                            return (
+                              <div key={codigo} className="flex items-center justify-between text-sm">
+                                <span style={{ color: 'var(--foreground)' }}>
+                                  {mod ? mod.nombre : codigo}
+                                </span>
+                                <span className="tabular-nums" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+                                  {(n as number).toLocaleString('es-MX')}
+                                </span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
-              </div>
+              </motion.div>
             )
           })}
         </div>
@@ -361,24 +443,29 @@ function TabProductividad({
 // ── Pestaña Agenda ────────────────────────────────────────────────────────────
 
 function TabAgenda({ datos }: { datos: MetAgenda }) {
+  const reducedMotion = useReducedMotion()
   const colaboradores = datos.colaboradores ?? []
   if (colaboradores.length === 0) return <Vacio />
 
   return (
     <div className="space-y-3 px-4 pt-4 pb-8">
-      {colaboradores.map(c => {
+      {colaboradores.map((c, i) => {
         const pctATiempo = c.cerradas > 0 ? (c.a_tiempo / c.cerradas) * 100 : null
         return (
-          <div key={c.profile_id} className="rounded-xl border border-border bg-card p-4 space-y-3">
+          <EntradaEscalonada key={c.profile_id} index={i} reducedMotion={reducedMotion} className="rounded-xl border border-border bg-card p-4 space-y-3">
             <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{c.nombre}</p>
             <div className="grid grid-cols-3 gap-2 text-sm">
               <div>
                 <p className="text-xs text-muted-foreground">Asignadas</p>
-                <p className="tabular-nums font-semibold" style={{ color: 'var(--foreground)' }}>{c.asignadas}</p>
+                <p className="tabular-nums font-semibold" style={{ color: 'var(--foreground)' }}>
+                  <AnimatedNumber value={c.asignadas} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
+                </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Cerradas</p>
-                <p className="tabular-nums font-semibold" style={{ color: 'var(--foreground)' }}>{c.cerradas}</p>
+                <p className="tabular-nums font-semibold" style={{ color: 'var(--foreground)' }}>
+                  <AnimatedNumber value={c.cerradas} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
+                </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">% a tiempo</p>
@@ -392,21 +479,25 @@ function TabAgenda({ datos }: { datos: MetAgenda }) {
                   className="tabular-nums font-semibold"
                   style={{ color: c.vencidas_abiertas > 0 ? 'var(--agro-danger-text)' : 'var(--foreground)' }}
                 >
-                  {c.vencidas_abiertas}
+                  <AnimatedNumber value={c.vencidas_abiertas} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
                 </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Regresadas</p>
-                <p className="tabular-nums font-semibold" style={{ color: 'var(--foreground)' }}>{c.regresadas}</p>
+                <p className="tabular-nums font-semibold" style={{ color: 'var(--foreground)' }}>
+                  <AnimatedNumber value={c.regresadas} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
+                </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Días prom.</p>
                 <p className="tabular-nums font-semibold" style={{ color: 'var(--foreground)' }}>
-                  {c.dias_promedio_cierre != null ? c.dias_promedio_cierre.toFixed(1) : '—'}
+                  {c.dias_promedio_cierre != null
+                    ? <AnimatedNumber value={c.dias_promedio_cierre} format={n => n.toFixed(1)} reducedMotion={reducedMotion} />
+                    : '—'}
                 </p>
               </div>
             </div>
-          </div>
+          </EntradaEscalonada>
         )
       })}
     </div>
@@ -431,7 +522,7 @@ function GraficaBarrasMes({
   const BAR_W = 22
   const OVERHEAD = 20
   const scrollable = meses.length > 8
-  const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const reducedMotion = useReducedMotion()
 
   const etiqueta = (mes: string) => {
     const nombres = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
@@ -491,15 +582,16 @@ function GraficaBarrasMes({
                       >
                         {val}
                       </span>
-                      <div
+                      <motion.div
                         className="absolute bottom-0 w-full rounded-sm"
                         style={{
                           height: `${ALTO}px`,
                           backgroundColor: val > 0 ? s.color : 'transparent',
-                          transform: `scaleY(${ratio})`,
                           transformOrigin: 'bottom',
-                          transition: reducedMotion ? undefined : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)',
                         }}
+                        initial={reducedMotion ? false : { scaleY: 0 }}
+                        animate={{ scaleY: ratio }}
+                        transition={reducedMotion ? { duration: 0 } : { ...SPRING_SUAVE_SIN_REBOTE, delay: Math.min(mi * 0.03, 0.3) }}
                       />
                     </div>
                   )
@@ -557,7 +649,7 @@ function GrupoAuditoriasInternas({
   const cfg = BANDA_CONFIG[banda]
   const { color, bg } = estilosBanda(banda)
   const [abierto, setAbierto] = useState(cfg.defaultOpen)
-  const reducido = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const reducedMotion = useReducedMotion()
 
   const sorted = [...auditorias].sort((a, b) => {
     if (b.porcentaje !== a.porcentaje) return b.porcentaje - a.porcentaje
@@ -588,25 +680,13 @@ function GrupoAuditoriasInternas({
           style={{
             color: 'var(--muted-foreground)',
             transform: abierto ? 'rotate(180deg)' : 'rotate(0deg)',
-            transitionDuration: reducido ? '0ms' : '200ms',
+            transitionDuration: 'var(--motion-fast)',
           }}
         />
       </button>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateRows: abierto ? '1fr' : '0fr',
-          overflow: 'hidden',
-          transition: reducido ? undefined : 'grid-template-rows 220ms ease',
-        }}
-      >
-        <div style={{ minHeight: 0 }}>
-          {cfg.nota && !abierto && (
-            // La nota se lee aunque el grupo esté cerrado vía attr, pero el
-            // texto solo es visible en abierto porque está dentro del grid
-            null
-          )}
+      <div className={`accordion-rows ${abierto ? 'is-open' : ''}`}>
+        <div>
           <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
             {cfg.nota && (
               <p className="px-4 py-2 text-xs" style={{ color: 'var(--muted-foreground)', backgroundColor: 'var(--muted)' }}>
@@ -617,7 +697,13 @@ function GrupoAuditoriasInternas({
               const b = bandaCumplimiento(a.porcentaje, a.posibles)
               const { color: bc, bg: bbg } = estilosBanda(b)
               return (
-                <div key={i} className="flex items-center justify-between gap-3 px-4 py-3" style={{ backgroundColor: 'var(--card)' }}>
+                <EntradaEscalonada
+                  key={i}
+                  index={i}
+                  reducedMotion={reducedMotion}
+                  className="flex items-center justify-between gap-3 px-4 py-3"
+                  style={{ backgroundColor: 'var(--card)' }}
+                >
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>{a.nombre}</p>
                     <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
@@ -641,7 +727,7 @@ function GrupoAuditoriasInternas({
                       <span className="text-xs tabular-nums" style={{ color: 'var(--muted-foreground)' }}>0/0 pts</span>
                     )}
                   </div>
-                </div>
+                </EntradaEscalonada>
               )
             })}
           </div>
@@ -654,6 +740,7 @@ function GrupoAuditoriasInternas({
 // ── Pestaña Cumplimiento ──────────────────────────────────────────────────────
 
 function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
+  const reducedMotion = useReducedMotion()
   const internas = datos.internas ?? []
   const externas = datos.externas ?? []
   const fallas = datos.fallas_recurrentes ?? []
@@ -681,14 +768,16 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
                   className="gap-3 mb-3"
                   style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}
                 >
-                  {resumen.map(r => {
+                  {resumen.map((r, i) => {
                     const banda = r.promedio != null
                       ? bandaCumplimiento(r.promedio, r.con_puntaje > 0 ? 1 : 0)
                       : 'sin_puntaje'
                     const { color, bg } = estilosBanda(banda)
                     return (
-                      <div
+                      <EntradaEscalonada
                         key={r.modulo}
+                        index={i}
+                        reducedMotion={reducedMotion}
                         className="rounded-xl border border-border bg-card p-3 flex flex-col gap-1.5"
                       >
                         <p
@@ -702,13 +791,15 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
                           className="text-2xl tabular-nums font-bold self-start px-2 py-0.5 rounded-lg"
                           style={{ color, backgroundColor: bg }}
                         >
-                          {r.promedio != null ? `${r.promedio.toFixed(1)}%` : '—'}
+                          {r.promedio != null
+                            ? <AnimatedNumber value={r.promedio} format={n => `${n.toFixed(1)}%`} reducedMotion={reducedMotion} />
+                            : '—'}
                         </span>
                         <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
                           {r.auditorias} auditoría{r.auditorias !== 1 ? 's' : ''}
                           {r.sin_puntaje > 0 && ` · ${r.sin_puntaje} sin puntaje`}
                         </p>
-                      </div>
+                      </EntradaEscalonada>
                     )
                   })}
                 </div>
@@ -762,7 +853,7 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
           </p>
           <div className="space-y-2">
             {externas.map((a, i) => (
-              <div key={i} className="rounded-xl border border-border bg-card p-3 space-y-1">
+              <EntradaEscalonada key={i} index={i} reducedMotion={reducedMotion} className="rounded-xl border border-border bg-card p-3 space-y-1">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{a.fecha}</p>
                   <span className="text-xs px-2 py-0.5 rounded-md" style={{
@@ -782,7 +873,7 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
                     {a.nc_abiertas} NC{a.nc_abiertas > 1 ? 's' : ''} abiertas
                   </p>
                 )}
-              </div>
+              </EntradaEscalonada>
             ))}
           </div>
         </section>
@@ -797,8 +888,18 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
           {porMes.length <= 1 ? (
             <div className="space-y-2 mt-3">
               <div className="grid grid-cols-2 gap-3">
-                <TarjetaResumen label="Reportes" valor={datos.incidencias.reportes} />
-                <TarjetaResumen label="Incidencias" valor={datos.incidencias.incidencias} />
+                <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
+                  <TarjetaResumen
+                    label="Reportes"
+                    valor={<AnimatedNumber value={datos.incidencias.reportes} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />}
+                  />
+                </EntradaEscalonada>
+                <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
+                  <TarjetaResumen
+                    label="Incidencias"
+                    valor={<AnimatedNumber value={datos.incidencias.incidencias} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />}
+                  />
+                </EntradaEscalonada>
               </div>
               <p className="text-xs text-muted-foreground">Un reporte puede tener varias incidencias</p>
             </div>
@@ -829,7 +930,7 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
           </p>
           <div className="space-y-1.5">
             {fallas.map((f, i) => (
-              <div key={i} className="flex items-start justify-between gap-3 py-1.5 border-b border-border last:border-0">
+              <EntradaEscalonada key={i} index={i} reducedMotion={reducedMotion} className="flex items-start justify-between gap-3 py-1.5 border-b border-border last:border-0">
                 <div className="min-w-0">
                   <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
                     {f.modulo}
@@ -837,9 +938,9 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
                   <p className="text-sm" style={{ color: 'var(--foreground)' }}>{f.punto}</p>
                 </div>
                 <span className="text-sm tabular-nums flex-shrink-0 font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
-                  ×{f.veces}
+                  ×<AnimatedNumber value={f.veces} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />
                 </span>
-              </div>
+              </EntradaEscalonada>
             ))}
           </div>
         </section>
@@ -857,6 +958,7 @@ function formatFechaCorta(fecha: string): string {
 }
 
 function TabConstancia({ datos }: { datos: MetConstancia }) {
+  const reducedMotion = useReducedMotion()
   const modulos = datos.modulos ?? []
   if (modulos.length === 0) return (
     <Vacio mensaje="Sin módulos con frecuencia fija en este periodo" />
@@ -868,7 +970,12 @@ function TabConstancia({ datos }: { datos: MetConstancia }) {
         {modulos.map((m, i) => {
           const huecos = m.huecos_recientes ?? []
           return (
-            <div key={`${m.modulo}-${m.rancho_id}-${i}`} className="rounded-xl border border-border bg-card overflow-hidden">
+            <EntradaEscalonada
+              key={`${m.modulo}-${m.rancho_id}-${i}`}
+              index={i}
+              reducedMotion={reducedMotion}
+              className="rounded-xl border border-border bg-card overflow-hidden"
+            >
               <div className="p-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>{m.nombre}</p>
@@ -876,7 +983,9 @@ function TabConstancia({ datos }: { datos: MetConstancia }) {
                 </div>
                 <div className="text-right flex-shrink-0 space-y-1">
                   <ChipPct pct={m.pct} />
-                  <p className="text-xs text-muted-foreground tabular-nums">{m.cubiertos}/{m.esperados}</p>
+                  <p className="text-xs text-muted-foreground tabular-nums">
+                    <AnimatedNumber value={m.cubiertos} format={n => String(Math.round(n))} reducedMotion={reducedMotion} />/{m.esperados}
+                  </p>
                 </div>
               </div>
               {huecos.length > 0 && (
@@ -886,7 +995,7 @@ function TabConstancia({ datos }: { datos: MetConstancia }) {
                   </p>
                 </div>
               )}
-            </div>
+            </EntradaEscalonada>
           )
         })}
       </div>
@@ -900,6 +1009,7 @@ function TabConstancia({ datos }: { datos: MetConstancia }) {
 // ── Pestaña Campo ─────────────────────────────────────────────────────────────
 
 function TabCampo({ datos }: { datos: MetCampo }) {
+  const reducedMotion = useReducedMotion()
   const porMes = datos.aplicaciones_por_mes ?? {}
   const meses = Object.keys(porMes).sort()
   const productosTop = datos.productos_top ?? []
@@ -917,8 +1027,18 @@ function TabCampo({ datos }: { datos: MetCampo }) {
           </p>
           {meses.length <= 1 ? (
             <div className="grid grid-cols-2 gap-3">
-              <TarjetaResumen label="Aplicaciones" valor={porMes[meses[0]]?.aplicaciones ?? 0} />
-              <TarjetaResumen label="Hectáreas" valor={(porMes[meses[0]]?.ha ?? 0).toFixed(1)} />
+              <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
+                <TarjetaResumen
+                  label="Aplicaciones"
+                  valor={<AnimatedNumber value={porMes[meses[0]]?.aplicaciones ?? 0} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />}
+                />
+              </EntradaEscalonada>
+              <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
+                <TarjetaResumen
+                  label="Hectáreas"
+                  valor={<AnimatedNumber value={porMes[meses[0]]?.ha ?? 0} format={n => n.toFixed(1)} reducedMotion={reducedMotion} />}
+                />
+              </EntradaEscalonada>
             </div>
           ) : (
             <GraficaBarrasMes
@@ -947,25 +1067,23 @@ function TabCampo({ datos }: { datos: MetCampo }) {
               const maxP = productosTop[0]?.aplicaciones ?? 1
               const pct = (p.aplicaciones / maxP) * 100
               return (
-                <div key={i} className="space-y-1">
+                <EntradaEscalonada key={i} index={i} reducedMotion={reducedMotion} className="space-y-1">
                   <div className="flex items-center justify-between text-sm">
                     <span className="truncate" style={{ color: 'var(--foreground)' }}>{p.producto}</span>
                     <span className="tabular-nums flex-shrink-0 ml-2 text-xs" style={{ color: 'var(--primary)', fontWeight: 600 }}>
-                      {p.aplicaciones}
+                      <AnimatedNumber value={p.aplicaciones} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />
                     </span>
                   </div>
                   <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--muted)' }}>
-                    <div
+                    <motion.div
                       className="h-full rounded-full origin-left"
-                      style={{
-                        backgroundColor: 'var(--primary)',
-                        transform: `scaleX(${pct / 100})`,
-                        opacity: 0.7,
-                        transition: 'transform 0.4s cubic-bezier(0.22,1,0.36,1)',
-                      }}
+                      style={{ backgroundColor: 'var(--primary)', opacity: 0.7 }}
+                      initial={reducedMotion ? false : { scaleX: 0 }}
+                      animate={{ scaleX: pct / 100 }}
+                      transition={reducedMotion ? { duration: 0 } : { ...SPRING_SUAVE_SIN_REBOTE, delay: Math.min(i * 0.04, 0.4) + 0.1 }}
                     />
                   </div>
-                </div>
+                </EntradaEscalonada>
               )
             })}
           </div>
@@ -980,8 +1098,10 @@ function TabCampo({ datos }: { datos: MetCampo }) {
           </p>
           <div className="space-y-2">
             {cosechasEnIntervalo.map((c, i) => (
-              <div
+              <EntradaEscalonada
                 key={i}
+                index={i}
+                reducedMotion={reducedMotion}
                 className="rounded-xl border p-3 space-y-1"
                 style={{ borderColor: 'var(--agro-danger-fill)', backgroundColor: 'var(--agro-danger-fill)' }}
               >
@@ -997,7 +1117,7 @@ function TabCampo({ datos }: { datos: MetCampo }) {
                 <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>
                   Permitida desde: {c.cosecha_permitida_desde}
                 </p>
-              </div>
+              </EntradaEscalonada>
             ))}
           </div>
         </section>
@@ -1031,63 +1151,79 @@ function Filtros({
   ranchos, terminoSingular, esAdmin, pestanaActiva,
 }: FiltrosProps) {
   const mostrarRancho = esAdmin && pestanaActiva !== 'agenda'
+  const reducedMotion = useReducedMotion()
   return (
     <div
-      className="sticky top-0 z-10 px-4 py-3 border-b border-border space-y-3"
+      className="sticky top-0 z-10 px-4 py-3 border-b border-border"
       style={{ backgroundColor: 'var(--card)' }}
     >
-      {/* Selector de periodo */}
+      {/* Selector de periodo — fondo deslizante (layoutId + SPRING_SUAVE) */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-0.5">
-        {PERIODOS.map(p => (
-          <button
-            key={p.key}
-            onClick={() => setPeriodo(p.key)}
-            className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full transition-colors"
-            style={{
-              backgroundColor: periodo === p.key ? 'var(--primary)' : 'var(--muted)',
-              color: periodo === p.key ? '#fff' : 'var(--muted-foreground)',
-              fontWeight: periodo === p.key ? 600 : 400,
-            }}
-          >
-            {p.label}
-          </button>
-        ))}
+        {PERIODOS.map(p => {
+          const activo = periodo === p.key
+          return (
+            <button
+              key={p.key}
+              onClick={() => setPeriodo(p.key)}
+              className="relative flex-shrink-0 text-xs px-3 py-1.5 rounded-full"
+              style={{
+                color: activo ? '#fff' : 'var(--muted-foreground)',
+                fontWeight: activo ? 600 : 400,
+              }}
+            >
+              {activo && (
+                <motion.span
+                  layoutId="metricas-periodo-pill"
+                  className="absolute inset-0 rounded-full"
+                  style={{ backgroundColor: 'var(--primary)', zIndex: -1 }}
+                  transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
+                />
+              )}
+              {!activo && (
+                <span className="absolute inset-0 rounded-full" style={{ backgroundColor: 'var(--muted)', zIndex: -1 }} />
+              )}
+              <span className="relative">{p.label}</span>
+            </button>
+          )
+        })}
       </div>
 
-      {/* Fechas personalizadas */}
-      {periodo === 'personalizado' && (
-        <div className="flex gap-2">
-          <input
-            type="date"
-            value={desdePersonalizado}
-            onChange={e => setDesdePersonalizado(e.target.value)}
-            className="flex-1 h-9 px-3 rounded-lg text-sm outline-none"
-            style={{
-              backgroundColor: 'var(--input-background)',
-              border: '1px solid var(--border)',
-              color: 'var(--foreground)',
-            }}
-          />
-          <input
-            type="date"
-            value={hastaPersonalizado}
-            onChange={e => setHastaPersonalizado(e.target.value)}
-            className="flex-1 h-9 px-3 rounded-lg text-sm outline-none"
-            style={{
-              backgroundColor: 'var(--input-background)',
-              border: '1px solid var(--border)',
-              color: 'var(--foreground)',
-            }}
-          />
+      {/* Fechas personalizadas — desplegable, cerrado = 0 real */}
+      <div className={`accordion-rows ${periodo === 'personalizado' ? 'is-open' : ''}`}>
+        <div>
+          <div className="flex gap-2 pt-3">
+            <input
+              type="date"
+              value={desdePersonalizado}
+              onChange={e => setDesdePersonalizado(e.target.value)}
+              className="flex-1 h-9 px-3 rounded-lg text-sm outline-none"
+              style={{
+                backgroundColor: 'var(--input-background)',
+                border: '1px solid var(--border)',
+                color: 'var(--foreground)',
+              }}
+            />
+            <input
+              type="date"
+              value={hastaPersonalizado}
+              onChange={e => setHastaPersonalizado(e.target.value)}
+              className="flex-1 h-9 px-3 rounded-lg text-sm outline-none"
+              style={{
+                backgroundColor: 'var(--input-background)',
+                border: '1px solid var(--border)',
+                color: 'var(--foreground)',
+              }}
+            />
+          </div>
         </div>
-      )}
+      </div>
 
       {/* Selector de rancho */}
       {mostrarRancho && (
         <select
           value={ranchoId}
           onChange={e => setRanchoId(e.target.value)}
-          className="w-full h-9 px-3 rounded-lg text-sm outline-none"
+          className="w-full h-9 px-3 rounded-lg text-sm outline-none mt-3"
           style={{
             backgroundColor: 'var(--input-background)',
             border: '1px solid var(--border)',
@@ -1112,6 +1248,7 @@ interface PestanaConfig { key: PestanaKey; label: string; icon: React.ReactNode 
 
 export function Metricas() {
   const navigate = useNavigate()
+  const reducedMotion = useReducedMotion()
   const { profile } = useAuthContext()
   const { modulos, terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
@@ -1144,6 +1281,15 @@ export function Metricas() {
   ]
 
   const [pestanaActiva, setPestanaActiva] = useState<PestanaKey>('productividad')
+  // Dirección del deslizamiento al cambiar de pestaña, según el índice de
+  // la pestaña elegida respecto a la actual (como el stepper de M1).
+  const [direccionPestana, setDireccionPestana] = useState<1 | -1>(1)
+  function cambiarPestana(key: PestanaKey) {
+    const iActual = pestanas.findIndex(p => p.key === pestanaActiva)
+    const iNueva = pestanas.findIndex(p => p.key === key)
+    setDireccionPestana(iNueva >= iActual ? 1 : -1)
+    setPestanaActiva(key)
+  }
 
   // Datos por pestaña
   const [datosProd, setDatosProd] = useState<MetProductividad | null>(null)
@@ -1194,9 +1340,18 @@ export function Metricas() {
 
   const modulosParaDesglose = modulos.map(m => ({ codigo: m.codigo, nombre: m.nombre }))
 
-  function renderContenido() {
-    if (cargando) return <TabSkeleton />
+  // ¿La pestaña activa ya tiene datos de una carga previa? Si es así, un
+  // cambio de periodo/sitio no debe desmontar el contenido (para que los
+  // contadores y las barras puedan animar del valor anterior al nuevo).
+  const tieneDatosPestanaActiva = (
+    (pestanaActiva === 'productividad' && datosProd != null) ||
+    (pestanaActiva === 'agenda' && datosAgenda != null) ||
+    (pestanaActiva === 'cumplimiento' && datosCumpl != null) ||
+    (pestanaActiva === 'constancia' && datosConst != null) ||
+    (pestanaActiva === 'campo' && datosCampo != null)
+  )
 
+  function renderTab() {
     if (pestanaActiva === 'productividad') {
       if (!datosProd) return <Vacio />
       return <TabProductividad datos={datosProd} modulos={modulosParaDesglose} esAdmin={esAdmin} />
@@ -1221,6 +1376,38 @@ export function Metricas() {
       return <TabCampo datos={datosCampo} />
     }
     return null
+  }
+
+  function renderContenido() {
+    // Primera carga de la pestaña (sin datos todavía): skeleton completo.
+    if (cargando && !tieneDatosPestanaActiva) return <TabSkeleton />
+
+    // Carga por cambio de periodo/sitio con datos ya en pantalla: se deja
+    // el contenido visible (atenuado) con una barra de carga arriba, en
+    // vez de desmontarlo — así los contadores y filas pueden animar.
+    const atenuado = cargando && tieneDatosPestanaActiva
+    return (
+      <>
+        {atenuado && !reducedMotion && (
+          <div className="h-0.5 overflow-hidden" style={{ backgroundColor: 'var(--muted)' }}>
+            <motion.div
+              className="h-full w-1/3 rounded-full"
+              style={{ backgroundColor: 'var(--primary)' }}
+              animate={{ x: ['-100%', '300%'] }}
+              transition={{ duration: 1.1, ease: 'linear', repeat: Infinity }}
+            />
+          </div>
+        )}
+        <div
+          style={{
+            opacity: atenuado ? 0.6 : 1,
+            transition: reducedMotion ? undefined : 'opacity var(--motion-base) var(--ease-out)',
+          }}
+        >
+          {renderTab()}
+        </div>
+      </>
+    )
   }
 
   if (profile?.rol === 'auditor') return null
@@ -1251,7 +1438,7 @@ export function Metricas() {
         pestanaActiva={pestanaActiva}
       />
 
-      {/* Pestañas */}
+      {/* Pestañas — fondo deslizante (layoutId + SPRING_SUAVE) */}
       <div
         className="flex gap-1 overflow-x-auto no-scrollbar px-4 py-2 border-b border-border flex-shrink-0"
         style={{ backgroundColor: 'var(--card)' }}
@@ -1261,24 +1448,46 @@ export function Metricas() {
           return (
             <button
               key={p.key}
-              onClick={() => setPestanaActiva(p.key)}
-              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors"
+              onClick={() => cambiarPestana(p.key)}
+              className="relative flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs"
               style={{
-                backgroundColor: activa ? 'var(--primary)' : 'var(--muted)',
                 color: activa ? '#fff' : 'var(--muted-foreground)',
                 fontWeight: activa ? 600 : 400,
               }}
             >
-              {p.icon}
-              {p.label}
+              {activa && (
+                <motion.span
+                  layoutId="metricas-pestana-pill"
+                  className="absolute inset-0 rounded-full"
+                  style={{ backgroundColor: 'var(--primary)', zIndex: -1 }}
+                  transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
+                />
+              )}
+              {!activa && (
+                <span className="absolute inset-0 rounded-full" style={{ backgroundColor: 'var(--muted)', zIndex: -1 }} />
+              )}
+              <span className="relative flex items-center gap-1.5">
+                {p.icon}
+                {p.label}
+              </span>
             </button>
           )
         })}
       </div>
 
-      {/* Contenido */}
-      <div className="flex-1 overflow-y-auto">
-        {renderContenido()}
+      {/* Contenido — entra desde el lado de la pestaña elegida */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={pestanaActiva}
+            initial={reducedMotion ? false : { opacity: 0, x: direccionPestana * 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={reducedMotion ? undefined : { opacity: 0, x: -direccionPestana * 24 }}
+            transition={reducedMotion ? { duration: 0 } : TAB_TRANSITION}
+          >
+            {renderContenido()}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   )
