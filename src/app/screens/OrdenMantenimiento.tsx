@@ -1,5 +1,5 @@
 ﻿import { useState, useCallback, useMemo } from 'react'
-import { Wrench, Plus, FileText, Loader2, AlertTriangle, TriangleAlert } from 'lucide-react'
+import { Wrench, Plus, FileText, Loader2, AlertTriangle, TriangleAlert, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
@@ -22,7 +22,7 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
-import { Portal } from '@/app/components/Portal'
+import { BottomSheet } from '@/app/components/BottomSheet'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -362,22 +362,15 @@ export function OrdenMantenimiento() {
             <Fab onClick={abrirFormulario} aria-label="Nueva orden" />
 
       {/* ── Modal: nueva orden ─────────────────────────────────────────── */}
-      {abierto && (
-        <Portal>
-        <div
-          className="fixed inset-0 z-50 flex flex-col justify-end"
-          onClick={(e) => { if (e.target === e.currentTarget) handleCerrarModal() }}
-        >
-          <div className="absolute inset-0 bg-black/40" />
-          <div
-            className="relative bg-card rounded-t-[10px] flex flex-col"
-            style={{ maxHeight: '85dvh' }}
-          >
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-4 flex-shrink-0" />
-            <div className="px-4 pb-2 flex-shrink-0">
+      <BottomSheet open={abierto} onClose={handleCerrarModal}>
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1 bg-border rounded-full" />
+            </div>
+            <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>
                 Nueva Orden de Mantenimiento
               </h2>
+              <button type="button" onClick={handleCerrarModal}><X className="w-5 h-5 text-muted-foreground" /></button>
             </div>
 
             {sheetPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />}
@@ -575,10 +568,7 @@ export function OrdenMantenimiento() {
                 ) : 'Guardar orden'}
               </button>
             </div>}
-          </div>
-        </div>
-        </Portal>
-      )}
+      </BottomSheet>
     </div>
   )
 }

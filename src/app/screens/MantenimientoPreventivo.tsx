@@ -25,7 +25,7 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
-import { Portal } from '@/app/components/Portal'
+import { BottomSheet } from '@/app/components/BottomSheet'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -733,12 +733,10 @@ export function MantenimientoPreventivo() {
         }} aria-label="Agregar" />
 
       {/* ── Sheet: crear registro ──────────────────────────────────────── */}
-      {sheetCrear && (
-        <Portal>
-        <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={(e) => { if (e.target === e.currentTarget) handleCerrarSheetCrear() }}>
-          <div className="absolute inset-0 bg-black/40" />
-          <div className="relative bg-card rounded-t-[10px] flex flex-col" style={{ maxHeight: '85dvh' }}>
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-4 flex-shrink-0" />
+      <BottomSheet open={sheetCrear} onClose={handleCerrarSheetCrear}>
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1 bg-border rounded-full" />
+            </div>
             <div className="px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Nuevo registro mensual</h2>
               <button type="button" onClick={handleCerrarSheetCrear}><X className="w-5 h-5 text-muted-foreground" /></button>
@@ -808,24 +806,20 @@ export function MantenimientoPreventivo() {
               </button>
             </div>
             )}
-          </div>
-        </div>
-        </Portal>
-      )}
+      </BottomSheet>
 
       {/* ── Sheet: capturar día ───────────────────────────────────────── */}
-      {sheetDia && registroActivo && (
-        <Portal>
-        <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={(e) => { if (e.target === e.currentTarget) setSheetDia(false) }}>
-          <div className="absolute inset-0 bg-black/40" />
-          <div className="relative bg-card rounded-t-[10px] flex flex-col" style={{ maxHeight: '85dvh' }}>
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-4 flex-shrink-0" />
+      <BottomSheet open={sheetDia && !!registroActivo} onClose={() => setSheetDia(false)}>
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1 bg-border rounded-full" />
+            </div>
             <div className="px-4 pb-2 flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Capturar día</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Toca cada elemento para cambiar su estado. Se guarda con UPSERT (sobrescribe si ya existe).
               </p>
             </div>
+            {registroActivo && (
             <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-3">
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5">Fecha</label>
@@ -920,18 +914,14 @@ export function MantenimientoPreventivo() {
                 {dGuardando ? 'Guardando…' : 'Guardar día'}
               </button>
             </div>
-          </div>
-        </div>
-        </Portal>
-      )}
+            )}
+      </BottomSheet>
 
       {/* ── Sheet: acciones del mes ────────────────────────────────────── */}
-      {sheetAcciones && registroActivo && (
-        <Portal>
-        <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={(e) => { if (e.target === e.currentTarget) setSheetAcciones(false) }}>
-          <div className="absolute inset-0 bg-black/40" />
-          <div className="relative bg-card rounded-t-[10px] flex flex-col" style={{ maxHeight: '85dvh' }}>
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-4 flex-shrink-0" />
+      <BottomSheet open={sheetAcciones && !!registroActivo} onClose={() => setSheetAcciones(false)}>
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1 bg-border rounded-full" />
+            </div>
             <div className="px-4 pb-2 flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Acciones del mes</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -995,18 +985,13 @@ export function MantenimientoPreventivo() {
                 ) : 'Guardar acciones'}
               </button>
             </div>
-          </div>
-        </div>
-        </Portal>
-      )}
+      </BottomSheet>
 
       {/* ── Sheet: consolidado ─────────────────────────────────────────── */}
-      {sheetConsolidado && (
-        <Portal>
-        <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={(e) => { if (e.target === e.currentTarget) setSheetConsolidado(false) }}>
-          <div className="absolute inset-0 bg-black/40" />
-          <div className="relative bg-card rounded-t-[10px] flex flex-col" style={{ maxHeight: '85dvh' }}>
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-4 flex-shrink-0" />
+      <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)}>
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1 bg-border rounded-full" />
+            </div>
             <div className="px-4 pb-2 flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Exportar PDF consolidado</h2>
             </div>
@@ -1062,10 +1047,7 @@ export function MantenimientoPreventivo() {
                 ) : 'Generar PDF consolidado'}
               </button>
             </div>
-          </div>
-        </div>
-        </Portal>
-      )}
+      </BottomSheet>
 
     </div>
   )
