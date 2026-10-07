@@ -754,10 +754,7 @@ export function AlmacenEmpaqueGG() {
         setPendienteFirmaId(null)
         if (pendienteDetalle) { const d = pendienteDetalle; setPendienteDetalle(null); abrirDetalle(d) }
       }} height="85%">
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
-        </div>
-        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             {sheetNuevoPaso === 'firma_decision' ? 'Firmar registro' : sheetNuevoPaso === 'firma_gate' ? 'Firma requerida' : 'Nuevo registro mensual'}
           </h2>
@@ -880,10 +877,7 @@ export function AlmacenEmpaqueGG() {
 
       {/* Sheet consolidado */}
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="85%">
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
-        </div>
-        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
           <button onClick={() => setSheetConsolidado(false)}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />

@@ -311,10 +311,7 @@ export function EmpleadosGG() {
 
       {/* Sheet */}
       <BottomSheet open={sheetNuevo} onClose={handleCerrarSheet} height="85%">
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
-        </div>
-        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Registrar empleado'}
           </h2>
@@ -443,10 +440,7 @@ export function EmpleadosGG() {
 
       {/* Consolidado sheet */}
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="50%">
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-9 h-1 rounded-full" style={{ backgroundColor: 'var(--border)' }} />
-        </div>
-        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar directorio</h2>
           <button onClick={() => setSheetConsolidado(false)}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
