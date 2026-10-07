@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 import { useActividadEquipo } from '@/hooks/useActividadEquipo'
 import type { ActividadItem } from '@/hooks/useActividadEquipo'
 import { marcarCorreccion } from '@/lib/queries'
-import { Portal } from '@/app/components/Portal'
+import { BottomSheet } from '@/app/components/BottomSheet'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -354,18 +354,7 @@ export function ActividadEquipo() {
       </div>
 
       {/* Bottom Sheet — marcar/desmarcar corrección */}
-      {itemSeleccionado && (
-        <Portal>
-          <div className="fixed inset-0 bg-black/40 z-30" onClick={cerrarSheet} />
-          <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-card flex flex-col"
-            style={{
-              borderRadius: '0.625rem 0.625rem 0 0',
-              maxWidth: 390,
-              margin: '0 auto',
-              maxHeight: '80%',
-            }}
-          >
+      <BottomSheet open={!!itemSeleccionado} onClose={cerrarSheet}>
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-border" />
@@ -460,9 +449,7 @@ export function ActividadEquipo() {
                 </button>
               )}
             </div>
-          </div>
-        </Portal>
-      )}
+      </BottomSheet>
     </div>
   )
 }
