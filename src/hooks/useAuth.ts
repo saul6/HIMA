@@ -3,6 +3,7 @@ import { type User } from '@supabase/supabase-js'
 import { supabase, initialAuthParams } from '@/lib/supabase'
 import type { Profile, Productor } from '@/types/database.types'
 import { devLog } from '@/lib/log'
+import { cacheGet, cachePut, cacheClearUser } from '@/lib/offline/db'
 
 export interface AuthState {
   user: User | null
@@ -31,6 +32,21 @@ const SIN_SESION: Omit<AuthState, 'loading'> = {
   responsableProfile: null,
   error: null,
   isRecovery: false,
+}
+
+const CACHE_PERFIL_TTL = 24 * 60 * 60 * 1000
+
+async function guardarPerfilCache(userId: string, datos: Omit<AuthState, 'user' | 'loading' | 'isRecovery'>): Promise<void> {
+  await cachePut(`perfil:${userId}`, { datos, guardadoEn: Date.now(), userId, orgId: datos.profile?.org_id ?? '' }).catch(() => {})
+}
+
+async function cargarPerfilCache(userId: string): Promise<Omit<AuthState, 'user' | 'loading' | 'isRecovery'> | null> {
+  try {
+    const entrada = await cacheGet<{ datos: Omit<AuthState, 'user' | 'loading' | 'isRecovery'>; guardadoEn: number; userId: string }>(`perfil:${userId}`)
+    if (!entrada || entrada.userId !== userId) return null
+    if (Date.now() - entrada.guardadoEn > CACHE_PERFIL_TTL) return null
+    return entrada.datos
+  } catch { return null }
 }
 
 // Garantiza que NUNCA lanza — cualquier error interno queda atrapado y devuelve
@@ -151,17 +167,28 @@ export function useAuth(): UseAuthReturn {
       if (initialSession) {
         try {
           const datosPerfil = await cargarDatosPerfil(initialSession.user.id)
-          setState({ user: initialSession.user, ...datosPerfil, loading: false, isRecovery: IS_INITIAL_RECOVERY })
+          // Guardar en caché cuando la carga fue exitosa
+          if (datosPerfil.profile) {
+            guardarPerfilCache(initialSession.user.id, datosPerfil)
+          }
+          // Si no hay perfil (posiblemente sin red), intentar desde caché
+          const datosFinales = (!datosPerfil.profile && datosPerfil.error)
+            ? (await cargarPerfilCache(initialSession.user.id)) ?? datosPerfil
+            : datosPerfil
+          setState({ user: initialSession.user, ...datosFinales, loading: false, isRecovery: IS_INITIAL_RECOVERY })
         } catch (err) {
           console.error('[auth] error cargando perfil desde sesión inicial:', err)
+          const cacheado = await cargarPerfilCache(initialSession.user.id)
           setState({
             user: initialSession.user,
-            profile: null,
-            productor: null,
-            asesorProfile: null,
-            responsableProfile: null,
+            ...(cacheado ?? {
+              profile: null,
+              productor: null,
+              asesorProfile: null,
+              responsableProfile: null,
+              error: err instanceof Error ? err.message : 'Error cargando perfil',
+            }),
             loading: false,
-            error: err instanceof Error ? err.message : 'Error cargando perfil',
             isRecovery: IS_INITIAL_RECOVERY,
           })
         } finally {
@@ -184,9 +211,14 @@ export function useAuth(): UseAuthReturn {
           if (event === 'SIGNED_IN' && session?.access_token !== initialSession?.access_token) {
             // Solo para logins nuevos — la sesión de recarga ya fue manejada por getSession
             const datosPerfil = await cargarDatosPerfil(session!.user.id)
+            if (datosPerfil.profile) guardarPerfilCache(session!.user.id, datosPerfil)
             setState({ user: session!.user, ...datosPerfil, loading: false, isRecovery: false })
           }
           if (event === 'SIGNED_OUT') {
+            // Limpiar caché del usuario anterior
+            if (initialSession?.user.id) {
+              cacheClearUser(initialSession.user.id).catch(() => {})
+            }
             setState({ ...SIN_SESION, loading: false })
           }
         } catch (err) {
