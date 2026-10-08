@@ -36,6 +36,7 @@ import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
+import { opCabecera, opUpsert } from '@/lib/offline/construirOperaciones'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -225,37 +226,50 @@ export function InspeccionPerimetral() {
   const [savingObs, setSavingObs] = useState(false)
 
   const cargarDias = useCallback(async (regId: string) => {
-    if (!profile?.org_id) return
+    if (!profile?.org_id || !profile?.id) return
     setLoadingDias(true)
     try {
-      const { data: diasData, error: dErr } = await supabase
-        .from('m9_dias_inspeccion')
-        .select('id, fecha')
-        .eq('registro_id', regId)
-        .eq('org_id', profile.org_id)
-        .order('fecha')
-      if (dErr) throw dErr
+      // Si el registro es local (aún no subido), no hay nada en el servidor — los días
+      // pendientes ya se muestran desde lotesOffline, no hace falta consultar.
+      const esLocal = lotesOffline.some(
+        l => (l.metadatos as any)?.tipo === 'cabecera' &&
+             l.operaciones.some(op => op.fila.id === regId)
+      )
+      if (esLocal) { setDias([]); setLoadingDias(false); return }
 
-      const diaIds = (diasData ?? []).map((d: any) => d.id as string)
-      const diaFechaMap: Record<string, string> = {}
-      for (const d of diasData ?? []) diaFechaMap[(d as any).id] = (d as any).fecha
+      const resultado = await leerConCache<{ dias: { id: string; fecha: string }[]; resultados: { dia_id: string; item_id: string; valor: boolean }[] }>(
+        `m9_dias:${regId}`,
+        profile.id,
+        profile.org_id,
+        async () => {
+          const { data: diasData, error: dErr } = await supabase
+            .from('m9_dias_inspeccion')
+            .select('id, fecha')
+            .eq('registro_id', regId)
+            .eq('org_id', profile.org_id)
+            .order('fecha')
+          if (dErr) throw dErr
 
-      let resData: any[] = []
-      if (diaIds.length > 0) {
-        const { data: r, error: rErr } = await supabase
-          .from('m9_resultados')
-          .select('dia_id, item_id, valor')
-          .in('dia_id', diaIds)
-          .eq('org_id', profile.org_id)
-        if (rErr) throw rErr
-        resData = r ?? []
-      }
+          const diaIds = (diasData ?? []).map((d: any) => d.id as string)
+          let resData: any[] = []
+          if (diaIds.length > 0) {
+            const { data: r, error: rErr } = await supabase
+              .from('m9_resultados')
+              .select('dia_id, item_id, valor')
+              .in('dia_id', diaIds)
+              .eq('org_id', profile.org_id)
+            if (rErr) throw rErr
+            resData = r ?? []
+          }
+          return { dias: diasData ?? [], resultados: resData }
+        },
+      )
 
       const diaMap = new Map<string, M9DiaConResultados>()
-      for (const d of diasData ?? []) {
-        diaMap.set((d as any).id, { id: (d as any).id, fecha: (d as any).fecha, resultados: [] })
+      for (const d of resultado.datos.dias) {
+        diaMap.set(d.id, { id: d.id, fecha: d.fecha, resultados: [] })
       }
-      for (const r of resData) {
+      for (const r of resultado.datos.resultados) {
         diaMap.get(r.dia_id)?.resultados.push({ item_id: r.item_id, valor: r.valor })
       }
 
@@ -265,7 +279,7 @@ export function InspeccionPerimetral() {
     } finally {
       setLoadingDias(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.org_id, profile?.id, lotesOffline])
 
   const abrirDetalle = (reg: M9RegistroResumen) => {
     setRegistroActivo(reg)
@@ -323,23 +337,32 @@ export function InspeccionPerimetral() {
 
   useEffect(() => {
     if (!sheetNuevo) { setNYaExiste(false); return }
-    if (!nRanchoId || !nMes || !profile?.org_id) { setNYaExiste(false); return }
-    let cancelado = false
-    ;(supabase as any)
-      .from('m9_registro_mensual')
-      .select('id')
-      .eq('org_id', profile.org_id)
-      .eq('rancho_id', nRanchoId)
-      .eq('mes', nMes + '-01')
-      .maybeSingle()
-      .then(({ data }) => { if (!cancelado) setNYaExiste(!!data) })
-    return () => { cancelado = true }
-  }, [sheetNuevo, nRanchoId, nMes, profile?.org_id])
+    if (!nRanchoId || !nMes) { setNYaExiste(false); return }
+    const mesISO = nMes + '-01'
+    const existeServidor = registros.some(r => r.rancho_id === nRanchoId && r.mes.startsWith(nMes))
+    const existePendiente = lotesOffline.some(
+      l => (l.metadatos as any)?.tipo === 'cabecera' &&
+           (l.metadatos as any)?.rancho_id === nRanchoId &&
+           (l.metadatos as any)?.mes === mesISO
+    )
+    setNYaExiste(existeServidor || existePendiente)
+  }, [sheetNuevo, nRanchoId, nMes, registros, lotesOffline])
 
   async function handleCrearRegistro() {
     if (!nRanchoId) { setNErrRancho(true); return }
     if (!profile?.org_id || !user?.id) { toast.error('Sin organización activa'); return }
-    if (nYaExiste) { toast.warning(`Ya existe un registro para este mes y ${terminosSitio.singular.toLowerCase()}`); return }
+    // Si ya existe, abrir el registro existente en lugar de crear otro
+    if (nYaExiste) {
+      const existente = registros.find(r => r.rancho_id === nRanchoId && r.mes.startsWith(nMes))
+      setSheetNuevo(false)
+      if (existente) {
+        abrirDetalle(existente)
+      } else {
+        // Solo pendiente offline — ya se muestra en la lista
+        toast.info(`Ya existe un registro pendiente para este mes y ${terminosSitio.singular.toLowerCase()}`)
+      }
+      return
+    }
     setNGuardando(true)
     try {
       const rancho = ranchos.find(r => r.id === nRanchoId)
@@ -349,19 +372,16 @@ export function InspeccionPerimetral() {
         const ok = await guardarOffline({
           descripcion: `Monitoreo Perimetral · ${rancho?.nombre ?? ''} · ${nMes}`,
           metadatos: { rancho_id: nRanchoId, rancho_nombre: rancho?.nombre, mes: nMes + '-01', tipo: 'cabecera' },
-          operaciones: [{
-            tabla: 'm9_registro_mensual',
-            tipo: 'insert',
-            conflicto: ['rancho_id', 'mes'],
-            fila: {
+          operaciones: [
+            opCabecera('m9_registro_mensual', {
               id: localId,
               rancho_id: nRanchoId,
               org_id: profile.org_id!,
               mes: nMes + '-01',
               tiene_almacen: nAlmacen,
               responsable_id: user.id,
-            },
-          }],
+            }, ['rancho_id', 'mes']),
+          ],
         })
         if (ok) setSheetNuevo(false)
         return
@@ -440,20 +460,15 @@ export function InspeccionPerimetral() {
   }, [sheetDia, itemsVisibles, registroActivo])
 
   useEffect(() => {
-    if (!sheetDia || !dFecha || !registroActivo || !profile?.org_id) {
-      setDYaExiste(false); return
-    }
-    let cancelado = false
-    supabase
-      .from('m9_dias_inspeccion')
-      .select('id')
-      .eq('registro_id', registroActivo.id)
-      .eq('org_id', profile.org_id)
-      .eq('fecha', dFecha)
-      .maybeSingle()
-      .then(({ data }) => { if (!cancelado) setDYaExiste(!!data) })
-    return () => { cancelado = true }
-  }, [sheetDia, dFecha, registroActivo, profile?.org_id])
+    if (!sheetDia || !dFecha || !registroActivo) { setDYaExiste(false); return }
+    const existeEnDias = dias.some(d => d.fecha === dFecha)
+    const existeEnPendientes = lotesOffline.some(
+      l => (l.metadatos as any)?.tipo === 'dia' &&
+           (l.metadatos as any)?.registro_id === registroActivo.id &&
+           (l.metadatos as any)?.fecha === dFecha
+    )
+    setDYaExiste(existeEnDias || existeEnPendientes)
+  }, [sheetDia, dFecha, registroActivo, dias, lotesOffline])
 
   function handleCerrarSheetDia() {
     setSheetDia(false); setSheetDiaPaso('form'); setPendienteFirmaIds([])
@@ -480,8 +495,8 @@ export function InspeccionPerimetral() {
           descripcion: `Monitoreo Perimetral · Inspección ${dFecha} · ${registroActivo.rancho_nombre}`,
           metadatos: { registro_id: registroActivo.id, rancho_nombre: registroActivo.rancho_nombre, mes: registroActivo.mes, fecha: dFecha, tipo: 'dia', items_count: itemsVisibles.length },
           operaciones: [
-            { tabla: 'm9_dias_inspeccion', tipo: 'insert' as const, fila: { id: diaId, registro_id: registroActivo.id, org_id: profile.org_id!, fecha: dFecha } },
-            ...itemsVisibles.map(item => ({ tabla: 'm9_resultados', tipo: 'insert' as const, fila: { id: crypto.randomUUID(), dia_id: diaId, item_id: item.id, org_id: profile.org_id!, valor: dValores[item.id] ?? item.default_valor } })),
+            opCabecera('m9_dias_inspeccion', { id: diaId, registro_id: registroActivo.id, org_id: profile.org_id!, fecha: dFecha }, ['registro_id', 'fecha']),
+            ...itemsVisibles.map(item => opUpsert('m9_resultados', { id: crypto.randomUUID(), dia_id: diaId, item_id: item.id, org_id: profile.org_id!, valor: dValores[item.id] ?? item.default_valor }, ['dia_id', 'item_id'])),
           ],
         })
         if (ok) handleCerrarSheetDia()
