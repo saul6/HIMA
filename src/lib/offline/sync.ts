@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabase'
 import { obtenerLotes, obtenerLote, actualizarLote, eliminarLote, obtenerAdjuntosLote } from './outbox'
-import type { LoteOutbox } from './tipos'
+import type { LoteOutbox, OperacionSync } from './tipos'
 import { setSincronizando } from './actualizacionSegura'
+import { mapeoGet, mapeoPut, mapeoLimpiar } from './db'
 
 export const SYNC_OK_EVENT = 'mady:lote-sincronizado'
 export const SYNC_RECHAZADO_EVENT = 'mady:lote-rechazado'
@@ -51,6 +52,24 @@ function mensajeDeError(codigo: string, mensajeBD: string, modulo: string): stri
     default:
       return 'No se pudo subir este registro. Reintenta más tarde.'
   }
+}
+
+// ── Remapeo de ids entre lotes ────────────────────────────────────────────────
+
+function aplicarMapeoAOperaciones(
+  operaciones: OperacionSync[],
+  mapeo: Record<string, string>,
+): OperacionSync[] {
+  if (Object.keys(mapeo).length === 0) return operaciones
+  return operaciones.map(op => ({
+    ...op,
+    fila: Object.fromEntries(
+      Object.entries(op.fila).map(([k, v]) => [
+        k,
+        typeof v === 'string' && mapeo[v] ? mapeo[v] : v,
+      ]),
+    ),
+  }))
 }
 
 // ── Subir adjuntos de un lote ─────────────────────────────────────────────────
@@ -168,6 +187,11 @@ export async function sincronizarLote(loteId: string): Promise<ResultadoSync | n
       codigo: null,
     })
 
+    // Guardar mapeo global para que lotes posteriores resuelvan ids locales
+    if (Object.keys(mapeo).length > 0) {
+      await mapeoPut(lote.userId, mapeo).catch(() => {})
+    }
+
     window.dispatchEvent(new CustomEvent(SYNC_OK_EVENT, {
       detail: { loteId, modulo: lote.modulo, mapeo, tarde },
     }))
@@ -197,11 +221,29 @@ async function procesarCola(userId: string): Promise<void> {
     const pendientes = lotes.filter(l => l.estado === 'pendiente')
     if (pendientes.length === 0) return
 
+    // Limpiar entradas de mapeo con más de 7 días
+    await mapeoLimpiar(userId).catch(() => {})
+
     // Refrescar token antes de sincronizar
     await supabase.auth.getSession()
 
     for (const lote of pendientes) {
       if (!navigator.onLine) break
+
+      // Aplicar mapeo acumulado: sustituir ids locales por ids reales en las operaciones
+      const mapeoActual = await mapeoGet(userId).catch(() => ({}))
+      const mapaPlano: Record<string, string> = {}
+      for (const [k, v] of Object.entries(mapeoActual)) mapaPlano[k] = v.realId
+
+      if (Object.keys(mapaPlano).length > 0) {
+        const operacionesCorregidas = aplicarMapeoAOperaciones(lote.operaciones, mapaPlano)
+        // Solo actualizar si hubo cambios reales para evitar escrituras innecesarias
+        const cambio = JSON.stringify(operacionesCorregidas) !== JSON.stringify(lote.operaciones)
+        if (cambio) {
+          await actualizarLote(lote.id, { operaciones: operacionesCorregidas })
+        }
+      }
+
       await sincronizarLote(lote.id)
     }
   } finally {

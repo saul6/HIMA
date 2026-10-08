@@ -1,5 +1,5 @@
 // IndexedDB: mady_offline
-// stores: cache, lotes, adjuntos
+// stores: cache, lotes, adjuntos, mapeo_ids
 //
 // Al incrementar DB_VERSION para añadir stores nuevos, el patrón
 // if (!db.objectStoreNames.contains(...)) { db.createObjectStore(...) }
@@ -7,9 +7,9 @@
 // pendientes de subir nunca se borran en una actualización de versión.
 
 const DB_NAME = 'mady_offline'
-const DB_VERSION = 1
+const DB_VERSION = 2
 
-type StoreName = 'cache' | 'lotes' | 'adjuntos'
+type StoreName = 'cache' | 'lotes' | 'adjuntos' | 'mapeo_ids'
 
 function abrirDB(): Promise<IDBDatabase> {
   if (typeof indexedDB === 'undefined') {
@@ -35,6 +35,10 @@ function abrirDB(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains('adjuntos')) {
         const adj = db.createObjectStore('adjuntos', { keyPath: 'uid' })
         adj.createIndex('loteId', 'loteId', { unique: false })
+      }
+
+      if (!db.objectStoreNames.contains('mapeo_ids')) {
+        db.createObjectStore('mapeo_ids', { keyPath: 'userId' })
       }
     }
 
@@ -163,6 +167,55 @@ export async function adjuntoDelete(uid: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction('adjuntos', 'readwrite')
     tx.objectStore('adjuntos').delete(uid)
+    tx.oncomplete = () => { db.close(); resolve() }
+    tx.onerror = () => { db.close(); reject(tx.error) }
+  })
+}
+
+// ── mapeo_ids store — id local → id real, por usuario ────────────────────────
+
+export interface EntradaMapeoId {
+  realId: string
+  creadoEn: string
+}
+
+export async function mapeoGet(userId: string): Promise<Record<string, EntradaMapeoId>> {
+  const db = await abrirDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('mapeo_ids', 'readonly')
+    const req = tx.objectStore('mapeo_ids').get(userId)
+    req.onsuccess = () => { db.close(); resolve((req.result as any)?.mapeo ?? {}) }
+    req.onerror = () => { db.close(); reject(req.error) }
+  })
+}
+
+export async function mapeoPut(userId: string, nuevoMapeo: Record<string, string>): Promise<void> {
+  const db = await abrirDB()
+  const existente = await mapeoGet(userId).catch(() => ({}))
+  const ahora = new Date().toISOString()
+  const merged: Record<string, EntradaMapeoId> = { ...existente }
+  for (const [localId, realId] of Object.entries(nuevoMapeo)) {
+    merged[localId] = { realId, creadoEn: ahora }
+  }
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('mapeo_ids', 'readwrite')
+    tx.objectStore('mapeo_ids').put({ userId, mapeo: merged })
+    tx.oncomplete = () => { db.close(); resolve() }
+    tx.onerror = () => { db.close(); reject(tx.error) }
+  })
+}
+
+export async function mapeoLimpiar(userId: string): Promise<void> {
+  const db = await abrirDB()
+  const existente = await mapeoGet(userId).catch(() => ({}))
+  const limite = Date.now() - 7 * 24 * 60 * 60 * 1000
+  const filtrado: Record<string, EntradaMapeoId> = {}
+  for (const [k, v] of Object.entries(existente)) {
+    if (new Date(v.creadoEn).getTime() > limite) filtrado[k] = v
+  }
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('mapeo_ids', 'readwrite')
+    tx.objectStore('mapeo_ids').put({ userId, mapeo: filtrado })
     tx.oncomplete = () => { db.close(); resolve() }
     tx.onerror = () => { db.close(); reject(tx.error) }
   })
