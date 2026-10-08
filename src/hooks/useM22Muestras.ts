@@ -67,22 +67,32 @@ export function useM22Muestras(userId: string | null, orgId: string | null) {
   return { muestras, loading, error, refetch: fetch }
 }
 
-export function useM22Microorganismos() {
+export function useM22Microorganismos(userId: string | null, orgId: string | null) {
   const [microorganismos, setMicroorganismos] = useState<M22Microorganismo[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    if (!userId || !orgId) return
+    let cancelado = false
     setLoading(true)
-    ;(supabase as any)
-      .from('m22_microorganismos')
-      .select('*')
-      .order('tipo')
-      .order('orden')
-      .then(({ data }: any) => {
-        setMicroorganismos(data ?? [])
-        setLoading(false)
-      })
-  }, [])
+    leerConCache<M22Microorganismo[]>(
+      'm22_microorganismos',
+      userId,
+      orgId,
+      async () => {
+        const { data, error } = await (supabase as any)
+          .from('m22_microorganismos')
+          .select('*')
+          .order('tipo')
+          .order('orden')
+        if (error) throw error
+        return data ?? []
+      },
+    )
+      .then(({ datos }) => { if (!cancelado) { setMicroorganismos(datos); setLoading(false) } })
+      .catch(() => { if (!cancelado) setLoading(false) })
+    return () => { cancelado = true }
+  }, [userId, orgId])
 
   return { microorganismos, loading }
 }

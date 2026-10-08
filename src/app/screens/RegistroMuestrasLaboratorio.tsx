@@ -67,7 +67,7 @@ export function RegistroMuestrasLaboratorio() {
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { muestras, loading, refetch } = useM22Muestras(profile?.id ?? null, orgId)
-  const { microorganismos } = useM22Microorganismos()
+  const { microorganismos } = useM22Microorganismos(profile?.id ?? null, orgId)
   const orgNombre = useOrganizacion(orgId)
 
   const { obligatoria, tengoFirma } = useFirmaContext()

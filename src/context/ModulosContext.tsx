@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useCallback, type ReactNode } fro
 import { useMisModulos, type ModuloVisible } from '@/hooks/useMisModulos'
 import { useTerminoSitio, resolverTerminos, type TerminosSitio } from '@/hooks/useTerminoSitio'
 import { useAuthContext } from '@/context/AuthContext'
-import { precargarCache } from '@/lib/offline/cacheLectura'
+import { precargarCache, leerConCache } from '@/lib/offline/cacheLectura'
 import { supabase } from '@/lib/supabase'
 import { getRanchos } from '@/lib/queries'
 
@@ -103,8 +103,63 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
           return data ?? []
         },
       },
+      {
+        clave: 'm22_microorganismos',
+        fetcher: async () => {
+          const { data } = await supabase
+            .from('m22_microorganismos')
+            .select('*')
+            .order('tipo')
+            .order('orden')
+          return data ?? []
+        },
+      },
     ])
+
+    // Precarga de días M9 para todos los registros del mes actual
+    await precargarDiasM9(userId, orgId!)
   }, [userId, orgId])
+
+  async function precargarDiasM9(userId: string, orgId: string) {
+    const mes = new Date().toISOString().slice(0, 7)
+    const { data: registros } = await supabase
+      .from('m9_registro_mensual')
+      .select('id')
+      .eq('org_id', orgId)
+      .gte('mes', mes + '-01')
+      .lte('mes', mes + '-28')
+    if (!registros) return
+    await Promise.allSettled(
+      registros.map(reg =>
+        leerConCache(
+          `m9_dias:${reg.id}`,
+          userId,
+          orgId,
+          async () => {
+            const { data: diasData } = await supabase
+              .from('m9_dias_inspeccion')
+              .select('id, fecha')
+              .eq('registro_id', reg.id)
+              .eq('org_id', orgId)
+              .order('fecha')
+            const dias = diasData ?? []
+            const diaIds = dias.map((d: any) => d.id)
+            let resultados: any[] = []
+            if (diaIds.length > 0) {
+              const { data: r } = await supabase
+                .from('m9_resultados')
+                .select('dia_id, item_id, valor')
+                .in('dia_id', diaIds)
+                .eq('org_id', orgId)
+              resultados = r ?? []
+            }
+            return { dias, resultados }
+          },
+          { maxEdad: 5 * 60 * 1000 },
+        ),
+      ),
+    )
+  }
 
   // Precarga al iniciar sesión con red
   useEffect(() => {
