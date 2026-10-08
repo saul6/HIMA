@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { X, CheckCircle, Loader2, FileDown, FileText } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { toast } from "sonner";
 import { getAplicacionRicaById } from "@/lib/queries";
 import { generarExcelHistorial } from "@/lib/excel/generarExcelHistorial";
@@ -9,8 +10,8 @@ import { formatFenologia } from "@/lib/fenologia";
 import { useAuthContext } from "@/context/AuthContext";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useTheme } from "@/context/ThemeContext";
+import { SPRING_SUAVE } from "@/lib/motion";
 import type { AplicacionRica } from "@/types/database.types";
-import { Portal } from "@/app/components/Portal";
 
 export function DetalleAplicacion() {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ export function DetalleAplicacion() {
   const [loading, setLoading] = useState(true);
   const [exportandoExcel, setExportandoExcel] = useState(false);
   const [exportandoPDF, setExportandoPDF] = useState(false);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     if (!id) return;
@@ -94,7 +96,7 @@ export function DetalleAplicacion() {
   const a = app;
 
   return (
-    <div className="min-h-full pb-[calc(72px+env(safe-area-inset-bottom,0px)+64px)]">
+    <div className="min-h-full pb-[calc(96px+env(safe-area-inset-bottom,0px))] md:pb-6">
       {/* Header */}
       <header className="sticky top-0 bg-card border-b border-border px-4 py-4 z-20">
         <div className="flex items-center justify-between mb-3">
@@ -217,34 +219,39 @@ export function DetalleAplicacion() {
             <p className="text-sm text-foreground">{a.observaciones}</p>
           </Section>
         )}
-      </div>
 
-      {/* Sticky Footer */}
-      <Portal>
-      <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-white border-t border-black/10 p-4 flex gap-3">
-        <button
-          onClick={handleExportExcel}
-          disabled={exportandoExcel}
-          className="flex-1 h-12 border border-[#2B7AB5] text-[#2B7AB5] rounded-xl hover:bg-[#E3F2FD] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-          style={{ fontWeight: 600 }}
-        >
-          {exportandoExcel
-            ? <Loader2 className="w-4 h-4 animate-spin" />
-            : <FileDown className="w-4 h-4" />
-          }
-          Excel
-        </button>
-        <button
-          onClick={handleGenerarPDF}
-          disabled={exportandoPDF}
-          className="flex-1 h-12 bg-[#2B7AB5] text-white rounded-xl hover:bg-[#1E88C7] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-          style={{ fontWeight: 600 }}
-        >
-          {exportandoPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-          PDF
-        </button>
+        {/* Cápsula flotante — Excel / PDF */}
+        <div className="sticky bottom-[calc(88px+env(safe-area-inset-bottom,0px))] md:bottom-4 z-10 flex justify-center">
+          <motion.div
+            initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
+            className="w-full md:w-fit flex items-center gap-2 md:gap-3 bg-card border border-border rounded-2xl p-2"
+          >
+            <button
+              onClick={handleExportExcel}
+              disabled={exportandoExcel}
+              className="flex-1 md:flex-none md:min-w-[160px] h-11 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary hover:bg-primary/5 transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              style={{ fontWeight: 600 }}
+            >
+              {exportandoExcel
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : <FileDown className="w-4 h-4" />
+              }
+              Excel
+            </button>
+            <button
+              onClick={handleGenerarPDF}
+              disabled={exportandoPDF}
+              className="flex-1 md:flex-none md:min-w-[160px] h-11 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              style={{ fontWeight: 600 }}
+            >
+              {exportandoPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+              PDF
+            </button>
+          </motion.div>
+        </div>
       </div>
-      </Portal>
     </div>
   );
 }
