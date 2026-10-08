@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M7FilaMaterial {
   id: string
@@ -30,25 +31,35 @@ export function useVidrioPlastico() {
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id) {
+    if (!profile?.id || !profile?.org_id) {
       setLoading(false)
       return
     }
+    const userId = profile.id
+    const orgId  = profile.org_id
     setLoading(true)
     setError(null)
     try {
-      const { data, error: err } = await supabase
-        .from('m7_vidrio_plastico')
-        .select('*, ranchos(nombre, codigo)')
-        .eq('org_id', profile.org_id)
-        .order('fecha', { ascending: false })
-        .order('created_at', { ascending: true })
-        .limit(500)
-      if (err) throw err
+      const resultado = await leerConCache(
+        'm7_vidrio_plastico',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await supabase
+            .from('m7_vidrio_plastico')
+            .select('*, ranchos(nombre, codigo)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: true })
+            .limit(500)
+          if (err) throw err
+          return data ?? []
+        },
+      )
 
       // Agrupar filas por rancho_id + fecha para formar inspecciones
       const grouped = new Map<string, M7Inspeccion>()
-      for (const row of (data ?? [])) {
+      for (const row of (resultado.datos as any[])) {
         const key = `${row.rancho_id}|${row.fecha}`
         if (!grouped.has(key)) {
           grouped.set(key, {
@@ -74,7 +85,7 @@ export function useVidrioPlastico() {
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.id, profile?.org_id])
 
   useEffect(() => {
     cargar()

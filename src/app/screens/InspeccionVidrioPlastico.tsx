@@ -37,6 +37,13 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { useLimiteProactivo } from '@/hooks/useLimiteProactivo'
+import { ChipOffline } from '@/app/components/ChipOffline'
+import { BannerLimiteOffline } from '@/app/components/BannerLimiteOffline'
+import { WifiOff } from 'lucide-react'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -259,6 +266,9 @@ export function InspeccionVidrioPlastico() {
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M7')
+  const { guardar: guardarOffline } = useGuardarOffline('M7')
   const todosIds = inspecciones.flatMap(insp => insp.materiales.map(m => m.id))
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M7', todosIds)
 
@@ -279,7 +289,6 @@ export function InspeccionVidrioPlastico() {
   const [cargandoMateriales, setCargandoMateriales] = useState(false)
   const [errRancho, setErrRancho] = useState(false)
   const [guardando, setGuardando] = useState(false)
-  const [limiteInfo, setLimiteInfo] = useState<{ proxima: string } | null>(null)
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null)
 
   // ── Estado configuración ────────────────────────────────────────────────
@@ -372,40 +381,17 @@ export function InspeccionVidrioPlastico() {
   }, [sheetConfigAbierto, configRanchoId, profile?.org_id])
 
   // ── Verificación proactiva del límite quincenal ──────────────────────────
-  useEffect(() => {
-    if (!sheetInspeccionAbierto || !ranchoId || !fecha || !profile?.org_id) {
-      setLimiteInfo(null)
-      return
-    }
-    let cancelado = false
-    const fechaDate = new Date(fecha + 'T12:00:00')
-    const inicio = new Date(fechaDate)
-    inicio.setDate(inicio.getDate() - 13)
-    const inicioStr = inicio.toISOString().split('T')[0]
-
-    supabase
-      .from('m7_vidrio_plastico')
-      .select('fecha')
-      .eq('org_id', profile.org_id)
-      .eq('rancho_id', ranchoId)
-      .gte('fecha', inicioStr)
-      .lt('fecha', fecha)
-      .order('fecha', { ascending: false })
-      .limit(1)
-      .then(({ data }) => {
-        if (cancelado) return
-        if (data && data.length > 0) {
-          const ultimoDate = new Date(data[0].fecha + 'T12:00:00')
-          const proximaDate = new Date(ultimoDate)
-          proximaDate.setDate(proximaDate.getDate() + 14)
-          setLimiteInfo({ proxima: formatFecha(proximaDate.toISOString().split('T')[0]) })
-        } else {
-          setLimiteInfo(null)
-        }
-      })
-
-    return () => { cancelado = true }
-  }, [sheetInspeccionAbierto, ranchoId, fecha, profile?.org_id])
+  const { limiteInfo, hayConflictoOffline: hayLoteOfflineConflicto } = useLimiteProactivo({
+    modulo: 'M7',
+    orgId: profile?.org_id ?? null,
+    ranchoId: ranchoId || null,
+    fecha,
+    activo: sheetInspeccionAbierto && sheetInspeccionPaso === 'form',
+    tabla: 'm7_vidrio_plastico',
+    campoFecha: 'fecha',
+    ventanaDias: 14,
+    sheetAbierto: sheetInspeccionAbierto,
+  })
 
   // ── Sugerencias dinámicas para config (solo lo ya configurado en este rancho) ──
   const areasSugerencias = [...new Set(configMateriales.map((m) => m.area))]
@@ -428,7 +414,6 @@ export function InspeccionVidrioPlastico() {
     setFecha(hoy())
     setFilasInspeccion([])
     setErrRancho(false)
-    setLimiteInfo(null)
     setPendientesFirmaIds([])
     setPendienteFirmaFecha('')
     setSheetInspeccionPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
@@ -456,6 +441,34 @@ export function InspeccionVidrioPlastico() {
 
     setGuardando(true)
     try {
+      if (!online) {
+        const rancho = ranchos.find((r) => r.id === ranchoId)
+        const ok = await guardarOffline({
+          descripcion: `Vidrio y Plástico · ${rancho?.nombre ?? ''} · ${fecha}`,
+          metadatos: { rancho_id: ranchoId, rancho_nombre: rancho?.nombre, fecha, materiales_count: filasInspeccion.length },
+          operaciones: filasInspeccion.map((f) => ({
+            tabla: 'm7_vidrio_plastico',
+            tipo: 'insert' as const,
+            fila: {
+              id: crypto.randomUUID(),
+              rancho_id: ranchoId,
+              fecha,
+              registrado_por: profile.id,
+              area: f.area,
+              material_equipo: f.material,
+              protegido: f.protegido,
+              estado: f.estado,
+              observaciones: f.observaciones.trim() || null,
+            },
+          })),
+        })
+        if (ok) {
+          if (tareaId) setRegistroGuardado(true)
+          handleCerrarSheetInspeccion()
+        }
+        return
+      }
+
       const rows = filasInspeccion.map((f) => ({
         rancho_id: ranchoId,
         org_id: profile.org_id,
@@ -709,9 +722,29 @@ export function InspeccionVidrioPlastico() {
 
       {/* Historial */}
       <div className="p-4 space-y-3">
+        {/* Lotes sin conexión */}
+        {lotesOffline.map(lote => {
+          const meta = lote.metadatos as { rancho_nombre?: string; fecha?: string; materiales_count?: number } | undefined
+          return (
+            <div key={lote.id} className="bg-card border border-border rounded-xl p-4 opacity-80">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    {meta?.rancho_nombre ?? '—'}
+                  </span>
+                  <p className="text-xs text-muted-foreground mt-0.5">{meta?.fecha ?? '—'}</p>
+                </div>
+                <ChipOffline lote={lote} />
+              </div>
+              {lote.estado === 'rechazado' && lote.error && (
+                <p className="text-xs mt-1" style={{ color: 'var(--agro-danger-text)' }}>{lote.error}</p>
+              )}
+            </div>
+          )
+        })}
         {loading ? (
           <ListaSkeleton />
-        ) : inspecciones.length === 0 ? (
+        ) : inspecciones.length === 0 && lotesOffline.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <Eye className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Sin inspecciones aún</p>
@@ -1086,19 +1119,13 @@ export function InspeccionVidrioPlastico() {
               </div>
 
               {/* Aviso límite quincenal */}
-              {limiteInfo && (
-                <div
-                  className="flex items-start gap-2 rounded-xl p-3"
-                  style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid #F5A623' }}
-                >
-                  <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-                  <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
-                    Ya existe una inspección para {terminosSitio.genero === 'f' ? 'esta' : 'este'} {terminosSitio.singular.toLowerCase()} en los últimos 14 días.{' '}
-                    Próxima disponible:{' '}
-                    <span style={{ fontWeight: 600 }}>{limiteInfo.proxima}</span>
-                  </p>
-                </div>
-              )}
+              <BannerLimiteOffline
+                limiteInfo={limiteInfo}
+                hayConflictoOffline={hayLoteOfflineConflicto}
+                terminoSingular={terminosSitio.singular}
+                terminoGenero={terminosSitio.genero}
+                descripcionLimite={`Ya existe una inspección para ${terminosSitio.genero === 'f' ? 'esta' : 'este'} ${terminosSitio.singular.toLowerCase()} en los últimos 14 días.`}
+              />
 
               {/* Materiales del catálogo */}
               {ranchoId && (
@@ -1176,12 +1203,13 @@ export function InspeccionVidrioPlastico() {
             <div className="p-4 border-t border-border flex-shrink-0">
               <button
                 onClick={handleGuardar}
-                disabled={guardando || !!limiteInfo || filasInspeccion.length === 0 || cargandoMateriales}
+                disabled={guardando || !!limiteInfo || hayLoteOfflineConflicto || filasInspeccion.length === 0 || cargandoMateriales}
                 className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
                 style={{ fontWeight: 600 }}
               >
                 {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-                Guardar y generar PDF
+                {!guardando && !online && <WifiOff className="w-4 h-4" />}
+                {online ? 'Guardar y generar PDF' : 'Guardar sin conexión'}
               </button>
             </div>
             </>

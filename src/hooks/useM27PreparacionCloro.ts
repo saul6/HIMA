@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M27Preparacion {
   id: string
@@ -21,20 +22,30 @@ export function useM27PreparacionCloro() {
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id) { setLoading(false); return }
+    if (!profile?.id || !profile?.org_id) { setLoading(false); return }
+    const userId = profile.id
+    const orgId  = profile.org_id
     setLoading(true)
     setError(null)
     try {
-      const { data, error: err } = await (supabase as any)
-        .from('m27_preparaciones')
-        .select('*, ranchos(nombre)')
-        .eq('org_id', profile.org_id)
-        .order('fecha', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(500)
-      if (err) throw err
+      const resultado = await leerConCache(
+        'm27_preparaciones',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await (supabase as any)
+            .from('m27_preparaciones')
+            .select('*, ranchos(nombre)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+            .limit(500)
+          if (err) throw err
+          return data ?? []
+        },
+      )
       setPreparaciones(
-        (data ?? []).map((r: any) => ({
+        (resultado.datos as any[]).map((r: any) => ({
           id: r.id,
           rancho_id: r.rancho_id,
           rancho_nombre: r.ranchos?.nombre ?? '—',
@@ -51,7 +62,7 @@ export function useM27PreparacionCloro() {
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.id, profile?.org_id])
 
   useEffect(() => { cargar() }, [cargar])
 

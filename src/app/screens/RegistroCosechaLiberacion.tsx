@@ -32,6 +32,11 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
+import { WifiOff } from 'lucide-react'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -127,6 +132,9 @@ export function RegistroCosechaLiberacion() {
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M10')
+  const { guardar: guardarOffline } = useGuardarOffline('M10')
 
   // Firmas del hook (sin imágenes) para la lista
   const todosIds = registros.flatMap((r) => r.liberaciones.map((l) => l.id))
@@ -265,6 +273,42 @@ export function RegistroCosechaLiberacion() {
 
     setGuardando(true)
     try {
+      if (!online) {
+        const rancho = ranchos.find((r) => r.id === ranchoId)
+        const ok = await guardarOffline({
+          descripcion: `Cosecha y Liberación · ${rancho?.nombre ?? ''} · ${fecha}`,
+          metadatos: { rancho_id: ranchoId, rancho_nombre: rancho?.nombre, fecha, liberaciones_count: liberaciones.length },
+          operaciones: liberaciones.map((lib) => ({
+            tabla: 'm10_cosecha_liberacion',
+            tipo: 'insert' as const,
+            fila: {
+              id: crypto.randomUUID(),
+              rancho_id: ranchoId,
+              fecha,
+              sector: lib.sector || null,
+              cantidad_bandejas: lib.cantidad_bandejas ? parseInt(lib.cantidad_bandejas, 10) : null,
+              lote_liberado: lib.lote_liberado,
+              numero_comprobante: lib.numero_comprobante || null,
+              codigo_trazabilidad: lib.codigo_trazabilidad || null,
+              marca_embalaje: lib.marca_embalaje || null,
+              destino_final: lib.destino_final || null,
+              fruta_proceso_kg: lib.fruta_proceso_kg ? parseFloat(lib.fruta_proceso_kg) : null,
+              encargado_liberacion_id: lib.encargado_liberacion_id || null,
+              verificacion_semanal: lib.verificacion_semanal,
+              hora_inicio_cosecha: lib.hora_inicio_cosecha || null,
+              hora_fin_cosecha: lib.hora_fin_cosecha || null,
+              observaciones: lib.observaciones || null,
+            },
+          })),
+        })
+        if (ok) {
+          if (tareaId) setRegistroGuardado(true)
+          setSheetAbierto(false)
+          setSheetPaso('form')
+        }
+        return
+      }
+
       const rows = liberaciones.map((lib) => ({
         rancho_id: ranchoId,
         org_id: profile.org_id,
@@ -436,9 +480,29 @@ export function RegistroCosechaLiberacion() {
 
       {/* Historial */}
       <div className="p-4 space-y-3">
+        {/* Lotes sin conexión */}
+        {lotesOffline.map(lote => {
+          const meta = lote.metadatos as { rancho_nombre?: string; fecha?: string; liberaciones_count?: number } | undefined
+          return (
+            <div key={lote.id} className="bg-card border border-border rounded-xl p-4 opacity-80">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    {meta?.rancho_nombre ?? '—'}
+                  </span>
+                  <p className="text-xs text-muted-foreground mt-0.5">{meta?.fecha ?? '—'}</p>
+                </div>
+                <ChipOffline lote={lote} />
+              </div>
+              {lote.estado === 'rechazado' && lote.error && (
+                <p className="text-xs mt-1" style={{ color: 'var(--agro-danger-text)' }}>{lote.error}</p>
+              )}
+            </div>
+          )
+        })}
         {loading ? (
           <ListaSkeleton />
-        ) : registros.length === 0 ? (
+        ) : registros.length === 0 && lotesOffline.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <Package className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Sin registros aún</p>
@@ -1004,7 +1068,8 @@ export function RegistroCosechaLiberacion() {
                 style={{ fontWeight: 600 }}
               >
                 {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-                Guardar registro
+                {!guardando && !online && <WifiOff className="w-4 h-4" />}
+                {online ? 'Guardar registro' : 'Guardar sin conexión'}
               </button>
             </div>
             </>

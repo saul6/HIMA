@@ -1,7 +1,7 @@
 ﻿import { useState, useMemo } from 'react'
 import {
   Plus, FileDown, Loader2, FlaskConical,
-  ChevronDown, ChevronUp, X,
+  ChevronDown, ChevronUp, X, WifiOff,
 } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
@@ -26,6 +26,10 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -58,6 +62,9 @@ export function PreparacionCloro() {
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { preparaciones, loading, refetch } = useM27PreparacionCloro()
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M27')
+  const { guardar: guardarOffline } = useGuardarOffline('M27')
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
 
@@ -133,6 +140,27 @@ export function PreparacionCloro() {
     if (!litrosAgua || isNaN(litrosNum) || litrosNum <= 0) { setErrLitros(true); valido = false }
     if (!valido) return
     if (!profile?.org_id) { toast.error('Sin organización activa'); return }
+
+    if (!online) {
+      guardarOffline({
+        descripcion: `Preparación de cloro ${area.trim()} — ${fecha}`,
+        metadatos: { rancho_id: ranchoId, fecha },
+        operaciones: [{
+          tabla: 'm27_preparaciones',
+          tipo: 'insert' as const,
+          fila: {
+            rancho_id: ranchoId,
+            fecha,
+            area: area.trim(),
+            litros_agua: litrosNum,
+            responsable: responsable.trim() || null,
+            observaciones: observaciones.trim() || null,
+          },
+        }],
+      })
+      handleCerrarSheet()
+      return
+    }
 
     setGuardando(true)
     try {
@@ -301,7 +329,7 @@ export function PreparacionCloro() {
       <div className="p-4 space-y-3">
         {loading ? (
           <ListaSkeleton />
-        ) : preparaciones.length === 0 ? (
+        ) : preparaciones.length === 0 && lotesOffline.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <FlaskConical className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Sin registros aún</p>
@@ -310,7 +338,23 @@ export function PreparacionCloro() {
             </p>
           </div>
         ) : (
-          preparaciones.map((prep) => (
+          <>
+          {lotesOffline.map((lote) => (
+            <div key={lote.id} className="bg-card border border-border rounded-xl p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    {lote.descripcion}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {(lote.metadatos as any)?.fecha ?? ''}
+                  </p>
+                </div>
+                <ChipOffline lote={lote} />
+              </div>
+            </div>
+          ))}
+          {preparaciones.map((prep) => (
             <div key={prep.id} className="bg-card border border-border rounded-xl p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
@@ -384,7 +428,8 @@ export function PreparacionCloro() {
                 onFirmado={async () => { await refetch(); await refetchFirmas() }}
               />
             </div>
-          ))
+          ))}
+          </>
         )}
       </div>
 
@@ -652,8 +697,10 @@ export function PreparacionCloro() {
             className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
             style={{ fontWeight: 600 }}
           >
-            {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar
+            {guardando
+              ? <Loader2 className="w-4 h-4 animate-spin" />
+              : !online && <WifiOff className="w-4 h-4" />}
+            {online ? 'Guardar' : 'Guardar sin conexión'}
           </button>
         </div>
         </>)}

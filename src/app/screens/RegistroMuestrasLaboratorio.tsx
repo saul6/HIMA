@@ -23,6 +23,11 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
+import { WifiOff } from 'lucide-react'
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -61,11 +66,14 @@ export function RegistroMuestrasLaboratorio() {
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
-  const { muestras, loading, refetch } = useM22Muestras(orgId)
+  const { muestras, loading, refetch } = useM22Muestras(profile?.id ?? null, orgId)
   const { microorganismos } = useM22Microorganismos()
   const orgNombre = useOrganizacion(orgId)
 
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M22')
+  const { guardar: guardarOffline } = useGuardarOffline('M22')
   const todosIds = muestras.map(m => m.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M22', todosIds)
 
@@ -115,6 +123,33 @@ export function RegistroMuestrasLaboratorio() {
 
     setGuardando(true)
     try {
+      if (!online) {
+        const rancho = ranchos.find((r) => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Muestra · ${rancho?.nombre ?? ''} · ${form.fecha_muestreo}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha_muestreo },
+          operaciones: [{
+            tabla: 'm22_muestras',
+            tipo: 'insert' as const,
+            fila: {
+              id: crypto.randomUUID(),
+              rancho_id: form.rancho_id,
+              fecha_muestreo: form.fecha_muestreo,
+              hora_muestreo: form.hora_muestreo || null,
+              descripcion_muestra: form.descripcion_muestra.trim(),
+              microorganismos: form.microorganismos,
+              laboratorio: form.laboratorio.trim(),
+              solicitante_nombre: form.solicitante_nombre.trim(),
+            },
+          }],
+        })
+        if (ok) {
+          setSheetOpen(false)
+          setSheetPaso('form')
+        }
+        return
+      }
+
       const { data, error } = await (supabase as any)
         .from('m22_muestras')
         .insert({
@@ -205,12 +240,30 @@ export function RegistroMuestrasLaboratorio() {
 
       {/* Lista */}
       <div className="flex-1 px-4 pb-32 space-y-3">
+        {/* Lotes sin conexión */}
+        {lotesOffline.map(lote => {
+          const meta = lote.metadatos as { rancho_nombre?: string; fecha?: string } | undefined
+          return (
+            <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4 opacity-80">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-semibold">{meta?.rancho_nombre ?? '—'}</span>
+                  <p className="text-xs text-muted-foreground mt-0.5">{meta?.fecha ?? '—'}</p>
+                </div>
+                <ChipOffline lote={lote} />
+              </div>
+              {lote.estado === 'rechazado' && lote.error && (
+                <p className="text-xs mt-1" style={{ color: 'var(--agro-danger-text)' }}>{lote.error}</p>
+              )}
+            </div>
+          )
+        })}
         {loading && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           </div>
         )}
-        {!loading && muestras.length === 0 && (
+        {!loading && muestras.length === 0 && lotesOffline.length === 0 && (
           <div className="text-center py-12 text-muted-foreground text-sm">
             Sin registros. Usa el botón + para agregar.
           </div>
@@ -426,7 +479,8 @@ export function RegistroMuestrasLaboratorio() {
                 className="w-full h-11 rounded-[0.625rem] bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-                Guardar y generar PDF
+                {!guardando && !online && <WifiOff className="w-4 h-4" />}
+                {online ? 'Guardar y generar PDF' : 'Guardar sin conexión'}
               </button>
             </div>
             </>)}

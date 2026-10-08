@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M10FilaLiberacion {
   id: string
@@ -38,21 +39,31 @@ export function useM10CosechaLiberacion() {
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id) { setLoading(false); return }
+    if (!profile?.id || !profile?.org_id) { setLoading(false); return }
+    const userId = profile.id
+    const orgId  = profile.org_id
     setLoading(true)
     setError(null)
     try {
-      const { data, error: err } = await supabase
-        .from('m10_cosecha_liberacion')
-        .select('*, ranchos(nombre, codigo), encargado:profiles!encargado_liberacion_id(nombre_completo)')
-        .eq('org_id', profile.org_id)
-        .order('fecha', { ascending: false })
-        .order('created_at', { ascending: true })
-        .limit(500)
-      if (err) throw err
+      const resultado = await leerConCache(
+        'm10_cosecha_liberacion',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await supabase
+            .from('m10_cosecha_liberacion')
+            .select('*, ranchos(nombre, codigo), encargado:profiles!encargado_liberacion_id(nombre_completo)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: true })
+            .limit(500)
+          if (err) throw err
+          return data ?? []
+        },
+      )
 
       const grouped = new Map<string, M10Registro>()
-      for (const row of (data ?? [])) {
+      for (const row of (resultado.datos as any[])) {
         const key = `${row.rancho_id}|${row.fecha}`
         if (!grouped.has(key)) {
           grouped.set(key, {
@@ -87,7 +98,7 @@ export function useM10CosechaLiberacion() {
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.id, profile?.org_id])
 
   useEffect(() => { cargar() }, [cargar])
   return { registros, loading, error, refetch: cargar }

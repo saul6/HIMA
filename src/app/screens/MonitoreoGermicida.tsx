@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, FileDown, X, Loader2 } from 'lucide-react'
+import { Plus, FileDown, X, Loader2, WifiOff } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { toast } from 'sonner'
@@ -22,6 +22,10 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -60,8 +64,11 @@ export function MonitoreoGermicida() {
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
-  const { monitoreos, loading, refetch } = useM36Monitoreos(orgId)
+  const { monitoreos, loading, refetch } = useM36Monitoreos(profile?.id ?? null, orgId)
   const orgNombre = useOrganizacion(orgId)
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M36')
+  const { guardar: guardarOffline } = useGuardarOffline('M36')
 
   const todosIds = monitoreos.map(m => m.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M36', todosIds)
@@ -91,6 +98,28 @@ export function MonitoreoGermicida() {
     const conc = parseFloat(form.concentracion)
     if (!form.concentracion || isNaN(conc)) { toast.error('Ingresa una concentración válida'); return }
     if (!form.preparado_por.trim()) { toast.error('Ingresa quién preparó la solución'); return }
+
+    if (!online) {
+      guardarOffline({
+        descripcion: `Germicida ${form.tipo_germicida.trim()} — ${form.fecha}`,
+        metadatos: { rancho_id: form.rancho_id, fecha: form.fecha },
+        operaciones: [{
+          tabla: 'm36_monitoreos',
+          tipo: 'insert' as const,
+          fila: {
+            rancho_id: form.rancho_id,
+            fecha: form.fecha,
+            tipo_germicida: form.tipo_germicida.trim(),
+            uso: form.uso.trim(),
+            concentracion: conc,
+            correccion: form.correccion.trim() || null,
+            preparado_por: form.preparado_por.trim(),
+          },
+        }],
+      })
+      handleCerrarSheet()
+      return
+    }
 
     setGuardando(true)
     try {
@@ -198,11 +227,24 @@ export function MonitoreoGermicida() {
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           </div>
         )}
-        {!loading && monitoreos.length === 0 && (
+        {!loading && monitoreos.length === 0 && lotesOffline.length === 0 && (
           <div className="text-center py-12 text-muted-foreground text-sm">
             Sin registros. Usa el botón + para agregar.
           </div>
         )}
+        {lotesOffline.map((lote) => (
+          <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold">{lote.descripcion}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {(lote.metadatos as any)?.fecha ?? ''}
+                </p>
+              </div>
+              <ChipOffline lote={lote} />
+            </div>
+          </div>
+        ))}
         {monitoreos.map(m => (
           <div key={m.id} className="bg-card border border-border rounded-[0.625rem] p-4">
             <div className="flex items-start justify-between gap-2">
@@ -388,8 +430,10 @@ export function MonitoreoGermicida() {
                 disabled={guardando}
                 className="w-full h-11 rounded-[0.625rem] bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-                Guardar y generar PDF
+                {guardando
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : !online && <WifiOff className="w-4 h-4" />}
+                {online ? 'Guardar y generar PDF' : 'Guardar sin conexión'}
               </button>
             </div>
           </>

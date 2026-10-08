@@ -37,6 +37,13 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaPad, type FirmaPadRef } from '@/app/components/FirmaPad'
 import { FirmaSvg } from '@/app/components/FirmaSvg'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { useLimiteProactivo } from '@/hooks/useLimiteProactivo'
+import { ChipOffline } from '@/app/components/ChipOffline'
+import { BannerLimiteOffline } from '@/app/components/BannerLimiteOffline'
+import { WifiOff } from 'lucide-react'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -160,6 +167,9 @@ export function BotiquinPrimerosAuxilios() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const [registroGuardado, setRegistroGuardado] = useState(false)
   const { registros, loading, refetch } = useBotiquin()
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M6')
+  const { guardar: guardarOffline } = useGuardarOffline('M6')
 
   useEffect(() => {
     if (ranchoInicial) setForm((f) => ({ ...f, rancho_id: ranchoInicial }))
@@ -176,7 +186,6 @@ export function BotiquinPrimerosAuxilios() {
   const [guardando, setGuardando] = useState(false)
   const [errRancho, setErrRancho] = useState(false)
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null)
-  const [limiteInfo, setLimiteInfo] = useState<{ proxima: string } | null>(null)
 
   // Estado del paso firma_decision
   const [pendienteFirma, setPendienteFirma] = useState<{
@@ -196,40 +205,17 @@ export function BotiquinPrimerosAuxilios() {
   const [guardandoFirmaDecision, setGuardandoFirmaDecision] = useState(false)
   const [firmandoDecision, setFirmandoDecision] = useState(false)
 
-  // Verifica si el rancho ya tiene un registro en los 7 días anteriores a la fecha elegida.
-  useEffect(() => {
-    if (!sheetAbierto || sheetPaso !== 'form' || !form.rancho_id || !form.fecha_verificacion || !profile?.org_id) {
-      setLimiteInfo(null)
-      return
-    }
-    let cancelado = false
-    const fechaDate = new Date(form.fecha_verificacion + 'T12:00:00')
-    const inicio = new Date(fechaDate)
-    inicio.setDate(inicio.getDate() - 6)
-    const inicioStr = inicio.toISOString().split('T')[0]
-
-    supabase
-      .from('m6_botiquin')
-      .select('fecha_verificacion')
-      .eq('org_id', profile.org_id)
-      .eq('rancho_id', form.rancho_id)
-      .gte('fecha_verificacion', inicioStr)
-      .lte('fecha_verificacion', form.fecha_verificacion)
-      .order('fecha_verificacion', { ascending: false })
-      .limit(1)
-      .then(({ data }) => {
-        if (cancelado) return
-        if (data && data.length > 0) {
-          const ultimoDate = new Date(data[0].fecha_verificacion + 'T12:00:00')
-          const proximaDate = new Date(ultimoDate)
-          proximaDate.setDate(proximaDate.getDate() + 7)
-          setLimiteInfo({ proxima: formatFecha(proximaDate.toISOString().split('T')[0]) })
-        } else {
-          setLimiteInfo(null)
-        }
-      })
-    return () => { cancelado = true }
-  }, [sheetAbierto, sheetPaso, form.rancho_id, form.fecha_verificacion, profile?.org_id])
+  const { limiteInfo, hayConflictoOffline: hayLoteOfflineConflicto } = useLimiteProactivo({
+    modulo: 'M6',
+    orgId: profile?.org_id ?? null,
+    ranchoId: form.rancho_id || null,
+    fecha: form.fecha_verificacion,
+    activo: sheetAbierto && sheetPaso === 'form',
+    tabla: 'm6_botiquin',
+    campoFecha: 'fecha_verificacion',
+    ventanaDias: 7,
+    sheetAbierto,
+  })
 
   // Consolidado
   const [sheetConsolidadoAbierto, setSheetConsolidadoAbierto] = useState(false)
@@ -245,7 +231,6 @@ export function BotiquinPrimerosAuxilios() {
   function abrirSheet() {
     setForm({ ...FORM_INICIAL, fecha_verificacion: hoy(), rancho_id: ranchoInicial ?? '' })
     setErrRancho(false)
-    setLimiteInfo(null)
     setSheetPaso('form')
     setPendienteFirma(null)
     setMiFirmaDecision(null)
@@ -262,6 +247,35 @@ export function BotiquinPrimerosAuxilios() {
 
     setGuardando(true)
     try {
+      if (!online) {
+        const rancho = ranchos.find((r) => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Botiquín · ${rancho?.nombre ?? ''} · ${form.fecha_verificacion}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha_verificacion },
+          operaciones: [{
+            tabla: 'm6_botiquin',
+            tipo: 'insert' as const,
+            fila: {
+              id: crypto.randomUUID(),
+              rancho_id: form.rancho_id,
+              fecha_verificacion: form.fecha_verificacion,
+              parches_curitas: form.parches_curitas,
+              guantes_curacion: form.guantes_curacion,
+              vendas_tijeras: form.vendas_tijeras,
+              gasas_cinta: form.gasas_cinta,
+              desinfectante: form.desinfectante,
+              responsable_id: profile.id,
+              firma_verificacion: true,
+            },
+          }],
+        })
+        if (ok) {
+          if (tareaId) setRegistroGuardado(true)
+          handleCerrarSheet()
+        }
+        return
+      }
+
       const { data, error } = await supabase
         .from('m6_botiquin')
         .insert({
@@ -536,9 +550,29 @@ export function BotiquinPrimerosAuxilios() {
 
       {/* Historial */}
       <div className="p-4 space-y-3">
+        {/* Lotes sin conexión */}
+        {lotesOffline.map(lote => {
+          const meta = lote.metadatos as { rancho_nombre?: string; fecha?: string } | undefined
+          return (
+            <div key={lote.id} className="bg-card border border-border rounded-xl p-4 opacity-80">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    {meta?.rancho_nombre ?? '—'}
+                  </span>
+                  <p className="text-xs text-muted-foreground mt-0.5">{meta?.fecha ? formatFecha(meta.fecha) : '—'}</p>
+                </div>
+                <ChipOffline lote={lote} />
+              </div>
+              {lote.estado === 'rechazado' && lote.error && (
+                <p className="text-xs mt-1" style={{ color: 'var(--agro-danger-text)' }}>{lote.error}</p>
+              )}
+            </div>
+          )
+        })}
         {loading ? (
           <ListaSkeleton />
-        ) : registros.length === 0 ? (
+        ) : registros.length === 0 && lotesOffline.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <Shield className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Sin registros aún</p>
@@ -803,16 +837,13 @@ export function BotiquinPrimerosAuxilios() {
                   </div>
 
                   {/* Aviso límite semanal */}
-                  {limiteInfo && (
-                    <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid #F5A623' }}>
-                      <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-                      <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
-                        Ya existe un registro para este {terminosSitio.singular.toLowerCase()} en los últimos 7 días.{' '}
-                        Próximo registro disponible:{' '}
-                        <span style={{ fontWeight: 600 }}>{limiteInfo.proxima}</span>
-                      </p>
-                    </div>
-                  )}
+                  <BannerLimiteOffline
+                    limiteInfo={limiteInfo}
+                    hayConflictoOffline={hayLoteOfflineConflicto}
+                    terminoSingular={terminosSitio.singular}
+                    terminoGenero={terminosSitio.genero}
+                    descripcionLimite={`Ya existe un registro de botiquín para este ${terminosSitio.singular.toLowerCase()} en los últimos 7 días.`}
+                  />
 
                   {/* Artículos */}
                   <div>
@@ -858,12 +889,13 @@ export function BotiquinPrimerosAuxilios() {
                 <div className="p-4 border-t border-border flex-shrink-0">
                   <button
                     onClick={handleGuardar}
-                    disabled={guardando || !!limiteInfo}
+                    disabled={guardando || !!limiteInfo || hayLoteOfflineConflicto}
                     className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
                     style={{ fontWeight: 600 }}
                   >
                     {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-                    Guardar y generar PDF
+                    {!guardando && !online && <WifiOff className="w-4 h-4" />}
+                    {online ? 'Guardar y generar PDF' : 'Guardar sin conexión'}
                   </button>
                 </div>
               </>

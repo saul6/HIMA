@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M6BotiquinConRancho {
   id: string
@@ -38,22 +39,32 @@ export function useBotiquin() {
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id) {
+    if (!profile?.id || !profile?.org_id) {
       setLoading(false)
       return
     }
+    const userId = profile.id
+    const orgId  = profile.org_id
     setLoading(true)
     setError(null)
     try {
-      const { data, error: err } = await supabase
-        .from('m6_botiquin')
-        .select('*, ranchos(nombre, codigo), creador:profiles!creado_por(nombre_completo)')
-        .eq('org_id', profile.org_id)
-        .order('fecha_verificacion', { ascending: false })
-        .limit(100)
-      if (err) throw err
+      const resultado = await leerConCache(
+        'm6_botiquin',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await supabase
+            .from('m6_botiquin')
+            .select('*, ranchos(nombre, codigo), creador:profiles!creado_por(nombre_completo)')
+            .eq('org_id', orgId)
+            .order('fecha_verificacion', { ascending: false })
+            .limit(100)
+          if (err) throw err
+          return data ?? []
+        },
+      )
       setRegistros(
-        (data ?? []).map((r: any) => ({
+        (resultado.datos as any[]).map((r: any) => ({
           ...r,
           rancho_nombre: r.ranchos?.nombre ?? '—',
           rancho_codigo: r.ranchos?.codigo ?? '—',
@@ -70,7 +81,7 @@ export function useBotiquin() {
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.id, profile?.org_id])
 
   useEffect(() => {
     cargar()

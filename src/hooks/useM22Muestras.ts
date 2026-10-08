@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M22Microorganismo {
   codigo: string
@@ -23,30 +24,43 @@ export interface M22Muestra {
   creado_por: string | null
 }
 
-export function useM22Muestras(orgId: string | null) {
+export function useM22Muestras(userId: string | null, orgId: string | null) {
   const [muestras, setMuestras] = useState<M22Muestra[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fetch = useCallback(async () => {
-    if (!orgId) return
+    if (!userId || !orgId) return
     setLoading(true)
     setError(null)
-    const { data, error: err } = await (supabase as any)
-      .from('m22_muestras')
-      .select('*, ranchos(nombre)')
-      .eq('org_id', orgId)
-      .order('fecha_muestreo', { ascending: false })
-      .order('created_at', { ascending: false })
-    if (err) { setError(err.message); setLoading(false); return }
-    setMuestras(
-      (data ?? []).map((r: any) => ({
-        ...r,
-        rancho_nombre: r.ranchos?.nombre ?? '—',
-      }))
-    )
-    setLoading(false)
-  }, [orgId])
+    try {
+      const resultado = await leerConCache(
+        'm22_muestras',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await (supabase as any)
+            .from('m22_muestras')
+            .select('*, ranchos(nombre)')
+            .eq('org_id', orgId)
+            .order('fecha_muestreo', { ascending: false })
+            .order('created_at', { ascending: false })
+          if (err) throw err
+          return data ?? []
+        },
+      )
+      setMuestras(
+        (resultado.datos as any[]).map((r: any) => ({
+          ...r,
+          rancho_nombre: r.ranchos?.nombre ?? '—',
+        }))
+      )
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error al cargar muestras')
+    } finally {
+      setLoading(false)
+    }
+  }, [userId, orgId])
 
   useEffect(() => { fetch() }, [fetch])
 
