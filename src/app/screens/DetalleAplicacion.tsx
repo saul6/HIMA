@@ -11,6 +11,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useTheme } from "@/context/ThemeContext";
 import { SPRING_SUAVE } from "@/lib/motion";
+import { Skeleton } from "@/app/components/ui/skeleton";
 import type { AplicacionRica } from "@/types/database.types";
 
 export function DetalleAplicacion() {
@@ -72,8 +73,45 @@ export function DetalleAplicacion() {
 
   if (loading) {
     return (
-      <div className="min-h-full flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      <div className="min-h-full pb-[calc(96px+env(safe-area-inset-bottom,0px))] md:pb-6">
+        <header className="sticky top-0 bg-card border-b border-border px-4 py-4 z-20">
+          <div className="flex items-center justify-between mb-3">
+            <Skeleton className="h-5 w-40" />
+            <button onClick={() => navigate("/historial")} className="p-1">
+              <X className="w-6 h-6 text-foreground" />
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-5 w-24 rounded-full" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </header>
+
+        <div className="p-4 space-y-6">
+          <div>
+            <Skeleton className="h-8 -mx-4 mb-4 rounded-none" />
+            <div className="space-y-3">
+              <SkeletonRow />
+              <SkeletonRow />
+              <SkeletonRow valueWidth="w-20" />
+            </div>
+          </div>
+          <div>
+            <Skeleton className="h-8 -mx-4 mb-4 rounded-none" />
+            <div className="space-y-3">
+              <SkeletonRow valueWidth="w-16" />
+              <SkeletonRow />
+              <SkeletonRow valueWidth="w-24" />
+            </div>
+          </div>
+          <div>
+            <Skeleton className="h-8 -mx-4 mb-4 rounded-none" />
+            <div className="space-y-3">
+              <SkeletonRow />
+              <SkeletonRow valueWidth="w-20" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -283,6 +321,15 @@ function DataRow({ label, value }: { label: string; value: string }) {
       <span className="text-sm text-right max-w-[55%] text-foreground" style={{ fontWeight: 600 }}>
         {value}
       </span>
+    </div>
+  );
+}
+
+function SkeletonRow({ valueWidth = "w-28" }: { valueWidth?: string }) {
+  return (
+    <div className="flex justify-between items-start">
+      <Skeleton className="h-3.5 w-20" />
+      <Skeleton className={`h-3.5 ${valueWidth}`} />
     </div>
   );
 }
