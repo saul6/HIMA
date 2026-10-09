@@ -33,7 +33,8 @@ import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
-import { opCabecera } from '@/lib/offline/construirOperaciones'
+import { opCabecera, opInsert, opUpsert } from '@/lib/offline/construirOperaciones'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -205,10 +206,12 @@ export function InspeccionAlmacenEmpaque() {
   // ── Catalog ──
   const [puntos, setPuntos] = useState<M43Punto[]>([])
   useEffect(() => {
-    const tbl = supabase as any
-    tbl.from('m43_puntos').select('id, orden, texto').order('orden')
-      .then(({ data }: any) => { if (data) setPuntos(data as M43Punto[]) })
-  }, [])
+    if (!profile?.id || !profile?.org_id) return
+    leerConCache('m43_puntos', profile.id, profile.org_id, async () => {
+      const { data } = await (supabase as any).from('m43_puntos').select('id, orden, texto').order('orden')
+      return data ?? []
+    }).then((resultado) => { setPuntos((resultado.datos ?? []) as M43Punto[]) }).catch(() => {})
+  }, [profile?.id, profile?.org_id])
 
   // ── Vista ──
   const [vista, setVista]                   = useState<Vista>('lista')
@@ -217,6 +220,11 @@ export function InspeccionAlmacenEmpaque() {
   const [loadingDias, setLoadingDias]       = useState(false)
 
   const cargarDias = useCallback(async (regId: string) => {
+    const esLocal = lotesOffline.some(
+      l => (l.metadatos as any)?.tipo === 'cabecera' &&
+           l.operaciones.some(op => op.fila.id === regId)
+    )
+    if (esLocal) { setDias([]); setLoadingDias(false); return }
     setLoadingDias(true)
     const tbl = supabase as any
     const [{ data: diasData }, { data: resData }] = await Promise.all([
@@ -250,7 +258,7 @@ export function InspeccionAlmacenEmpaque() {
       setDias(mapped)
     }
     setLoadingDias(false)
-  }, [])
+  }, [lotesOffline])
 
   function abrirDetalle(reg: M43RegistroMensual) {
     setRegistroActivo(reg)
@@ -337,7 +345,7 @@ export function InspeccionAlmacenEmpaque() {
       const mes = Number(nMes.split('-')[1])
       const ok = await guardarOffline({
         descripcion: `Inspección Almacén Empaque · ${rancho?.nombre ?? ''} · ${nMes}`,
-        metadatos: { rancho_id: nRanchoId, rancho_nombre: rancho?.nombre, anio, mes },
+        metadatos: { rancho_id: nRanchoId, rancho_nombre: rancho?.nombre, anio, mes, tipo: 'cabecera' },
         operaciones: [
           opCabecera('m43_registro_mensual', {
             id: localId, rancho_id: nRanchoId, org_id: profile.org_id,
@@ -431,6 +439,43 @@ export function InspeccionAlmacenEmpaque() {
       toast.warning('Solo puedes registrar con la fecha de hoy')
       return
     }
+    if (!online) {
+      const diaId = crypto.randomUUID()
+      const diaNum = parseInt(dFecha.slice(8, 10))
+      const itemsNoCumple = puntos.filter(p => (dValores[p.id] ?? 'cumple') === 'no_cumple' && dDescripciones[p.id]?.trim())
+      const incidenciaIds: Record<string, string> = {}
+      let reporteId: string | null = null
+      if (itemsNoCumple.length > 0) {
+        reporteId = crypto.randomUUID()
+        for (const p of itemsNoCumple) incidenciaIds[p.id] = crypto.randomUUID()
+      }
+      const ok = await guardarOffline({
+        descripcion: `Insp. Almacén Empaque · día ${diaNum} · ${registroActivo.rancho_nombre}`,
+        metadatos: { registro_id: registroActivo.id, rancho_nombre: registroActivo.rancho_nombre, anio: registroActivo.anio, mes: registroActivo.mes, dia: diaNum, tipo: 'dia' },
+        operaciones: [
+          ...(reporteId ? [
+            opInsert('m13_reportes', { id: reporteId, org_id: profile.org_id!, rancho_id: registroActivo.rancho_id, fecha: dFecha, auditor_nombre: profile.nombre_completo ?? null }),
+            ...itemsNoCumple.map((p, i) => opInsert('m13_incidencias', { id: incidenciaIds[p.id], reporte_id: reporteId!, org_id: profile.org_id!, descripcion: dDescripciones[p.id].trim(), orden: i + 1 })),
+          ] : []),
+          opCabecera('m43_dias', { id: diaId, registro_id: registroActivo.id, org_id: profile.org_id!, dia: diaNum, acciones_tomadas: dAcciones.trim() || null }, ['registro_id', 'dia']),
+          ...puntos.map(p => opUpsert('m43_resultados', {
+            id: crypto.randomUUID(),
+            registro_id: registroActivo.id,
+            punto_id: p.id,
+            org_id: profile.org_id!,
+            dia: diaNum,
+            valor: dValores[p.id] ?? 'cumple',
+            incidencia_id: incidenciaIds[p.id] ?? null,
+          }, ['registro_id', 'punto_id', 'dia'])),
+        ],
+      })
+      if (ok) {
+        setSheetDia(false)
+        cargarDias(registroActivo.id)
+      }
+      return
+    }
+
     setDGuardando(true)
     const tbl = supabase as any
     try {
