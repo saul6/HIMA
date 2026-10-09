@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, FileDown, X, Loader2 } from 'lucide-react'
+import { FileDown, X, Loader2, WifiOff } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
@@ -21,6 +21,10 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
 
 function mesActual(): string {
   const d = new Date()
@@ -67,8 +71,11 @@ export function ConsumoEnergia() {
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
-  const { registros, loading, refetch } = useM60ConsumoEnergia(orgId)
+  const { registros, loading, refetch } = useM60ConsumoEnergia(user?.id ?? null, orgId)
   const orgNombre = useOrganizacion(orgId)
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M60')
+  const { guardar: guardarOffline } = useGuardarOffline('M60')
 
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
@@ -103,22 +110,34 @@ export function ConsumoEnergia() {
 
     setGuardando(true)
     try {
+      const fila = {
+        id: crypto.randomUUID(),
+        rancho_id: form.rancho_id,
+        mes: form.mes + '-01',
+        tipo_combustible: form.tipo_combustible.trim() || null,
+        cantidad_litros: form.cantidad_litros ? parseFloat(form.cantidad_litros) : null,
+        costo_combustible: form.costo_combustible ? parseFloat(form.costo_combustible) : null,
+        actividad: form.actividad.trim() || null,
+        luz_costo: form.luz_costo ? parseFloat(form.luz_costo) : null,
+        luz_kwh: form.luz_kwh ? parseFloat(form.luz_kwh) : null,
+        realizo: form.realizo.trim() || null,
+        observaciones: form.observaciones.trim() || null,
+      }
+
+      if (!online) {
+        const rancho = ranchos.find(r => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Consumo energía · ${rancho?.nombre ?? ''} · ${formatMes(form.mes)}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.mes },
+          operaciones: [{ tabla: 'm60_consumo_energia', tipo: 'insert' as const, fila }],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       const { data, error } = await (supabase as any)
         .from('m60_consumo_energia')
-        .insert({
-          org_id: orgId,
-          rancho_id: form.rancho_id,
-          mes: form.mes + '-01',
-          tipo_combustible: form.tipo_combustible.trim() || null,
-          cantidad_litros: form.cantidad_litros ? parseFloat(form.cantidad_litros) : null,
-          costo_combustible: form.costo_combustible ? parseFloat(form.costo_combustible) : null,
-          actividad: form.actividad.trim() || null,
-          luz_costo: form.luz_costo ? parseFloat(form.luz_costo) : null,
-          luz_kwh: form.luz_kwh ? parseFloat(form.luz_kwh) : null,
-          realizo: form.realizo.trim() || null,
-          observaciones: form.observaciones.trim() || null,
-          creado_por: user?.id,
-        })
+        .insert({ ...fila, org_id: orgId, creado_por: user?.id ?? null })
         .select('id')
         .single()
       if (error) throw error
@@ -192,12 +211,27 @@ export function ConsumoEnergia() {
       </div>
 
       <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
+        {lotesOffline.length > 0 && (
+          <div className="space-y-2 pb-2">
+            {lotesOffline.map(lote => (
+              <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold leading-snug">{lote.metadatos?.rancho_nombre ?? lote.descripcion}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{lote.metadatos?.fecha ? formatMes(lote.metadatos.fecha) : ''}</p>
+                  </div>
+                  <ChipOffline estado={lote.estado} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {loading && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           </div>
         )}
-        {!loading && registros.length === 0 && (
+        {!loading && registros.length === 0 && lotesOffline.length === 0 && (
           <div className="text-center py-12 text-muted-foreground text-sm">
             Sin registros. Usa el botón + para agregar.
           </div>
@@ -256,7 +290,7 @@ export function ConsumoEnergia() {
         ))}
       </div>
 
-            <Fab onClick={abrirNuevo} aria-label="Nuevo registro" />
+      <Fab onClick={abrirNuevo} aria-label="Nuevo registro" icon={!online ? WifiOff : undefined} />
 
       <BottomSheet open={sheetOpen} onClose={handleCerrarSheet}>
         {sheetPaso === 'firma_gate' && (
@@ -431,7 +465,7 @@ export function ConsumoEnergia() {
             style={{ backgroundColor: 'var(--primary)' }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar
+            {!online ? 'Guardar sin conexión' : 'Guardar'}
           </button>
         </div>
         </>)}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, FileDown, X, Loader2 } from 'lucide-react'
+import { FileDown, X, Loader2, WifiOff } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
@@ -21,6 +21,10 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -75,8 +79,11 @@ export function UsoEpp() {
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
-  const { registros, loading, refetch } = useM63UsoEpp(orgId)
+  const { registros, loading, refetch } = useM63UsoEpp(user?.id ?? null, orgId)
   const orgNombre = useOrganizacion(orgId)
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M63')
+  const { guardar: guardarOffline } = useGuardarOffline('M63')
 
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
@@ -112,23 +119,35 @@ export function UsoEpp() {
 
     setGuardando(true)
     try {
+      const fila = {
+        id: crypto.randomUUID(),
+        rancho_id: form.rancho_id,
+        fecha: form.fecha,
+        aplicador: form.aplicador.trim(),
+        momento: form.momento,
+        botas_ok: form.botas_ok,
+        overol_ok: form.overol_ok,
+        guantes_ok: form.guantes_ok,
+        lentes_ok: form.lentes_ok,
+        mascarilla_ok: form.mascarilla_ok,
+        realizo: form.realizo.trim() || null,
+        observaciones: form.observaciones.trim() || null,
+      }
+
+      if (!online) {
+        const rancho = ranchos.find(r => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `EPP · ${rancho?.nombre ?? ''} · ${form.aplicador.trim()} · ${form.fecha}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [{ tabla: 'm63_uso_epp', tipo: 'insert' as const, fila }],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       const { data, error } = await (supabase as any)
         .from('m63_uso_epp')
-        .insert({
-          org_id: orgId,
-          rancho_id: form.rancho_id,
-          fecha: form.fecha,
-          aplicador: form.aplicador.trim(),
-          momento: form.momento,
-          botas_ok: form.botas_ok,
-          overol_ok: form.overol_ok,
-          guantes_ok: form.guantes_ok,
-          lentes_ok: form.lentes_ok,
-          mascarilla_ok: form.mascarilla_ok,
-          realizo: form.realizo.trim() || null,
-          observaciones: form.observaciones.trim() || null,
-          creado_por: user?.id,
-        })
+        .insert({ ...fila, org_id: orgId, creado_por: user?.id ?? null })
         .select('id')
         .single()
       if (error) throw error
@@ -197,7 +216,6 @@ export function UsoEpp() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Header */}
       <ModuloHeader
         tituloFallback="Uso de Equipo de Protección Personal (EPP)"
         subtitulo="M63 · Por evento"
@@ -205,19 +223,32 @@ export function UsoEpp() {
       />
       <BannerTareaOrigen tareaId={tareaId} />
 
-      {/* Exportar consolidado */}
       <div className="px-4 pt-3 pb-4">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
-      {/* Lista */}
       <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
+        {lotesOffline.length > 0 && (
+          <div className="space-y-2 pb-2">
+            {lotesOffline.map(lote => (
+              <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold leading-snug">{lote.metadatos?.rancho_nombre ?? lote.descripcion}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{lote.metadatos?.fecha ? formatFecha(lote.metadatos.fecha) : ''}</p>
+                  </div>
+                  <ChipOffline estado={lote.estado} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {loading && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           </div>
         )}
-        {!loading && registros.length === 0 && (
+        {!loading && registros.length === 0 && lotesOffline.length === 0 && (
           <div className="text-center py-12 text-muted-foreground text-sm">
             Sin registros. Usa el botón + para agregar.
           </div>
@@ -285,10 +316,8 @@ export function UsoEpp() {
         })}
       </div>
 
-      {/* FAB */}
-            <Fab onClick={abrirNuevo} aria-label="Nuevo registro EPP" />
+      <Fab onClick={abrirNuevo} aria-label="Nuevo registro EPP" icon={!online ? WifiOff : undefined} />
 
-      {/* Bottom sheet — Formulario */}
       <BottomSheet open={sheetOpen} onClose={handleCerrarSheet}>
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <h2 className="text-base font-semibold">
@@ -431,13 +460,12 @@ export function UsoEpp() {
             className="w-full h-11 rounded-[0.625rem] bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar y generar PDF
+            {!online ? 'Guardar sin conexión' : 'Guardar y generar PDF'}
           </button>
         </div>
         </>)}
       </BottomSheet>
 
-      {/* Bottom sheet — Consolidado */}
       <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}>
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <h2 className="text-base font-semibold">Exportar consolidado</h2>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M61Registro {
   id: string
@@ -18,7 +19,7 @@ export interface M61Registro {
   created_at: string
 }
 
-export function useM61GestionResiduos(orgId: string | null) {
+export function useM61GestionResiduos(userId: string | null, orgId: string | null) {
   const [registros, setRegistros] = useState<M61Registro[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -27,21 +28,32 @@ export function useM61GestionResiduos(orgId: string | null) {
     if (!orgId) return
     setLoading(true)
     setError(null)
-    const { data, error: err } = await (supabase as any)
-      .from('m61_gestion_residuos')
-      .select('*, ranchos(nombre)')
-      .eq('org_id', orgId)
-      .order('fecha', { ascending: false })
-      .order('created_at', { ascending: false })
-    if (err) { setError(err.message); setLoading(false); return }
-    setRegistros(
-      (data ?? []).map((r: any) => ({
-        ...r,
-        rancho_nombre: r.ranchos?.nombre ?? '—',
-      }))
-    )
-    setLoading(false)
-  }, [orgId])
+    try {
+      const { datos } = await leerConCache<M61Registro[]>(
+        'm61_gestion_residuos',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await (supabase as any)
+            .from('m61_gestion_residuos')
+            .select('*, ranchos(nombre)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          if (err) throw err
+          return (data ?? []).map((r: any) => ({
+            ...r,
+            rancho_nombre: r.ranchos?.nombre ?? '—',
+          }))
+        },
+      )
+      setRegistros(datos)
+    } catch (e: any) {
+      setError(e?.message ?? 'Error al cargar')
+    } finally {
+      setLoading(false)
+    }
+  }, [userId, orgId])
 
   useEffect(() => { fetch() }, [fetch])
 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileDown, Plus, X, Loader2, Pencil } from 'lucide-react'
+import { FileDown, X, Loader2, Pencil, WifiOff, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -10,6 +10,10 @@ import { supabase } from '@/lib/supabase'
 import { generarFrecuenciaCapacitacionPDF } from '@/lib/pdf/m56/generarFrecuenciaCapacitacionPDF'
 import { Fab } from '@/app/components/Fab'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const ANIO_ACTUAL = new Date().getFullYear()
@@ -38,7 +42,10 @@ export function FrecuenciaCapacitacion() {
   const orgId = profile?.org_id ?? null
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
   const orgNombre = useOrganizacion(orgId)
-  const { registros, loading, error, refetch } = useM56FrecuenciaCapacitacion(orgId)
+  const { registros, loading, error, refetch } = useM56FrecuenciaCapacitacion(user?.id ?? null, orgId)
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M56')
+  const { guardar: guardarOffline } = useGuardarOffline('M56')
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
@@ -82,22 +89,32 @@ export function FrecuenciaCapacitacion() {
     setGuardando(true)
     try {
       if (editId === null) {
+        const fila = {
+          id: crypto.randomUUID(),
+          tema: form.tema.trim(),
+          anio: form.anio,
+          mes: form.mes,
+          capacitador: form.capacitador.trim() || null,
+          realizado: form.realizado,
+          observaciones: form.observaciones.trim() || null,
+          activo: true,
+        }
+        if (!online) {
+          const ok = await guardarOffline({
+            descripcion: `Capacitación · ${form.tema.trim()} · ${MESES[form.mes - 1]} ${form.anio}`,
+            metadatos: { tema: form.tema.trim(), anio: form.anio, mes: form.mes },
+            operaciones: [{ tabla: 'm56_frecuencia_capacitacion', tipo: 'insert' as const, fila }],
+          })
+          if (ok) setSheetOpen(false)
+          return
+        }
         const { error: err } = await (supabase as any)
           .from('m56_frecuencia_capacitacion')
-          .insert({
-            org_id: orgId,
-            creado_por: user?.id,
-            tema: form.tema.trim(),
-            anio: form.anio,
-            mes: form.mes,
-            capacitador: form.capacitador.trim() || null,
-            realizado: form.realizado,
-            observaciones: form.observaciones.trim() || null,
-            activo: true,
-          })
+          .insert({ ...fila, org_id: orgId, creado_por: user?.id })
         if (err) throw err
         toast.success('Registro agregado')
       } else {
+        if (!online) { toast.warning('Necesitas conexión para editar'); return }
         const { error: err } = await (supabase as any)
           .from('m56_frecuencia_capacitacion')
           .update({
@@ -123,6 +140,7 @@ export function FrecuenciaCapacitacion() {
 
   async function desactivar() {
     if (!editId) return
+    if (!online) { toast.warning('Necesitas conexión para desactivar'); return }
     setGuardando(true)
     try {
       const { error: err } = await (supabase as any)
@@ -201,6 +219,23 @@ export function FrecuenciaCapacitacion() {
       </div>
 
       <div className="flex-1 px-4 pb-32 space-y-2 overflow-y-auto">
+        {lotesOffline.length > 0 && (
+          <div className="space-y-2 pb-2">
+            {lotesOffline.map(lote => (
+              <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold leading-snug">{lote.metadatos?.tema ?? lote.descripcion}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {lote.metadatos?.mes != null ? `${MESES[lote.metadatos.mes - 1]} ${lote.metadatos.anio}` : ''}
+                    </p>
+                  </div>
+                  <ChipOffline estado={lote.estado} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {loading && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -209,7 +244,7 @@ export function FrecuenciaCapacitacion() {
         {error && (
           <p className="text-center py-12 text-sm" style={{ color: 'var(--agro-danger-text)' }}>{error}</p>
         )}
-        {!loading && !error && registrosFiltrados.length === 0 && (
+        {!loading && !error && registrosFiltrados.length === 0 && lotesOffline.length === 0 && (
           <p className="text-center py-12 text-muted-foreground text-sm">
             Sin registros para {anioFiltro}.
           </p>
@@ -249,7 +284,7 @@ export function FrecuenciaCapacitacion() {
       </div>
 
       {esAdmin && (
-                <Fab onClick={abrirNuevo} aria-label="Nuevo registro" />
+        <Fab onClick={abrirNuevo} aria-label="Nuevo registro" icon={!online ? WifiOff : Plus} />
       )}
 
       <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} height="85%">
@@ -345,7 +380,7 @@ export function FrecuenciaCapacitacion() {
             <button
               type="button"
               onClick={desactivar}
-              disabled={guardando}
+              disabled={guardando || !online}
               className="w-full h-10 rounded-[0.625rem] border text-sm font-medium disabled:opacity-50"
               style={{ borderColor: 'var(--agro-danger-text)', color: 'var(--agro-danger-text)' }}
             >
@@ -361,7 +396,7 @@ export function FrecuenciaCapacitacion() {
             style={{ backgroundColor: 'var(--primary)' }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar
+            {!online && editId === null ? 'Guardar sin conexión' : 'Guardar'}
           </button>
         </div>
       </BottomSheet>

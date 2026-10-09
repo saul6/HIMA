@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, FileDown, X, Loader2 } from 'lucide-react'
+import { FileDown, X, Loader2, WifiOff } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -22,6 +22,10 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -64,8 +68,11 @@ export function Tensiometros() {
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
-  const { registros, loading, refetch } = useM58Tensiometros(orgId)
+  const { registros, loading, refetch } = useM58Tensiometros(user?.id ?? null, orgId)
   const orgNombre = useOrganizacion(orgId)
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M58')
+  const { guardar: guardarOffline } = useGuardarOffline('M58')
 
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
@@ -103,21 +110,33 @@ export function Tensiometros() {
 
     setGuardando(true)
     try {
+      const fila = {
+        id: crypto.randomUUID(),
+        rancho_id: form.rancho_id,
+        fecha: form.fecha,
+        hora: form.hora.trim() || null,
+        prof_15cm: form.prof_15cm ? parseFloat(form.prof_15cm) : null,
+        prof_45cm: form.prof_45cm ? parseFloat(form.prof_45cm) : null,
+        prof_otra_cm: form.prof_otra_cm ? parseFloat(form.prof_otra_cm) : null,
+        lectura_otra: form.lectura_otra ? parseFloat(form.lectura_otra) : null,
+        realizo: form.realizo.trim() || null,
+        observaciones: form.observaciones.trim() || null,
+      }
+
+      if (!online) {
+        const rancho = ranchos.find(r => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Tensiómetros · ${rancho?.nombre ?? ''} · ${formatFecha(form.fecha)}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [{ tabla: 'm58_tensiometros', tipo: 'insert' as const, fila }],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       const { data, error } = await (supabase as any)
         .from('m58_tensiometros')
-        .insert({
-          org_id: orgId,
-          rancho_id: form.rancho_id,
-          fecha: form.fecha,
-          hora: form.hora.trim() || null,
-          prof_15cm: form.prof_15cm ? parseFloat(form.prof_15cm) : null,
-          prof_45cm: form.prof_45cm ? parseFloat(form.prof_45cm) : null,
-          prof_otra_cm: form.prof_otra_cm ? parseFloat(form.prof_otra_cm) : null,
-          lectura_otra: form.lectura_otra ? parseFloat(form.lectura_otra) : null,
-          realizo: form.realizo.trim() || null,
-          observaciones: form.observaciones.trim() || null,
-          creado_por: user?.id,
-        })
+        .insert({ ...fila, org_id: orgId, creado_por: user?.id ?? null })
         .select('id')
         .single()
       if (error) throw error
@@ -188,12 +207,27 @@ export function Tensiometros() {
       </div>
 
       <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
+        {lotesOffline.length > 0 && (
+          <div className="space-y-2 pb-2">
+            {lotesOffline.map(lote => (
+              <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold leading-snug">{lote.metadatos?.rancho_nombre ?? lote.descripcion}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{lote.metadatos?.fecha ? formatFecha(lote.metadatos.fecha) : ''}</p>
+                  </div>
+                  <ChipOffline estado={lote.estado} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {loading && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           </div>
         )}
-        {!loading && registros.length === 0 && (
+        {!loading && registros.length === 0 && lotesOffline.length === 0 && (
           <div className="text-center py-12 text-muted-foreground text-sm">
             Sin registros. Usa el botón + para agregar.
           </div>
@@ -257,7 +291,7 @@ export function Tensiometros() {
         ))}
       </div>
 
-            <Fab onClick={abrirNuevo} aria-label="Nueva lectura" />
+      <Fab onClick={abrirNuevo} aria-label="Nueva lectura" icon={!online ? WifiOff : undefined} />
 
       <BottomSheet open={sheetOpen} onClose={handleCerrarSheet} height="85%">
         {sheetPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />}
@@ -421,7 +455,7 @@ export function Tensiometros() {
             style={{ backgroundColor: 'var(--primary)' }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar
+            {!online ? 'Guardar sin conexión' : 'Guardar'}
           </button>
         </div>
         </>)}

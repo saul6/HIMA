@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M56Registro {
   id: string
@@ -15,7 +16,7 @@ export interface M56Registro {
   created_at: string
 }
 
-export function useM56FrecuenciaCapacitacion(orgId: string | null) {
+export function useM56FrecuenciaCapacitacion(userId: string | null, orgId: string | null) {
   const [registros, setRegistros] = useState<M56Registro[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -24,16 +25,29 @@ export function useM56FrecuenciaCapacitacion(orgId: string | null) {
     if (!orgId) return
     setLoading(true)
     setError(null)
-    const { data, error: err } = await (supabase as any)
-      .from('m56_frecuencia_capacitacion')
-      .select('*')
-      .eq('org_id', orgId)
-      .order('anio', { ascending: false })
-      .order('mes', { ascending: true })
-    if (err) { setError(err.message); setLoading(false); return }
-    setRegistros(data ?? [])
-    setLoading(false)
-  }, [orgId])
+    try {
+      const { datos } = await leerConCache<M56Registro[]>(
+        'm56_frecuencia_capacitacion',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await (supabase as any)
+            .from('m56_frecuencia_capacitacion')
+            .select('*')
+            .eq('org_id', orgId)
+            .order('anio', { ascending: false })
+            .order('mes', { ascending: true })
+          if (err) throw err
+          return data ?? []
+        },
+      )
+      setRegistros(datos)
+    } catch (e: any) {
+      setError(e?.message ?? 'Error al cargar')
+    } finally {
+      setLoading(false)
+    }
+  }, [userId, orgId])
 
   useEffect(() => { fetch() }, [fetch])
 

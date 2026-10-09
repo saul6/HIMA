@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileDown, Plus, X, Loader2, Pencil } from 'lucide-react'
+import { FileDown, X, Loader2, Pencil, WifiOff, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -10,6 +10,10 @@ import { supabase } from '@/lib/supabase'
 import { generarCronogramaCapacitacionPDF } from '@/lib/pdf/m57/generarCronogramaCapacitacionPDF'
 import { Fab } from '@/app/components/Fab'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
 
 const PERIODICIDADES = ['Mensual', 'Bimestral', 'Trimestral', 'Semestral', 'Anual']
 
@@ -35,7 +39,10 @@ export function CronogramaCapacitacion() {
   const orgId = profile?.org_id ?? null
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
   const orgNombre = useOrganizacion(orgId)
-  const { registros, loading, error, refetch } = useM57CronogramaCapacitacion(orgId)
+  const { registros, loading, error, refetch } = useM57CronogramaCapacitacion(user?.id ?? null, orgId)
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M57')
+  const { guardar: guardarOffline } = useGuardarOffline('M57')
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
@@ -72,21 +79,31 @@ export function CronogramaCapacitacion() {
     setGuardando(true)
     try {
       if (editId === null) {
+        const fila = {
+          id: crypto.randomUUID(),
+          cargo: form.cargo.trim(),
+          tematica: form.tematica.trim(),
+          periodicidad: form.periodicidad.trim(),
+          mes_programado: form.mes_programado.trim(),
+          observaciones: form.observaciones.trim() || null,
+          activo: true,
+        }
+        if (!online) {
+          const ok = await guardarOffline({
+            descripcion: `Cronograma · ${form.cargo.trim()} · ${form.tematica.trim()}`,
+            metadatos: { cargo: form.cargo.trim(), tematica: form.tematica.trim() },
+            operaciones: [{ tabla: 'm57_cronograma_capacitacion', tipo: 'insert' as const, fila }],
+          })
+          if (ok) setSheetOpen(false)
+          return
+        }
         const { error: err } = await (supabase as any)
           .from('m57_cronograma_capacitacion')
-          .insert({
-            org_id: orgId,
-            creado_por: user?.id,
-            cargo: form.cargo.trim(),
-            tematica: form.tematica.trim(),
-            periodicidad: form.periodicidad.trim(),
-            mes_programado: form.mes_programado.trim(),
-            observaciones: form.observaciones.trim() || null,
-            activo: true,
-          })
+          .insert({ ...fila, org_id: orgId, creado_por: user?.id })
         if (err) throw err
         toast.success('Registro agregado')
       } else {
+        if (!online) { toast.warning('Necesitas conexión para editar'); return }
         const { error: err } = await (supabase as any)
           .from('m57_cronograma_capacitacion')
           .update({
@@ -111,6 +128,7 @@ export function CronogramaCapacitacion() {
 
   async function desactivar() {
     if (!editId) return
+    if (!online) { toast.warning('Necesitas conexión para desactivar'); return }
     setGuardando(true)
     try {
       const { error: err } = await (supabase as any)
@@ -174,6 +192,21 @@ export function CronogramaCapacitacion() {
       </div>
 
       <div className="flex-1 px-4 pb-32 space-y-2 overflow-y-auto">
+        {lotesOffline.length > 0 && (
+          <div className="space-y-2 pb-2">
+            {lotesOffline.map(lote => (
+              <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold leading-snug">{lote.metadatos?.cargo ?? lote.descripcion}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{lote.metadatos?.tematica ?? ''}</p>
+                  </div>
+                  <ChipOffline estado={lote.estado} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {loading && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -182,7 +215,7 @@ export function CronogramaCapacitacion() {
         {error && (
           <p className="text-center py-12 text-sm" style={{ color: 'var(--agro-danger-text)' }}>{error}</p>
         )}
-        {!loading && !error && registrosFiltrados.length === 0 && (
+        {!loading && !error && registrosFiltrados.length === 0 && lotesOffline.length === 0 && (
           <p className="text-center py-12 text-muted-foreground text-sm">
             Sin registros. {esAdmin ? 'Usa el botón + para agregar.' : ''}
           </p>
@@ -224,7 +257,7 @@ export function CronogramaCapacitacion() {
       </div>
 
       {esAdmin && (
-                <Fab onClick={abrirNuevo} aria-label="Nuevo registro" />
+        <Fab onClick={abrirNuevo} aria-label="Nuevo registro" icon={!online ? WifiOff : Plus} />
       )}
 
       <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} height="85%">
@@ -303,7 +336,7 @@ export function CronogramaCapacitacion() {
             <button
               type="button"
               onClick={desactivar}
-              disabled={guardando}
+              disabled={guardando || !online}
               className="w-full h-10 rounded-[0.625rem] border text-sm font-medium disabled:opacity-50"
               style={{ borderColor: 'var(--agro-danger-text)', color: 'var(--agro-danger-text)' }}
             >
@@ -319,7 +352,7 @@ export function CronogramaCapacitacion() {
             style={{ backgroundColor: 'var(--primary)' }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar
+            {!online && editId === null ? 'Guardar sin conexión' : 'Guardar'}
           </button>
         </div>
       </BottomSheet>
