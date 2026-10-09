@@ -16,6 +16,7 @@ import { opCabecera } from '@/lib/offline/construirOperaciones'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { Skeleton } from '@/app/components/ui/skeleton'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -644,8 +645,15 @@ export function AlmacenEmpaqueGG() {
             </div>
 
             {(loadingCeldas || loadingItems) ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--primary)' }} />
+              <div className="p-3 space-y-2">
+                {[0, 1, 2, 3, 4, 5].map(i => (
+                  <div key={i} className="flex items-center gap-1">
+                    <Skeleton className="h-6 w-24 flex-shrink-0" />
+                    {Array.from({ length: 10 }).map((_, j) => (
+                      <Skeleton key={j} className="h-6 w-6 flex-shrink-0" />
+                    ))}
+                  </div>
+                ))}
               </div>
             ) : (
               <div style={{ overflow: 'auto', maxHeight: '60vh', WebkitOverflowScrolling: 'touch' }}>

@@ -25,6 +25,8 @@ import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
@@ -161,6 +163,10 @@ export function TrazabilidadProducto() {
   const { lotes: lotesLPT, loading: loadingLPT, refetch: refetchLPT } = useM48LotesProducto(orgId, ranchoId || null)
   const { lotes: lotesLC, loading: loadingLC, refetch: refetchLC } = useM48LotesCompuestos(orgId, ranchoId || null)
   const { folios: feFolios, loading: loadingFE, refetch: refetchFE } = useM48FoliosEmbarque(orgId, ranchoId || null)
+  const mostrarSkeletonLR = useMostrarCarga(loadingLR, lotesLR.length > 0)
+  const mostrarSkeletonLPT = useMostrarCarga(loadingLPT, lotesLPT.length > 0)
+  const mostrarSkeletonLC = useMostrarCarga(loadingLC, lotesLC.length > 0)
+  const mostrarSkeletonFE = useMostrarCarga(loadingFE, feFolios.length > 0)
 
   // Sheet states
   const [sheetLR, setSheetLR] = useState(false)
@@ -537,11 +543,9 @@ export function TrazabilidadProducto() {
               placeholder="Buscar por codigo o proveedor..."
               className="w-full h-9 px-3 rounded-lg bg-input-background border border-border text-sm focus:outline-none focus:border-primary"
             />
-            {loadingLR ? (
-              <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 text-primary animate-spin" /></div>
-            ) : lrFiltrados.length === 0 ? (
-              <p className="text-center text-sm text-muted-foreground py-8">Sin lotes de recepcion</p>
-            ) : lrFiltrados.map(lr => (
+            {mostrarSkeletonLR ? (
+              <ListaSkeleton />
+            ) : lrFiltrados.length > 0 ? lrFiltrados.map(lr => (
               <div key={lr.id} className="bg-card border border-border rounded-xl p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
@@ -558,7 +562,11 @@ export function TrazabilidadProducto() {
                 </div>
                 <FirmasRegistro modulo="M48" registroId={lr.id} firma={firmas[lr.id]} loadingFirmas={loadingFirmas} fechaRegistro={lr.fecha} onFirmado={refetchFirmas} />
               </div>
-            ))}
+            )) : loadingLR ? (
+              <div style={{ minHeight: '160px' }} />
+            ) : (
+              <p className="text-center text-sm text-muted-foreground py-8">Sin lotes de recepcion</p>
+            )}
           </div>
         )}
 
@@ -571,11 +579,9 @@ export function TrazabilidadProducto() {
               placeholder="Buscar por codigo o presentacion..."
               className="w-full h-9 px-3 rounded-lg bg-input-background border border-border text-sm focus:outline-none focus:border-primary"
             />
-            {loadingLPT ? (
-              <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 text-primary animate-spin" /></div>
-            ) : lptFiltrados.length === 0 ? (
-              <p className="text-center text-sm text-muted-foreground py-8">Sin lotes de producto terminado</p>
-            ) : lptFiltrados.map(lpt => {
+            {mostrarSkeletonLPT ? (
+              <ListaSkeleton />
+            ) : lptFiltrados.length > 0 ? lptFiltrados.map(lpt => {
               const ing = lpt.cant_ingresada ?? 0
               const suma = (lpt.cant_empacada ?? 0) + (lpt.rechazo_merma ?? 0) + (lpt.pendiente_retenido ?? 0)
               const deseq = ing > 0 && Math.abs(suma - ing) > 0.001
@@ -633,18 +639,20 @@ export function TrazabilidadProducto() {
                   <FirmasRegistro modulo="M48" registroId={lpt.id} firma={firmas[lpt.id]} loadingFirmas={loadingFirmas} fechaRegistro={lpt.fecha_empaque} onFirmado={refetchFirmas} />
                 </div>
               )
-            })}
+            }) : loadingLPT ? (
+              <div style={{ minHeight: '160px' }} />
+            ) : (
+              <p className="text-center text-sm text-muted-foreground py-8">Sin lotes de producto terminado</p>
+            )}
           </div>
         )}
 
         {/* ── Tab: LC ─────────────────────────────────────────────────────── */}
         {tab === 'lc' && (
           <div className="space-y-2">
-            {loadingLC ? (
-              <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 text-primary animate-spin" /></div>
-            ) : lotesLC.length === 0 ? (
-              <p className="text-center text-sm text-muted-foreground py-8">Sin lotes compuestos</p>
-            ) : lotesLC.map(lc => (
+            {mostrarSkeletonLC ? (
+              <ListaSkeleton />
+            ) : lotesLC.length > 0 ? lotesLC.map(lc => (
               <div key={lc.id} className="bg-card border border-border rounded-xl p-4">
                 <p className="text-sm font-mono" style={{ fontWeight: 700, color: 'var(--primary)' }}>{lc.codigo}</p>
                 <p className="text-xs text-muted-foreground">{fmtFecha(lc.fecha)}{lc.motivo ? ` · ${lc.motivo}` : ''}</p>
@@ -658,18 +666,20 @@ export function TrazabilidadProducto() {
                 </div>
                 <FirmasRegistro modulo="M48" registroId={lc.id} firma={firmas[lc.id]} loadingFirmas={loadingFirmas} fechaRegistro={lc.fecha} onFirmado={refetchFirmas} />
               </div>
-            ))}
+            )) : loadingLC ? (
+              <div style={{ minHeight: '160px' }} />
+            ) : (
+              <p className="text-center text-sm text-muted-foreground py-8">Sin lotes compuestos</p>
+            )}
           </div>
         )}
 
         {/* ── Tab: FE ─────────────────────────────────────────────────────── */}
         {tab === 'fe' && (
           <div className="space-y-2">
-            {loadingFE ? (
-              <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 text-primary animate-spin" /></div>
-            ) : feFolios.length === 0 ? (
-              <p className="text-center text-sm text-muted-foreground py-8">Sin folios de embarque</p>
-            ) : feFolios.map(fe => (
+            {mostrarSkeletonFE ? (
+              <ListaSkeleton />
+            ) : feFolios.length > 0 ? feFolios.map(fe => (
               <div key={fe.id} className="bg-card border border-border rounded-xl p-4">
                 <p className="text-sm font-mono" style={{ fontWeight: 700, color: 'var(--primary)' }}>{fe.codigo}</p>
                 <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>{fe.cliente ?? '—'}</p>
@@ -687,7 +697,11 @@ export function TrazabilidadProducto() {
                 )}
                 <FirmasRegistro modulo="M48" registroId={fe.id} firma={firmas[fe.id]} loadingFirmas={loadingFirmas} fechaRegistro={fe.fecha} onFirmado={refetchFirmas} />
               </div>
-            ))}
+            )) : loadingFE ? (
+              <div style={{ minHeight: '160px' }} />
+            ) : (
+              <p className="text-center text-sm text-muted-foreground py-8">Sin folios de embarque</p>
+            )}
           </div>
         )}
 
