@@ -38,6 +38,7 @@ import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { opCabecera } from '@/lib/offline/construirOperaciones'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -99,7 +100,7 @@ function frecuenciaLabel(f: string): string {
 }
 
 export function LimpiezaComedor() {
-  const { profile, codigoClave } = useAuthContext()
+  const { profile, user, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
@@ -173,25 +174,29 @@ export function LimpiezaComedor() {
   }), [activeItems, resultados, days])
 
   const cargarDetalle = useCallback(async (regId: string) => {
-    if (!orgId) return
+    if (!orgId || !user?.id) return
     setLoadingDetalle(true)
     try {
-      const [resultadosRes, diasRes] = await Promise.all([
-        tbl('m30_resultados').select('item_id, dia, valor').eq('registro_id', regId).eq('org_id', orgId),
-        tbl('m30_dias').select('*').eq('registro_id', regId),
-      ])
-      if (resultadosRes.error) throw resultadosRes.error
-      if (diasRes.error) throw diasRes.error
+      const resultado = await leerConCache(`m30_detalle_${regId}`, user.id, orgId, async () => {
+        const [resultadosRes, diasRes] = await Promise.all([
+          tbl('m30_resultados').select('item_id, dia, valor').eq('registro_id', regId).eq('org_id', orgId),
+          tbl('m30_dias').select('*').eq('registro_id', regId),
+        ])
+        if (resultadosRes.error) throw resultadosRes.error
+        if (diasRes.error) throw diasRes.error
+        return { resultados: resultadosRes.data ?? [], dias: diasRes.data ?? [] }
+      })
+      const { resultados: rawRes, dias: rawDias } = (resultado.datos ?? { resultados: [], dias: [] }) as { resultados: any[], dias: any[] }
 
       const res: Record<number, Record<string, ValorM30>> = {}
-      for (const r of (resultadosRes.data ?? []) as any[]) {
+      for (const r of rawRes) {
         if (!res[r.dia]) res[r.dia] = {}
         res[r.dia][r.item_id] = r.valor as ValorM30
       }
       setResultados(res)
 
       const dd: Record<number, DiaDataLocal> = {}
-      for (const d of (diasRes.data ?? []) as any[]) {
+      for (const d of rawDias) {
         dd[d.dia] = {
           concentracion_cloro: d.concentracion_cloro ?? null,
           ajuste_cloro: d.ajuste_cloro ?? null,
@@ -207,7 +212,7 @@ export function LimpiezaComedor() {
     } finally {
       setLoadingDetalle(false)
     }
-  }, [orgId])
+  }, [orgId, user?.id])
 
   const abrirDetalle = (reg: M30RegistroResumen) => {
     setRegistroActivo(reg)

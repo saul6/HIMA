@@ -63,20 +63,29 @@ export function useM30LimpiezaComedor() {
 }
 
 export function useM30Items(ranchoId: string | null, orgId: string | null) {
+  const { user } = useAuthContext()
   const [items, setItems] = useState<M30Item[]>([])
   const [loading, setLoading] = useState(false)
 
   const cargar = useCallback(async () => {
-    if (!ranchoId || !orgId) { setItems([]); return }
+    if (!ranchoId || !orgId || !user?.id) { setItems([]); return }
     setLoading(true)
-    const { data } = await tbl('m30_items')
-      .select('id, nombre, frecuencia, activo, orden')
-      .eq('org_id', orgId)
-      .eq('rancho_id', ranchoId)
-      .order('orden')
-    setItems((data ?? []) as M30Item[])
-    setLoading(false)
-  }, [ranchoId, orgId])
+    try {
+      const resultado = await leerConCache(`m30_items_${ranchoId}`, user.id, orgId, async () => {
+        const { data } = await tbl('m30_items')
+          .select('id, nombre, frecuencia, activo, orden')
+          .eq('org_id', orgId)
+          .eq('rancho_id', ranchoId)
+          .order('orden')
+        return data ?? []
+      })
+      setItems((resultado.datos ?? []) as M30Item[])
+    } catch {
+      setItems([])
+    } finally {
+      setLoading(false)
+    }
+  }, [ranchoId, orgId, user?.id])
 
   useEffect(() => { cargar() }, [cargar])
   return { items, loading, refetch: cargar }

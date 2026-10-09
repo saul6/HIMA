@@ -269,6 +269,75 @@ Clasificaciones: **C** = necesaria para capturar/ver lo capturado → `leerConCa
 | M36 | SELECT lista (hook `useM36Monitoreos`) | hook | C | ✅ (verificar) |
 | M36 | INSERT `m36_monitoreos` | MonitoreoGermicida L127 | R | ✅ guarda offline |
 
+---
+
+## Auditoría de lecturas Lote B2 (M28–M32, 2026-10-09)
+
+### M28 LimpiezaBanosQuimicos
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m28_registro_mensual` (lista) | useM28LimpiezaBanosQuimicos hook | C | ✅ `leerConCache` |
+| SELECT `m28_items` | `useM28Items` hook | C | ✅ *este fix* — `leerConCache` + `user?.id` |
+| SELECT `m28_resultados` + `m28_dias` (detalle) | LimpiezaBanosQuimicos `cargarDetalle` | C | ✅ *este fix* — `leerConCache` key `m28_detalle_${id}` |
+| UPSERT/DELETE `m28_resultados` (celda) | `handleSetValor` L249 | R | ✅ bloqueado sin red (toast) |
+| UPSERT `m28_dias` (día) | `handleGuardarDia` L298 | R | ✅ bloqueado sin red (toast) |
+| INSERT `m28_registro_mensual` (nuevo) | `handleCrearRegistro` L363 | R | ✅ guarda offline |
+
+### M29 LimpiezaAduana
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m29_registro_mensual` (lista) | useM29LimpiezaAduana hook | C | ✅ `leerConCache` |
+| SELECT `m29_items` | `useM29Items` hook | C | ✅ *este fix* |
+| SELECT `m29_resultados` + `m29_dias` (detalle) | LimpiezaAduana `cargarDetalle` | C | ✅ *este fix* |
+| UPSERT/DELETE `m29_resultados` | `handleSetValor` | R | ✅ bloqueado sin red |
+| UPSERT `m29_dias` | `handleGuardarDia` | R | ✅ bloqueado sin red |
+| INSERT `m29_registro_mensual` | `handleCrearRegistro` | R | ✅ guarda offline |
+
+### M30 LimpiezaComedor
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m30_registro_mensual` (lista) | useM30LimpiezaComedor hook | C | ✅ `leerConCache` |
+| SELECT `m30_items` | `useM30Items` hook | C | ✅ *este fix* |
+| SELECT `m30_resultados` + `m30_dias` (detalle) | LimpiezaComedor `cargarDetalle` | C | ✅ *este fix* |
+| UPSERT/DELETE `m30_resultados` | `handleSetValor` | R | ✅ bloqueado sin red |
+| UPSERT `m30_dias` | `handleGuardarDia` | R | ✅ bloqueado sin red |
+| INSERT `m30_registro_mensual` | `handleCrearRegistro` | R | ✅ guarda offline |
+
+---
+
+## Auditoría de lecturas Lote B2 cont. (M31–M32) y Lote B3 (M33–M37, 2026-10-09)
+
+### M31–M37 (misma estructura que M28–M30)
+
+Mismas correcciones aplicadas: `useM3X_Items` → `leerConCache`; `cargarDetalle` → `leerConCache` key `m3X_detalle_${id}`.
+
+| Módulo | Ítems hook corregido | Detalle corregido |
+|---|---|---|
+| M31 LimpiezaOficinas | ✅ | ✅ |
+| M32 LimpiezaPatiosAzoteas | ✅ | ✅ |
+| M33 LimpiezaRecepcion | ✅ | ✅ |
+| M34 LimpiezaPreenfrio | ✅ | ✅ |
+| M35 LimpiezaAlmacenEmpaque | ✅ | ✅ |
+| M37 LimpiezaCisterna | ✅ (campo extra `es_inspeccion_plaga`) | ✅ |
+
+---
+
+## Auditoría de lecturas M45 (MantenimientoPreventivo, 2026-10-09)
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m45_registro_mensual` (lista) | useM45MttoPreventivo hook | C | ✅ `leerConCache` |
+| SELECT `m45_items` (catálogo global) | MantenimientoPreventivo `useEffect` L186 | C | ✅ *este fix* — `leerConCache` key `m45_items` |
+| SELECT `m45_resultados` + `m45_acciones` (detalle) | `cargarDetalle` L227 | C | ✅ *este fix* — `leerConCache` key `m45_detalle_${id}` |
+| UPSERT `m45_resultados` | `handleToggleValor` | R | ✅ bloqueado sin red |
+| UPSERT `m45_acciones` | `handleToggleAccion` | R | ✅ bloqueado sin red |
+| INSERT `m45_registro_mensual` | `handleCrearRegistro` | R | ✅ guarda offline |
+
+---
+
 ### Pendientes para Lote A2
 
 | Prioridad | Módulo | Pendiente |
