@@ -9,6 +9,8 @@ import { ConsolidadoSheetLimpieza } from '@/app/components/ConsolidadoSheetLimpi
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { BotonConfigurar } from '@/app/components/BotonConfigurar'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { SkeletonFilas } from '@/app/components/SkeletonFilas'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { codigoFormato } from '@/lib/codigoFormato'
@@ -420,6 +422,7 @@ export function LimpiezaComedor() {
   const { items: itemsGestion, loading: loadingGestion, refetch: refetchGestion } = useM30Items(
     catRanchoId || null, orgId
   )
+  const mostrarSkeletonGestion = useMostrarCarga(loadingGestion, itemsGestion.length > 0)
 
   function abrirConfigurar() {
     setCatRanchoId(registroActivo?.rancho_id ?? '')
@@ -713,9 +716,7 @@ export function LimpiezaComedor() {
           )}
 
           {loadingDetalle ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="w-5 h-5 text-primary animate-spin" />
-            </div>
+            <SkeletonFilas rows={3} />
           ) : (
             <>
               {/* Selector de día */}
@@ -1090,11 +1091,9 @@ export function LimpiezaComedor() {
                   Sembrar 10 ítems estándar
                 </button>
 
-                {loadingGestion ? (
-                  <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 text-primary animate-spin" /></div>
-                ) : itemsGestion.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-2">Sin ítems configurados.</p>
-                ) : (
+                {mostrarSkeletonGestion ? (
+                  <SkeletonFilas rows={2} />
+                ) : itemsGestion.length > 0 ? (
                   <div className="bg-card border border-border rounded-xl divide-y divide-border">
                     {itemsGestion.map((item) => (
                       <div key={item.id} className="flex items-center gap-3 px-3 py-2.5">
@@ -1118,6 +1117,10 @@ export function LimpiezaComedor() {
                       </div>
                     ))}
                   </div>
+                ) : loadingGestion ? (
+                  <div style={{ minHeight: '60px' }} />
+                ) : (
+                  <p className="text-xs text-muted-foreground text-center py-2">Sin ítems configurados.</p>
                 )}
 
                 <div className="bg-card border border-border rounded-xl p-3 space-y-3">
