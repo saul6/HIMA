@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   ChevronLeft, Plus, FileDown, Loader2, Snowflake,
-  TriangleAlert, X, ChevronDown, ChevronUp, Bug,
+  TriangleAlert, X, ChevronDown, ChevronUp, Bug, WifiOff,
 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
@@ -33,6 +33,11 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
+import { opCabecera } from '@/lib/offline/construirOperaciones'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -98,6 +103,9 @@ export function LimpiezaPreenfrio() {
   const orgId = profile?.org_id ?? null
   const termino = terminosSitio.singular
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M34')
+  const { guardar: guardarOffline } = useGuardarOffline('M34')
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M34', todosIds)
 
@@ -251,6 +259,7 @@ export function LimpiezaPreenfrio() {
 
   async function handleSetValor(itemId: string, dia: number, valor: ValorM34) {
     if (!registroActivo || !orgId) return
+    if (!online) { toast.warning('Necesitas conexión para registrar actividades'); return }
     const cellKey = `${dia}|${itemId}`
     if (togglingCells.has(cellKey)) return
     const current = resultados[dia]?.[itemId]
@@ -367,6 +376,7 @@ export function LimpiezaPreenfrio() {
 
   async function handleGuardarDia() {
     if (!registroActivo || !orgId) return
+    if (!online) { toast.warning('Necesitas conexión para guardar el día'); return }
     setDiaSaving(true)
     try {
       const payload: any = {
@@ -415,6 +425,22 @@ export function LimpiezaPreenfrio() {
   async function handleCrearRegistro() {
     if (!nRanchoId) { setNErrRancho(true); return }
     if (!orgId) { toast.error('Sin organización activa'); return }
+    const rancho = ranchos.find(r => r.id === nRanchoId)
+    if (!online) {
+      const localId = crypto.randomUUID()
+      const ok = await guardarOffline({
+        descripcion: `Limpieza Pre-enfrío · ${rancho?.nombre ?? ''} · ${MESES[nMes - 1]} ${nAnio}`,
+        metadatos: { rancho_id: nRanchoId, rancho_nombre: rancho?.nombre, anio: nAnio, mes: nMes },
+        operaciones: [
+          opCabecera('m34_registro_mensual', {
+            id: localId, rancho_id: nRanchoId, org_id: orgId!,
+            anio: nAnio, mes: nMes,
+          }, ['rancho_id', 'anio', 'mes']),
+        ],
+      })
+      if (ok) handleCerrarSheet()
+      return
+    }
     setNGuardando(true)
     try {
       const { data, error: e } = await tbl('m34_registro_mensual')
@@ -675,7 +701,7 @@ export function LimpiezaPreenfrio() {
           )}
           {loading ? (
             <ListaSkeleton />
-          ) : registros.length === 0 ? (
+          ) : registros.length === 0 && lotesOffline.length === 0 ? (
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <Snowflake className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
               <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
@@ -683,6 +709,20 @@ export function LimpiezaPreenfrio() {
             </div>
           ) : (
             <div className="space-y-3">
+              {lotesOffline.map((lote) => (
+                <div key={lote.id} className="bg-card rounded-xl border border-border p-4">
+                  <div className="mb-1">
+                    <span className="text-xs px-2 py-0.5 rounded"
+                      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                      {formatMesLabel((lote.metadatos as any)?.anio ?? 0, (lote.metadatos as any)?.mes ?? 0)}
+                    </span>
+                  </div>
+                  <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    {(lote.metadatos as any)?.rancho_nombre ?? '—'}
+                  </span>
+                  <div className="mt-2"><ChipOffline estado={lote.estado} /></div>
+                </div>
+              ))}
               {registros.map((reg) => (
                 <div key={reg.id} className="bg-card rounded-xl border border-border">
                   <button
@@ -1206,10 +1246,10 @@ export function LimpiezaPreenfrio() {
                 type="button"
                 onClick={handleCrearRegistro}
                 disabled={nGuardando}
-                className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60"
+                className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-1.5"
                 style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
               >
-                {nGuardando ? 'Guardando…' : 'Crear registro'}
+                {nGuardando ? 'Guardando…' : !online ? <><WifiOff className="w-4 h-4" /> Crear sin conexión</> : 'Crear registro'}
               </button>
             </div>
           </div>
