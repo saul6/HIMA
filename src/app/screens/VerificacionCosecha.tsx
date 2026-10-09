@@ -197,7 +197,7 @@ export function VerificacionCosecha() {
     if (!profile?.org_id) return
     setLoadingCeldas(true)
     try {
-      const resultados = await cargarM69Resultados(regId, profile.org_id)
+      const resultados = await cargarM69Resultados(regId, profile.org_id, profile.id)
       setCeldas(celdasDesdeBD(resultados))
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al cargar matriz')

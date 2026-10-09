@@ -349,3 +349,52 @@ Mismas correcciones aplicadas: `useM3X_Items` → `leerConCache`; `cargarDetalle
 | ~~Media~~ | M36 | ✅ confirmado — hook usa `leerConCache` |
 | ~~Baja~~ | M9 | ✅ botón deshabilitado sin red |
 | ~~Baja~~ | M13 | ✅ botón deshabilitado sin red |
+
+---
+
+## Auditoría de lecturas Lote B1 (M11, M69, M71, M75, 2026-10-09)
+
+### M11 InspeccionPreoperacionalCosecha
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m11_registro_mensual` (lista) | useM11Preoperacional hook | C | ✅ `leerConCache` |
+| SELECT `m11_items_catalogo` | InspeccionPreoperacionalCosecha `useEffect` L207 | C | ✅ `leerConCache` (ya existía) |
+| SELECT `m11_dias_inspeccion` + `m11_resultados` (detalle) | `cargarDias` L227 | C | ✅ *este fix* — `leerConCache` key `m11_detalle_${id}` |
+| INSERT `m11_registro_mensual` (nuevo) | `handleCrearRegistro` | R | ✅ guarda offline |
+| INSERT `m11_dias_inspeccion` + `m11_resultados` | `handleGuardarDia` | R | ✅ guarda offline |
+| UPDATE `m11_registro_mensual` (observaciones) | `handleGuardarObs` | R | ✅ solo con red |
+
+**Nota:** `cargarDias` tiene guard `esLocal` previo (si lote offline, retorna días vacíos sin tocar caché).
+
+### M69 VerificacionCosecha
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m69_registro` (lista) | useM69VerificacionCosecha hook | C | ✅ `leerConCache` |
+| SELECT `m69_items_catalogo` | `useM69ItemsCatalogo` | C | ✅ *este fix* — `leerConCache` + `useAuthContext` |
+| SELECT `m69_resultados` (detalle celdas) | `cargarM69Resultados` standalone | C | ✅ *este fix* — `leerConCache` key `m69_resultados_${id}`, userId param agregado |
+| UPSERT/DELETE `m69_resultados` (celda) | VerificacionCosecha screen | R | ✅ bloqueado sin red |
+| INSERT `m69_registro` (nuevo) | `handleCrearRegistro` | R | ✅ guarda offline |
+
+### M71 LimpiezaCampo
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m71_registro` (lista) | useM71LimpiezaCampo hook | C | ✅ `leerConCache` |
+| SELECT `m71_items_catalogo` | `useM71ItemsCatalogo` | C | ✅ *este fix* — `leerConCache` + `useAuthContext` |
+| SELECT `m71_resultados` (detalle celdas) | `cargarM71Resultados` standalone | C | ✅ *este fix* — `leerConCache` key `m71_resultados_${id}`, userId param agregado |
+| UPSERT/DELETE `m71_resultados` | LimpiezaCampo screen | R | ✅ bloqueado sin red |
+| INSERT `m71_registro` | `handleCrearRegistro` | R | ✅ guarda offline |
+
+### M75 AlmacenEmpaqueGG
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m75_registro` (lista) | useM75AlmacenEmpaqueGG hook | C | ✅ `leerConCache` |
+| SELECT `m75_items_catalogo` | `useM75ItemsCatalogo` | C | ✅ *este fix* — `leerConCache` + `useAuthContext` |
+| SELECT `m75_resultados` (detalle celdas) | `cargarM75Resultados` standalone | C | ✅ *este fix* — `leerConCache` key `m75_resultados_${id}`, userId param agregado |
+| SELECT `m75_acciones` (detalle acciones) | `cargarM75Acciones` standalone | C | ✅ *este fix* — `leerConCache` key `m75_acciones_${id}`, userId param agregado |
+| UPSERT/DELETE `m75_resultados` | AlmacenEmpaqueGG screen | R | ✅ bloqueado sin red |
+| UPSERT `m75_acciones` | AlmacenEmpaqueGG screen | R | ✅ bloqueado sin red |
+| INSERT `m75_registro` | `handleCrearRegistro` | R | ✅ guarda offline |

@@ -179,8 +179,8 @@ export function AlmacenEmpaqueGG() {
     setLoadingCeldas(true)
     try {
       const [resultados, accs] = await Promise.all([
-        cargarM75Resultados(regId, profile.org_id),
-        cargarM75Acciones(regId, profile.org_id),
+        cargarM75Resultados(regId, profile.org_id, profile.id),
+        cargarM75Acciones(regId, profile.org_id, profile.id),
       ])
       setCeldas(celdasDesdeBD(resultados))
       setAcciones(accionesDesdeBD(accs))

@@ -86,25 +86,32 @@ export function useM69VerificacionCosecha() {
 }
 
 export function useM69ItemsCatalogo() {
+  const { profile } = useAuthContext()
   const [items, setItems] = useState<M69ItemCatalogo[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!profile?.id || !profile?.org_id) return
+    const userId = profile.id
+    const orgId = profile.org_id
     let cancelado = false
     setLoading(true)
-    tbl('m69_items_catalogo')
-      .select('id, seccion, numero, texto')
-      .eq('activo', true)
-      .order('numero')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .then(({ data }: { data: any[] | null }) => {
-        if (!cancelado) {
-          setItems((data ?? []) as M69ItemCatalogo[])
-          setLoading(false)
-        }
-      })
+    leerConCache('m69_items_catalogo', userId, orgId, async () => {
+      const { data } = await tbl('m69_items_catalogo')
+        .select('id, seccion, numero, texto')
+        .eq('activo', true)
+        .order('numero')
+      return data ?? []
+    }).then((resultado) => {
+      if (!cancelado) {
+        setItems((resultado.datos ?? []) as M69ItemCatalogo[])
+        setLoading(false)
+      }
+    }).catch(() => {
+      if (!cancelado) setLoading(false)
+    })
     return () => { cancelado = true }
-  }, [])
+  }, [profile?.id, profile?.org_id])
 
   return { items, loading }
 }
@@ -112,14 +119,18 @@ export function useM69ItemsCatalogo() {
 export async function cargarM69Resultados(
   registroId: string,
   orgId: string,
+  userId: string,
 ): Promise<M69Resultado[]> {
-  const { data, error } = await tbl('m69_resultados')
-    .select('item_id, dia, valor')
-    .eq('registro_id', registroId)
-    .eq('org_id', orgId)
-  if (error) throw error
+  const resultado = await leerConCache(`m69_resultados_${registroId}`, userId, orgId, async () => {
+    const { data, error } = await tbl('m69_resultados')
+      .select('item_id, dia, valor')
+      .eq('registro_id', registroId)
+      .eq('org_id', orgId)
+    if (error) throw error
+    return data ?? []
+  })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return ((data ?? []) as any[]).map((r) => ({
+  return ((resultado.datos ?? []) as any[]).map((r) => ({
     item_id: r.item_id as string,
     dia: r.dia as number,
     valor: r.valor as string,

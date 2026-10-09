@@ -225,7 +225,7 @@ export function InspeccionPreoperacionalCosecha() {
   const [savingObs, setSavingObs] = useState(false)
 
   const cargarDias = useCallback(async (regId: string) => {
-    if (!profile?.org_id) return
+    if (!profile?.org_id || !profile?.id) return
     const esLocal = lotesOffline.some(
       l => (l.metadatos as any)?.tipo === 'cabecera' &&
            l.operaciones.some(op => op.fila.id === regId)
@@ -233,48 +233,50 @@ export function InspeccionPreoperacionalCosecha() {
     if (esLocal) { setDias([]); setLoadingDias(false); return }
     setLoadingDias(true)
     try {
-      const { data: diasData, error: dErr } = await supabase
-        .from('m11_dias_inspeccion')
-        .select('id, fecha')
-        .eq('registro_id', regId)
-        .eq('org_id', profile.org_id)
-        .order('fecha')
-      if (dErr) throw dErr
-
-      const diaIds = (diasData ?? []).map((d: any) => d.id as string)
-      const diaFechaMap: Record<string, string> = {}
-      for (const d of diasData ?? []) diaFechaMap[(d as any).id] = (d as any).fecha
-
-      let resData: any[] = []
-      if (diaIds.length > 0) {
-        const { data: r, error: rErr } = await supabase
-          .from('m11_resultados')
-          .select('dia_id, item_id, valor, codigo_correctivo')
-          .in('dia_id', diaIds)
+      const resultado = await leerConCache(`m11_detalle_${regId}`, profile.id, profile.org_id, async () => {
+        const { data: diasData, error: dErr } = await supabase
+          .from('m11_dias_inspeccion')
+          .select('id, fecha')
+          .eq('registro_id', regId)
           .eq('org_id', profile.org_id)
-        if (rErr) throw rErr
-        resData = r ?? []
-      }
+          .order('fecha')
+        if (dErr) throw dErr
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const diaIds = (diasData ?? []).map((d: any) => d.id as string)
+        let resData: any[] = []
+        if (diaIds.length > 0) {
+          const { data: r, error: rErr } = await supabase
+            .from('m11_resultados')
+            .select('dia_id, item_id, valor, codigo_correctivo')
+            .in('dia_id', diaIds)
+            .eq('org_id', profile.org_id)
+          if (rErr) throw rErr
+          resData = r ?? []
+        }
+        return { dias: diasData ?? [], resultados: resData }
+      })
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { dias: rawDias, resultados: rawRes } = (resultado.datos ?? { dias: [], resultados: [] }) as { dias: any[], resultados: any[] }
       const diaMap = new Map<string, M11DiaConResultados>()
-      for (const d of diasData ?? []) {
-        diaMap.set((d as any).id, { id: (d as any).id, fecha: (d as any).fecha, resultados: [] })
+      for (const d of rawDias) {
+        diaMap.set(d.id, { id: d.id, fecha: d.fecha, resultados: [] })
       }
-      for (const r of resData) {
+      for (const r of rawRes) {
         diaMap.get(r.dia_id)?.resultados.push({
           item_id: r.item_id,
           valor: r.valor,
           codigo_correctivo: r.codigo_correctivo ?? null,
         })
       }
-
       setDias(Array.from(diaMap.values()))
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al cargar días')
     } finally {
       setLoadingDias(false)
     }
-  }, [profile?.org_id, lotesOffline])
+  }, [profile?.org_id, profile?.id, lotesOffline])
 
   const abrirDetalle = (reg: M11RegistroResumen) => {
     setRegistroActivo(reg)

@@ -89,25 +89,32 @@ export function useM75AlmacenEmpaqueGG() {
 }
 
 export function useM75ItemsCatalogo() {
+  const { profile } = useAuthContext()
   const [items, setItems] = useState<M75ItemCatalogo[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!profile?.id || !profile?.org_id) return
+    const userId = profile.id
+    const orgId = profile.org_id
     let cancelado = false
     setLoading(true)
-    tbl('m75_items_catalogo')
-      .select('id, numero, texto')
-      .eq('activo', true)
-      .order('numero')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .then(({ data }: { data: any[] | null }) => {
-        if (!cancelado) {
-          setItems((data ?? []) as M75ItemCatalogo[])
-          setLoading(false)
-        }
-      })
+    leerConCache('m75_items_catalogo', userId, orgId, async () => {
+      const { data } = await tbl('m75_items_catalogo')
+        .select('id, numero, texto')
+        .eq('activo', true)
+        .order('numero')
+      return data ?? []
+    }).then((resultado) => {
+      if (!cancelado) {
+        setItems((resultado.datos ?? []) as M75ItemCatalogo[])
+        setLoading(false)
+      }
+    }).catch(() => {
+      if (!cancelado) setLoading(false)
+    })
     return () => { cancelado = true }
-  }, [])
+  }, [profile?.id, profile?.org_id])
 
   return { items, loading }
 }
@@ -115,14 +122,18 @@ export function useM75ItemsCatalogo() {
 export async function cargarM75Resultados(
   registroId: string,
   orgId: string,
+  userId: string,
 ): Promise<M75Resultado[]> {
-  const { data, error } = await tbl('m75_resultados')
-    .select('item_id, dia, valor')
-    .eq('registro_id', registroId)
-    .eq('org_id', orgId)
-  if (error) throw error
+  const resultado = await leerConCache(`m75_resultados_${registroId}`, userId, orgId, async () => {
+    const { data, error } = await tbl('m75_resultados')
+      .select('item_id, dia, valor')
+      .eq('registro_id', registroId)
+      .eq('org_id', orgId)
+    if (error) throw error
+    return data ?? []
+  })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return ((data ?? []) as any[]).map((r) => ({
+  return ((resultado.datos ?? []) as any[]).map((r) => ({
     item_id: r.item_id as string,
     dia: r.dia as number,
     valor: r.valor as string,
@@ -132,14 +143,18 @@ export async function cargarM75Resultados(
 export async function cargarM75Acciones(
   registroId: string,
   orgId: string,
+  userId: string,
 ): Promise<M75Accion[]> {
-  const { data, error } = await tbl('m75_acciones')
-    .select('dia, texto')
-    .eq('registro_id', registroId)
-    .eq('org_id', orgId)
-  if (error) throw error
+  const resultado = await leerConCache(`m75_acciones_${registroId}`, userId, orgId, async () => {
+    const { data, error } = await tbl('m75_acciones')
+      .select('dia, texto')
+      .eq('registro_id', registroId)
+      .eq('org_id', orgId)
+    if (error) throw error
+    return data ?? []
+  })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return ((data ?? []) as any[]).map((r) => ({
+  return ((resultado.datos ?? []) as any[]).map((r) => ({
     dia: r.dia as number,
     texto: r.texto as string,
   }))
