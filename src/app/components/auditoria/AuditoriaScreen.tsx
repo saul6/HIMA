@@ -12,6 +12,9 @@ import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useAuditoria, calcularAgregados, type ModuloAuditoria, type AuditoriaConRancho } from '@/hooks/useAuditoria'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { SkeletonFilas } from '@/app/components/SkeletonFilas'
 import { SeccionAccordion } from './SeccionAccordion'
 import { ResumenPuntaje } from './ResumenPuntaje'
 import { generarAuditoriaPDF, generarAuditoriaConsolidadoPDF } from '@/lib/pdf/auditoria/generarAuditoriaPDF'
@@ -122,6 +125,8 @@ export function AuditoriaScreen({
   const { ranchos } = useRanchos()
   const { secciones, preguntas, loadingCatalogo, auditorias, loading, refetch, cargarRespuestas, guardar } =
     useAuditoria(modulo)
+  const mostrarSkeletonLista = useMostrarCarga(loading, auditorias.length > 0)
+  const mostrarSkeletonCatalogo = useMostrarCarga(loadingCatalogo, secciones.length > 0)
 
   // Form state
   const [sheetAbierto, setSheetAbierto] = useState(false)
@@ -314,19 +319,9 @@ export function AuditoriaScreen({
 
       {/* Lista */}
       <div className="p-4 space-y-3">
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          </div>
-        ) : auditorias.length === 0 ? (
-          <div className="bg-card border border-border rounded-xl p-6 text-center">
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2 text-primary">
-              {icono}
-            </div>
-            <p className="text-sm text-muted-foreground">Sin auditorías aún</p>
-            <p className="text-xs text-muted-foreground mt-1">Toca + para registrar la primera</p>
-          </div>
-        ) : (
+        {mostrarSkeletonLista ? (
+          <ListaSkeleton />
+        ) : auditorias.length > 0 ? (
           auditorias.map((a) => (
             <div
               key={a.id}
@@ -390,6 +385,16 @@ export function AuditoriaScreen({
               </div>
             </div>
           ))
+        ) : loading ? (
+          <div style={{ minHeight: '280px' }} />
+        ) : (
+          <div className="bg-card border border-border rounded-xl p-6 text-center">
+            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2 text-primary">
+              {icono}
+            </div>
+            <p className="text-sm text-muted-foreground">Sin auditorías aún</p>
+            <p className="text-xs text-muted-foreground mt-1">Toca + para registrar la primera</p>
+          </div>
         )}
       </div>
 
@@ -521,15 +526,9 @@ export function AuditoriaScreen({
               )}
 
               {/* Checklist por sección */}
-              {loadingCatalogo ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="w-6 h-6 text-primary animate-spin" />
-                </div>
-              ) : secciones.length === 0 ? (
-                <div className="bg-muted rounded-xl p-4 text-center">
-                  <p className="text-sm text-muted-foreground">No se encontró el catálogo de preguntas</p>
-                </div>
-              ) : (
+              {mostrarSkeletonCatalogo ? (
+                <SkeletonFilas rows={3} />
+              ) : secciones.length > 0 ? (
                 <div className="space-y-3">
                   {secciones.map((sec) => {
                     const pregs = preguntasPorSeccion.get(sec.id) ?? []
@@ -545,6 +544,12 @@ export function AuditoriaScreen({
                       />
                     )
                   })}
+                </div>
+              ) : loadingCatalogo ? (
+                <div style={{ minHeight: '180px' }} />
+              ) : (
+                <div className="bg-muted rounded-xl p-4 text-center">
+                  <p className="text-sm text-muted-foreground">No se encontró el catálogo de preguntas</p>
                 </div>
               )}
 

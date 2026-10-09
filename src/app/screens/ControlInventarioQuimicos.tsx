@@ -29,6 +29,10 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { SkeletonFilas } from '@/app/components/SkeletonFilas'
+import { Skeleton } from '@/app/components/ui/skeleton'
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -109,6 +113,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
   }, [movimientos])
 
   const movsParaMostrar = useMemo(() => [...movsConSaldo].reverse(), [movsConSaldo])
+  const mostrarSkeletonMovs = useMostrarCarga(loading, movsParaMostrar.length > 0)
 
   const saldoActual = movsConSaldo.length > 0 ? movsConSaldo[movsConSaldo.length - 1].saldo : quimico.saldo
   const stockBajo = quimico.stock_minimo !== null && saldoActual <= quimico.stock_minimo
@@ -234,20 +239,25 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
         {/* Historial */}
         <h2 className="text-sm font-semibold">Historial de movimientos</h2>
 
-        {loading ? (
-          <div className="flex justify-center py-8">
-            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+        {mostrarSkeletonMovs ? (
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
+            <div className="grid grid-cols-[80px_1fr_52px_44px] px-3 py-2 border-b border-border"
+              style={{ backgroundColor: 'var(--muted)' }}>
+              <span className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>Fecha</span>
+              <span className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>Persona / Área</span>
+              <span className="text-xs font-semibold text-right" style={{ color: 'var(--muted-foreground)' }}>Mov.</span>
+              <span className="text-xs font-semibold text-right" style={{ color: 'var(--muted-foreground)' }}>Total</span>
+            </div>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="grid grid-cols-[80px_1fr_52px_44px] items-center gap-2 px-3 py-2.5 border-b border-border last:border-b-0">
+                <Skeleton className="h-3 w-12" />
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-3 w-8 justify-self-end" />
+                <Skeleton className="h-3 w-8 justify-self-end" />
+              </div>
+            ))}
           </div>
-        ) : movsParaMostrar.length === 0 ? (
-          <div className="bg-card border border-border rounded-xl p-6 text-center">
-            <p className="text-sm font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-              Sin movimientos
-            </p>
-            <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
-              Registra la primera entrada con el botón +
-            </p>
-          </div>
-        ) : (
+        ) : movsParaMostrar.length > 0 ? (
           <div className="bg-card border border-border rounded-xl overflow-hidden">
             <div className="grid grid-cols-[80px_1fr_52px_44px] px-3 py-2 border-b border-border"
               style={{ backgroundColor: 'var(--muted)' }}>
@@ -296,6 +306,17 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                 </div>
               </div>
             ))}
+          </div>
+        ) : loading ? (
+          <div style={{ minHeight: '160px' }} />
+        ) : (
+          <div className="bg-card border border-border rounded-xl p-6 text-center">
+            <p className="text-sm font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+              Sin movimientos
+            </p>
+            <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
+              Registra la primera entrada con el botón +
+            </p>
           </div>
         )}
       </div>
@@ -467,6 +488,8 @@ export function ControlInventarioQuimicos() {
     () => ranchoId ? saldos.filter(s => s.rancho_id === ranchoId) : saldos,
     [saldos, ranchoId],
   )
+  const mostrarSkeletonSaldos = useMostrarCarga(saldosLoading, saldosFiltrados.length > 0)
+  const mostrarSkeletonCatalogo = useMostrarCarga(catalogoLoading, catalogoQuimicos.length > 0)
 
   async function guardarQuimico() {
     if (!orgId || !ranchoId) {
@@ -592,20 +615,9 @@ export function ControlInventarioQuimicos() {
         )}
 
         {/* Lista de químicos */}
-        {saldosLoading ? (
-          <div className="flex justify-center py-10">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          </div>
-        ) : saldosFiltrados.length === 0 ? (
-          <div className="bg-card border border-border rounded-xl p-6 text-center">
-            <p className="text-sm font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-              Sin químicos registrados
-            </p>
-            <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
-              Usa el ícono de configuración para agregar químicos.
-            </p>
-          </div>
-        ) : (
+        {mostrarSkeletonSaldos ? (
+          <ListaSkeleton />
+        ) : saldosFiltrados.length > 0 ? (
           <div className="space-y-2">
             {saldosFiltrados.map(s => {
               const stockBajo = s.stock_minimo !== null && s.saldo <= s.stock_minimo
@@ -658,6 +670,17 @@ export function ControlInventarioQuimicos() {
               )
             })}
           </div>
+        ) : saldosLoading ? (
+          <div style={{ minHeight: '200px' }} />
+        ) : (
+          <div className="bg-card border border-border rounded-xl p-6 text-center">
+            <p className="text-sm font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+              Sin químicos registrados
+            </p>
+            <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
+              Usa el ícono de configuración para agregar químicos.
+            </p>
+          </div>
         )}
       </div>
 
@@ -687,15 +710,9 @@ export function ControlInventarioQuimicos() {
             <div className="flex-1 overflow-y-auto">
               {ranchoId ? (
                 <div className="px-4 py-3 space-y-2">
-                  {catalogoLoading ? (
-                    <div className="flex justify-center py-4">
-                      <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                    </div>
-                  ) : catalogoQuimicos.length === 0 ? (
-                    <p className="text-sm text-center py-4" style={{ color: 'var(--muted-foreground)' }}>
-                      Sin químicos. Agrega el primero abajo.
-                    </p>
-                  ) : (
+                  {mostrarSkeletonCatalogo ? (
+                    <SkeletonFilas rows={3} />
+                  ) : catalogoQuimicos.length > 0 ? (
                     catalogoQuimicos.map(q => (
                       <div key={q.id} className="flex items-center gap-3 bg-card border border-border rounded-xl px-3 py-2.5">
                         <div className="flex-1 min-w-0">
@@ -718,6 +735,12 @@ export function ControlInventarioQuimicos() {
                         </button>
                       </div>
                     ))
+                  ) : catalogoLoading ? (
+                    <div style={{ minHeight: '100px' }} />
+                  ) : (
+                    <p className="text-sm text-center py-4" style={{ color: 'var(--muted-foreground)' }}>
+                      Sin químicos. Agrega el primero abajo.
+                    </p>
                   )}
                   <button
                     onClick={() => { setQuimicoForm(QUIMICO_INICIAL); setNuevoQuimicoOpen(true) }}
