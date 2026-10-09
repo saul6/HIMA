@@ -42,7 +42,7 @@ import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
-import { opCabecera } from '@/lib/offline/construirOperaciones'
+import { opCabecera, opInsert, opUpsert } from '@/lib/offline/construirOperaciones'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -243,6 +243,11 @@ export function VerificacionInsumos() {
 
   const cargarDias = useCallback(async (regId: string) => {
     if (!orgId) return
+    const esLocal = lotesOffline.some(
+      l => (l.metadatos as any)?.tipo === 'cabecera' &&
+           l.operaciones.some(op => op.fila.id === regId)
+    )
+    if (esLocal) { setDias([]); setLoadingDias(false); return }
     setLoadingDias(true)
     try {
       const { data: diasData, error: dErr } = await tbl('m23_dias_inspeccion')
@@ -284,7 +289,7 @@ export function VerificacionInsumos() {
     } finally {
       setLoadingDias(false)
     }
-  }, [orgId])
+  }, [orgId, lotesOffline])
 
   const abrirDetalle = (reg: M23RegistroResumen) => {
     setRegistroActivo(reg)
@@ -337,13 +342,20 @@ export function VerificacionInsumos() {
 
   useEffect(() => {
     if (!sheetNuevo || !nRanchoId || !nMes || !orgId) { setNYaExiste(false); return }
+    const mesISO = nMes + '-01'
+    const existePendiente = lotesOffline.some(
+      l => (l.metadatos as any)?.tipo === 'cabecera' &&
+           (l.metadatos as any)?.rancho_id === nRanchoId &&
+           (l.metadatos as any)?.mes === mesISO
+    )
+    if (existePendiente) { setNYaExiste(true); return }
     let cancelado = false
     tbl('m23_registro_mensual')
-      .select('id').eq('org_id', orgId).eq('rancho_id', nRanchoId).eq('mes', nMes + '-01')
+      .select('id').eq('org_id', orgId).eq('rancho_id', nRanchoId).eq('mes', mesISO)
       .maybeSingle()
       .then(({ data }: { data: any }) => { if (!cancelado) setNYaExiste(!!data) })
     return () => { cancelado = true }
-  }, [sheetNuevo, nRanchoId, nMes, orgId])
+  }, [sheetNuevo, nRanchoId, nMes, orgId, lotesOffline])
 
   async function handleCrearRegistro() {
     if (!nRanchoId) { setNErrRancho(true); return }
@@ -354,7 +366,7 @@ export function VerificacionInsumos() {
       const localId = crypto.randomUUID()
       const ok = await guardarOffline({
         descripcion: `Verificación Insumos · ${rancho?.nombre ?? ''} · ${nMes}`,
-        metadatos: { rancho_id: nRanchoId, rancho_nombre: rancho?.nombre, mes: nMes },
+        metadatos: { rancho_id: nRanchoId, rancho_nombre: rancho?.nombre, mes: nMes + '-01', tipo: 'cabecera' },
         operaciones: [
           opCabecera('m23_registro_mensual', {
             id: localId, rancho_id: nRanchoId, org_id: orgId!,
@@ -433,13 +445,19 @@ export function VerificacionInsumos() {
 
   useEffect(() => {
     if (!sheetDia || !dFecha || !registroActivo || !orgId) { setDYaExiste(false); return }
+    const existePendiente = lotesOffline.some(
+      l => (l.metadatos as any)?.tipo === 'dia' &&
+           (l.metadatos as any)?.registro_id === registroActivo.id &&
+           (l.metadatos as any)?.fecha === dFecha
+    )
+    if (existePendiente) { setDYaExiste(true); return }
     let cancelado = false
     tbl('m23_dias_inspeccion')
       .select('id').eq('registro_id', registroActivo.id).eq('org_id', orgId).eq('fecha', dFecha)
       .maybeSingle()
       .then(({ data }: { data: any }) => { if (!cancelado) setDYaExiste(!!data) })
     return () => { cancelado = true }
-  }, [sheetDia, dFecha, registroActivo, orgId])
+  }, [sheetDia, dFecha, registroActivo, orgId, lotesOffline])
 
   function handleCerrarSheetDia() {
     setSheetDia(false); setSheetDiaPaso('form'); setPendienteFirmaIds([])
@@ -455,6 +473,42 @@ export function VerificacionInsumos() {
     const mes = registroActivo.mes.slice(0, 7)
     if (!dFecha.startsWith(mes)) {
       toast.error('La fecha debe estar dentro del mes del registro'); return
+    }
+
+    if (!online) {
+      const diaId = crypto.randomUUID()
+      const incItems = insumosActivosFiltrados.filter(ins => dValores[ins.id] === 'NO' && dIncidencias[ins.id]?.trim())
+      const incidenciaIds: Record<string, string> = {}
+      let reporteId: string | null = null
+      if (incItems.length > 0) {
+        reporteId = crypto.randomUUID()
+        for (const ins of incItems) incidenciaIds[ins.id] = crypto.randomUUID()
+      }
+      const ok = await guardarOffline({
+        descripcion: `Verificación Insumos · ${dFecha} · ${registroActivo.rancho_nombre}`,
+        metadatos: { registro_id: registroActivo.id, rancho_nombre: registroActivo.rancho_nombre, mes: registroActivo.mes, fecha: dFecha, tipo: 'dia', items_count: insumosActivosFiltrados.length },
+        operaciones: [
+          ...(reporteId ? [
+            opInsert('m13_reportes', { id: reporteId, rancho_id: registroActivo.rancho_id, org_id: orgId!, fecha: dFecha, auditor_nombre: profile?.nombre_completo ?? null }),
+            ...incItems.map((ins, i) => opInsert('m13_incidencias', { id: incidenciaIds[ins.id], reporte_id: reporteId!, org_id: orgId!, descripcion: dIncidencias[ins.id].trim(), orden: i + 1 })),
+          ] : []),
+          opCabecera('m23_dias_inspeccion', { id: diaId, registro_id: registroActivo.id, org_id: orgId!, fecha: dFecha }, ['registro_id', 'fecha']),
+          ...insumosActivosFiltrados.map(ins => {
+            const val = dValores[ins.id] ?? 'SI'
+            return opUpsert('m23_resultados', {
+              id: crypto.randomUUID(),
+              dia_id: diaId,
+              insumo_id: ins.id,
+              org_id: orgId!,
+              valor: val,
+              codigo_correctivo: val === 'NO' ? (dCodigos[ins.id]?.trim() || null) : null,
+              incidencia_id: incidenciaIds[ins.id] ?? null,
+            }, ['dia_id', 'insumo_id'])
+          }),
+        ],
+      })
+      if (ok) handleCerrarSheetDia()
+      return
     }
 
     setDGuardando(true)

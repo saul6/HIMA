@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
 import { leerConCache } from '@/lib/offline/cacheLectura'
 
+
 export interface M23RegistroResumen {
   id: string
   rancho_id: string
@@ -79,21 +80,30 @@ export function useM23VerificacionInsumos() {
 }
 
 export function useM23Insumos(ranchoId: string | null, orgId: string | null) {
+  const { user } = useAuthContext()
   const [insumos, setInsumos] = useState<M23Insumo[]>([])
   const [loading, setLoading] = useState(false)
 
   const cargar = useCallback(async () => {
-    if (!ranchoId || !orgId) { setInsumos([]); return }
+    if (!ranchoId || !orgId || !user?.id) { setInsumos([]); return }
     setLoading(true)
-    const { data } = await tbl('m23_insumos')
-      .select('id, area, insumo, activo, orden')
-      .eq('org_id', orgId)
-      .eq('rancho_id', ranchoId)
-      .order('area')
-      .order('orden')
-    setInsumos((data ?? []) as M23Insumo[])
-    setLoading(false)
-  }, [ranchoId, orgId])
+    try {
+      const resultado = await leerConCache(`m23_insumos_${ranchoId}`, user.id, orgId, async () => {
+        const { data } = await tbl('m23_insumos')
+          .select('id, area, insumo, activo, orden')
+          .eq('org_id', orgId)
+          .eq('rancho_id', ranchoId)
+          .order('area')
+          .order('orden')
+        return data ?? []
+      })
+      setInsumos((resultado.datos ?? []) as M23Insumo[])
+    } catch {
+      setInsumos([])
+    } finally {
+      setLoading(false)
+    }
+  }, [ranchoId, orgId, user?.id])
 
   useEffect(() => { cargar() }, [cargar])
   return { insumos, loading, refetch: cargar }
