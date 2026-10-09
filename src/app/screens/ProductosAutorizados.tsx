@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileDown, Plus, X, Loader2, Pencil } from 'lucide-react'
+import { FileDown, Plus, WifiOff, X, Loader2, Pencil } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
@@ -13,6 +13,10 @@ import { Fab } from '@/app/components/Fab'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
 
 type FormState = {
   cultivo: string
@@ -44,11 +48,15 @@ export function ProductosAutorizados() {
   const orgId = profile?.org_id ?? null
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
   const orgNombre = useOrganizacion(orgId)
-  const { productos, loading, error, refetch } = useM66ProductosAutorizados(orgId)
+  const { productos, loading, error, refetch } = useM66ProductosAutorizados(user?.id ?? null, orgId)
 
   const { obligatoria } = useFirmaContext()
   const todosIds = productos.map(p => p.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M66', todosIds)
+
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M66')
+  const { guardar: guardarOffline } = useGuardarOffline('M66')
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
@@ -112,12 +120,24 @@ export function ProductosAutorizados() {
       }
 
       if (editId === null) {
+        if (!online) {
+          const fila = { id: crypto.randomUUID(), ...payload, activo: true }
+          const ok = await guardarOffline({
+            descripcion: `Producto · ${payload.nombre_comercial} · ${payload.cultivo}`,
+            metadatos: { nombre_comercial: payload.nombre_comercial, cultivo: payload.cultivo },
+            operaciones: [{ tabla: 'm66_productos_autorizados', tipo: 'insert' as const, fila }],
+          })
+          if (ok) setSheetOpen(false)
+          setGuardando(false)
+          return
+        }
         const { error: err } = await (supabase as any)
           .from('m66_productos_autorizados')
           .insert({ org_id: orgId, ...payload, creado_por: user?.id })
         if (err) throw err
         toast.success('Producto agregado')
       } else {
+        if (!online) { toast.warning('Necesitas conexión para editar'); setGuardando(false); return }
         const { error: err } = await (supabase as any)
           .from('m66_productos_autorizados')
           .update(payload)
@@ -136,6 +156,7 @@ export function ProductosAutorizados() {
 
   async function desactivar() {
     if (!editId) return
+    if (!online) { toast.warning('Necesitas conexión para desactivar'); return }
     setGuardando(true)
     try {
       const { error: err } = await (supabase as any)
@@ -259,6 +280,21 @@ export function ProductosAutorizados() {
             Sin productos{cultivoFiltro ? ` para ${cultivoFiltro}` : ''}.
           </p>
         )}
+        {lotesOffline.length > 0 && (
+          <div className="space-y-2 pb-2">
+            {lotesOffline.map(lote => (
+              <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold">{lote.metadatos?.nombre_comercial ?? lote.descripcion}</p>
+                    <p className="text-xs text-muted-foreground">{lote.metadatos?.cultivo}</p>
+                  </div>
+                  <ChipOffline estado={lote.estado} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {productosFiltrados.map(p => (
           <div key={p.id} className="bg-card border border-border rounded-[0.625rem] p-4">
             <div className="flex items-start justify-between gap-2">
@@ -323,7 +359,7 @@ export function ProductosAutorizados() {
 
       {/* FAB — solo admin */}
       {esAdmin && (
-                <Fab onClick={abrirNuevo} aria-label="Nuevo producto" />
+                <Fab onClick={abrirNuevo} aria-label="Nuevo producto" icon={!online ? WifiOff : Plus} />
       )}
 
       {/* Bottom sheet — Formulario */}
@@ -448,7 +484,7 @@ export function ProductosAutorizados() {
             <button
               type="button"
               onClick={desactivar}
-              disabled={guardando}
+              disabled={guardando || !online}
               className="w-full h-10 rounded-[0.625rem] border text-sm font-medium disabled:opacity-50"
               style={{ borderColor: 'var(--agro-danger-text)', color: 'var(--agro-danger-text)' }}
             >
@@ -464,7 +500,7 @@ export function ProductosAutorizados() {
             style={{ backgroundColor: 'var(--primary)' }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar
+            {!online && editId === null ? 'Guardar sin conexión' : 'Guardar'}
           </button>
         </div>
       </BottomSheet>

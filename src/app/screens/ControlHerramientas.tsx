@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, FileDown, X, Loader2 } from 'lucide-react'
+import { WifiOff, FileDown, X, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
@@ -21,6 +21,10 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -67,12 +71,16 @@ export function ControlHerramientas() {
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
-  const { registros, loading, refetch } = useM64ControlHerramientas(orgId)
+  const { registros, loading, refetch } = useM64ControlHerramientas(user?.id ?? null, orgId)
   const orgNombre = useOrganizacion(orgId)
 
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M64', todosIds)
+
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M64')
+  const { guardar: guardarOffline } = useGuardarOffline('M64')
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
@@ -104,6 +112,31 @@ export function ControlHerramientas() {
     if (!form.herramienta.trim()) { toast.error('Ingresa la herramienta'); return }
     if (!form.entrega_nombre.trim()) { toast.error('Ingresa quien entrega'); return }
     if (!form.recibe_nombre.trim()) { toast.error('Ingresa quien recibe'); return }
+
+    const fila = {
+      id: crypto.randomUUID(),
+      rancho_id: form.rancho_id,
+      fecha: form.fecha,
+      trabajador: form.trabajador.trim(),
+      herramienta: form.herramienta.trim(),
+      cantidad: parseInt(form.cantidad) || 1,
+      entrega_nombre: form.entrega_nombre.trim(),
+      recibe_nombre: form.recibe_nombre.trim(),
+      devuelto: form.devuelto,
+      fecha_devolucion: form.devuelto && form.fecha_devolucion ? form.fecha_devolucion : null,
+      realizo: form.realizo.trim() || null,
+      observaciones: form.observaciones.trim() || null,
+    }
+    if (!online) {
+      const rancho = ranchos.find(r => r.id === form.rancho_id)
+      const ok = await guardarOffline({
+        descripcion: `Herramienta · ${fila.herramienta} · ${fila.trabajador}`,
+        metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha, herramienta: fila.herramienta },
+        operaciones: [{ tabla: 'm64_control_herramientas', tipo: 'insert' as const, fila }],
+      })
+      if (ok) handleCerrarSheet()
+      return
+    }
 
     setGuardando(true)
     try {
@@ -214,6 +247,21 @@ export function ControlHerramientas() {
             Sin registros. Usa el botón + para agregar.
           </div>
         )}
+        {lotesOffline.length > 0 && (
+          <div className="space-y-2 pb-2">
+            {lotesOffline.map(lote => (
+              <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold">{lote.metadatos?.herramienta ?? lote.descripcion}</p>
+                    <p className="text-xs text-muted-foreground">{lote.metadatos?.rancho_nombre}</p>
+                  </div>
+                  <ChipOffline estado={lote.estado} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {registros.map(r => (
           <div key={r.id} className="bg-card border border-border rounded-[0.625rem] p-4">
             <div className="flex items-start justify-between gap-2">
@@ -268,7 +316,7 @@ export function ControlHerramientas() {
       </div>
 
       {/* FAB */}
-            <Fab onClick={abrirNuevo} aria-label="Nuevo registro" />
+            <Fab onClick={abrirNuevo} aria-label="Nuevo registro" icon={!online ? WifiOff : undefined} />
 
       {/* Bottom sheet — Formulario */}
       <BottomSheet open={sheetOpen} onClose={handleCerrarSheet}>
@@ -439,7 +487,7 @@ export function ControlHerramientas() {
             className="w-full h-11 rounded-[0.625rem] bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar
+            {!online ? 'Guardar sin conexión' : 'Guardar'}
           </button>
         </div>
         </>)}

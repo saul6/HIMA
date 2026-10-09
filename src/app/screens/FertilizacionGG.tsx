@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, FileDown, X, Loader2 } from 'lucide-react'
+import { WifiOff, FileDown, X, Loader2 } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -24,6 +24,10 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -80,12 +84,16 @@ export function FertilizacionGG() {
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
-  const { registros, loading, refetch } = useM67FertilizacionGG(orgId)
+  const { registros, loading, refetch } = useM67FertilizacionGG(user?.id ?? null, orgId)
   const orgNombre = useOrganizacion(orgId)
 
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M67', todosIds)
+
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M67')
+  const { guardar: guardarOffline } = useGuardarOffline('M67')
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
@@ -133,6 +141,35 @@ export function FertilizacionGG() {
     }
     if (!form.unidad.trim()) { toast.error('Ingresa las unidades (L, Kg, mL)'); return }
     if (!form.operario.trim()) { toast.error('Ingresa el nombre del operario'); return }
+
+    const fila = {
+      id: crypto.randomUUID(),
+      rancho_id: form.rancho_id,
+      fecha: form.fecha,
+      cultivo: form.cultivo.trim(),
+      bloque: form.bloque.trim() || null,
+      superficie_ha: parseFloat(form.superficie_ha),
+      producto: form.producto.trim(),
+      fabricante: form.fabricante.trim() || null,
+      formula: form.formula.trim() || null,
+      cantidad_total: parseFloat(form.cantidad_total),
+      unidad: form.unidad.trim(),
+      cantidad_ha: form.cantidad_ha.trim() || null,
+      maquinaria: form.maquinaria.trim() || null,
+      metodo_aplicacion: form.metodo_aplicacion.trim() || null,
+      operario: form.operario.trim(),
+      observaciones: form.observaciones.trim() || null,
+    }
+    if (!online) {
+      const rancho = ranchos.find(r => r.id === form.rancho_id)
+      const ok = await guardarOffline({
+        descripcion: `Fertilización · ${fila.producto} · ${formatFecha(fila.fecha)}`,
+        metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha, producto: fila.producto },
+        operaciones: [{ tabla: 'm67_fertilizacion_gg', tipo: 'insert' as const, fila }],
+      })
+      if (ok) handleCerrarSheet()
+      return
+    }
 
     setGuardando(true)
     try {
@@ -247,6 +284,21 @@ export function FertilizacionGG() {
             Sin registros. Usa el botón + para agregar.
           </div>
         )}
+        {lotesOffline.length > 0 && (
+          <div className="space-y-2 pb-2">
+            {lotesOffline.map(lote => (
+              <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold">{lote.metadatos?.producto ?? lote.descripcion}</p>
+                    <p className="text-xs text-muted-foreground">{lote.metadatos?.rancho_nombre}</p>
+                  </div>
+                  <ChipOffline estado={lote.estado} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {registros.map(reg => (
           <div key={reg.id} className="bg-card border border-border rounded-[0.625rem] p-4">
             <div className="flex items-start justify-between gap-2">
@@ -312,7 +364,7 @@ export function FertilizacionGG() {
       </div>
 
       {/* FAB */}
-            <Fab onClick={abrirNuevo} aria-label="Nuevo registro" />
+            <Fab onClick={abrirNuevo} aria-label="Nuevo registro" icon={!online ? WifiOff : undefined} />
 
       {/* Bottom sheet — Formulario */}
       <BottomSheet open={sheetOpen} onClose={handleCerrarSheet}>
@@ -539,7 +591,7 @@ export function FertilizacionGG() {
             style={{ backgroundColor: 'var(--primary)' }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar y generar PDF
+            {!online ? 'Guardar sin conexión' : 'Guardar y generar PDF'}
           </button>
         </div>
         </>)}

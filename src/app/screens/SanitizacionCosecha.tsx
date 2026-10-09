@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, FileDown, X, Loader2 } from 'lucide-react'
+import { WifiOff, FileDown, X, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
@@ -21,6 +21,10 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -69,12 +73,16 @@ export function SanitizacionCosecha() {
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
-  const { registros, loading, refetch } = useM65SanitizacionCosecha(orgId)
+  const { registros, loading, refetch } = useM65SanitizacionCosecha(user?.id ?? null, orgId)
   const orgNombre = useOrganizacion(orgId)
 
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M65', todosIds)
+
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M65')
+  const { guardar: guardarOffline } = useGuardarOffline('M65')
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
@@ -104,6 +112,32 @@ export function SanitizacionCosecha() {
     if (!form.rancho_id) { toast.error(`Selecciona ${terminosSitio.singular}`); return }
     if (!form.sector.trim()) { toast.error('Ingresa el sector'); return }
     if (!form.producto_sanitizante.trim()) { toast.error('Ingresa el producto sanitizante'); return }
+
+    const fila = {
+      id: crypto.randomUUID(),
+      rancho_id: form.rancho_id,
+      fecha: form.fecha,
+      sector: form.sector.trim(),
+      empaque_o_granel: form.empaque_o_granel,
+      cantidad_ton: parseFloat(form.cantidad_ton) || 0,
+      canastos: parseInt(form.canastos) || 0,
+      herramientas_sanitizadas: parseInt(form.herramientas_sanitizadas) || 0,
+      producto_sanitizante: form.producto_sanitizante.trim(),
+      ppm: parseFloat(form.ppm) || 0,
+      hora: form.hora || null,
+      realizo: form.realizo.trim() || null,
+      observaciones: form.observaciones.trim() || null,
+    }
+    if (!online) {
+      const rancho = ranchos.find(r => r.id === form.rancho_id)
+      const ok = await guardarOffline({
+        descripcion: `Sanitización · ${fila.sector} · ${formatFecha(fila.fecha)}`,
+        metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha, sector: fila.sector },
+        operaciones: [{ tabla: 'm65_sanitizacion_cosecha', tipo: 'insert' as const, fila }],
+      })
+      if (ok) handleCerrarSheet()
+      return
+    }
 
     setGuardando(true)
     try {
@@ -214,6 +248,21 @@ export function SanitizacionCosecha() {
             Sin registros. Usa el botón + para agregar.
           </div>
         )}
+        {lotesOffline.length > 0 && (
+          <div className="space-y-2 pb-2">
+            {lotesOffline.map(lote => (
+              <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold">{lote.metadatos?.sector ?? lote.descripcion}</p>
+                    <p className="text-xs text-muted-foreground">{lote.metadatos?.rancho_nombre}</p>
+                  </div>
+                  <ChipOffline estado={lote.estado} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {registros.map(r => (
           <div key={r.id} className="bg-card border border-border rounded-[0.625rem] p-4">
             <div className="flex items-start justify-between gap-2">
@@ -271,7 +320,7 @@ export function SanitizacionCosecha() {
       </div>
 
       {/* FAB */}
-            <Fab onClick={abrirNuevo} aria-label="Nuevo registro" />
+            <Fab onClick={abrirNuevo} aria-label="Nuevo registro" icon={!online ? WifiOff : undefined} />
 
       {/* Bottom sheet — Formulario */}
       <BottomSheet open={sheetOpen} onClose={handleCerrarSheet}>
@@ -462,7 +511,7 @@ export function SanitizacionCosecha() {
             className="w-full h-11 rounded-[0.625rem] bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar
+            {!online ? 'Guardar sin conexión' : 'Guardar'}
           </button>
         </div>
         </>)}

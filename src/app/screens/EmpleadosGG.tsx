@@ -6,7 +6,7 @@
 
 import { useState } from 'react'
 import {
-  Plus, X, Loader2, Users, TriangleAlert, Trash2, FileDown,
+  WifiOff, X, Loader2, Users, TriangleAlert, Trash2, FileDown,
 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
@@ -27,6 +27,10 @@ import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { generarEmpleadosGGPDF, generarEmpleadosGGConsolidadoPDF } from '@/lib/pdf/m77/generarEmpleadosGGPDF'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -76,6 +80,10 @@ export function EmpleadosGG() {
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M77', todosIds)
+
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M77')
+  const { guardar: guardarOffline } = useGuardarOffline('M77')
 
   const termino = terminosSitio.singular
   const [pdfLoading, setPdfLoading] = useState<string | null>(null)
@@ -140,7 +148,26 @@ export function EmpleadosGG() {
     if (!form.nombre.trim()) { setErrNombre(true); valido = false }
     if (!valido) return
     if (!profile?.org_id) { toast.error('Sin organización activa'); return }
-
+    if (!online) {
+      const fila = {
+        id: crypto.randomUUID(),
+        rancho_id: form.rancho_id,
+        nombre: form.nombre.trim(),
+        fecha_ingreso: form.fecha_ingreso || null,
+        telefono: form.telefono.trim() || null,
+        domicilio: form.domicilio.trim() || null,
+        persona_contacto: form.persona_contacto.trim() || null,
+        observaciones: form.observaciones.trim() || null,
+      }
+      const rancho = ranchos.find(r => r.id === form.rancho_id)
+      const ok = await guardarOffline({
+        descripcion: `Empleado · ${fila.nombre}`,
+        metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, nombre: fila.nombre },
+        operaciones: [{ tabla: 'm77_empleados', tipo: 'insert' as const, fila }],
+      })
+      if (ok) handleCerrarSheet()
+      return
+    }
     setGuardando(true)
     try {
       const { data, error: e } = await tbl('m77_empleados').insert({
@@ -173,6 +200,7 @@ export function EmpleadosGG() {
 
   async function handleEliminar(reg: M77EmpleadoRegistro) {
     if (!profile?.org_id) return
+    if (!online) { toast.warning('Necesitas conexión para eliminar'); return }
     const esAdmin = profile.rol === 'admin_org' || profile.rol === 'super_admin'
     const esMio = reg.creado_por === user?.id
     if (!esAdmin && !esMio) { toast.error('No tienes permiso para eliminar este registro'); return }
@@ -215,6 +243,24 @@ export function EmpleadosGG() {
           </div>
         )}
 
+        {lotesOffline.length > 0 && (
+          <div className="space-y-2 mb-2">
+            {lotesOffline.map(lote => (
+              <div key={lote.id} className="rounded-xl p-4 border"
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm" style={{ fontWeight: 600 }}>{lote.metadatos?.nombre ?? lote.descripcion}</p>
+                    {lote.metadatos?.rancho_nombre && (
+                      <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{lote.metadatos.rancho_nombre}</p>
+                    )}
+                  </div>
+                  <ChipOffline estado={lote.estado} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {loading ? (
           <ListaSkeleton />
         ) : registros.length === 0 ? (
@@ -307,7 +353,7 @@ export function EmpleadosGG() {
       </div>
 
       {/* FAB */}
-            <Fab onClick={abrirSheet} aria-label="Nuevo empleado" />
+            <Fab onClick={abrirSheet} aria-label="Nuevo empleado" icon={!online ? WifiOff : undefined} />
 
       {/* Sheet */}
       <BottomSheet open={sheetNuevo} onClose={handleCerrarSheet} height="85%">
@@ -432,7 +478,7 @@ export function EmpleadosGG() {
             className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
             style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
           >
-            {guardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</> : 'Guardar empleado'}
+            {!online ? 'Guardar sin conexión' : guardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</> : 'Guardar empleado'}
           </button>
         </div>
         </>)}
