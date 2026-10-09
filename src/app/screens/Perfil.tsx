@@ -9,6 +9,7 @@ import { MadyLogo } from '@/app/components/MadyLogo'
 import { supabase } from '@/lib/supabase'
 import { FirmaPad, type FirmaPadRef } from '@/app/components/FirmaPad'
 import { FirmaSvg } from '@/app/components/FirmaSvg'
+import { Skeleton } from '@/app/components/ui/skeleton'
 import { contarPendientes } from '@/lib/offline/outbox'
 import { isUpdateDisponible, UPDATE_DISPONIBLE_EVENT, ejecutarActualizacion } from '@/lib/offline/actualizacionSegura'
 
@@ -265,9 +266,7 @@ export function Perfil() {
             </div>
 
             {loadingFirma ? (
-              <div className="flex justify-center py-4">
-                <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--muted-foreground)' }} />
-              </div>
+              <Skeleton className="h-20 w-full rounded-lg" />
             ) : tieneFirma && !cambiandoFirma ? (
               /* Mostrar firma existente */
               <div

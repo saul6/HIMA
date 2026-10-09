@@ -8,6 +8,8 @@ import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { supabase } from '@/lib/supabase'
 import { Switch } from '@/app/components/ui/switch'
+import { Skeleton } from '@/app/components/ui/skeleton'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import {
   getOrganizacion,
   getRanchos,
@@ -85,6 +87,7 @@ export function MiOrganizacion() {
   // Map profile_id → Set<rancho_id>
   const [asignaciones, setAsignaciones] = useState<Map<string, Set<string>>>(new Map())
   const [cargando, setCargando] = useState(true)
+  const mostrarSkeleton = useMostrarCarga(cargando, !!organizacion)
 
   const esIlimitado = organizacion ? LIMITE_POR_PLAN[organizacion.plan] === null : false
   const esPendiente = organizacion?.plan === 'pendiente'
@@ -330,10 +333,14 @@ export function MiOrganizacion() {
       </header>
 
       <div className="p-4 space-y-4">
-        {cargando ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        {mostrarSkeleton ? (
+          <div className="space-y-4">
+            <Skeleton className="h-20 w-full rounded-xl" />
+            <Skeleton className="h-20 w-full rounded-xl" />
+            <Skeleton className="h-32 w-full rounded-xl" />
           </div>
+        ) : cargando && !organizacion ? (
+          <div style={{ minHeight: '280px' }} />
         ) : (
           <>
             {/* Nombre de la organización */}
