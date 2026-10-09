@@ -39,6 +39,8 @@ import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import type { AdjuntoOutbox } from '@/lib/offline/tipos'
 import { ChipOffline } from '@/app/components/ChipOffline'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { WifiOff } from 'lucide-react'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -308,6 +310,7 @@ export function RegistroAccidentesLaborales() {
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M20')
   const { guardar: guardarOffline } = useGuardarOffline('M20')
+  const mostrarSkeleton = useMostrarCarga(loading, accidentes.length > 0 || lotesOffline.length > 0)
 
   const { obligatoria, tengoFirma } = useFirmaContext()
 
@@ -588,10 +591,11 @@ export function RegistroAccidentesLaborales() {
       {/* Lista */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 pb-28 flex flex-col gap-3">
-          {loading && (
-            <div className="flex justify-center py-16">
-              <Loader2 className="w-6 h-6 animate-spin text-[var(--primary)]" />
-            </div>
+          {mostrarSkeleton && (
+            <ListaSkeleton />
+          )}
+          {!mostrarSkeleton && loading && accidentes.length === 0 && lotesOffline.length === 0 && (
+            <div style={{ minHeight: '280px' }} />
           )}
           {!loading && error && (
             <p className="text-center text-sm text-[var(--agro-danger-text)] py-8">{error}</p>
@@ -613,7 +617,7 @@ export function RegistroAccidentesLaborales() {
               </div>
             </div>
           ))}
-          {!loading && accidentes.map((acc) => (
+          {accidentes.length > 0 && accidentes.map((acc) => (
             <AccidenteCard
               key={acc.id}
               acc={acc}

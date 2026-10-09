@@ -14,6 +14,8 @@ import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 const PERIODICIDADES = ['Mensual', 'Bimestral', 'Trimestral', 'Semestral', 'Anual']
 
@@ -40,6 +42,7 @@ export function CronogramaCapacitacion() {
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
   const orgNombre = useOrganizacion(orgId)
   const { registros, loading, error, refetch } = useM57CronogramaCapacitacion(user?.id ?? null, orgId)
+  const mostrarSkeleton = useMostrarCarga(loading, registros.length > 0)
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M57')
   const { guardar: guardarOffline } = useGuardarOffline('M57')
@@ -207,11 +210,11 @@ export function CronogramaCapacitacion() {
             ))}
           </div>
         )}
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-          </div>
-        )}
+        {mostrarSkeleton ? (
+          <ListaSkeleton />
+        ) : loading && !error && registrosFiltrados.length === 0 ? (
+          <div style={{ minHeight: '280px' }} />
+        ) : null}
         {error && (
           <p className="text-center py-12 text-sm" style={{ color: 'var(--agro-danger-text)' }}>{error}</p>
         )}

@@ -12,6 +12,8 @@ import { Fab } from '@/app/components/Fab'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 
@@ -43,6 +45,7 @@ export function FrecuenciaCapacitacion() {
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
   const orgNombre = useOrganizacion(orgId)
   const { registros, loading, error, refetch } = useM56FrecuenciaCapacitacion(user?.id ?? null, orgId)
+  const mostrarSkeleton = useMostrarCarga(loading, registros.length > 0)
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M56')
   const { guardar: guardarOffline } = useGuardarOffline('M56')
@@ -236,11 +239,11 @@ export function FrecuenciaCapacitacion() {
             ))}
           </div>
         )}
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-          </div>
-        )}
+        {mostrarSkeleton ? (
+          <ListaSkeleton />
+        ) : loading && !error && registrosFiltrados.length === 0 ? (
+          <div style={{ minHeight: '280px' }} />
+        ) : null}
         {error && (
           <p className="text-center py-12 text-sm" style={{ color: 'var(--agro-danger-text)' }}>{error}</p>
         )}

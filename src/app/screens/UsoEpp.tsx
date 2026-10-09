@@ -25,6 +25,8 @@ import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -83,6 +85,7 @@ export function UsoEpp() {
   const orgNombre = useOrganizacion(orgId)
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M63')
+  const mostrarSkeleton = useMostrarCarga(loading, registros.length > 0 || lotesOffline.length > 0)
   const { guardar: guardarOffline } = useGuardarOffline('M63')
 
   const { obligatoria, tengoFirma } = useFirmaContext()
@@ -243,16 +246,15 @@ export function UsoEpp() {
             ))}
           </div>
         )}
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-          </div>
-        )}
-        {!loading && registros.length === 0 && lotesOffline.length === 0 && (
+        {mostrarSkeleton ? (
+          <ListaSkeleton />
+        ) : loading && registros.length === 0 && lotesOffline.length === 0 ? (
+          <div style={{ minHeight: '280px' }} />
+        ) : registros.length === 0 && lotesOffline.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground text-sm">
             Sin registros. Usa el botón + para agregar.
           </div>
-        )}
+        ) : null}
         {registros.map(r => {
           const okCount = eppOkCount(r)
           const allOk = okCount === 5
