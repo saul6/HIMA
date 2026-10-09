@@ -21,6 +21,8 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -84,6 +86,7 @@ export function MipIntervencion() {
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, refetch } = useM55MipIntervencion(orgId)
+  const mostrarSkeleton = useMostrarCarga(loading, registros.length > 0)
   const { items } = useM55Items()
   const orgNombre = useOrganizacion(orgId)
 
@@ -261,16 +264,15 @@ export function MipIntervencion() {
       </div>
 
       <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-          </div>
-        )}
-        {!loading && registros.length === 0 && (
+        {mostrarSkeleton ? (
+          <ListaSkeleton />
+        ) : loading && registros.length === 0 ? (
+          <div style={{ minHeight: '280px' }} />
+        ) : registros.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground text-sm">
             Sin registros. Usa el botón + para agregar.
           </div>
-        )}
+        ) : null}
         {registros.map(r => (
           <div key={r.id} className="bg-card border border-border rounded-[0.625rem] p-4">
             <div className="flex items-start justify-between gap-2">

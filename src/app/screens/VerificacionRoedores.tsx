@@ -15,6 +15,8 @@ import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
@@ -95,6 +97,7 @@ export function VerificacionRoedores() {
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, refetch } = useM70VerificacionRoedores(orgId)
+  const mostrarSkeleton = useMostrarCarga(loading, registros.length > 0)
 
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M70', todosIds)
@@ -247,16 +250,15 @@ export function VerificacionRoedores() {
 
       {/* Lista */}
       <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--muted-foreground)' }} />
-          </div>
-        )}
-        {!loading && grupos.length === 0 && (
+        {mostrarSkeleton ? (
+          <ListaSkeleton />
+        ) : loading && grupos.length === 0 ? (
+          <div style={{ minHeight: '280px' }} />
+        ) : grupos.length === 0 ? (
           <div className="text-center py-12 text-sm" style={{ color: 'var(--muted-foreground)' }}>
             Sin registros. Usa el botón + para agregar.
           </div>
-        )}
+        ) : null}
         {grupos.map(g => (
           <div
             key={g.key}

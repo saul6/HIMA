@@ -22,6 +22,8 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import {
   generarMonitoreoPlaguasPDF,
   generarMonitoreoPlaguasConsolidadoPDF,
@@ -76,6 +78,7 @@ export function MonitoreoPlaguasEnfermedades() {
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, refetch } = useM72MonitoreoPlaguasEnfermedades(orgId)
+  const mostrarSkeleton = useMostrarCarga(loading, registros.length > 0)
   const { organismos } = useM72Organismos()
 
   const { obligatoria, tengoFirma } = useFirmaContext()
@@ -247,16 +250,15 @@ export function MonitoreoPlaguasEnfermedades() {
 
       {/* Lista */}
       <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--muted-foreground)' }} />
-          </div>
-        )}
-        {!loading && registros.length === 0 && (
+        {mostrarSkeleton ? (
+          <ListaSkeleton />
+        ) : loading && registros.length === 0 ? (
+          <div style={{ minHeight: '280px' }} />
+        ) : registros.length === 0 ? (
           <div className="text-center py-12 text-sm" style={{ color: 'var(--muted-foreground)' }}>
             Sin registros. Usa el botón + para agregar.
           </div>
-        )}
+        ) : null}
         {registros.map(r => (
           <div
             key={r.id}

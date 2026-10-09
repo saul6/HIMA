@@ -18,6 +18,9 @@ import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { SkeletonFilas } from '@/app/components/SkeletonFilas'
 import {
   useM21EstacionesRancho,
   type M21Estacion,
@@ -441,6 +444,7 @@ export function MonitoreoEstacionesPlagas() {
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { revisiones, loading, error, refetch } = useM21MonitoreoEstaciones()
+  const mostrarSkeleton = useMostrarCarga(loading, revisiones.length > 0)
   const orgNombre = useOrganizacion(profile?.org_id)
 
   const todosIds = revisiones.map(r => r.id)
@@ -952,10 +956,11 @@ export function MonitoreoEstacionesPlagas() {
       {/* Lista */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 pb-28 flex flex-col gap-3">
-          {loading && (
-            <div className="flex justify-center py-16">
-              <Loader2 className="w-6 h-6 animate-spin text-[var(--primary)]" />
-            </div>
+          {mostrarSkeleton && (
+            <ListaSkeleton />
+          )}
+          {!mostrarSkeleton && loading && revisiones.length === 0 && (
+            <div style={{ minHeight: '280px' }} />
           )}
           {!loading && error && (
             <p className="text-center text-sm text-[var(--agro-danger-text)] py-8">{error}</p>
@@ -967,7 +972,7 @@ export function MonitoreoEstacionesPlagas() {
               <p className="text-xs">Primero configura las estaciones con el ícono de ajustes</p>
             </div>
           )}
-          {!loading && revisiones.map(rev => (
+          {revisiones.length > 0 && revisiones.map(rev => (
             <RevisionCard
               key={rev.id}
               rev={rev}
@@ -1019,17 +1024,15 @@ export function MonitoreoEstacionesPlagas() {
             {/* Lista de estaciones */}
             {estRanchoId && (
               <>
-                {loadingEst && (
-                  <div className="flex justify-center py-6">
-                    <Loader2 className="w-5 h-5 animate-spin text-[var(--primary)]" />
-                  </div>
+                {loadingEst && estaciones.length === 0 && (
+                  <SkeletonFilas rows={2} />
                 )}
                 {!loadingEst && estaciones.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-4">
                     Sin estaciones. Agrega la primera abajo.
                   </p>
                 )}
-                {!loadingEst && TIPOS_ORDEN.filter(t => estaciones.some(e => e.tipo_trampa === t)).map(tipo => (
+                {estaciones.length > 0 && TIPOS_ORDEN.filter(t => estaciones.some(e => e.tipo_trampa === t)).map(tipo => (
                   <div key={tipo} className="flex flex-col gap-2">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                       {TIPO_TRAMPA_LABELS[tipo]}
