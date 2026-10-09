@@ -23,6 +23,11 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
+import { WifiOff } from 'lucide-react'
 
 function formatFecha(iso: string): string {
   try {
@@ -65,8 +70,11 @@ export function CalibracionBasculas() {
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
-  const { registros, loading, refetch } = useM51CalibracionBasculas(orgId)
+  const { registros, loading, refetch } = useM51CalibracionBasculas(user?.id ?? null, orgId)
   const orgNombre = useOrganizacion(orgId)
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M51')
+  const { guardar: guardarOffline } = useGuardarOffline('M51')
 
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
@@ -98,23 +106,34 @@ export function CalibracionBasculas() {
     setGuardando(true)
     try {
       const dentroTol = form.dentro_tolerancia === 'true' ? true : form.dentro_tolerancia === 'false' ? false : null
+      const rancho = ranchos.find(r => r.id === form.rancho_id)
+      const fila = {
+        id: crypto.randomUUID(),
+        rancho_id: form.rancho_id,
+        fecha: form.fecha,
+        uso_bascula: form.uso_bascula.trim(),
+        pesa_patron_kg: form.pesa_patron_kg ? parseFloat(form.pesa_patron_kg) : null,
+        punto_calibracion: form.punto_calibracion.trim() || null,
+        peso_medido_kg: form.peso_medido_kg ? parseFloat(form.peso_medido_kg) : null,
+        desviacion: form.desviacion ? parseFloat(form.desviacion) : null,
+        dentro_tolerancia: dentroTol,
+        realizo: form.realizo.trim(),
+        observaciones: form.observaciones.trim() || null,
+      }
+
+      if (!online) {
+        const ok = await guardarOffline({
+          descripcion: `Calibración báscula · ${rancho?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [{ tabla: 'm51_calibracion_basculas', tipo: 'insert' as const, fila }],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
 
       const { data, error } = await (supabase as any)
         .from('m51_calibracion_basculas')
-        .insert({
-          org_id: orgId,
-          rancho_id: form.rancho_id,
-          fecha: form.fecha,
-          uso_bascula: form.uso_bascula.trim(),
-          pesa_patron_kg: form.pesa_patron_kg ? parseFloat(form.pesa_patron_kg) : null,
-          punto_calibracion: form.punto_calibracion.trim() || null,
-          peso_medido_kg: form.peso_medido_kg ? parseFloat(form.peso_medido_kg) : null,
-          desviacion: form.desviacion ? parseFloat(form.desviacion) : null,
-          dentro_tolerancia: dentroTol,
-          realizo: form.realizo.trim(),
-          observaciones: form.observaciones.trim() || null,
-          creado_por: user?.id ?? null,
-        })
+        .insert({ ...fila, org_id: orgId, creado_por: user?.id ?? null })
         .select('id')
         .single()
       if (error) throw error
@@ -203,11 +222,22 @@ export function CalibracionBasculas() {
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           </div>
         )}
-        {!loading && registros.length === 0 && (
+        {!loading && registros.length === 0 && lotesOffline.length === 0 && (
           <div className="text-center py-12 text-muted-foreground text-sm">
             Sin registros. Usa el botón + para agregar.
           </div>
         )}
+        {lotesOffline.map(lote => (
+          <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">{(lote.metadatos as any)?.rancho_nombre ?? '—'}</p>
+                <p className="text-xs text-muted-foreground">{(lote.metadatos as any)?.fecha ?? '—'}</p>
+              </div>
+              <ChipOffline lote={lote} />
+            </div>
+          </div>
+        ))}
         {registros.map(m => (
           <div key={m.id} className="bg-card border border-border rounded-[0.625rem] p-4">
             <div className="flex items-start justify-between gap-2">
@@ -409,7 +439,8 @@ export function CalibracionBasculas() {
             className="w-full h-11 rounded-[0.625rem] bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar y generar PDF
+            {!guardando && !online && <WifiOff className="w-4 h-4" />}
+            {online ? 'Guardar y generar PDF' : 'Guardar sin conexión'}
           </button>
         </div>
           </>

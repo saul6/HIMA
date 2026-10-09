@@ -34,6 +34,12 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import type { AdjuntoOutbox } from '@/lib/offline/tipos'
+import { ChipOffline } from '@/app/components/ChipOffline'
+import { WifiOff } from 'lucide-react'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -299,6 +305,9 @@ export function RegistroAccidentesLaborales() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { accidentes, loading, error, refetch } = useM20Accidentes()
   const orgNombre = useOrganizacion(profile?.org_id)
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M20')
+  const { guardar: guardarOffline } = useGuardarOffline('M20')
 
   const { obligatoria, tengoFirma } = useFirmaContext()
 
@@ -402,6 +411,62 @@ export function RegistroAccidentesLaborales() {
     }
 
     setGuardando(true)
+    const orgId = profile.org_id
+    const localAccidenteId = crypto.randomUUID()
+    const rancho = ranchos.find(r => r.id === form.ranchoId)
+    const filaAccidente = {
+      id: localAccidenteId,
+      rancho_id: form.ranchoId,
+      fecha: form.fecha,
+      trabajador_nombre: form.trabajadorNombre.trim(),
+      descripcion_incidente: form.descripcionIncidente.trim() || null,
+      atencion_recibida: form.atencionRecibida,
+      requirio_incapacidad: form.requirioIncapacidad,
+      incapacidad_motivo: form.requirioIncapacidad && form.incapacidadMotivo.trim()
+        ? form.incapacidadMotivo.trim()
+        : null,
+      requirio_limpieza: form.requirioLimpieza,
+      limpieza_descripcion: form.requirioLimpieza && form.limpiezaDescripcion.trim()
+        ? form.limpiezaDescripcion.trim()
+        : null,
+      producto_involucrado: form.productoInvolucrado,
+      disposicion_producto: form.productoInvolucrado && form.disposicionProducto.trim()
+        ? form.disposicionProducto.trim()
+        : null,
+    }
+
+    if (!online) {
+      try {
+        const adjuntosParaEncolar: Omit<AdjuntoOutbox, 'loteId'>[] = []
+        const operaciones: any[] = [{ tabla: 'm20_accidentes', tipo: 'insert' as const, fila: filaAccidente }]
+        for (let i = 0; i < fotosLocal.length; i++) {
+          const foto = fotosLocal[i]
+          const fotoId = crypto.randomUUID()
+          const path = `${orgId}/m20/${localAccidenteId}/${fotoId}.jpg`
+          adjuntosParaEncolar.push({ uid: fotoId, blob: foto.file, path, bucket: 'incidencias' })
+          operaciones.push({
+            tabla: 'm20_accidente_fotos',
+            tipo: 'insert' as const,
+            fila: { id: fotoId, accidente_id: localAccidenteId, storage_path: path, orden: i },
+          })
+        }
+        const ok = await guardarOffline({
+          descripcion: `Accidente laboral · ${rancho?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: { rancho_id: form.ranchoId, rancho_nombre: rancho?.nombre, fecha: form.fecha, fotos_count: fotosLocal.length },
+          operaciones,
+          adjuntos: adjuntosParaEncolar,
+        })
+        if (ok) {
+          setForm(FORM_INICIAL)
+          setFotosLocal([])
+          handleCerrarSheet()
+        }
+      } finally {
+        setGuardando(false)
+      }
+      return
+    }
+
     const pathsSubidos: string[] = []
     let accidenteId: string | null = null
 
@@ -410,26 +475,7 @@ export function RegistroAccidentesLaborales() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: ins, error: insErr } = await (supabase as any)
         .from('m20_accidentes')
-        .insert({
-          org_id: profile.org_id,
-          rancho_id: form.ranchoId,
-          fecha: form.fecha,
-          trabajador_nombre: form.trabajadorNombre.trim(),
-          descripcion_incidente: form.descripcionIncidente.trim() || null,
-          atencion_recibida: form.atencionRecibida,
-          requirio_incapacidad: form.requirioIncapacidad,
-          incapacidad_motivo: form.requirioIncapacidad && form.incapacidadMotivo.trim()
-            ? form.incapacidadMotivo.trim()
-            : null,
-          requirio_limpieza: form.requirioLimpieza,
-          limpieza_descripcion: form.requirioLimpieza && form.limpiezaDescripcion.trim()
-            ? form.limpiezaDescripcion.trim()
-            : null,
-          producto_involucrado: form.productoInvolucrado,
-          disposicion_producto: form.productoInvolucrado && form.disposicionProducto.trim()
-            ? form.disposicionProducto.trim()
-            : null,
-        })
+        .insert({ ...filaAccidente, org_id: orgId })
         .select('id')
         .single()
       if (insErr) throw insErr
@@ -438,15 +484,14 @@ export function RegistroAccidentesLaborales() {
       // 2. Subir fotos
       for (let i = 0; i < fotosLocal.length; i++) {
         const foto = fotosLocal[i]
-        const ext = 'jpg'
-        const path = `${profile.org_id}/m20/${accidenteId}/${crypto.randomUUID()}.${ext}`
+        const path = `${orgId}/m20/${accidenteId}/${crypto.randomUUID()}.jpg`
         await subirFoto(path, foto.file)
         pathsSubidos.push(path)
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (supabase as any)
           .from('m20_accidente_fotos')
-          .insert({ accidente_id: accidenteId, org_id: profile.org_id, storage_path: path, orden: i })
+          .insert({ accidente_id: accidenteId, org_id: orgId, storage_path: path, orden: i })
       }
 
       // 3. Refetch + cierre + transición firma
@@ -551,12 +596,23 @@ export function RegistroAccidentesLaborales() {
           {!loading && error && (
             <p className="text-center text-sm text-[var(--agro-danger-text)] py-8">{error}</p>
           )}
-          {!loading && !error && accidentes.length === 0 && (
+          {!loading && !error && accidentes.length === 0 && lotesOffline.length === 0 && (
             <div className="flex flex-col items-center gap-2 py-16 text-muted-foreground">
               <ShieldAlert className="w-10 h-10 opacity-30" />
               <p className="text-sm">No hay registros de accidentes</p>
             </div>
           )}
+          {lotesOffline.map(lote => (
+            <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">{(lote.metadatos as any)?.rancho_nombre ?? '—'}</p>
+                  <p className="text-xs text-muted-foreground">{(lote.metadatos as any)?.fecha ?? '—'}</p>
+                </div>
+                <ChipOffline lote={lote} />
+              </div>
+            </div>
+          ))}
           {!loading && accidentes.map((acc) => (
             <AccidenteCard
               key={acc.id}
@@ -848,6 +904,8 @@ export function RegistroAccidentesLaborales() {
             >
               {guardando ? (
                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Guardando...</>
+              ) : !online ? (
+                <><WifiOff className="w-4 h-4 mr-2" /> Guardar sin conexión</>
               ) : (
                 'Guardar y generar PDF'
               )}

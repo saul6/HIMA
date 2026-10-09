@@ -23,6 +23,11 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
+import { WifiOff } from 'lucide-react'
 
 function formatFecha(iso: string): string {
   try {
@@ -65,8 +70,11 @@ export function CalibracionEquipos() {
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
-  const { registros, loading, refetch } = useM50CalibracionEquipos(orgId)
+  const { registros, loading, refetch } = useM50CalibracionEquipos(user?.id ?? null, orgId)
   const orgNombre = useOrganizacion(orgId)
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M50')
+  const { guardar: guardarOffline } = useGuardarOffline('M50')
 
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
@@ -97,22 +105,34 @@ export function CalibracionEquipos() {
 
     setGuardando(true)
     try {
+      const rancho = ranchos.find(r => r.id === form.rancho_id)
+      const fila = {
+        id: crypto.randomUUID(),
+        rancho_id: form.rancho_id,
+        fecha: form.fecha,
+        num_equipo: form.num_equipo.trim(),
+        velocidad_kmh: form.velocidad_kmh ? parseFloat(form.velocidad_kmh) : null,
+        presion_trabajo_bar: form.presion_trabajo_bar ? parseFloat(form.presion_trabajo_bar) : null,
+        boquilla: form.boquilla.trim() || null,
+        gasto_boquilla_ml: form.gasto_boquilla_ml ? parseFloat(form.gasto_boquilla_ml) : null,
+        resultado: form.resultado.trim() || null,
+        realizo: form.realizo.trim(),
+        observaciones: form.observaciones.trim() || null,
+      }
+
+      if (!online) {
+        const ok = await guardarOffline({
+          descripcion: `Calibración equipo · ${rancho?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [{ tabla: 'm50_calibracion_equipos', tipo: 'insert' as const, fila }],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       const { data, error } = await (supabase as any)
         .from('m50_calibracion_equipos')
-        .insert({
-          org_id: orgId,
-          rancho_id: form.rancho_id,
-          fecha: form.fecha,
-          num_equipo: form.num_equipo.trim(),
-          velocidad_kmh: form.velocidad_kmh ? parseFloat(form.velocidad_kmh) : null,
-          presion_trabajo_bar: form.presion_trabajo_bar ? parseFloat(form.presion_trabajo_bar) : null,
-          boquilla: form.boquilla.trim() || null,
-          gasto_boquilla_ml: form.gasto_boquilla_ml ? parseFloat(form.gasto_boquilla_ml) : null,
-          resultado: form.resultado.trim() || null,
-          realizo: form.realizo.trim(),
-          observaciones: form.observaciones.trim() || null,
-          creado_por: user?.id ?? null,
-        })
+        .insert({ ...fila, org_id: orgId, creado_por: user?.id ?? null })
         .select('id')
         .single()
       if (error) throw error
@@ -201,11 +221,22 @@ export function CalibracionEquipos() {
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           </div>
         )}
-        {!loading && registros.length === 0 && (
+        {!loading && registros.length === 0 && lotesOffline.length === 0 && (
           <div className="text-center py-12 text-muted-foreground text-sm">
             Sin registros. Usa el botón + para agregar.
           </div>
         )}
+        {lotesOffline.map(lote => (
+          <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">{(lote.metadatos as any)?.rancho_nombre ?? '—'}</p>
+                <p className="text-xs text-muted-foreground">{(lote.metadatos as any)?.fecha ?? '—'}</p>
+              </div>
+              <ChipOffline lote={lote} />
+            </div>
+          </div>
+        ))}
         {registros.map(m => (
           <div key={m.id} className="bg-card border border-border rounded-[0.625rem] p-4">
             <div className="flex items-start justify-between gap-2">
@@ -401,7 +432,8 @@ export function CalibracionEquipos() {
             className="w-full h-11 rounded-[0.625rem] bg-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar y generar PDF
+            {!guardando && !online && <WifiOff className="w-4 h-4" />}
+            {online ? 'Guardar y generar PDF' : 'Guardar sin conexión'}
           </button>
         </div>
           </>

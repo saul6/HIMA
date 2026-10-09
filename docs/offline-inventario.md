@@ -148,14 +148,14 @@
 | M6 | A | ✅ | No | Lote A1 |
 | M7 | A | ✅ | No | Lote A1 — catálogo m7_materiales_rancho ops en lote |
 | M10 | A | ✅ | No | Lote A1 |
-| M20 | A | No | No | Adjuntos bucket incidencias |
+| M20 | A | ✅ | No | Lote A2 — adjuntos bucket incidencias |
 | M22 | A | ✅ | No | Lote A1 |
 | M27 | A | ✅ | No | Lote A1 |
 | M36 | A | ✅ | No | Lote A1 |
-| M49 | A | No | No | — |
-| M50 | A | No | No | — |
-| M51 | A | No | No | — |
-| M52 | A | No | No | — |
+| M49 | A | ✅ | No | Lote A2 |
+| M50 | A | ✅ | No | Lote A2 |
+| M51 | A | ✅ | No | Lote A2 |
+| M52 | A | ✅ | No | Lote A2 |
 | M56 | A | No | No | Catálogo mgmt solo con red |
 | M57 | A | No | No | Catálogo mgmt solo con red |
 | M58 | A | No | No | — |

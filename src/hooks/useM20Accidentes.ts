@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M20FotoRef {
   id: string
@@ -37,20 +38,28 @@ export function useM20Accidentes() {
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id) { setLoading(false); return }
+    if (!profile?.id || !profile?.org_id) { setLoading(false); return }
     setLoading(true)
     setError(null)
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error: err } = await (supabase as any)
-        .from('m20_accidentes')
-        .select('*, ranchos(nombre, codigo), m20_accidente_fotos(id, storage_path, orden)')
-        .eq('org_id', profile.org_id)
-        .order('fecha', { ascending: false })
-        .order('created_at', { ascending: false })
-      if (err) throw err
+      const resultado = await leerConCache(
+        'm20_accidentes',
+        profile.id,
+        profile.org_id,
+        async () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { data, error: err } = await (supabase as any)
+            .from('m20_accidentes')
+            .select('*, ranchos(nombre, codigo), m20_accidente_fotos(id, storage_path, orden)')
+            .eq('org_id', profile.org_id)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          if (err) throw err
+          return data ?? []
+        },
+      )
 
-      const lista: M20AccidenteConFotos[] = ((data ?? []) as any[]).map((r: any) => ({
+      const lista: M20AccidenteConFotos[] = (resultado.datos as any[]).map((r: any) => ({
         id: r.id,
         rancho_id: r.rancho_id,
         rancho_nombre: r.ranchos?.nombre ?? '—',
@@ -76,7 +85,7 @@ export function useM20Accidentes() {
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.id, profile?.org_id])
 
   useEffect(() => { cargar() }, [cargar])
 

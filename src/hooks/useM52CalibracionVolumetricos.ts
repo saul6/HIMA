@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M52CalibracionVolumetrico {
   id: string
@@ -20,30 +21,43 @@ export interface M52CalibracionVolumetrico {
   creado_por: string | null
 }
 
-export function useM52CalibracionVolumetricos(orgId: string | null) {
+export function useM52CalibracionVolumetricos(userId: string | null, orgId: string | null) {
   const [registros, setRegistros] = useState<M52CalibracionVolumetrico[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fetch = useCallback(async () => {
-    if (!orgId) return
+    if (!userId || !orgId) return
     setLoading(true)
     setError(null)
-    const { data, error: err } = await (supabase as any)
-      .from('m52_calibracion_volumetricos')
-      .select('*, ranchos(nombre)')
-      .eq('org_id', orgId)
-      .order('fecha', { ascending: false })
-      .order('created_at', { ascending: false })
-    if (err) { console.error(err); setError(err.message); setLoading(false); return }
-    setRegistros(
-      (data ?? []).map((r: any) => ({
-        ...r,
-        rancho_nombre: r.ranchos?.nombre ?? '—',
-      }))
-    )
-    setLoading(false)
-  }, [orgId])
+    try {
+      const resultado = await leerConCache(
+        'm52_calibracion_volumetricos',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await (supabase as any)
+            .from('m52_calibracion_volumetricos')
+            .select('*, ranchos(nombre)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          if (err) throw err
+          return data ?? []
+        },
+      )
+      setRegistros(
+        (resultado.datos as any[]).map((r: any) => ({
+          ...r,
+          rancho_nombre: r.ranchos?.nombre ?? '—',
+        }))
+      )
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error al cargar registros')
+    } finally {
+      setLoading(false)
+    }
+  }, [userId, orgId])
 
   useEffect(() => { fetch() }, [fetch])
 
