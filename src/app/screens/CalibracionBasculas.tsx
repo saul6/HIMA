@@ -23,6 +23,8 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
@@ -75,6 +77,7 @@ export function CalibracionBasculas() {
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M51')
   const { guardar: guardarOffline } = useGuardarOffline('M51')
+  const mostrarSkeleton = useMostrarCarga(loading, registros.length > 0 || lotesOffline.length > 0)
 
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
@@ -217,16 +220,15 @@ export function CalibracionBasculas() {
       </div>
 
       <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-          </div>
-        )}
-        {!loading && registros.length === 0 && lotesOffline.length === 0 && (
+        {mostrarSkeleton ? (
+          <ListaSkeleton />
+        ) : loading && registros.length === 0 && lotesOffline.length === 0 ? (
+          <div style={{ minHeight: '280px' }} />
+        ) : registros.length === 0 && lotesOffline.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground text-sm">
             Sin registros. Usa el botón + para agregar.
           </div>
-        )}
+        ) : null}
         {lotesOffline.map(lote => (
           <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
             <div className="flex items-start justify-between gap-2">
