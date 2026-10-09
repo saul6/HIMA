@@ -7,8 +7,13 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
-  ChevronLeft, Plus, FileDown, X, Loader2, Droplets, TriangleAlert,
+  ChevronLeft, Plus, FileDown, X, Loader2, Droplets, TriangleAlert, WifiOff,
 } from 'lucide-react'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
+import { opCabecera } from '@/lib/offline/construirOperaciones'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
@@ -168,6 +173,9 @@ export function LimpiezaCampo() {
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M71', todosIds)
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M71')
+  const { guardar: guardarOffline } = useGuardarOffline('M71')
 
   // ── Navegación interna ──
   const [vista, setVista] = useState<Vista>('lista')
@@ -218,6 +226,7 @@ export function LimpiezaCampo() {
   // ── Guardar edición del detalle ──
   async function handleGuardarDetalle() {
     if (!registroActivo || !profile?.org_id) return
+    if (!online) { toast.warning('Necesitas conexión para guardar la matriz'); return }
     setGuardando(true)
     try {
       // 1. Update encabezado
@@ -293,6 +302,12 @@ export function LimpiezaCampo() {
   useEffect(() => {
     if (!sheetNuevo) { setNYaExiste(false); return }
     if (!nRanchoId || !nMes || !profile?.org_id) { setNYaExiste(false); return }
+    const existePendiente = lotesOffline.some(
+      l => (l.metadatos as any)?.tipo === 'cabecera' &&
+           (l.metadatos as any)?.rancho_id === nRanchoId &&
+           (l.metadatos as any)?.mes === nMes + '-01'
+    )
+    if (existePendiente) { setNYaExiste(true); return }
     let cancelado = false
     tbl('m71_registro')
       .select('id')
@@ -303,12 +318,33 @@ export function LimpiezaCampo() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .then(({ data }: { data: any }) => { if (!cancelado) setNYaExiste(!!data) })
     return () => { cancelado = true }
-  }, [sheetNuevo, nRanchoId, nMes, profile?.org_id])
+  }, [sheetNuevo, nRanchoId, nMes, profile?.org_id, lotesOffline])
 
   async function handleCrearRegistro() {
     if (!nRanchoId) { setNErrRancho(true); return }
     if (!profile?.org_id) { toast.error('Sin organización activa'); return }
     if (nYaExiste) { toast.warning('Ya existe un registro para este mes y rancho'); return }
+    const rancho = ranchos.find(r => r.id === nRanchoId)
+    if (!online) {
+      const localId = crypto.randomUUID()
+      const ok = await guardarOffline({
+        descripcion: `Limpieza Campo · ${rancho?.nombre ?? ''} · ${nMes}`,
+        metadatos: { rancho_id: nRanchoId, rancho_nombre: rancho?.nombre, mes: nMes + '-01', tipo: 'cabecera' },
+        operaciones: [
+          opCabecera('m71_registro', {
+            id: localId,
+            org_id: profile.org_id!,
+            rancho_id: nRanchoId,
+            mes: nMes + '-01',
+            realizo: nRealizo.trim() || null,
+            observaciones: nObservaciones.trim() || null,
+            creado_por: user?.id ?? null,
+          }, ['rancho_id', 'mes']),
+        ],
+      })
+      if (ok) setSheetNuevo(false)
+      return
+    }
     setNGuardando(true)
     try {
       const { data, error: e } = await tbl('m71_registro')
@@ -432,7 +468,7 @@ export function LimpiezaCampo() {
 
           {loading ? (
             <ListaSkeleton />
-          ) : registros.length === 0 ? (
+          ) : registros.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').length === 0 ? (
             <div
               className="border rounded-xl p-6 text-center"
               style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
@@ -450,6 +486,30 @@ export function LimpiezaCampo() {
             </div>
           ) : (
             <div className="space-y-3">
+              {lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').map((lote) => (
+                <div
+                  key={lote.id}
+                  className="rounded-xl border overflow-hidden"
+                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                >
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span
+                        className="text-xs px-2 py-0.5 rounded"
+                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+                      >
+                        {formatMesLabel((lote.metadatos as any)?.mes ?? '')}
+                      </span>
+                    </div>
+                    <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                      {(lote.metadatos as any)?.rancho_nombre ?? '—'}
+                    </span>
+                    <div className="mt-2">
+                      <ChipOffline estado={lote.estado} />
+                    </div>
+                  </div>
+                </div>
+              ))}
               {registros.map((reg) => (
                 <div
                   key={reg.id}
@@ -927,6 +987,8 @@ export function LimpiezaCampo() {
             >
               {nGuardando ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Creando…</>
+              ) : !online ? (
+                <><WifiOff className="w-4 h-4" /> Crear sin conexión</>
               ) : (
                 'Crear registro'
               )}

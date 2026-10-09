@@ -1,7 +1,12 @@
 ﻿import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
-  ChevronLeft, Plus, FileDown, Loader2, TriangleAlert, Settings, X,
+  ChevronLeft, Plus, FileDown, Loader2, TriangleAlert, Settings, X, WifiOff,
 } from 'lucide-react'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
+import { opCabecera, opUpsert } from '@/lib/offline/construirOperaciones'
 import { toast } from 'sonner'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
@@ -160,12 +165,15 @@ function AccionToggle({
 type Vista = 'lista' | 'detalle'
 
 export function MantenimientoPreventivo() {
-  const { profile, codigoClave } = useAuthContext()
+  const { profile, user, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos }       = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM45MttoPreventivo()
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M45')
+  const { guardar: guardarOffline } = useGuardarOffline('M45')
 
   const mesActual    = hoyMX().slice(0, 7)  // YYYY-MM
   const termino      = terminosSitio.singular
@@ -313,9 +321,28 @@ export function MantenimientoPreventivo() {
   async function handleCrearRegistro() {
     if (!nRanchoId) { setErrRancho(true); return }
     if (!profile?.org_id) return
+    const [yearStr, mesStr] = nMes.split('-')
+    const rancho = ranchos.find(r => r.id === nRanchoId)
+    if (!online) {
+      const localId = crypto.randomUUID()
+      const ok = await guardarOffline({
+        descripcion: `Mtto. Preventivo · ${rancho?.nombre ?? ''} · ${nMes}`,
+        metadatos: { rancho_id: nRanchoId, rancho_nombre: rancho?.nombre, anio: parseInt(yearStr), mes: parseInt(mesStr), tipo: 'cabecera' },
+        operaciones: [
+          opCabecera('m45_registro_mensual', {
+            id: localId,
+            org_id: profile.org_id!,
+            rancho_id: nRanchoId,
+            anio: parseInt(yearStr),
+            mes: parseInt(mesStr),
+          }, ['rancho_id', 'anio', 'mes']),
+        ],
+      })
+      if (ok) handleCerrarSheetCrear()
+      return
+    }
     setCreando(true)
     try {
-      const [yearStr, mesStr] = nMes.split('-')
       const { data: inserted, error: err } = await (supabase as any)
         .from('m45_registro_mensual')
         .insert({
@@ -400,6 +427,22 @@ export function MantenimientoPreventivo() {
   async function handleGuardarDia() {
     if (!registroActivo || !profile?.org_id || !dFecha) return
     const dia = new Date(dFecha + 'T12:00:00').getDate()
+    if (!online) {
+      const ok = await guardarOffline({
+        descripcion: `Mtto. Preventivo · Día ${dia} · ${registroActivo?.rancho_nombre ?? ''}`,
+        metadatos: { registro_id: registroActivo!.id, rancho_nombre: registroActivo?.rancho_nombre, anio: registroActivo?.anio, mes: registroActivo?.mes, dia, tipo: 'dia' },
+        operaciones: items.map(item => opUpsert('m45_resultados', {
+          id: crypto.randomUUID(),
+          registro_id: registroActivo!.id,
+          org_id: profile.org_id!,
+          item_id: item.id,
+          dia,
+          valor: dValores[item.id] ?? 'hecho',
+        }, ['registro_id', 'item_id', 'dia'])),
+      })
+      if (ok) setSheetDia(false)
+      return
+    }
     setDGuardando(true)
     try {
       const batch = items.map((item) => ({
@@ -587,7 +630,7 @@ export function MantenimientoPreventivo() {
 
           {loading ? (
             <ListaSkeleton />
-          ) : registros.length === 0 ? (
+          ) : registros.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').length === 0 ? (
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <Settings className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
               <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
@@ -597,6 +640,19 @@ export function MantenimientoPreventivo() {
             </div>
           ) : (
             <div className="space-y-3">
+              {lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').map((lote) => (
+                <div key={lote.id} className="bg-card border border-border rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ChipOffline estado={lote.estado} />
+                  </div>
+                  <div className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    {(lote.metadatos as any)?.rancho_nombre ?? '—'}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {mesLabel((lote.metadatos as any)?.anio ?? 0, (lote.metadatos as any)?.mes ?? 0)}
+                  </div>
+                </div>
+              ))}
               {registros.map((reg) => (
                 <button
                   key={reg.id}
@@ -693,25 +749,37 @@ export function MantenimientoPreventivo() {
               <div className="flex justify-center py-6">
                 <Loader2 className="w-5 h-5 text-primary animate-spin" />
               </div>
-            ) : diasConData.length === 0 ? (
-              <div className="bg-card border border-border rounded-xl p-6 text-center">
-                <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin días aún</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Registra el primer día con el botón +
-                </p>
-              </div>
             ) : (
               <div className="space-y-2">
-                {diasConData.map(([dia, cnt]) => (
-                  <DiaCard
-                    key={dia}
-                    dia={dia}
-                    h={cnt.h}
-                    n={cnt.n}
-                    na={cnt.na}
-                    onClick={() => abrirSheetDia(dia)}
-                  />
+                {lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'dia' && (l.metadatos as any)?.registro_id === registroActivo?.id).map((lote) => (
+                  <div key={lote.id} className="bg-card border border-border rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                        Día {(lote.metadatos as any)?.dia ?? '—'}
+                      </span>
+                    </div>
+                    <ChipOffline estado={lote.estado} />
+                  </div>
                 ))}
+                {diasConData.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'dia' && (l.metadatos as any)?.registro_id === registroActivo?.id).length === 0 ? (
+                  <div className="bg-card border border-border rounded-xl p-6 text-center">
+                    <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin días aún</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Registra el primer día con el botón +
+                    </p>
+                  </div>
+                ) : (
+                  diasConData.map(([dia, cnt]) => (
+                    <DiaCard
+                      key={dia}
+                      dia={dia}
+                      h={cnt.h}
+                      n={cnt.n}
+                      na={cnt.na}
+                      onClick={() => abrirSheetDia(dia)}
+                    />
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -902,10 +970,16 @@ export function MantenimientoPreventivo() {
               <button
                 onClick={handleGuardarDia}
                 disabled={dGuardando || items.length === 0}
-                className="w-full h-12 rounded-xl text-sm text-white disabled:opacity-60"
+                className="w-full h-12 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
                 style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
               >
-                {dGuardando ? 'Guardando…' : 'Guardar día'}
+                {dGuardando ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
+                ) : !online ? (
+                  <><WifiOff className="w-4 h-4" /> Guardar sin conexión</>
+                ) : (
+                  'Guardar día'
+                )}
               </button>
             </div>
             )}

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export type ValorM45 = 'hecho' | 'no_hecho' | 'na'
 
@@ -30,20 +31,25 @@ export function useM45MttoPreventivo() {
   const [error, setError]         = useState(false)
 
   const fetchRegistros = useCallback(async () => {
-    if (!profile?.org_id) return
+    if (!profile?.org_id || !profile?.id) return
+    const userId = profile.id
+    const orgId = profile.org_id
     setLoading(true)
     setError(false)
     try {
-      const tbl = supabase as any
-      const { data, error: err } = await tbl
-        .from('m45_registro_mensual')
-        .select('id, org_id, rancho_id, anio, mes, observaciones, ranchos(nombre, codigo)')
-        .eq('org_id', profile.org_id)
-        .order('anio', { ascending: false })
-        .order('mes',  { ascending: false })
-      if (err) throw err
+      const resultado = await leerConCache('m45_registros', userId, orgId, async () => {
+        const tbl = supabase as any
+        const { data, error: err } = await tbl
+          .from('m45_registro_mensual')
+          .select('id, org_id, rancho_id, anio, mes, observaciones, ranchos(nombre, codigo)')
+          .eq('org_id', orgId)
+          .order('anio', { ascending: false })
+          .order('mes',  { ascending: false })
+        if (err) throw err
+        return data ?? []
+      })
 
-      const items: M45RegistroMensual[] = ((data ?? []) as any[]).map((r: any) => ({
+      const items: M45RegistroMensual[] = ((resultado.datos ?? []) as any[]).map((r: any) => ({
         id:            r.id,
         org_id:        r.org_id,
         rancho_id:     r.rancho_id,
@@ -59,7 +65,7 @@ export function useM45MttoPreventivo() {
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.org_id, profile?.id])
 
   useEffect(() => { fetchRegistros() }, [fetchRegistros])
 

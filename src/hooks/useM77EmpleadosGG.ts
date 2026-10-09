@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -24,7 +25,7 @@ export interface M77EmpleadoRegistro {
 }
 
 export function useM77EmpleadosGG() {
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
   const [registros, setRegistros] = useState<M77EmpleadoRegistro[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -34,34 +35,42 @@ export function useM77EmpleadosGG() {
     setLoading(true)
     setError(null)
     try {
-      const { data, error: err } = await tbl('m77_empleados')
-        .select('*, ranchos(nombre)')
-        .eq('org_id', profile.org_id)
-        .order('nombre', { ascending: true })
-      if (err) throw err
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const lista: M77EmpleadoRegistro[] = ((data ?? []) as any[]).map((r) => ({
-        id: r.id,
-        rancho_id: r.rancho_id,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
-        nombre: r.nombre,
-        fecha_ingreso: r.fecha_ingreso ?? null,
-        telefono: r.telefono ?? null,
-        domicilio: r.domicilio ?? null,
-        persona_contacto: r.persona_contacto ?? null,
-        observaciones: r.observaciones ?? null,
-        creado_por: r.creado_por ?? null,
-        created_at: r.created_at,
-      }))
-      setRegistros(lista)
+      const orgId = profile.org_id
+      const userId = user?.id ?? null
+      const { datos } = await leerConCache<M77EmpleadoRegistro[]>(
+        'm77_empleados',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await tbl('m77_empleados')
+            .select('*, ranchos(nombre)')
+            .eq('org_id', orgId)
+            .order('nombre', { ascending: true })
+          if (err) throw err
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return ((data ?? []) as any[]).map((r) => ({
+            id: r.id,
+            rancho_id: r.rancho_id,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
+            nombre: r.nombre,
+            fecha_ingreso: r.fecha_ingreso ?? null,
+            telefono: r.telefono ?? null,
+            domicilio: r.domicilio ?? null,
+            persona_contacto: r.persona_contacto ?? null,
+            observaciones: r.observaciones ?? null,
+            creado_por: r.creado_por ?? null,
+            created_at: r.created_at,
+          }))
+        },
+      )
+      setRegistros(datos)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error al cargar registros M77')
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.org_id, user?.id])
 
   useEffect(() => { cargar() }, [cargar])
 

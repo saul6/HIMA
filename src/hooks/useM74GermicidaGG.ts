@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -33,7 +34,7 @@ export interface M74GermicidaRegistro {
 }
 
 export function useM74GermicidaGG() {
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
   const [registros, setRegistros] = useState<M74GermicidaRegistro[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -43,44 +44,52 @@ export function useM74GermicidaGG() {
     setLoading(true)
     setError(null)
     try {
-      const { data, error: err } = await tbl('m74_germicida')
-        .select('*, ranchos(nombre)')
-        .eq('org_id', profile.org_id)
-        .order('fecha', { ascending: false })
-        .order('created_at', { ascending: false })
-      if (err) throw err
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const lista: M74GermicidaRegistro[] = ((data ?? []) as any[]).map((r) => ({
-        id: r.id,
-        rancho_id: r.rancho_id,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
-        producto: r.producto ?? null,
-        fecha: r.fecha,
-        material_utilizado: r.material_utilizado ?? null,
-        sector: r.sector ?? null,
-        hora1: r.hora1 ?? null,
-        ppm1: r.ppm1 ?? null,
-        ajuste1: r.ajuste1 ?? null,
-        hora2: r.hora2 ?? null,
-        ppm2: r.ppm2 ?? null,
-        ajuste2: r.ajuste2 ?? null,
-        hora3: r.hora3 ?? null,
-        ppm3: r.ppm3 ?? null,
-        ajuste3: r.ajuste3 ?? null,
-        realizo: r.realizo ?? null,
-        observaciones: r.observaciones ?? null,
-        creado_por: r.creado_por ?? null,
-        created_at: r.created_at,
-      }))
-      setRegistros(lista)
+      const orgId = profile.org_id
+      const userId = user?.id ?? null
+      const { datos } = await leerConCache<M74GermicidaRegistro[]>(
+        'm74_germicida',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await tbl('m74_germicida')
+            .select('*, ranchos(nombre)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          if (err) throw err
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return ((data ?? []) as any[]).map((r) => ({
+            id: r.id,
+            rancho_id: r.rancho_id,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
+            producto: r.producto ?? null,
+            fecha: r.fecha,
+            material_utilizado: r.material_utilizado ?? null,
+            sector: r.sector ?? null,
+            hora1: r.hora1 ?? null,
+            ppm1: r.ppm1 ?? null,
+            ajuste1: r.ajuste1 ?? null,
+            hora2: r.hora2 ?? null,
+            ppm2: r.ppm2 ?? null,
+            ajuste2: r.ajuste2 ?? null,
+            hora3: r.hora3 ?? null,
+            ppm3: r.ppm3 ?? null,
+            ajuste3: r.ajuste3 ?? null,
+            realizo: r.realizo ?? null,
+            observaciones: r.observaciones ?? null,
+            creado_por: r.creado_por ?? null,
+            created_at: r.created_at,
+          }))
+        },
+      )
+      setRegistros(datos)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error al cargar registros M74')
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.org_id, user?.id])
 
   useEffect(() => { cargar() }, [cargar])
 

@@ -8,8 +8,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   ChevronLeft, FileDown, Loader2, ClipboardList,
-  TriangleAlert, CalendarDays, X,
+  TriangleAlert, CalendarDays, X, WifiOff,
 } from 'lucide-react'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
+import { leerConCache } from '@/lib/offline/cacheLectura'
+import { opCabecera, opUpsert } from '@/lib/offline/construirOperaciones'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
@@ -182,6 +188,9 @@ export function InspeccionPreoperacionalCosecha() {
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M11', todosIds)
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M11')
+  const { guardar: guardarOffline } = useGuardarOffline('M11')
 
   // ── Navegación interna ──
   const [vista, setVista] = useState<Vista>('lista')
@@ -192,17 +201,22 @@ export function InspeccionPreoperacionalCosecha() {
   const [loadingItems, setLoadingItems] = useState(false)
 
   useEffect(() => {
+    if (!profile?.id || !profile?.org_id) return
     let cancelado = false
     setLoadingItems(true)
-    supabase
-      .from('m11_items_catalogo')
-      .select('*')
-      .order('orden')
-      .then(({ data }) => {
-        if (!cancelado) { setItems((data ?? []) as M11ItemCatalogo[]); setLoadingItems(false) }
-      })
+    leerConCache('m11_items_catalogo', profile.id, profile.org_id, async () => {
+      const { data } = await supabase
+        .from('m11_items_catalogo')
+        .select('*')
+        .order('orden')
+      return data ?? []
+    }).then((resultado) => {
+      if (!cancelado) { setItems((resultado.datos ?? []) as M11ItemCatalogo[]); setLoadingItems(false) }
+    }).catch(() => {
+      if (!cancelado) setLoadingItems(false)
+    })
     return () => { cancelado = true }
-  }, [])
+  }, [profile?.id, profile?.org_id])
 
   // ── Datos del detalle ──
   const [dias, setDias] = useState<M11DiaConResultados[]>([])
@@ -212,6 +226,11 @@ export function InspeccionPreoperacionalCosecha() {
 
   const cargarDias = useCallback(async (regId: string) => {
     if (!profile?.org_id) return
+    const esLocal = lotesOffline.some(
+      l => (l.metadatos as any)?.tipo === 'cabecera' &&
+           l.operaciones.some(op => op.fila.id === regId)
+    )
+    if (esLocal) { setDias([]); setLoadingDias(false); return }
     setLoadingDias(true)
     try {
       const { data: diasData, error: dErr } = await supabase
@@ -255,7 +274,7 @@ export function InspeccionPreoperacionalCosecha() {
     } finally {
       setLoadingDias(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.org_id, lotesOffline])
 
   const abrirDetalle = (reg: M11RegistroResumen) => {
     setRegistroActivo(reg)
@@ -311,6 +330,13 @@ export function InspeccionPreoperacionalCosecha() {
   useEffect(() => {
     if (!sheetNuevo) { setNYaExiste(false); return }
     if (!nRanchoId || !nMes || !profile?.org_id) { setNYaExiste(false); return }
+    const mesISO = nMes + '-01'
+    const existePendiente = lotesOffline.some(
+      l => (l.metadatos as any)?.tipo === 'cabecera' &&
+           (l.metadatos as any)?.rancho_id === nRanchoId &&
+           (l.metadatos as any)?.mes === mesISO
+    )
+    if (existePendiente) { setNYaExiste(true); return }
     let cancelado = false
     ;(supabase as any)
       .from('m11_registro_mensual')
@@ -321,12 +347,32 @@ export function InspeccionPreoperacionalCosecha() {
       .maybeSingle()
       .then(({ data }) => { if (!cancelado) setNYaExiste(!!data) })
     return () => { cancelado = true }
-  }, [sheetNuevo, nRanchoId, nMes, profile?.org_id])
+  }, [sheetNuevo, nRanchoId, nMes, profile?.org_id, lotesOffline])
 
   async function handleCrearRegistro() {
     if (!nRanchoId) { setNErrRancho(true); return }
     if (!profile?.org_id) { toast.error('Sin organización activa'); return }
     if (nYaExiste) { toast.warning(`Ya existe un registro para este mes y ${terminosSitio.singular.toLowerCase()}`); return }
+    const rancho = ranchos.find(r => r.id === nRanchoId)
+    if (!online) {
+      const localId = crypto.randomUUID()
+      const ok = await guardarOffline({
+        descripcion: `Insp. Preoperacional · ${rancho?.nombre ?? ''} · ${nMes}`,
+        metadatos: { rancho_id: nRanchoId, rancho_nombre: rancho?.nombre, mes: nMes + '-01', tipo: 'cabecera' },
+        operaciones: [
+          opCabecera('m11_registro_mensual', {
+            id: localId,
+            rancho_id: nRanchoId,
+            org_id: profile.org_id!,
+            mes: nMes + '-01',
+            realizado_por_nombre: nRealizadoPor.trim() || null,
+            responsable_id: user?.id ?? null,
+          }, ['rancho_id', 'mes']),
+        ],
+      })
+      if (ok) setSheetNuevo(false)
+      return
+    }
     setNGuardando(true)
     try {
       const { data, error: e } = await (supabase as any)
@@ -400,6 +446,12 @@ export function InspeccionPreoperacionalCosecha() {
     if (!sheetDia || !dFecha || !registroActivo || !profile?.org_id) {
       setDYaExiste(false); return
     }
+    const existePendiente = lotesOffline.some(
+      l => (l.metadatos as any)?.tipo === 'dia' &&
+           (l.metadatos as any)?.registro_id === registroActivo.id &&
+           (l.metadatos as any)?.fecha === dFecha
+    )
+    if (existePendiente) { setDYaExiste(true); return }
     let cancelado = false
     supabase
       .from('m11_dias_inspeccion')
@@ -410,7 +462,7 @@ export function InspeccionPreoperacionalCosecha() {
       .maybeSingle()
       .then(({ data }) => { if (!cancelado) setDYaExiste(!!data) })
     return () => { cancelado = true }
-  }, [sheetDia, dFecha, registroActivo, profile?.org_id])
+  }, [sheetDia, dFecha, registroActivo, profile?.org_id, lotesOffline])
 
   function handleCerrarSheetDia() {
     setSheetDia(false); setSheetDiaPaso('form'); setPendienteFirmaIds([])
@@ -425,6 +477,27 @@ export function InspeccionPreoperacionalCosecha() {
     const mes = registroActivo.mes.slice(0, 7)
     if (!dFecha.startsWith(mes)) {
       toast.error('La fecha debe estar dentro del mes del registro')
+      return
+    }
+
+    if (!online) {
+      const diaId = crypto.randomUUID()
+      const ok = await guardarOffline({
+        descripcion: `Insp. Preoperacional · ${dFecha} · ${registroActivo.rancho_nombre}`,
+        metadatos: { registro_id: registroActivo.id, rancho_nombre: registroActivo.rancho_nombre, mes: registroActivo.mes, fecha: dFecha, tipo: 'dia', items_count: items.length },
+        operaciones: [
+          opCabecera('m11_dias_inspeccion', { id: diaId, registro_id: registroActivo.id, org_id: profile.org_id!, fecha: dFecha }, ['registro_id', 'fecha']),
+          ...items.map(item => opUpsert('m11_resultados', {
+            id: crypto.randomUUID(),
+            dia_id: diaId,
+            item_id: item.id,
+            org_id: profile.org_id!,
+            valor: (dValores[item.id] ?? (item.default_valor === 'SI')) ? 'SI' : 'NO',
+            codigo_correctivo: !(dValores[item.id] ?? (item.default_valor === 'SI')) ? (dCodigos[item.id]?.trim() || null) : null,
+          }, ['dia_id', 'item_id'])),
+        ],
+      })
+      if (ok) handleCerrarSheetDia()
       return
     }
 
@@ -568,7 +641,7 @@ export function InspeccionPreoperacionalCosecha() {
 
           {loading ? (
             <ListaSkeleton />
-          ) : registros.length === 0 ? (
+          ) : registros.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').length === 0 ? (
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <ClipboardList className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
               <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
@@ -578,6 +651,19 @@ export function InspeccionPreoperacionalCosecha() {
             </div>
           ) : (
             <div className="space-y-3">
+              {lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').map((lote) => (
+                <div key={lote.id} className="bg-card border border-border rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ChipOffline estado={lote.estado} />
+                  </div>
+                  <div className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    {(lote.metadatos as any)?.rancho_nombre ?? '—'}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {formatMesLabel((lote.metadatos as any)?.mes ?? '')}
+                  </div>
+                </div>
+              ))}
               {registros.map((reg) => (
                 <button
                   key={reg.id}
@@ -670,18 +756,32 @@ export function InspeccionPreoperacionalCosecha() {
               <div className="flex justify-center py-6">
                 <Loader2 className="w-5 h-5 text-primary animate-spin" />
               </div>
-            ) : dias.length === 0 ? (
-              <div className="bg-card border border-border rounded-xl p-6 text-center">
-                <CalendarDays className="w-7 h-7 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  Sin días de inspección aún. Agrega el primer día con el botón +
-                </p>
-              </div>
             ) : (
               <div className="space-y-3">
-                {dias.map((d) => (
-                  <DiaCard key={d.id} dia={d} />
+                {lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'dia' && (l.metadatos as any)?.registro_id === registroActivo?.id).map((lote) => (
+                  <div key={lote.id} className="bg-card border border-border rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <CalendarDays className="w-4 h-4 text-primary flex-shrink-0" />
+                      <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                        {formatFechaCorta((lote.metadatos as any)?.fecha ?? '')}
+                      </span>
+                    </div>
+                    <ChipOffline estado={lote.estado} />
+                    <div className="text-xs text-muted-foreground mt-1">{(lote.metadatos as any)?.items_count ?? 0} ítems</div>
+                  </div>
                 ))}
+                {dias.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'dia' && (l.metadatos as any)?.registro_id === registroActivo?.id).length === 0 ? (
+                  <div className="bg-card border border-border rounded-xl p-6 text-center">
+                    <CalendarDays className="w-7 h-7 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      Sin días de inspección aún. Agrega el primer día con el botón +
+                    </p>
+                  </div>
+                ) : (
+                  dias.map((d) => (
+                    <DiaCard key={d.id} dia={d} />
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -901,6 +1001,8 @@ export function InspeccionPreoperacionalCosecha() {
                   >
                     {dGuardando ? (
                       <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
+                    ) : !online ? (
+                      <><WifiOff className="w-4 h-4" /> Guardar sin conexión ({items.length} ítems)</>
                     ) : (
                       `Guardar ${items.length} ítems`
                     )}
