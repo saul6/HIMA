@@ -33,6 +33,7 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -352,8 +353,10 @@ export function RegistroFertilizacion() {
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, refetch: refetchRegistros } = useM8Fertilizacion()
+  const mostrarSkeletonRegistros = useMostrarCarga(loading, registros.length > 0)
   const { fertilizantes: catalogo, refetch: refetchCatalogo } = useFertilizantesOrg()
   const { saldos, loading: saldosLoading, refetch: refetchSaldos } = useInventarioFertilizantes()
+  const mostrarSkeletonSaldos = useMostrarCarga(saldosLoading, saldos.length > 0)
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
   const todosIds = registros.map(r => r.fertilizantes[0]?.id).filter(Boolean) as string[]
@@ -835,15 +838,9 @@ export function RegistroFertilizacion() {
 
           {/* Lista */}
           <div className="p-4 space-y-3">
-            {loading ? (
+            {mostrarSkeletonRegistros ? (
               <ListaSkeleton />
-            ) : registros.length === 0 ? (
-              <div className="bg-card border border-border rounded-xl p-6 text-center">
-                <Sprout className="w-10 h-10 mx-auto mb-2" style={{ color: 'var(--muted-foreground)' }} />
-                <p className="text-sm text-muted-foreground">Sin registros aún</p>
-                <p className="text-xs text-muted-foreground mt-1">Toca + para agregar el primero</p>
-              </div>
-            ) : (
+            ) : registros.length > 0 ? (
               registros.map((reg) => {
                 const key = `${reg.rancho_id}|${reg.fecha}`
                 return (
@@ -912,6 +909,14 @@ export function RegistroFertilizacion() {
                   </div>
                 )
               })
+            ) : loading ? (
+              <div style={{ minHeight: '280px' }} />
+            ) : (
+              <div className="bg-card border border-border rounded-xl p-6 text-center">
+                <Sprout className="w-10 h-10 mx-auto mb-2" style={{ color: 'var(--muted-foreground)' }} />
+                <p className="text-sm text-muted-foreground">Sin registros aún</p>
+                <p className="text-xs text-muted-foreground mt-1">Toca + para agregar el primero</p>
+              </div>
             )}
           </div>
         </>
@@ -920,19 +925,9 @@ export function RegistroFertilizacion() {
       {/* ── TAB: Inventario ─────────────────────────────────────────────────── */}
       {tab === 'inventario' && (
         <div className="p-4 space-y-3">
-          {saldosLoading ? (
-            <div className="flex justify-center py-10">
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            </div>
-          ) : saldos.length === 0 ? (
-            <div className="bg-card border border-border rounded-xl p-6 text-center">
-              <Package className="w-10 h-10 mx-auto mb-2" style={{ color: 'var(--muted-foreground)' }} />
-              <p className="text-sm text-muted-foreground">Sin saldos registrados</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Los saldos aparecen al registrar entradas de inventario
-              </p>
-            </div>
-          ) : (
+          {mostrarSkeletonSaldos ? (
+            <ListaSkeleton />
+          ) : saldos.length > 0 ? (
             saldos.map((s) => (
               <div
                 key={`${s.rancho_id}|${s.fertilizante_id}`}
@@ -972,6 +967,16 @@ export function RegistroFertilizacion() {
                 )}
               </div>
             ))
+          ) : saldosLoading ? (
+            <div style={{ minHeight: '200px' }} />
+          ) : (
+            <div className="bg-card border border-border rounded-xl p-6 text-center">
+              <Package className="w-10 h-10 mx-auto mb-2" style={{ color: 'var(--muted-foreground)' }} />
+              <p className="text-sm text-muted-foreground">Sin saldos registrados</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Los saldos aparecen al registrar entradas de inventario
+              </p>
+            </div>
           )}
         </div>
       )}

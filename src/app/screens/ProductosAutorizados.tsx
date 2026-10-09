@@ -17,6 +17,8 @@ import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 type FormState = {
   cultivo: string
@@ -76,6 +78,7 @@ export function ProductosAutorizados() {
     if (mercadoFiltro && p.mercado !== mercadoFiltro) return false
     return true
   })
+  const mostrarSkeleton = useMostrarCarga(loading, productos.length > 0)
 
   function abrirNuevo() {
     setEditId(null)
@@ -267,11 +270,11 @@ export function ProductosAutorizados() {
 
       {/* Lista */}
       <div className="flex-1 px-4 pb-32 space-y-2 overflow-y-auto">
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-          </div>
-        )}
+        {mostrarSkeleton ? (
+          <ListaSkeleton />
+        ) : loading && !error && productosFiltrados.length === 0 ? (
+          <div style={{ minHeight: '280px' }} />
+        ) : null}
         {error && (
           <p className="text-center py-12 text-sm" style={{ color: 'var(--agro-danger-text)' }}>{error}</p>
         )}

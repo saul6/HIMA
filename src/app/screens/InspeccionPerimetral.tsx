@@ -31,6 +31,8 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { SkeletonFilas } from '@/app/components/SkeletonFilas'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { leerConCache } from '@/lib/offline/cacheLectura'
 import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
@@ -176,6 +178,7 @@ export function InspeccionPerimetral() {
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM9Perimetral()
+  const mostrarSkeletonRegistros = useMostrarCarga(loading, registros.length > 0)
   const { terminosSitio } = useModulosContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M9', todosIds)
@@ -221,6 +224,7 @@ export function InspeccionPerimetral() {
   // ── Datos del detalle ──
   const [dias, setDias] = useState<M9DiaConResultados[]>([])
   const [loadingDias, setLoadingDias] = useState(false)
+  const mostrarSkeletonDias = useMostrarCarga(loadingDias, dias.length > 0)
   const [obsLocal, setObsLocal] = useState('')
   const [otroLocal, setOtroLocal] = useState('')
   const [savingObs, setSavingObs] = useState(false)
@@ -657,17 +661,9 @@ export function InspeccionPerimetral() {
               </div>
             )
           })}
-          {loading ? (
+          {mostrarSkeletonRegistros ? (
             <ListaSkeleton />
-          ) : registros.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').length === 0 ? (
-            <div className="bg-card border border-border rounded-xl p-6 text-center">
-              <Navigation className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Crea el primer registro mensual con el botón +
-              </p>
-            </div>
-          ) : (
+          ) : registros.length > 0 ? (
             <div className="space-y-3">
               {registros.map((reg) => (
                 <button
@@ -715,7 +711,17 @@ export function InspeccionPerimetral() {
                 </button>
               ))}
             </div>
-          )}
+          ) : loading ? (
+            <div style={{ minHeight: '280px' }} />
+          ) : registros.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').length === 0 ? (
+            <div className="bg-card border border-border rounded-xl p-6 text-center">
+              <Navigation className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Crea el primer registro mensual con el botón +
+              </p>
+            </div>
+          ) : null}
         </div>
       )}
 
@@ -834,10 +840,16 @@ export function InspeccionPerimetral() {
               )
             })}
 
-            {loadingDias ? (
-              <div className="flex justify-center py-6">
-                <Loader2 className="w-5 h-5 text-primary animate-spin" />
+            {mostrarSkeletonDias ? (
+              <ListaSkeleton rows={3} />
+            ) : dias.length > 0 ? (
+              <div className="space-y-3">
+                {dias.map((d) => (
+                  <DiaCard key={d.id} dia={d} items={itemsVisibles} />
+                ))}
               </div>
+            ) : loadingDias ? (
+              <div style={{ minHeight: '140px' }} />
             ) : dias.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'dia' && (l.metadatos as any)?.registro_id === registroActivo.id).length === 0 ? (
               <div className="bg-card border border-border rounded-xl p-6 text-center">
                 <CalendarDays className="w-7 h-7 text-muted-foreground mx-auto mb-2" />
@@ -845,13 +857,7 @@ export function InspeccionPerimetral() {
                   Sin días de inspección aún. Agrega el primer día con el botón +
                 </p>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {dias.map((d) => (
-                  <DiaCard key={d.id} dia={d} items={itemsVisibles} />
-                ))}
-              </div>
-            )}
+            ) : null}
           </div>
         </div>
       )}
@@ -1037,8 +1043,8 @@ export function InspeccionPerimetral() {
                   </div>
 
                   {loadingItems && (
-                    <div className="flex justify-center py-4">
-                      <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                    <div className="px-1">
+                      <SkeletonFilas rows={3} />
                     </div>
                   )}
                 </div>
