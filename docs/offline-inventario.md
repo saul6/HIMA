@@ -156,19 +156,19 @@
 | M50 | A | ✅ | No | Lote A2 |
 | M51 | A | ✅ | No | Lote A2 |
 | M52 | A | ✅ | No | Lote A2 |
-| M56 | A | No | No | Catálogo mgmt solo con red |
-| M57 | A | No | No | Catálogo mgmt solo con red |
-| M58 | A | No | No | — |
-| M60 | A | No | No | — |
-| M61 | A | No | No | — |
-| M63 | A | No | No | — |
-| M64 | A | No | No | — |
-| M65 | A | No | No | — |
-| M66 | A | No | No | Actualizar/desactivar solo con red |
-| M67 | A | No | No | — |
-| M74 | A | No | No | — |
-| M76 | A | No | No | — |
-| M77 | A | No | No | — |
+| M56 | A | ✅ | No | Catálogo mgmt solo con red; editar/desactivar guarda con online check |
+| M57 | A | ✅ | No | Catálogo mgmt solo con red; editar/desactivar guarda con online check |
+| M58 | A | ✅ | No | — |
+| M60 | A | ✅ | No | — |
+| M61 | A | ✅ | No | — |
+| M63 | A | ✅ | No | — |
+| M64 | A | ✅ | No | — |
+| M65 | A | ✅ | No | — |
+| M66 | A | ✅ | No | Actualizar/desactivar guarda con online check |
+| M67 | A | ✅ | No | — |
+| M74 | A | ✅ | No | — |
+| M76 | A | ✅ | No | — |
+| M77 | A | ✅ | No | — |
 | M11 | B | No | No | — |
 | M19 | B | No | No | Crea M13 para NO |
 | M23 | B | No | No | Crea M13 para NO |
@@ -398,3 +398,21 @@ Mismas correcciones aplicadas: `useM3X_Items` → `leerConCache`; `cargarDetalle
 | UPSERT/DELETE `m75_resultados` | AlmacenEmpaqueGG screen | R | ✅ bloqueado sin red |
 | UPSERT `m75_acciones` | AlmacenEmpaqueGG screen | R | ✅ bloqueado sin red |
 | INSERT `m75_registro` | `handleCrearRegistro` | R | ✅ guarda offline |
+
+---
+
+## Auditoría de lecturas Lote A3–A4 (M56–M77 simples, 2026-10-09)
+
+Módulos: M56, M57, M58, M60, M61, M63, M64, M65, M66, M67, M74, M76, M77.
+
+Todos comparten el mismo patrón verificado:
+
+| Lectura | Patrón | Estado |
+|---|---|---|
+| SELECT lista (hook `useMXX`) | Hook importa y usa `leerConCache` | ✅ ya existía |
+| INSERT (pantalla) | `guardarOffline` para INSERT offline; `online` guard para UPDATE/DELETE | ✅ ya existía |
+| `.select('id')` en INSERT | Llamada encadenada al INSERT para obtener el ID — no es lectura separada | ✅ correcto |
+
+**Módulos con lógica adicional auditada:**
+- M56/M57: editar y desactivar registros existentes solo funciona con `online` — guard presente (`if (!online) { toast.warning(...) }`)
+- M66: actualizar/desactivar bloqueado sin red — guard presente
