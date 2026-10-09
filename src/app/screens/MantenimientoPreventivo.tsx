@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { supabase } from '@/lib/supabase'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 import { useAuthContext } from '@/context/AuthContext'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -183,24 +184,28 @@ export function MantenimientoPreventivo() {
   const [areasOrdenadas, setAreasOrdenadas] = useState<string[]>([])
 
   useEffect(() => {
-    const tbl = supabase as any
-    tbl.from('m45_items')
-      .select('id, area, nombre, frecuencia, orden')
-      .eq('activo', true)
-      .order('area')
-      .order('orden')
-      .then(({ data }: any) => {
-        if (!data) return
-        const list = data as M45Item[]
-        setItems(list)
-        const areas: string[] = []
-        const seen = new Set<string>()
-        for (const item of list) {
-          if (!seen.has(item.area)) { seen.add(item.area); areas.push(item.area) }
-        }
-        setAreasOrdenadas(areas)
-      })
-  }, [])
+    if (!profile?.org_id || !user?.id) return
+    const orgId = profile.org_id
+    const userId = user.id
+    leerConCache('m45_items', userId, orgId, async () => {
+      const tbl = supabase as any
+      const { data } = await tbl.from('m45_items')
+        .select('id, area, nombre, frecuencia, orden')
+        .eq('activo', true)
+        .order('area')
+        .order('orden')
+      return data ?? []
+    }).then((resultado) => {
+      const list = (resultado.datos ?? []) as M45Item[]
+      setItems(list)
+      const areas: string[] = []
+      const seen = new Set<string>()
+      for (const item of list) {
+        if (!seen.has(item.area)) { seen.add(item.area); areas.push(item.area) }
+      }
+      setAreasOrdenadas(areas)
+    }).catch(() => {})
+  }, [profile?.org_id, user?.id])
 
   // ── Vista ──
   const [vista, setVista]                   = useState<Vista>('lista')
@@ -225,43 +230,50 @@ export function MantenimientoPreventivo() {
   }, [resultadosMap])
 
   const cargarDetalle = useCallback(async (regId: string) => {
-    if (!profile?.org_id) return
+    if (!profile?.org_id || !user?.id) return
     setLoadingDetalle(true)
     setResultadosMap({})
     setAccionesMap({})
-    const tbl = supabase as any
-    const [resData, accData] = await Promise.all([
-      tbl.from('m45_resultados')
-        .select('item_id, dia, valor')
-        .eq('registro_id', regId)
-        .eq('org_id', profile.org_id),
-      tbl.from('m45_acciones')
-        .select('item_id, revision_general, cambio_aceites, cambio_piezas, revision_electrico')
-        .eq('registro_id', regId)
-        .eq('org_id', profile.org_id),
-    ])
-    if (!resData.error && resData.data) {
-      const map: Record<string, Record<number, ValorM45>> = {}
-      for (const r of resData.data as any[]) {
-        if (!map[r.item_id]) map[r.item_id] = {}
-        map[r.item_id][r.dia as number] = r.valor as ValorM45
+    try {
+      const resultado = await leerConCache(`m45_detalle_${regId}`, user.id, profile.org_id, async () => {
+        const tbl = supabase as any
+        const [resData, accData] = await Promise.all([
+          tbl.from('m45_resultados')
+            .select('item_id, dia, valor')
+            .eq('registro_id', regId)
+            .eq('org_id', profile.org_id),
+          tbl.from('m45_acciones')
+            .select('item_id, revision_general, cambio_aceites, cambio_piezas, revision_electrico')
+            .eq('registro_id', regId)
+            .eq('org_id', profile.org_id),
+        ])
+        return { resultados: resData.data ?? [], acciones: accData.data ?? [] }
+      })
+      const { resultados: rawRes, acciones: rawAcc } = (resultado.datos ?? { resultados: [], acciones: [] }) as { resultados: any[], acciones: any[] }
+
+      const resMap: Record<string, Record<number, ValorM45>> = {}
+      for (const r of rawRes) {
+        if (!resMap[r.item_id]) resMap[r.item_id] = {}
+        resMap[r.item_id][r.dia as number] = r.valor as ValorM45
       }
-      setResultadosMap(map)
-    }
-    if (!accData.error && accData.data) {
-      const map: Record<string, AccionesRow> = {}
-      for (const a of accData.data as any[]) {
-        map[a.item_id] = {
-          revision_general:  a.revision_general,
-          cambio_aceites:    a.cambio_aceites,
-          cambio_piezas:     a.cambio_piezas,
+      setResultadosMap(resMap)
+
+      const accMap: Record<string, AccionesRow> = {}
+      for (const a of rawAcc) {
+        accMap[a.item_id] = {
+          revision_general:   a.revision_general,
+          cambio_aceites:     a.cambio_aceites,
+          cambio_piezas:      a.cambio_piezas,
           revision_electrico: a.revision_electrico,
         }
       }
-      setAccionesMap(map)
+      setAccionesMap(accMap)
+    } catch {
+      // silencioso — la UI muestra datos vacíos
+    } finally {
+      setLoadingDetalle(false)
     }
-    setLoadingDetalle(false)
-  }, [profile?.org_id])
+  }, [profile?.org_id, user?.id])
 
   function abrirDetalle(reg: M45RegistroMensual) {
     setRegistroActivo(reg)

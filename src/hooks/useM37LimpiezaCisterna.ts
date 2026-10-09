@@ -64,20 +64,29 @@ export function useM37LimpiezaCisterna() {
 }
 
 export function useM37Items(ranchoId: string | null, orgId: string | null) {
+  const { user } = useAuthContext()
   const [items, setItems] = useState<M37Item[]>([])
   const [loading, setLoading] = useState(false)
 
   const cargar = useCallback(async () => {
-    if (!ranchoId || !orgId) { setItems([]); return }
+    if (!ranchoId || !orgId || !user?.id) { setItems([]); return }
     setLoading(true)
-    const { data } = await tbl('m37_items')
-      .select('id, nombre, frecuencia, es_inspeccion_plaga, activo, orden')
-      .eq('org_id', orgId)
-      .eq('rancho_id', ranchoId)
-      .order('orden')
-    setItems((data ?? []) as M37Item[])
-    setLoading(false)
-  }, [ranchoId, orgId])
+    try {
+      const resultado = await leerConCache(`m37_items_${ranchoId}`, user.id, orgId, async () => {
+        const { data } = await tbl('m37_items')
+          .select('id, nombre, frecuencia, es_inspeccion_plaga, activo, orden')
+          .eq('org_id', orgId)
+          .eq('rancho_id', ranchoId)
+          .order('orden')
+        return data ?? []
+      })
+      setItems((resultado.datos ?? []) as M37Item[])
+    } catch {
+      setItems([])
+    } finally {
+      setLoading(false)
+    }
+  }, [ranchoId, orgId, user?.id])
 
   useEffect(() => { cargar() }, [cargar])
   return { items, loading, refetch: cargar }

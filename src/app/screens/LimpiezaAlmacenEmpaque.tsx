@@ -38,6 +38,7 @@ import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { opCabecera } from '@/lib/offline/construirOperaciones'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -91,7 +92,7 @@ function frecuenciaLabel(f: string): string {
 }
 
 export function LimpiezaAlmacenEmpaque() {
-  const { profile, codigoClave } = useAuthContext()
+  const { profile, user, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
@@ -165,19 +166,23 @@ export function LimpiezaAlmacenEmpaque() {
   const [incSaving, setIncSaving] = useState(false)
 
   const cargarDetalle = useCallback(async (regId: string) => {
-    if (!orgId) return
+    if (!orgId || !user?.id) return
     setLoadingDetalle(true)
     try {
-      const [resultadosRes, diasRes] = await Promise.all([
-        tbl('m35_resultados').select('item_id, dia, valor, incidencia_id').eq('registro_id', regId).eq('org_id', orgId),
-        tbl('m35_dias').select('*').eq('registro_id', regId),
-      ])
-      if (resultadosRes.error) throw resultadosRes.error
-      if (diasRes.error) throw diasRes.error
+      const resultado = await leerConCache(`m35_detalle_${regId}`, user.id, orgId, async () => {
+        const [resultadosRes, diasRes] = await Promise.all([
+          tbl('m35_resultados').select('item_id, dia, valor, incidencia_id').eq('registro_id', regId).eq('org_id', orgId),
+          tbl('m35_dias').select('*').eq('registro_id', regId),
+        ])
+        if (resultadosRes.error) throw resultadosRes.error
+        if (diasRes.error) throw diasRes.error
+        return { resultados: resultadosRes.data ?? [], dias: diasRes.data ?? [] }
+      })
+      const { resultados: rawRes, dias: rawDias } = (resultado.datos ?? { resultados: [], dias: [] }) as { resultados: any[], dias: any[] }
 
       const res: Record<number, Record<string, ValorM35>> = {}
       const incMap: Record<string, string | null> = {}
-      for (const r of (resultadosRes.data ?? []) as any[]) {
+      for (const r of rawRes) {
         if (!res[r.dia]) res[r.dia] = {}
         res[r.dia][r.item_id] = r.valor as ValorM35
         if (r.incidencia_id !== undefined) {
@@ -188,7 +193,7 @@ export function LimpiezaAlmacenEmpaque() {
       setIncidenciaIdMap(incMap)
 
       const dd: Record<number, DiaDataLocal> = {}
-      for (const d of (diasRes.data ?? []) as any[]) {
+      for (const d of rawDias) {
         dd[d.dia] = {
           realizo: d.realizo ?? null,
           aprobo: d.aprobo ?? null,
@@ -200,7 +205,7 @@ export function LimpiezaAlmacenEmpaque() {
     } finally {
       setLoadingDetalle(false)
     }
-  }, [orgId])
+  }, [orgId, user?.id])
 
   const abrirDetalle = (reg: M35RegistroResumen) => {
     setRegistroActivo(reg)

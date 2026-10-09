@@ -36,6 +36,7 @@ import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { opCabecera } from '@/lib/offline/construirOperaciones'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -90,7 +91,7 @@ function frecuenciaLabel(f: string): string {
 }
 
 export function LimpiezaCisterna() {
-  const { profile, codigoClave } = useAuthContext()
+  const { profile, user, codigoClave } = useAuthContext()
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
@@ -166,19 +167,23 @@ export function LimpiezaCisterna() {
   const [plagaSaving, setPlagaSaving] = useState(false)
 
   const cargarDetalle = useCallback(async (regId: string) => {
-    if (!orgId) return
+    if (!orgId || !user?.id) return
     setLoadingDetalle(true)
     try {
-      const [resultadosRes, diasRes] = await Promise.all([
-        tbl('m37_resultados').select('item_id, dia, valor, incidencia_id').eq('registro_id', regId).eq('org_id', orgId),
-        tbl('m37_dias').select('*').eq('registro_id', regId),
-      ])
-      if (resultadosRes.error) throw resultadosRes.error
-      if (diasRes.error) throw diasRes.error
+      const resultado = await leerConCache(`m37_detalle_${regId}`, user.id, orgId, async () => {
+        const [resultadosRes, diasRes] = await Promise.all([
+          tbl('m37_resultados').select('item_id, dia, valor, incidencia_id').eq('registro_id', regId).eq('org_id', orgId),
+          tbl('m37_dias').select('*').eq('registro_id', regId),
+        ])
+        if (resultadosRes.error) throw resultadosRes.error
+        if (diasRes.error) throw diasRes.error
+        return { resultados: resultadosRes.data ?? [], dias: diasRes.data ?? [] }
+      })
+      const { resultados: rawRes, dias: rawDias } = (resultado.datos ?? { resultados: [], dias: [] }) as { resultados: any[], dias: any[] }
 
       const res: Record<number, Record<string, ValorM37>> = {}
       const incMap: Record<string, string | null> = {}
-      for (const r of (resultadosRes.data ?? []) as any[]) {
+      for (const r of rawRes) {
         if (!res[r.dia]) res[r.dia] = {}
         res[r.dia][r.item_id] = r.valor as ValorM37
         if (r.incidencia_id !== undefined) {
@@ -189,7 +194,7 @@ export function LimpiezaCisterna() {
       setIncidenciaIdMap(incMap)
 
       const dd: Record<number, DiaDataLocal> = {}
-      for (const d of (diasRes.data ?? []) as any[]) {
+      for (const d of rawDias) {
         dd[d.dia] = {
           cloro_cisterna: d.cloro_cisterna ?? null,
           ajuste_cloro_cisterna: d.ajuste_cloro_cisterna ?? null,
@@ -205,7 +210,7 @@ export function LimpiezaCisterna() {
     } finally {
       setLoadingDetalle(false)
     }
-  }, [orgId])
+  }, [orgId, user?.id])
 
   const abrirDetalle = (reg: M37RegistroResumen) => {
     setRegistroActivo(reg)
