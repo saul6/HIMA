@@ -9,7 +9,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   ChevronLeft, FileDown, Loader2, ClipboardList,
-  TriangleAlert, CalendarDays, X, AlertCircle,
+  TriangleAlert, CalendarDays, X, AlertCircle, WifiOff,
 } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -41,6 +41,12 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
+import { opCabecera, opInsert, opUpsert } from '@/lib/offline/construirOperaciones'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -268,6 +274,9 @@ export function InspeccionPreoperacionalCooler() {
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M19', todosIds)
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M19')
+  const { guardar: guardarOffline } = useGuardarOffline('M19')
 
   // ── Navegación interna ──
   const [vista, setVista] = useState<Vista>('lista')
@@ -278,16 +287,19 @@ export function InspeccionPreoperacionalCooler() {
   const [loadingItems, setLoadingItems] = useState(false)
 
   useEffect(() => {
+    if (!profile?.id || !profile?.org_id) return
     let cancelado = false
     setLoadingItems(true)
-    tbl('m19_items_catalogo')
-      .select('*')
-      .order('orden')
-      .then(({ data }: { data: M19ItemCatalogo[] | null }) => {
-        if (!cancelado) { setItems(data ?? []); setLoadingItems(false) }
-      })
+    leerConCache('m19_items_catalogo', profile.id, profile.org_id, async () => {
+      const { data } = await tbl('m19_items_catalogo').select('*').order('orden')
+      return data ?? []
+    }).then((resultado) => {
+      if (!cancelado) { setItems((resultado.datos ?? []) as M19ItemCatalogo[]); setLoadingItems(false) }
+    }).catch(() => {
+      if (!cancelado) setLoadingItems(false)
+    })
     return () => { cancelado = true }
-  }, [])
+  }, [profile?.id, profile?.org_id])
 
   // ── Datos del detalle ──
   const [dias, setDias] = useState<M19DiaConResultados[]>([])
@@ -297,6 +309,11 @@ export function InspeccionPreoperacionalCooler() {
 
   const cargarDias = useCallback(async (regId: string) => {
     if (!profile?.org_id) return
+    const esLocal = lotesOffline.some(
+      l => (l.metadatos as any)?.tipo === 'cabecera' &&
+           l.operaciones.some(op => op.fila.id === regId)
+    )
+    if (esLocal) { setDias([]); setLoadingDias(false); return }
     setLoadingDias(true)
     try {
       const { data: diasData, error: dErr } = await tbl('m19_dias_inspeccion')
@@ -339,7 +356,7 @@ export function InspeccionPreoperacionalCooler() {
     } finally {
       setLoadingDias(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.org_id, lotesOffline])
 
   const abrirDetalle = (reg: M19RegistroResumen) => {
     setRegistroActivo(reg)
@@ -390,21 +407,44 @@ export function InspeccionPreoperacionalCooler() {
   useEffect(() => {
     if (!sheetNuevo) { setNYaExiste(false); return }
     if (!nRanchoId || !nMes || !profile?.org_id) { setNYaExiste(false); return }
+    const mesISO = nMes + '-01'
+    const existePendiente = lotesOffline.some(
+      l => (l.metadatos as any)?.tipo === 'cabecera' &&
+           (l.metadatos as any)?.rancho_id === nRanchoId &&
+           (l.metadatos as any)?.mes === mesISO
+    )
+    if (existePendiente) { setNYaExiste(true); return }
     let cancelado = false
     tbl('m19_registro_mensual')
       .select('id')
       .eq('org_id', profile.org_id)
       .eq('rancho_id', nRanchoId)
-      .eq('mes', nMes + '-01')
+      .eq('mes', mesISO)
       .maybeSingle()
       .then(({ data }: { data: any }) => { if (!cancelado) setNYaExiste(!!data) })
     return () => { cancelado = true }
-  }, [sheetNuevo, nRanchoId, nMes, profile?.org_id])
+  }, [sheetNuevo, nRanchoId, nMes, profile?.org_id, lotesOffline])
 
   async function handleCrearRegistro() {
     if (!nRanchoId) { setNErrRancho(true); return }
     if (!profile?.org_id) { toast.error('Sin organización activa'); return }
     if (nYaExiste) { toast.warning(`Ya existe un registro para este mes e instalación`); return }
+    const rancho = ranchos.find(r => r.id === nRanchoId)
+    if (!online) {
+      const localId = crypto.randomUUID()
+      const ok = await guardarOffline({
+        descripcion: `Inspección Pre-operacional · ${rancho?.nombre ?? ''} · ${nMes}`,
+        metadatos: { rancho_id: nRanchoId, rancho_nombre: rancho?.nombre, mes: nMes + '-01', tipo: 'cabecera' },
+        operaciones: [
+          opCabecera('m19_registro_mensual', {
+            id: localId, rancho_id: nRanchoId, org_id: profile.org_id,
+            mes: nMes + '-01',
+          }, ['rancho_id', 'mes']),
+        ],
+      })
+      if (ok) setSheetNuevo(false)
+      return
+    }
     setNGuardando(true)
     try {
       const { data, error: e } = await tbl('m19_registro_mensual')
@@ -480,6 +520,12 @@ export function InspeccionPreoperacionalCooler() {
     if (!sheetDia || !dFecha || !registroActivo || !profile?.org_id) {
       setDYaExiste(false); return
     }
+    const existePendiente = lotesOffline.some(
+      l => (l.metadatos as any)?.tipo === 'dia' &&
+           (l.metadatos as any)?.registro_id === registroActivo.id &&
+           (l.metadatos as any)?.fecha === dFecha
+    )
+    if (existePendiente) { setDYaExiste(true); return }
     let cancelado = false
     tbl('m19_dias_inspeccion')
       .select('id')
@@ -489,7 +535,7 @@ export function InspeccionPreoperacionalCooler() {
       .maybeSingle()
       .then(({ data }: { data: any }) => { if (!cancelado) setDYaExiste(!!data) })
     return () => { cancelado = true }
-  }, [sheetDia, dFecha, registroActivo, profile?.org_id])
+  }, [sheetDia, dFecha, registroActivo, profile?.org_id, lotesOffline])
 
   function handleCerrarSheetDia() {
     setSheetDia(false); setSheetDiaPaso('form'); setPendienteFirmaIds([])
@@ -504,6 +550,42 @@ export function InspeccionPreoperacionalCooler() {
     const mes = registroActivo.mes.slice(0, 7)
     if (!dFecha.startsWith(mes)) {
       toast.error('La fecha debe estar dentro del mes del registro')
+      return
+    }
+
+    if (!online) {
+      const diaId = crypto.randomUUID()
+      const incItems = items.filter(item => dValores[item.id] === 'NO' && dIncidencias[item.id]?.trim())
+      const incidenciaIds: Record<string, string> = {}
+      let reporteId: string | null = null
+      if (incItems.length > 0) {
+        reporteId = crypto.randomUUID()
+        for (const item of incItems) incidenciaIds[item.id] = crypto.randomUUID()
+      }
+      const ok = await guardarOffline({
+        descripcion: `Insp. Pre-operacional Cooler · ${dFecha} · ${registroActivo.rancho_nombre}`,
+        metadatos: { registro_id: registroActivo.id, rancho_nombre: registroActivo.rancho_nombre, mes: registroActivo.mes, fecha: dFecha, tipo: 'dia', items_count: items.length },
+        operaciones: [
+          ...(reporteId ? [
+            opInsert('m13_reportes', { id: reporteId, rancho_id: registroActivo.rancho_id, org_id: profile.org_id!, fecha: dFecha, auditor_nombre: profile.nombre_completo ?? null }),
+            ...incItems.map((item, i) => opInsert('m13_incidencias', { id: incidenciaIds[item.id], reporte_id: reporteId!, org_id: profile.org_id!, descripcion: dIncidencias[item.id].trim(), orden: i + 1 })),
+          ] : []),
+          opCabecera('m19_dias_inspeccion', { id: diaId, registro_id: registroActivo.id, org_id: profile.org_id!, fecha: dFecha }, ['registro_id', 'fecha']),
+          ...items.map(item => {
+            const val = dValores[item.id] ?? 'SI'
+            return opUpsert('m19_resultados', {
+              id: crypto.randomUUID(),
+              dia_id: diaId,
+              item_id: item.id,
+              org_id: profile.org_id!,
+              valor: val,
+              codigo_correctivo: val === 'NO' ? (dCodigos[item.id]?.trim() || null) : null,
+              incidencia_id: incidenciaIds[item.id] ?? null,
+            }, ['dia_id', 'item_id'])
+          }),
+        ],
+      })
+      if (ok) handleCerrarSheetDia()
       return
     }
 
@@ -694,7 +776,7 @@ export function InspeccionPreoperacionalCooler() {
 
           {loading ? (
             <ListaSkeleton />
-          ) : registros.length === 0 ? (
+          ) : registros.length === 0 && lotesOffline.length === 0 ? (
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <ClipboardList className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
               <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
@@ -704,6 +786,20 @@ export function InspeccionPreoperacionalCooler() {
             </div>
           ) : (
             <div className="space-y-3">
+              {lotesOffline.map((lote) => (
+                <div key={lote.id} className="bg-card rounded-xl border border-border p-4">
+                  <div className="mb-1">
+                    <span className="text-xs px-2 py-0.5 rounded"
+                      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                      {formatMesLabel((lote.metadatos as any)?.mes + '-01')}
+                    </span>
+                  </div>
+                  <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    {(lote.metadatos as any)?.rancho_nombre ?? '—'}
+                  </span>
+                  <div className="mt-2"><ChipOffline estado={lote.estado} /></div>
+                </div>
+              ))}
               {registros.map((reg) => (
                 <button
                   key={reg.id}
@@ -934,10 +1030,10 @@ export function InspeccionPreoperacionalCooler() {
                 <button
                   onClick={handleCrearRegistro}
                   disabled={nGuardando || nYaExiste || !nRanchoId}
-                  className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 transition-colors"
+                  className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 transition-colors flex items-center justify-center gap-1.5"
                   style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
                 >
-                  {nGuardando ? 'Creando…' : 'Crear registro'}
+                  {nGuardando ? 'Creando…' : !online ? <><WifiOff className="w-4 h-4" /> Crear sin conexión</> : 'Crear registro'}
                 </button>
             </div>
           </div>

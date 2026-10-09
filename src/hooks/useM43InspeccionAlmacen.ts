@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export type ValorM43 = 'cumple' | 'no_cumple' | 'na'
 
@@ -36,7 +37,7 @@ export interface M43RegistroMensual {
 }
 
 export function useM43InspeccionAlmacen() {
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
   const [registros, setRegistros] = useState<M43RegistroMensual[]>([])
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState(false)
@@ -46,21 +47,24 @@ export function useM43InspeccionAlmacen() {
     setLoading(true)
     setError(false)
     try {
-      const tbl = supabase as any
-      const { data, error: err } = await tbl
-        .from('m43_registro_mensual')
-        .select(`
-          id, org_id, rancho_id, anio, mes, realizado_por, verifica, autoriza, observaciones,
-          ranchos(nombre, codigo),
-          m43_dias(id, dia, acciones_tomadas),
-          m43_resultados(id, punto_id, dia, valor, incidencia_id)
-        `)
-        .eq('org_id', profile.org_id)
-        .order('anio', { ascending: false })
-        .order('mes', { ascending: false })
-      if (err) throw err
+      const resultado = await leerConCache('m43_registros', user?.id ?? '', profile.org_id, async () => {
+        const tbl = supabase as any
+        const { data, error: err } = await tbl
+          .from('m43_registro_mensual')
+          .select(`
+            id, org_id, rancho_id, anio, mes, realizado_por, verifica, autoriza, observaciones,
+            ranchos(nombre, codigo),
+            m43_dias(id, dia, acciones_tomadas),
+            m43_resultados(id, punto_id, dia, valor, incidencia_id)
+          `)
+          .eq('org_id', profile.org_id)
+          .order('anio', { ascending: false })
+          .order('mes', { ascending: false })
+        if (err) throw err
+        return data ?? []
+      })
 
-      const items: M43RegistroMensual[] = ((data ?? []) as any[]).map((r: any) => {
+      const items: M43RegistroMensual[] = ((resultado.datos ?? []) as any[]).map((r: any) => {
         const diasRaw: any[]      = r.m43_dias ?? []
         const resultadosRaw: any[] = r.m43_resultados ?? []
 
@@ -107,7 +111,7 @@ export function useM43InspeccionAlmacen() {
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.org_id, user?.id])
 
   useEffect(() => { fetchRegistros() }, [fetchRegistros])
 

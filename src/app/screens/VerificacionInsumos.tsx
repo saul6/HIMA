@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   ChevronLeft, Plus, FileDown, Loader2, ClipboardCheck,
-  TriangleAlert, CalendarDays, X, AlertCircle,
+  TriangleAlert, CalendarDays, X, AlertCircle, WifiOff,
 } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -38,6 +38,11 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
+import { opCabecera } from '@/lib/offline/construirOperaciones'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -214,6 +219,9 @@ export function VerificacionInsumos() {
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M23', todosIds)
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M23')
+  const { guardar: guardarOffline } = useGuardarOffline('M23')
 
   // ── Navegación interna ──
   const [vista, setVista] = useState<Vista>('lista')
@@ -341,6 +349,22 @@ export function VerificacionInsumos() {
     if (!nRanchoId) { setNErrRancho(true); return }
     if (!orgId) { toast.error('Sin organización activa'); return }
     if (nYaExiste) { toast.warning('Ya existe un registro para este mes e instalación'); return }
+    const rancho = ranchos.find(r => r.id === nRanchoId)
+    if (!online) {
+      const localId = crypto.randomUUID()
+      const ok = await guardarOffline({
+        descripcion: `Verificación Insumos · ${rancho?.nombre ?? ''} · ${nMes}`,
+        metadatos: { rancho_id: nRanchoId, rancho_nombre: rancho?.nombre, mes: nMes },
+        operaciones: [
+          opCabecera('m23_registro_mensual', {
+            id: localId, rancho_id: nRanchoId, org_id: orgId!,
+            mes: nMes + '-01',
+          }, ['rancho_id', 'mes']),
+        ],
+      })
+      if (ok) setSheetNuevo(false)
+      return
+    }
     setNGuardando(true)
     try {
       const { data, error: e } = await tbl('m23_registro_mensual')
@@ -705,7 +729,7 @@ export function VerificacionInsumos() {
           )}
           {loading ? (
             <ListaSkeleton />
-          ) : registros.length === 0 ? (
+          ) : registros.length === 0 && lotesOffline.length === 0 ? (
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <ClipboardCheck className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
               <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
@@ -713,6 +737,20 @@ export function VerificacionInsumos() {
             </div>
           ) : (
             <div className="space-y-3">
+              {lotesOffline.map((lote) => (
+                <div key={lote.id} className="bg-card rounded-xl border border-border p-4">
+                  <div className="mb-1">
+                    <span className="text-xs px-2 py-0.5 rounded"
+                      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                      {formatMesLabel((lote.metadatos as any)?.mes + '-01')}
+                    </span>
+                  </div>
+                  <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    {(lote.metadatos as any)?.rancho_nombre ?? '—'}
+                  </span>
+                  <div className="mt-2"><ChipOffline estado={lote.estado} /></div>
+                </div>
+              ))}
               {registros.map((reg) => (
                 <button
                   key={reg.id}
@@ -881,10 +919,10 @@ export function VerificacionInsumos() {
                 <button
                   onClick={handleCrearRegistro}
                   disabled={nGuardando || nYaExiste || !nRanchoId}
-                  className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60"
+                  className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-1.5"
                   style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
                 >
-                  {nGuardando ? 'Creando…' : 'Crear registro'}
+                  {nGuardando ? 'Creando…' : !online ? <><WifiOff className="w-4 h-4" /> Crear sin conexión</> : 'Crear registro'}
                 </button>
               </div>
             </div>

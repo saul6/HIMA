@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M23RegistroResumen {
   id: string
@@ -37,41 +38,41 @@ export interface M23Insumo {
 const tbl = (name: string) => (supabase as any).from(name)
 
 export function useM23VerificacionInsumos() {
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
   const [registros, setRegistros] = useState<M23RegistroResumen[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
     if (!profile?.org_id) { setLoading(false); return }
-    setLoading(true)
-    setError(null)
+    setLoading(true); setError(null)
     try {
-      const { data, error: err } = await tbl('m23_registro_mensual')
-        .select('*, ranchos(nombre, codigo)')
-        .eq('org_id', profile.org_id)
-        .order('mes', { ascending: false })
-        .order('created_at', { ascending: false })
-      if (err) throw err
-      setRegistros(
-        ((data ?? []) as any[]).map((r) => ({
-          id: r.id,
-          rancho_id: r.rancho_id,
-          rancho_nombre: r.ranchos?.nombre ?? '—',
-          rancho_codigo: r.ranchos?.codigo ?? '—',
-          mes: r.mes as string,
-          verifico_nombre: r.verifico_nombre ?? null,
-          autorizo_nombre: r.autorizo_nombre ?? null,
-          observaciones: r.observaciones ?? null,
-          created_at: r.created_at,
-        }))
-      )
+      const resultado = await leerConCache('m23_registros', user?.id ?? '', profile.org_id, async () => {
+        const { data, error: err } = await tbl('m23_registro_mensual')
+          .select('*, ranchos(nombre, codigo)')
+          .eq('org_id', profile.org_id)
+          .order('mes', { ascending: false })
+          .order('created_at', { ascending: false })
+        if (err) throw err
+        return data ?? []
+      })
+      setRegistros(((resultado.datos ?? []) as any[]).map((r) => ({
+        id: r.id,
+        rancho_id: r.rancho_id,
+        rancho_nombre: r.ranchos?.nombre ?? '—',
+        rancho_codigo: r.ranchos?.codigo ?? '—',
+        mes: r.mes as string,
+        verifico_nombre: r.verifico_nombre ?? null,
+        autorizo_nombre: r.autorizo_nombre ?? null,
+        observaciones: r.observaciones ?? null,
+        created_at: r.created_at,
+      })))
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error al cargar registros M23')
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.org_id, user?.id])
 
   useEffect(() => { cargar() }, [cargar])
   return { registros, loading, error, refetch: cargar }

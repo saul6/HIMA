@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
-  ChevronLeft, FileDown, Loader2, AlertCircle, TriangleAlert, PackageOpen, X,
+  ChevronLeft, FileDown, Loader2, AlertCircle, TriangleAlert, PackageOpen, X, WifiOff,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
@@ -29,6 +29,11 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { useConexion } from '@/hooks/useConexion'
+import { usePendientesModulo } from '@/hooks/usePendientesModulo'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { ChipOffline } from '@/app/components/ChipOffline'
+import { opCabecera } from '@/lib/offline/construirOperaciones'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -182,6 +187,9 @@ export function InspeccionAlmacenEmpaque() {
   const termino      = terminosSitio.singular
 
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { lotes: lotesOffline } = usePendientesModulo('M43')
+  const { guardar: guardarOffline } = useGuardarOffline('M43')
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M43', todosIds)
 
@@ -322,6 +330,24 @@ export function InspeccionAlmacenEmpaque() {
   async function handleCrearRegistro() {
     if (!nRanchoId) { setErrRancho(true); return }
     if (!profile?.org_id) return
+    const rancho = ranchos.find(r => r.id === nRanchoId)
+    if (!online) {
+      const localId = crypto.randomUUID()
+      const anio = Number(nMes.split('-')[0])
+      const mes = Number(nMes.split('-')[1])
+      const ok = await guardarOffline({
+        descripcion: `Inspección Almacén Empaque · ${rancho?.nombre ?? ''} · ${nMes}`,
+        metadatos: { rancho_id: nRanchoId, rancho_nombre: rancho?.nombre, anio, mes },
+        operaciones: [
+          opCabecera('m43_registro_mensual', {
+            id: localId, rancho_id: nRanchoId, org_id: profile.org_id,
+            anio, mes,
+          }, ['rancho_id', 'anio', 'mes']),
+        ],
+      })
+      if (ok) handleCerrarSheetCrear()
+      return
+    }
     setCreando(true)
     try {
       const { error: err } = await (supabase as any)
@@ -584,7 +610,7 @@ export function InspeccionAlmacenEmpaque() {
 
           {loading ? (
             <ListaSkeleton />
-          ) : registros.length === 0 ? (
+          ) : registros.length === 0 && lotesOffline.length === 0 ? (
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <PackageOpen className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
               <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
@@ -594,6 +620,20 @@ export function InspeccionAlmacenEmpaque() {
             </div>
           ) : (
             <div className="space-y-3">
+              {lotesOffline.map((lote) => (
+                <div key={lote.id} className="bg-card rounded-xl border border-border p-4">
+                  <div className="mb-1">
+                    <span className="text-xs px-2 py-0.5 rounded"
+                      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                      {formatMesLabel((lote.metadatos as any)?.anio ?? 0, (lote.metadatos as any)?.mes ?? 0)}
+                    </span>
+                  </div>
+                  <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    {(lote.metadatos as any)?.rancho_nombre ?? '—'}
+                  </span>
+                  <div className="mt-2"><ChipOffline estado={lote.estado} /></div>
+                </div>
+              ))}
               {registros.map((reg) => (
                 <button
                   key={reg.id}
@@ -865,10 +905,10 @@ export function InspeccionAlmacenEmpaque() {
               <button
                 onClick={handleCrearRegistro}
                 disabled={creando}
-                className="w-full h-12 rounded-xl text-sm text-white disabled:opacity-60"
+                className="w-full h-12 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-1.5"
                 style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
               >
-                {creando ? 'Creando…' : 'Crear registro'}
+                {creando ? 'Creando…' : !online ? <><WifiOff className="w-4 h-4" /> Crear sin conexión</> : 'Crear registro'}
               </button>
             </div>
             </>)}
