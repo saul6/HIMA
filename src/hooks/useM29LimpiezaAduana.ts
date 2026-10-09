@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export type ValorM29 = 'hecho' | 'no_hecho' | 'na'
 
@@ -25,7 +26,7 @@ export interface M29Item {
 const tbl = (name: string) => (supabase as any).from(name)
 
 export function useM29LimpiezaAduana() {
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
   const [registros, setRegistros] = useState<M29RegistroResumen[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -34,13 +35,16 @@ export function useM29LimpiezaAduana() {
     if (!profile?.org_id) { setLoading(false); return }
     setLoading(true); setError(null)
     try {
-      const { data, error: err } = await tbl('m29_registro_mensual')
-        .select('*, ranchos(nombre)')
-        .eq('org_id', profile.org_id)
-        .order('anio', { ascending: false })
-        .order('mes', { ascending: false })
-      if (err) throw err
-      setRegistros(((data ?? []) as any[]).map((r) => ({
+      const resultado = await leerConCache('m29_registros', user?.id ?? '', profile.org_id, async () => {
+        const { data, error: err } = await tbl('m29_registro_mensual')
+          .select('*, ranchos(nombre)')
+          .eq('org_id', profile.org_id)
+          .order('anio', { ascending: false })
+          .order('mes', { ascending: false })
+        if (err) throw err
+        return data ?? []
+      })
+      setRegistros(((resultado.datos ?? []) as any[]).map((r) => ({
         id: r.id,
         rancho_id: r.rancho_id,
         rancho_nombre: r.ranchos?.nombre ?? '—',
@@ -52,7 +56,7 @@ export function useM29LimpiezaAduana() {
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error al cargar registros M29')
     } finally { setLoading(false) }
-  }, [profile?.org_id])
+  }, [profile?.org_id, user?.id])
 
   useEffect(() => { cargar() }, [cargar])
   return { registros, loading, error, refetch: cargar }
