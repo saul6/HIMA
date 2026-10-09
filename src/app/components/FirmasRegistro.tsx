@@ -8,8 +8,11 @@ import {
   type FirmasDeRegistro,
   type FirmaDetalle,
 } from '@/hooks/useFirmasRegistro'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { FirmaPad, type FirmaPadRef } from '@/app/components/FirmaPad'
 import { FirmaSvg } from '@/app/components/FirmaSvg'
+import { Skeleton } from '@/app/components/ui/skeleton'
+import { SkeletonFilas } from '@/app/components/SkeletonFilas'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -194,6 +197,7 @@ export function FirmasRegistro({
   const [mostrarHistorial, setMostrarHistorial] = useState(false)
   const [historial, setHistorial] = useState<any[]>([])
   const [cargandoHistorial, setCargandoHistorial] = useState(false)
+  const mostrarSkeletonHistorial = useMostrarCarga(cargandoHistorial, historial.length > 0)
 
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'asesor_tecnico' || profile?.rol === 'super_admin'
   const esAuditor = profile?.rol === 'auditor'
@@ -303,12 +307,25 @@ export function FirmasRegistro({
     }
   }
 
-  if (loadingFirmas) {
+  const mostrarSkeletonFirmas = useMostrarCarga(loadingFirmas, !!firma)
+
+  if (mostrarSkeletonFirmas) {
     return (
       <div className="border-t border-border mt-3 pt-3">
-        <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+        <div className="grid grid-cols-2 gap-3">
+          {[0, 1].map((i) => (
+            <div key={i} className="space-y-1.5">
+              <Skeleton className="h-2.5 w-14" />
+              <Skeleton className="h-3.5 w-20" />
+            </div>
+          ))}
+        </div>
       </div>
     )
+  }
+
+  if (loadingFirmas && !firma) {
+    return <div className="border-t border-border mt-3 pt-3" style={{ minHeight: '44px' }} />
   }
 
   return (
@@ -356,7 +373,7 @@ export function FirmasRegistro({
           </p>
 
           {cargandoMiFirma ? (
-            <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+            <Skeleton className="h-20 w-full rounded-lg" />
           ) : miFirmaInfo?.tiene ? (
             /* Preview de la firma del usuario */
             <div
@@ -427,8 +444,8 @@ export function FirmasRegistro({
         inert={!mostrarHistorial ? true : undefined}
       >
         <div className="mt-2 space-y-2">
-          {cargandoHistorial ? (
-            <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+          {mostrarSkeletonHistorial ? (
+            <SkeletonFilas rows={2} />
           ) : historial.length === 0 ? (
             <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
               Sin historial de firmas
