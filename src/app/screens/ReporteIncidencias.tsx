@@ -1013,8 +1013,9 @@ export function ReporteIncidencias() {
                       {/* Eliminar */}
                       <button
                         onClick={() => handleEliminar(r)}
-                        className="p-2 text-muted-foreground hover:text-agro-red transition-colors"
-                        title="Eliminar reporte"
+                        disabled={!online}
+                        title={!online ? 'Necesitas conexión para eliminar' : 'Eliminar reporte'}
+                        className="p-2 text-muted-foreground hover:text-agro-red transition-colors disabled:opacity-40"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

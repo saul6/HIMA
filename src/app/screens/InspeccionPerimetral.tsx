@@ -795,11 +795,12 @@ export function InspeccionPerimetral() {
             </div>
             <button
               onClick={handleGuardarObs}
-              disabled={savingObs}
+              disabled={savingObs || !online}
+              title={!online ? 'Necesitas conexión para editar' : undefined}
               className="h-9 px-4 rounded-xl text-sm text-white disabled:opacity-60 transition-colors"
               style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
             >
-              {savingObs ? 'Guardando…' : 'Guardar notas'}
+              {savingObs ? 'Guardando…' : !online ? 'Sin conexión' : 'Guardar notas'}
             </button>
           </div>
 

@@ -44,6 +44,7 @@ import { useLimiteProactivo } from '@/hooks/useLimiteProactivo'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { BannerLimiteOffline } from '@/app/components/BannerLimiteOffline'
 import { WifiOff } from 'lucide-react'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -313,7 +314,7 @@ export function InspeccionVidrioPlastico() {
 
   // ── Carga de materiales del catálogo al cambiar rancho en inspección ────
   useEffect(() => {
-    if (!sheetInspeccionAbierto || !ranchoId || !profile?.org_id) {
+    if (!sheetInspeccionAbierto || !ranchoId || !profile?.org_id || !user?.id) {
       setFilasInspeccion([])
       setCargandoMateriales(false)
       return
@@ -322,36 +323,43 @@ export function InspeccionVidrioPlastico() {
     setFilasInspeccion([])
     setCargandoMateriales(true)
 
-    supabase
-      .from('m7_materiales_rancho')
-      .select('id, area, material')
-      .eq('org_id', profile.org_id)
-      .eq('rancho_id', ranchoId)
-      .eq('activo', true)
-      .order('area')
-      .order('material')
-      .then(({ data, error }) => {
-        if (cancelado) return
-        if (error) {
-          toast.error('Error al cargar materiales del catálogo')
-          setCargandoMateriales(false)
-          return
-        }
-        setFilasInspeccion(
-          (data ?? []).map((m) => ({
-            catalogoId: m.id,
-            area: m.area,
-            material: m.material,
-            protegido: true,
-            estado: 'Bueno' as Estado,
-            observaciones: '',
-          }))
-        )
-        setCargandoMateriales(false)
-      })
+    leerConCache<{ id: string; area: string; material: string }[]>(
+      `m7_materiales:${ranchoId}`,
+      user.id,
+      profile.org_id,
+      async () => {
+        const { data, error } = await supabase
+          .from('m7_materiales_rancho')
+          .select('id, area, material')
+          .eq('org_id', profile.org_id)
+          .eq('rancho_id', ranchoId)
+          .eq('activo', true)
+          .order('area')
+          .order('material')
+        if (error) throw error
+        return data ?? []
+      },
+    ).then(({ datos }) => {
+      if (cancelado) return
+      setFilasInspeccion(
+        datos.map((m) => ({
+          catalogoId: m.id,
+          area: m.area,
+          material: m.material,
+          protegido: true,
+          estado: 'Bueno' as Estado,
+          observaciones: '',
+        }))
+      )
+      setCargandoMateriales(false)
+    }).catch(() => {
+      if (cancelado) return
+      toast.error('Error al cargar materiales del catálogo')
+      setCargandoMateriales(false)
+    })
 
     return () => { cancelado = true }
-  }, [sheetInspeccionAbierto, ranchoId, profile?.org_id])
+  }, [sheetInspeccionAbierto, ranchoId, profile?.org_id, user?.id])
 
   // ── Carga de materiales al cambiar rancho en configuración ───────────────
   useEffect(() => {

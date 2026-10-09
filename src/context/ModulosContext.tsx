@@ -114,10 +114,24 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
           return data ?? []
         },
       },
+      {
+        clave: 'profiles_org',
+        fetcher: async () => {
+          const { data } = await supabase
+            .from('profiles')
+            .select('id, nombre_completo')
+            .eq('org_id', orgId)
+            .eq('activo', true)
+            .order('nombre_completo')
+          return data ?? []
+        },
+      },
     ])
 
     // Precarga de días M9 para todos los registros del mes actual
     await precargarDiasM9(userId, orgId!)
+    // Precarga de materiales M7 por rancho
+    await precargarMaterialesM7(userId, orgId!)
   }, [userId, orgId])
 
   async function precargarDiasM9(userId: string, orgId: string) {
@@ -156,6 +170,36 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
             return { dias, resultados }
           },
           { maxEdad: 5 * 60 * 1000 },
+        ),
+      ),
+    )
+  }
+
+  async function precargarMaterialesM7(userId: string, orgId: string) {
+    const { data: ranchos } = await supabase
+      .from('ranchos')
+      .select('id')
+      .eq('org_id', orgId)
+      .eq('activo', true)
+    if (!ranchos) return
+    await Promise.allSettled(
+      ranchos.map((r: any) =>
+        leerConCache(
+          `m7_materiales:${r.id}`,
+          userId,
+          orgId,
+          async () => {
+            const { data } = await supabase
+              .from('m7_materiales_rancho')
+              .select('id, area, material')
+              .eq('org_id', orgId)
+              .eq('rancho_id', r.id)
+              .eq('activo', true)
+              .order('area')
+              .order('material')
+            return data ?? []
+          },
+          { maxEdad: 10 * 60 * 1000 },
         ),
       ),
     )

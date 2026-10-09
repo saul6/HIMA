@@ -37,6 +37,7 @@ import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { WifiOff } from 'lucide-react'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -144,15 +145,24 @@ export function RegistroCosechaLiberacion() {
   const [perfiles, setPerfiles] = useState<PerfilItem[]>([])
 
   useEffect(() => {
-    if (!profile?.org_id) return
-    supabase
-      .from('profiles')
-      .select('id, nombre_completo')
-      .eq('org_id', profile.org_id)
-      .eq('activo', true)
-      .order('nombre_completo')
-      .then(({ data }) => { if (data) setPerfiles(data) })
-  }, [profile?.org_id])
+    if (!profile?.org_id || !user?.id) return
+    leerConCache<{ id: string; nombre_completo: string }[]>(
+      'profiles_org',
+      user.id,
+      profile.org_id,
+      async () => {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, nombre_completo')
+          .eq('org_id', profile.org_id)
+          .eq('activo', true)
+          .order('nombre_completo')
+        if (error) throw error
+        return data ?? []
+      },
+    ).then(({ datos }) => { setPerfiles(datos) })
+      .catch(() => { /* sin red: perfiles vacíos — sigue funcionando sin selector */ })
+  }, [profile?.org_id, user?.id])
 
   // Form principal
   const [sheetAbierto, setSheetAbierto]     = useState(false)
@@ -190,6 +200,11 @@ export function RegistroCosechaLiberacion() {
   useEffect(() => {
     if (!sheetAbierto || !ranchoId || !fecha || !profile?.org_id) {
       setAdvertencias([])
+      return
+    }
+    if (!navigator.onLine) {
+      setAdvertencias([])
+      setCargandoVerif(false)
       return
     }
     let cancelado = false
