@@ -315,7 +315,7 @@ function TabProductividad({
                       {c.es_yo && (
                         <span
                           className="text-xs font-semibold px-1 py-0.5 rounded"
-                          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                          style={{ backgroundColor: 'var(--mint-tint-fill)', color: 'var(--mint-tint-text)', outline: '1px solid var(--mint-tint-border)' }}
                         >
                           Tú
                         </span>

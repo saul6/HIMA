@@ -1501,7 +1501,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                         disabled={bloqueado}
                         herenciaEstado="sin_confirmar"
                       />
-                      <p className="text-[10px] font-medium" style={{ color: 'var(--agro-blue)' }}>
+                      <p className="text-[10px] font-medium" style={{ color: 'var(--text-sky-strong)' }}>
                         Heredado de {h.origen_question_id ?? 'otra pregunta'}: sin confirmar
                       </p>
                       {!cerrada && (

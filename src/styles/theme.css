@@ -16,19 +16,25 @@
   --primary-foreground: #FFFFFF;
   --secondary: #2AAD95;           /* Verde Esmeralda/Menta */
   --secondary-foreground: #FFFFFF;
-  --muted: #F0F7FC;               /* Azul/Gris Muted claro */
-  --muted-foreground: #607286;
-  --accent: #E5F2FA;              /* Fondo de Acento (Azul Cielo Claro) */
+  --muted: #E3EAF1;               /* Azul/Gris Muted claro */
+  --muted-foreground: #4A5A6C;
+  --accent: #D6E8F6;              /* Fondo de Acento (Azul Cielo Claro) */
   --accent-foreground: #173251;
   --destructive: #C02A2A;
   --destructive-foreground: #FFFFFF;
-  --border: rgba(9, 13, 21, 0.1);
-  --input: transparent;
+  --border: rgba(9, 13, 21, 0.18);
+  --input: var(--border-control);
   --input-background: #F3F6F9;
   --switch-background: #CBD2D9;
   --font-weight-medium: 600;
   --font-weight-normal: 400;
   --ring: #81BEE5;
+  --border-control: #8496AB;      /* Borde de controles: 3:1 sobre blanco */
+  --text-sky-strong: #1B6598;     /* Texto Sky sobre fondo claro (AA) */
+  --text-mint-strong: #17695A;    /* Texto menta sobre fondo claro (AA) */
+  --mint-tint-fill: #D9F1E9;
+  --mint-tint-text: #17695A;
+  --mint-tint-border: #9FD8C7;
   
   /* AgroCampo Brand Colors - Paleta de Inocuidad Vegetal Actualizada */
   --agro-primary: #173251;        /* Azul Oscuro */
@@ -54,9 +60,9 @@
   --sidebar-foreground: #090D15;
   --sidebar-primary: #173251;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #E5F2FA;
+  --sidebar-accent: #D6E8F6;
   --sidebar-accent-foreground: #173251;
-  --sidebar-border: rgba(9, 13, 21, 0.1);
+  --sidebar-border: rgba(9, 13, 21, 0.18);
   --sidebar-ring: #81BEE5;
 
   /* Paleta login/registro/restablecer — panel oscuro Navy/Sky/Muted. Navy es
@@ -82,7 +88,7 @@
   --auth-border-dark: rgba(255, 255, 255, 0.14);
   /* Gris claro derivado de --muted-foreground (NO azul/sky) — para que el texto
      secundario no compita con el título, igual que la referencia de diseño. */
-  --auth-text-secondary-dark: color-mix(in srgb, var(--muted-foreground) 55%, white 45%);
+  --auth-text-secondary-dark: color-mix(in srgb, #607286 55%, white 45%);
   /* Línea divisoria: fina + glow sky suave (no barra sólida). */
   --auth-divider: color-mix(in srgb, var(--auth-accent) 40%, transparent);
   --auth-divider-width: 2px;
@@ -184,6 +190,12 @@
   --border: rgba(255, 255, 255, 0.15);
   --input: #1A2332;
   --ring: #2AAD95;
+  --border-control: rgba(255, 255, 255, 0.15);
+  --text-sky-strong: #81BEE5;
+  --text-mint-strong: #2AAD95;
+  --mint-tint-fill: var(--primary);
+  --mint-tint-text: #FFFFFF;
+  --mint-tint-border: transparent;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
   --chart-1: #81BEE5;
@@ -241,6 +253,8 @@
   --color-input-background: var(--input-background);
   --color-switch-background: var(--switch-background);
   --color-ring: var(--ring);
+  --color-text-sky-strong: var(--text-sky-strong);
+  --color-text-mint-strong: var(--text-mint-strong);
   
   /* AgroCampo Brand Colors */
   --color-agro-primary: var(--agro-primary);

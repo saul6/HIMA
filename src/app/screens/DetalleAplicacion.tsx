@@ -235,7 +235,7 @@ export function DetalleAplicacion() {
                 }`}
               >
                 {used ? (
-                  <CheckCircle className="w-4 h-4 text-secondary" />
+                  <CheckCircle className="w-4 h-4 text-text-mint-strong" />
                 ) : (
                   <div className="w-4 h-4 rounded-full border-2 border-muted-foreground" />
                 )}
