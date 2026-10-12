@@ -17,6 +17,8 @@ import { useCorreccionesPendientes } from '@/hooks/useCorreccionesPendientes'
 import { useAgendaResumen } from '@/hooks/useAgendaResumen'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useHomeSearch } from '@/context/HomeSearchContext'
+import { buscarPorInicio } from '@/lib/busquedaPorInicio'
+import { TextoResaltado } from '@/app/components/TextoResaltado'
 import { useTheme } from '@/context/ThemeContext'
 import { useContadorAnimado } from '@/hooks/useContadorAnimado'
 import { resolverIcono } from '@/app/components/iconos-modulos'
@@ -73,22 +75,6 @@ function searchCascadeStyle(index: number, enabled: boolean) {
     animation: 'searchResultFade var(--motion-fast) var(--ease-out) both',
     animationDelay: `${Math.min(index, 5) * 20}ms`,
   }
-}
-
-// Envuelve la parte de `nombre` que coincide con `query` (misma comparación
-// que el filtro: lowercase, sin normalizar acentos) en un span más grueso.
-function resaltarCoincidencia(nombre: string, query: string): ReactNode {
-  const q = query.trim().toLowerCase()
-  if (!q) return nombre
-  const idx = nombre.toLowerCase().indexOf(q)
-  if (idx === -1) return nombre
-  return (
-    <span>
-      {nombre.slice(0, idx)}
-      <span className="font-semibold" style={{ color: 'inherit' }}>{nombre.slice(idx, idx + q.length)}</span>
-      {nombre.slice(idx + q.length)}
-    </span>
-  )
 }
 
 // ── Sub-componentes locales ────────────────────────────────────────────────────
@@ -598,9 +584,7 @@ export function Home() {
   // Resultados de búsqueda en vivo — orden alfabético por nombre visible
   const modulosFiltrados = useMemo(() => {
     if (!busqueda.trim()) return []
-    const q = busqueda.toLowerCase()
-    const encontrados = modulos.filter(m => m.mostrar_en_menu && m.nombre.toLowerCase().includes(q))
-    return ordenarAlfabetico(encontrados, m => m.nombre)
+    return buscarPorInicio(modulos.filter(m => m.mostrar_en_menu), busqueda, m => m.nombre)
   }, [modulos, busqueda])
 
   // Objetos de módulos fijados
@@ -822,7 +806,7 @@ export function Home() {
                         style={{ opacity: 0.55, fontWeight: 500, ...searchCascadeStyle(index, !reducedMotion) }}
                       >
                         <Lock className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
-                        {resaltarCoincidencia(modulo.nombre, busqueda)}
+                        {<TextoResaltado texto={modulo.nombre} query={busqueda} />}
                       </button>
                     )
                   }
@@ -835,7 +819,7 @@ export function Home() {
                       style={{ fontWeight: 500, ...searchCascadeStyle(index, !reducedMotion) }}
                     >
                       <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--primary)' }} />
-                      {resaltarCoincidencia(modulo.nombre, busqueda)}
+                      {<TextoResaltado texto={modulo.nombre} query={busqueda} />}
                     </Link>
                   )
                 })}

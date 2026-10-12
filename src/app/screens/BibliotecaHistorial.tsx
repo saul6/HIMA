@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import type { ReactNode } from 'react'
+import { buscarPorInicio } from '@/lib/busquedaPorInicio'
+import { TextoResaltado } from '@/app/components/TextoResaltado'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ChevronLeft, ChevronDown, Search, X, Check, FileText, Package, Loader2, FilterX, Filter } from 'lucide-react'
 import { toast } from 'sonner'
@@ -85,30 +86,6 @@ function formatFecha(iso: string): string {
 
 function slugify(s: string): string {
   return s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-}
-
-// Ignora acentos/mayúsculas para el buscador de la ventana de módulos (los
-// índices se conservan 1:1 frente al texto original: NFD descompone cada
-// vocal/ñ acentuada en base + marca combinante, y aquí solo se quita la marca).
-const DIACRITICOS = new RegExp('[\\u0300-\\u036f]', 'g')
-function normalizarBusqueda(s: string): string {
-  return s.normalize('NFD').replace(DIACRITICOS, '').toLowerCase()
-}
-
-// Resalta la coincidencia dentro del texto original (con sus acentos intactos)
-// aunque la búsqueda ignore acentos. Solo negrita, mismo color del texto.
-function resaltarCoincidenciaModulo(texto: string, query: string): ReactNode {
-  const q = normalizarBusqueda(query.trim())
-  if (!q) return texto
-  const idx = normalizarBusqueda(texto).indexOf(q)
-  if (idx === -1) return texto
-  return (
-    <span>
-      {texto.slice(0, idx)}
-      <span className="font-semibold" style={{ color: 'inherit' }}>{texto.slice(idx, idx + q.length)}</span>
-      {texto.slice(idx + q.length)}
-    </span>
-  )
 }
 
 // Número de resultados del botón Exportar — cuenta del valor anterior al
@@ -969,13 +946,7 @@ export function BibliotecaHistorial() {
   )
 
   const modulosVisiblesSheet = useMemo(() => {
-    const q = normalizarBusqueda(busquedaModulos.trim())
-    if (!q) return modulosOrdenados
-    return modulosOrdenados.filter((m) => {
-      const nombre = normalizarBusqueda(nombreModulo(m))
-      const codigo = normalizarBusqueda(m)
-      return nombre.includes(q) || codigo.includes(q)
-    })
+    return buscarPorInicio(modulosOrdenados, busquedaModulos, nombreModulo, (m) => m)
   }, [modulosOrdenados, busquedaModulos, nombreModulo])
 
   const modulosSeleccionadosOrdenados = useMemo(
@@ -1578,7 +1549,7 @@ export function BibliotecaHistorial() {
                         )}
                       </span>
                       <span className="flex-1 min-w-0 text-sm truncate" style={{ fontWeight: active ? 600 : 400 }}>
-                        {resaltarCoincidenciaModulo(nombreModulo(m), busquedaModulos)}
+                        {<TextoResaltado texto={nombreModulo(m)} query={busquedaModulos} />}
                       </span>
                       <span className="text-xs flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>{m}</span>
                     </button>
