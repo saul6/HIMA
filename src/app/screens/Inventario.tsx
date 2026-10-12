@@ -619,7 +619,7 @@ export function Inventario() {
                     <div
                       className={`accordion-rows ${expanded ? 'is-open' : ''}`}
                       aria-hidden={!expanded}
-                      inert={!expanded ? true : undefined}
+                      inert={!expanded ? '' : undefined}
                     >
                       <HistorialInline
                         movimientos={historialCache[key] ?? []}
@@ -670,7 +670,7 @@ export function Inventario() {
                     <div
                       className={`accordion-rows ${expanded ? 'is-open' : ''}`}
                       aria-hidden={!expanded}
-                      inert={!expanded ? true : undefined}
+                      inert={!expanded ? '' : undefined}
                     >
                       <HistorialInline
                         movimientos={historialCache[key] ?? []}

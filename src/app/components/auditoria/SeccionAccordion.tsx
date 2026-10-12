@@ -73,7 +73,7 @@ export function SeccionAccordion({
       <div
         className={`accordion-rows ${abierto ? 'is-open' : ''}`}
         aria-hidden={!abierto}
-        inert={!abierto ? true : undefined}
+        inert={!abierto ? '' : undefined}
       >
         <div className="px-4 border-t border-border">
           {preguntas.map((p) => (

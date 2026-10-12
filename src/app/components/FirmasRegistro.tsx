@@ -441,7 +441,7 @@ export function FirmasRegistro({
       <div
         className={`accordion-rows ${mostrarHistorial ? 'is-open' : ''}`}
         aria-hidden={!mostrarHistorial}
-        inert={!mostrarHistorial ? true : undefined}
+        inert={!mostrarHistorial ? '' : undefined}
       >
         <div className="mt-2 space-y-2">
           {mostrarSkeletonHistorial ? (
