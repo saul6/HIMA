@@ -49,7 +49,7 @@ export function FiltroPildoras<T extends string = string>({
             aria-pressed={active}
             onClick={() => onChange(opt.value)}
             className={cn(
-              "relative flex-shrink-0 px-4 h-9 rounded-full whitespace-nowrap text-sm border transition-colors",
+              "relative isolate flex-shrink-0 px-4 h-9 rounded-full whitespace-nowrap text-sm border transition-colors",
               "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
               active ? "border-transparent" : inactiveClassName,
               className,

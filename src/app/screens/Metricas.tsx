@@ -1165,9 +1165,9 @@ function Filtros({
             <button
               key={p.key}
               onClick={() => setPeriodo(p.key)}
-              className="relative flex-shrink-0 text-xs px-3 py-1.5 rounded-full"
+              className="relative isolate flex-shrink-0 text-xs px-3 py-1.5 rounded-full"
               style={{
-                color: activo ? '#fff' : 'var(--muted-foreground)',
+                color: activo ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
                 fontWeight: activo ? 600 : 400,
               }}
             >
@@ -1175,7 +1175,7 @@ function Filtros({
                 <motion.span
                   layoutId="metricas-periodo-pill"
                   className="absolute inset-0 rounded-full"
-                  style={{ backgroundColor: 'var(--primary)', zIndex: -1 }}
+                  style={{ backgroundColor: 'var(--accent)', zIndex: -1 }}
                   transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
                 />
               )}
@@ -1449,9 +1449,9 @@ export function Metricas() {
             <button
               key={p.key}
               onClick={() => cambiarPestana(p.key)}
-              className="relative flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs"
+              className="relative isolate flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs"
               style={{
-                color: activa ? '#fff' : 'var(--muted-foreground)',
+                color: activa ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
                 fontWeight: activa ? 600 : 400,
               }}
             >
@@ -1459,7 +1459,7 @@ export function Metricas() {
                 <motion.span
                   layoutId="metricas-pestana-pill"
                   className="absolute inset-0 rounded-full"
-                  style={{ backgroundColor: 'var(--primary)', zIndex: -1 }}
+                  style={{ backgroundColor: 'var(--accent)', zIndex: -1 }}
                   transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
                 />
               )}
