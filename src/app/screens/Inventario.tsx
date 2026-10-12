@@ -1,5 +1,6 @@
 ﻿import { useState, useCallback, useMemo, useRef, useEffect } from "react"
-import { useReducedMotion } from "motion/react"
+import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from "motion/react"
+import { SPRING_SUAVE } from "@/lib/motion"
 import {
   Search,
   Plus,
@@ -419,6 +420,8 @@ export function Inventario() {
   const esOperario = profile?.rol === 'operario'
   const esCampo = terminosSitio.singular === 'Rancho'
   const [vista, setVista] = useState<Vista>("rancho")
+  // Dirección de la última vista elegida (1 = derecha, -1 = izquierda)
+  const dirVistaRef = useRef(1)
   const [searchQuery, setSearchQuery] = useState("")
   const [activeFilter, setActiveFilter] = useState("Todos")
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
@@ -506,22 +509,36 @@ export function Inventario() {
 
         {/* Toggle vista — solo para roles con productor asignado */}
         {!esOperario && (
-          <div className="flex gap-1 mt-3 bg-muted p-1 rounded-lg">
-            {(["rancho", "productor"] as Vista[]).map((v) => (
-              <button
-                key={v}
-                onClick={() => handleVistaChange(v)}
-                className={`flex-1 h-8 rounded-md text-sm transition-all ${
-                  vista === v
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground"
-                }`}
-                style={{ fontWeight: 600 }}
-              >
-                {v === "rancho" ? `Por ${terminosSitio.singular.toLowerCase()}` : "Por productor"}
-              </button>
-            ))}
-          </div>
+          <LayoutGroup id="inventario-vista">
+            <div className="flex gap-1 mt-3 bg-muted p-1 rounded-lg">
+              {(["rancho", "productor"] as Vista[]).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => {
+                    dirVistaRef.current = v === "productor" ? 1 : -1
+                    handleVistaChange(v)
+                  }}
+                  aria-pressed={vista === v}
+                  className={`relative flex-1 h-8 rounded-md text-sm transition-colors ${
+                    vista === v ? "text-foreground" : "text-muted-foreground"
+                  }`}
+                  style={{ fontWeight: 600, transitionDuration: 'var(--motion-fast)' }}
+                >
+                  {vista === v && (
+                    <motion.span
+                      layoutId="inventario-vista-activa"
+                      className="absolute inset-0 rounded-md bg-card"
+                      style={{ zIndex: 0 }}
+                      transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
+                    />
+                  )}
+                  <span className="relative z-10">
+                    {v === "rancho" ? `Por ${terminosSitio.singular.toLowerCase()}` : "Por productor"}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </LayoutGroup>
         )}
       </header>
 
@@ -568,7 +585,22 @@ export function Inventario() {
 
         {/* Lista */}
         {!loading && !error && (
-          <div className="space-y-3">
+          <AnimatePresence mode="wait" initial={false} custom={dirVistaRef.current}>
+          <motion.div
+            key={vista}
+            custom={dirVistaRef.current}
+            variants={{
+              enter: (d: number) => (reducedMotion ? { opacity: 1 } : { opacity: 0, x: d * 24 }),
+              center: { opacity: 1, x: 0, transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] } },
+              exit: (d: number) => (reducedMotion
+                ? { opacity: 1 }
+                : { opacity: 0, x: d * -12, transition: { duration: 0.12, ease: [0.22, 1, 0.36, 1] } }),
+            }}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            className="space-y-3"
+          >
             {filtered.length === 0 ? (
               <p
                 className="text-sm text-muted-foreground text-center py-8"
@@ -682,7 +714,8 @@ export function Inventario() {
                 )
               })
             )}
-          </div>
+          </motion.div>
+          </AnimatePresence>
         )}
       </div>
 
