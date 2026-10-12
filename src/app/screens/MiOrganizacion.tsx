@@ -404,11 +404,11 @@ export function MiOrganizacion() {
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                             <span className="text-xs text-primary" style={{ fontWeight: 600 }}>
-                              {emp.nombre_completo.split(' ').slice(0, 2).map((p) => p[0]).join('').toUpperCase()}
+                              {(emp.nombre_completo ?? '').split(' ').slice(0, 2).map((p) => p[0] ?? '').join('').toUpperCase()}
                             </span>
                           </div>
                           <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
-                            {emp.nombre_completo}
+                            {emp.nombre_completo ?? 'Sin nombre'}
                           </span>
                         </div>
                         <span
@@ -686,7 +686,7 @@ export function MiOrganizacion() {
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <div className="min-w-0 flex-1">
                 <h2 className="text-base text-foreground truncate" style={{ fontWeight: 600 }}>
-                  {empleadoSeleccionado.nombre_completo}
+                  {empleadoSeleccionado?.nombre_completo ?? 'Sin nombre'}
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {asignacionesEmpleado.size} {asignacionesEmpleado.size === 1 ? sTerminoL : sPluralL} asignado{sGenero === 'f' ? 'a' : ''}s
