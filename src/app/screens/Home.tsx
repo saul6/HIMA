@@ -25,7 +25,6 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import type { ModuloVisible } from '@/hooks/useMisModulos'
 import { CATEGORIA_MAP } from '@/lib/categoriasModulos'
 import { ordenarAlfabetico } from '@/lib/ordenAlfabetico'
-import { SPRING_SUAVE } from '@/lib/motion'
 import { useConexion } from '@/hooks/useConexion'
 import { MODULOS_OFFLINE, type CodigoOffline } from '@/lib/offline/modulosOffline'
 
@@ -418,7 +417,7 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
                                 vaAFijar
                                   ? { scale: [1, 1.25, 1], rotate: [0, -20, 0] }
                                   : { scale: [1, 1.25, 1], rotate: [0, 20, 0] },
-                                SPRING_SUAVE,
+                                { type: 'tween', duration: 0.22, ease: [0.22, 1, 0.36, 1] },
                               )
                             }
                           }
