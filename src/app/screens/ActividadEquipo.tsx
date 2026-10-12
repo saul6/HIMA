@@ -355,6 +355,8 @@ export function ActividadEquipo() {
 
       {/* Bottom Sheet — marcar/desmarcar corrección */}
       <BottomSheet open={!!itemSeleccionado} onClose={cerrarSheet}>
+        {itemSeleccionado && (
+          <>
 
             {/* Header */}
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
@@ -445,6 +447,8 @@ export function ActividadEquipo() {
                 </button>
               )}
             </div>
+          </>
+        )}
       </BottomSheet>
     </div>
   )
