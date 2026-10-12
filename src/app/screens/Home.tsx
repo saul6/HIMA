@@ -83,11 +83,11 @@ function resaltarCoincidencia(nombre: string, query: string): ReactNode {
   const idx = nombre.toLowerCase().indexOf(q)
   if (idx === -1) return nombre
   return (
-    <>
+    <span>
       {nombre.slice(0, idx)}
-      <span style={{ fontWeight: 700 }}>{nombre.slice(idx, idx + q.length)}</span>
+      <span className="font-semibold" style={{ color: 'inherit' }}>{nombre.slice(idx, idx + q.length)}</span>
       {nombre.slice(idx + q.length)}
-    </>
+    </span>
   )
 }
 

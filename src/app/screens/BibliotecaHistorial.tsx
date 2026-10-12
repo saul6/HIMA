@@ -96,19 +96,18 @@ function normalizarBusqueda(s: string): string {
 }
 
 // Resalta la coincidencia dentro del texto original (con sus acentos intactos)
-// aunque la búsqueda ignore acentos. Color --primary en vez de --secondary
-// (menta): menta sobre bg-card no llega a 4.5:1 en ninguno de los dos temas.
+// aunque la búsqueda ignore acentos. Solo negrita, mismo color del texto.
 function resaltarCoincidenciaModulo(texto: string, query: string): ReactNode {
   const q = normalizarBusqueda(query.trim())
   if (!q) return texto
   const idx = normalizarBusqueda(texto).indexOf(q)
   if (idx === -1) return texto
   return (
-    <>
+    <span>
       {texto.slice(0, idx)}
-      <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{texto.slice(idx, idx + q.length)}</span>
+      <span className="font-semibold" style={{ color: 'inherit' }}>{texto.slice(idx, idx + q.length)}</span>
       {texto.slice(idx + q.length)}
-    </>
+    </span>
   )
 }
 
