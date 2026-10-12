@@ -44,16 +44,6 @@ function formatFechaCorta(iso: string): string {
   }
 }
 
-// Entrada en cascada — solo en la carga inicial (ver primeraCargaRef). Máx. 8
-// ítems escalonados, 35ms entre cada uno.
-function cascadeStyle(index: number, enabled: boolean): CSSProperties | undefined {
-  if (!enabled) return undefined
-  return {
-    animation: 'slideUpFade var(--motion-base) var(--ease-out) both',
-    animationDelay: `${Math.min(index, 7) * 35}ms`,
-  }
-}
-
 type FiltroAgenda = 'pendientes' | 'por_firmar' | 'realizadas' | 'aceptadas'
 
 const PRIORIDAD_LABELS: Record<PrioridadTarea, string> = {
@@ -259,6 +249,41 @@ function TarjetaFiltroAgenda({
         {label}
       </span>
     </button>
+  )
+}
+
+// ── TarjetaResumenAdmin ──────────────────────────────────────────────────────
+
+// Tarjeta de resumen de la Agenda del administrador: contador animado y
+// entrada escalonada. Los colores de estado los decide quien la usa.
+function TarjetaResumenAdmin({
+  index, valor, label, borde, fondo, colorNumero, colorEtiqueta, reducedMotion,
+}: {
+  index: number
+  valor: number
+  label: string
+  borde: string
+  fondo: string
+  colorNumero: string
+  colorEtiqueta: string
+  reducedMotion: boolean
+}) {
+  const spanRef = useContadorAnimado(valor, (n) => String(Math.round(n)), reducedMotion)
+  return (
+    <motion.div
+      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+      animate={{
+        opacity: 1, y: 0,
+        transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: index * 0.035 },
+      }}
+      className="rounded-xl p-4 border flex flex-col items-start text-left"
+      style={{ borderColor: borde, backgroundColor: fondo }}
+    >
+      <span ref={spanRef} className="text-2xl tracking-tight tabular-nums" style={{ fontWeight: 600, color: colorNumero }}>
+        {valor}
+      </span>
+      <span className="text-xs mt-0.5 leading-tight" style={{ color: colorEtiqueta }}>{label}</span>
+    </motion.div>
   )
 }
 
@@ -1482,10 +1507,6 @@ export function AgendaTareas() {
   const { ranchos } = useRanchos()
   const hook = useAgendaTareas()
   const reducedMotion = useReducedMotion()
-  const primeraCargaRef = useRef(true)
-  useEffect(() => {
-    if (!hook.loading) primeraCargaRef.current = false
-  }, [hook.loading])
 
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
   const esSuperAdmin = profile?.rol === 'super_admin'
@@ -1494,6 +1515,8 @@ export function AgendaTareas() {
   const [tabAdmin, setTabAdmin] = useState<'verificar' | 'abiertas' | 'cerradas' | 'canceladas'>('verificar')
   const [filtroActivo, setFiltroActivo] = useState<FiltroAgenda>('pendientes')
   const [filtroColaborador, setFiltroColaborador] = useState('')
+  // Dirección de la última pestaña elegida (1 = derecha, -1 = izquierda, 0 = sin deslizar)
+  const dirTabRef = useRef(0)
   const [cerradasAbiertas, setCerradasAbiertas] = useState(false)
   const [canceladasAbiertas, setCanceladasAbiertas] = useState(false)
 
@@ -1591,6 +1614,13 @@ export function AgendaTareas() {
   const adminCerradas   = hook.tareas.filter(t => t.estado === 'cerrada')
   const adminCanceladas = hook.tareas.filter(t => t.estado === 'cancelada')
 
+  const tabsAdmin = [
+    { key: 'verificar', label: `Verificar${adminVerificar.length > 0 ? ` (${adminVerificar.length})` : ''}` },
+    { key: 'abiertas', label: 'Abiertas' },
+    { key: 'cerradas', label: 'Cerradas' },
+    { key: 'canceladas', label: 'Canceladas' },
+  ] as const
+
   const tareasTab = tabAdmin === 'verificar' ? adminVerificar
     : tabAdmin === 'abiertas' ? adminAbiertas
     : tabAdmin === 'cerradas' ? adminCerradas
@@ -1615,56 +1645,60 @@ export function AgendaTareas() {
         </div>
       </header>
 
-      <div className={esAdmin ? 'p-4 space-y-4 max-w-[390px] mx-auto md:max-w-2xl' : 'p-4 space-y-4'}>
+      <div className="p-4 space-y-4">
 
         {esAdmin ? (
         hook.loading && !hook.tareas.length ? (
-          <div className="space-y-2">
-            {[0, 1, 2].map(i => (
-              <div key={i} className="rounded-xl border border-border bg-card p-4 flex flex-col gap-2 animate-pulse">
-                <div className="h-4 rounded w-2/3" style={{ backgroundColor: 'var(--muted)' }} />
-                <div className="h-3 rounded w-1/3" style={{ backgroundColor: 'var(--muted)' }} />
-              </div>
-            ))}
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-3">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="rounded-xl p-4 border border-border bg-card space-y-2">
+                  <Skeleton className="h-7 w-10" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              ))}
+            </div>
+            <Skeleton className="h-9 w-full rounded-xl" />
+            <Skeleton className="h-9 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full rounded-xl" />
+            <ListaSkeleton rows={4} />
           </div>
         ) : (
           /* ── VISTA ADMIN ── */
           <>
             {/* Resumen */}
             {resumen && (
-              <div className="grid grid-cols-3 gap-2">
-                <div
-                  className="rounded-xl p-3 border flex flex-col items-center text-center"
-                  style={{
-                    borderColor: resumen.por_verificar ? 'var(--agro-amber)' : 'var(--border)',
-                    backgroundColor: resumen.por_verificar ? 'var(--agro-warning-fill)' : 'var(--card)',
-                  }}
-                >
-                  <span className="text-xl font-bold" style={{ color: resumen.por_verificar ? 'var(--agro-warning-text)' : 'var(--foreground)' }}>
-                    {resumen.por_verificar ?? 0}
-                  </span>
-                  <span className="text-[10px] mt-0.5 leading-tight" style={{ color: resumen.por_verificar ? 'var(--agro-warning-text)' : 'var(--muted-foreground)' }}>
-                    Por verificar
-                  </span>
-                </div>
-                <div className="rounded-xl p-3 border border-border flex flex-col items-center text-center" style={{ backgroundColor: 'var(--card)' }}>
-                  <span className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>{resumen.abiertas_org ?? 0}</span>
-                  <span className="text-[10px] mt-0.5 leading-tight" style={{ color: 'var(--muted-foreground)' }}>Abiertas</span>
-                </div>
-                <div
-                  className="rounded-xl p-3 border flex flex-col items-center text-center"
-                  style={{
-                    borderColor: resumen.vencidas_org ? 'var(--agro-red)' : 'var(--border)',
-                    backgroundColor: resumen.vencidas_org ? 'var(--agro-danger-fill)' : 'var(--card)',
-                  }}
-                >
-                  <span className="text-xl font-bold" style={{ color: resumen.vencidas_org ? 'var(--agro-danger-text)' : 'var(--foreground)' }}>
-                    {resumen.vencidas_org ?? 0}
-                  </span>
-                  <span className="text-[10px] mt-0.5 leading-tight" style={{ color: resumen.vencidas_org ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }}>
-                    Vencidas
-                  </span>
-                </div>
+              <div className="grid grid-cols-3 gap-3">
+                <TarjetaResumenAdmin
+                  index={0}
+                  valor={resumen.por_verificar ?? 0}
+                  label="Por verificar"
+                  borde={resumen.por_verificar ? 'var(--agro-amber)' : 'var(--border)'}
+                  fondo={resumen.por_verificar ? 'var(--agro-warning-fill)' : 'var(--card)'}
+                  colorNumero={resumen.por_verificar ? 'var(--agro-warning-text)' : 'var(--foreground)'}
+                  colorEtiqueta={resumen.por_verificar ? 'var(--agro-warning-text)' : 'var(--muted-foreground)'}
+                  reducedMotion={!!reducedMotion}
+                />
+                <TarjetaResumenAdmin
+                  index={1}
+                  valor={resumen.abiertas_org ?? 0}
+                  label="Abiertas"
+                  borde="var(--border)"
+                  fondo="var(--card)"
+                  colorNumero="var(--foreground)"
+                  colorEtiqueta="var(--muted-foreground)"
+                  reducedMotion={!!reducedMotion}
+                />
+                <TarjetaResumenAdmin
+                  index={2}
+                  valor={resumen.vencidas_org ?? 0}
+                  label="Vencidas"
+                  borde={resumen.vencidas_org ? 'var(--agro-red)' : 'var(--border)'}
+                  fondo={resumen.vencidas_org ? 'var(--agro-danger-fill)' : 'var(--card)'}
+                  colorNumero={resumen.vencidas_org ? 'var(--agro-danger-text)' : 'var(--foreground)'}
+                  colorEtiqueta={resumen.vencidas_org ? 'var(--agro-danger-text)' : 'var(--muted-foreground)'}
+                  reducedMotion={!!reducedMotion}
+                />
               </div>
             )}
 
@@ -1683,7 +1717,7 @@ export function AgendaTareas() {
             {hook.colaboradores.length > 0 && (
               <select
                 value={filtroColaborador}
-                onChange={e => setFiltroColaborador(e.target.value)}
+                onChange={e => { dirTabRef.current = 0; setFiltroColaborador(e.target.value) }}
                 className="w-full h-9 rounded-lg text-sm outline-none"
                 style={{
                   backgroundColor: 'var(--input-background)',
@@ -1700,51 +1734,78 @@ export function AgendaTareas() {
             )}
 
             {/* Pestañas */}
-            <div className="flex gap-1 rounded-xl p-1 overflow-x-auto" style={{ backgroundColor: 'var(--muted)' }}>
-              {([
-                { key: 'verificar', label: `Verificar${adminVerificar.length > 0 ? ` (${adminVerificar.length})` : ''}` },
-                { key: 'abiertas', label: 'Abiertas' },
-                { key: 'cerradas', label: 'Cerradas' },
-                { key: 'canceladas', label: 'Canceladas' },
-              ] as const).map(t => (
-                <button
-                  key={t.key}
-                  onClick={() => setTabAdmin(t.key)}
-                  className="flex-1 min-w-0 text-xs font-semibold whitespace-nowrap rounded-lg py-1.5 px-2 transition-colors"
-                  style={{
-                    backgroundColor: tabAdmin === t.key ? 'var(--card)' : 'transparent',
-                    color: tabAdmin === t.key ? 'var(--foreground)' : 'var(--muted-foreground)',
-                  }}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
+            <LayoutGroup id="agenda-admin-tabs">
+              <div className="flex gap-1 rounded-xl p-1 overflow-x-auto" style={{ backgroundColor: 'var(--muted)' }}>
+                {tabsAdmin.map((t, i) => (
+                  <button
+                    key={t.key}
+                    onClick={() => {
+                      const actual = tabsAdmin.findIndex(x => x.key === tabAdmin)
+                      dirTabRef.current = i > actual ? 1 : -1
+                      setTabAdmin(t.key)
+                    }}
+                    className="relative flex-1 min-w-0 text-xs font-semibold whitespace-nowrap rounded-lg py-1.5 px-2 transition-colors"
+                    style={{
+                      color: tabAdmin === t.key ? 'var(--foreground)' : 'var(--muted-foreground)',
+                      transitionDuration: 'var(--motion-fast)',
+                    }}
+                  >
+                    {tabAdmin === t.key && (
+                      <motion.span
+                        layoutId="agenda-admin-tab-activa"
+                        className="absolute inset-0 rounded-lg"
+                        style={{ backgroundColor: 'var(--card)', zIndex: 0 }}
+                        transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
+                      />
+                    )}
+                    <span className="relative z-10">{t.label}</span>
+                  </button>
+                ))}
+              </div>
+            </LayoutGroup>
 
             {/* Lista de tareas */}
-            <div className="space-y-2">
-              {tareasTab.length === 0 ? (
-                <p
-                  className="text-sm text-center py-8"
-                  style={{
-                    color: 'var(--muted-foreground)',
-                    ...(reducedMotion ? {} : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }),
-                  }}
-                >
-                  Sin tareas
-                </p>
-              ) : (
-                tareasTab.map((t, index) => (
-                  <TareaCard
-                    key={t.id}
-                    tarea={t}
-                    esAdmin={esAdmin}
-                    onClick={() => abrirDetalle(t.id)}
-                    style={cascadeStyle(index, !reducedMotion && primeraCargaRef.current)}
-                  />
-                ))
-              )}
-            </div>
+            <AnimatePresence mode="wait" initial={false} custom={dirTabRef.current}>
+              <motion.div
+                key={`${tabAdmin}|${filtroColaborador}`}
+                custom={dirTabRef.current}
+                variants={{
+                  enter: (d: number) => (reducedMotion ? { opacity: 1 } : { opacity: 0, x: d * 24 }),
+                  center: { opacity: 1, x: 0, transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] } },
+                  exit: (d: number) => (reducedMotion
+                    ? { opacity: 1 }
+                    : { opacity: 0, x: d * -12, transition: { duration: 0.12, ease: [0.22, 1, 0.36, 1] } }),
+                }}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="space-y-2"
+              >
+                {tareasTab.length === 0 ? (
+                  <motion.p
+                    initial={reducedMotion ? false : { opacity: 0 }}
+                    animate={{ opacity: 1, transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] } }}
+                    className="text-sm text-center py-8"
+                    style={{ color: 'var(--muted-foreground)' }}
+                  >
+                    Sin tareas
+                  </motion.p>
+                ) : (
+                  tareasTab.map((t, index) => (
+                    <motion.div
+                      key={t.id}
+                      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+                      animate={{
+                        opacity: 1, y: 0,
+                        transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: Math.min(index, 7) * 0.03 },
+                      }}
+                    >
+                      <TareaCard tarea={t} esAdmin={esAdmin} onClick={() => abrirDetalle(t.id)} />
+                    </motion.div>
+                  ))
+                )}
+              </motion.div>
+            </AnimatePresence>
           </>
         )
         ) : (
