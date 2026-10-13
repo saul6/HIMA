@@ -1,4 +1,4 @@
-import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
+import { useParams, useNavigate, useLocation, Navigate, Outlet } from 'react-router'
 import { ChevronLeft, Plus, MapPin, ClipboardCheck } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorOrg } from '@/hooks/useAuditorOrg'
@@ -187,6 +187,8 @@ export function AuditorOrgDetalle() {
 
       {/* FAB */}
             <Fab onClick={() => navigate(`/auditor/org/${orgId}/nueva`, { state: { orgNombre } })} aria-label="Nueva auditoría" />
+
+      <Outlet />
     </div>
   )
 }

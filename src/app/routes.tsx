@@ -199,8 +199,11 @@ export const router = createBrowserRouter([
               { path: "auditor", Component: AuditorHome },
               { path: "auditor/agenda", Component: AuditorAgenda },
               { path: "auditor/calendario", Component: RedirCalendario },
-              { path: "auditor/org/:orgId", Component: AuditorOrgDetalle },
-              { path: "auditor/org/:orgId/nueva", Component: AuditorNuevaAuditoria },
+              {
+                path: "auditor/org/:orgId",
+                Component: AuditorOrgDetalle,
+                children: [{ path: "nueva", Component: AuditorNuevaAuditoria }],
+              },
               { path: "auditor/auditoria/:auditoriaId", Component: AuditorEjecucion },
               { path: "auditor/auditoria/:auditoriaId/azzule", Component: AuditorModoAzzule },
               { path: "auditor/instalacion/nueva", Component: AuditorNuevaInstalacion },

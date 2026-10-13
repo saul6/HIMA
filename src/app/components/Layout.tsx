@@ -37,7 +37,6 @@ function getPageTitle(pathname: string): string {
   if (pathname === '/auditor') return 'Mis organizaciones'
   if (pathname === '/auditor/agenda') return 'Agenda'
   if (pathname.match(/^\/auditor\/auditoria\//)) return 'Ejecución'
-  if (pathname.match(/^\/auditor\/org\/[^/]+\/nueva/)) return 'Nueva auditoría'
   if (pathname.match(/^\/auditor\/org\//)) return 'Empresa auditada'
   return 'M.A.D.Y'
 }
