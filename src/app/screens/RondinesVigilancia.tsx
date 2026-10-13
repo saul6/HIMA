@@ -8,6 +8,9 @@ import { BotonConfigurar } from '@/app/components/BotonConfigurar'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert, opCabecera, opUpsert } from '@/lib/offline/construirOperaciones'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -186,6 +189,8 @@ export function RondinesVigilancia() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { rondines, loading, error, refetch } = useM46Rondines()
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M46')
 
   const orgId = profile?.org_id ?? null
   const esSuperAdmin = profile?.rol === 'super_admin'
@@ -202,6 +207,7 @@ export function RondinesVigilancia() {
 
   async function handlePDFIndividual(rondin: M46RondinResumen) {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (obligatoria && !firmas[rondin.id]?.realizo) {
       toast.info('Firma el registro antes de descargar el PDF')
       return
@@ -305,6 +311,61 @@ export function RondinesVigilancia() {
     if (!orgId) return
     setNGuardando(true)
     try {
+      if (!online) {
+        const rondinId = crypto.randomUUID()
+        const conDesc: Array<{ itemId: string; ronda: number; item: M46Item; desc: string }> = []
+        for (const item of activeFormItems) {
+          for (const ronda of RONDAS) {
+            const val = nValores[item.id]?.[ronda] ?? 'sin_novedad'
+            const desc = nDescs[`${item.id}|${ronda}`]?.trim()
+            if (val === 'con_novedad' && desc) conDesc.push({ itemId: item.id, ronda, item, desc })
+          }
+        }
+        const reporteId = conDesc.length > 0 ? crypto.randomUUID() : null
+        const incIds: Record<string, string> = {}
+        for (const c of conDesc) incIds[`${c.itemId}|${c.ronda}`] = crypto.randomUUID()
+        const rancho = ranchos.find((r) => r.id === nRanchoId)
+        const ok = await guardarOffline({
+          descripcion: `Rondín de vigilancia · ${rancho?.nombre ?? ''} · ${nFecha}`,
+          metadatos: { rancho_id: nRanchoId, rancho_nombre: rancho?.nombre, fecha: nFecha },
+          operaciones: [
+            opInsert('m46_rondines', {
+              id: rondinId,
+              rancho_id: nRanchoId,
+              fecha: nFecha,
+              turno: nTurno.trim() || null,
+              vigilante: nVigilante.trim(),
+              jefe_seguridad: nJefe.trim() || null,
+              observaciones: nObs.trim() || null,
+            }),
+            ...RONDAS.map((n) => opCabecera('m46_rondas', {
+              rondin_id: rondinId,
+              numero: n,
+              hora: nHoras[n]?.trim() || null,
+            }, ['rondin_id', 'numero'])),
+            ...(reporteId ? [
+              opInsert('m13_reportes', { id: reporteId, rancho_id: nRanchoId, org_id: orgId, fecha: nFecha, auditor_nombre: nVigilante.trim() }),
+              ...conDesc.map((c, i) => opInsert('m13_incidencias', {
+                id: incIds[`${c.itemId}|${c.ronda}`],
+                reporte_id: reporteId,
+                org_id: orgId,
+                descripcion: `[Ronda ${c.ronda}] ${c.item.area} - ${c.item.nombre}: ${c.desc}`,
+                orden: i + 1,
+              })),
+            ] : []),
+            ...activeFormItems.flatMap((item) => RONDAS.map((ronda) => opUpsert('m46_resultados', {
+              rondin_id: rondinId,
+              item_id: item.id,
+              ronda,
+              valor: nValores[item.id]?.[ronda] ?? 'sin_novedad',
+              incidencia_id: incIds[`${item.id}|${ronda}`] ?? null,
+            }, ['rondin_id', 'item_id', 'ronda']))),
+          ],
+        })
+        if (ok) handleCerrarSheetNuevo()
+        return
+      }
+
       // 1. INSERT rondín
       const { data: rondinData, error: eRondin } = await tbl('m46_rondines')
         .insert({
@@ -438,6 +499,23 @@ export function RondinesVigilancia() {
     setConfAgregando(true)
     try {
       const maxOrden = confItems.reduce((m, i) => Math.max(m, i.orden), 0)
+      if (!online) {
+        const ok = await guardarOffline({
+          descripcion: `Punto de rondín · ${confArea.trim()} - ${confNombre.trim()}`,
+          metadatos: { rancho_id: confRanchoId, tipo: 'catalogo' },
+          operaciones: [
+            opCabecera('m46_items', {
+              rancho_id: confRanchoId,
+              area: confArea.trim(),
+              nombre: confNombre.trim(),
+              activo: true,
+              orden: maxOrden + 1,
+            }, ['rancho_id', 'area', 'nombre']),
+          ],
+        })
+        if (ok) { setConfArea(''); setConfNombre('') }
+        return
+      }
       const { error: e } = await tbl('m46_items').insert({
         org_id: orgId,
         rancho_id: confRanchoId,
@@ -463,6 +541,7 @@ export function RondinesVigilancia() {
 
   async function handleToggleActivo(item: M46Item) {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para activar o desactivar puntos'); return }
     setConfToggling(item.id)
     try {
       const { error: e } = await tbl('m46_items')
@@ -480,6 +559,22 @@ export function RondinesVigilancia() {
     if (!confRanchoId || !orgId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${termino}`); return }
     setConfCargandoPlantilla(true)
     try {
+      if (!online) {
+        const ok = await guardarOffline({
+          descripcion: `Puntos estándar de rondín · ${ranchos.find((r) => r.id === confRanchoId)?.nombre ?? ''}`,
+          metadatos: { rancho_id: confRanchoId, tipo: 'catalogo' },
+          // cabecera con conflicto = INSERT ... ON CONFLICT DO NOTHING (igual que ignoreDuplicates)
+          operaciones: PLANTILLA_ESTANDAR.map((item) => opCabecera('m46_items', {
+            rancho_id: confRanchoId,
+            area: item.area,
+            nombre: item.nombre,
+            activo: true,
+            orden: item.orden,
+          }, ['rancho_id', 'area', 'nombre'])),
+        })
+        if (ok) toast.info('Los puntos aparecerán al recuperar la conexión')
+        return
+      }
       const rows = PLANTILLA_ESTANDAR.map((item) => ({
         org_id: orgId,
         rancho_id: confRanchoId,
@@ -509,6 +604,7 @@ export function RondinesVigilancia() {
   async function handleConsolidado() {
     if (!cRanchoId) { setCErrRancho(true); return }
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setCGenerando(true)
     try {
       await generarRondinesVigilanciaConsolidadoPDF(cRanchoId, orgId, cDesde, cHasta, codigoClave)
@@ -859,7 +955,7 @@ export function RondinesVigilancia() {
               >
                 {nGuardando ? (
                   <><Loader2 className="w-4 h-4 animate-spin" />Guardando…</>
-                ) : 'Guardar rondín'}
+                ) : online ? 'Guardar rondín' : 'Guardar sin conexión'}
               </button>
             </div>
             )}

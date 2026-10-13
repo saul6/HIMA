@@ -14,6 +14,9 @@ import { hoyMX } from '@/lib/fecha'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert, opUpdate, opCabecera, opUpsert } from '@/lib/offline/construirOperaciones'
 import { useM47Trabajadores, useM47Items } from '@/hooks/useM47RegistroPersonal'
 import { generarRegistroPersonalPDF } from '@/lib/pdf/m47/generarRegistroPersonalPDF'
 import { Fab } from '@/app/components/Fab'
@@ -115,6 +118,8 @@ export function RegistroPersonal() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { trabajadores, loading, error, refetch } = useM47Trabajadores()
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M47')
 
   // ── Filtros lista ──
   const [filtroRanchoId, setFiltroRanchoId] = useState('')
@@ -217,6 +222,45 @@ export function RegistroPersonal() {
     if (!form.nombre.trim()) { toast.error('El nombre es obligatorio'); return }
     setGuardando(true)
     try {
+      if (!online) {
+        const trabajadorIdOff = editingId ?? crypto.randomUUID()
+        const datosTrabajador = {
+          puesto: form.puesto.trim() || null,
+          nombre: form.nombre.trim(),
+          direccion: form.direccion.trim() || null,
+          telefono_casa: form.telefono_casa.trim() || null,
+          celular: form.celular.trim() || null,
+          fecha_nacimiento: form.fecha_nacimiento || null,
+          emergencia_nombre: form.emergencia_nombre.trim() || null,
+          emergencia_parentesco: form.emergencia_parentesco.trim() || null,
+          emergencia_telefono: form.emergencia_telefono.trim() || null,
+          observaciones: form.observaciones.trim() || null,
+        }
+        const rancho = ranchos.find(r => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Registro de personal · ${form.nombre.trim()} · ${rancho?.nombre ?? ''}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [
+            editingId
+              ? opUpdate('m47_trabajadores', editingId, datosTrabajador)
+              : opInsert('m47_trabajadores', {
+                  id: trabajadorIdOff,
+                  rancho_id: form.rancho_id,
+                  fecha: form.fecha,
+                  ...datosTrabajador,
+                }),
+            ...formItems.filter(i => i.activo).map(item => opUpsert('m47_checklist', {
+              trabajador_id: trabajadorIdOff,
+              item_id: item.id,
+              rancho_id: form.rancho_id,
+              valor: checklistValues[item.id] ?? false,
+            }, ['trabajador_id', 'item_id'])),
+          ],
+        })
+        if (ok) { setSheetOpen(false); setSheetPaso('form') }
+        return
+      }
+
       let trabajadorId: string
 
       if (editingId) {
@@ -302,6 +346,22 @@ export function RegistroPersonal() {
     if (!confRanchoId || !orgId) return
     setSembrando(true)
     try {
+      if (!online) {
+        const ok = await guardarOffline({
+          descripcion: `Plantilla de personal · ${ranchos.find(r => r.id === confRanchoId)?.nombre ?? ''}`,
+          metadatos: { rancho_id: confRanchoId, tipo: 'catalogo' },
+          // cabecera con conflicto = INSERT ... ON CONFLICT DO NOTHING (igual que ignoreDuplicates)
+          operaciones: PLANTILLA.map(p => opCabecera('m47_items', {
+            rancho_id: confRanchoId,
+            tipo: p.tipo,
+            nombre: p.nombre,
+            activo: true,
+            orden: p.orden,
+          }, ['rancho_id', 'tipo', 'nombre'])),
+        })
+        if (ok) toast.info('Los ítems aparecerán al recuperar la conexión')
+        return
+      }
       const rows = PLANTILLA.map(p => ({
         org_id: orgId,
         rancho_id: confRanchoId,
@@ -324,6 +384,7 @@ export function RegistroPersonal() {
 
   async function toggleItemActivo(itemId: string, activo: boolean) {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para activar o desactivar ítems'); return }
     const { error } = await tbl('m47_items')
       .update({ activo: !activo })
       .eq('id', itemId)
@@ -341,6 +402,23 @@ export function RegistroPersonal() {
       const maxOrden = confItems
         .filter(i => i.tipo === nuevoItemTipo)
         .reduce((mx, i) => Math.max(mx, i.orden), 0)
+      if (!online) {
+        const ok = await guardarOffline({
+          descripcion: `Ítem de personal · ${nuevoItemNombre.trim()}`,
+          metadatos: { rancho_id: confRanchoId, tipo: 'catalogo' },
+          operaciones: [
+            opCabecera('m47_items', {
+              rancho_id: confRanchoId,
+              tipo: nuevoItemTipo,
+              nombre: nuevoItemNombre.trim(),
+              activo: true,
+              orden: maxOrden + 1,
+            }, ['rancho_id', 'tipo', 'nombre']),
+          ],
+        })
+        if (ok) setNuevoItemNombre('')
+        return
+      }
       const { error } = await tbl('m47_items').insert({
         org_id: orgId,
         rancho_id: confRanchoId,
@@ -362,6 +440,7 @@ export function RegistroPersonal() {
 
   async function exportarPDF() {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (!pdfRanchoId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     setExportando(true)
     try {
@@ -750,7 +829,7 @@ export function RegistroPersonal() {
             style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            {guardando ? 'Guardando…' : editingId ? 'Guardar cambios' : 'Registrar trabajador'}
+            {guardando ? 'Guardando…' : !online ? 'Guardar sin conexión' : editingId ? 'Guardar cambios' : 'Registrar trabajador'}
           </button>
         </div>
         </>)}

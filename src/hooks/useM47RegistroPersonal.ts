@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M47Item {
   id: string
@@ -36,21 +37,31 @@ export interface M47Trabajador {
 const tbl = (name: string) => (supabase as any).from(name)
 
 export function useM47Trabajadores() {
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
+  const userId = user?.id ?? null
   const [trabajadores, setTrabajadores] = useState<M47Trabajador[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id) { setLoading(false); return }
+    if (!profile?.org_id || !userId) { setLoading(false); return }
+    const orgId = profile.org_id
     setLoading(true); setError(null)
     try {
-      const { data, error: err } = await tbl('m47_trabajadores')
-        .select('*, ranchos(nombre), m47_checklist(item_id, valor)')
-        .eq('org_id', profile.org_id)
-        .order('nombre')
-      if (err) throw err
-      setTrabajadores(((data ?? []) as any[]).map((r) => ({
+      const resultado = await leerConCache(
+        'm47_trabajadores',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await tbl('m47_trabajadores')
+            .select('*, ranchos(nombre), m47_checklist(item_id, valor)')
+            .eq('org_id', orgId)
+            .order('nombre')
+          if (err) throw err
+          return data ?? []
+        },
+      )
+      setTrabajadores((resultado.datos as any[]).map((r) => ({
         id: r.id,
         rancho_id: r.rancho_id,
         rancho_nombre: r.ranchos?.nombre ?? '—',
@@ -71,31 +82,41 @@ export function useM47Trabajadores() {
         })),
       })))
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al cargar trabajadores')
+      setError((e as { message?: string })?.message ?? 'Error al cargar trabajadores')
     } finally { setLoading(false) }
-  }, [profile?.org_id])
+  }, [profile?.org_id, userId])
 
   useEffect(() => { cargar() }, [cargar])
   return { trabajadores, loading, error, refetch: cargar }
 }
 
 export function useM47Items(ranchoId: string | null, orgId: string | null) {
+  const { user } = useAuthContext()
+  const userId = user?.id ?? null
   const [items, setItems] = useState<M47Item[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!ranchoId || !orgId) { setItems([]); return }
+    if (!ranchoId || !orgId || !userId) { setItems([]); return }
     setLoading(true); setError(null)
     try {
-      const { data, error: err } = await tbl('m47_items')
-        .select('id, tipo, nombre, activo, orden')
-        .eq('org_id', orgId)
-        .eq('rancho_id', ranchoId)
-        .order('tipo')
-        .order('orden')
-      if (err) throw err
-      setItems(((data ?? []) as any[]).map((r) => ({
+      const resultado = await leerConCache(
+        `m47_items:${ranchoId}`,
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await tbl('m47_items')
+            .select('id, tipo, nombre, activo, orden')
+            .eq('org_id', orgId)
+            .eq('rancho_id', ranchoId)
+            .order('tipo')
+            .order('orden')
+          if (err) throw err
+          return data ?? []
+        },
+      )
+      setItems((resultado.datos as any[]).map((r) => ({
         id: r.id as string,
         tipo: r.tipo as 'documento' | 'capacitacion',
         nombre: r.nombre as string,
@@ -103,9 +124,9 @@ export function useM47Items(ranchoId: string | null, orgId: string | null) {
         orden: r.orden as number,
       })))
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al cargar ítems M47')
+      setError((e as { message?: string })?.message ?? 'Error al cargar ítems M47')
     } finally { setLoading(false) }
-  }, [ranchoId, orgId])
+  }, [ranchoId, orgId, userId])
 
   useEffect(() => { cargar() }, [cargar])
   return { items, loading, error, refetch: cargar }

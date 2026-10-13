@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export type ValorM46 = 'sin_novedad' | 'con_novedad'
 
@@ -27,22 +28,32 @@ export interface M46Item {
 const tbl = (name: string) => (supabase as any).from(name)
 
 export function useM46Rondines() {
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
+  const userId = user?.id ?? null
   const [rondines, setRondines] = useState<M46RondinResumen[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id) { setLoading(false); return }
+    if (!profile?.org_id || !userId) { setLoading(false); return }
+    const orgId = profile.org_id
     setLoading(true); setError(null)
     try {
-      const { data, error: err } = await tbl('m46_rondines')
-        .select('*, ranchos(nombre), m46_resultados(valor)')
-        .eq('org_id', profile.org_id)
-        .order('fecha', { ascending: false })
-        .order('created_at', { ascending: false })
-      if (err) throw err
-      setRondines(((data ?? []) as any[]).map((r) => ({
+      const resultado = await leerConCache(
+        'm46_rondines',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await tbl('m46_rondines')
+            .select('*, ranchos(nombre), m46_resultados(valor)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          if (err) throw err
+          return data ?? []
+        },
+      )
+      setRondines((resultado.datos as any[]).map((r) => ({
         id: r.id,
         rancho_id: r.rancho_id,
         rancho_nombre: r.ranchos?.nombre ?? '—',
@@ -56,29 +67,44 @@ export function useM46Rondines() {
         ).length,
       })))
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al cargar rondines')
+      setError((e as { message?: string })?.message ?? 'Error al cargar rondines')
     } finally { setLoading(false) }
-  }, [profile?.org_id])
+  }, [profile?.org_id, userId])
 
   useEffect(() => { cargar() }, [cargar])
   return { rondines, loading, error, refetch: cargar }
 }
 
 export function useM46Items(ranchoId: string | null, orgId: string | null) {
+  const { user } = useAuthContext()
+  const userId = user?.id ?? null
   const [items, setItems] = useState<M46Item[]>([])
   const [loading, setLoading] = useState(false)
 
   const cargar = useCallback(async () => {
-    if (!ranchoId || !orgId) { setItems([]); return }
+    if (!ranchoId || !orgId || !userId) { setItems([]); return }
     setLoading(true)
-    const { data } = await tbl('m46_items')
-      .select('id, area, nombre, activo, orden')
-      .eq('org_id', orgId)
-      .eq('rancho_id', ranchoId)
-      .order('orden')
-    setItems((data ?? []) as M46Item[])
+    try {
+      const resultado = await leerConCache(
+        `m46_items:${ranchoId}`,
+        userId,
+        orgId,
+        async () => {
+          const { data, error } = await tbl('m46_items')
+            .select('id, area, nombre, activo, orden')
+            .eq('org_id', orgId)
+            .eq('rancho_id', ranchoId)
+            .order('orden')
+          if (error) throw error
+          return (data ?? []) as M46Item[]
+        },
+      )
+      setItems(resultado.datos)
+    } catch {
+      setItems([])
+    }
     setLoading(false)
-  }, [ranchoId, orgId])
+  }, [ranchoId, orgId, userId])
 
   useEffect(() => { cargar() }, [cargar])
   return { items, loading, refetch: cargar }

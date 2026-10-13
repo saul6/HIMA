@@ -273,12 +273,37 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
           return data ?? []
         },
       },
+      {
+        clave: 'm46_rondines',
+        fetcher: async () => {
+          const { data } = await (supabase as any)
+            .from('m46_rondines')
+            .select('*, ranchos(nombre), m46_resultados(valor)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          return data ?? []
+        },
+      },
+      {
+        clave: 'm47_trabajadores',
+        fetcher: async () => {
+          const { data } = await (supabase as any)
+            .from('m47_trabajadores')
+            .select('*, ranchos(nombre), m47_checklist(item_id, valor)')
+            .eq('org_id', orgId)
+            .order('nombre')
+          return data ?? []
+        },
+      },
     ])
 
     // Precarga de días M9 para todos los registros del mes actual
     await precargarDiasM9(userId, orgId!)
     // Precarga de materiales M7 por rancho
     await precargarMaterialesM7(userId, orgId!)
+    // Precarga de catálogos por sitio de M46 y M47
+    await precargarItemsPorRancho(userId, orgId!)
   }, [userId, orgId])
 
   async function precargarDiasM9(userId: string, orgId: string) {
@@ -349,6 +374,48 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
           { maxEdad: 10 * 60 * 1000 },
         ),
       ),
+    )
+  }
+
+  async function precargarItemsPorRancho(userId: string, orgId: string) {
+    const { data: ranchos } = await supabase
+      .from('ranchos')
+      .select('id')
+      .eq('org_id', orgId)
+      .eq('activo', true)
+    if (!ranchos) return
+    await Promise.allSettled(
+      ranchos.flatMap((r: any) => [
+        leerConCache(
+          `m46_items:${r.id}`,
+          userId,
+          orgId,
+          async () => {
+            const { data } = await (supabase as any)
+              .from('m46_items')
+              .select('id, area, nombre, activo, orden')
+              .eq('org_id', orgId)
+              .eq('rancho_id', r.id)
+              .order('orden')
+            return data ?? []
+          },
+        ),
+        leerConCache(
+          `m47_items:${r.id}`,
+          userId,
+          orgId,
+          async () => {
+            const { data } = await (supabase as any)
+              .from('m47_items')
+              .select('id, tipo, nombre, activo, orden')
+              .eq('org_id', orgId)
+              .eq('rancho_id', r.id)
+              .order('tipo')
+              .order('orden')
+            return data ?? []
+          },
+        ),
+      ]),
     )
   }
 

@@ -579,3 +579,28 @@ Camino en línea: mismos `insert`, validaciones, toasts, firma y PDF. Lo único 
 | INSERT/UPDATE `m41_registros`, UPSERT `m41_lecturas`, INSERT `m13_reportes`/`m13_incidencias` | pantalla | — | ✅ offline en un lote: registro nuevo → `opCabecera(['org_id','rancho_id','fecha'])`; día existente → `opUpdate` (igual que con red); lecturas → `opUpsert(['registro_id','hora'])`; incidencias M13 por lecturas fuera de rango en el mismo lote |
 
 Nota: en `sync_aplicar_lote` la cabecera con `conflicto` hace `ON CONFLICT DO NOTHING` y fusiona ids; no actualiza temp_min/temp_max/observaciones si el día ya existía en el servidor y la app no lo tenía en caché (caso raro: día creado desde otro dispositivo). Las lecturas sí se actualizan por upsert.
+
+### M46 RondinesVigilancia
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m46_rondines` + `ranchos(nombre)` + `m46_resultados(valor)` (lista) | `useM46Rondines` | C | ✅ `leerConCache` + precarga |
+| SELECT `m46_items` por sitio (formulario y configuración) | `useM46Items` | C | ✅ `leerConCache` clave `m46_items:<rancho>` + precarga por sitio |
+| `ranchos`, firmas, `BannerTareaOrigen`, PDFs | compartidos / pantalla | C/R | ✅ PDFs avisan que requieren conexión |
+| INSERT rondín + 4 rondas + resultados (+ M13) | `RondinesVigilancia` | — | ✅ offline en un lote: `opInsert` rondín, `opCabecera(['rondin_id','numero'])` rondas, `opUpsert(['rondin_id','item_id','ronda'])` resultados, M13 (`m13_reportes` + `m13_incidencias`) en el mismo lote |
+| INSERT `m46_items` (agregar punto) y plantilla de 11 puntos | `RondinesVigilancia` | — | ✅ offline con `opCabecera(['rancho_id','area','nombre'])` (equivale a `ON CONFLICT DO NOTHING`, como `ignoreDuplicates`). Los puntos nuevos aparecen al sincronizar |
+| UPDATE `m46_items.activo` (activar/desactivar) | `RondinesVigilancia` | R | ✅ sin red: "Necesitas conexión para activar o desactivar puntos" |
+
+### M47 RegistroPersonal
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m47_trabajadores` + `ranchos(nombre)` + `m47_checklist(item_id, valor)` (lista) | `useM47Trabajadores` | C | ✅ `leerConCache` + precarga |
+| SELECT `m47_items` por sitio | `useM47Items` | C | ✅ `leerConCache` clave `m47_items:<rancho>` + precarga por sitio |
+| `ranchos`, firmas, `BannerTareaOrigen`, PDF | compartidos / pantalla | C/R | ✅ PDF avisa que requiere conexión |
+| INSERT trabajador + checklist | `RegistroPersonal` | — | ✅ offline: `opInsert` trabajador + `opUpsert(['trabajador_id','item_id'])` checklist en un lote |
+| UPDATE trabajador existente + checklist | `RegistroPersonal` | — | ✅ offline: `opUpdate` por id + upsert del checklist (misma semántica que con red) |
+| INSERT `m47_items` (agregar ítem) y plantilla | `RegistroPersonal` | — | ✅ offline con `opCabecera(['rancho_id','tipo','nombre'])` |
+| UPDATE `m47_items.activo` | `RegistroPersonal` | R | ✅ sin red: "Necesitas conexión para activar o desactivar ítems" |
+
+Nota para M41/M46/M47: `sync_aplicar_lote` aplica `opCabecera` con `ON CONFLICT DO NOTHING` (fusiona ids pero no actualiza campos de una fila ya existente). Los ítems de catálogo con la misma clave ya existente en el servidor conservan sus valores.
