@@ -430,7 +430,7 @@ export function AuditorHome() {
                 <button
                   key={v.agenda_id}
                   onClick={() => navigate(`/auditor/auditoria/${v.auditoria_id}`)}
-                  className="w-full text-left bg-card rounded-xl border border-border p-3 flex items-center gap-3 active:opacity-70 transition-opacity"
+                  className="w-full text-left bg-card rounded-xl border border-border p-3 flex items-center gap-3 hover:bg-muted active:opacity-70 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 >
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -475,7 +475,7 @@ export function AuditorHome() {
                 <button
                   key={j.jornada_id}
                   onClick={() => navigate(`/auditor/jornada/${j.jornada_id}`)}
-                  className="w-full text-left bg-card rounded-xl border border-border p-3 flex items-center gap-3 active:opacity-70 transition-opacity"
+                  className="w-full text-left bg-card rounded-xl border border-border p-3 flex items-center gap-3 hover:bg-muted active:opacity-70 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 >
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -632,7 +632,7 @@ export function AuditorHome() {
                 <button
                   key={org.org_id}
                   onClick={() => navigate(`/auditor/org/${org.org_id}`, { state: { orgNombre: org.nombre } })}
-                  className="w-full text-left bg-card rounded-xl border border-border p-4 flex items-center gap-3 active:opacity-70 transition-opacity"
+                  className="w-full text-left bg-card rounded-xl border border-border p-4 flex items-center gap-3 hover:bg-muted active:opacity-70 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 >
                   <div
                     className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"

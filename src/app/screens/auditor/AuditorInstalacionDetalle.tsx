@@ -464,7 +464,7 @@ export function AuditorInstalacionDetalle() {
                     }}
                     className="flex-1 py-2 text-xs font-semibold transition-colors"
                     style={modoOrg === modo
-                      ? { backgroundColor: 'var(--primary)', color: '#fff' }
+                      ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }
                       : { backgroundColor: 'var(--card)', color: 'var(--muted-foreground)' }
                     }
                   >
@@ -621,7 +621,7 @@ export function AuditorInstalacionDetalle() {
               onClick={handleVincular}
               disabled={vinculando || !confirmado}
               className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-              style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
             >
               {vinculando
                 ? <><Loader size={15} className="animate-spin" /> Vinculando…</>

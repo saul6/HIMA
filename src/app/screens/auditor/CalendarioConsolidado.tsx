@@ -223,7 +223,7 @@ export function CalendarioConsolidado() {
                 onClick={() => toggleTipo(t.event_type)}
                 className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 style={activo
-                  ? { backgroundColor: cfg.textVar, color: '#fff' }
+                  ? { backgroundColor: cfg.textVar, color: 'var(--card)' }
                   : { backgroundColor: cfg.fillVar, color: cfg.textVar, border: '1px solid transparent' }
                 }
               >
