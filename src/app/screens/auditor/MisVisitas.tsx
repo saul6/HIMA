@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { Calendar, Check } from 'lucide-react'
 import { toast } from 'sonner'
+import { motion, useReducedMotion } from 'motion/react'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -52,10 +55,14 @@ function ChipAviso() {
 
 function EventoCard({
   evento,
+  index,
+  reducedMotion,
   onMarcarHecho,
   onAbrirAuditoria,
 }: {
   evento: EventoAgenda
+  index: number
+  reducedMotion: boolean | null
   onMarcarHecho: (id: string) => void
   onAbrirAuditoria: (auditoriaId: string) => void
 }) {
@@ -63,14 +70,22 @@ function EventoCard({
   const esHecho = evento.estado === 'hecho'
 
   return (
-    <div
-      className="rounded-xl border border-border p-4 flex flex-col gap-2"
-      style={{ backgroundColor: 'var(--card)', opacity: esHecho ? 0.55 : 1 }}
+    <motion.div
+      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+      animate={{
+        opacity: 1, y: 0,
+        transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: Math.min(index, 7) * 0.03 },
+      }}
+      className="rounded-xl border border-border p-4 flex flex-col gap-2 transition-colors hover:bg-muted"
+      style={{ backgroundColor: 'var(--card)', transitionDuration: 'var(--motion-fast)' }}
     >
       <div className="flex items-start gap-2">
         <div className="flex-1 min-w-0">
           <div className="mb-1">{esAviso ? <ChipAviso /> : <ChipVisita />}</div>
-          <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--foreground)' }}>
+          <p
+            className="text-sm font-semibold leading-snug"
+            style={{ color: esHecho ? 'var(--muted-foreground)' : 'var(--foreground)' }}
+          >
             {evento.titulo}
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
@@ -98,7 +113,7 @@ function EventoCard({
           Abrir y descargar reporte →
         </button>
       )}
-    </div>
+    </motion.div>
   )
 }
 
@@ -107,6 +122,8 @@ export function MisVisitas() {
   const navigate = useNavigate()
   const [eventos, setEventos] = useState<EventoAgenda[]>([])
   const [cargando, setCargando] = useState(true)
+  const reducedMotion = useReducedMotion()
+  const mostrarSkeleton = useMostrarCarga(cargando, eventos.length > 0)
 
   useEffect(() => {
     if (!profile?.id) return
@@ -145,11 +162,7 @@ export function MisVisitas() {
   const hechos = eventos.filter(e => e.estado === 'hecho')
 
   if (cargando) {
-    return (
-      <p className="text-sm text-center py-12" style={{ color: 'var(--muted-foreground)' }}>
-        Cargando agenda…
-      </p>
-    )
+    return mostrarSkeleton ? <ListaSkeleton rows={4} /> : null
   }
 
   return (
@@ -171,9 +184,11 @@ export function MisVisitas() {
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            {pendientes.map(ev => (
+            {pendientes.map((ev, index) => (
               <EventoCard
                 key={ev.id}
+                index={index}
+                reducedMotion={reducedMotion}
                 evento={ev}
                 onMarcarHecho={marcarHecho}
                 onAbrirAuditoria={(aid) => navigate(`/auditor/auditoria/${aid}`)}
@@ -192,9 +207,11 @@ export function MisVisitas() {
             Completados
           </p>
           <div className="flex flex-col gap-2">
-            {hechos.map(ev => (
+            {hechos.map((ev, index) => (
               <EventoCard
                 key={ev.id}
+                index={index}
+                reducedMotion={reducedMotion}
                 evento={ev}
                 onMarcarHecho={marcarHecho}
                 onAbrirAuditoria={(aid) => navigate(`/auditor/auditoria/${aid}`)}

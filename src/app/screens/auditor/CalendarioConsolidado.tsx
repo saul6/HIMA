@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { ChevronLeft, ChevronRight, CalendarDays, Loader, RefreshCw } from 'lucide-react'
+import { motion, useReducedMotion } from 'motion/react'
 import { supabase } from '@/lib/supabase'
+import { Skeleton } from '@/app/components/ui/skeleton'
 import { useCalendario, type EventoCalendario } from '@/hooks/useCalendario'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,20 +45,29 @@ function EventoItem({
   evento,
   tipoLabel,
   onNavegar,
+  index,
+  reducedMotion,
 }: {
   evento: EventoCalendario
   tipoLabel: string
   onNavegar: (() => void) | null
+  index: number
+  reducedMotion: boolean | null
 }) {
   const tipo = TIPO_CONFIG[evento.event_type] ?? { fillVar: 'var(--muted)', textVar: 'var(--muted-foreground)' }
   const interactivo = !!onNavegar
 
   return (
-    <button
+    <motion.button
+      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+      animate={{
+        opacity: 1, y: 0,
+        transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: Math.min(index, 7) * 0.03 },
+      }}
       onClick={onNavegar ?? undefined}
       disabled={!interactivo}
-      className="w-full text-left rounded-xl border border-border px-4 py-3 flex flex-col gap-1.5 disabled:cursor-default transition-opacity"
-      style={{ backgroundColor: 'var(--card)' }}
+      className={`w-full text-left rounded-xl border border-border px-4 py-3 flex flex-col gap-1.5 disabled:cursor-default transition-colors ${interactivo ? 'hover:bg-muted' : ''}`}
+      style={{ backgroundColor: 'var(--card)', transitionDuration: 'var(--motion-fast)' }}
     >
       <div className="flex items-center gap-1.5 flex-wrap">
         <span
@@ -88,12 +99,13 @@ function EventoItem({
           Ver detalle →
         </p>
       )}
-    </button>
+    </motion.button>
   )
 }
 
 export function CalendarioConsolidado() {
   const navigate = useNavigate()
+  const reducedMotion = useReducedMotion()
 
   const [mesOffset, setMesOffset] = useState(0)
   const [calendarioTipos, setCalendarioTipos] = useState<CalendarioTipo[]>([])
@@ -235,7 +247,10 @@ export function CalendarioConsolidado() {
       {cargando ? (
         <div className="flex flex-col gap-2 pt-2">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-[72px] rounded-xl animate-pulse" style={{ backgroundColor: 'var(--muted)' }} />
+            <div key={i} className="bg-card rounded-xl border border-border px-4 py-3 space-y-2">
+              <Skeleton className="h-4 w-16 rounded-full" />
+              <Skeleton className="h-3.5 w-3/4" />
+            </div>
           ))}
         </div>
       ) : eventosPorDia.length === 0 ? (
@@ -259,9 +274,11 @@ export function CalendarioConsolidado() {
                 {formatDayHeader(dayIso)}
               </p>
               <div className="flex flex-col gap-2">
-                {evs.map(ev => (
+                {evs.map((ev, index) => (
                   <EventoItem
                     key={`${ev.source}-${ev.source_id}`}
+                    index={index}
+                    reducedMotion={reducedMotion}
                     evento={ev}
                     tipoLabel={tipoLabelMap.get(ev.event_type) ?? ev.event_type}
                     onNavegar={ev.route ? () => navigate(ev.route!) : null}
