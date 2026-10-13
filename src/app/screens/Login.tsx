@@ -7,6 +7,7 @@ import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
 import { AuthMobileBackdrop } from '@/app/components/AuthMobileBackdrop'
 import { AuthLeavesDecor } from '@/app/components/AuthLeavesDecor'
 import { useIntroTransition } from '@/context/IntroTransitionContext'
+import { enlaceVencidoInicial } from '@/lib/supabase'
 
 const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -58,6 +59,20 @@ export function Login() {
   const [recupEnviado, setRecupEnviado] = useState(false)
   const [recupCargando, setRecupCargando] = useState(false)
   const [recupError, setRecupError] = useState<string | null>(null)
+  const [recupCaptchaToken, setRecupCaptchaToken] = useState<string | null>(null)
+  const recupTurnstileRef = useRef<TurnstileInstance>(null)
+  const [enlaceVencido, setEnlaceVencido] = useState(enlaceVencidoInicial)
+
+  // Limpia el hash/query de error para que al recargar no vuelva a salir el aviso
+  useEffect(() => {
+    if (!enlaceVencidoInicial) return
+    if (window.location.hash || window.location.search.includes('error')) {
+      const q = new URLSearchParams(window.location.search)
+      ;['error', 'error_code', 'error_description'].forEach(k => q.delete(k))
+      const qs = q.toString()
+      window.history.replaceState(null, '', window.location.pathname + (qs ? `?${qs}` : ''))
+    }
+  }, [])
 
   function goToApp() {
     if (navigatedRef.current) return
@@ -100,14 +115,66 @@ export function Login() {
   async function handleRecuperar(e: FormEvent) {
     e.preventDefault()
     setRecupError(null)
+    if (SITE_KEY && !recupCaptchaToken) {
+      setRecupError('Completa la verificación de seguridad e intenta de nuevo.')
+      return
+    }
     setRecupCargando(true)
-    const result = await requestPasswordReset(recupEmail)
+    const result = await requestPasswordReset(recupEmail, recupCaptchaToken ?? undefined)
     setRecupCargando(false)
+    // Cada token de Turnstile sirve una sola vez
+    recupTurnstileRef.current?.reset()
+    setRecupCaptchaToken(null)
     if (result.error) {
-      setRecupError('No pudimos enviar el correo. Verifica la dirección e intenta de nuevo.')
+      setRecupError(
+        /captcha/i.test(result.error)
+          ? 'Completa la verificación de seguridad e intenta de nuevo.'
+          : 'No pudimos enviar el correo. Verifica la dirección e intenta de nuevo.'
+      )
     } else {
       setRecupEnviado(true)
     }
+  }
+
+  function renderTurnstile(
+    ref: React.RefObject<TurnstileInstance | null>,
+    onToken: (t: string | null) => void,
+    onFail: () => void,
+  ) {
+    if (!SITE_KEY) return null
+    return (
+      <div
+        // -mx-5 cancela el padding horizontal de la tarjeta (p-5=20px)
+        // en móvil: Turnstile tiene un mínimo duro de ~300px que no
+        // cabía en teléfonos angostos (S21/iPhone 11) con ese padding
+        // acumulado. lg:mx-0 lo restaura en escritorio, donde el panel
+        // siempre tiene sobra de ancho.
+        className="flex flex-col items-stretch gap-2 p-2 lg:p-3 rounded-[10px] border bg-[var(--auth-input-bg)] -mx-5 lg:mx-0"
+        style={{ borderColor: 'var(--auth-input-border)' }}
+      >
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: 'var(--auth-accent)' }} />
+          <div>
+            <p className="text-xs font-semibold" style={{ color: 'var(--auth-label-color)' }}>
+              Verificación de seguridad
+            </p>
+            <p className="text-[11px]" style={{ color: 'var(--auth-subtext-color)' }}>
+              Completa el captcha para continuar
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-center">
+          <Turnstile
+            ref={ref}
+            siteKey={SITE_KEY}
+            options={{ theme: 'auto', size: isDesktop ? 'normal' : 'flexible' }}
+            onSuccess={(token) => onToken(token)}
+            onExpire={() => onToken(null)}
+            onError={() => { onToken(null); onFail() }}
+          />
+        </div>
+      </div>
+    )
   }
 
   if (loading) {
@@ -171,6 +238,27 @@ export function Login() {
             )}
           </div>
 
+          {enlaceVencido && (
+            <div
+              className="p-3 rounded-lg text-sm space-y-2"
+              style={{ background: 'var(--auth-danger-fill)', color: 'var(--auth-danger-text)' }}
+            >
+              <p>Este enlace ya se usó o expiró. Solicita uno nuevo.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setEnlaceVencido(false)
+                  setModoRecup(true); setRecupEmail(''); setRecupError(null)
+                  setRecupEnviado(false); setRecupCaptchaToken(null)
+                }}
+                className="text-sm underline"
+                style={{ fontWeight: 600 }}
+              >
+                Solicitar un enlace nuevo
+              </button>
+            </div>
+          )}
+
           {/* ── Recuperación de contraseña ── */}
           {modoRecup && (
             <div className="space-y-4">
@@ -182,7 +270,7 @@ export function Login() {
                   >
                     <p style={{ fontWeight: 600 }}>Correo enviado</p>
                     <p>
-                      Revisa tu bandeja de entrada en <strong>{recupEmail}</strong> y sigue el enlace para crear una nueva contraseña.
+                      Revisa tu bandeja de entrada en <strong>{recupEmail}</strong> y sigue el enlace para crear una nueva contraseña. Te enviamos un enlace a tu correo. Revisa también la carpeta de spam.
                     </p>
                   </div>
                   <button
@@ -224,9 +312,10 @@ export function Login() {
                       {recupError}
                     </div>
                   )}
+                  {renderTurnstile(recupTurnstileRef, setRecupCaptchaToken, () => setRecupError('Verificación fallida, intenta de nuevo'))}
                   <button
                     type="submit"
-                    disabled={recupCargando || !recupEmail}
+                    disabled={recupCargando || !recupEmail || (!!SITE_KEY && !recupCaptchaToken)}
                     className={ctaCls}
                     style={{ borderRadius: 10, color: 'var(--auth-cta-text)' }}
                   >
@@ -320,42 +409,7 @@ export function Login() {
             </div>
 
             {/* Turnstile — fila simple en móvil, tarjeta con encabezado en escritorio */}
-            {SITE_KEY && (
-              <div
-                // -mx-5 cancela el padding horizontal de la tarjeta (p-5=20px)
-                // en móvil: Turnstile tiene un mínimo duro de ~300px que no
-                // cabía en teléfonos angostos (S21/iPhone 11) con ese padding
-                // acumulado. lg:mx-0 lo restaura en escritorio, donde el panel
-                // siempre tiene sobra de ancho.
-                className="flex flex-col items-stretch gap-2 p-2 lg:p-3 rounded-[10px] border bg-[var(--auth-input-bg)] -mx-5 lg:mx-0"
-                style={{ borderColor: 'var(--auth-input-border)' }}
-              >
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: 'var(--auth-accent)' }} />
-                  <div>
-                    <p className="text-xs font-semibold" style={{ color: 'var(--auth-label-color)' }}>
-                      Verificación de seguridad
-                    </p>
-                    <p className="text-[11px]" style={{ color: 'var(--auth-subtext-color)' }}>
-                      Completa el captcha para continuar
-                    </p>
-                  </div>
-                </div>
-                <div className="flex justify-center">
-                  <Turnstile
-                    ref={turnstileRef}
-                    siteKey={SITE_KEY}
-                    options={{ theme: 'auto', size: isDesktop ? 'normal' : 'flexible' }}
-                    onSuccess={(token) => setCaptchaToken(token)}
-                    onExpire={() => setCaptchaToken(null)}
-                    onError={() => {
-                      setCaptchaToken(null)
-                      setError('Verificación fallida, intenta de nuevo')
-                    }}
-                  />
-                </div>
-              </div>
-            )}
+            {renderTurnstile(turnstileRef, setCaptchaToken, () => setError('Verificación fallida, intenta de nuevo'))}
 
             {error && (
               <div

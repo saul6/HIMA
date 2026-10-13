@@ -11,7 +11,7 @@ interface AuthContextValue extends UseAuthReturn {
     nombreCompleto: string,
     captchaToken?: string
   ) => Promise<{ error: string | null; requiresConfirmation: boolean }>
-  requestPasswordReset: (email: string) => Promise<{ error: string | null }>
+  requestPasswordReset: (email: string, captchaToken?: string) => Promise<{ error: string | null }>
   codigoClave: string
 }
 
@@ -41,9 +41,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut({ scope: 'local' })
   }
 
-  async function requestPasswordReset(email: string): Promise<{ error: string | null }> {
+  async function requestPasswordReset(email: string, captchaToken?: string): Promise<{ error: string | null }> {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: 'https://www.mady.com.mx',
+      ...(captchaToken ? { captchaToken } : {}),
     })
     return { error: error?.message ?? null }
   }

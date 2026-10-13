@@ -8,8 +8,18 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 export const initialAuthParams = (() => {
   if (typeof window === 'undefined') return new URLSearchParams()
   const hash = window.location.hash
-  return new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : hash)
+  const params = new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : hash)
+  // Supabase puede devolver el error en el query string en vez del hash
+  new URLSearchParams(window.location.search).forEach((v, k) => {
+    if (!params.has(k)) params.set(k, v)
+  })
+  return params
 })()
+
+// Enlace de recuperación/invitación ya usado o vencido
+export const enlaceVencidoInicial =
+  initialAuthParams.get('error_code') === 'otp_expired' ||
+  initialAuthParams.get('error') === 'access_denied'
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
