@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate, Navigate } from 'react-router'
+import { useParams, useNavigate, Navigate, Outlet } from 'react-router'
 import { ChevronLeft, Plus, ClipboardCheck, MapPin, Info, AlertTriangle, Loader, Building2, CheckCircle2, XCircle } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -631,6 +631,8 @@ export function AuditorInstalacionDetalle() {
           </div>
         </div>
       </BottomSheet>
+
+      <Outlet />
     </div>
   )
 }

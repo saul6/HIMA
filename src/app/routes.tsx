@@ -207,8 +207,11 @@ export const router = createBrowserRouter([
               { path: "auditor/auditoria/:auditoriaId", Component: AuditorEjecucion },
               { path: "auditor/auditoria/:auditoriaId/azzule", Component: AuditorModoAzzule },
               { path: "auditor/instalacion/nueva", Component: AuditorNuevaInstalacion },
-              { path: "auditor/instalacion/:instalacionId", Component: AuditorInstalacionDetalle },
-              { path: "auditor/instalacion/:instalacionId/nueva", Component: AuditorNuevaAuditoriaEfimera },
+              {
+                path: "auditor/instalacion/:instalacionId",
+                Component: AuditorInstalacionDetalle,
+                children: [{ path: "nueva", Component: AuditorNuevaAuditoriaEfimera }],
+              },
               { path: "auditor/jornada/nueva", Component: NuevaJornada },
               { path: "auditor/jornada/:jornadaId", Component: EjecucionJornada },
               { path: "nueva-aplicacion", Component: NuevaAplicacion },
