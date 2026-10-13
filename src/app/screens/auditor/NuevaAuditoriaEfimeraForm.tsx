@@ -1,0 +1,230 @@
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
+import { X } from 'lucide-react'
+import { toast } from 'sonner'
+import { useAuthContext } from '@/context/AuthContext'
+import { supabase } from '@/lib/supabase'
+import { hoyMX } from '@/lib/fecha'
+import { ModulosSelectorStep } from './ModulosSelectorStep'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const tbl = (name: string) => (supabase as any).from(name)
+
+interface ModuloItem { id: string; nombre: string; orden: number }
+
+const inputSt: React.CSSProperties = {
+  width: '100%', height: '2.5rem',
+  borderRadius: 'var(--radius)',
+  border: '1px solid var(--border)',
+  backgroundColor: 'var(--input-background)',
+  color: 'var(--foreground)',
+  padding: '0 0.75rem',
+  fontSize: '0.875rem',
+  outline: 'none',
+}
+
+export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) {
+  const { instalacionId } = useParams<{ instalacionId: string }>()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { profile } = useAuthContext()
+
+  const instalacionNombre: string =
+    (location.state as { instalacionNombre?: string } | null)?.instalacionNombre ?? 'Instalación'
+  const hoy = hoyMX()
+
+  const [modulos, setModulos] = useState<ModuloItem[]>([])
+  const [versionId, setVersionId] = useState<string | null>(null)
+  const [cargando, setCargando] = useState(true)
+
+  const [fecha, setFecha] = useState(hoy)
+  const [tipoOperacion, setTipoOperacion] = useState('')
+  const [producto, setProducto] = useState('')
+  const [periodo, setPeriodo] = useState('')
+  const [modulosSel, setModulosSel] = useState<Set<string>>(new Set())
+  const [guardando, setGuardando] = useState(false)
+
+  if (profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin') {
+    return <Navigate to="/" replace />
+  }
+
+  useEffect(() => {
+    if (!profile?.id) return
+    let cancelado = false
+    async function init() {
+      setCargando(true)
+      try {
+        const { data: verData, error: verErr } = await tbl('aud_versiones_norma')
+          .select('id').eq('vigente', true).single()
+        if (verErr) throw verErr
+        const vid = verData.id as string
+        if (!cancelado) setVersionId(vid)
+
+        const { data: modData, error: modErr } = await tbl('aud_modulos_norma')
+          .select('id, nombre, orden').eq('version_id', vid).order('orden')
+        if (modErr) throw modErr
+        if (!cancelado) setModulos(modData ?? [])
+      } catch (e) {
+        console.error('[AuditorNuevaAuditoriaEfimera]', e)
+        if (!cancelado) toast.error('Error al cargar el catálogo')
+      } finally {
+        if (!cancelado) setCargando(false)
+      }
+    }
+    init()
+    return () => { cancelado = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.id])
+
+  function toggleModulo(id: string) {
+    setModulosSel(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  async function handleCrear() {
+    if (modulosSel.size === 0) { toast.warning('Selecciona al menos un módulo PrimusGFS'); return }
+    if (!versionId || !instalacionId) return
+    if (!profile?.org_id) { toast.error('No se pudo identificar tu organización'); return }
+
+    setGuardando(true)
+    try {
+      const { data: audData, error: audErr } = await tbl('aud_auditorias')
+        .insert({
+          org_id: profile.org_id,
+          version_id: versionId,
+          rancho_id: null,
+          instalacion_id: instalacionId,
+          tipo_operacion: tipoOperacion.trim() || null,
+          producto: producto.trim() || null,
+          periodo: periodo.trim() || null,
+          fecha,
+          auditor_nombre: profile.nombre_completo ?? null,
+          auditor_profile_id: profile.id,
+          certificadora_org_id: profile.org_id,
+          creado_por: profile.id,
+          estado: 'en_proceso',
+          scoring_isolation_key: crypto.randomUUID(),
+        })
+        .select('id')
+        .single()
+      if (audErr) throw audErr
+      const auditoriaId = (audData as { id: string }).id
+
+      const modInserts = Array.from(modulosSel).map(mid => ({
+        org_id: profile.org_id,
+        auditoria_id: auditoriaId,
+        modulo_norma_id: mid,
+        aplicable: true,
+      }))
+      const { error: mErr } = await tbl('aud_auditoria_modulos').insert(modInserts)
+      if (mErr) throw mErr
+
+      toast.success('Auditoría creada')
+      navigate(`/auditor/auditoria/${auditoriaId}`, {
+        replace: true,
+        state: { instalacionId, instalacionNombre },
+      })
+    } catch (e: unknown) {
+      console.error('[AuditorNuevaAuditoriaEfimera]', e)
+      toast.error('No se pudo crear la auditoría. Reintenta.')
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  return (
+    <>
+      <div className="flex items-start justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
+        <div className="min-w-0">
+          <h2 className="text-base font-semibold">Nueva auditoría PrimusGFS</h2>
+          <p className="text-xs truncate" style={{ color: 'var(--muted-foreground)' }}>{instalacionNombre}</p>
+        </div>
+        <button onClick={onClose} aria-label="Cerrar"><X className="w-5 h-5" /></button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4 flex flex-col gap-5">
+        {cargando ? (
+          <p className="text-sm text-center py-12" style={{ color: 'var(--muted-foreground)' }}>
+            Cargando catálogo…
+          </p>
+        ) : (
+          <>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+            Fecha *
+          </label>
+          <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} style={inputSt} />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+            Tipo de operación
+          </label>
+          <input
+            type="text"
+            value={tipoOperacion}
+            onChange={e => setTipoOperacion(e.target.value)}
+            placeholder="Ej. Granja, Empaque…"
+            style={inputSt}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+            Producto
+          </label>
+          <input
+            type="text"
+            value={producto}
+            onChange={e => setProducto(e.target.value)}
+            placeholder="Ej. Tomate, Zarzamora…"
+            style={inputSt}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+            Periodo
+          </label>
+          <input
+            type="text"
+            value={periodo}
+            onChange={e => setPeriodo(e.target.value)}
+            placeholder="Ej. Temporada 2026"
+            style={inputSt}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+            Módulos PrimusGFS a evaluar *
+          </label>
+          <ModulosSelectorStep
+            modulos={modulos}
+            seleccionados={modulosSel}
+            onToggle={toggleModulo}
+          />
+        </div>
+
+          </>
+        )}
+      </div>
+
+      {!cargando && (
+        <div className="px-4 pt-3 pb-4 border-t border-border flex-shrink-0">
+          <button
+            onClick={handleCrear}
+            disabled={guardando}
+            className="w-full h-11 rounded-xl text-sm font-semibold disabled:opacity-50"
+            style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+          >
+            {guardando ? 'Creando…' : 'Crear auditoría'}
+          </button>
+        </div>
+      )}
+    </>
+  )
+}
