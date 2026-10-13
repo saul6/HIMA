@@ -284,9 +284,13 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
       .order('fecha', { ascending: false }).limit(500),
     tbl('m43_registro_mensual')
-      .select('id, rancho_id, mes, ranchos(nombre)')
-      .eq('org_id', orgId).gte('mes', desdeM).lte('mes', hastaM)
-      .order('mes', { ascending: false }).limit(200),
+      .select('id, rancho_id, anio, mes, ranchos(nombre)')
+      .eq('org_id', orgId)
+      .gte('anio', parseInt(desdeM.slice(0, 4)))
+      .lte('anio', parseInt(hastaM.slice(0, 4)))
+      .order('anio', { ascending: false })
+      .order('mes', { ascending: false })
+      .limit(200),
     tbl('m44_ordenes')
       .select('id, rancho_id, fecha, folio, descripcion_solicitud, ranchos(nombre)')
       .eq('org_id', orgId).gte('fecha', desde).lte('fecha', hasta)
@@ -863,12 +867,16 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
 
   // M43 — una fila = un registro mensual de inspección de almacén de material de empaque
   for (const r of (r43 as any)?.data ?? []) {
+    const desdeV = parseInt(desdeM.slice(0, 4)) * 12 + parseInt(desdeM.slice(5, 7))
+    const hastaV = parseInt(hastaM.slice(0, 4)) * 12 + parseInt(hastaM.slice(5, 7))
+    const v = (r.anio as number) * 12 + (r.mes as number)
+    if (v < desdeV || v > hastaV) continue
     todos.push({
       key: `M43-${r.id}`,
       modulo: 'M43',
       rancho_id: r.rancho_id,
       rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
-      fecha: r.mes,
+      fecha: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
       resumen: 'Inspección de almacén de material de empaque mensual',
       pdfRef: { tipo: 'M43', id: r.id },
     })
