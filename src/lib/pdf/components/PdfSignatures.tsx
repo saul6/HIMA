@@ -14,6 +14,10 @@ interface PdfSignaturesProps {
 }
 
 export function PdfSignatures({ signatures }: PdfSignaturesProps) {
+  // La firma de enterado viaja dentro de las firmas Realizó/Verificó (ver obtenerFirmasParaPdf)
+  const enterado = signatures.map((s) => s.firma?.enterado).find(Boolean) ?? null
+  const enteradoDigital = enterado && enterado.estado === 'vigente' && enterado.png
+
   return (
     <View style={{ flexDirection: 'row', marginTop: 24 }}>
       {signatures.map((sig, i) => {
@@ -26,7 +30,7 @@ export function PdfSignatures({ signatures }: PdfSignaturesProps) {
             key={i}
             style={{
               flex: 1,
-              marginRight: i < signatures.length - 1 ? 16 : 0,
+              marginRight: i < signatures.length - 1 || enterado ? 16 : 0,
             }}
           >
             {/* Contenedor de altura fija para que la línea de firma quede siempre alineada */}
@@ -82,6 +86,44 @@ export function PdfSignatures({ signatures }: PdfSignaturesProps) {
           </View>
         )
       })}
+
+      {enterado && (
+        <View style={{ flex: 1 }}>
+          <View style={{ height: 32 }}>
+            {enteradoDigital ? (
+              <Image src={enterado.png} style={{ height: 32, objectFit: 'contain', marginBottom: 2 }} />
+            ) : (
+              <Text style={{ fontSize: 7, color: PC.textSub }}>Enterado (Productor)</Text>
+            )}
+          </View>
+
+          <View
+            style={{
+              borderTopWidth: 1,
+              borderTopColor: PC.fieldValue,
+              marginTop: 20,
+              paddingTop: 4,
+            }}
+          >
+            <Text style={{ fontSize: 7, color: PC.textSub }}>Enterado (Productor)</Text>
+            {enteradoDigital ? (
+              <>
+                <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.fieldValue, marginTop: 2 }}>
+                  {enterado.firmante}
+                </Text>
+                <Text style={{ fontSize: 7, color: PC.textSub }}>{enterado.cargo}</Text>
+                <Text style={{ fontSize: 6, color: PC.footerGray, marginTop: 2 }}>
+                  {`Capturada por ${enterado.capturadoPor} - ${enterado.fecha}`}
+                </Text>
+              </>
+            ) : (
+              <Text style={{ fontSize: 7, color: PC.footerGray, marginTop: 2 }}>
+                Firma digital desactualizada: el registro se modifico despues de firmarse
+              </Text>
+            )}
+          </View>
+        </View>
+      )}
     </View>
   )
 }
