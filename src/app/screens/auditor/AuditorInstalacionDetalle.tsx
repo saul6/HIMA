@@ -7,6 +7,10 @@ import { toast } from 'sonner'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { useAuditorAsignaciones } from '@/hooks/useAuditorAsignaciones'
 import { Fab } from '@/app/components/Fab'
+import { motion, useReducedMotion } from 'motion/react'
+import { Skeleton } from '@/app/components/ui/skeleton'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -73,6 +77,8 @@ export function AuditorInstalacionDetalle() {
   const [linkedOrgNombre, setLinkedOrgNombre] = useState<string | null>(null)
   const [auditorias, setAuditorias] = useState<AuditoriaItem[]>([])
   const [cargando, setCargando] = useState(true)
+  const reducedMotion = useReducedMotion()
+  const mostrarSkeleton = useMostrarCarga(cargando, instalacion !== null)
   const [error, setError] = useState<string | null>(null)
 
   // — Sheet: vincular a org M.A.D.Y. —
@@ -264,9 +270,15 @@ export function AuditorInstalacionDetalle() {
       </header>
 
       {cargando ? (
-        <p className="text-sm text-center py-16" style={{ color: 'var(--muted-foreground)' }}>
-          Cargando…
-        </p>
+        mostrarSkeleton ? (
+          <div className="px-4 py-4 flex flex-col gap-6">
+            <Skeleton className="h-20 w-full rounded-xl" />
+            <div className="space-y-2.5">
+              <Skeleton className="h-3 w-28" />
+              <ListaSkeleton rows={3} />
+            </div>
+          </div>
+        ) : null
       ) : error ? (
         <p className="text-sm text-center py-16" style={{ color: 'var(--agro-danger-text)' }}>
           {error}
@@ -350,15 +362,21 @@ export function AuditorInstalacionDetalle() {
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                {auditorias.map(a => {
+                {auditorias.map((a, index) => {
                   const style = ESTADO_STYLE[a.estado] ?? ESTADO_STYLE.cerrada
                   return (
-                    <button
+                    <motion.button
                       key={a.id}
+                      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+                      animate={{
+                        opacity: 1, y: 0,
+                        transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: Math.min(index, 7) * 0.03 },
+                      }}
                       onClick={() => navigate(`/auditor/auditoria/${a.id}`, {
                         state: { instalacionId, instalacionNombre: instalacion?.nombre }
                       })}
-                      className="w-full text-left bg-card rounded-xl border border-border p-4 flex items-start justify-between gap-2 active:opacity-70 transition-opacity"
+                      className="w-full text-left bg-card rounded-xl border border-border p-4 flex items-start justify-between gap-2 hover:bg-muted active:opacity-70 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                      style={{ transitionDuration: 'var(--motion-fast)' }}
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold truncate" style={{ color: 'var(--foreground)' }}>
@@ -374,7 +392,7 @@ export function AuditorInstalacionDetalle() {
                       >
                         {ESTADO_LABELS[a.estado] ?? a.estado}
                       </span>
-                    </button>
+                    </motion.button>
                   )
                 })}
               </div>

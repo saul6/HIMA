@@ -4,6 +4,21 @@ import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorOrg } from '@/hooks/useAuditorOrg'
 import type { AuditorAuditoriaItem } from '@/hooks/useAuditorOrg'
 import { Fab } from '@/app/components/Fab'
+import { motion, useReducedMotion } from 'motion/react'
+import { Skeleton } from '@/app/components/ui/skeleton'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+
+// Entrada escalonada (primeros 8) compartida por las listas de esta pantalla.
+function entrada(index: number, reducedMotion: boolean | null) {
+  return {
+    initial: reducedMotion ? (false as const) : { opacity: 0, y: 8 },
+    animate: {
+      opacity: 1, y: 0,
+      transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] as const, delay: Math.min(index, 7) * 0.03 },
+    },
+  }
+}
 
 const ESTADO_LABELS: Record<string, string> = {
   en_proceso:  'En proceso',
@@ -24,12 +39,16 @@ function formatFecha(fecha: string) {
   return `${d}/${m}/${y}`
 }
 
-function AuditoriaCard({ a, onClick }: { a: AuditorAuditoriaItem; onClick: () => void }) {
+function AuditoriaCard({
+  a, index, reducedMotion, onClick,
+}: { a: AuditorAuditoriaItem; index: number; reducedMotion: boolean | null; onClick: () => void }) {
   const style = ESTADO_STYLE[a.estado] ?? ESTADO_STYLE.cerrada
   return (
-    <button
+    <motion.button
+      {...entrada(index, reducedMotion)}
       onClick={onClick}
-      className="w-full text-left bg-card rounded-xl border border-border p-4 flex flex-col gap-1.5 active:opacity-70 transition-opacity"
+      className="w-full text-left bg-card rounded-xl border border-border p-4 flex flex-col gap-1.5 hover:bg-muted active:opacity-70 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      style={{ transitionDuration: 'var(--motion-fast)' }}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -47,7 +66,7 @@ function AuditoriaCard({ a, onClick }: { a: AuditorAuditoriaItem; onClick: () =>
           {ESTADO_LABELS[a.estado] ?? a.estado}
         </span>
       </div>
-    </button>
+    </motion.button>
   )
 }
 
@@ -57,6 +76,8 @@ export function AuditorOrgDetalle() {
   const location = useLocation()
   const { profile } = useAuthContext()
   const { ranchos, auditorias, loading, error, refetch } = useAuditorOrg(orgId)
+  const reducedMotion = useReducedMotion()
+  const mostrarSkeleton = useMostrarCarga(loading, ranchos.length > 0 || auditorias.length > 0)
 
   const orgNombre: string = (location.state as { orgNombre?: string } | null)?.orgNombre ?? 'Empresa auditada'
 
@@ -81,9 +102,18 @@ export function AuditorOrgDetalle() {
       </header>
 
       {loading ? (
-        <p className="text-sm text-center py-16" style={{ color: 'var(--muted-foreground)' }}>
-          Cargando…
-        </p>
+        mostrarSkeleton ? (
+          <div className="px-4 py-4 flex flex-col gap-6">
+            <div className="space-y-2.5">
+              <Skeleton className="h-3 w-28" />
+              <ListaSkeleton rows={2} />
+            </div>
+            <div className="space-y-2.5">
+              <Skeleton className="h-3 w-28" />
+              <ListaSkeleton rows={3} />
+            </div>
+          </div>
+        ) : null
       ) : error ? (
         <div className="flex flex-col items-center gap-2 py-16 px-4">
           <p className="text-sm text-center" style={{ color: 'var(--agro-danger-text)' }}>{error}</p>
@@ -102,8 +132,12 @@ export function AuditorOrgDetalle() {
               <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Sin instalaciones registradas.</p>
             ) : (
               <div className="flex flex-col gap-2">
-                {ranchos.map(r => (
-                  <div key={r.id} className="bg-card rounded-xl border border-border px-4 py-3 flex items-center gap-3">
+                {ranchos.map((r, index) => (
+                  <motion.div
+                    key={r.id}
+                    {...entrada(index, reducedMotion)}
+                    className="bg-card rounded-xl border border-border px-4 py-3 flex items-center gap-3"
+                  >
                     <MapPin size={15} style={{ color: 'var(--muted-foreground)' }} className="flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>{r.nombre}</p>
@@ -113,7 +147,7 @@ export function AuditorOrgDetalle() {
                         </p>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             )}
@@ -136,10 +170,12 @@ export function AuditorOrgDetalle() {
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                {auditorias.map(a => (
+                {auditorias.map((a, index) => (
                   <AuditoriaCard
                     key={a.id}
                     a={a}
+                    index={index}
+                    reducedMotion={reducedMotion}
                     onClick={() => navigate(`/auditor/auditoria/${a.id}`, { state: { orgId, orgNombre } })}
                   />
                 ))}
