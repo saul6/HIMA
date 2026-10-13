@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { ChevronLeft, X } from 'lucide-react'
+import { X } from 'lucide-react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { hoyMX } from '@/lib/fecha'
 import { ModulosSelectorStep } from './ModulosSelectorStep'
-import { Portal } from '@/app/components/Portal'
+import { BottomSheet } from '@/app/components/BottomSheet'
+import { SPRING_SUAVE } from '@/lib/motion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -17,6 +19,9 @@ interface Props {
   onClose: () => void
   onCreated: () => void
 }
+
+const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1]
+const STEP_TRANSITION = { duration: 0.22, ease: EASE_OUT }
 
 const inputSt: React.CSSProperties = {
   width: '100%', height: '2.5rem',
@@ -34,7 +39,9 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
   const navigate = useNavigate()
   const hoy = hoyMX()
 
+  const reducedMotion = useReducedMotion()
   const [paso, setPaso] = useState<1 | 2>(1)
+  const [direccion, setDireccion] = useState<1 | -1>(1)
 
   // Paso 1 — instalación
   const [nombre, setNombre] = useState('')
@@ -77,6 +84,7 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
       }
       setCargandoModulos(false)
     }
+    setDireccion(1)
     setPaso(2)
   }
 
@@ -164,183 +172,217 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
   }
 
   return (
-    <Portal>
-      {/* Fondo */}
-      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
-
-      {/* Sheet */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-50 flex flex-col"
-        style={{
-          backgroundColor: 'var(--card)',
-          borderRadius: '0.625rem 0.625rem 0 0',
-          maxHeight: '85vh',
-        }}
-      >
-        {/* Cabecera */}
-        <div className="flex items-center gap-3 px-4 pt-4 pb-3 flex-shrink-0 border-b border-border">
-          {paso === 2 ? (
-            <button onClick={() => setPaso(1)} className="flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
-              <ChevronLeft size={22} />
-            </button>
-          ) : (
-            <button onClick={onClose} className="flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
-              <X size={20} />
-            </button>
-          )}
-          <div className="flex-1 min-w-0">
-            <p className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>
-              Nueva auditoría
-            </p>
-            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-              {paso === 1 ? 'Paso 1 de 2 · Instalación a auditar' : 'Paso 2 de 2 · Módulos a evaluar'}
-            </p>
-          </div>
+    <BottomSheet open onClose={onClose} height="85%">
+      {/* Cabecera */}
+      <div className="flex items-start justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
+        <div className="min-w-0">
+          <h2 className="text-base font-semibold">Nueva auditoría</h2>
+          <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+            {paso === 1 ? 'Paso 1 de 2 · Instalación a auditar' : 'Paso 2 de 2 · Módulos a evaluar'}
+          </p>
         </div>
+        <button onClick={onClose} aria-label="Cerrar"><X className="w-5 h-5" /></button>
+      </div>
 
-        {/* Contenido */}
-        <div className="flex-1 overflow-y-auto px-4 pt-4 flex flex-col gap-4" style={{ paddingBottom: '2rem' }}>
-          {paso === 1 ? (
-            <>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-                  Nombre *
-                </label>
-                <input
-                  type="text"
-                  value={nombre}
-                  onChange={e => setNombre(e.target.value)}
-                  placeholder="Nombre de la instalación"
-                  style={inputSt}
-                  autoFocus
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-                  Ubicación
-                </label>
-                <input
-                  type="text"
-                  value={ubicacion}
-                  onChange={e => setUbicacion(e.target.value)}
-                  placeholder="Ciudad, estado o dirección"
-                  style={inputSt}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-                  Cultivo / Producto
-                </label>
-                <input
-                  type="text"
-                  value={cultivoProducto}
-                  onChange={e => setCultivoProducto(e.target.value)}
-                  placeholder="Ej. Tomate, Zarzamora…"
-                  style={inputSt}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-                  Tipo de operación
-                </label>
-                <input
-                  type="text"
-                  value={tipoOperacion}
-                  onChange={e => setTipoOperacion(e.target.value)}
-                  placeholder="Granja · Invernadero · Empaque · Cuarto Frío…"
-                  style={inputSt}
-                />
-              </div>
-
-              {/* Rango de visita */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-                  Fecha de visita *
-                </label>
-                <div className="flex gap-2">
-                  <div className="flex-1 flex flex-col gap-1">
-                    <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>Inicio</span>
-                    <input
-                      type="date"
-                      value={fechaInicio}
-                      onChange={e => {
-                        setFechaInicio(e.target.value)
-                        if (fechaFin < e.target.value) setFechaFin(e.target.value)
-                      }}
-                      style={inputSt}
-                    />
-                  </div>
-                  <div className="flex-1 flex flex-col gap-1">
-                    <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>Fin</span>
-                    <input
-                      type="date"
-                      value={fechaFin}
-                      min={fechaInicio}
-                      onChange={e => setFechaFin(e.target.value)}
-                      style={inputSt}
-                    />
-                  </div>
-                </div>
-                <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
-                  Si la visita es de un solo día, deja inicio y fin iguales.
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-                  Contacto (opcional)
-                </label>
-                <input
-                  type="text"
-                  value={contacto}
-                  onChange={e => setContacto(e.target.value)}
-                  placeholder="Nombre o teléfono del responsable"
-                  style={inputSt}
-                />
-              </div>
-
+      {/* Indicador de pasos */}
+      <div className="flex justify-center pt-3 flex-shrink-0">
+        <div className="relative inline-flex items-center gap-2">
+          <div className="absolute left-[6px] right-[6px] top-1/2 -translate-y-1/2 h-0.5 rounded-full bg-muted-foreground/20" />
+          {[1, 2].map(n => {
+            const active = n === paso
+            return (
               <button
-                onClick={handleSiguiente}
-                disabled={cargandoModulos}
-                className="w-full h-11 rounded-xl text-sm font-semibold mt-2 disabled:opacity-50"
-                style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                key={n}
+                type="button"
+                onClick={() => { if (n === 1 && paso === 2) { setDireccion(-1); setPaso(1) } }}
+                aria-label={`Paso ${n}`}
+                aria-current={active ? 'step' : undefined}
+                className={`relative z-10 h-3 w-3 rounded-full transition-colors duration-[var(--motion-fast)] ${
+                  active ? '' : n < paso ? 'bg-primary/40' : 'bg-muted-foreground/30'
+                }`}
               >
-                {cargandoModulos ? 'Cargando…' : 'Siguiente'}
+                {active && (
+                  <motion.span
+                    layoutId="auditor-nueva-auditoria-paso"
+                    className="absolute -left-1.5 inset-y-0 w-6 rounded-full bg-primary"
+                    transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
+                  />
+                )}
               </button>
-            </>
-          ) : (
-            <>
-              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                Elige los módulos normativos a evaluar (mínimo 1).
-              </p>
-
-              {cargandoModulos ? (
-                <p className="text-sm text-center py-8" style={{ color: 'var(--muted-foreground)' }}>
-                  Cargando catálogo…
-                </p>
-              ) : (
-                <ModulosSelectorStep
-                  modulos={modulos}
-                  seleccionados={modulosSel}
-                  onToggle={toggleModulo}
-                />
-              )}
-
-              <button
-                onClick={handleCrear}
-                disabled={guardando || cargandoModulos}
-                className="w-full h-11 rounded-xl text-sm font-semibold mt-2 disabled:opacity-50"
-                style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-              >
-                {guardando ? 'Creando…' : 'Crear auditoría'}
-              </button>
-            </>
-          )}
+            )
+          })}
         </div>
       </div>
-    </Portal>
+
+      {/* Contenido */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 pt-4 pb-4">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={paso}
+            className="flex flex-col gap-4"
+            initial={reducedMotion ? false : { opacity: 0, x: direccion * 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={reducedMotion ? undefined : { opacity: 0, x: -direccion * 24 }}
+            transition={reducedMotion ? { duration: 0 } : STEP_TRANSITION}
+          >
+            {paso === 1 ? (
+              <>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+              Nombre *
+            </label>
+            <input
+              type="text"
+              value={nombre}
+              onChange={e => setNombre(e.target.value)}
+              placeholder="Nombre de la instalación"
+              style={inputSt}
+              autoFocus
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+              Ubicación
+            </label>
+            <input
+              type="text"
+              value={ubicacion}
+              onChange={e => setUbicacion(e.target.value)}
+              placeholder="Ciudad, estado o dirección"
+              style={inputSt}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+              Cultivo / Producto
+            </label>
+            <input
+              type="text"
+              value={cultivoProducto}
+              onChange={e => setCultivoProducto(e.target.value)}
+              placeholder="Ej. Tomate, Zarzamora…"
+              style={inputSt}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+              Tipo de operación
+            </label>
+            <input
+              type="text"
+              value={tipoOperacion}
+              onChange={e => setTipoOperacion(e.target.value)}
+              placeholder="Granja · Invernadero · Empaque · Cuarto Frío…"
+              style={inputSt}
+            />
+          </div>
+
+          {/* Rango de visita */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+              Fecha de visita *
+            </label>
+            <div className="flex gap-2">
+              <div className="flex-1 flex flex-col gap-1">
+                <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>Inicio</span>
+                <input
+                  type="date"
+                  value={fechaInicio}
+                  onChange={e => {
+                    setFechaInicio(e.target.value)
+                    if (fechaFin < e.target.value) setFechaFin(e.target.value)
+                  }}
+                  style={inputSt}
+                />
+              </div>
+              <div className="flex-1 flex flex-col gap-1">
+                <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>Fin</span>
+                <input
+                  type="date"
+                  value={fechaFin}
+                  min={fechaInicio}
+                  onChange={e => setFechaFin(e.target.value)}
+                  style={inputSt}
+                />
+              </div>
+            </div>
+            <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+              Si la visita es de un solo día, deja inicio y fin iguales.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+              Contacto (opcional)
+            </label>
+            <input
+              type="text"
+              value={contacto}
+              onChange={e => setContacto(e.target.value)}
+              placeholder="Nombre o teléfono del responsable"
+              style={inputSt}
+            />
+          </div>
+
+              </>
+            ) : (
+              <>
+          <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+            Elige los módulos normativos a evaluar (mínimo 1).
+          </p>
+
+          {cargandoModulos ? (
+            <p className="text-sm text-center py-8" style={{ color: 'var(--muted-foreground)' }}>
+              Cargando catálogo…
+            </p>
+          ) : (
+            <ModulosSelectorStep
+              modulos={modulos}
+              seleccionados={modulosSel}
+              onToggle={toggleModulo}
+            />
+          )}
+
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Pie fijo */}
+      <div className="px-4 pt-3 pb-4 border-t border-border flex-shrink-0">
+        {paso === 1 ? (
+          <button
+            onClick={handleSiguiente}
+            disabled={cargandoModulos}
+            className="w-full h-11 rounded-xl text-sm font-semibold disabled:opacity-50"
+            style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+          >
+            {cargandoModulos ? 'Cargando…' : 'Siguiente'}
+          </button>
+        ) : (
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setDireccion(-1); setPaso(1) }}
+              className="h-11 px-4 rounded-xl text-sm font-semibold border border-border"
+              style={{ color: 'var(--foreground)' }}
+            >
+              Atrás
+            </button>
+            <button
+              onClick={handleCrear}
+              disabled={guardando || cargandoModulos}
+              className="flex-1 h-11 rounded-xl text-sm font-semibold disabled:opacity-50"
+              style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+            >
+              {guardando ? 'Creando…' : 'Crear auditoría'}
+            </button>
+          </div>
+        )}
+      </div>
+    </BottomSheet>
   )
 }
