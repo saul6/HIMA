@@ -261,6 +261,18 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
           return data ?? []
         },
       },
+      {
+        clave: 'm41_registros',
+        fetcher: async () => {
+          const { data } = await (supabase as any)
+            .from('m41_registros')
+            .select('id, rancho_id, fecha, temp_min, temp_max, ranchos(nombre), m41_lecturas(hora, temperatura, incidencia_id)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          return data ?? []
+        },
+      },
     ])
 
     // Precarga de días M9 para todos los registros del mes actual

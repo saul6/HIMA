@@ -11,6 +11,9 @@ import { useM41TemperaturaConservador } from '@/hooks/useM41TemperaturaConservad
 import { useModulosContext } from '@/context/ModulosContext'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opUpdate, opInsert, opCabecera, opUpsert } from '@/lib/offline/construirOperaciones'
 import { generarTemperaturaConservadorPDF } from '@/lib/pdf/m41/generarTemperaturaConservadorPDF'
 import { generarTemperaturaConservadorConsolidadoPDF } from '@/lib/pdf/m41/generarTemperaturaConservadorConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
@@ -59,6 +62,8 @@ export function TemperaturasConservador() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM41TemperaturaConservador()
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M41')
 
   const todosIds = useMemo(() => registros.map(r => r.id), [registros])
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M41', todosIds)
@@ -113,6 +118,15 @@ export function TemperaturasConservador() {
         temp_min: existing.temp_min != null ? String(existing.temp_min) : '',
         temp_max: existing.temp_max != null ? String(existing.temp_max) : '',
       }))
+      if (!online) {
+        // Sin red: las lecturas del día vienen de la caché de la lista
+        const map: LecturasState = {}
+        for (const l of existing.lecturas) {
+          map[l.hora] = { temp: l.temperatura != null ? String(l.temperatura) : '', incidenciaId: l.incidencia_id ?? null }
+        }
+        setLecturas(map)
+        return
+      }
       setCargandoLecturas(true)
       try {
         const { data: lects, error: eL } = await (supabase as any)
@@ -140,12 +154,69 @@ export function TemperaturasConservador() {
         }))
       }
     }
-  }, [registros])
+  }, [registros, online])
 
   const guardar = useCallback(async () => {
     if (!orgId || !form.rancho_id) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular.toLowerCase()}`); return }
     setCargando(true)
     try {
+      if (!online) {
+        const horasOff = HORAS.filter(h => (lecturas[h]?.temp ?? '').trim() !== '')
+        const nuevasOff = horasOff.filter(h =>
+          isOutOfRange(lecturas[h].temp, form.temp_min, form.temp_max) && !lecturas[h]?.incidenciaId
+        )
+        const regIdOff = registroExistenteId ?? crypto.randomUUID()
+        const camposReg = {
+          temp_min: form.temp_min ? parseFloat(form.temp_min) : null,
+          temp_max: form.temp_max ? parseFloat(form.temp_max) : null,
+          observaciones: form.observaciones.trim() || null,
+        }
+        const reporteIdOff = nuevasOff.length > 0 ? crypto.randomUUID() : null
+        const incIdsOff: Record<number, string> = {}
+        for (const h of nuevasOff) incIdsOff[h] = crypto.randomUUID()
+        const rancho = ranchos.find((r: any) => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Temperaturas conservador · ${rancho?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [
+            // Registro del día ya existente: UPDATE igual que con red; nuevo: cabecera con UNIQUE
+            registroExistenteId
+              ? opUpdate('m41_registros', registroExistenteId, camposReg)
+              : opCabecera('m41_registros', {
+                  id: regIdOff,
+                  org_id: orgId,
+                  rancho_id: form.rancho_id,
+                  fecha: form.fecha,
+                  ...camposReg,
+                }, ['org_id', 'rancho_id', 'fecha']),
+            ...(reporteIdOff ? [
+              opInsert('m13_reportes', { id: reporteIdOff, rancho_id: form.rancho_id, org_id: orgId, fecha: form.fecha, auditor_nombre: profile?.nombre_completo ?? null }),
+              ...nuevasOff.map(hora => {
+                const t = parseFloat(lecturas[hora].temp)
+                const minLabel = form.temp_min ? `${form.temp_min} – ` : ''
+                const maxLabel = form.temp_max ? `${form.temp_max} C` : ''
+                return opInsert('m13_incidencias', {
+                  id: incIdsOff[hora],
+                  reporte_id: reporteIdOff,
+                  org_id: orgId,
+                  descripcion: `Temperatura fuera de rango a las ${String(hora).padStart(2, '0')}:00 hs: ${t} C (objetivo: ${minLabel}${maxLabel})`,
+                  orden: hora,
+                })
+              }),
+            ] : []),
+            ...horasOff.map(h => opUpsert('m41_lecturas', {
+              id: crypto.randomUUID(),
+              registro_id: regIdOff,
+              hora: h,
+              temperatura: parseFloat(lecturas[h].temp),
+              incidencia_id: incIdsOff[h] ?? lecturas[h]?.incidenciaId ?? null,
+            }, ['registro_id', 'hora'])),
+          ],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       let regId: string
       if (registroExistenteId) {
         const { error } = await (supabase as any)
@@ -236,9 +307,10 @@ export function TemperaturasConservador() {
     } finally {
       setCargando(false)
     }
-  }, [orgId, form, lecturas, registroExistenteId, profile?.nombre_completo, refetch, terminosSitio])
+  }, [orgId, form, lecturas, registroExistenteId, profile?.nombre_completo, refetch, terminosSitio, online, guardarOffline, ranchos])
 
   const generarConsolidado = useCallback(async () => {
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (!consolDesde || !consolHasta) { toast.error('Selecciona el rango de fechas'); return }
     setConsolCargando(true)
     try {
@@ -254,7 +326,7 @@ export function TemperaturasConservador() {
     } finally {
       setConsolCargando(false)
     }
-  }, [orgId, consolRanchoId, consolDesde, consolHasta, ranchos, terminosSitio, codigoClave])
+  }, [orgId, consolRanchoId, consolDesde, consolHasta, ranchos, terminosSitio, codigoClave, online])
 
   return (
     <div className="flex flex-col min-h-full" style={{ backgroundColor: 'var(--background)' }}>
@@ -318,6 +390,7 @@ export function TemperaturasConservador() {
                     toast.info('Firma este registro antes de descargar el PDF')
                     return
                   }
+                  if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
                   generarTemperaturaConservadorPDF(r.id, orgId).catch(e => toast.error(e.message))
                 }}
                 className="p-2 rounded-lg flex-shrink-0"
@@ -514,7 +587,7 @@ export function TemperaturasConservador() {
                 className="w-full py-3 rounded-xl text-[14px] font-semibold text-white"
                 style={{ backgroundColor: cargando || !form.rancho_id ? 'var(--muted-foreground)' : 'var(--primary)' }}
               >
-                {cargando ? 'Guardando...' : registroExistenteId ? 'Actualizar' : 'Guardar'}
+                {cargando ? 'Guardando...' : !online ? 'Guardar sin conexión' : registroExistenteId ? 'Actualizar' : 'Guardar'}
               </button>
             </div>}
       </BottomSheet>

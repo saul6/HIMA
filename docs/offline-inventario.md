@@ -566,3 +566,16 @@ Camino en línea: mismos `insert`, validaciones, toasts, firma y PDF. Lo único 
 ### Para Saúl
 - Confirmar que `sync_aplicar_lote` permite `m53…m55_registro/resultados`, `m59_*`, `m62_*`, `m68_roedores_*`, `m70_verificacion_roedores`, `m72_*`, `m73_*` y `m78_nota_trazabilidad` (no se verificó desde el front).
 - Las precargas existentes devuelven `[]` si la consulta falla (guardan `data ?? []` sin revisar el error); una precarga con error deja una lista vacía en caché hasta que se refresque con red.
+
+## Auditoría de lecturas Fase 3a — Bloque 2
+
+### M41 TemperaturasConservador
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m41_registros` + `ranchos(nombre)` + `m41_lecturas(hora, temperatura, incidencia_id)` (lista) | `useM41TemperaturaConservador` | C | ✅ `leerConCache` + precarga. Se añadió `hora` al embed para poder editar el día sin red |
+| SELECT `m41_lecturas` del registro existente (al elegir sitio) | `TemperaturasConservador` (`handleRanchoChange`) | C | ✅ con red, la misma consulta de antes; sin red usa las lecturas de la caché de la lista |
+| `ranchos`, `organizaciones.nombre` (consolidado), firmas, `BannerTareaOrigen`, PDFs | compartidos / pantalla | C/R | ✅ PDFs avisan "Necesitas conexión para generar el PDF" |
+| INSERT/UPDATE `m41_registros`, UPSERT `m41_lecturas`, INSERT `m13_reportes`/`m13_incidencias` | pantalla | — | ✅ offline en un lote: registro nuevo → `opCabecera(['org_id','rancho_id','fecha'])`; día existente → `opUpdate` (igual que con red); lecturas → `opUpsert(['registro_id','hora'])`; incidencias M13 por lecturas fuera de rango en el mismo lote |
+
+Nota: en `sync_aplicar_lote` la cabecera con `conflicto` hace `ON CONFLICT DO NOTHING` y fusiona ids; no actualiza temp_min/temp_max/observaciones si el día ya existía en el servidor y la app no lo tenía en caché (caso raro: día creado desde otro dispositivo). Las lecturas sí se actualizan por upsert.
