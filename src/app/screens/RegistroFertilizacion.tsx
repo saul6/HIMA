@@ -20,6 +20,9 @@ import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { useFertilizantesOrg, type FertilizanteOrgItem } from '@/hooks/useFertilizantesOrg'
 import { useInventarioFertilizantes } from '@/hooks/useInventarioFertilizantes'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert, opCabecera } from '@/lib/offline/construirOperaciones'
 import { generarFertilizacionPDF } from '@/lib/pdf/m8/generarFertilizacionPDF'
 import { generarFertilizacionConsolidadoPDF } from '@/lib/pdf/m8/generarFertilizacionConsolidadoPDF'
 import type { FertilizacionPDFProps } from '@/lib/pdf/m8/FertilizacionPDF'
@@ -362,6 +365,8 @@ export function RegistroFertilizacion() {
   const todosIds = registros.map(r => r.fertilizantes[0]?.id).filter(Boolean) as string[]
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M8', todosIds)
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M8')
 
   // ── Tab ─────────────────────────────────────────────────────────────────
   const [tab, setTab] = useState<'registros' | 'inventario'>('registros')
@@ -483,6 +488,65 @@ export function RegistroFertilizacion() {
 
     setGuardando(true)
     try {
+      if (!online) {
+        // Sin red: catálogo nuevo (cabecera con fusión), registros y salidas de inventario en un lote
+        const orgIdOff = profile.org_id
+        const nombres = [...new Set(filas.map((f) => f.nombre_comercial.trim()))]
+        const fertIds = new Map<string, string>(catalogo.map((c) => [c.nombre_comercial, c.id]))
+        const operaciones = []
+        for (const nombre of nombres) {
+          if (fertIds.has(nombre)) continue
+          const fila = filas.find((f) => f.nombre_comercial.trim() === nombre)!
+          const id = crypto.randomUUID()
+          fertIds.set(nombre, id)
+          operaciones.push(opCabecera('fertilizantes_org', {
+            id,
+            org_id: orgIdOff,
+            nombre_comercial: nombre,
+            ingrediente_activo: fila.ingrediente_activo.trim() || null,
+            concentracion: fila.concentracion.trim() || null,
+            unidad: fila.unidad,
+            activo: true,
+          }, ['org_id', 'nombre_comercial']))
+        }
+        for (const f of filas) {
+          const m8Id = crypto.randomUUID()
+          const cantidadTotal = parseFloat(f.cantidad || calcCantidad(f.superficie, f.dosis) || '0')
+          operaciones.push(opInsert('m8_fertilizacion', {
+            id: m8Id,
+            rancho_id: ranchoId,
+            fecha,
+            sector: sector.trim() || null,
+            nombre_comercial: f.nombre_comercial.trim(),
+            ingrediente_activo: f.ingrediente_activo.trim() || null,
+            concentracion: f.concentracion.trim() || null,
+            metodo: f.metodo,
+            superficie_ha: parseFloat(f.superficie),
+            dosis_kg_l_ha: parseFloat(f.dosis),
+            cantidad_total: cantidadTotal,
+            operario_id: profile.id,
+            verificacion_semanal: false,
+          }))
+          operaciones.push(opInsert('inventario_fertilizantes', {
+            rancho_id: ranchoId,
+            fertilizante_id: fertIds.get(f.nombre_comercial.trim()),
+            tipo: 'salida',
+            cantidad: cantidadTotal,
+            m8_id: m8Id,
+            fecha,
+            registrado_por: profile.id,
+          }))
+        }
+        const ranchoOff = ranchos.find((r) => r.id === ranchoId)
+        const ok = await guardarOffline({
+          descripcion: `Fertilización · ${ranchoOff?.nombre ?? ''} · ${fecha}`,
+          metadatos: { rancho_id: ranchoId, rancho_nombre: ranchoOff?.nombre, fecha },
+          operaciones,
+        })
+        if (ok) handleCerrarSheetNuevo()
+        return
+      }
+
       // 1. Upsert fertilizantes únicos en el catálogo (ignorar duplicados)
       const uniqueNames = [...new Set(filas.map((f) => f.nombre_comercial.trim()))]
       const upsertRows = uniqueNames.map((nombre) => {
@@ -646,6 +710,7 @@ export function RegistroFertilizacion() {
   // ── Handler consolidado ──────────────────────────────────────────────────
 
   async function handleGenerarConsolidado() {
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     let valido = true
     if (!consRanchoId) { setErrConsRancho(true); valido = false }
     if (!consDesde || !consHasta) { setErrConsFechas(true); valido = false }
@@ -699,6 +764,7 @@ export function RegistroFertilizacion() {
   }
 
   async function handleGuardarMovimiento() {
+    if (!online) { toast.warning('Necesitas conexión para registrar movimientos de inventario'); return }
     let valido = true
     if (!movRanchoId) { setErrMovRancho(true); valido = false }
     if (!movNombreComercial.trim()) { setErrMovNombre(true); valido = false }
@@ -1115,7 +1181,7 @@ export function RegistroFertilizacion() {
                     style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
                   >
                     {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-                    {guardando ? 'Guardando...' : 'Guardar y generar PDF'}
+                    {guardando ? 'Guardando...' : online ? 'Guardar y generar PDF' : 'Guardar sin conexión'}
                   </button>
                 </div>
               </>

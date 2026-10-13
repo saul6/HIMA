@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M8FilaFertilizante {
   id: string
@@ -26,24 +27,30 @@ export interface M8Registro {
 }
 
 export function useM8Fertilizacion() {
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
+  const userId = user?.id ?? null
   const [registros, setRegistros] = useState<M8Registro[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id) { setLoading(false); return }
+    if (!profile?.org_id || !userId) { setLoading(false); return }
+    const orgId = profile.org_id
     setLoading(true)
     setError(null)
     try {
-      const { data, error: err } = await supabase
-        .from('m8_fertilizacion')
-        .select('*, ranchos(nombre, codigo)')
-        .eq('org_id', profile.org_id)
-        .order('fecha', { ascending: false })
-        .order('created_at', { ascending: true })
-        .limit(500)
-      if (err) throw err
+      const resultado = await leerConCache('m8_registros', userId, orgId, async () => {
+        const { data, error: err } = await supabase
+          .from('m8_fertilizacion')
+          .select('*, ranchos(nombre, codigo)')
+          .eq('org_id', orgId)
+          .order('fecha', { ascending: false })
+          .order('created_at', { ascending: true })
+          .limit(500)
+        if (err) throw err
+        return data ?? []
+      })
+      const data = resultado.datos
 
       const grouped = new Map<string, M8Registro>()
       for (const row of (data ?? [])) {
@@ -71,11 +78,11 @@ export function useM8Fertilizacion() {
       }
       setRegistros(Array.from(grouped.values()))
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al cargar registros')
+      setError((e as { message?: string })?.message ?? 'Error al cargar registros')
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.org_id, userId])
 
   useEffect(() => { cargar() }, [cargar])
   return { registros, loading, error, refetch: cargar }

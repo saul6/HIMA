@@ -285,6 +285,43 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
         fetcher: fetchSaldosInventario,
       },
       {
+        clave: 'm8_registros',
+        fetcher: async () => {
+          const { data } = await supabase
+            .from('m8_fertilizacion')
+            .select('*, ranchos(nombre, codigo)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: true })
+            .limit(500)
+          return data ?? []
+        },
+      },
+      {
+        clave: 'fertilizantes_org',
+        fetcher: async () => {
+          const { data } = await supabase
+            .from('fertilizantes_org')
+            .select('id, nombre_comercial, ingrediente_activo, concentracion, unidad')
+            .eq('org_id', orgId)
+            .eq('activo', true)
+            .order('nombre_comercial')
+          return data ?? []
+        },
+      },
+      {
+        clave: 'inv_fertilizantes_saldo',
+        fetcher: async () => {
+          const { data } = await supabase
+            .from('v_inventario_fertilizantes_saldo')
+            .select('rancho_id, rancho_nombre, fertilizante_id, nombre_comercial, ingrediente_activo, unidad, saldo')
+            .eq('org_id', orgId)
+            .order('nombre_comercial')
+            .order('rancho_nombre')
+          return data ?? []
+        },
+      },
+      {
         clave: 'm40_registros',
         fetcher: async () => {
           const { data } = await (supabase as any)

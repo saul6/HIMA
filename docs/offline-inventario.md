@@ -644,3 +644,15 @@ Camino en línea: los campos de cada registro salieron a una función (`camposMa
 | `saldo_inventario` RPC (por producto, al guardar) | `registrarSalidasAplicacion` | V | ✅ sin red no se llama: `balance` es informativo (NOT NULL), el saldo real se suma de `cantidad` |
 | INSERT `aplicaciones` + `aplicacion_productos` + `inventario_movimientos` (salida) | `NuevaAplicacion` | — | ✅ offline: un lote; `productor_id` se omite (lo toma la BD del rancho); `balance` estimado = caché + pendientes − cantidad |
 | PDF | `generarAplicacionPDF` | — | ✅ offline con datos locales y pie "Pendiente de sincronizar"; la firma se hace desde el historial tras sincronizar |
+
+### M8 RegistroFertilizacion
+
+| Lectura / escritura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m8_fertilizacion` + `ranchos(nombre,codigo)` (lista, 500) | `useM8Fertilizacion` | C | ✅ `leerConCache` + precarga |
+| SELECT `fertilizantes_org` (catálogo activo) | `useFertilizantesOrg` | C | ✅ `leerConCache` + precarga |
+| SELECT `v_inventario_fertilizantes_saldo` (pestaña Inventario) | `useInventarioFertilizantes` | C | ✅ `leerConCache` + precarga (saldo "de la última carga", no incluye salidas sin subir) |
+| SELECT saldo por fertilizante (movimiento manual) | `RegistroFertilizacion` | V | ✅ solo se usa en el movimiento manual, que exige conexión |
+| Consolidado PDF (consulta por rango) | `generarFertilizacionConsolidadoPDF` | R | ✅ sin red: "Necesitas conexión para generar el PDF" |
+| Movimiento manual de inventario (entrada/salida) | `handleGuardarMovimiento` | R | ✅ sin red: "Necesitas conexión…" (no pedido en 3b) |
+| INSERT `fertilizantes_org` nuevos + `m8_fertilizacion` + `inventario_fertilizantes` (salida) | `RegistroFertilizacion` | — | ✅ offline: `opCabecera('fertilizantes_org', …, ['org_id','nombre_comercial'])` con `org_id` del perfil, luego `opInsert` de cada fila M8 y su salida (`m8_id` local) en el mismo lote |
