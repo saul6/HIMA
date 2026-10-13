@@ -7,6 +7,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/app/components/ui/dialog'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/app/components/ui/command'
 import { supabase } from '@/lib/supabase'
+import { TextoResaltado } from '@/app/components/TextoResaltado'
 import { ahora, ms, emitirEvento } from '@/lib/telemetria'
 
 interface BusquedaResultado {
@@ -35,6 +36,8 @@ const TIPO_ORDER: BusquedaResultado['tipo'][] = [
   'ORGANIZACION', 'RANCHO', 'AUDITORIA', 'HALLAZGO', 'ACCION', 'EVIDENCIA',
 ]
 
+// Barra "Buscar…" con el mismo aspecto que el buscador de Inicio de los demás
+// perfiles; al enfocarla abre el mismo diálogo de resultados (aud_buscar).
 export function AuditorBusqueda() {
   const navigate = useNavigate()
   const [abierto, setAbierto] = useState(false)
@@ -94,13 +97,25 @@ export function AuditorBusqueda() {
 
   return (
     <>
-      <button
-        onClick={() => setAbierto(true)}
-        className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        aria-label="Buscar"
-      >
-        <Search size={16} style={{ color: 'var(--muted-foreground)' }} />
-      </button>
+      <div className="relative w-full">
+        <Search
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+          style={{ color: 'var(--muted-foreground)' }}
+        />
+        <button
+          type="button"
+          onClick={() => setAbierto(true)}
+          aria-label="Buscar"
+          className="w-full h-9 pl-9 pr-4 rounded-lg text-sm text-left outline-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          style={{
+            backgroundColor: 'var(--input-background)',
+            border: '1px solid var(--border)',
+            color: 'var(--muted-foreground)',
+          }}
+        >
+          Buscar…
+        </button>
+      </div>
 
       <Dialog open={abierto} onOpenChange={handleOpenChange}>
         <DialogContent className="overflow-hidden p-0 gap-0 max-w-lg">
@@ -184,7 +199,7 @@ export function AuditorBusqueda() {
                             className="text-sm font-medium leading-tight truncate"
                             style={{ color: 'var(--foreground)' }}
                           >
-                            {item.titulo}
+                            <TextoResaltado texto={item.titulo} query={q} />
                           </p>
                           {item.subtitulo && (
                             <p

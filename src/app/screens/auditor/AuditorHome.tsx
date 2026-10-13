@@ -239,7 +239,6 @@ export function AuditorHome() {
             Auditores · M.A.D.Y
           </p>
         </div>
-        <AuditorBusqueda />
         <button
           onClick={() => navigate('/auditor/agenda?tab=calendario')}
           className="w-8 h-8 rounded-lg flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -251,6 +250,11 @@ export function AuditorHome() {
       </header>
 
       <main className="flex-1 px-4 py-4 flex flex-col gap-5">
+
+        {/* Buscador — móvil (en escritorio vive en el header del Layout) */}
+        <div className="md:hidden">
+          <AuditorBusqueda />
+        </div>
 
         {/* ── Continuar trabajo ──────────────────────────────────────── */}
         {workspace && (
