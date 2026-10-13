@@ -11,6 +11,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
+import { useConexion } from '@/hooks/useConexion'
 import { useAuditoria, calcularAgregados, type ModuloAuditoria, type AuditoriaConRancho } from '@/hooks/useAuditoria'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
@@ -123,6 +124,7 @@ export function AuditoriaScreen({
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
   const { ranchos } = useRanchos()
+  const { online } = useConexion()
   const { secciones, preguntas, loadingCatalogo, auditorias, loading, refetch, cargarRespuestas, guardar } =
     useAuditoria(modulo)
   const mostrarSkeletonLista = useMostrarCarga(loading, auditorias.length > 0)
@@ -235,7 +237,8 @@ export function AuditoriaScreen({
 
     setGuardando(true)
     try {
-      await guardar({
+      const ranchoSel = ranchos.find((r) => r.id === rancho_id)
+      const idGuardado = await guardar({
         auditoriaId: editandoId ?? undefined,
         rancho_id,
         fecha,
@@ -244,8 +247,13 @@ export function AuditoriaScreen({
         estado,
         respuestasMap: respuestas,
         comentariosMap: comentarios,
+        rancho_nombre: ranchoSel?.nombre,
+        rancho_codigo: ranchoSel?.codigo,
       })
-      toast.success(estado === 'completada' ? 'Auditoría completada' : 'Borrador guardado')
+      // null = no se pudo encolar sin conexión (el hook ya avisó)
+      if (idGuardado === null) return
+      // Sin conexión el hook ya mostró "Guardado sin conexión"
+      if (navigator.onLine) toast.success(estado === 'completada' ? 'Auditoría completada' : 'Borrador guardado')
       setSheetAbierto(false)
       await refetch()
     } catch (err: unknown) {
@@ -262,6 +270,7 @@ export function AuditoriaScreen({
 
   async function handleDescargarPDF(a: AuditoriaConRancho) {
     if (!profile?.org_id) return
+    if (!online || a.sin_subir) { toast.warning(a.sin_subir ? 'El PDF estará disponible cuando se suba la auditoría' : 'Necesitas conexión para generar el PDF'); return }
     setGenerandoPDF(a.id)
     try {
       await generarAuditoriaPDF(a.id, profile.org_id, modulo, a.rancho_nombre, a.fecha)
@@ -274,6 +283,7 @@ export function AuditoriaScreen({
 
   async function handleGenerarConsolidado() {
     if (!profile?.org_id) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (!consDesde || !consHasta) {
       toast.warning('Selecciona el rango de fechas')
       return
@@ -347,6 +357,11 @@ export function AuditoriaScreen({
                       {a.rancho_nombre}
                     </span>
                     {chipEstado(a.estado)}
+                    {a.sin_subir && (
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-agro-warning-fill text-agro-warning-text" style={{ fontWeight: 600 }}>
+                        Sin subir
+                      </span>
+                    )}
                     {scoreChip(a.porcentaje, a.puntos_posibles)}
                   </div>
                   <p className="text-xs text-muted-foreground">{formatFecha(a.fecha)}</p>

@@ -406,6 +406,8 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
     await precargarItemsPorRancho(userId, orgId!)
     // Precarga de inventario de químicos M24 (saldos, catálogo por sitio, movimientos por químico)
     await precargarM24(userId, orgId!)
+    // Precarga de auditorías internas M14–M18 (catálogo, lista y respuestas de borradores)
+    await precargarAuditoriasInternas(userId, orgId!)
   }, [userId, orgId])
 
   async function precargarDiasM9(userId: string, orgId: string) {
@@ -477,6 +479,48 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
         ),
       ),
     )
+  }
+
+  async function precargarAuditoriasInternas(userId: string, orgId: string) {
+    const modulosAud = ['m14', 'm15', 'm16', 'm17', 'm18']
+    await precargarCache(userId, orgId, modulosAud.flatMap((m) => [
+      {
+        clave: `${m}_catalogo`,
+        omitirSiMenorA: 12 * 60 * 60 * 1000,
+        fetcher: async () => {
+          const [s, p] = await Promise.all([
+            (supabase as any).from(`${m}_secciones`).select('*').order('orden'),
+            (supabase as any).from(`${m}_preguntas`).select('*').eq('activo', true).order('orden_seccion'),
+          ])
+          if (s.error || p.error) throw (s.error ?? p.error)
+          return { secs: s.data ?? [], pregs: p.data ?? [] }
+        },
+      },
+      {
+        clave: `${m}_auditorias`,
+        fetcher: async () => {
+          const { data, error } = await (supabase as any)
+            .from(`${m}_auditorias`)
+            .select('*, ranchos(nombre, codigo)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .limit(50)
+          if (error) throw error
+          return data ?? []
+        },
+      },
+    ]))
+    // Respuestas de los borradores (para poder continuarlos sin red)
+    await Promise.allSettled(modulosAud.map(async (m) => {
+      const { data: borradores } = await (supabase as any)
+        .from(`${m}_auditorias`).select('id').eq('org_id', orgId).eq('estado', 'borrador').limit(20)
+      await Promise.allSettled((borradores ?? []).map((b: any) =>
+        leerConCache(`${m}_respuestas:${b.id}`, userId, orgId, async () => {
+          const { data, error } = await (supabase as any).from(`${m}_respuestas`).select('*').eq('auditoria_id', b.id)
+          if (error) throw error
+          return data ?? []
+        })))
+    }))
   }
 
   async function precargarM24(userId: string, orgId: string) {

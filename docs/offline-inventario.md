@@ -671,3 +671,19 @@ Camino en línea: los campos de cada registro salieron a una función (`camposMa
 | INSERT `m24_movimientos` | `guardarMovimiento` | — | ✅ offline: `opInsert`. Crear químico y registrar un movimiento son acciones distintas en la UI, así que van en lotes distintos; el id local del químico se resuelve con el mapeo global del outbox (lotes en orden de creación) |
 
 Limitación: si un químico creado sin red ya existía en el servidor con el mismo nombre, la fusión ocurre al sincronizar; hasta entonces aparece duplicado en pantalla.
+
+### M14–M18 Auditorías internas (motor legacy `useAuditoria`, no `aud_*`)
+
+Los cinco módulos comparten `AuditoriaScreen` + `useAuditoria(modulo)` sin diferencias de flujo (M17 agrega la portada JSONB, que es solo un formulario local).
+
+| Lectura / escritura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `mXX_secciones` + `mXX_preguntas` (catálogo global; M17: 165 preguntas, M18: 22) | `useAuditoria` | C | ✅ `leerConCache` (`mXX_catalogo`) + precarga (se omite si el caché tiene < 12 h) |
+| SELECT `mXX_auditorias` + `ranchos(nombre,codigo)` (lista, 50) | `useAuditoria` | C | ✅ `leerConCache` + precarga; se le suman las auditorías nuevas/editadas del outbox con chip "Sin subir" |
+| SELECT `mXX_respuestas` de una auditoría (continuar borrador) | `cargarRespuestas` | C | ✅ caché `mXX_respuestas:{id}` + precarga de los borradores (hasta 20 por módulo); se mezclan las respuestas pendientes |
+| `ranchos`, portada M17 | `useRanchos`, `PortadaBPMForm` | C | ✅ ranchos ya en caché; la portada no consulta nada |
+| PDF individual / consolidado | `generarAuditoria*PDF` | R | ✅ sin red: "Necesitas conexión para generar el PDF"; una auditoría sin subir: "El PDF estará disponible cuando se suba la auditoría" |
+| INSERT `mXX_auditorias` (con puntos/porcentaje/estado ya calculados) + UPSERT `mXX_respuestas` | `guardar` | — | ✅ offline: `opInsert` + `opUpsert(…, ['auditoria_id','pregunta_id'])` en un lote. En el código real los totales viajan en la misma cabecera (no se guardan después), así que no hay `opUpdate` final para auditorías nuevas |
+| UPDATE de un borrador existente | `guardar` | — | ✅ offline: `opUpdate` de la cabecera (totales/estado) + upserts de respuestas en el mismo lote |
+
+Hallazgos / acciones correctivas: el flujo legacy M14–M18 **no** crea `aud_hallazgos` ni acciones correctivas al guardar (verificado en `useAuditoria` y `AuditoriaScreen`), por lo que no hay nada que diferir.
