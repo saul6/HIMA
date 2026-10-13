@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Navigate } from 'react-router'
+import { motion, LayoutGroup, useReducedMotion } from 'motion/react'
 import {
   Building2, ChevronRight,
   AlertCircle, Calendar, CheckCircle2, RefreshCw, PlayCircle, Layers,
@@ -15,6 +16,9 @@ import { AuditorNuevaAuditoriaSheet } from './AuditorNuevaAuditoriaSheet'
 import { AuditorCampana } from './AuditorCampana'
 import { AuditorBusqueda } from './AuditorBusqueda'
 import { Fab } from '@/app/components/Fab'
+import { Skeleton } from '@/app/components/ui/skeleton'
+import { useContadorAnimado } from '@/hooks/useContadorAnimado'
+import { SPRING_SUAVE } from '@/lib/motion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -94,58 +98,140 @@ function esVencida(item: WorkQueueItem, hoy: string): boolean {
   return item.priority === 1 || (!!item.due_at && item.due_at < hoy)
 }
 
+const EASE = [0.22, 1, 0.36, 1] as const
+
+// Entrada escalonada compartida (solo los primeros 8; el resto aparece sin retraso).
+function entrada(index: number, reducedMotion: boolean | null) {
+  return {
+    initial: reducedMotion ? (false as const) : { opacity: 0, y: 8 },
+    animate: {
+      opacity: 1, y: 0,
+      transition: { duration: 0.22, ease: EASE, delay: Math.min(index, 7) * 0.03 },
+    },
+  }
+}
+
+// Tarjeta de resumen / filtro — mismo estilo que las tarjetas de la Agenda del
+// operario: contador animado y resaltado deslizante. Solo "Vencidas" va en rojo.
+function TarjetaResumen({
+  index, active, label, count, rojo, onClick, reducedMotion,
+}: {
+  index: number
+  active: boolean
+  label: string
+  count: number
+  rojo?: boolean
+  onClick: () => void
+  reducedMotion: boolean | null
+}) {
+  const spanRef = useContadorAnimado(count, (n) => String(Math.round(n)), !!reducedMotion)
+  return (
+    <motion.div {...entrada(index, reducedMotion)}>
+      <button
+        type="button"
+        aria-pressed={active}
+        onClick={onClick}
+        className={[
+          'relative w-full rounded-xl p-3 md:p-4 border flex flex-col items-start text-left transition-colors',
+          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+          active ? 'border-transparent' : 'border-border bg-card hover:bg-muted',
+        ].join(' ')}
+        style={{ transitionDuration: 'var(--motion-fast)' }}
+      >
+        {active && (
+          <motion.span
+            layoutId="auditor-resumen-activa"
+            className="absolute inset-0 rounded-xl"
+            style={{ backgroundColor: 'var(--accent)', zIndex: 0 }}
+            transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
+          />
+        )}
+        <span
+          ref={spanRef}
+          className="relative z-10 text-2xl tracking-tight tabular-nums"
+          style={{
+            fontWeight: 600,
+            color: rojo ? 'var(--agro-danger-text)' : active ? 'var(--accent-foreground)' : 'var(--foreground)',
+          }}
+        >
+          {count}
+        </span>
+        <span
+          className="relative z-10 text-xs mt-0.5 leading-tight"
+          style={{
+            color: rojo && !active ? 'var(--agro-danger-text)' : active ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
+          }}
+        >
+          {label}
+        </span>
+      </button>
+    </motion.div>
+  )
+}
+
 function WorkQueueCard({
   item,
   orgNombre,
   hoy,
+  index,
+  reducedMotion,
   onClick,
 }: {
   item: WorkQueueItem
   orgNombre: string | null
   hoy: string
+  index: number
+  reducedMotion: boolean | null
   onClick: () => void
 }) {
   const vencida = esVencida(item, hoy)
   return (
-    <button
-      onClick={onClick}
-      className="w-full text-left bg-card rounded-xl border p-4 flex flex-col gap-2 active:opacity-70 transition-opacity"
-      style={{
-        borderColor: vencida ? 'var(--agro-danger-text)' : 'var(--border)',
-        borderWidth: vencida ? '1.5px' : undefined,
-      }}
-    >
-      <div className="flex items-start gap-2">
-        <p className="flex-1 text-sm font-medium leading-snug" style={{ color: 'var(--foreground)' }}>
-          {item.title}
-        </p>
-        <ChevronRight size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--muted-foreground)' }} />
-      </div>
-      <div className="flex flex-wrap gap-1.5 items-center">
-        {vencida && (
-          <span
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
-            style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
-          >
-            <AlertCircle size={9} />
-            Vencida
-          </span>
-        )}
-        {item.next_action_code !== 'SIN_ACCION' && (
-          <span
-            className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium"
-            style={accionChipStyle(item.next_action_code)}
-          >
-            {ACCION_LABELS[item.next_action_code] ?? item.next_action_code}
-          </span>
-        )}
-        {orgNombre && (
-          <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
-            {orgNombre}
-          </span>
-        )}
-      </div>
-    </button>
+    <motion.div {...entrada(index, reducedMotion)}>
+      <button
+        onClick={onClick}
+        className="group w-full text-left bg-card rounded-xl border p-4 flex flex-col gap-2 hover:bg-muted active:opacity-70 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        style={{
+          borderColor: vencida ? 'var(--agro-danger-text)' : 'var(--border)',
+          borderWidth: vencida ? '1.5px' : undefined,
+          transitionDuration: 'var(--motion-fast)',
+        }}
+      >
+        <div className="flex items-start gap-2">
+          <p className="flex-1 text-sm font-medium leading-snug line-clamp-2" style={{ color: 'var(--foreground)' }}>
+            {item.title}
+          </p>
+          <ChevronRight
+            size={15}
+            className="flex-shrink-0 mt-0.5 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+            style={{ color: 'var(--muted-foreground)', transitionDuration: 'var(--motion-fast)' }}
+          />
+        </div>
+        <div className="flex flex-wrap gap-1.5 items-center">
+          {vencida && (
+            <span
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
+              style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+            >
+              <AlertCircle size={10} />
+              Vencida
+            </span>
+          )}
+          {item.next_action_code !== 'SIN_ACCION' && (
+            <span
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium"
+              style={accionChipStyle(item.next_action_code)}
+            >
+              {ACCION_LABELS[item.next_action_code] ?? item.next_action_code}
+            </span>
+          )}
+          {orgNombre && (
+            <span className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+              {orgNombre}
+            </span>
+          )}
+        </div>
+      </button>
+    </motion.div>
   )
 }
 
@@ -155,6 +241,7 @@ export function AuditorHome() {
   const { orgs, loading: loadingOrgs } = useAuditorAsignaciones()
   const { workspace } = useLastWorkspace()
   const { jornadas: todasJornadas, cargarJornadas } = useAuditorJornada()
+  const reducedMotion = useReducedMotion()
 
   const [cola, setCola] = useState<WorkQueueItem[]>([])
   const [resumen, setResumen] = useState<DashboardResumen | null>(null)
@@ -261,8 +348,8 @@ export function AuditorHome() {
           <section>
             <button
               onClick={() => { markResume(clicksBeforeResumeRef.current); navigate(workspace.route) }}
-              className="w-full text-left bg-card rounded-xl p-4 flex items-center gap-3 active:opacity-70 transition-opacity"
-              style={{ border: '1.5px solid var(--primary)' }}
+              className="w-full text-left bg-card rounded-xl p-4 flex items-center gap-3 hover:bg-muted active:opacity-70 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              style={{ border: '1.5px solid var(--primary)', transitionDuration: 'var(--motion-fast)' }}
             >
               <div
                 className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
@@ -284,71 +371,48 @@ export function AuditorHome() {
         )}
 
         {/* ── Franja de resumen ──────────────────────────────────────── */}
-        {!loadingDash && resumen && (
+        {loadingDash ? (
           <section>
-            <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
-
-              <button
-                onClick={() => setFiltro(f => f === '__vencidas__' ? null : '__vencidas__')}
-                className="flex-shrink-0 rounded-xl px-3 py-2 flex flex-col items-center gap-0.5 min-w-[70px] transition-colors"
-                style={{
-                  backgroundColor: filtro === '__vencidas__' ? 'var(--agro-danger-text)' : 'var(--agro-danger-fill)',
-                  color: filtro === '__vencidas__' ? '#fff' : 'var(--agro-danger-text)',
-                }}
-              >
-                <span className="text-xl font-bold leading-none">{resumen.vencidas}</span>
-                <span className="text-[10px] font-medium leading-tight whitespace-nowrap">Vencidas</span>
-              </button>
-
-              <button
-                onClick={() => setFiltro(f => f === 'VALIDAR_PARA_AZZULE' ? null : 'VALIDAR_PARA_AZZULE')}
-                className="flex-shrink-0 rounded-xl px-3 py-2 flex flex-col items-center gap-0.5 min-w-[70px] transition-colors"
-                style={{
-                  backgroundColor: filtro === 'VALIDAR_PARA_AZZULE' ? 'var(--agro-warning-text)' : 'var(--agro-warning-fill)',
-                  color: filtro === 'VALIDAR_PARA_AZZULE' ? '#fff' : 'var(--agro-warning-text)',
-                }}
-              >
-                <span className="text-xl font-bold leading-none">{resumen.por_validar}</span>
-                <span className="text-[10px] font-medium leading-tight whitespace-nowrap">Por validar</span>
-              </button>
-
-              <button
-                onClick={() => setFiltro(f => f === 'ABRIR_MODO_AZZULE' ? null : 'ABRIR_MODO_AZZULE')}
-                className="flex-shrink-0 rounded-xl px-3 py-2 flex flex-col items-center gap-0.5 min-w-[70px] transition-colors"
-                style={{
-                  backgroundColor: filtro === 'ABRIR_MODO_AZZULE' ? 'var(--primary)' : 'var(--agro-success-fill)',
-                  color: filtro === 'ABRIR_MODO_AZZULE' ? '#fff' : 'var(--agro-success-text)',
-                }}
-              >
-                <span className="text-xl font-bold leading-none">{resumen.listas_azzule}</span>
-                <span className="text-[10px] font-medium leading-tight whitespace-nowrap">Listas Azzule</span>
-              </button>
-
-              <button
-                onClick={() => setFiltro(f => f === 'VERIFICAR_ESTADO_AZZULE' ? null : 'VERIFICAR_ESTADO_AZZULE')}
-                className="flex-shrink-0 rounded-xl px-3 py-2 flex flex-col items-center gap-0.5 min-w-[70px] transition-colors"
-                style={{
-                  backgroundColor: filtro === 'VERIFICAR_ESTADO_AZZULE' ? 'var(--muted-foreground)' : 'var(--muted)',
-                  color: filtro === 'VERIFICAR_ESTADO_AZZULE' ? '#fff' : 'var(--muted-foreground)',
-                }}
-              >
-                <span className="text-xl font-bold leading-none">{resumen.seguimiento_azzule}</span>
-                <span className="text-[10px] font-medium leading-tight whitespace-nowrap">Seguimiento</span>
-              </button>
-
-              <button
-                onClick={() => setFiltro(null)}
-                className="flex-shrink-0 rounded-xl px-3 py-2 flex flex-col items-center gap-0.5 min-w-[70px] transition-colors"
-                style={{
-                  backgroundColor: !filtro ? 'var(--primary)' : 'var(--muted)',
-                  color: !filtro ? '#fff' : 'var(--muted-foreground)',
-                }}
-              >
-                <span className="text-xl font-bold leading-none">{resumen.total_pendiente}</span>
-                <span className="text-[10px] font-medium leading-tight whitespace-nowrap">Total</span>
-              </button>
-
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+              {[0, 1, 2, 3, 4].map(i => (
+                <div key={i} className="rounded-xl p-3 md:p-4 border border-border bg-card space-y-2">
+                  <Skeleton className="h-7 w-10" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              ))}
             </div>
+          </section>
+        ) : resumen && (
+          <section>
+            <LayoutGroup id="auditor-resumen">
+              <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+                <TarjetaResumen
+                  index={0} rojo reducedMotion={reducedMotion}
+                  active={filtro === '__vencidas__'} label="Vencidas" count={resumen.vencidas}
+                  onClick={() => setFiltro(f => f === '__vencidas__' ? null : '__vencidas__')}
+                />
+                <TarjetaResumen
+                  index={1} reducedMotion={reducedMotion}
+                  active={filtro === 'VALIDAR_PARA_AZZULE'} label="Por validar" count={resumen.por_validar}
+                  onClick={() => setFiltro(f => f === 'VALIDAR_PARA_AZZULE' ? null : 'VALIDAR_PARA_AZZULE')}
+                />
+                <TarjetaResumen
+                  index={2} reducedMotion={reducedMotion}
+                  active={filtro === 'ABRIR_MODO_AZZULE'} label="Listas Azzule" count={resumen.listas_azzule}
+                  onClick={() => setFiltro(f => f === 'ABRIR_MODO_AZZULE' ? null : 'ABRIR_MODO_AZZULE')}
+                />
+                <TarjetaResumen
+                  index={3} reducedMotion={reducedMotion}
+                  active={filtro === 'VERIFICAR_ESTADO_AZZULE'} label="Seguimiento" count={resumen.seguimiento_azzule}
+                  onClick={() => setFiltro(f => f === 'VERIFICAR_ESTADO_AZZULE' ? null : 'VERIFICAR_ESTADO_AZZULE')}
+                />
+                <TarjetaResumen
+                  index={4} reducedMotion={reducedMotion}
+                  active={!filtro} label="Total" count={resumen.total_pendiente}
+                  onClick={() => setFiltro(null)}
+                />
+              </div>
+            </LayoutGroup>
           </section>
         )}
 
@@ -398,8 +462,8 @@ export function AuditorHome() {
             </p>
             <button
               onClick={() => navigate('/auditor/jornada/nueva')}
-              className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg"
-              style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+              className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-colors hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              style={{ border: '1px solid var(--ring)', color: 'var(--foreground)', transitionDuration: 'var(--motion-fast)' }}
             >
               <Layers size={11} />
               Auditar por bloque
@@ -468,11 +532,13 @@ export function AuditorHome() {
           {loadingDash ? (
             <div className="flex flex-col gap-2">
               {[1, 2, 3].map(i => (
-                <div
-                  key={i}
-                  className="h-[72px] rounded-xl animate-pulse"
-                  style={{ backgroundColor: 'var(--muted)' }}
-                />
+                <div key={i} className="bg-card rounded-xl border border-border p-4 space-y-2.5">
+                  <Skeleton className="h-3.5 w-3/4" />
+                  <div className="flex gap-1.5">
+                    <Skeleton className="h-4 w-20 rounded-full" />
+                    <Skeleton className="h-4 w-28 rounded-full" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : errorDash ? (
@@ -511,9 +577,11 @@ export function AuditorHome() {
                     <AlertCircle size={10} />
                     Vencidas · {itemsVencidos.length}
                   </p>
-                  {itemsVencidos.map(item => (
+                  {itemsVencidos.map((item, index) => (
                     <WorkQueueCard
                       key={`${item.entity_type}-${item.entity_id}`}
+                      index={index}
+                      reducedMotion={reducedMotion}
                       item={item}
                       orgNombre={item.organization_id ? (orgNombreMap.get(item.organization_id) ?? null) : null}
                       hoy={hoy}
@@ -533,9 +601,11 @@ export function AuditorHome() {
                       Pendientes · {itemsResto.length}
                     </p>
                   )}
-                  {itemsResto.map(item => (
+                  {itemsResto.map((item, index) => (
                     <WorkQueueCard
                       key={`${item.entity_type}-${item.entity_id}`}
+                      index={index}
+                      reducedMotion={reducedMotion}
                       item={item}
                       orgNombre={item.organization_id ? (orgNombreMap.get(item.organization_id) ?? null) : null}
                       hoy={hoy}
