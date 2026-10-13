@@ -604,3 +604,11 @@ Nota: en `sync_aplicar_lote` la cabecera con `conflicto` hace `ON CONFLICT DO NO
 | UPDATE `m47_items.activo` | `RegistroPersonal` | R | ✅ sin red: "Necesitas conexión para activar o desactivar ítems" |
 
 Nota para M41/M46/M47: `sync_aplicar_lote` aplica `opCabecera` con `ON CONFLICT DO NOTHING` (fusiona ids pero no actualiza campos de una fila ya existente). Los ítems de catálogo con la misma clave ya existente en el servidor conservan sus valores.
+
+### M40 EntradasSalidasPreFrio
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m40_registros` + `ranchos(nombre)` (lista) | `useM40RegistrosPrefrio` | C | ✅ `leerConCache` + precarga |
+| `ranchos`, `organizaciones.nombre`, firmas, `BannerTareaOrigen`, PDFs | compartidos / pantalla | C/R | ✅ PDFs avisan que requieren conexión |
+| INSERT `m40_registros` + `m40_lineas` | `EntradasSalidasPreFrio` | — | ✅ offline: `opInsert` de registro y líneas en el mismo lote (el tiempo total se calcula antes de encolar) |

@@ -274,6 +274,18 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
         },
       },
       {
+        clave: 'm40_registros',
+        fetcher: async () => {
+          const { data } = await (supabase as any)
+            .from('m40_registros')
+            .select('id, rancho_id, fecha, empresa, ranchos(nombre)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          return data ?? []
+        },
+      },
+      {
         clave: 'm46_rondines',
         fetcher: async () => {
           const { data } = await (supabase as any)

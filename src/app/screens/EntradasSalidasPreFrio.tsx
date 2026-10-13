@@ -15,6 +15,9 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { useM40RegistrosPrefrio } from '@/hooks/useM40RegistrosPrefrio'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 import { generarEntradasSalidasPreFrioPDF } from '@/lib/pdf/m40/generarEntradasSalidasPreFrioPDF'
 import { generarEntradasSalidasPreFrioConsolidadoPDF } from '@/lib/pdf/m40/generarEntradasSalidasPreFrioConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
@@ -93,6 +96,8 @@ export function EntradasSalidasPreFrio() {
   const { registros, loading, error, refetch } = useM40RegistrosPrefrio()
   const orgNombre = useOrganizacion(orgId)
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M40')
 
   const todosIds = useMemo(() => registros.map(r => r.id), [registros])
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M40', todosIds)
@@ -136,11 +141,53 @@ export function EntradasSalidasPreFrio() {
     [lineas]
   )
 
+  function armarLineas(registroId: string) {
+    const lineasFiltradas = lineas.filter(l =>
+      l.cuarto_prefrio.trim() || l.fruta.trim() || l.num_tarimas
+    )
+    return lineasFiltradas.map((l, i) => ({
+      registro_id: registroId,
+      org_id: orgId,
+      orden: i + 1,
+      cuarto_prefrio: l.cuarto_prefrio.trim() || null,
+      fruta: l.fruta.trim() || null,
+      presentacion: l.presentacion.trim() || null,
+      num_tarimas: l.num_tarimas !== '' ? parseInt(l.num_tarimas, 10) : null,
+      restos: l.restos.trim() || null,
+      entrada_hora: l.entrada_hora || null,
+      entrada_temp: l.entrada_temp !== '' ? parseFloat(l.entrada_temp) : null,
+      salida_hora: l.salida_hora || null,
+      salida_temp: l.salida_temp !== '' ? parseFloat(l.salida_temp) : null,
+      tiempo_total: calcTiempoTotal(l.entrada_hora, l.salida_hora) || null,
+    }))
+  }
+
   async function guardar() {
     if (!orgId) return
     if (!form.rancho_id) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     setGuardando(true)
     try {
+      if (!online) {
+        const registroIdOff = crypto.randomUUID()
+        const rancho = ranchos.find(r => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Entradas y salidas prefrío · ${rancho?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [
+            opInsert('m40_registros', {
+              id: registroIdOff,
+              rancho_id: form.rancho_id,
+              fecha: form.fecha,
+              empresa: form.empresa.trim() || null,
+              observaciones: form.observaciones.trim() || null,
+            }),
+            ...armarLineas(registroIdOff).map(({ org_id: _org, ...l }) => opInsert('m40_lineas', l)),
+          ],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       const { data: reg, error: eReg } = await tbl('m40_registros').insert({
         org_id: orgId,
         rancho_id: form.rancho_id,
@@ -152,25 +199,8 @@ export function EntradasSalidasPreFrio() {
 
       const registroId = (reg as any).id as string
 
-      const lineasFiltradas = lineas.filter(l =>
-        l.cuarto_prefrio.trim() || l.fruta.trim() || l.num_tarimas
-      )
-      if (lineasFiltradas.length > 0) {
-        const rows = lineasFiltradas.map((l, i) => ({
-          registro_id: registroId,
-          org_id: orgId,
-          orden: i + 1,
-          cuarto_prefrio: l.cuarto_prefrio.trim() || null,
-          fruta: l.fruta.trim() || null,
-          presentacion: l.presentacion.trim() || null,
-          num_tarimas: l.num_tarimas !== '' ? parseInt(l.num_tarimas, 10) : null,
-          restos: l.restos.trim() || null,
-          entrada_hora: l.entrada_hora || null,
-          entrada_temp: l.entrada_temp !== '' ? parseFloat(l.entrada_temp) : null,
-          salida_hora: l.salida_hora || null,
-          salida_temp: l.salida_temp !== '' ? parseFloat(l.salida_temp) : null,
-          tiempo_total: calcTiempoTotal(l.entrada_hora, l.salida_hora) || null,
-        }))
+      const rows = armarLineas(registroId)
+      if (rows.length > 0) {
         const { error: eLineas } = await tbl('m40_lineas').insert(rows)
         if (eLineas) throw eLineas
       }
@@ -194,6 +224,7 @@ export function EntradasSalidasPreFrio() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (obligatoria && !firmas[id]?.realizo) {
       toast.info('Firma este registro antes de descargar el PDF')
       return
@@ -210,6 +241,7 @@ export function EntradasSalidasPreFrio() {
 
   async function exportarConsolidado() {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setExportando(true)
     try {
       const rancho = ranchos.find(r => r.id === consolidadoForm.rancho_id)
@@ -552,7 +584,7 @@ export function EntradasSalidasPreFrio() {
             style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            {guardando ? 'Guardando…' : 'Guardar'}
+            {guardando ? 'Guardando…' : online ? 'Guardar' : 'Guardar sin conexión'}
           </button>
         </div>
         </>)}
