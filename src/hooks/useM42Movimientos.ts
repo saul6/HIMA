@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M42MovimientoResumen {
   id: string
@@ -20,22 +21,32 @@ export interface M42MovimientoResumen {
 const tbl = (name: string) => (supabase as any).from(name)
 
 export function useM42Movimientos() {
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
+  const userId = user?.id ?? null
   const [movimientos, setMovimientos] = useState<M42MovimientoResumen[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id) { setLoading(false); return }
+    if (!profile?.org_id || !userId) { setLoading(false); return }
+    const orgId = profile.org_id
     setLoading(true); setError(null)
     try {
-      const { data, error: err } = await tbl('m42_movimientos')
-        .select('id, rancho_id, fecha, empresa, descripcion_material, entrada, salida, total, mat_libre_plagas, tr_libre_plagas, incidencia_id, ranchos(nombre)')
-        .eq('org_id', profile.org_id)
-        .order('fecha', { ascending: false })
-        .order('created_at', { ascending: false })
-      if (err) throw err
-      setMovimientos(((data ?? []) as any[]).map((r) => ({
+      const resultado = await leerConCache(
+        'm42_movimientos',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await tbl('m42_movimientos')
+            .select('id, rancho_id, fecha, empresa, descripcion_material, entrada, salida, total, mat_libre_plagas, tr_libre_plagas, incidencia_id, ranchos(nombre)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          if (err) throw err
+          return data ?? []
+        },
+      )
+      setMovimientos((resultado.datos as any[]).map((r) => ({
         id: r.id,
         rancho_id: r.rancho_id,
         rancho_nombre: r.ranchos?.nombre ?? '—',
@@ -50,9 +61,9 @@ export function useM42Movimientos() {
         incidencia_id: r.incidencia_id ?? null,
       })))
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al cargar movimientos M42')
+      setError((e as { message?: string })?.message ?? 'Error al cargar movimientos M42')
     } finally { setLoading(false) }
-  }, [profile?.org_id])
+  }, [profile?.org_id, userId])
 
   useEffect(() => { cargar() }, [cargar])
   return { movimientos, loading, error, refetch: cargar }

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export type PrioridadM44 = 'inmediata' | 'turno' | 'siguientes_dias'
 
@@ -24,28 +25,38 @@ export interface M44Orden {
 }
 
 export function useM44OrdenesMantenimiento() {
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
+  const userId = user?.id ?? null
   const [ordenes, setOrdenes]   = useState<M44Orden[]>([])
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState<string | null>(null)
 
   const fetchOrdenes = useCallback(async () => {
-    if (!profile?.org_id) return
+    if (!profile?.org_id || !userId) return
+    const orgId = profile.org_id
     setLoading(true)
     setError(null)
     try {
-      const { data, error: err } = await (supabase as any)
-        .from('m44_ordenes')
-        .select(`
-          id, rancho_id, fecha, folio, descripcion_solicitud, prioridad,
-          solicita, recibe_mtto, equipo_produccion, lavado_sanitizado,
-          observaciones, entrega_mtto, recibe, incidencia_id,
-          ranchos(nombre, codigo)
-        `)
-        .eq('org_id', profile.org_id)
-        .order('fecha', { ascending: false })
-      if (err) throw err
-      const items: M44Orden[] = ((data ?? []) as any[]).map((r: any) => ({
+      const resultado = await leerConCache(
+        'm44_ordenes',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await (supabase as any)
+            .from('m44_ordenes')
+            .select(`
+              id, rancho_id, fecha, folio, descripcion_solicitud, prioridad,
+              solicita, recibe_mtto, equipo_produccion, lavado_sanitizado,
+              observaciones, entrega_mtto, recibe, incidencia_id,
+              ranchos(nombre, codigo)
+            `)
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+          if (err) throw err
+          return data ?? []
+        },
+      )
+      const items: M44Orden[] = (resultado.datos as any[]).map((r: any) => ({
         id:                    r.id,
         rancho_id:             r.rancho_id,
         rancho_nombre:         (r.ranchos as any)?.nombre ?? '—',
@@ -65,11 +76,11 @@ export function useM44OrdenesMantenimiento() {
       }))
       setOrdenes(items)
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al cargar órdenes')
+      setError((e as { message?: string })?.message ?? 'Error al cargar órdenes')
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.org_id, userId])
 
   useEffect(() => { fetchOrdenes() }, [fetchOrdenes])
 

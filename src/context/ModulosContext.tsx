@@ -286,6 +286,46 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
         },
       },
       {
+        clave: 'm38_manifiestos',
+        fetcher: async () => {
+          const { data } = await (supabase as any)
+            .from('m38_manifiestos')
+            .select('id, rancho_id, fecha, folio, empresa, nombre_chofer, incidencia_id, ranchos(nombre)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          return data ?? []
+        },
+      },
+      {
+        clave: 'm42_movimientos',
+        fetcher: async () => {
+          const { data } = await (supabase as any)
+            .from('m42_movimientos')
+            .select('id, rancho_id, fecha, empresa, descripcion_material, entrada, salida, total, mat_libre_plagas, tr_libre_plagas, incidencia_id, ranchos(nombre)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          return data ?? []
+        },
+      },
+      {
+        clave: 'm44_ordenes',
+        fetcher: async () => {
+          const { data } = await (supabase as any)
+            .from('m44_ordenes')
+            .select(`
+              id, rancho_id, fecha, folio, descripcion_solicitud, prioridad,
+              solicita, recibe_mtto, equipo_produccion, lavado_sanitizado,
+              observaciones, entrega_mtto, recibe, incidencia_id,
+              ranchos(nombre, codigo)
+            `)
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+          return data ?? []
+        },
+      },
+      {
         clave: 'm46_rondines',
         fetcher: async () => {
           const { data } = await (supabase as any)

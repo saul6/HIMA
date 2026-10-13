@@ -15,6 +15,9 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { useM38Manifiestos } from '@/hooks/useM38Manifiestos'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert, opUpdate } from '@/lib/offline/construirOperaciones'
 import { generarManifiestoEmbarquePDF } from '@/lib/pdf/m38/generarManifiestoEmbarquePDF'
 import { generarManifiestoEmbarqueConsolidadoPDF } from '@/lib/pdf/m38/generarManifiestoEmbarqueConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
@@ -166,6 +169,8 @@ export function ManifiestoEmbarque() {
   const { manifiestos, loading, error, refetch } = useM38Manifiestos()
   const orgNombre = useOrganizacion(orgId)
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M38')
 
   const todosIds = useMemo(() => manifiestos.map(m => m.id), [manifiestos])
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M38', todosIds)
@@ -212,6 +217,54 @@ export function ManifiestoEmbarque() {
     return acc
   }, [lineas])
 
+  function camposManifiesto(incidenciaId: string | null) {
+    return {
+      rancho_id: form.rancho_id,
+      fecha: form.fecha,
+      folio: form.folio.trim() || null,
+      empresa: form.empresa.trim() || null,
+      linea_transportista: form.linea_transportista.trim() || null,
+      nombre_chofer: form.nombre_chofer.trim() || null,
+      placas_tractor: form.placas_tractor.trim() || null,
+      caja_pies: form.caja_pies.trim() || null,
+      econ_tractor: form.econ_tractor.trim() || null,
+      econ_caja: form.econ_caja.trim() || null,
+      num_sello: form.num_sello.trim() || null,
+      num_chismografo: form.num_chismografo.trim() || null,
+      llegada_hora: form.llegada_hora || null,
+      llegada_temp: form.llegada_temp !== '' ? parseFloat(form.llegada_temp) : null,
+      carga_hora: form.carga_hora || null,
+      carga_temp: form.carga_temp !== '' ? parseFloat(form.carga_temp) : null,
+      salida_hora: form.salida_hora || null,
+      salida_temp: form.salida_temp !== '' ? parseFloat(form.salida_temp) : null,
+      cond_buen_estado: form.cond_buen_estado,
+      cond_limpio: form.cond_limpio,
+      cond_presencia_plagas: form.cond_presencia_plagas,
+      tar_remontado: form.tar_remontado,
+      tar_flejado: form.tar_flejado,
+      tar_limpieza: form.tar_limpieza,
+      tar_condicion: form.tar_condicion,
+      tar_distribucion: form.tar_distribucion,
+      observaciones: form.observaciones.trim() || null,
+      incidencia_id: incidenciaId,
+    }
+  }
+
+  function armarLineas(manifiestoId: string) {
+    return lineas.filter(l => l.tarima.trim() || l.producto.trim()).map((l, i) => ({
+      manifiesto_id: manifiestoId,
+      org_id: orgId,
+      orden: i + 1,
+      tarima: l.tarima.trim() || null,
+      producto: l.producto.trim() || null,
+      presentacion: l.presentacion.trim() || null,
+      cajas: l.cajas !== '' ? parseInt(l.cajas, 10) : null,
+      temp_superior: l.temp_superior !== '' ? parseFloat(l.temp_superior) : null,
+      temp_medio: l.temp_medio !== '' ? parseFloat(l.temp_medio) : null,
+      temp_inferior: l.temp_inferior !== '' ? parseFloat(l.temp_inferior) : null,
+    }))
+  }
+
   async function guardar() {
     if (!orgId) return
     if (!form.rancho_id) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
@@ -221,6 +274,44 @@ export function ManifiestoEmbarque() {
     }
     setGuardando(true)
     try {
+      if (!online) {
+        const manifiestoIdOff = crypto.randomUUID()
+        const conPlaga = form.cond_presencia_plagas && form.plaga_descripcion.trim()
+        const reporteIdOff = conPlaga ? crypto.randomUUID() : null
+        const incidenciaIdOff = conPlaga ? crypto.randomUUID() : null
+        const rancho = ranchos.find(r => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Manifiesto de embarque · ${rancho?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [
+            ...(reporteIdOff && incidenciaIdOff ? [
+              opInsert('m13_reportes', {
+                id: reporteIdOff,
+                rancho_id: form.rancho_id,
+                org_id: orgId,
+                fecha: form.fecha,
+                auditor_nombre: profile?.nombre_completo ?? '',
+              }),
+              opInsert('m13_incidencias', {
+                id: incidenciaIdOff,
+                reporte_id: reporteIdOff,
+                org_id: orgId,
+                descripcion: form.plaga_descripcion.trim(),
+                orden: 1,
+              }),
+            ] : []),
+            opInsert('m38_manifiestos', {
+              id: manifiestoIdOff,
+              rancho_id: form.rancho_id,
+              ...camposManifiesto(incidenciaIdOff),
+            }),
+            ...armarLineas(manifiestoIdOff).map(({ org_id: _org, ...l }) => opInsert('m38_lineas', l)),
+          ],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       let incidenciaId: string | null = null
       if (form.cond_presencia_plagas && form.plaga_descripcion.trim()) {
         const { data: rep, error: eRep } = await tbl('m13_reportes').insert({
@@ -243,53 +334,14 @@ export function ManifiestoEmbarque() {
 
       const { data: man, error: eMan } = await tbl('m38_manifiestos').insert({
         org_id: orgId,
-        rancho_id: form.rancho_id,
-        fecha: form.fecha,
-        folio: form.folio.trim() || null,
-        empresa: form.empresa.trim() || null,
-        linea_transportista: form.linea_transportista.trim() || null,
-        nombre_chofer: form.nombre_chofer.trim() || null,
-        placas_tractor: form.placas_tractor.trim() || null,
-        caja_pies: form.caja_pies.trim() || null,
-        econ_tractor: form.econ_tractor.trim() || null,
-        econ_caja: form.econ_caja.trim() || null,
-        num_sello: form.num_sello.trim() || null,
-        num_chismografo: form.num_chismografo.trim() || null,
-        llegada_hora: form.llegada_hora || null,
-        llegada_temp: form.llegada_temp !== '' ? parseFloat(form.llegada_temp) : null,
-        carga_hora: form.carga_hora || null,
-        carga_temp: form.carga_temp !== '' ? parseFloat(form.carga_temp) : null,
-        salida_hora: form.salida_hora || null,
-        salida_temp: form.salida_temp !== '' ? parseFloat(form.salida_temp) : null,
-        cond_buen_estado: form.cond_buen_estado,
-        cond_limpio: form.cond_limpio,
-        cond_presencia_plagas: form.cond_presencia_plagas,
-        tar_remontado: form.tar_remontado,
-        tar_flejado: form.tar_flejado,
-        tar_limpieza: form.tar_limpieza,
-        tar_condicion: form.tar_condicion,
-        tar_distribucion: form.tar_distribucion,
-        observaciones: form.observaciones.trim() || null,
-        incidencia_id: incidenciaId,
+        ...camposManifiesto(incidenciaId),
       }).select('id').single()
       if (eMan) throw eMan
 
       const manifiestoId = (man as any).id as string
 
-      const lineasFiltradas = lineas.filter(l => l.tarima.trim() || l.producto.trim())
-      if (lineasFiltradas.length > 0) {
-        const rows = lineasFiltradas.map((l, i) => ({
-          manifiesto_id: manifiestoId,
-          org_id: orgId,
-          orden: i + 1,
-          tarima: l.tarima.trim() || null,
-          producto: l.producto.trim() || null,
-          presentacion: l.presentacion.trim() || null,
-          cajas: l.cajas !== '' ? parseInt(l.cajas, 10) : null,
-          temp_superior: l.temp_superior !== '' ? parseFloat(l.temp_superior) : null,
-          temp_medio: l.temp_medio !== '' ? parseFloat(l.temp_medio) : null,
-          temp_inferior: l.temp_inferior !== '' ? parseFloat(l.temp_inferior) : null,
-        }))
+      const rows = armarLineas(manifiestoId)
+      if (rows.length > 0) {
         const { error: eLineas } = await tbl('m38_lineas').insert(rows)
         if (eLineas) throw eLineas
       }
@@ -313,6 +365,7 @@ export function ManifiestoEmbarque() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (obligatoria && !firmas[id]?.realizo) {
       toast.info('Firma este registro antes de descargar el PDF')
       return
@@ -329,6 +382,7 @@ export function ManifiestoEmbarque() {
 
   async function exportarConsolidado() {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setExportando(true)
     try {
       const rancho = ranchos.find(r => r.id === consolidadoForm.rancho_id)
@@ -796,7 +850,7 @@ export function ManifiestoEmbarque() {
             style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            {guardando ? 'Guardando…' : 'Guardar'}
+            {guardando ? 'Guardando…' : online ? 'Guardar' : 'Guardar sin conexión'}
           </button>
         </div>
         </>)}

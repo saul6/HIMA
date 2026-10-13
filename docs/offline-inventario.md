@@ -612,3 +612,21 @@ Nota para M41/M46/M47: `sync_aplicar_lote` aplica `opCabecera` con `ON CONFLICT 
 | SELECT `m40_registros` + `ranchos(nombre)` (lista) | `useM40RegistrosPrefrio` | C | ✅ `leerConCache` + precarga |
 | `ranchos`, `organizaciones.nombre`, firmas, `BannerTareaOrigen`, PDFs | compartidos / pantalla | C/R | ✅ PDFs avisan que requieren conexión |
 | INSERT `m40_registros` + `m40_lineas` | `EntradasSalidasPreFrio` | — | ✅ offline: `opInsert` de registro y líneas en el mismo lote (el tiempo total se calcula antes de encolar) |
+
+## Auditoría de lecturas Fase 3a — Bloque 3 (crean incidencia M13)
+
+### M38 ManifiestoEmbarque, M42 MaterialEmpaqueMovimientos, M44 OrdenMantenimiento
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m38_manifiestos` / `m42_movimientos` / `m44_ordenes` + `ranchos` (lista) | `useM38Manifiestos`, `useM42Movimientos`, `useM44OrdenesMantenimiento` | C | ✅ `leerConCache` + precarga (misma consulta) |
+| `ranchos`, `organizaciones.nombre`, firmas, `BannerTareaOrigen`, PDFs | compartidos / pantallas | C/R | ✅ PDFs y consolidados avisan que requieren conexión |
+| INSERT `m38_manifiestos` + `m38_lineas` (+ M13) | `ManifiestoEmbarque` | — | ✅ offline en un lote: `m13_reportes` → `m13_incidencias` → `m38_manifiestos` (con `incidencia_id` local) → `m38_lineas` |
+| INSERT `m42_movimientos` + M13 + UPDATE `incidencia_id` | `MaterialEmpaqueMovimientos` | — | ✅ offline en un lote: movimiento → `m13_reportes` → `m13_incidencias` → `opUpdate('m42_movimientos', id, { incidencia_id })` al final, igual que con red |
+| INSERT `m44_ordenes` + M13 + UPDATE `incidencia_id` | `OrdenMantenimiento` | — | ✅ ídem con `m44_ordenes` |
+
+Camino en línea: los campos de cada registro salieron a una función (`camposManifiesto`, `camposMovimiento`, `camposOrden`; `armarLineas` en M38) reutilizada por la rama offline; el contenido de los `insert` con red es el mismo. Ninguno hace RPC, fotos ni otra tabla fuera de la lista, así que ninguno pasa a Fase 3b.
+
+### Para Saúl
+- Verificado en solo lectura: las tablas de Fase 3a (incluidas `m13_*`, `m38_*`, `m40_*`, `m41_*`, `m42_*`, `m44_*`, `m46_*`, `m47_*`, `m53…m78`) están en `sync_tablas_permitidas`, y existen los UNIQUE usados como `conflicto` (`m41_registros(org_id,rancho_id,fecha)`, `m41_lecturas(registro_id,hora)`, `m46_*`, `m47_*`).
+- `sync_aplicar_lote` aplica `insert` con `conflicto` como `ON CONFLICT DO NOTHING`; no actualiza campos de una fila existente.

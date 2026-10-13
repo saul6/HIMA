@@ -11,6 +11,9 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert, opUpdate } from '@/lib/offline/construirOperaciones'
 import { generarMaterialEmpaquePDF } from '@/lib/pdf/m42/generarMaterialEmpaquePDF'
 import { generarMaterialEmpaqueConsolidadoPDF } from '@/lib/pdf/m42/generarMaterialEmpaqueConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
@@ -106,6 +109,8 @@ export function MaterialEmpaqueMovimientos() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { movimientos, loading, error, refetch } = useM42Movimientos()
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M42')
 
   const todosIds = useMemo(() => movimientos.map(m => m.id), [movimientos])
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M42', todosIds)
@@ -141,6 +146,33 @@ export function MaterialEmpaqueMovimientos() {
     setAbierto(true)
   }, [ranchoInicial, obligatoria, tengoFirma])
 
+  function camposMovimiento() {
+    return {
+      rancho_id: form.rancho_id,
+      fecha: form.fecha,
+      empresa: form.empresa.trim() || null,
+      descripcion_material: form.descripcion_material.trim() || null,
+      entrada: form.entrada ? parseFloat(form.entrada) : null,
+      salida: form.salida ? parseFloat(form.salida) : null,
+      total: form.total ? parseFloat(form.total) : null,
+      entrega: form.entrega.trim() || null,
+      recibe: form.recibe.trim() || null,
+      mat_integro: form.mat_integro,
+      mat_buen_estado: form.mat_buen_estado,
+      mat_limpio: form.mat_limpio,
+      mat_libre_olores: form.mat_libre_olores,
+      mat_libre_plagas: form.mat_libre_plagas,
+      mat_otros: form.mat_otros.trim() || null,
+      tr_integro: form.tr_integro,
+      tr_buen_estado: form.tr_buen_estado,
+      tr_limpio: form.tr_limpio,
+      tr_libre_olores: form.tr_libre_olores,
+      tr_libre_plagas: form.tr_libre_plagas,
+      tr_otros: form.tr_otros.trim() || null,
+      observaciones: form.observaciones.trim() || null,
+    }
+  }
+
   const guardar = useCallback(async () => {
     if (!orgId || !form.rancho_id) {
       toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular.toLowerCase()}`)
@@ -148,31 +180,50 @@ export function MaterialEmpaqueMovimientos() {
     }
     setCargando(true)
     try {
+      if (!online) {
+        const movIdOff = crypto.randomUUID()
+        const plagasMatOff = !form.mat_libre_plagas
+        const plagasTrOff = !form.tr_libre_plagas
+        const conIncidencia = plagasMatOff || plagasTrOff
+        const reporteIdOff = conIncidencia ? crypto.randomUUID() : null
+        const incidenciaIdOff = conIncidencia ? crypto.randomUUID() : null
+        const partesOff: string[] = []
+        if (plagasMatOff) partesOff.push('material de empaque')
+        if (plagasTrOff) partesOff.push('transporte del material')
+        const rancho = ranchos.find(r => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Movimiento de material de empaque · ${rancho?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [
+            opInsert('m42_movimientos', { id: movIdOff, rancho_id: form.rancho_id, ...camposMovimiento() }),
+            ...(reporteIdOff && incidenciaIdOff ? [
+              opInsert('m13_reportes', {
+                id: reporteIdOff,
+                rancho_id: form.rancho_id,
+                org_id: orgId,
+                fecha: form.fecha,
+                auditor_nombre: profile?.nombre_completo ?? null,
+              }),
+              opInsert('m13_incidencias', {
+                id: incidenciaIdOff,
+                reporte_id: reporteIdOff,
+                org_id: orgId,
+                descripcion: `Presencia de plagas detectada en: ${partesOff.join(' y ')}`,
+                orden: 1,
+              }),
+              // Igual que con red: la incidencia se enlaza con un UPDATE posterior al movimiento
+              opUpdate('m42_movimientos', movIdOff, { incidencia_id: incidenciaIdOff }),
+            ] : []),
+          ],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       // INSERT movimiento sin incidencia_id aún
       const { data: movData, error: eMov } = await tbl('m42_movimientos').insert({
         org_id: orgId,
-        rancho_id: form.rancho_id,
-        fecha: form.fecha,
-        empresa: form.empresa.trim() || null,
-        descripcion_material: form.descripcion_material.trim() || null,
-        entrada: form.entrada ? parseFloat(form.entrada) : null,
-        salida: form.salida ? parseFloat(form.salida) : null,
-        total: form.total ? parseFloat(form.total) : null,
-        entrega: form.entrega.trim() || null,
-        recibe: form.recibe.trim() || null,
-        mat_integro: form.mat_integro,
-        mat_buen_estado: form.mat_buen_estado,
-        mat_limpio: form.mat_limpio,
-        mat_libre_olores: form.mat_libre_olores,
-        mat_libre_plagas: form.mat_libre_plagas,
-        mat_otros: form.mat_otros.trim() || null,
-        tr_integro: form.tr_integro,
-        tr_buen_estado: form.tr_buen_estado,
-        tr_limpio: form.tr_limpio,
-        tr_libre_olores: form.tr_libre_olores,
-        tr_libre_plagas: form.tr_libre_plagas,
-        tr_otros: form.tr_otros.trim() || null,
-        observaciones: form.observaciones.trim() || null,
+        ...camposMovimiento(),
       }).select('id').single()
 
       if (eMov) {
@@ -231,9 +282,10 @@ export function MaterialEmpaqueMovimientos() {
     } finally {
       setCargando(false)
     }
-  }, [orgId, form, profile?.nombre_completo, refetch, terminosSitio])
+  }, [orgId, form, profile?.nombre_completo, refetch, terminosSitio, online, guardarOffline, ranchos])
 
   const generarConsolidado = useCallback(async () => {
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (!consolDesde || !consolHasta) { toast.error('Selecciona el rango de fechas'); return }
     setConsolCargando(true)
     try {
@@ -246,7 +298,7 @@ export function MaterialEmpaqueMovimientos() {
     } finally {
       setConsolCargando(false)
     }
-  }, [orgId, consolRanchoId, consolDesde, consolHasta, codigoClave])
+  }, [orgId, consolRanchoId, consolDesde, consolHasta, codigoClave, online])
 
   return (
     <div className="flex flex-col min-h-full" style={{ backgroundColor: 'var(--background)' }}>
@@ -547,7 +599,7 @@ export function MaterialEmpaqueMovimientos() {
                 className="w-full py-3 rounded-xl text-[14px] font-semibold text-white"
                 style={{ backgroundColor: cargando || !form.rancho_id ? 'var(--muted-foreground)' : 'var(--primary)' }}
               >
-                {cargando ? 'Guardando...' : 'Guardar'}
+                {cargando ? 'Guardando...' : online ? 'Guardar' : 'Guardar sin conexión'}
               </button>
             </div>}
       </BottomSheet>

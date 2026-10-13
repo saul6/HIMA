@@ -2,6 +2,9 @@
 import { Wrench, Plus, FileText, Loader2, AlertTriangle, TriangleAlert, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert, opUpdate } from '@/lib/offline/construirOperaciones'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -122,6 +125,8 @@ export function OrdenMantenimiento() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { ordenes, loading, error, refetch } = useM44OrdenesMantenimiento()
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M44')
 
   const todosIds = useMemo(() => ordenes.map(o => o.id), [ordenes])
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M44', todosIds)
@@ -155,27 +160,68 @@ export function OrdenMantenimiento() {
     setAbierto(true)
   }, [ranchoInicial, obligatoria, tengoFirma])
 
+  function camposOrden() {
+    return {
+      rancho_id:             form.rancho_id,
+      fecha:                 form.fecha,
+      folio:                 form.folio.trim() || null,
+      descripcion_solicitud: form.descripcion_solicitud.trim() || null,
+      prioridad:             form.prioridad,
+      solicita:              form.solicita.trim() || null,
+      recibe_mtto:           form.recibe_mtto.trim() || null,
+      equipo_produccion:     form.equipo_produccion,
+      lavado_sanitizado:     form.lavado_sanitizado,
+      observaciones:         form.observaciones.trim() || null,
+      entrega_mtto:          form.entrega_mtto.trim() || null,
+      recibe:                form.recibe.trim() || null,
+    }
+  }
+
   const guardar = useCallback(async () => {
     if (!orgId) return
     if (!form.rancho_id) { setErrRancho(true); return }
 
     setCargando(true)
     try {
+      if (!online) {
+        const ordenIdOff = crypto.randomUUID()
+        const conIncidencia = form.equipo_produccion && !form.lavado_sanitizado
+        const reporteIdOff = conIncidencia ? crypto.randomUUID() : null
+        const incidenciaIdOff = conIncidencia ? crypto.randomUUID() : null
+        const rancho = ranchos.find(r => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Orden de mantenimiento · ${rancho?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [
+            opInsert('m44_ordenes', { id: ordenIdOff, rancho_id: form.rancho_id, ...camposOrden() }),
+            ...(reporteIdOff && incidenciaIdOff ? [
+              opInsert('m13_reportes', {
+                id: reporteIdOff,
+                rancho_id: form.rancho_id,
+                org_id: orgId,
+                fecha: form.fecha,
+                auditor_nombre: profile?.nombre_completo ?? null,
+              }),
+              opInsert('m13_incidencias', {
+                id: incidenciaIdOff,
+                reporte_id: reporteIdOff,
+                org_id: orgId,
+                descripcion: 'Equipo de produccion reparado sin lavar y sanitizar despues del mantenimiento',
+                orden: 1,
+              }),
+              // Igual que con red: la incidencia se enlaza con un UPDATE posterior a la orden
+              opUpdate('m44_ordenes', ordenIdOff, { incidencia_id: incidenciaIdOff }),
+            ] : []),
+          ],
+        })
+        if (ok) handleCerrarModal()
+        return
+      }
+
       // INSERT orden sin incidencia_id aún
       const { data: ordenData, error: eOrd } = await tbl('m44_ordenes').insert({
         org_id:                orgId,
-        rancho_id:             form.rancho_id,
-        fecha:                 form.fecha,
-        folio:                 form.folio.trim() || null,
-        descripcion_solicitud: form.descripcion_solicitud.trim() || null,
-        prioridad:             form.prioridad,
-        solicita:              form.solicita.trim() || null,
-        recibe_mtto:           form.recibe_mtto.trim() || null,
-        equipo_produccion:     form.equipo_produccion,
-        lavado_sanitizado:     form.lavado_sanitizado,
-        observaciones:         form.observaciones.trim() || null,
-        entrega_mtto:          form.entrega_mtto.trim() || null,
-        recibe:                form.recibe.trim() || null,
+        ...camposOrden(),
       }).select('id').single()
 
       if (eOrd) {
@@ -227,13 +273,14 @@ export function OrdenMantenimiento() {
     } finally {
       setCargando(false)
     }
-  }, [orgId, form, profile?.nombre_completo, refetch])
+  }, [orgId, form, profile?.nombre_completo, refetch, online, guardarOffline, ranchos])
 
   // ── PDF individual ──
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null)
 
   async function handlePDF(orden: M44Orden) {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (obligatoria && !firmas[orden.id]?.realizo) {
       toast.info('Firma este registro antes de descargar el PDF')
       return
@@ -562,7 +609,7 @@ export function OrdenMantenimiento() {
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Guardando…
                   </span>
-                ) : 'Guardar orden'}
+                ) : online ? 'Guardar orden' : 'Guardar sin conexión'}
               </button>
             </div>}
       </BottomSheet>
