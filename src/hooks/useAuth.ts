@@ -11,6 +11,8 @@ export interface AuthState {
   productor: Productor | null
   asesorProfile: Profile | null
   responsableProfile: Profile | null
+  // Interruptor de emergencia por organización (organizaciones.offline_habilitado). Default true.
+  offlineHabilitado: boolean
   loading: boolean
   error: string | null
   isRecovery: boolean
@@ -30,6 +32,7 @@ const SIN_SESION: Omit<AuthState, 'loading'> = {
   productor: null,
   asesorProfile: null,
   responsableProfile: null,
+  offlineHabilitado: true,
   error: null,
   isRecovery: false,
 }
@@ -45,15 +48,15 @@ async function cargarPerfilCache(userId: string): Promise<Omit<AuthState, 'user'
     const entrada = await cacheGet<{ datos: Omit<AuthState, 'user' | 'loading' | 'isRecovery'>; guardadoEn: number; userId: string }>(`perfil:${userId}`)
     if (!entrada || entrada.userId !== userId) return null
     if (Date.now() - entrada.guardadoEn > CACHE_PERFIL_TTL) return null
-    return entrada.datos
+    return { ...entrada.datos, offlineHabilitado: entrada.datos.offlineHabilitado !== false }
   } catch { return null }
 }
 
 // Garantiza que NUNCA lanza — cualquier error interno queda atrapado y devuelve
 // un resultado parcial en lugar de propagarse al callback de onAuthStateChange.
-async function cargarDatosPerfil(
+async function cargarDatosPerfilBase(
   userId: string
-): Promise<Omit<AuthState, 'user' | 'loading' | 'isRecovery'>> {
+): Promise<Omit<AuthState, 'user' | 'loading' | 'isRecovery' | 'offlineHabilitado'>> {
   try {
     devLog('[auth] cargarDatosPerfil → profiles query para', userId)
     const { data: profile, error: profileError } = await supabase
@@ -139,6 +142,33 @@ async function cargarDatosPerfil(
   }
 }
 
+// Carga el perfil y, con él, el interruptor de emergencia de la organización.
+// Si la lectura del interruptor falla, conserva el último valor cacheado (o true).
+async function cargarDatosPerfil(userId: string): Promise<Omit<AuthState, 'user' | 'loading' | 'isRecovery'>>{
+  const base = await cargarDatosPerfilBase(userId)
+  let offlineHabilitado = true
+  const orgId = base.profile?.org_id
+  if (orgId) {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('organizaciones')
+        .select('offline_habilitado')
+        .eq('id', orgId)
+        .single()
+      if (!error && data && typeof data.offline_habilitado === 'boolean') {
+        offlineHabilitado = data.offline_habilitado
+      } else {
+        const previo = await cargarPerfilCache(userId)
+        offlineHabilitado = previo?.offlineHabilitado ?? true
+      }
+    } catch {
+      const previo = await cargarPerfilCache(userId)
+      offlineHabilitado = previo?.offlineHabilitado ?? true
+    }
+  }
+  return { ...base, offlineHabilitado }
+}
+
 export function useAuth(): UseAuthReturn {
   const [state, setState] = useState<AuthState>({
     ...SIN_SESION,
@@ -186,6 +216,7 @@ export function useAuth(): UseAuthReturn {
               productor: null,
               asesorProfile: null,
               responsableProfile: null,
+              offlineHabilitado: true,
               error: err instanceof Error ? err.message : 'Error cargando perfil',
             }),
             loading: false,
@@ -229,6 +260,7 @@ export function useAuth(): UseAuthReturn {
             productor: null,
             asesorProfile: null,
             responsableProfile: null,
+            offlineHabilitado: true,
             loading: false,
             error: err instanceof Error ? err.message : 'Error inesperado de autenticación',
             isRecovery: event === 'PASSWORD_RECOVERY',

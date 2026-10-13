@@ -14,12 +14,17 @@ interface GuardarOpts {
 // Hook que encola un lote en el outbox y muestra el toast correcto.
 // Con red: "Guardado". Sin red: "Guardado sin conexión — se subirá al recuperar señal".
 export function useGuardarOffline(modulo: string) {
-  const { user, profile } = useAuthContext()
+  const { user, profile, offlineHabilitado } = useAuthContext()
   const [guardando, setGuardando] = useState(false)
 
   const guardar = useCallback(async (opts: GuardarOpts): Promise<boolean> => {
     if (!user?.id || !profile?.org_id) {
       toast.error('Sin organización activa')
+      return false
+    }
+    // Interruptor de emergencia: con el offline apagado nada se encola.
+    if (!offlineHabilitado) {
+      toast.error('Necesitas conexión para guardar')
       return false
     }
     setGuardando(true)
@@ -45,7 +50,7 @@ export function useGuardarOffline(modulo: string) {
     } finally {
       setGuardando(false)
     }
-  }, [user?.id, profile?.org_id, modulo])
+  }, [user?.id, profile?.org_id, modulo, offlineHabilitado])
 
   return { guardar, guardando }
 }
