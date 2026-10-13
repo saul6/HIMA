@@ -746,7 +746,7 @@ export function TrazabilidadProducto() {
       {/* ── Bottom Sheet: LR ─────────────────────────────────────────────── */}
       {sheetLR && (
         <BottomSheet
-          title={sheetPaso === 'firma_decision' ? 'Firmar como Realizó' : sheetPaso === 'firma_gate' ? 'Registrar tu firma' : 'Nuevo Lote de Recepcion (LR)'}
+          title={sheetPaso === 'firma_decision' ? (profile?.rol === 'admin_org' ? 'Firmar como Realizó y verificó' : 'Firmar como Realizó') : sheetPaso === 'firma_gate' ? 'Registrar tu firma' : 'Nuevo Lote de Recepcion (LR)'}
           onClose={() => { if (guardando) return; setSheetLR(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLR(LR_VACÍO) }}
           noContentPad={sheetPaso !== 'form'}
         >
@@ -809,7 +809,7 @@ export function TrazabilidadProducto() {
       {/* ── Bottom Sheet: LPT ───────────────────────────────────────────── */}
       {sheetLPT && (
         <BottomSheet
-          title={sheetPaso === 'firma_decision' ? 'Firmar como Realizó' : sheetPaso === 'firma_gate' ? 'Registrar tu firma' : 'Nuevo Lote de Producto Terminado (LPT)'}
+          title={sheetPaso === 'firma_decision' ? (profile?.rol === 'admin_org' ? 'Firmar como Realizó y verificó' : 'Firmar como Realizó') : sheetPaso === 'firma_gate' ? 'Registrar tu firma' : 'Nuevo Lote de Producto Terminado (LPT)'}
           onClose={() => { if (guardando) return; setSheetLPT(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLPT(LPT_VACÍO) }}
           noContentPad={sheetPaso !== 'form'}
         >
@@ -913,7 +913,7 @@ export function TrazabilidadProducto() {
       {/* ── Bottom Sheet: LC ─────────────────────────────────────────────── */}
       {sheetLC && (
         <BottomSheet
-          title={sheetPaso === 'firma_decision' ? 'Firmar como Realizó' : sheetPaso === 'firma_gate' ? 'Registrar tu firma' : 'Nuevo Lote Compuesto (LC)'}
+          title={sheetPaso === 'firma_decision' ? (profile?.rol === 'admin_org' ? 'Firmar como Realizó y verificó' : 'Firmar como Realizó') : sheetPaso === 'firma_gate' ? 'Registrar tu firma' : 'Nuevo Lote Compuesto (LC)'}
           onClose={() => { if (guardando) return; setSheetLC(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLC(LC_VACÍO) }}
           noContentPad={sheetPaso !== 'form'}
         >
@@ -964,7 +964,7 @@ export function TrazabilidadProducto() {
       {/* ── Bottom Sheet: FE ─────────────────────────────────────────────── */}
       {sheetFE && (
         <BottomSheet
-          title={sheetPaso === 'firma_decision' ? 'Firmar como Realizó' : sheetPaso === 'firma_gate' ? 'Registrar tu firma' : 'Nuevo Folio de Embarque (FE)'}
+          title={sheetPaso === 'firma_decision' ? (profile?.rol === 'admin_org' ? 'Firmar como Realizó y verificó' : 'Firmar como Realizó') : sheetPaso === 'firma_gate' ? 'Registrar tu firma' : 'Nuevo Folio de Embarque (FE)'}
           onClose={() => { if (guardando) return; setSheetFE(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormFE(FE_VACÍO) }}
           noContentPad={sheetPaso !== 'form'}
         >

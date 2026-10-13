@@ -14,6 +14,7 @@ import {
   type MapaFirmas,
 } from '@/hooks/useFirmasRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useAuthContext } from '@/context/AuthContext'
 
 const ERRORES_FIRMA_WARNING = [
   'Primero registra tu firma',
@@ -51,6 +52,8 @@ export function PasoFirmaRegistro({
   onDespues,
 }: PasoFirmaRegistroProps) {
   const { refrescar } = useFirmaContext()
+  const { profile } = useAuthContext()
+  const esAdminOrg = profile?.rol === 'admin_org'
 
   const [miFirma, setMiFirma] = useState<MiFirmaInfo | null>(null)
   const [cargando, setCargando] = useState(true)
@@ -131,19 +134,21 @@ export function PasoFirmaRegistro({
         {obligatoria ? (
           <div className="space-y-1">
             <p className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>
-              Firmar como Realizó
+              {esAdminOrg ? 'Firmar como Realizó y verificó' : 'Firmar como Realizó'}
             </p>
             <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
               {descripcion}
             </p>
             <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-              Firmo como responsable de realizar este registro y confirmo que su contenido es correcto.
+              {esAdminOrg
+                ? 'Firmo como responsable de realizar y verificar este registro y confirmo que su contenido es correcto.'
+                : 'Firmo como responsable de realizar este registro y confirmo que su contenido es correcto.'}
             </p>
           </div>
         ) : (
           <div className="space-y-1">
             <p className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>
-              ¿Firmar como Realizó?
+              {esAdminOrg ? '¿Firmar como Realizó y verificó?' : '¿Firmar como Realizó?'}
             </p>
             <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
               {descripcion}

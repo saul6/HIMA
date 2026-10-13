@@ -15,9 +15,20 @@ interface PdfSignaturesProps {
   enterado?: FirmaParaPdf['enterado']
 }
 
-export function PdfSignatures({ signatures, enterado: enteradoProp }: PdfSignaturesProps) {
-  const enterado = enteradoProp ?? signatures.map((s) => s.firma?.enterado).find(Boolean) ?? null
+// Evita que react-pdf parta "Sello 9ce1..." con guion al final de línea
+const sinGuion = (word: string) => [word]
+
+export function PdfSignatures({ signatures: signaturesProp, enterado: enteradoProp }: PdfSignaturesProps) {
+  const enterado = enteradoProp ?? signaturesProp.map((s) => s.firma?.enterado).find(Boolean) ?? null
   const enteradoDigital = enterado && enterado.estado === 'vigente' && enterado.png
+
+  // Firma única (admin): un solo bloque "Realizó y verificó"; el de Verificó no se dibuja
+  const idxUnica = signaturesProp.findIndex((s) => s.firma?.unica)
+  const signatures = idxUnica === -1
+    ? signaturesProp
+    : signaturesProp
+        .filter((s, i) => i === idxUnica || !s.firma?.unica)
+        .map((s, i) => (i === idxUnica ? { ...s, caption: 'Realizo y verifico - Firma' } : s))
 
   return (
     <View style={{ flexDirection: 'row', marginTop: 24 }}>
@@ -72,8 +83,11 @@ export function PdfSignatures({ signatures, enterado: enteradoProp }: PdfSignatu
 
               {tieneDigital && (
                 /* Datos de firma digital debajo del caption */
-                <Text style={{ fontSize: 6, color: PC.footerGray, marginTop: 2 }}>
-                  {`Firmado digitalmente el ${firma.fecha} - Sello ${firma.sello}`}
+                <Text
+                  hyphenationCallback={sinGuion}
+                  style={{ fontSize: 6, color: PC.footerGray, marginTop: 2 }}
+                >
+                  {`Firmado digitalmente el ${firma.fecha}\nSello ${firma.sello}`}
                 </Text>
               )}
 

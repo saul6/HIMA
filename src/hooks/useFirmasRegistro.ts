@@ -28,6 +28,8 @@ export interface FirmaDetalle {
   sello: string
   trazos?: Array<Array<{ x: number; y: number }>>
   firma_png?: string
+  // true cuando un admin_org firmó una sola vez como "Realizó y verificó"
+  firma_unica?: boolean
   // Solo lo llena obtenerFirmasParaPdf: lleva el enterado hasta PdfSignatures
   // sin tener que cambiar la firma de cada generador de PDF.
   enterado?: FirmaEnterado | null
@@ -58,7 +60,15 @@ export interface FirmaParaPdf {
   fecha: string      // "dd/mm/yyyy hh:mm"
   sello: string      // primeros 12 chars
   estado: EstadoFirma
+  unica?: boolean    // firma única "Realizó y verificó": PdfSignatures dibuja un solo bloque
   enterado?: FirmaEnteradoParaPdf | null
+}
+
+// Firma única: la fila verifico la marca y comparte firmante con realizo.
+export function esFirmaUnica(reg: FirmasDeRegistro | undefined | null): boolean {
+  const r = reg?.realizo
+  const v = reg?.verifico
+  return !!(r?.profile_id && v?.profile_id && v.firma_unica && r.profile_id === v.profile_id)
 }
 
 // ── Helpers de formateo ───────────────────────────────────────────────────────
@@ -86,6 +96,7 @@ export function firmaDetalleAParaPdf(firma: FirmaDetalle): FirmaParaPdf {
     fecha: firma.firmado_en ? formatFirmaFecha(firma.firmado_en) : '',
     sello: (firma.sello ?? '').slice(0, 12),
     estado: firma.estado,
+    unica: !!firma.firma_unica,
     enterado: e
       ? {
           png: e.firma_png ?? '',
@@ -171,6 +182,8 @@ export async function obtenerFirmasParaPdf(modulo: string, ids: string[]): Promi
   // Los generadores solo leen realizo/verifico: el enterado viaja dentro de ellos.
   // Si no hay firma Realizó, un marcador vacío (png '') se imprime igual que "sin firma".
   for (const reg of Object.values(resultado)) {
+    // Registros viejos: la fila realizo no trae firma_unica aunque verifico sí
+    if (esFirmaUnica(reg) && reg.realizo) reg.realizo.firma_unica = true
     const ent = reg?.enterado
     if (!ent) continue
     if (reg.realizo) reg.realizo.enterado = ent

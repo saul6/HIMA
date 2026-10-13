@@ -912,7 +912,7 @@ export function BotiquinPrimerosAuxilios() {
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   <div className="space-y-1">
                     <p className="text-base" style={{ color: 'var(--foreground)', fontWeight: 600 }}>
-                      ¿Firmar como Realizó?
+                      {profile?.rol === 'admin_org' ? '¿Firmar como Realizó y verificó?' : '¿Firmar como Realizó?'}
                     </p>
                     <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                       Puedes firmar ahora o hacerlo después desde la lista de registros.

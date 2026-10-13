@@ -8,6 +8,7 @@ import {
   type FirmasDeRegistro,
   type FirmaDetalle,
   type FirmaEnterado,
+  esFirmaUnica,
 } from '@/hooks/useFirmasRegistro'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
@@ -225,6 +226,8 @@ export function FirmasRegistro({
 
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'asesor_tecnico' || profile?.rol === 'super_admin'
   const esAuditor = profile?.rol === 'auditor'
+  const esAdminOrg = profile?.rol === 'admin_org'
+  const firmaUnica = esFirmaUnica(firma)
 
   // Lógica de visibilidad de botones
   const puedeRealizarFirma = !esAuditor && firma?.realizo?.estado !== 'vigente'
@@ -232,6 +235,12 @@ export function FirmasRegistro({
     esAdmin &&
     firma?.realizo?.estado === 'vigente' &&
     firma?.realizo?.profile_id !== profile?.id &&
+    firma?.verifico?.estado !== 'vigente'
+  // Registros previos: el admin firmó Realizó y falta Verificó → completa con su misma firma
+  const puedeCompletarUnica =
+    esAdminOrg &&
+    firma?.realizo?.estado === 'vigente' &&
+    firma?.realizo?.profile_id === profile?.id &&
     firma?.verifico?.estado !== 'vigente'
 
   const puedeFirmarEnterado = !esAuditor && firma?.enterado?.estado !== 'vigente'
@@ -420,9 +429,18 @@ export function FirmasRegistro({
     <div className="border-t border-border mt-3 pt-3">
 
       {/* Estado de firmas */}
-      <div className="grid grid-cols-3 gap-2 mb-3">
-        <FirmaEstadoChip firma={firma?.realizo} label="Realizó" />
-        <FirmaEstadoChip firma={firma?.verifico} label="Verificó" />
+      <div className={`grid ${firmaUnica ? 'grid-cols-2' : 'grid-cols-3'} gap-2 mb-3`}>
+        {firmaUnica ? (
+          <FirmaEstadoChip
+            firma={firma?.verifico?.estado === 'desactualizada' ? firma.verifico : firma?.realizo}
+            label="Realizó y verificó"
+          />
+        ) : (
+          <>
+            <FirmaEstadoChip firma={firma?.realizo} label="Realizó" />
+            <FirmaEstadoChip firma={firma?.verifico} label="Verificó" />
+          </>
+        )}
         <FirmaEstadoChip firma={firma?.enterado} label="Enterado (Productor)" />
       </div>
 
@@ -439,7 +457,7 @@ export function FirmasRegistro({
       )}
 
       {/* Botones de acción */}
-      {(puedeRealizarFirma || puedeVerificarFirma) && panelActivo === null && (
+      {(puedeRealizarFirma || puedeVerificarFirma || puedeCompletarUnica) && panelActivo === null && (
         <div className="flex flex-wrap gap-2 mb-3">
           {puedeRealizarFirma && (
             <button
@@ -447,7 +465,16 @@ export function FirmasRegistro({
               className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
               style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
             >
-              Firmar como Realizó
+              {esAdminOrg ? 'Firmar como Realizó y verificó' : 'Firmar como Realizó'}
+            </button>
+          )}
+          {puedeCompletarUnica && (
+            <button
+              onClick={() => abrirPanel('verifico')}
+              className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
+              style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
+            >
+              Completar como Realizó y verificó
             </button>
           )}
           {puedeVerificarFirma && (
@@ -469,9 +496,14 @@ export function FirmasRegistro({
           style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
         >
           <p className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
-            Firmar "{panelActivo === 'realizo' ? 'Realizó' : 'Verificó'}" —{' '}
+            Firmar "{esAdminOrg ? 'Realizó y verificó' : panelActivo === 'realizo' ? 'Realizó' : 'Verificó'}" —{' '}
             {formatFechaLarga(fechaRegistro)}
           </p>
+          {esAdminOrg && (
+            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+              Firmo como responsable de realizar y verificar este registro y confirmo que su contenido es correcto.
+            </p>
+          )}
 
           {cargandoMiFirma ? (
             <Skeleton className="h-20 w-full rounded-lg" />
@@ -640,6 +672,7 @@ export function FirmasRegistro({
                   </span>
                   <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
                     · {h.rol_firma === 'realizo' ? 'Realizó' : h.rol_firma === 'enterado' ? 'Enterado (Productor)' : 'Verificó'}
+                    {h.firma_unica && h.rol_firma !== 'enterado' ? ' (firma única)' : ''}
                   </span>
                 </div>
                 <p className="text-xs" style={{ color: 'var(--foreground)' }}>{h.firmante}</p>
