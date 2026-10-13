@@ -23,12 +23,17 @@ import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { SkeletonFilas } from '@/app/components/SkeletonFilas'
 import {
   useM21EstacionesRancho,
+  fetchEstacionesRancho,
   type M21Estacion,
   type TipoTrampa,
 } from '@/hooks/useM21EstacionesRancho'
 import { useM21MonitoreoEstaciones, type M21RevisionConResultados } from '@/hooks/useM21MonitoreoEstaciones'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert, opCabecera, opUpsert } from '@/lib/offline/construirOperaciones'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 import { generarMonitoreoEstacionesPDF } from '@/lib/pdf/m21/generarMonitoreoEstacionesPDF'
 import { generarMonitoreoEstacionesConsolidadoPDF } from '@/lib/pdf/m21/generarMonitoreoEstacionesConsolidadoPDF'
 import { Button } from '@/app/components/ui/button'
@@ -162,7 +167,7 @@ function RevisionCard({
           size="icon"
           className="shrink-0 text-[var(--primary)] hover:bg-[var(--agro-success-fill)]"
           onClick={() => onPDF(rev.id)}
-          disabled={cargandoPDF === rev.id}
+          disabled={cargandoPDF === rev.id || rev.sin_subir}
           aria-label="Descargar PDF"
         >
           {cargandoPDF === rev.id
@@ -182,7 +187,13 @@ function RevisionCard({
       {rev.observaciones && (
         <p className="text-xs text-muted-foreground italic line-clamp-2">{rev.observaciones}</p>
       )}
-      <FirmasRegistro modulo="M21" registroId={rev.id} firma={firmas[rev.id]} loadingFirmas={loadingFirmas} fechaRegistro={rev.fecha} onFirmado={onFirmado} />
+      {rev.sin_subir ? (
+        <span className="self-start text-xs bg-[var(--agro-warning-fill)] text-[var(--agro-warning-text)] px-2 py-0.5 rounded-full">
+          Sin subir — podrás firmar y descargar el PDF al sincronizar
+        </span>
+      ) : (
+        <FirmasRegistro modulo="M21" registroId={rev.id} firma={firmas[rev.id]} loadingFirmas={loadingFirmas} fechaRegistro={rev.fecha} onFirmado={onFirmado} />
+      )}
     </div>
   )
 }
@@ -450,6 +461,8 @@ export function MonitoreoEstacionesPlagas() {
   const todosIds = revisiones.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M21', todosIds)
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M21')
 
   const [sheetNuevoPaso, setSheetNuevoPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
   const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
@@ -462,18 +475,27 @@ export function MonitoreoEstacionesPlagas() {
   const [catalogoPlagas, setCatalogoPlagas] = useState<CatCodigo[]>([])
 
   useEffect(() => {
-    if (!profile?.org_id) return
+    if (!profile?.org_id || !user?.id) return
+    const orgId = profile.org_id
+    const userId = user.id
     ;(async () => {
-      const [e, c, p] = await Promise.all([
-        (supabase as any).from('m21_estado_trampa').select('codigo, label').order('codigo'),
-        (supabase as any).from('m21_condiciones').select('codigo, label').order('codigo'),
-        (supabase as any).from('m21_plagas').select('codigo, label').order('codigo'),
-      ])
-      if (!e.error) setCatalogoEstado(e.data ?? [])
-      if (!c.error) setCatalogoCondiciones(c.data ?? [])
-      if (!p.error) setCatalogoPlagas(p.data ?? [])
+      try {
+        const r = await leerConCache<{ e: CatCodigo[]; c: CatCodigo[]; p: CatCodigo[] }>(
+          'm21_catalogos', userId, orgId, async () => {
+            const [e, c, p] = await Promise.all([
+              (supabase as any).from('m21_estado_trampa').select('codigo, label').order('codigo'),
+              (supabase as any).from('m21_condiciones').select('codigo, label').order('codigo'),
+              (supabase as any).from('m21_plagas').select('codigo, label').order('codigo'),
+            ])
+            if (e.error || c.error || p.error) throw (e.error ?? c.error ?? p.error)
+            return { e: e.data ?? [], c: c.data ?? [], p: p.data ?? [] }
+          })
+        setCatalogoEstado(r.datos.e)
+        setCatalogoCondiciones(r.datos.c)
+        setCatalogoPlagas(r.datos.p)
+      } catch { /* sin catálogos: los selectores quedan vacíos */ }
     })()
-  }, [profile?.org_id])
+  }, [profile?.org_id, user?.id])
 
   // ── Sheet: Gestionar Estaciones ─────────────────────────────────────────────
   const [sheetEstaciones, setSheetEstaciones] = useState(false)
@@ -488,6 +510,7 @@ export function MonitoreoEstacionesPlagas() {
 
   async function handleToggleActivo(id: string, nuevoActivo: boolean) {
     if (!profile?.org_id) return
+    if (!online) { toast.warning('Necesitas conexión para activar o desactivar estaciones'); return }
     setToggling(id)
     try {
       const { error: err } = await (supabase as any)
@@ -508,6 +531,7 @@ export function MonitoreoEstacionesPlagas() {
     if (!estRanchoId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     if (!addNumero.trim()) { toast.error('Ingresa el número de la estación'); return }
     if (!profile?.org_id) return
+    if (!online) { toast.warning('Necesitas conexión para agregar estaciones'); return }
     setAddingEst(true)
     try {
       const orden = estaciones.filter(e => e.tipo_trampa === addTipo).length
@@ -579,11 +603,22 @@ export function MonitoreoEstacionesPlagas() {
     if (!nfcModal?.estacionId || nfcModal.estacion) return
     let cancelado = false
     setNfcCargandoEst(true)
-    ;(supabase as any)
-      .from('m21_estaciones')
-      .select('*')
-      .eq('id', nfcModal.estacionId)
-      .single()
+    const buscarEnCache = async (): Promise<M21Estacion | null> => {
+      if (!profile?.org_id || !user?.id) return null
+      try {
+        const lista = await leerConCache<M21Estacion[]>(
+          `m21_estaciones:${nfcModal.ranchoId}`, user.id, profile.org_id,
+          () => fetchEstacionesRancho(profile.org_id!, nfcModal.ranchoId))
+        return lista.datos.find(x => x.id === nfcModal.estacionId) ?? null
+      } catch { return null }
+    }
+    const consulta: Promise<{ data: M21Estacion | null; error: unknown }> = navigator.onLine
+      ? (supabase as any).from('m21_estaciones').select('*').eq('id', nfcModal.estacionId).single()
+          .then(async (r: { data: M21Estacion | null; error: unknown }) =>
+            r.data && !r.error ? r : { data: await buscarEnCache(), error: null },
+            async () => ({ data: await buscarEnCache(), error: null }))
+      : buscarEnCache().then(data => ({ data, error: null }))
+    consulta
       .then(({ data, error }: { data: M21Estacion | null; error: unknown }) => {
         if (cancelado) return
         if (data && !error) {
@@ -641,6 +676,75 @@ export function MonitoreoEstacionesPlagas() {
     let revisionId: string | null = null
 
     try {
+      if (!online) {
+        const hallazgosOff = estacionesActivas.filter(e => {
+          const d = estForm[e.id]
+          if (!d) return false
+          const esLuz = e.tipo_trampa === 'luz'
+          return (d.tieneHallazgo || (esLuz && d.plaga_detectada.length > 0)) && d.hallazgoDescripcion.trim()
+        })
+        const revIdOff = crypto.randomUUID()
+        const ops = [
+          opCabecera('m21_revision', {
+            id: revIdOff,
+            rancho_id: form.ranchoId,
+            fecha: form.fecha,
+            inspector_nombre: form.inspectorNombre.trim(),
+            observaciones: form.observaciones.trim() || null,
+          }, ['rancho_id', 'fecha']),
+        ]
+        const incOff: Record<string, string> = {}
+        if (hallazgosOff.length > 0) {
+          const repIdOff = crypto.randomUUID()
+          ops.push(opInsert('m13_reportes', {
+            id: repIdOff,
+            rancho_id: form.ranchoId,
+            fecha: form.fecha,
+            auditor_nombre: form.inspectorNombre.trim(),
+          }))
+          hallazgosOff.forEach((est, i) => {
+            const incId = crypto.randomUUID()
+            incOff[est.id] = incId
+            ops.push(opInsert('m13_incidencias', {
+              id: incId,
+              reporte_id: repIdOff,
+              orden: i + 1,
+              descripcion: estForm[est.id].hallazgoDescripcion.trim(),
+            }))
+          })
+        }
+        for (const e of estacionesActivas) {
+          const d = estForm[e.id] ?? EST_FORM_INICIAL
+          const esLuz = e.tipo_trampa === 'luz'
+          ops.push(opUpsert('m21_resultado', {
+            revision_id: revIdOff,
+            estacion_id: e.id,
+            tipo_consumo: !esLuz && d.tipo_consumo.trim() ? d.tipo_consumo.trim() : null,
+            estado_trampa: !esLuz && d.estado_trampa ? d.estado_trampa : null,
+            condiciones: !esLuz && d.condiciones ? d.condiciones : null,
+            senalizacion: !esLuz && d.senalizacion ? d.senalizacion : null,
+            estado_equipo: esLuz && d.estado_equipo.trim() ? d.estado_equipo.trim() : null,
+            estado_lampara: esLuz && d.estado_lampara.trim() ? d.estado_lampara.trim() : null,
+            plaga_detectada: esLuz ? d.plaga_detectada : [],
+            incidencia_id: incOff[e.id] ?? null,
+          }, ['revision_id', 'estacion_id']))
+        }
+        const ranchoOff = ranchos.find(r => r.id === form.ranchoId)
+        const ok = await guardarOffline({
+          descripcion: `Monitoreo de plagas · ${ranchoOff?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: {
+            rancho_id: form.ranchoId,
+            rancho_nombre: ranchoOff?.nombre,
+            rancho_codigo: ranchoOff?.codigo,
+            fecha: form.fecha,
+            estaciones: Object.fromEntries(estacionesActivas.map(e => [e.id, { numero: e.numero, tipo_trampa: e.tipo_trampa }])),
+          },
+          operaciones: ops,
+        })
+        if (ok) setSheetNuevo(false)
+        return
+      }
+
       // 1. INSERT m21_revision
       const { data: rev, error: revErr } = await (supabase as any)
         .from('m21_revision')
@@ -754,6 +858,64 @@ export function MonitoreoEstacionesPlagas() {
 
     setNfcGuardando(true)
     try {
+      if (!online) {
+        // Sin red: la revisión de hoy se fusiona por (sitio, fecha) al sincronizar
+        const revIdOff = crypto.randomUUID()
+        const ops = [
+          opCabecera('m21_revision', {
+            id: revIdOff,
+            rancho_id: ranchoId,
+            fecha: fechaHoy,
+            inspector_nombre: profile.nombre_completo ?? '',
+            observaciones: null,
+          }, ['rancho_id', 'fecha']),
+        ]
+        let incOffId: string | null = null
+        const hayHallazgo = (d.tieneHallazgo || (esLuz && d.plaga_detectada.length > 0)) && d.hallazgoDescripcion.trim()
+        if (hayHallazgo) {
+          const repIdOff = crypto.randomUUID()
+          incOffId = crypto.randomUUID()
+          ops.push(opInsert('m13_reportes', {
+            id: repIdOff,
+            rancho_id: ranchoId,
+            fecha: fechaHoy,
+            auditor_nombre: profile.nombre_completo ?? '',
+          }))
+          ops.push(opInsert('m13_incidencias', {
+            id: incOffId,
+            reporte_id: repIdOff,
+            orden: 1,
+            descripcion: d.hallazgoDescripcion.trim(),
+          }))
+        }
+        ops.push(opUpsert('m21_resultado', {
+          revision_id: revIdOff,
+          estacion_id: estacionId,
+          tipo_consumo: !esLuz && d.tipo_consumo.trim() ? d.tipo_consumo.trim() : null,
+          estado_trampa: !esLuz && d.estado_trampa ? d.estado_trampa : null,
+          condiciones: !esLuz && d.condiciones ? d.condiciones : null,
+          senalizacion: !esLuz && d.senalizacion ? d.senalizacion : null,
+          estado_equipo: esLuz && d.estado_equipo.trim() ? d.estado_equipo.trim() : null,
+          estado_lampara: esLuz && d.estado_lampara.trim() ? d.estado_lampara.trim() : null,
+          plaga_detectada: esLuz ? d.plaga_detectada : [],
+          incidencia_id: incOffId,
+        }, ['revision_id', 'estacion_id']))
+        const ranchoOff = ranchos.find(r => r.id === ranchoId)
+        const ok = await guardarOffline({
+          descripcion: `Monitoreo de plagas · Trampa N.° ${estacion.numero} · ${fechaHoy}`,
+          metadatos: {
+            rancho_id: ranchoId,
+            rancho_nombre: ranchoOff?.nombre,
+            rancho_codigo: ranchoOff?.codigo,
+            fecha: fechaHoy,
+            estaciones: { [estacionId]: { numero: estacion.numero, tipo_trampa: estacion.tipo_trampa } },
+          },
+          operaciones: ops,
+        })
+        if (ok) { setNfcModal(null); setNfcPaso('form'); setPendienteNfcFirmaId(null) }
+        return
+      }
+
       // 1. Buscar revisión de hoy para este rancho (unique por rancho_id+fecha)
       const { data: revRows, error: revBuscErr } = await (supabase as any)
         .from('m21_revision')
@@ -881,6 +1043,7 @@ export function MonitoreoEstacionesPlagas() {
 
   async function handlePDF(id: string) {
     if (!profile?.org_id) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setCargandoPDF(id)
     try {
       await generarMonitoreoEstacionesPDF(id, profile.org_id, codigoClave ?? '')
@@ -899,6 +1062,7 @@ export function MonitoreoEstacionesPlagas() {
   const [cargandoCons, setCargandoCons] = useState(false)
 
   async function handleConsolidado() {
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (!consRanchoId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     if (!consDesde || !consHasta) { toast.error('Selecciona el rango de fechas'); return }
     if (!profile?.org_id) return
@@ -1237,7 +1401,7 @@ export function MonitoreoEstacionesPlagas() {
               {guardando ? (
                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Guardando...</>
               ) : (
-                'Guardar y generar PDF'
+                online ? 'Guardar y generar PDF' : 'Guardar sin conexión'
               )}
             </Button>
           </div>}
@@ -1376,7 +1540,7 @@ export function MonitoreoEstacionesPlagas() {
           >
             {nfcGuardando
               ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Guardando...</>
-              : 'Guardar'}
+              : online ? 'Guardar' : 'Guardar sin conexión'}
           </Button>
         </div>
         </>}

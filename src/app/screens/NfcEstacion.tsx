@@ -8,6 +8,7 @@ import { useParams, useNavigate } from 'react-router'
 import { Loader2, Bug, AlertTriangle, ShieldX, PowerOff, WifiOff } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { resolverNfcOffline } from '@/lib/offline/resolverNfcOffline'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -60,7 +61,7 @@ type Estado = 'cargando' | 'error_red' | 'resultado'
 export function NfcEstacion() {
   const { token } = useParams<{ token: string }>()
   const navigate = useNavigate()
-  const { user, loading: authLoading } = useAuthContext()
+  const { user, profile, loading: authLoading } = useAuthContext()
 
   const [estado, setEstado] = useState<Estado>('cargando')
   const [respuesta, setRespuesta] = useState<Extract<NfcRespuesta, { ok: false }> | null>(null)
@@ -79,11 +80,25 @@ export function NfcEstacion() {
     async function resolver() {
       setEstado('cargando')
       try {
-        const { data, error } = await supabase.rpc('resolver_nfc_estacion', { p_token: token })
+        let res: NfcRespuesta | null = null
+        // Con red sigue llamando a la RPC; sin red (o si la red falla) usa las estaciones en caché
+        if (navigator.onLine) {
+          try {
+            const { data, error } = await supabase.rpc('resolver_nfc_estacion', { p_token: token })
+            if (error) throw error
+            res = data as NfcRespuesta
+          } catch (e) {
+            if (!user?.id || !profile?.org_id) throw e
+            res = await resolverNfcOffline(token ?? '', user.id, profile.org_id)
+            if (!res) throw e
+          }
+        } else {
+          if (!user?.id || !profile?.org_id) throw new Error('Sin organización')
+          res = await resolverNfcOffline(token ?? '', user.id, profile.org_id)
+          if (!res) throw new Error('Sin conexión y sin estaciones en caché')
+        }
+        if (!res) throw new Error('Sin respuesta')
         if (cancelado) return
-        if (error) throw error
-
-        const res = data as NfcRespuesta
         if (res.ok) {
           navigate(
             `/inocuidad/monitoreo-plagas?estacion=${res.estacion_id}&rancho=${res.rancho_id}`,
@@ -100,7 +115,7 @@ export function NfcEstacion() {
 
     resolver()
     return () => { cancelado = true }
-  }, [authLoading, user, token, reintentar])
+  }, [authLoading, user, profile?.org_id, token, reintentar])
 
   // ── Cargando ────────────────────────────────────────────────────────────────
 

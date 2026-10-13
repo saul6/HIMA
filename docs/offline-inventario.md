@@ -687,3 +687,22 @@ Los cinco módulos comparten `AuditoriaScreen` + `useAuditoria(modulo)` sin dife
 | UPDATE de un borrador existente | `guardar` | — | ✅ offline: `opUpdate` de la cabecera (totales/estado) + upserts de respuestas en el mismo lote |
 
 Hallazgos / acciones correctivas: el flujo legacy M14–M18 **no** crea `aud_hallazgos` ni acciones correctivas al guardar (verificado en `useAuditoria` y `AuditoriaScreen`), por lo que no hay nada que diferir.
+
+### M21 MonitoreoEstacionesPlagas y /nfc/:token
+
+| Lectura / escritura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m21_revision` + resultados + estaciones (lista) | `useM21MonitoreoEstaciones` | C | ✅ `leerConCache` (`m21_revisiones`) + precarga; las revisiones sin subir se mezclan desde el outbox (por sitio+fecha) con chip "Sin subir" |
+| SELECT `m21_estaciones` por sitio (`select *`, incluye `nfc_token`) | `useM21EstacionesRancho` | C | ✅ caché `m21_estaciones:{rancho}` + precarga |
+| SELECT `m21_estaciones` de toda la org + `organizaciones.nfc_trampas_activo` | `resolverNfcOffline` | C | ✅ cachés `m21_estaciones_org` y `org_nfc_activo` + precarga |
+| SELECT catálogos `m21_estado_trampa`, `m21_condiciones`, `m21_plagas` | `MonitoreoEstacionesPlagas` | C | ✅ caché `m21_catalogos` + precarga |
+| SELECT estación por id (modal NFC) | `MonitoreoEstacionesPlagas` | C | ✅ con red igual que antes; sin red usa la caché por sitio |
+| RPC `resolver_nfc_estacion(token)` | `NfcEstacion` | R/V | ✅ con red igual que antes; sin red (o si la red falla) `resolverNfcOffline` replica sus respuestas con la caché: token inválido → función no activa → sin acceso → estación inactiva → ok |
+| Buscar revisión / reporte M13 del día (modal NFC) | `handleGuardarNfc` | V | ✅ sin red no se consulta: la cabecera se fusiona por (`rancho_id`,`fecha`) al sincronizar |
+| UPDATE `m21_estaciones.activo`, INSERT estación nueva | `handleToggleActivo`, `handleAgregarEstacion` | R | ✅ sin red: "Necesitas conexión…" |
+| PDF individual / consolidado | `generarMonitoreoEstaciones*PDF` | R | ✅ sin red: "Necesitas conexión para generar el PDF" |
+| `opCabecera('m21_revision', …, ['rancho_id','fecha'])` + `opUpsert('m21_resultado', …, ['revision_id','estacion_id'])` (+ `m13_reportes`/`m13_incidencias` si hay hallazgo, en el mismo lote) | `handleGuardar`, `handleGuardarNfc` | — | ✅ offline |
+
+Cambio de infraestructura: `vite.config.ts` ya no excluye `/nfc/` del `navigateFallback` del Service Worker; sin eso, escanear un chip sin red mostraba la página de "sin conexión" del navegador en lugar de abrir la app.
+
+Limitaciones: (1) sin red, un chip de otra organización se reporta como "Chip no reconocido" (esas estaciones no están en la caché por RLS; el motivo `SIN_ACCESO` solo lo distingue el servidor). (2) Offline el hallazgo crea siempre un reporte M13 nuevo; con red se reutiliza el reporte M13 del día.

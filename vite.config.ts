@@ -34,8 +34,8 @@ export default defineConfig({
         navigateFallback: '/index.html',
         // No cachear peticiones a Supabase — los datos van por IndexedDB
         runtimeCaching: [],
-        // Excluir rutas de auth del navigateFallback
-        navigateFallbackDenylist: [/^\/nfc\//],
+        // /nfc/:token también cae al app shell: los chips NFC deben abrir la app sin red
+        // (NfcEstacion resuelve el token con las estaciones en caché).
         // El bundle principal de esta app supera el límite por defecto de 2 MiB
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
       },

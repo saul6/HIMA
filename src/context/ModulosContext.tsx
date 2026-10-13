@@ -7,6 +7,8 @@ import { supabase } from '@/lib/supabase'
 import { getRanchos } from '@/lib/queries'
 import { fetchCatalogoProductos } from '@/hooks/useCatalogoProductos'
 import { fetchSaldosInventario } from '@/lib/offline/saldosInventario'
+import { fetchEstacionesOrg, fetchNfcActivo, CLAVE_ESTACIONES_ORG, CLAVE_NFC_ACTIVO } from '@/lib/offline/resolverNfcOffline'
+import { claveCacheEstaciones } from '@/hooks/useM21EstacionesRancho'
 
 interface ModulosContextValue {
   modulos: ModuloVisible[]
@@ -408,6 +410,8 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
     await precargarM24(userId, orgId!)
     // Precarga de auditorías internas M14–M18 (catálogo, lista y respuestas de borradores)
     await precargarAuditoriasInternas(userId, orgId!)
+    // Precarga de M21 (estaciones con nfc_token, indicador NFC, catálogos y revisiones) para trabajar y escanear sin red
+    await precargarM21(userId, orgId!)
   }, [userId, orgId])
 
   async function precargarDiasM9(userId: string, orgId: string) {
@@ -479,6 +483,41 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
         ),
       ),
     )
+  }
+
+  async function precargarM21(userId: string, orgId: string) {
+    let estaciones: Awaited<ReturnType<typeof fetchEstacionesOrg>>
+    try { estaciones = await fetchEstacionesOrg(orgId) } catch { return }
+    const porRancho = new Map<string, typeof estaciones>()
+    for (const e of estaciones) porRancho.set(e.rancho_id, [...(porRancho.get(e.rancho_id) ?? []), e])
+    const ordenar = (l: typeof estaciones) => [...l].sort((a, b) =>
+      a.tipo_trampa.localeCompare(b.tipo_trampa) || (a.orden - b.orden) || a.numero.localeCompare(b.numero))
+    await Promise.allSettled([
+      leerConCache(CLAVE_ESTACIONES_ORG, userId, orgId, async () => estaciones),
+      leerConCache(CLAVE_NFC_ACTIVO, userId, orgId, () => fetchNfcActivo(orgId)),
+      ...Array.from(porRancho.entries()).map(([ranchoId, lista]) =>
+        leerConCache(claveCacheEstaciones(ranchoId), userId, orgId, async () => ordenar(lista))),
+      leerConCache('m21_catalogos', userId, orgId, async () => {
+        const [e, c, p] = await Promise.all([
+          (supabase as any).from('m21_estado_trampa').select('codigo, label').order('codigo'),
+          (supabase as any).from('m21_condiciones').select('codigo, label').order('codigo'),
+          (supabase as any).from('m21_plagas').select('codigo, label').order('codigo'),
+        ])
+        if (e.error || c.error || p.error) throw (e.error ?? c.error ?? p.error)
+        return { e: e.data ?? [], c: c.data ?? [], p: p.data ?? [] }
+      }),
+      leerConCache('m21_revisiones', userId, orgId, async () => {
+        const { data, error } = await (supabase as any)
+          .from('m21_revision')
+          .select(`id, rancho_id, fecha, inspector_nombre, observaciones, created_at, ranchos ( nombre, codigo ),
+            m21_resultado ( id, estacion_id, tipo_consumo, estado_trampa, condiciones, senalizacion, estado_equipo, estado_lampara, plaga_detectada, incidencia_id, m21_estaciones ( numero, tipo_trampa ) )`)
+          .eq('org_id', orgId)
+          .order('fecha', { ascending: false })
+          .order('created_at', { ascending: false })
+        if (error) throw error
+        return data ?? []
+      }),
+    ])
   }
 
   async function precargarAuditoriasInternas(userId: string, orgId: string) {
