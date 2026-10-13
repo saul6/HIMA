@@ -399,6 +399,7 @@ export function InspeccionVidrioPlastico() {
     campoFecha: 'fecha',
     ventanaDias: 14,
     sheetAbierto: sheetInspeccionAbierto,
+    excluirFechaRef: true,
   })
 
   // ── Sugerencias dinámicas para config (solo lo ya configurado en este rancho) ──
@@ -1133,6 +1134,13 @@ export function InspeccionVidrioPlastico() {
                 terminoSingular={terminosSitio.singular}
                 terminoGenero={terminosSitio.genero}
                 descripcionLimite={`Ya existe una inspección para ${terminosSitio.genero === 'f' ? 'esta' : 'este'} ${terminosSitio.singular.toLowerCase()} en los últimos 14 días.`}
+                mensajeLimite={limiteInfo && (
+                  <>
+                    Ya existe una inspección para {terminosSitio.genero === 'f' ? 'esta' : 'este'} {terminosSitio.singular.toLowerCase()} en los últimos 14 días.{' '}
+                    Próxima disponible:{' '}
+                    <span style={{ fontWeight: 600 }}>{limiteInfo.proxima}</span>
+                  </>
+                )}
               />
 
               {/* Materiales del catálogo */}

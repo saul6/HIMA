@@ -20,6 +20,8 @@ interface OpcionesLimite {
   ventanaDias: number
   // Si el sheet está abierto (para no consultar en segundo plano)
   sheetAbierto: boolean
+  // true = la consulta al servidor excluye la fecha de referencia (lt en vez de lte). M7 lo necesita.
+  excluirFechaRef?: boolean
 }
 
 interface ResultadoLimite {
@@ -47,6 +49,7 @@ export function useLimiteProactivo({
   campoFecha,
   ventanaDias,
   sheetAbierto,
+  excluirFechaRef = false,
 }: OpcionesLimite): ResultadoLimite {
   const [limiteInfo, setLimiteInfo] = useState<{ proxima: string } | null>(null)
   const { lotes } = useOutbox(modulo)
@@ -79,13 +82,13 @@ export function useLimiteProactivo({
     inicio.setDate(inicio.getDate() - (ventanaDias - 1))
     const inicioStr = inicio.toISOString().split('T')[0]
 
-    ;(supabase as any)
+    const consulta = (supabase as any)
       .from(tabla)
       .select(campoFecha)
       .eq('org_id', orgId)
       .eq('rancho_id', ranchoId)
       .gte(campoFecha, inicioStr)
-      .lte(campoFecha, fecha)
+    ;(excluirFechaRef ? consulta.lt(campoFecha, fecha) : consulta.lte(campoFecha, fecha))
       .order(campoFecha, { ascending: false })
       .limit(1)
       .then(({ data }: { data: any[] | null }) => {
@@ -100,7 +103,7 @@ export function useLimiteProactivo({
         }
       })
     return () => { cancelado = true }
-  }, [sheetAbierto, ranchoId, fecha, orgId, activo, tabla, campoFecha, ventanaDias])
+  }, [sheetAbierto, ranchoId, fecha, orgId, activo, tabla, campoFecha, ventanaDias, excluirFechaRef])
 
   return { limiteInfo, hayConflictoOffline }
 }

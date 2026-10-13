@@ -843,6 +843,13 @@ export function BotiquinPrimerosAuxilios() {
                     terminoSingular={terminosSitio.singular}
                     terminoGenero={terminosSitio.genero}
                     descripcionLimite={`Ya existe un registro de botiquín para este ${terminosSitio.singular.toLowerCase()} en los últimos 7 días.`}
+                    mensajeLimite={limiteInfo && (
+                      <>
+                        Ya existe un registro para este {terminosSitio.singular.toLowerCase()} en los últimos 7 días.{' '}
+                        Próximo registro disponible:{' '}
+                        <span style={{ fontWeight: 600 }}>{limiteInfo.proxima}</span>
+                      </>
+                    )}
                   />
 
                   {/* Artículos */}

@@ -343,30 +343,32 @@ export function InspeccionPerimetral() {
     if (!sheetNuevo) { setNYaExiste(false); return }
     if (!nRanchoId || !nMes) { setNYaExiste(false); return }
     const mesISO = nMes + '-01'
-    const existeServidor = registros.some(r => r.rancho_id === nRanchoId && r.mes.startsWith(nMes))
+    const existeLocal = registros.some(r => r.rancho_id === nRanchoId && r.mes.startsWith(nMes))
     const existePendiente = lotesOffline.some(
       l => (l.metadatos as any)?.tipo === 'cabecera' &&
            (l.metadatos as any)?.rancho_id === nRanchoId &&
            (l.metadatos as any)?.mes === mesISO
     )
-    setNYaExiste(existeServidor || existePendiente)
-  }, [sheetNuevo, nRanchoId, nMes, registros, lotesOffline])
+    // Sin red: lista ya cargada + pendientes. Con red: misma consulta al servidor de siempre.
+    if (!profile?.org_id || !navigator.onLine) { setNYaExiste(existeLocal || existePendiente); return }
+    let cancelado = false
+    ;(supabase as any)
+      .from('m9_registro_mensual')
+      .select('id')
+      .eq('org_id', profile.org_id)
+      .eq('rancho_id', nRanchoId)
+      .eq('mes', mesISO)
+      .maybeSingle()
+      .then(({ data, error }: { data: unknown; error: unknown }) => {
+        if (!cancelado) setNYaExiste(!!data || existePendiente || (!!error && existeLocal))
+      })
+    return () => { cancelado = true }
+  }, [sheetNuevo, nRanchoId, nMes, profile?.org_id, registros, lotesOffline])
 
   async function handleCrearRegistro() {
     if (!nRanchoId) { setNErrRancho(true); return }
     if (!profile?.org_id || !user?.id) { toast.error('Sin organización activa'); return }
-    // Si ya existe, abrir el registro existente en lugar de crear otro
-    if (nYaExiste) {
-      const existente = registros.find(r => r.rancho_id === nRanchoId && r.mes.startsWith(nMes))
-      setSheetNuevo(false)
-      if (existente) {
-        abrirDetalle(existente)
-      } else {
-        // Solo pendiente offline — ya se muestra en la lista
-        toast.info(`Ya existe un registro pendiente para este mes y ${terminosSitio.singular.toLowerCase()}`)
-      }
-      return
-    }
+    if (nYaExiste) { toast.warning(`Ya existe un registro para este mes y ${terminosSitio.singular.toLowerCase()}`); return }
     setNGuardando(true)
     try {
       const rancho = ranchos.find(r => r.id === nRanchoId)
@@ -471,8 +473,21 @@ export function InspeccionPerimetral() {
            (l.metadatos as any)?.registro_id === registroActivo.id &&
            (l.metadatos as any)?.fecha === dFecha
     )
-    setDYaExiste(existeEnDias || existeEnPendientes)
-  }, [sheetDia, dFecha, registroActivo, dias, lotesOffline])
+    // Sin red: días ya cargados + pendientes. Con red: misma consulta al servidor de siempre.
+    if (!profile?.org_id || !navigator.onLine) { setDYaExiste(existeEnDias || existeEnPendientes); return }
+    let cancelado = false
+    supabase
+      .from('m9_dias_inspeccion')
+      .select('id')
+      .eq('registro_id', registroActivo.id)
+      .eq('org_id', profile.org_id)
+      .eq('fecha', dFecha)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!cancelado) setDYaExiste(!!data || existeEnPendientes || (!!error && existeEnDias))
+      })
+    return () => { cancelado = true }
+  }, [sheetDia, dFecha, registroActivo, profile?.org_id, dias, lotesOffline])
 
   function handleCerrarSheetDia() {
     setSheetDia(false); setSheetDiaPaso('form'); setPendienteFirmaIds([])

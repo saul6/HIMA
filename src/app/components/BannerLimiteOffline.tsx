@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { AlertTriangle } from 'lucide-react'
 
 interface Props {
@@ -6,6 +7,8 @@ interface Props {
   terminoSingular: string
   terminoGenero: 'f' | 'm'
   descripcionLimite?: string
+  // Texto exacto que se mostraba antes del modo sin conexión cuando el límite viene del servidor
+  mensajeLimite?: ReactNode
 }
 
 // Banner ámbar en el formulario cuando hay un registro en la ventana del límite
@@ -16,12 +19,13 @@ export function BannerLimiteOffline({
   terminoSingular,
   terminoGenero,
   descripcionLimite,
+  mensajeLimite,
 }: Props) {
   if (!limiteInfo && !hayConflictoOffline) return null
 
   const articulo = terminoGenero === 'f' ? 'esta' : 'este'
 
-  const mensaje = hayConflictoOffline && !limiteInfo
+  const mensaje: ReactNode = limiteInfo && mensajeLimite ? mensajeLimite : hayConflictoOffline && !limiteInfo
     ? `Ya tienes un registro pendiente de subir para ${articulo} ${terminoSingular.toLowerCase()}.`
     : descripcionLimite
       ? descripcionLimite + (limiteInfo ? ` Próxima disponible: ${limiteInfo.proxima}.` : '')

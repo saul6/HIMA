@@ -416,3 +416,62 @@ Todos comparten el mismo patrón verificado:
 **Módulos con lógica adicional auditada:**
 - M56/M57: editar y desactivar registros existentes solo funciona con `online` — guard presente (`if (!online) { toast.warning(...) }`)
 - M66: actualizar/desactivar bloqueado sin red — guard presente
+
+
+## Revisión del camino en línea (2026-10-13)
+
+Método: se extrajo el diff de los 29 commits `(offline)` sobre pantallas y hooks (`git show -U0`) y se revisó cada línea eliminada o modificada, comparándola con la versión previa a `feat(offline): PWA y caché de app` (`0c410cb`). Los archivos `src/lib/pdf/**` no fueron tocados por ningún commit offline, así que el PDF individual y el consolidado siguen igual. Las lecturas envueltas en `leerConCache` conservan `select`, filtros y orden, y con red hacen primero la consulta al servidor; los errores de BD/RLS se propagan igual que antes.
+
+Limitación: no hay sesión contra la BD de producción en esta máquina, así que la prueba funcional con red (abrir lista/detalle, crear, firmar, PDF) **no se ejecutó**; la columna "Probado con red" indica revisión estática, no una prueba en vivo.
+
+Hallazgos con cambio de comportamiento en línea (corregidos en el commit `fix(offline): restaurar camino en línea`):
+- `useLimiteProactivo` (M7): el original usaba `.lt('fecha', fecha)`; el hook compartido usaba `.lte`. Se agregó `excluirFechaRef` y M7 lo activa.
+- `BannerLimiteOffline` (M6, M7, M12): el texto con red cambió de redacción; se agregó `mensajeLimite` con el texto original.
+- M9: `nYaExiste` y `dYaExiste` dejaron de consultar al servidor y la creación duplicada abría el registro existente en vez de mostrar el toast. Con red vuelven la consulta y el toast originales; sin red se usa lista local + pendientes.
+
+| Módulo | Diff con red (sí/no) | Probado con red | Corregido |
+|---|---|---|---|
+| M6 | sí | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | Texto del aviso de límite semanal restaurado (era distinto con red) |
+| M7 | sí | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | Consulta de límite quincenal volvía a incluir la fecha de hoy (`lte` en vez de `lt`); restaurado `lt`. Texto del aviso restaurado |
+| M9 | sí | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | Validación "ya existe" mensual/diaria volvía a usar solo la lista local; restauradas las consultas al servidor y el toast original |
+| M10 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M11 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M12 | sí | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | Texto del aviso de límite semanal restaurado |
+| M13 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M19 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M20 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M22 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M23 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M27 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M28 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M29 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M30 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M31 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M32 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M33 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M34 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M35 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M37 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M36 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M43 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M45 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M49 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M50 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M51 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M52 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M56 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M57 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M58 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M60 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M61 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M63 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M64 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M65 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M66 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M67 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M69 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M71 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M74 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M75 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M76 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+| M77 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |

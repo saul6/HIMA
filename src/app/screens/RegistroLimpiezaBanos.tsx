@@ -694,6 +694,7 @@ export function RegistroLimpiezaBanos() {
                 terminoSingular={terminosSitio.singular}
                 terminoGenero={terminosSitio.genero}
                 descripcionLimite={`Ya existe una limpieza registrada esta semana para ${terminosSitio.genero === 'f' ? 'esta' : 'este'} ${terminosSitio.singular.toLowerCase()}.`}
+                mensajeLimite={limiteInfo && `Ya existe una limpieza registrada esta semana para ${terminosSitio.genero === 'f' ? 'esta' : 'este'} ${terminosSitio.singular.toLowerCase()}. Próxima disponible: ${limiteInfo.proxima}`}
               />
 
               {/* Lista de baños */}
