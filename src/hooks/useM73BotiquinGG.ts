@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -39,25 +40,35 @@ export interface M73Resultado {
 }
 
 export function useM73BotiquinGG() {
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
+  const userId = user?.id ?? null
   const [registros, setRegistros] = useState<M73RegistroResumen[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id) { setLoading(false); return }
+    if (!profile?.org_id || !userId) { setLoading(false); return }
+    const orgId = profile.org_id
     setLoading(true)
     setError(null)
     try {
-      const { data, error: err } = await tbl('m73_registro')
-        .select('*, ranchos(nombre), m73_resultados(count)')
-        .eq('org_id', profile.org_id)
-        .order('fecha', { ascending: false })
-        .order('created_at', { ascending: false })
-      if (err) throw err
+      const resultado = await leerConCache(
+        'm73_registro',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await tbl('m73_registro')
+            .select('*, ranchos(nombre), m73_resultados(count)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          if (err) throw err
+          return data ?? []
+        },
+      )
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const lista: M73RegistroResumen[] = ((data ?? []) as any[]).map((r) => ({
+      const lista: M73RegistroResumen[] = (resultado.datos as any[]).map((r) => ({
         id: r.id,
         rancho_id: r.rancho_id,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -73,11 +84,11 @@ export function useM73BotiquinGG() {
       }))
       setRegistros(lista)
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al cargar registros M73')
+      setError((e as { message?: string })?.message ?? 'Error al cargar registros M73')
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.org_id, userId])
 
   useEffect(() => { cargar() }, [cargar])
 
@@ -85,25 +96,34 @@ export function useM73BotiquinGG() {
 }
 
 export function useM73Catalogo() {
+  const { user, profile } = useAuthContext()
+  const userId = user?.id ?? null
+  const orgId = profile?.org_id ?? null
   const [items, setItems] = useState<M73ItemCatalogo[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!userId || !orgId) { setLoading(false); return }
     let cancelado = false
     setLoading(true)
-    tbl('m73_botiquin_catalogo')
-      .select('id, nombre')
-      .eq('activo', true)
-      .order('orden')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .then(({ data }: { data: any[] | null }) => {
-        if (!cancelado) {
-          setItems((data ?? []) as M73ItemCatalogo[])
-          setLoading(false)
-        }
-      })
+    leerConCache(
+      'm73_botiquin_catalogo',
+      userId,
+      orgId,
+      async () => {
+        const { data, error } = await tbl('m73_botiquin_catalogo')
+          .select('id, nombre')
+          .eq('activo', true)
+          .order('orden')
+        if (error) throw error
+        return (data ?? []) as M73ItemCatalogo[]
+      },
+    )
+      .then((r) => { if (!cancelado) setItems(r.datos) })
+      .catch(() => { if (!cancelado) setItems([]) })
+      .finally(() => { if (!cancelado) setLoading(false) })
     return () => { cancelado = true }
-  }, [])
+  }, [userId, orgId])
 
   return { items, loading }
 }

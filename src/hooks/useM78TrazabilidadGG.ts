@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -35,25 +36,35 @@ export interface M78TrazabilidadRegistro {
 }
 
 export function useM78TrazabilidadGG() {
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
+  const userId = user?.id ?? null
   const [registros, setRegistros] = useState<M78TrazabilidadRegistro[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id) { setLoading(false); return }
+    if (!profile?.org_id || !userId) { setLoading(false); return }
+    const orgId = profile.org_id
     setLoading(true)
     setError(null)
     try {
-      const { data, error: err } = await tbl('m78_nota_trazabilidad')
-        .select('*, ranchos(nombre)')
-        .eq('org_id', profile.org_id)
-        .order('fecha', { ascending: false })
-        .order('created_at', { ascending: false })
-      if (err) throw err
+      const resultado = await leerConCache(
+        'm78_nota_trazabilidad',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await tbl('m78_nota_trazabilidad')
+            .select('*, ranchos(nombre)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          if (err) throw err
+          return data ?? []
+        },
+      )
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const lista: M78TrazabilidadRegistro[] = ((data ?? []) as any[]).map((r) => ({
+      const lista: M78TrazabilidadRegistro[] = (resultado.datos as any[]).map((r) => ({
         id: r.id,
         rancho_id: r.rancho_id,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,11 +91,11 @@ export function useM78TrazabilidadGG() {
       }))
       setRegistros(lista)
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al cargar registros M78')
+      setError((e as { message?: string })?.message ?? 'Error al cargar registros M78')
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.org_id, userId])
 
   useEffect(() => { cargar() }, [cargar])
 

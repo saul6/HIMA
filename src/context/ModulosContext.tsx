@@ -184,6 +184,83 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
           },
         },
       ]),
+      // M62, M68, M72: lista de registros y catálogo (misma consulta que su hook)
+      ...([
+        ['m62_registro', 'm62_items_catalogo', 'id, numero, descripcion', false, [['numero']]],
+        ['m68_roedores_registro', 'm68_roedores_criterios', 'id, numero, descripcion', true, [['numero']]],
+        ['m72_registro', 'm72_organismos', 'id, tipo, nombre', true, [['tipo'], ['nombre']]],
+      ] as const).flatMap(([reg, cat, cols, soloActivos, orden]) => [
+        {
+          clave: reg,
+          fetcher: async () => {
+            const { data } = await (supabase as any)
+              .from(reg)
+              .select('*, ranchos(nombre)')
+              .eq('org_id', orgId)
+              .order('fecha', { ascending: false })
+              .order('created_at', { ascending: false })
+            return data ?? []
+          },
+        },
+        {
+          clave: cat,
+          fetcher: async () => {
+            let q = (supabase as any).from(cat).select(cols)
+            if (soloActivos) q = q.eq('activo', true)
+            for (const [col] of orden) q = q.order(col, { ascending: true })
+            const { data } = await q
+            return data ?? []
+          },
+        },
+      ]),
+      // M70, M73, M78: lista de registros (misma consulta que su hook) y catálogo de M73
+      {
+        clave: 'm70_verificacion_roedores',
+        fetcher: async () => {
+          const { data } = await (supabase as any)
+            .from('m70_verificacion_roedores')
+            .select('*, ranchos(nombre)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          return data ?? []
+        },
+      },
+      {
+        clave: 'm73_registro',
+        fetcher: async () => {
+          const { data } = await (supabase as any)
+            .from('m73_registro')
+            .select('*, ranchos(nombre), m73_resultados(count)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          return data ?? []
+        },
+      },
+      {
+        clave: 'm73_botiquin_catalogo',
+        fetcher: async () => {
+          const { data } = await (supabase as any)
+            .from('m73_botiquin_catalogo')
+            .select('id, nombre')
+            .eq('activo', true)
+            .order('orden')
+          return data ?? []
+        },
+      },
+      {
+        clave: 'm78_nota_trazabilidad',
+        fetcher: async () => {
+          const { data } = await (supabase as any)
+            .from('m78_nota_trazabilidad')
+            .select('*, ranchos(nombre)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          return data ?? []
+        },
+      },
     ])
 
     // Precarga de días M9 para todos los registros del mes actual

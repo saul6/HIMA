@@ -526,3 +526,43 @@ Clases: **C** = necesaria para capturar/ver lo capturado · **R** = solo con red
 | INSERT `mXX_registro` + `mXX_resultados` | pantallas | — | ✅ offline: `opInsert` de cabecera y resultados en el **mismo lote** (ids locales; sin `org_id`/`creado_por`) |
 
 Camino en línea: mismos `insert`, validaciones, toasts, firma y PDF. Lo único que cambió es que el armado de los resultados salió a `armarResultados(registroId)` (mismo contenido), reutilizado por la rama offline.
+
+### M62 FuentesAgua, M68 MonitoreoRoedores, M72 MonitoreoPlaguasEnfermedades
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m62_registro`, `m68_roedores_registro`, `m72_registro` + `ranchos(nombre)` (lista) | `useM62…`, `useM68…`, `useM72…` | C | ✅ `leerConCache` + precarga |
+| SELECT `m62_items_catalogo`, `m68_roedores_criterios`, `m72_organismos` (catálogos de la matriz) | `useM62Items`, `useM68Criterios`, `useM72Organismos` | C | ✅ `leerConCache` + precarga (misma consulta, con sus filtros `activo`/orden) |
+| `ranchos`, `organizaciones.nombre` | `useRanchos`, `useOrganizacion` (M62/M68) | C | ✅ ya cacheados |
+| Firmas, `BannerTareaOrigen`, PDFs | compartidos / pantallas | R | ✅ igual que Bloque 1 (firmar y PDF avisan que requieren conexión) |
+| INSERT cabecera + resultados | pantallas | — | ✅ offline: `opInsert` de cabecera y resultados en el mismo lote. M68: matriz criterio × trampa; M72: conteos > 0 por sector/planta/organismo |
+
+### M73 BotiquinGG
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m73_registro` + `ranchos(nombre)` + `m73_resultados(count)` (lista) | `useM73BotiquinGG` | C | ✅ `leerConCache` + precarga |
+| SELECT `m73_botiquin_catalogo` | `useM73Catalogo` | C | ✅ `leerConCache` + precarga |
+| `cargarM73Resultados` | `useM73BotiquinGG` | R | sin usos en la app |
+| DELETE `m73_resultados` / `m73_registro` | `BotiquinGG` (`handleEliminar`) | R | ✅ sin red: "Necesitas conexión para eliminar" (la RPC no tiene `delete`) |
+| INSERT cabecera + resultados | `BotiquinGG` | — | ✅ offline: captura nueva en un lote. La pantalla no tiene edición de registros; solo alta y eliminación |
+
+### M78 TrazabilidadGG
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m78_nota_trazabilidad` + `ranchos(nombre)` (lista) | `useM78TrazabilidadGG` | C | ✅ `leerConCache` + precarga |
+| `ranchos`, `organizaciones.nombre`, firmas, PDFs | compartidos | C/R | ✅ igual que arriba |
+| INSERT `m78_nota_trazabilidad` | `TrazabilidadGG` | — | ✅ offline: `opInsert`, el folio es el que captura el usuario (no lo genera el servidor) |
+
+### M70 VerificacionRoedores
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m70_verificacion_roedores` + `ranchos(nombre)` (lista; la pantalla agrupa por fecha + sitio) | `useM70VerificacionRoedores` | C | ✅ `leerConCache` + precarga |
+| Firmas, `BannerTareaOrigen`, PDFs | compartidos / pantalla | R | ✅ igual que arriba |
+| INSERT de N filas (una por trampa) | `VerificacionRoedores` | — | ✅ offline: N `opInsert` en un solo lote. La pantalla no calcula ciclos/rondas: la ronda es fecha + sitio, así que no hay lógica que adelantar |
+
+### Para Saúl
+- Confirmar que `sync_aplicar_lote` permite `m53…m55_registro/resultados`, `m59_*`, `m62_*`, `m68_roedores_*`, `m70_verificacion_roedores`, `m72_*`, `m73_*` y `m78_nota_trazabilidad` (no se verificó desde el front).
+- Las precargas existentes devuelven `[]` si la consulta falla (guardan `data ?? []` sin revisar el error); una precarga con error deja una lista vacía en caché hasta que se refresque con red.

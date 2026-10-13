@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, X, Loader2, Files, FileDown } from 'lucide-react'
+import { Plus, X, Loader2, Files, FileDown, WifiOff } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -14,6 +14,9 @@ import {
   useM72Organismos,
 } from '@/hooks/useM72MonitoreoPlaguasEnfermedades'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
@@ -81,6 +84,9 @@ export function MonitoreoPlaguasEnfermedades() {
   const mostrarSkeleton = useMostrarCarga(loading, registros.length > 0)
   const { organismos } = useM72Organismos()
 
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M72')
+
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M72', todosIds)
@@ -96,6 +102,7 @@ export function MonitoreoPlaguasEnfermedades() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setPdfLoading(id)
     try {
       await generarMonitoreoPlaguasPDF(id, orgId)
@@ -108,6 +115,7 @@ export function MonitoreoPlaguasEnfermedades() {
 
   async function exportarConsolidado() {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setExportandoConsolidado(true)
     try {
       const ranchoNombre = ranchos.find(r => r.id === consolidadoForm.rancho_id)?.nombre ?? 'Todos'
@@ -162,6 +170,28 @@ export function MonitoreoPlaguasEnfermedades() {
     ))
   }
 
+  function armarResultados(registroId: string): any[] {
+    const batch: any[] = []
+    for (const fila of filas) {
+      const numPlanta = parseInt(fila.num_planta) || 0
+      if (!fila.sector.trim() || numPlanta <= 0) continue
+      for (const [organismoId, conteoStr] of Object.entries(fila.conteos)) {
+        const conteo = parseInt(conteoStr) || 0
+        if (conteo > 0) {
+          batch.push({
+            org_id: orgId,
+            registro_id: registroId,
+            sector: fila.sector.trim(),
+            num_planta: numPlanta,
+            organismo_id: organismoId,
+            conteo,
+          })
+        }
+      }
+    }
+    return batch
+  }
+
   async function guardar() {
     if (!orgId) return
     if (!form.rancho_id) {
@@ -171,6 +201,29 @@ export function MonitoreoPlaguasEnfermedades() {
 
     setGuardando(true)
     try {
+      if (!online) {
+        const registroId = crypto.randomUUID()
+        const rancho = ranchos.find(r => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Plagas y enfermedades · ${rancho?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [
+            opInsert('m72_registro', {
+              id: registroId,
+              rancho_id: form.rancho_id,
+              fecha: form.fecha,
+              etapa_fenologica: form.etapa.trim() || null,
+              realizo: form.realizo.trim() || null,
+              beneficos: form.beneficos.trim() || null,
+              observaciones: form.observaciones.trim() || null,
+            }),
+            ...armarResultados(registroId).map(({ org_id: _org, ...r }) => opInsert('m72_resultados', r)),
+          ],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       // 1. INSERT m72_registro
       const { data: reg, error: regErr } = await tbl('m72_registro')
         .insert({
@@ -190,24 +243,7 @@ export function MonitoreoPlaguasEnfermedades() {
       const registroId = (reg as any).id as string
 
       // 2. INSERT m72_resultados (solo conteos > 0)
-      const batch: object[] = []
-      for (const fila of filas) {
-        const numPlanta = parseInt(fila.num_planta) || 0
-        if (!fila.sector.trim() || numPlanta <= 0) continue
-        for (const [organismoId, conteoStr] of Object.entries(fila.conteos)) {
-          const conteo = parseInt(conteoStr) || 0
-          if (conteo > 0) {
-            batch.push({
-              org_id: orgId,
-              registro_id: registroId,
-              sector: fila.sector.trim(),
-              num_planta: numPlanta,
-              organismo_id: organismoId,
-              conteo,
-            })
-          }
-        }
-      }
+      const batch = armarResultados(registroId)
       if (batch.length > 0) {
         const { error: resErr } = await tbl('m72_resultados').insert(batch)
         if (resErr) throw resErr
@@ -559,7 +595,8 @@ export function MonitoreoPlaguasEnfermedades() {
             style={{ backgroundColor: 'var(--primary)' }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar
+            {!guardando && !online && <WifiOff className="w-4 h-4" />}
+            {online ? 'Guardar' : 'Guardar sin conexión'}
           </button>
         </div>
         </>)}

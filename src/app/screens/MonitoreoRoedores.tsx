@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, FileDown, X, Loader2, Check } from 'lucide-react'
+import { Plus, FileDown, X, Loader2, Check, WifiOff } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -12,6 +12,9 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { useM68MonitoreoRoedores, useM68Criterios, type M68Criterio } from '@/hooks/useM68MonitoreoRoedores'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 import { generarMonitoreoRoedoresPDF } from '@/lib/pdf/m68/generarMonitoreoRoedoresPDF'
 import { generarMonitoreoRoedoresConsolidadoPDF } from '@/lib/pdf/m68/generarMonitoreoRoedoresPDF'
 import { Fab } from '@/app/components/Fab'
@@ -154,6 +157,9 @@ export function MonitoreoRoedores() {
   const { criterios } = useM68Criterios()
   const orgNombre = useOrganizacion(orgId)
 
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M68')
+
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M68', todosIds)
@@ -203,6 +209,18 @@ export function MonitoreoRoedores() {
     setForm(f => ({ ...f, num_trampas: n }))
   }
 
+  function armarResultados(registroId: string) {
+    return criterios.flatMap(c =>
+      Array.from({ length: form.num_trampas }, (_, i) => ({
+        org_id: orgId,
+        registro_id: registroId,
+        criterio_id: c.id,
+        trampa_numero: i + 1,
+        cumple: matriz[`${c.id}_${i + 1}`] ?? true,
+      }))
+    )
+  }
+
   async function guardar() {
     if (!orgId) return
     if (!form.rancho_id) {
@@ -213,6 +231,29 @@ export function MonitoreoRoedores() {
 
     setGuardando(true)
     try {
+      if (!online) {
+        const registroId = crypto.randomUUID()
+        const rancho = ranchos.find(r => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Monitoreo de roedores · ${rancho?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [
+            opInsert('m68_roedores_registro', {
+              id: registroId,
+              rancho_id: form.rancho_id,
+              fecha: form.fecha,
+              ubicacion: form.ubicacion.trim(),
+              num_trampas: form.num_trampas,
+              responsable: form.responsable.trim() || null,
+              observaciones: form.observaciones.trim() || null,
+            }),
+            ...armarResultados(registroId).map(({ org_id: _org, ...r }) => opInsert('m68_roedores_resultados', r)),
+          ],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       const { data: regData, error: regErr } = await (supabase as any)
         .from('m68_roedores_registro')
         .insert({
@@ -230,15 +271,7 @@ export function MonitoreoRoedores() {
       if (regErr) throw regErr
       const registroId = (regData as any).id as string
 
-      const batch = criterios.flatMap(c =>
-        Array.from({ length: form.num_trampas }, (_, i) => ({
-          org_id: orgId,
-          registro_id: registroId,
-          criterio_id: c.id,
-          trampa_numero: i + 1,
-          cumple: matriz[`${c.id}_${i + 1}`] ?? true,
-        }))
-      )
+      const batch = armarResultados(registroId)
       const { error: resErr } = await (supabase as any).from('m68_roedores_resultados').insert(batch)
       if (resErr) throw resErr
 
@@ -264,6 +297,7 @@ export function MonitoreoRoedores() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (obligatoria && !firmas[id]?.realizo) {
       toast.info('Firma el registro antes de generar el PDF')
       return
@@ -280,6 +314,7 @@ export function MonitoreoRoedores() {
 
   async function exportarConsolidado() {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setExportando(true)
     try {
       const rancho = ranchos.find(r => r.id === consolidadoForm.rancho_id)
@@ -484,7 +519,8 @@ export function MonitoreoRoedores() {
             style={{ backgroundColor: 'var(--primary)' }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar
+            {!guardando && !online && <WifiOff className="w-4 h-4" />}
+            {online ? 'Guardar' : 'Guardar sin conexión'}
           </button>
         </div>
         </>)}

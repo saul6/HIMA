@@ -6,7 +6,7 @@
 
 import { useState } from 'react'
 import {
-  Plus, X, Loader2, Truck, TriangleAlert, FileDown,
+  Plus, X, Loader2, Truck, TriangleAlert, FileDown, WifiOff,
 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
@@ -17,6 +17,9 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM78TrazabilidadGG } from '@/hooks/useM78TrazabilidadGG'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
@@ -100,6 +103,8 @@ export function TrazabilidadGG() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM78TrazabilidadGG()
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M78')
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M78', todosIds)
 
@@ -126,6 +131,7 @@ export function TrazabilidadGG() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (obligatoria && !firmas[id]?.realizo) {
       toast.info('Firma este registro antes de descargar el PDF')
       return
@@ -142,6 +148,7 @@ export function TrazabilidadGG() {
 
   async function exportarConsolidado() {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setExportando(true)
     try {
       const rancho = ranchos.find(r => r.id === consolidadoForm.rancho_id)
@@ -178,6 +185,38 @@ export function TrazabilidadGG() {
     if (!profile?.org_id) { toast.error('Sin organización activa'); return }
     setGuardando(true)
     try {
+      if (!online) {
+        const rancho = ranchos.find((r) => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Nota de trazabilidad · ${rancho?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [
+            opInsert('m78_nota_trazabilidad', {
+              rancho_id: form.rancho_id,
+              folio: form.folio.trim() || null,
+              fecha: form.fecha,
+              productor: form.productor.trim() || null,
+              hora_salida: form.hora_salida || null,
+              num_camion: form.num_camion.trim() || null,
+              zona: form.zona.trim() || null,
+              sector: form.sector.trim() || null,
+              cultivo: form.cultivo.trim() || null,
+              presentacion: form.presentacion,
+              otro_presentacion: form.presentacion === 'Otro' ? (form.otro_presentacion.trim() || null) : null,
+              peso_bruto: form.peso_bruto ? parseFloat(form.peso_bruto) : null,
+              peso_neto: form.peso_neto ? parseFloat(form.peso_neto) : null,
+              total_producto: form.total_producto.trim() || null,
+              embarco: form.embarco.trim() || null,
+              chofer: form.chofer.trim() || null,
+              recibio: form.recibio.trim() || null,
+              observaciones: form.observaciones.trim() || null,
+            }),
+          ],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       const { data, error: e } = await tbl('m78_nota_trazabilidad').insert({
         org_id: profile.org_id,
         rancho_id: form.rancho_id,
@@ -543,7 +582,7 @@ export function TrazabilidadGG() {
             className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
             style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
           >
-            {guardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</> : 'Guardar nota'}
+            {guardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</> : online ? 'Guardar nota' : <><WifiOff className="w-4 h-4" /> Guardar sin conexión</>}
           </button>
         </div>
         </>)}

@@ -6,7 +6,7 @@
 
 import { useState, useCallback } from 'react'
 import {
-  Plus, X, Loader2, ShieldPlus, TriangleAlert, Trash2, FileDown,
+  Plus, X, Loader2, ShieldPlus, TriangleAlert, Trash2, FileDown, WifiOff,
 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
@@ -21,6 +21,9 @@ import {
   type M73RegistroResumen,
 } from '@/hooks/useM73BotiquinGG'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
@@ -71,6 +74,8 @@ export function BotiquinGG() {
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M73', todosIds)
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M73')
 
   const termino = terminosSitio.singular
 
@@ -81,6 +86,7 @@ export function BotiquinGG() {
 
   async function descargarPDF(reg: M73RegistroResumen) {
     if (!profile?.org_id) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setPdfLoading(reg.id)
     try {
       await generarInventarioBotiquinGGPDF(reg.id, profile.org_id)
@@ -93,6 +99,7 @@ export function BotiquinGG() {
 
   async function exportarConsolidado() {
     if (!profile?.org_id) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (!consolidadoForm.desde || !consolidadoForm.hasta) {
       toast.warning('Selecciona el rango de fechas')
       return
@@ -169,12 +176,54 @@ export function BotiquinGG() {
     setFilasExtra((prev) => prev.filter((_, i) => i !== idx))
   }
 
+  function armarResultados(registroId: string) {
+    const todasFilas = [
+      ...filasCatalogo.map((f) => ({ ...f, tipo: 'catalogo' })),
+      ...filasExtra.map((f) => ({ ...f, tipo: 'extra' })),
+    ]
+
+    return todasFilas
+      .filter((f) => f.sale || f.entra || f.total || f.usuario)
+      .map((f) => ({
+        org_id: profile?.org_id,
+        registro_id: registroId,
+        material_id: f.material_id || null,
+        material_otro: f.tipo === 'extra' ? (f.material_otro.trim() || null) : null,
+        sale: f.sale ? parseFloat(f.sale) : null,
+        entra: f.entra ? parseFloat(f.entra) : null,
+        total: f.total ? parseFloat(f.total) : null,
+        usuario: f.usuario.trim() || null,
+      }))
+  }
+
   async function handleGuardar() {
     if (!nRanchoId) { setNErrRancho(true); return }
     if (!profile?.org_id) { toast.error('Sin organización activa'); return }
 
     setNGuardando(true)
     try {
+      if (!online) {
+        const registroId = crypto.randomUUID()
+        const rancho = ranchos.find((r) => r.id === nRanchoId)
+        const ok = await guardarOffline({
+          descripcion: `Botiquín GG · ${rancho?.nombre ?? ''} · ${nFecha}`,
+          metadatos: { rancho_id: nRanchoId, rancho_nombre: rancho?.nombre, fecha: nFecha },
+          operaciones: [
+            opInsert('m73_registro', {
+              id: registroId,
+              rancho_id: nRanchoId,
+              fecha: nFecha,
+              botiquin_num: nBotiquinNum.trim() || null,
+              realizo: nRealizo.trim() || null,
+              observaciones: nObservaciones.trim() || null,
+            }),
+            ...armarResultados(registroId).map(({ org_id: _org, ...r }) => opInsert('m73_resultados', r)),
+          ],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       // 1. INSERT encabezado
       const { data, error: e1 } = await tbl('m73_registro')
         .insert({
@@ -193,23 +242,7 @@ export function BotiquinGG() {
       const registroId = (data as { id: string }).id
 
       // 2. INSERT resultados (solo filas con al menos un valor)
-      const todasFilas = [
-        ...filasCatalogo.map((f) => ({ ...f, tipo: 'catalogo' })),
-        ...filasExtra.map((f) => ({ ...f, tipo: 'extra' })),
-      ]
-
-      const batch = todasFilas
-        .filter((f) => f.sale || f.entra || f.total || f.usuario)
-        .map((f) => ({
-          org_id: profile.org_id,
-          registro_id: registroId,
-          material_id: f.material_id || null,
-          material_otro: f.tipo === 'extra' ? (f.material_otro.trim() || null) : null,
-          sale: f.sale ? parseFloat(f.sale) : null,
-          entra: f.entra ? parseFloat(f.entra) : null,
-          total: f.total ? parseFloat(f.total) : null,
-          usuario: f.usuario.trim() || null,
-        }))
+      const batch = armarResultados(registroId)
 
       if (batch.length > 0) {
         const { error: e2 } = await tbl('m73_resultados').insert(batch)
@@ -237,6 +270,7 @@ export function BotiquinGG() {
     const esAdmin = profile.rol === 'admin_org' || profile.rol === 'super_admin'
     const esMio = reg.creado_por === user?.id
     if (!esAdmin && !esMio) { toast.error('No tienes permiso para eliminar este registro'); return }
+    if (!online) { toast.warning('Necesitas conexión para eliminar'); return }
     if (!confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')) return
 
     try {
@@ -619,8 +653,10 @@ export function BotiquinGG() {
           >
             {nGuardando ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
-            ) : (
+            ) : online ? (
               'Guardar registro'
+            ) : (
+              <><WifiOff className="w-4 h-4" /> Guardar sin conexión</>
             )}
           </button>
         </div>

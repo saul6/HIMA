@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useAuthContext } from '@/context/AuthContext'
+import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M62Registro {
   id: string
@@ -25,25 +27,41 @@ export function useM62FuentesAgua(orgId: string | null) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const { user } = useAuthContext()
+  const userId = user?.id ?? null
+
   const fetch = useCallback(async () => {
-    if (!orgId) return
+    if (!orgId || !userId) return
     setLoading(true)
     setError(null)
-    const { data, error: err } = await (supabase as any)
-      .from('m62_registro')
-      .select('*, ranchos(nombre)')
-      .eq('org_id', orgId)
-      .order('fecha', { ascending: false })
-      .order('created_at', { ascending: false })
-    if (err) { setError(err.message); setLoading(false); return }
-    setRegistros(
-      (data ?? []).map((r: any) => ({
-        ...r,
-        rancho_nombre: r.ranchos?.nombre ?? '—',
-      }))
-    )
-    setLoading(false)
-  }, [orgId])
+    try {
+      const resultado = await leerConCache(
+        'm62_registro',
+        userId,
+        orgId,
+        async () => {
+          const { data, error: err } = await (supabase as any)
+            .from('m62_registro')
+            .select('*, ranchos(nombre)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          if (err) throw err
+          return data ?? []
+        },
+      )
+      setRegistros(
+        (resultado.datos as any[]).map((r: any) => ({
+          ...r,
+          rancho_nombre: r.ranchos?.nombre ?? '—',
+        }))
+      )
+    } catch (e: unknown) {
+      setError((e as { message?: string })?.message ?? 'Error al cargar registros')
+    } finally {
+      setLoading(false)
+    }
+  }, [orgId, userId])
 
   useEffect(() => { fetch() }, [fetch])
 
@@ -51,20 +69,32 @@ export function useM62FuentesAgua(orgId: string | null) {
 }
 
 export function useM62Items() {
+  const { user, profile } = useAuthContext()
+  const userId = user?.id ?? null
+  const orgId = profile?.org_id ?? null
   const [items, setItems] = useState<M62Item[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    if (!userId || !orgId) return
     setLoading(true)
-    ;(supabase as any)
-      .from('m62_items_catalogo')
-      .select('id, numero, descripcion')
-      .order('numero', { ascending: true })
-      .then(({ data }: { data: M62Item[] | null }) => {
-        setItems(data ?? [])
-        setLoading(false)
-      })
-  }, [])
+    leerConCache(
+      'm62_items_catalogo',
+      userId,
+      orgId,
+      async () => {
+        const { data, error } = await (supabase as any)
+          .from('m62_items_catalogo')
+          .select('id, numero, descripcion')
+          .order('numero', { ascending: true })
+        if (error) throw error
+        return (data ?? []) as M62Item[]
+      },
+    )
+      .then((r) => setItems(r.datos))
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false))
+  }, [userId, orgId])
 
   return { items, loading }
 }

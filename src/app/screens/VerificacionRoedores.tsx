@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, X, Loader2, Files, FileDown } from 'lucide-react'
+import { Plus, X, Loader2, Files, FileDown, WifiOff } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { useNavigate } from 'react-router'
@@ -11,6 +11,9 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useM70VerificacionRoedores } from '@/hooks/useM70VerificacionRoedores'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
@@ -102,6 +105,8 @@ export function VerificacionRoedores() {
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M70', todosIds)
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M70')
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
@@ -123,6 +128,7 @@ export function VerificacionRoedores() {
 
   async function descargarPDF(ranchoId: string, fecha: string, key: string) {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setPdfLoading(key)
     try {
       await generarVerificacionRoedoresPDF(orgId, ranchoId, fecha)
@@ -135,6 +141,7 @@ export function VerificacionRoedores() {
 
   async function exportarConsolidado() {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setExportandoConsolidado(true)
     try {
       const ranchoNombre = ranchos.find(r => r.id === consolidadoForm.rancho_id)?.nombre ?? 'Todos'
@@ -187,6 +194,27 @@ export function VerificacionRoedores() {
 
     setGuardando(true)
     try {
+      if (!online) {
+        const rancho = ranchos.find(r => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Verificación de roedores · ${rancho?.nombre ?? ''} · ${form.fecha} · ${filasValidas.length} trampa${filasValidas.length > 1 ? 's' : ''}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: filasValidas.map(f => opInsert('m70_verificacion_roedores', {
+            rancho_id: form.rancho_id,
+            fecha: form.fecha,
+            num_trampa: f.num_trampa.trim(),
+            roedor: f.roedor,
+            insectos: f.insectos,
+            otros: f.otros,
+            cambio: f.cambio,
+            verifico: f.verifico.trim() || null,
+            observaciones: f.observaciones.trim() || null,
+          })),
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       const batch = filasValidas.map(f => ({
         org_id: orgId,
         rancho_id: form.rancho_id,
@@ -496,7 +524,8 @@ export function VerificacionRoedores() {
             style={{ backgroundColor: 'var(--primary)' }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar
+            {!guardando && !online && <WifiOff className="w-4 h-4" />}
+            {online ? 'Guardar' : 'Guardar sin conexión'}
           </button>
         </div>
         </>)}

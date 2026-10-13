@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, FileDown, X, Loader2 } from 'lucide-react'
+import { Plus, FileDown, X, Loader2, WifiOff } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
@@ -10,6 +10,9 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { useM62FuentesAgua, useM62Items } from '@/hooks/useM62FuentesAgua'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 import { generarFuentesAguaPDF } from '@/lib/pdf/m62/generarFuentesAguaPDF'
 import { generarFuentesAguaConsolidadoPDF } from '@/lib/pdf/m62/generarFuentesAguaPDF'
 import { Fab } from '@/app/components/Fab'
@@ -83,6 +86,9 @@ export function FuentesAgua() {
   const { items } = useM62Items()
   const orgNombre = useOrganizacion(orgId)
 
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M62')
+
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M62', todosIds)
@@ -116,6 +122,16 @@ export function FuentesAgua() {
     setPendienteFirmaId(null)
   }
 
+  function armarResultados(registroId: string) {
+    return items.map(item => ({
+      org_id: orgId,
+      registro_id: registroId,
+      item_id: item.id,
+      respuesta: valores[item.id] ?? 'si',
+      comentario: comentarios[item.id]?.trim() || null,
+    }))
+  }
+
   async function guardar() {
     if (!orgId) return
     if (!form.rancho_id) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
@@ -123,6 +139,28 @@ export function FuentesAgua() {
 
     setGuardando(true)
     try {
+      if (!online) {
+        const registroId = crypto.randomUUID()
+        const rancho = ranchos.find(r => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Fuentes de agua · ${rancho?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [
+            opInsert('m62_registro', {
+              id: registroId,
+              rancho_id: form.rancho_id,
+              fecha: form.fecha,
+              tipo_fuente: form.tipo_fuente.trim(),
+              realizo: form.realizo.trim() || null,
+              observaciones: form.observaciones.trim() || null,
+            }),
+            ...armarResultados(registroId).map(({ org_id: _org, ...r }) => opInsert('m62_resultados', r)),
+          ],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       const { data: regData, error: regErr } = await (supabase as any)
         .from('m62_registro')
         .insert({
@@ -139,13 +177,7 @@ export function FuentesAgua() {
       if (regErr) throw regErr
       const registroId = (regData as any).id as string
 
-      const batch = items.map(item => ({
-        org_id: orgId,
-        registro_id: registroId,
-        item_id: item.id,
-        respuesta: valores[item.id] ?? 'si',
-        comentario: comentarios[item.id]?.trim() || null,
-      }))
+      const batch = armarResultados(registroId)
       const { error: resErr } = await (supabase as any).from('m62_resultados').insert(batch)
       if (resErr) throw resErr
 
@@ -170,6 +202,7 @@ export function FuentesAgua() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (obligatoria && !firmas[id]?.realizo) {
       toast.info('Firma el registro antes de generar el PDF')
       return
@@ -186,6 +219,7 @@ export function FuentesAgua() {
 
   async function exportarConsolidado() {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setExportando(true)
     try {
       const rancho = ranchos.find(r => r.id === consolidadoForm.rancho_id)
@@ -407,7 +441,8 @@ export function FuentesAgua() {
             style={{ backgroundColor: 'var(--primary)' }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar
+            {!guardando && !online && <WifiOff className="w-4 h-4" />}
+            {online ? 'Guardar' : 'Guardar sin conexión'}
           </button>
         </div>
         </>)}
