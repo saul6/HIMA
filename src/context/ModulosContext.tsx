@@ -404,6 +404,8 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
     await precargarMaterialesM7(userId, orgId!)
     // Precarga de catálogos por sitio de M46 y M47
     await precargarItemsPorRancho(userId, orgId!)
+    // Precarga de inventario de químicos M24 (saldos, catálogo por sitio, movimientos por químico)
+    await precargarM24(userId, orgId!)
   }, [userId, orgId])
 
   async function precargarDiasM9(userId: string, orgId: string) {
@@ -475,6 +477,29 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
         ),
       ),
     )
+  }
+
+  async function precargarM24(userId: string, orgId: string) {
+    const [saldosR, quimicosR, movsR] = await Promise.all([
+      (supabase as any).from('v_m24_saldo_quimico').select('*').eq('org_id', orgId).order('nombre'),
+      (supabase as any).from('m24_quimicos').select('*').eq('org_id', orgId).order('orden').order('nombre'),
+      (supabase as any).from('m24_movimientos').select('*').eq('org_id', orgId)
+        .order('fecha', { ascending: true }).order('created_at', { ascending: true }),
+    ])
+    if (saldosR.error || quimicosR.error || movsR.error) return
+    const quimicos: any[] = quimicosR.data ?? []
+    const movs: any[] = movsR.data ?? []
+    const porRancho = new Map<string, any[]>()
+    for (const q of quimicos) porRancho.set(q.rancho_id, [...(porRancho.get(q.rancho_id) ?? []), q])
+    const porQuimico = new Map<string, any[]>()
+    for (const m of movs) porQuimico.set(m.quimico_id, [...(porQuimico.get(m.quimico_id) ?? []), m])
+    await Promise.allSettled([
+      leerConCache('m24_saldos', userId, orgId, async () => saldosR.data ?? []),
+      ...Array.from(porRancho.entries()).map(([ranchoId, lista]) =>
+        leerConCache(`m24_quimicos:${ranchoId}`, userId, orgId, async () => lista)),
+      ...quimicos.map((q) =>
+        leerConCache(`m24_movs:${q.id}`, userId, orgId, async () => porQuimico.get(q.id) ?? [])),
+    ])
   }
 
   async function precargarItemsPorRancho(userId: string, orgId: string) {

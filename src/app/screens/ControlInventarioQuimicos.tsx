@@ -13,6 +13,9 @@ import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert, opCabecera } from '@/lib/offline/construirOperaciones'
 import {
   useM24Saldos,
   useM24Movimientos,
@@ -88,7 +91,9 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
   const { saldos: _, refetch: refetchSaldos } = useM24Saldos(orgId)
 
   const { obligatoria, tengoFirma } = useFirmaContext()
-  const todosIds = movimientos.map(m => m.id)
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M24')
+  const todosIds = movimientos.filter(m => !m.sin_subir).map(m => m.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M24', todosIds)
 
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -129,6 +134,25 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
 
     setGuardando(true)
     try {
+      if (!online) {
+        const ok = await guardarOffline({
+          descripcion: `Inventario de químicos · ${quimico.nombre} · ${movForm.tipo === 'entrada' ? 'Entrada' : 'Salida'} ${movForm.cantidad} · ${movForm.fecha}`,
+          metadatos: { rancho_id: quimico.rancho_id, quimico_id: quimico.quimico_id, fecha: movForm.fecha },
+          operaciones: [
+            opInsert('m24_movimientos', {
+              rancho_id: quimico.rancho_id,
+              quimico_id: quimico.quimico_id,
+              fecha: movForm.fecha,
+              persona_solicita: movForm.persona_solicita.trim(),
+              area: movForm.area.trim(),
+              tipo: movForm.tipo,
+              cantidad: Number(movForm.cantidad),
+            }),
+          ],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
       const { data, error } = await (supabase as any)
         .from('m24_movimientos')
         .insert({
@@ -162,6 +186,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
   }
 
   async function exportarPDF() {
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setPdfLoading(true)
     try {
       await generarInventarioQuimicosPDF(quimico.quimico_id, orgId)
@@ -225,6 +250,11 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
               Stock mínimo: {quimico.stock_minimo} {quimico.unidad}
             </p>
           )}
+          {(quimico.sin_subir || movimientos.some(m => m.sin_subir)) && (
+            <p className="text-xs mt-1.5" style={{ color: 'var(--muted-foreground)' }}>
+              Incluye movimientos sin subir
+            </p>
+          )}
           {(stockBajo || stockNegativo) && (
             <div className="flex items-center gap-1.5 mt-2"
               style={{ color: stockNegativo ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)' }}>
@@ -275,7 +305,12 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                   <div className="min-w-0 pr-2">
                     <p className="text-xs font-medium truncate">{m.persona_solicita}</p>
                     <p className="text-xs truncate" style={{ color: 'var(--muted-foreground)' }}>{m.area}</p>
-                    {obligatoria && !firmas[m.id]?.realizo && (
+                    {m.sin_subir && (
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-agro-warning-fill text-agro-warning-text mt-0.5 inline-block">
+                        Sin subir
+                      </span>
+                    )}
+                    {!m.sin_subir && obligatoria && !firmas[m.id]?.realizo && (
                       <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-0.5 inline-block">
                         Pendiente de firma
                       </span>
@@ -294,7 +329,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                     {m.saldo}
                   </span>
                 </div>
-                <div className="px-3 pb-2">
+                {!m.sin_subir && <div className="px-3 pb-2">
                   <FirmasRegistro
                     modulo="M24"
                     registroId={m.id}
@@ -303,7 +338,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                     loadingFirmas={loadingFirmas}
                     onFirmado={async () => { await refetchMovs(); await refetchFirmas() }}
                   />
-                </div>
+                </div>}
               </div>
             ))}
           </div>
@@ -434,7 +469,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                 disabled={guardando}
                 className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-primary hover:bg-agro-blue transition-colors disabled:opacity-50"
               >
-                {guardando ? 'Guardando...' : 'Guardar movimiento'}
+                {guardando ? 'Guardando...' : online ? 'Guardar movimiento' : 'Guardar sin conexión'}
               </button>
             </div>
             )}
@@ -454,6 +489,8 @@ export function ControlInventarioQuimicos() {
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M24')
 
   const [ranchoId, setRanchoId] = useState('')
   const [selectedQuimico, setSelectedQuimico] = useState<M24SaldoQuimico | null>(null)
@@ -502,6 +539,25 @@ export function ControlInventarioQuimicos() {
     setGuardandoQuimico(true)
     try {
       const stockMin = quimicoForm.stock_minimo !== '' ? Number(quimicoForm.stock_minimo) : null
+      if (!online) {
+        const ok = await guardarOffline({
+          descripcion: `Inventario de químicos · Nuevo químico · ${quimicoForm.nombre.trim()}`,
+          metadatos: { rancho_id: ranchoId, rancho_nombre: ranchoNombreById[ranchoId] },
+          operaciones: [
+            opCabecera('m24_quimicos', {
+              rancho_id: ranchoId,
+              nombre: quimicoForm.nombre.trim(),
+              unidad: quimicoForm.unidad.trim(),
+              stock_minimo: stockMin,
+            }, ['rancho_id', 'nombre']),
+          ],
+        })
+        if (ok) {
+          setQuimicoForm(QUIMICO_INICIAL)
+          setNuevoQuimicoOpen(false)
+        }
+        return
+      }
       const { error } = await (supabase as any)
         .from('m24_quimicos')
         .insert({
@@ -529,6 +585,7 @@ export function ControlInventarioQuimicos() {
   }
 
   async function toggleActivo(id: string, activo: boolean) {
+    if (!online) { toast.warning('Necesitas conexión para activar o desactivar químicos'); return }
     const { error } = await (supabase as any)
       .from('m24_quimicos')
       .update({ activo: !activo })
@@ -545,6 +602,7 @@ export function ControlInventarioQuimicos() {
       return
     }
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setExportando(true)
     try {
       await generarInventarioQuimicosConsolidadoPDF(
@@ -810,7 +868,7 @@ export function ControlInventarioQuimicos() {
                 disabled={guardandoQuimico}
                 className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-primary hover:bg-agro-blue transition-colors disabled:opacity-50"
               >
-                {guardandoQuimico ? 'Guardando...' : 'Agregar químico'}
+                {guardandoQuimico ? 'Guardando...' : online ? 'Agregar químico' : 'Agregar sin conexión'}
               </button>
             </div>
       </BottomSheet>

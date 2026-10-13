@@ -656,3 +656,18 @@ Camino en línea: los campos de cada registro salieron a una función (`camposMa
 | Consolidado PDF (consulta por rango) | `generarFertilizacionConsolidadoPDF` | R | ✅ sin red: "Necesitas conexión para generar el PDF" |
 | Movimiento manual de inventario (entrada/salida) | `handleGuardarMovimiento` | R | ✅ sin red: "Necesitas conexión…" (no pedido en 3b) |
 | INSERT `fertilizantes_org` nuevos + `m8_fertilizacion` + `inventario_fertilizantes` (salida) | `RegistroFertilizacion` | — | ✅ offline: `opCabecera('fertilizantes_org', …, ['org_id','nombre_comercial'])` con `org_id` del perfil, luego `opInsert` de cada fila M8 y su salida (`m8_id` local) en el mismo lote |
+
+### M24 ControlInventarioQuimicos
+
+| Lectura / escritura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `v_m24_saldo_quimico` (lista) | `useM24Saldos` | C | ✅ `leerConCache` (`m24_saldos`) + precarga; se le suman los movimientos pendientes del outbox y se agregan los químicos nuevos sin subir |
+| SELECT `m24_quimicos` por sitio (Configurar) | `useM24QuimicosRancho` | C | ✅ caché `m24_quimicos:{rancho}` + precarga; incluye los pendientes |
+| SELECT `m24_movimientos` por químico (detalle) | `useM24Movimientos` | C | ✅ caché `m24_movs:{quimico}` + precarga; los pendientes se marcan "Sin subir" y el saldo dice "Incluye movimientos sin subir" |
+| Firmas (`FirmasRegistro`) de movimientos | `DetalleQuimico` | R | ✅ no se muestran para movimientos sin subir (no existe id real) |
+| UPDATE `m24_quimicos.activo` | `toggleActivo` | R | ✅ sin red: "Necesitas conexión para activar o desactivar químicos" |
+| PDF individual / consolidado | `generarInventarioQuimicos*PDF` | R | ✅ sin red: "Necesitas conexión para generar el PDF" |
+| INSERT `m24_quimicos` | `guardarQuimico` | — | ✅ offline: `opCabecera('m24_quimicos', …, ['rancho_id','nombre'])` |
+| INSERT `m24_movimientos` | `guardarMovimiento` | — | ✅ offline: `opInsert`. Crear químico y registrar un movimiento son acciones distintas en la UI, así que van en lotes distintos; el id local del químico se resuelve con el mapeo global del outbox (lotes en orden de creación) |
+
+Limitación: si un químico creado sin red ya existía en el servidor con el mismo nombre, la fusión ocurre al sincronizar; hasta entonces aparece duplicado en pantalla.
