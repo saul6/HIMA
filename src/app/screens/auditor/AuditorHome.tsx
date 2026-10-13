@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate, Navigate } from 'react-router'
+import { useNavigate, Navigate, Outlet } from 'react-router'
 import { motion, LayoutGroup, useReducedMotion } from 'motion/react'
 import {
   Building2, ChevronRight,
@@ -666,6 +666,8 @@ export function AuditorHome() {
           onCreated={() => { setShowSheet(false); setRefreshKey(k => k + 1) }}
         />
       )}
+
+      <Outlet />
     </div>
   )
 }

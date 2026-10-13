@@ -196,7 +196,11 @@ export const router = createBrowserRouter([
             Component: Layout,
             children: [
               { index: true, Component: Home },
-              { path: "auditor", Component: AuditorHome },
+              {
+                path: "auditor",
+                Component: AuditorHome,
+                children: [{ path: "instalacion/nueva", Component: AuditorNuevaInstalacion }],
+              },
               { path: "auditor/agenda", Component: AuditorAgenda },
               { path: "auditor/calendario", Component: RedirCalendario },
               {
@@ -206,7 +210,6 @@ export const router = createBrowserRouter([
               },
               { path: "auditor/auditoria/:auditoriaId", Component: AuditorEjecucion },
               { path: "auditor/auditoria/:auditoriaId/azzule", Component: AuditorModoAzzule },
-              { path: "auditor/instalacion/nueva", Component: AuditorNuevaInstalacion },
               {
                 path: "auditor/instalacion/:instalacionId",
                 Component: AuditorInstalacionDetalle,
