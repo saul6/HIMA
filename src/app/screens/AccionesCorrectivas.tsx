@@ -11,6 +11,10 @@ import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { toast } from 'sonner'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert } from '@/lib/offline/construirOperaciones'
+import type { AdjuntoOutbox } from '@/lib/offline/tipos'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
@@ -159,6 +163,8 @@ export function AccionesCorrectivas() {
   const { items, loading, error, refetch, guardarCapa, cerrarCapa, agregarFoto, eliminarFotoDb } =
     useAccionesCorrectivas()
 
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M26')
   const [filtro, setFiltro] = useState<FiltroEstado>('pendientes')
   const [sheetAbierto, setSheetAbierto] = useState(false)
   const [selectedItem, setSelectedItem] = useState<NcBandejaItem | null>(null)
@@ -223,6 +229,40 @@ export function AccionesCorrectivas() {
     if (!selectedItem || !profile?.org_id) return
     setGuardando(true)
     try {
+      if (!online) {
+        // Sin red solo se registra evidencia (fotos) de una acción correctiva que ya existe
+        const capaIdExistente = selectedItem.accion?.id
+        if (!capaIdExistente || cerrar) { toast.warning('Necesitas conexión para esto'); return }
+        if (fotosPendientes.length === 0) {
+          toast.warning('Sin conexión solo puedes agregar fotos de evidencia')
+          return
+        }
+        const operaciones = []
+        const adjuntos: Omit<AdjuntoOutbox, 'loteId'>[] = []
+        for (const fp of fotosPendientes) {
+          const errImg = validarImagen(fp.file)
+          if (errImg) throw new Error(errImg)
+          const fotoUid = crypto.randomUUID()
+          const path = `${profile.org_id}/${capaIdExistente}/${crypto.randomUUID()}.jpg`
+          adjuntos.push({ uid: fotoUid, blob: fp.file, path, bucket: 'acciones-correctivas' })
+          operaciones.push(opInsert('accion_correctiva_fotos', {
+            id: fotoUid,
+            capa_id: capaIdExistente,
+            tipo: fp.tipo,
+            storage_path: path,
+            leyenda: fp.leyenda.trim() || null,
+          }))
+        }
+        const ok = await guardarOffline({
+          descripcion: `Acción correctiva · ${selectedItem.codigo_pregunta} · ${fotosPendientes.length} foto${fotosPendientes.length !== 1 ? 's' : ''} de evidencia`,
+          metadatos: { rancho_id: selectedItem.rancho_id, rancho_nombre: selectedItem.rancho_nombre, capa_id: capaIdExistente, fotos_count: fotosPendientes.length },
+          operaciones,
+          adjuntos,
+        })
+        if (ok) cerrarSheet()
+        return
+      }
+
       const { hallazgoId, capaId } = await guardarCapa({
         hallazgoId: selectedItem.accion?.hallazgoId ?? null,
         capaId: selectedItem.accion?.id ?? null,
@@ -262,6 +302,7 @@ export function AccionesCorrectivas() {
   }
 
   async function handleDeleteFoto(fotoId: string, path: string) {
+    if (!online) { toast.warning('Necesitas conexión para esto'); return }
     try {
       await borrarFotosAccion([path])
       await eliminarFotoDb(fotoId)
@@ -298,6 +339,7 @@ export function AccionesCorrectivas() {
   }
 
   async function handleExportarPDF() {
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     const conAccion = itemsFiltrados.filter((i) => i.accion?.id)
     if (conAccion.length === 0) {
       toast.warning('No hay acciones correctivas para exportar')
@@ -321,6 +363,7 @@ export function AccionesCorrectivas() {
 
   async function handlePDFIndividual(item: NcBandejaItem) {
     if (!item.accion?.id || !profile?.org_id) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     try {
       await generarAccionCorrectivaIndividualPDF(
         item.accion.id,
@@ -431,7 +474,12 @@ export function AccionesCorrectivas() {
                     </p>
                   </button>
                   {item.accion && (
-                    <div className="mt-2 pt-2 border-t border-border flex items-center justify-end">
+                    <div className="mt-2 pt-2 border-t border-border flex items-center justify-between gap-2">
+                      {item.accion.fotosSinSubir ? (
+                        <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                          {item.accion.fotosSinSubir} foto{item.accion.fotosSinSubir !== 1 ? 's' : ''} sin subir
+                        </span>
+                      ) : <span />}
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
@@ -464,6 +512,15 @@ export function AccionesCorrectivas() {
           </div>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+          {!online && (
+            <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
+              <p className="text-xs" style={{ color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                {selectedItem?.accion?.id
+                  ? 'Sin conexión: solo se guardan las fotos de evidencia. Cambiar el texto, el estado o cerrar la NC requiere internet.'
+                  : 'Necesitas conexión para capturar esta acción correctiva.'}
+              </p>
+            </div>
+          )}
           {/* Contexto (no editable) */}
           <div className="rounded-xl p-3 bg-muted space-y-1">
             <p className="text-xs text-muted-foreground">
@@ -712,7 +769,7 @@ export function AccionesCorrectivas() {
 
         {/* Footer */}
         <div className="px-4 pb-4 pt-3 border-t border-border flex-shrink-0 space-y-2">
-          {selectedItem?.accion?.hallazgoId && selectedItem.accion.estado !== 'cerrada' && (
+          {online && selectedItem?.accion?.hallazgoId && selectedItem.accion.estado !== 'cerrada' && (
             <button
               onClick={() => handleGuardar(true)}
               disabled={guardando}
@@ -730,7 +787,7 @@ export function AccionesCorrectivas() {
             style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar
+            {online ? 'Guardar' : 'Guardar fotos sin conexión'}
           </button>
         </div>
       </BottomSheet>

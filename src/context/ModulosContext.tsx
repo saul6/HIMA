@@ -9,6 +9,7 @@ import { fetchCatalogoProductos } from '@/hooks/useCatalogoProductos'
 import { fetchSaldosInventario } from '@/lib/offline/saldosInventario'
 import { fetchEstacionesOrg, fetchNfcActivo, CLAVE_ESTACIONES_ORG, CLAVE_NFC_ACTIVO } from '@/lib/offline/resolverNfcOffline'
 import { claveCacheEstaciones } from '@/hooks/useM21EstacionesRancho'
+import { fetchBandeja } from '@/hooks/useAccionesCorrectivas'
 
 interface ModulosContextValue {
   modulos: ModuloVisible[]
@@ -334,6 +335,11 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
             .order('created_at', { ascending: false })
           return data ?? []
         },
+      },
+      {
+        clave: 'm26_bandeja',
+        fetcher: () => fetchBandeja(orgId!),
+        omitirSiMenorA: 6 * 60 * 60 * 1000,
       },
       {
         clave: 'm40_registros',

@@ -732,3 +732,17 @@ Sin red la tarjeta muestra el código provisional (`PROV-xxxxxx`, de `codigoProv
 | INSERT FE + `m48_fe_lpt` | `handleGuardarFE` | — | ✅ offline: un lote con ids locales |
 
 Corrección en el camino en línea: `m48_lc_lr` y `m48_fe_lpt` tienen `org_id` y `rancho_id` NOT NULL sin default ni trigger, y `handleGuardarLC`/`handleGuardarFE` no los mandaban (las cuatro tablas de LC/FE tienen 0 filas en producción, nunca se había guardado un LC/FE con éxito). Se agregaron `org_id` y `rancho_id` a esas filas relacionales; es el único cambio al camino con red.
+
+### M26 AccionesCorrectivas (solo evidencia fotográfica)
+
+M25 (`ResumenNoConformidades`, motor `aud_*`) **no** se agrega a `MODULOS_OFFLINE`: sigue pidiendo conexión.
+
+| Lectura / escritura | Archivo | Clase | Estado |
+|---|---|---|---|
+| Bandeja de NC: `m14–m18_respuestas` (no_cumple) + `aud_hallazgos` + `aud_acciones_correctivas` + `accion_correctiva_fotos` | `useAccionesCorrectivas` / `fetchBandeja` | C | ✅ el resultado ya armado se guarda con `leerConCache` (`m26_bandeja`) + precarga (se omite si el caché tiene < 6 h) |
+| Fotos guardadas (URL firmadas de `acciones-correctivas`) | `GaleriaGuardadas` | R | ✅ sin red no hay vista previa (el error ya se atrapa); la pantalla abre sin errores |
+| Fotos sin subir | `useAccionesCorrectivas` | C | ✅ chip "N foto(s) sin subir" en la tarjeta (conteo desde el outbox) |
+| `guardarCapa` (INSERT/UPDATE hallazgo y CAPA), `cerrarCapa` | `handleGuardar` | R | ✅ sin red: "Necesitas conexión para esto" (también en capturar una NC sin CAPA, editar texto y cerrar) |
+| Borrar foto guardada | `handleDeleteFoto` | R | ✅ sin red: "Necesitas conexión para esto" |
+| PDF individual / consolidado | `generarAccionesCorrectivas*PDF` | R | ✅ sin red: "Necesitas conexión para generar el PDF" |
+| Foto de evidencia en una CAPA existente | `handleGuardar` | — | ✅ offline: adjunto al bucket `acciones-correctivas` con ruta `{org_id}/{capa_id}/{uuid}.jpg` + `opInsert('accion_correctiva_fotos', {capa_id, tipo, storage_path, leyenda})` en un lote |

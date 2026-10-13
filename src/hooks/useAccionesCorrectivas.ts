@@ -1,6 +1,9 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { useOutbox } from '@/hooks/useOutbox'
+import { leerConCache } from '@/lib/offline/cacheLectura'
+import { SYNC_OK_EVENT } from '@/lib/offline/sync'
 import type { AccionCorrectivaFoto } from '@/types/database.types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -27,6 +30,8 @@ export interface CapaBandeja {
   verifico: string | null
   estado: 'abierta' | 'cerrada'
   fotos: AccionCorrectivaFoto[]
+  /** Fotos de evidencia capturadas sin conexión que aún no se suben */
+  fotosSinSubir?: number
 }
 
 export interface NcBandejaItem {
@@ -60,153 +65,185 @@ function buildComentario(realizo: string | null, verifico: string | null): strin
   return parts.length > 0 ? parts.join(' · ') : null
 }
 
+// Deriva la bandeja de NC (m14–m18 + hallazgos + CAPAs + fotos). Se usa en el hook y en la precarga offline.
+export async function fetchBandeja(orgId: string): Promise<NcBandejaItem[]> {
+  // 1. Derivar NCs desde m14-m18
+  const ncResultsRaw = await Promise.all(
+    MODULOS_NC.map(async ({ tabla, modulo, label }) => {
+      const { data, error: err } = await tbl(tabla)
+        .select(`
+          id, comentario,
+          ${modulo}_preguntas!pregunta_id(codigo, texto, ${modulo}_secciones!seccion_id(nombre)),
+          ${modulo}_auditorias!auditoria_id(rancho_id, fecha, visita_id, ranchos!rancho_id(nombre))
+        `)
+        .eq('org_id', orgId)
+        .eq('respuesta', 'no_cumple')
+        .order('created_at', { ascending: false })
+        .limit(500)
+      if (err) { console.warn(`useAccionesCorrectivas: error en ${tabla}`, err); return [] }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return ((data ?? []) as any[]).map((r: any) => {
+        const pregunta = r[`${modulo}_preguntas`] ?? {}
+        const seccionObj = pregunta[`${modulo}_secciones`] ?? {}
+        const auditoria = r[`${modulo}_auditorias`] ?? {}
+        const rancho = auditoria.ranchos ?? {}
+        return {
+          respuesta_id: r.id as string,
+          modulo,
+          modulo_label: label,
+          codigo_pregunta: (pregunta.codigo as string) ?? '—',
+          seccion: (seccionObj.nombre as string) ?? '—',
+          texto_pregunta: (pregunta.texto as string) ?? '—',
+          comentario_respuesta: (r.comentario as string | null) ?? null,
+          rancho_id: (auditoria.rancho_id as string) ?? '',
+          rancho_nombre: (rancho.nombre as string) ?? '—',
+          fecha_auditoria: (auditoria.fecha as string) ?? '',
+          visita_id: (auditoria.visita_id as string | null) ?? null,
+        }
+      })
+    })
+  )
+  const allNc = ncResultsRaw.flat()
+  const respuestaIds = allNc.map((nc) => nc.respuesta_id)
+
+  // 2. Cargar hallazgos + CAPAs canónicas
+  const capasMap = new Map<string, CapaBandeja>()
+
+  if (respuestaIds.length > 0) {
+    const { data: hallazgos, error: hErr } = await tbl('aud_hallazgos')
+      .select('id, source_record_id, estado, detectado_en, descripcion, criterion_code, source_module_code')
+      .eq('origin_type', 'SELF_AUDIT')
+      .eq('org_id', orgId)
+      .in('source_record_id', respuestaIds)
+    if (hErr) throw hErr
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const hallazgoList = (hallazgos ?? []) as any[]
+    const hallazgoIds = hallazgoList.map((h: any) => h.id as string)
+
+    let capaList: any[] = [] // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (hallazgoIds.length > 0) {
+      const { data: capas, error: cErr } = await tbl('aud_acciones_correctivas')
+        .select('id, hallazgo_id, causa_raiz, correccion_inmediata, accion_preventiva, comentario_accion, due_at')
+        .in('hallazgo_id', hallazgoIds)
+        .eq('org_id', orgId)
+      if (cErr) throw cErr
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      capaList = (capas ?? []) as any[]
+    }
+
+    // Cargar fotos por capa_id
+    const capaIds = capaList.map((c: any) => c.id as string) // eslint-disable-line @typescript-eslint/no-explicit-any
+    const fotosMap = new Map<string, AccionCorrectivaFoto[]>()
+    if (capaIds.length > 0) {
+      const { data: fotos, error: fErr } = await tbl('accion_correctiva_fotos')
+        .select('id, tipo, storage_path, leyenda, created_at, capa_id, accion_id')
+        .in('capa_id', capaIds)
+        .eq('org_id', orgId)
+      if (fErr) console.warn('[useAccionesCorrectivas] fotos:', fErr)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      for (const foto of (fotos ?? []) as any[]) {
+        const cId = foto.capa_id as string
+        if (!fotosMap.has(cId)) fotosMap.set(cId, [])
+        fotosMap.get(cId)!.push(foto as AccionCorrectivaFoto)
+      }
+    }
+
+    // Indexar CAPAs por hallazgo_id
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const capaByHallazgo = new Map<string, any>()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const c of capaList) capaByHallazgo.set(c.hallazgo_id as string, c)
+
+    // Construir mapa por source_record_id
+    for (const h of hallazgoList) {
+      const capa = capaByHallazgo.get(h.id)
+      if (!capa) continue
+      const { realizo, verifico } = parseComentario(capa.comentario_accion)
+      const cb: CapaBandeja = {
+        id: capa.id,
+        hallazgoId: h.id,
+        no_conformidad: h.descripcion ?? null,
+        causa: capa.causa_raiz ?? null,
+        accion_correctiva: capa.correccion_inmediata ?? null,
+        accion_preventiva: capa.accion_preventiva ?? null,
+        fecha_deteccion: h.detectado_en ?? null,
+        fecha_cumplimiento: capa.due_at ?? null,
+        realizo,
+        verifico,
+        estado: (h.estado as string) === 'CLOSED' ? 'cerrada' : 'abierta',
+        fotos: fotosMap.get(capa.id) ?? [],
+      }
+      capasMap.set(h.source_record_id as string, cb)
+    }
+  }
+
+  // 3. Armar bandeja
+  const bandeja: NcBandejaItem[] = allNc.map((nc) => {
+    const accion = capasMap.get(nc.respuesta_id) ?? null
+    let estado: 'sin_capturar' | 'abierta' | 'cerrada' = 'sin_capturar'
+    if (accion) estado = accion.estado
+    return { ...nc, accion, estado }
+  })
+
+  const ORDEN: Record<string, number> = { sin_capturar: 0, abierta: 1, cerrada: 2 }
+  bandeja.sort((a, b) => {
+    const o = (ORDEN[a.estado] ?? 0) - (ORDEN[b.estado] ?? 0)
+    if (o !== 0) return o
+    return b.fecha_auditoria.localeCompare(a.fecha_auditoria)
+  })
+
+  return bandeja
+}
+
 export function useAccionesCorrectivas() {
-  const { profile } = useAuthContext()
-  const [items, setItems] = useState<NcBandejaItem[]>([])
+  const { profile, user } = useAuthContext()
+  const userId = user?.id ?? null
+  const { pendientes } = useOutbox('M26')
+  const [itemsBase, setItems] = useState<NcBandejaItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id) { setLoading(false); return }
+    if (!profile?.org_id || !userId) { setLoading(false); return }
     setLoading(true)
     setError(null)
     try {
-      // 1. Derivar NCs desde m14-m18
-      const ncResultsRaw = await Promise.all(
-        MODULOS_NC.map(async ({ tabla, modulo, label }) => {
-          const { data, error: err } = await tbl(tabla)
-            .select(`
-              id, comentario,
-              ${modulo}_preguntas!pregunta_id(codigo, texto, ${modulo}_secciones!seccion_id(nombre)),
-              ${modulo}_auditorias!auditoria_id(rancho_id, fecha, visita_id, ranchos!rancho_id(nombre))
-            `)
-            .eq('org_id', profile.org_id)
-            .eq('respuesta', 'no_cumple')
-            .order('created_at', { ascending: false })
-            .limit(500)
-          if (err) { console.warn(`useAccionesCorrectivas: error en ${tabla}`, err); return [] }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return ((data ?? []) as any[]).map((r: any) => {
-            const pregunta = r[`${modulo}_preguntas`] ?? {}
-            const seccionObj = pregunta[`${modulo}_secciones`] ?? {}
-            const auditoria = r[`${modulo}_auditorias`] ?? {}
-            const rancho = auditoria.ranchos ?? {}
-            return {
-              respuesta_id: r.id as string,
-              modulo,
-              modulo_label: label,
-              codigo_pregunta: (pregunta.codigo as string) ?? '—',
-              seccion: (seccionObj.nombre as string) ?? '—',
-              texto_pregunta: (pregunta.texto as string) ?? '—',
-              comentario_respuesta: (r.comentario as string | null) ?? null,
-              rancho_id: (auditoria.rancho_id as string) ?? '',
-              rancho_nombre: (rancho.nombre as string) ?? '—',
-              fecha_auditoria: (auditoria.fecha as string) ?? '',
-              visita_id: (auditoria.visita_id as string | null) ?? null,
-            }
-          })
-        })
-      )
-      const allNc = ncResultsRaw.flat()
-      const respuestaIds = allNc.map((nc) => nc.respuesta_id)
-
-      // 2. Cargar hallazgos + CAPAs canónicas
-      const capasMap = new Map<string, CapaBandeja>()
-
-      if (respuestaIds.length > 0) {
-        const { data: hallazgos, error: hErr } = await tbl('aud_hallazgos')
-          .select('id, source_record_id, estado, detectado_en, descripcion, criterion_code, source_module_code')
-          .eq('origin_type', 'SELF_AUDIT')
-          .eq('org_id', profile.org_id)
-          .in('source_record_id', respuestaIds)
-        if (hErr) throw hErr
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const hallazgoList = (hallazgos ?? []) as any[]
-        const hallazgoIds = hallazgoList.map((h: any) => h.id as string)
-
-        let capaList: any[] = [] // eslint-disable-line @typescript-eslint/no-explicit-any
-        if (hallazgoIds.length > 0) {
-          const { data: capas, error: cErr } = await tbl('aud_acciones_correctivas')
-            .select('id, hallazgo_id, causa_raiz, correccion_inmediata, accion_preventiva, comentario_accion, due_at')
-            .in('hallazgo_id', hallazgoIds)
-            .eq('org_id', profile.org_id)
-          if (cErr) throw cErr
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          capaList = (capas ?? []) as any[]
-        }
-
-        // Cargar fotos por capa_id
-        const capaIds = capaList.map((c: any) => c.id as string) // eslint-disable-line @typescript-eslint/no-explicit-any
-        const fotosMap = new Map<string, AccionCorrectivaFoto[]>()
-        if (capaIds.length > 0) {
-          const { data: fotos, error: fErr } = await tbl('accion_correctiva_fotos')
-            .select('id, tipo, storage_path, leyenda, created_at, capa_id, accion_id')
-            .in('capa_id', capaIds)
-            .eq('org_id', profile.org_id)
-          if (fErr) console.warn('[useAccionesCorrectivas] fotos:', fErr)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          for (const foto of (fotos ?? []) as any[]) {
-            const cId = foto.capa_id as string
-            if (!fotosMap.has(cId)) fotosMap.set(cId, [])
-            fotosMap.get(cId)!.push(foto as AccionCorrectivaFoto)
-          }
-        }
-
-        // Indexar CAPAs por hallazgo_id
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const capaByHallazgo = new Map<string, any>()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        for (const c of capaList) capaByHallazgo.set(c.hallazgo_id as string, c)
-
-        // Construir mapa por source_record_id
-        for (const h of hallazgoList) {
-          const capa = capaByHallazgo.get(h.id)
-          if (!capa) continue
-          const { realizo, verifico } = parseComentario(capa.comentario_accion)
-          const cb: CapaBandeja = {
-            id: capa.id,
-            hallazgoId: h.id,
-            no_conformidad: h.descripcion ?? null,
-            causa: capa.causa_raiz ?? null,
-            accion_correctiva: capa.correccion_inmediata ?? null,
-            accion_preventiva: capa.accion_preventiva ?? null,
-            fecha_deteccion: h.detectado_en ?? null,
-            fecha_cumplimiento: capa.due_at ?? null,
-            realizo,
-            verifico,
-            estado: (h.estado as string) === 'CLOSED' ? 'cerrada' : 'abierta',
-            fotos: fotosMap.get(capa.id) ?? [],
-          }
-          capasMap.set(h.source_record_id as string, cb)
-        }
-      }
-
-      // 3. Armar bandeja
-      const bandeja: NcBandejaItem[] = allNc.map((nc) => {
-        const accion = capasMap.get(nc.respuesta_id) ?? null
-        let estado: 'sin_capturar' | 'abierta' | 'cerrada' = 'sin_capturar'
-        if (accion) estado = accion.estado
-        return { ...nc, accion, estado }
-      })
-
-      const ORDEN: Record<string, number> = { sin_capturar: 0, abierta: 1, cerrada: 2 }
-      bandeja.sort((a, b) => {
-        const o = (ORDEN[a.estado] ?? 0) - (ORDEN[b.estado] ?? 0)
-        if (o !== 0) return o
-        return b.fecha_auditoria.localeCompare(a.fecha_auditoria)
-      })
-
-      setItems(bandeja)
+      const resultado = await leerConCache('m26_bandeja', userId, profile.org_id, () => fetchBandeja(profile.org_id!))
+      setItems(resultado.datos)
     } catch (e: unknown) {
       console.error('[useAccionesCorrectivas]', e)
       setError('Error al cargar acciones correctivas')
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id])
+  }, [profile?.org_id, userId])
 
   useEffect(() => { cargar() }, [cargar])
+
+  useEffect(() => {
+    const h = () => { cargar() }
+    window.addEventListener(SYNC_OK_EVENT, h)
+    return () => window.removeEventListener(SYNC_OK_EVENT, h)
+  }, [cargar])
+
+  // Cuenta de fotos de evidencia capturadas sin conexión, por acción correctiva
+  const items = useMemo(() => {
+    if (pendientes.length === 0) return itemsBase
+    const porCapa = new Map<string, number>()
+    for (const lote of pendientes) {
+      for (const op of lote.operaciones) {
+        if (op.tabla !== 'accion_correctiva_fotos') continue
+        const capaId = (op.fila as { capa_id?: string }).capa_id
+        if (capaId) porCapa.set(capaId, (porCapa.get(capaId) ?? 0) + 1)
+      }
+    }
+    if (porCapa.size === 0) return itemsBase
+    return itemsBase.map(it =>
+      it.accion && porCapa.has(it.accion.id)
+        ? { ...it, accion: { ...it.accion, fotosSinSubir: porCapa.get(it.accion.id) } }
+        : it)
+  }, [itemsBase, pendientes])
 
   async function guardarCapa(params: {
     hallazgoId?: string | null
