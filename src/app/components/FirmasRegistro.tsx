@@ -9,6 +9,7 @@ import {
   type FirmaDetalle,
 } from '@/hooks/useFirmasRegistro'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { useConexion } from '@/hooks/useConexion'
 import { FirmaPad, type FirmaPadRef } from '@/app/components/FirmaPad'
 import { FirmaSvg } from '@/app/components/FirmaSvg'
 import { Skeleton } from '@/app/components/ui/skeleton'
@@ -181,6 +182,7 @@ export function FirmasRegistro({
   onFirmado,
 }: FirmasRegistroProps) {
   const { profile } = useAuthContext()
+  const { online } = useConexion()
 
   // Panel de confirmación inline
   const [panelActivo, setPanelActivo] = useState<'realizo' | 'verifico' | null>(null)
@@ -210,7 +212,14 @@ export function FirmasRegistro({
     firma?.realizo?.profile_id !== profile?.id &&
     firma?.verifico?.estado !== 'vigente'
 
+  function avisarSinConexion(): boolean {
+    if (online) return false
+    toast.warning('Necesitas conexión para firmar')
+    return true
+  }
+
   async function abrirPanel(rol: 'realizo' | 'verifico') {
+    if (avisarSinConexion()) return
     setPanelActivo(rol)
     setCargandoMiFirma(true)
     setMiFirmaInfo(null)
@@ -234,6 +243,7 @@ export function FirmasRegistro({
 
   async function handleGuardarFirma() {
     if (!firmaPadRef.current) return
+    if (avisarSinConexion()) return
     const { png, trazos } = firmaPadRef.current.exportar()
     setGuardandoFirmaLocal(true)
     try {
@@ -256,6 +266,7 @@ export function FirmasRegistro({
 
   async function handleFirmar() {
     if (!panelActivo) return
+    if (avisarSinConexion()) return
     setFirmando(true)
     try {
       const eventId = crypto.randomUUID()
