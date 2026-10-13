@@ -11,11 +11,12 @@ interface SignatureItem {
 
 interface PdfSignaturesProps {
   signatures: SignatureItem[]
+  /** Firma de enterado (Productor). Si se omite, se toma de la que viaja dentro de Realizó/Verificó. */
+  enterado?: FirmaParaPdf['enterado']
 }
 
-export function PdfSignatures({ signatures }: PdfSignaturesProps) {
-  // La firma de enterado viaja dentro de las firmas Realizó/Verificó (ver obtenerFirmasParaPdf)
-  const enterado = signatures.map((s) => s.firma?.enterado).find(Boolean) ?? null
+export function PdfSignatures({ signatures, enterado: enteradoProp }: PdfSignaturesProps) {
+  const enterado = enteradoProp ?? signatures.map((s) => s.firma?.enterado).find(Boolean) ?? null
   const enteradoDigital = enterado && enterado.estado === 'vigente' && enterado.png
 
   return (

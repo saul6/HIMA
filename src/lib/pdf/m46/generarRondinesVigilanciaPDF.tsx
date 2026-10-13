@@ -1,4 +1,5 @@
 import { pdf } from '@react-pdf/renderer'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 import { PDFDocument } from 'pdf-lib'
 import { supabase } from '@/lib/supabase'
 import {
@@ -23,6 +24,7 @@ function descargar(blob: Blob, filename: string) {
 }
 
 async function cargarDatos(id: string, orgId: string) {
+  const firmasReg = (await obtenerFirmasParaPdf('M46', [id]))[id]
   const [rondinRes, rondasRes, resultadosRes] = await Promise.all([
     tbl('m46_rondines')
       .select('*, ranchos(nombre)')
@@ -57,6 +59,7 @@ async function cargarDatos(id: string, orgId: string) {
     rondas: (rondasRes.data ?? []) as any[],
     resultados: (resultadosRes.data ?? []) as any[],
     items: (itemsRes.data ?? []) as any[],
+    firmasReg,
   }
 }
 
@@ -79,7 +82,7 @@ function buildProps(rondin: any, rondas: any[], resultados: any[], items: any[],
 }
 
 export async function generarBlobRondinesVigilancia(id: string, orgId: string, codigoClave: string): Promise<Blob> {
-  const { rondin, rondas, resultados, items } = await cargarDatos(id, orgId)
+  const { rondin, rondas, resultados, items, firmasReg } = await cargarDatos(id, orgId)
   const { pdfItems, pdfRondas, pdfResultados } = buildProps(rondin, rondas, resultados, items, codigoClave)
   return pdf(
     <RondinesVigilanciaPDF
@@ -93,12 +96,14 @@ export async function generarBlobRondinesVigilancia(id: string, orgId: string, c
       rondas={pdfRondas}
       resultados={pdfResultados}
       codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
     />
   ).toBlob()
 }
 
 export async function generarRondinesVigilanciaPDF(id: string, orgId: string, codigoClave: string): Promise<void> {
-  const { rondin, rondas, resultados, items } = await cargarDatos(id, orgId)
+  const { rondin, rondas, resultados, items, firmasReg } = await cargarDatos(id, orgId)
   const { pdfItems, pdfRondas, pdfResultados } = buildProps(rondin, rondas, resultados, items, codigoClave)
   const blob = await pdf(
     <RondinesVigilanciaPDF
@@ -112,6 +117,8 @@ export async function generarRondinesVigilanciaPDF(id: string, orgId: string, co
       rondas={pdfRondas}
       resultados={pdfResultados}
       codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
     />
   ).toBlob()
   descargar(blob, nombrePdf('Rondines_Vigilancia', rondin.fecha))

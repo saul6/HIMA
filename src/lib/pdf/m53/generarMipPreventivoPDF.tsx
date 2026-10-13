@@ -1,5 +1,6 @@
 import { Document } from '@react-pdf/renderer'
 import { pdf } from '@react-pdf/renderer'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 import { supabase } from '@/lib/supabase'
 import { MipPreventivoPDF, MipPreventivoPDFPage, type MipItemRow } from './MipPreventivoPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
@@ -95,6 +96,7 @@ async function cargarM53(id: string, orgId: string) {
 
 export async function generarMipPreventivoPDF(id: string, orgId: string, _codigoClave: string): Promise<void> {
   const { reg, items } = await cargarM53(id, orgId)
+  const firmasReg = (await obtenerFirmasParaPdf('M53', [id]))[id]
   const blob = await pdf(
     <MipPreventivoPDF
       rancho={reg.ranchos?.nombre ?? '—'}
@@ -104,6 +106,8 @@ export async function generarMipPreventivoPDF(id: string, orgId: string, _codigo
       realizo={reg.realizo ?? null}
       observaciones={reg.observaciones ?? null}
       items={items}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
     />
   ).toBlob()
   descargar(blob, nombrePdf('MIP-Preventivo', reg.fecha))
@@ -111,6 +115,7 @@ export async function generarMipPreventivoPDF(id: string, orgId: string, _codigo
 
 export async function generarBlobMipPreventivo(id: string, orgId: string, _codigoClave: string): Promise<Blob> {
   const { reg, items } = await cargarM53(id, orgId)
+  const firmasReg = (await obtenerFirmasParaPdf('M53', [id]))[id]
   return pdf(
     <MipPreventivoPDF
       rancho={reg.ranchos?.nombre ?? '—'}
@@ -120,6 +125,8 @@ export async function generarBlobMipPreventivo(id: string, orgId: string, _codig
       realizo={reg.realizo ?? null}
       observaciones={reg.observaciones ?? null}
       items={items}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
     />
   ).toBlob()
 }

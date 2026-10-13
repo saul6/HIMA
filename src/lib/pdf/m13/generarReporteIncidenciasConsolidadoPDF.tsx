@@ -8,6 +8,7 @@ import {
   type ReporteIncidenciasPDFProps,
 } from './ReporteIncidenciasPDF'
 import { fotosADataUris } from './incidenciasPdfImagenes'
+import { obtenerFirmasParaPdf, firmasRegistroAParaPdf } from '@/hooks/useFirmasRegistro'
 
 export async function generarReporteIncidenciasConsolidadoPDF(
   orgId: string,
@@ -54,7 +55,10 @@ export async function generarReporteIncidenciasConsolidadoPDF(
     }
   }
 
-  const urisPorPath = await fotosADataUris(todosLosPaths)
+  const [urisPorPath, firmasMapa] = await Promise.all([
+    fotosADataUris(todosLosPaths),
+    obtenerFirmasParaPdf('M13', (data as any[]).map((r) => r.id as string)),
+  ])
 
   // Construir props por reporte
   const propsList: ReporteIncidenciasPDFProps[] = (data as any[]).map((r) => {
@@ -68,6 +72,8 @@ export async function generarReporteIncidenciasConsolidadoPDF(
           .map((f: any) => urisPorPath[f.storage_path] ?? ''),
       }))
 
+    const firmas = firmasRegistroAParaPdf(firmasMapa[r.id])
+
     return {
       folio: (r.id as string).slice(0, 8).toUpperCase(),
       rancho: (r.ranchos as any)?.nombre ?? '—',
@@ -75,6 +81,9 @@ export async function generarReporteIncidenciasConsolidadoPDF(
       fecha: r.fecha,
       auditorNombre: r.auditor_nombre ?? null,
       incidencias,
+      firmaRealizo: firmas.realizo,
+      firmaVerifico: firmas.verifico,
+      firmaEnterado: firmas.enterado,
     }
   })
 

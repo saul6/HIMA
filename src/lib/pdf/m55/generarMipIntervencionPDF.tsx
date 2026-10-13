@@ -1,5 +1,6 @@
 import { Document } from '@react-pdf/renderer'
 import { pdf } from '@react-pdf/renderer'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 import { supabase } from '@/lib/supabase'
 import { MipIntervencionPDF, MipIntervencionPDFPage, type MipIntervencionItemRow } from './MipIntervencionPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
@@ -70,6 +71,7 @@ async function cargarM55(id: string, orgId: string) {
 
 export async function generarMipIntervencionPDF(id: string, orgId: string, _codigoClave: string): Promise<void> {
   const { reg, items } = await cargarM55(id, orgId)
+  const firmasReg = (await obtenerFirmasParaPdf('M55', [id]))[id]
   const blob = await pdf(
     <MipIntervencionPDF
       rancho={reg.ranchos?.nombre ?? '—'}
@@ -79,6 +81,8 @@ export async function generarMipIntervencionPDF(id: string, orgId: string, _codi
       realizo={reg.realizo ?? null}
       observaciones={reg.observaciones ?? null}
       items={items}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
     />
   ).toBlob()
   descargar(blob, nombrePdf('MIP-Intervencion', reg.fecha))
@@ -86,6 +90,7 @@ export async function generarMipIntervencionPDF(id: string, orgId: string, _codi
 
 export async function generarBlobMipIntervencion(id: string, orgId: string, _codigoClave: string): Promise<Blob> {
   const { reg, items } = await cargarM55(id, orgId)
+  const firmasReg = (await obtenerFirmasParaPdf('M55', [id]))[id]
   return pdf(
     <MipIntervencionPDF
       rancho={reg.ranchos?.nombre ?? '—'}
@@ -95,6 +100,8 @@ export async function generarBlobMipIntervencion(id: string, orgId: string, _cod
       realizo={reg.realizo ?? null}
       observaciones={reg.observaciones ?? null}
       items={items}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
     />
   ).toBlob()
 }

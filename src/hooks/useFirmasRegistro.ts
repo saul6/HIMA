@@ -99,6 +99,30 @@ export function firmaDetalleAParaPdf(firma: FirmaDetalle): FirmaParaPdf {
   }
 }
 
+export function firmaEnteradoAParaPdf(e: FirmaEnterado): FirmaEnteradoParaPdf {
+  return {
+    png: e.firma_png ?? '',
+    firmante: e.firmante,
+    cargo: e.cargo,
+    capturadoPor: e.capturado_por,
+    fecha: formatFirmaFecha(e.firmado_en),
+    estado: e.estado,
+  }
+}
+
+// Las tres firmas de un registro listas para PdfSignatures (enterado por separado).
+// Ignora el marcador vacío que obtenerFirmasParaPdf crea cuando solo hay enterado.
+export function firmasRegistroAParaPdf(reg: FirmasDeRegistro | undefined | null): {
+  realizo: FirmaParaPdf | null
+  verifico: FirmaParaPdf | null
+  enterado: FirmaEnteradoParaPdf | null
+} {
+  const realizo = reg?.realizo && reg.realizo.profile_id ? firmaDetalleAParaPdf(reg.realizo) : null
+  const verifico = reg?.verifico && reg.verifico.profile_id ? firmaDetalleAParaPdf(reg.verifico) : null
+  const enterado = reg?.enterado ? firmaEnteradoAParaPdf(reg.enterado) : null
+  return { realizo, verifico, enterado }
+}
+
 // ── Mensajes de error user-friendly ──────────────────────────────────────────
 
 const ERRORES_FIRMA_WARNING = [

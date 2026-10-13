@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { RecepcionFrutaPDF, type M39RecepcionDataPDF, type M39LineaPDF } from './RecepcionFrutaPDF'
 import { RecepcionFrutaAlmacenPDF, type M39RecepcionAlmacenDataPDF, type M39LineaAlmacenPDF } from './RecepcionFrutaAlmacenPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -94,11 +95,19 @@ async function cargarDatos(id: string, orgId: string): Promise<CargarResult> {
   return { esAlmacen: false, d }
 }
 
+async function firmasAlmacen(id: string) {
+  const reg = (await obtenerFirmasParaPdf('M39', [id]))[id]
+  return {
+    firmaRealizo: reg?.realizo ? firmaDetalleAParaPdf(reg.realizo) : null,
+    firmaVerifico: reg?.verifico ? firmaDetalleAParaPdf(reg.verifico) : null,
+  }
+}
+
 export async function generarRecepcionFrutaPDF(id: string, orgId: string, codigoClave: string): Promise<void> {
   const result = await cargarDatos(id, orgId)
   let blob: Blob
   if (result.esAlmacen) {
-    blob = await pdf(<RecepcionFrutaAlmacenPDF d={result.d} codigoClave={codigoClave} />).toBlob()
+    blob = await pdf(<RecepcionFrutaAlmacenPDF d={result.d} codigoClave={codigoClave} {...(await firmasAlmacen(id))} />).toBlob()
   } else {
     blob = await pdf(<RecepcionFrutaPDF d={result.d} codigoClave={codigoClave} />).toBlob()
   }
@@ -108,7 +117,7 @@ export async function generarRecepcionFrutaPDF(id: string, orgId: string, codigo
 export async function generarBlobRecepcionFruta(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const result = await cargarDatos(id, orgId)
   if (result.esAlmacen) {
-    return pdf(<RecepcionFrutaAlmacenPDF d={result.d} codigoClave={codigoClave} />).toBlob()
+    return pdf(<RecepcionFrutaAlmacenPDF d={result.d} codigoClave={codigoClave} {...(await firmasAlmacen(id))} />).toBlob()
   }
   return pdf(<RecepcionFrutaPDF d={result.d} codigoClave={codigoClave} />).toBlob()
 }

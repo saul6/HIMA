@@ -7,6 +7,7 @@ import { ReporteIncidenciasPDF, type ReporteIncidenciasPDFProps } from './Report
 import { fotosADataUris } from './incidenciasPdfImagenes'
 import type { M13ReporteConRancho } from '@/hooks/useM13Incidencias'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasParaPdf, firmasRegistroAParaPdf } from '@/hooks/useFirmasRegistro'
 
 export async function generarReporteIncidenciasPDF(
   reporte: M13ReporteConRancho,
@@ -17,7 +18,11 @@ export async function generarReporteIncidenciasPDF(
   )
 
   // Descargar + comprimir todas las fotos en paralelo
-  const urisPorPath = await fotosADataUris(todosLosPaths)
+  const [urisPorPath, firmasMapa] = await Promise.all([
+    fotosADataUris(todosLosPaths),
+    obtenerFirmasParaPdf('M13', [reporte.id]),
+  ])
+  const firmas = firmasRegistroAParaPdf(firmasMapa[reporte.id])
 
   // Construir props del componente PDF
   const props: ReporteIncidenciasPDFProps = {
@@ -31,6 +36,9 @@ export async function generarReporteIncidenciasPDF(
       descripcion: inc.descripcion,
       dataUris: inc.fotos.map((f) => urisPorPath[f.storage_path] ?? ''),
     })),
+    firmaRealizo: firmas.realizo,
+    firmaVerifico: firmas.verifico,
+    firmaEnterado: firmas.enterado,
   }
 
   const blob = await pdf(<ReporteIncidenciasPDF {...props} />).toBlob()
@@ -54,7 +62,11 @@ export async function generarBlobReporteIncidencias(
   const todosLosPaths = reporte.incidencias.flatMap((inc) =>
     inc.fotos.map((f) => f.storage_path)
   )
-  const urisPorPath = await fotosADataUris(todosLosPaths)
+  const [urisPorPath, firmasMapa] = await Promise.all([
+    fotosADataUris(todosLosPaths),
+    obtenerFirmasParaPdf('M13', [reporte.id]),
+  ])
+  const firmas = firmasRegistroAParaPdf(firmasMapa[reporte.id])
 
   const props: ReporteIncidenciasPDFProps = {
     folio: reporte.id.slice(0, 8).toUpperCase(),
@@ -67,6 +79,9 @@ export async function generarBlobReporteIncidencias(
       descripcion: inc.descripcion,
       dataUris: inc.fotos.map((f) => urisPorPath[f.storage_path] ?? ''),
     })),
+    firmaRealizo: firmas.realizo,
+    firmaVerifico: firmas.verifico,
+    firmaEnterado: firmas.enterado,
   }
 
   return pdf(<ReporteIncidenciasPDF {...props} />).toBlob()

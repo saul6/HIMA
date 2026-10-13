@@ -1,12 +1,14 @@
 // PATRÓN INOCUIDAD — PDF M13 (plantilla homogénea M.A.D.Y)
 // Reporte visual con fotos: tabla dos columnas EVIDENCIA | INCIDENCIAS, A4 portrait.
 // Las fotos se reciben como data URIs base64 (ya descargadas y re-comprimidas).
-// Helvetica built-in, sin Unicode, firma en blanco.
+// Helvetica built-in, sin Unicode. Firmas digitales vía PdfSignatures (en blanco si no hay).
 
 import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
 import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
 import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
 import { PC } from '@/lib/pdf/components/tokens'
+import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+import type { FirmaParaPdf, FirmaEnteradoParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -25,6 +27,9 @@ export interface ReporteIncidenciasPDFProps {
   incidencias: IncidenciaPDFRow[]
   codigoClave?: string
   terminoSitio?: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
+  firmaEnterado?: FirmaEnteradoParaPdf | null
 }
 
 // Ancho columna izquierda ~40%, derecha ~60% (sobre 515pt usables en A4 portrait con padding 40)
@@ -122,17 +127,6 @@ const s = StyleSheet.create({
     color: PC.fieldValue,
     lineHeight: 1.4,
   },
-
-  // ── Firma ──────────────────────────────────────────────────────────────────
-  firmaSection: { marginTop: 24 },
-  firmaLinea: {
-    borderTopWidth: 1,
-    borderTopColor: PC.fieldValue,
-    paddingTop: 4,
-    marginTop: 32,
-    width: '50%',
-  },
-  firmaLabel: { fontSize: 7, color: PC.textSub },
 })
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -156,6 +150,9 @@ export function ReporteIncidenciasPagina({
   incidencias,
   codigoClave = 'MXA',
   terminoSitio = 'Rancho',
+  firmaRealizo,
+  firmaVerifico,
+  firmaEnterado,
 }: ReporteIncidenciasPDFProps) {
   const fechaFormateada = formatFechaPDF(fecha)
   const codigoFmt = `${codigoClave}-F-SC-SIG`
@@ -226,11 +223,25 @@ export function ReporteIncidenciasPagina({
         ))}
       </View>
 
-      {/* Firma en blanco — nunca se rellena */}
-      <View style={s.firmaSection}>
-        <View style={s.firmaLinea}>
-          <Text style={s.firmaLabel}>Responsable de Inocuidad - Firma</Text>
-        </View>
+      {/* Firmas digitales; en blanco para firma a mano si no existen */}
+      <View wrap={false}>
+        <PdfSignatures
+          signatures={[
+            {
+              label: 'Realizo el recorrido',
+              nombre: auditorNombre ?? '',
+              caption: 'Realizo - Firma',
+              firma: firmaRealizo ?? null,
+            },
+            {
+              label: '',
+              nombre: '',
+              caption: 'Responsable de Inocuidad - Firma',
+              firma: firmaVerifico ?? null,
+            },
+          ]}
+          enterado={firmaEnterado ?? null}
+        />
       </View>
 
     </Page>

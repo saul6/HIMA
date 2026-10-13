@@ -1,4 +1,5 @@
 import { pdf } from '@react-pdf/renderer'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 import { supabase } from '@/lib/supabase'
 import { CalibracionVolumetricosPDF, type VolumetricoRow } from './CalibracionVolumetricosPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
@@ -43,8 +44,13 @@ function toRow(r: any): VolumetricoRow {
 export async function generarCalibracionVolumetricosPDF(id: string, orgId: string, codigoClave: string): Promise<void> {
   const r = await cargar(id, orgId)
   const rancho = r.ranchos?.nombre ?? '—'
+  const firmasReg = (await obtenerFirmasParaPdf('M52', [id]))[id]
   const blob = await pdf(
-    <CalibracionVolumetricosPDF rancho={rancho} desde={r.fecha} hasta={r.fecha} registros={[toRow(r)]} codigoClave={codigoClave} />
+    <CalibracionVolumetricosPDF
+      rancho={rancho} desde={r.fecha} hasta={r.fecha} registros={[toRow(r)]} codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
   ).toBlob()
   descargar(blob, nombrePdf('Calibracion_Volumetricos', r.fecha))
 }

@@ -1,8 +1,10 @@
 import { pdf } from '@react-pdf/renderer'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 import { supabase } from '@/lib/supabase'
 import { OrdenMantenimientoPDF, type OrdenMantenimientoPDFProps } from './OrdenMantenimientoPDF'
 
 async function cargarDatos(id: string, orgId: string): Promise<OrdenMantenimientoPDFProps & { folio: string | null; fecha: string }> {
+  const firmasReg = (await obtenerFirmasParaPdf('M44', [id]))[id]
   const tbl = supabase as any
   const [{ data: orden, error: oErr }, { data: org, error: orgErr }] = await Promise.all([
     tbl
@@ -41,6 +43,8 @@ async function cargarDatos(id: string, orgId: string): Promise<OrdenMantenimient
     observaciones:         r.observaciones ?? null,
     entrega_mtto:          r.entrega_mtto ?? null,
     recibe:                r.recibe ?? null,
+    firmaRealizo:          firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null,
+    firmaVerifico:         firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null,
   }
 }
 

@@ -15,6 +15,7 @@ import { PreoperacionalPDF } from './m11/PreoperacionalPDF'
 import { InspeccionPreoperacionalCoolerPDF } from './m19/InspeccionPreoperacionalCoolerPDF'
 import { LimpiezaBanosPDF } from './m12/LimpiezaBanosPDF'
 import { ReporteIncidenciasPDF } from './m13/ReporteIncidenciasPDF'
+import { obtenerFirmasParaPdf, firmasRegistroAParaPdf } from '@/hooks/useFirmasRegistro'
 import { fotosADataUris } from './m13/incidenciasPdfImagenes'
 import { getAplicacionRicaById } from '@/lib/queries'
 import { construirDatosPagina as construirDatosPerimetral } from './m9/generarPerimetralPDF'
@@ -341,7 +342,11 @@ async function generarBlobM13(id: string, orgId: string): Promise<Blob> {
       todosLosPaths.push(f.storage_path)
     }
   }
-  const urisPorPath = await fotosADataUris(todosLosPaths)
+  const [urisPorPath, firmasMapa] = await Promise.all([
+    fotosADataUris(todosLosPaths),
+    obtenerFirmasParaPdf('M13', [id]),
+  ])
+  const firmasM13 = firmasRegistroAParaPdf(firmasMapa[id])
 
   const incidencias = ((r.m13_incidencias ?? []) as any[])
     .sort((a: any, b: any) => a.orden - b.orden)
@@ -361,6 +366,9 @@ async function generarBlobM13(id: string, orgId: string): Promise<Blob> {
       fecha={r.fecha}
       auditorNombre={r.auditor_nombre ?? null}
       incidencias={incidencias}
+      firmaRealizo={firmasM13.realizo}
+      firmaVerifico={firmasM13.verifico}
+      firmaEnterado={firmasM13.enterado}
     />
   ).toBlob()
 }
