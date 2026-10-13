@@ -49,9 +49,11 @@ export function PdfPageFrame({ children }: PdfPageFrameProps) {
 
 interface PdfFooterProps {
   moduloCodigo: string
+  /** Registro capturado sin conexión que aún no se sube: agrega la leyenda al pie */
+  pendienteSync?: boolean
 }
 
-export function PdfFooter({ moduloCodigo }: PdfFooterProps) {
+export function PdfFooter({ moduloCodigo, pendienteSync }: PdfFooterProps) {
   return (
     <View
       fixed
@@ -68,7 +70,9 @@ export function PdfFooter({ moduloCodigo }: PdfFooterProps) {
         alignItems: 'center',
       }}
     >
-      <Text style={{ fontSize: 7, color: PC.footerGray }}>{moduloCodigo}</Text>
+      <Text style={{ fontSize: 7, color: PC.footerGray }}>
+        {pendienteSync ? `${moduloCodigo}  |  Pendiente de sincronizar` : moduloCodigo}
+      </Text>
       <Text style={{ fontSize: 7, color: PC.footerGray }}>
         M.A.D.Y. | Gestión inteligente para la inocuidad
       </Text>

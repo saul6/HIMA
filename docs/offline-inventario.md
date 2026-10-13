@@ -630,3 +630,17 @@ Camino en línea: los campos de cada registro salieron a una función (`camposMa
 ### Para Saúl
 - Verificado en solo lectura: las tablas de Fase 3a (incluidas `m13_*`, `m38_*`, `m40_*`, `m41_*`, `m42_*`, `m44_*`, `m46_*`, `m47_*`, `m53…m78`) están en `sync_tablas_permitidas`, y existen los UNIQUE usados como `conflicto` (`m41_registros(org_id,rancho_id,fecha)`, `m41_lecturas(registro_id,hora)`, `m46_*`, `m47_*`).
 - `sync_aplicar_lote` aplica `insert` con `conflicto` como `ON CONFLICT DO NOTHING`; no actualiza campos de una fila existente.
+
+## Fase 3b
+
+### M1 NuevaAplicacion
+
+| Lectura / escritura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `catalogo_productos` (activos, ~723 filas; sin columna de cultivo, no se puede filtrar) | `useCatalogoProductos` | C | ✅ `leerConCache` + precarga (se omite si el caché tiene < 12 h) |
+| `ranchos` (código, cultivo, productor_id), `productor`/`asesor`/`responsable` (perfil) | `useRanchos`, `useAuth` | C | ✅ ya en caché (Fase 1) |
+| SELECT `v_inventario_saldo_rancho` (productos con saldo > 0) | `NuevaAplicacion` | C | ✅ con red igual que antes; sin red usa `inv_saldos` + salidas pendientes y muestra "Saldo de inventario al {fecha}" |
+| `parcelas/sectores`, `aplicadores` | `NuevaAplicacion` | — | texto libre, sin lectura |
+| `saldo_inventario` RPC (por producto, al guardar) | `registrarSalidasAplicacion` | V | ✅ sin red no se llama: `balance` es informativo (NOT NULL), el saldo real se suma de `cantidad` |
+| INSERT `aplicaciones` + `aplicacion_productos` + `inventario_movimientos` (salida) | `NuevaAplicacion` | — | ✅ offline: un lote; `productor_id` se omite (lo toma la BD del rancho); `balance` estimado = caché + pendientes − cantidad |
+| PDF | `generarAplicacionPDF` | — | ✅ offline con datos locales y pie "Pendiente de sincronizar"; la firma se hace desde el historial tras sincronizar |

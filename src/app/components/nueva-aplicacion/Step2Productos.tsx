@@ -12,6 +12,8 @@ interface Props {
   onNext: () => void;
   onBack: () => void;
   productosEnInventario?: string[]
+  /** Marca de tiempo del saldo en caché (sin red); null cuando el saldo es en vivo */
+  inventarioAl?: number | null
 }
 
 const pestOptions = [
@@ -57,7 +59,7 @@ function calcularDosisBarril(dosePerHa: string, totalWater: string, surface: str
   return ((dose / (agua / 200)) * sup).toFixed(4);
 }
 
-export function Step2Productos({ formData, updateFormData, onNext, onBack, productosEnInventario }: Props) {
+export function Step2Productos({ formData, updateFormData, onNext, onBack, productosEnInventario, inventarioAl }: Props) {
   const { productos, loading: loadingCatalogo } = useCatalogoProductos();
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<typeof emptyProduct>({ ...emptyProduct });
@@ -184,6 +186,11 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
                 onSelect={handleProductSelect}
                 productosEnInventario={productosEnInventario}
               />
+            )}
+            {inventarioAl != null && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Saldo de inventario al {new Date(inventarioAl).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })} (incluye salidas sin subir)
+              </p>
             )}
           </div>
 

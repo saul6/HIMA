@@ -27,6 +27,8 @@ export interface AplicacionPDFProps {
   codigoClave?: string
   /** Término de sitio dinámico (default 'Rancho') */
   terminoSitio?: string
+  /** Capturada sin conexión y aún sin subir: imprime "Pendiente de sincronizar" en el pie */
+  pendienteSync?: boolean
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -72,6 +74,7 @@ export function AplicacionPDF({
   operarioEmail,
   codigoClave = 'MXA',
   terminoSitio = 'Rancho',
+  pendienteSync,
 }: AplicacionPDFProps) {
   const productorNombre = operario.nombre_completo || operarioEmail || '—'
   const folio = ap.id.slice(0, 8).toUpperCase()
@@ -105,7 +108,7 @@ export function AplicacionPDF({
       >
 
         {/* Footer fijo — va primero en el árbol para garantizar z-order correcto */}
-        <PdfFooter moduloCodigo="M1" />
+        <PdfFooter moduloCodigo="M1" pendienteSync={pendienteSync} />
 
         {/* Marco exterior */}
         <PdfPageFrame>

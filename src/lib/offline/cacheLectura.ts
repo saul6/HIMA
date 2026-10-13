@@ -73,12 +73,22 @@ export async function leerConCache<T>(
 export async function precargarCache(
   userId: string,
   orgId: string,
-  claves: Array<{ clave: string; fetcher: () => Promise<unknown>; maxEdad?: number }>,
+  claves: Array<{
+    clave: string
+    fetcher: () => Promise<unknown>
+    maxEdad?: number
+    /** Si ya hay caché de este usuario con menos de estos ms, no vuelve a pedir a la red (catálogos grandes) */
+    omitirSiMenorA?: number
+  }>,
 ): Promise<void> {
   if (!navigator.onLine) return
   await Promise.allSettled(
-    claves.map(({ clave, fetcher, maxEdad }) =>
-      leerConCache(clave, userId, orgId, fetcher, { maxEdad }),
-    ),
+    claves.map(async ({ clave, fetcher, maxEdad, omitirSiMenorA }) => {
+      if (omitirSiMenorA) {
+        const previa = await cacheGet<EntradaCache<unknown>>(clave).catch(() => undefined)
+        if (previa && previa.userId === userId && previa.orgId === orgId && Date.now() - previa.guardadoEn < omitirSiMenorA) return
+      }
+      await leerConCache(clave, userId, orgId, fetcher, { maxEdad })
+    }),
   )
 }

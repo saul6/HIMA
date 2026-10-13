@@ -41,6 +41,7 @@ export function AplicacionGlobalGapPDF({
   responsable,
   operario,
   operarioEmail,
+  pendienteSync,
 }: AplicacionPDFProps) {
   const productorNombre = operario.nombre_completo || operarioEmail || '—'
   const folio = ap.id.slice(0, 8).toUpperCase()
@@ -71,7 +72,7 @@ export function AplicacionGlobalGapPDF({
       >
 
         {/* Footer fijo */}
-        <PdfFooter moduloCodigo="M1" />
+        <PdfFooter moduloCodigo="M1" pendienteSync={pendienteSync} />
 
         {/* Marco exterior */}
         <PdfPageFrame>

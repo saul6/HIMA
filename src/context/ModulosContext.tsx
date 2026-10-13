@@ -5,6 +5,8 @@ import { useAuthContext } from '@/context/AuthContext'
 import { precargarCache, leerConCache } from '@/lib/offline/cacheLectura'
 import { supabase } from '@/lib/supabase'
 import { getRanchos } from '@/lib/queries'
+import { fetchCatalogoProductos } from '@/hooks/useCatalogoProductos'
+import { fetchSaldosInventario } from '@/lib/offline/saldosInventario'
 
 interface ModulosContextValue {
   modulos: ModuloVisible[]
@@ -272,6 +274,15 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
             .order('created_at', { ascending: false })
           return data ?? []
         },
+      },
+      {
+        clave: 'catalogo_productos',
+        fetcher: fetchCatalogoProductos,
+        omitirSiMenorA: 12 * 60 * 60 * 1000,
+      },
+      {
+        clave: 'inv_saldos',
+        fetcher: fetchSaldosInventario,
       },
       {
         clave: 'm40_registros',
