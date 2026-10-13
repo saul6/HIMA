@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Outlet, useLocation, Link } from "react-router";
+import { Outlet, useLocation, useMatches, Link } from "react-router";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck, X, Calendar, ListChecks, BarChart3, CloudUpload, WifiOff } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
@@ -55,6 +55,11 @@ const ROL_LABELS: Record<string, string> = {
 
 export function Layout() {
   const location = useLocation();
+  // Las rutas hijas tipo ventana no reinician la transición de la página de fondo
+  const matches = useMatches();
+  const claveTransicion =
+    [...matches].reverse().find(m => !(m.handle as { ventana?: boolean } | undefined)?.ventana)?.pathname ??
+    location.pathname;
   const { profile } = useAuthContext();
   const { modulos, loading: loadingModulos, terminosSitio } = useModulosContext();
   const { busqueda, setBusqueda } = useHomeSearch();
@@ -341,7 +346,7 @@ export function Layout() {
         {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto">
           <motion.div
-            key={location.pathname}
+            key={claveTransicion}
             initial={reducedMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
