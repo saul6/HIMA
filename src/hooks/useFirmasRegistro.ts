@@ -7,6 +7,18 @@ import { toast } from 'sonner'
 export type RolFirma = 'realizo' | 'verifico'
 export type EstadoFirma = 'vigente' | 'desactualizada'
 
+// Firma de enterado: persona sin cuenta, capturada desde la sesión de otro usuario
+export interface FirmaEnterado {
+  estado: EstadoFirma
+  firmante: string
+  cargo: string
+  capturado_por: string
+  firmado_en: string
+  sello: string
+  trazos?: Array<Array<{ x: number; y: number }>>
+  firma_png?: string
+}
+
 export interface FirmaDetalle {
   estado: EstadoFirma
   firmante: string
@@ -16,15 +28,28 @@ export interface FirmaDetalle {
   sello: string
   trazos?: Array<Array<{ x: number; y: number }>>
   firma_png?: string
+  // Solo lo llena obtenerFirmasParaPdf: lleva el enterado hasta PdfSignatures
+  // sin tener que cambiar la firma de cada generador de PDF.
+  enterado?: FirmaEnterado | null
 }
 
 export interface FirmasDeRegistro {
   contenido_sha256: string
   realizo: FirmaDetalle | null
   verifico: FirmaDetalle | null
+  enterado?: FirmaEnterado | null
 }
 
 export type MapaFirmas = Record<string, FirmasDeRegistro>
+
+export interface FirmaEnteradoParaPdf {
+  png: string
+  firmante: string
+  cargo: string
+  capturadoPor: string
+  fecha: string      // "dd/mm/yyyy hh:mm"
+  estado: EstadoFirma
+}
 
 // FirmaParaPdf: para pasar a PdfSignatures
 export interface FirmaParaPdf {
@@ -33,6 +58,7 @@ export interface FirmaParaPdf {
   fecha: string      // "dd/mm/yyyy hh:mm"
   sello: string      // primeros 12 chars
   estado: EstadoFirma
+  enterado?: FirmaEnteradoParaPdf | null
 }
 
 // ── Helpers de formateo ───────────────────────────────────────────────────────
@@ -53,12 +79,23 @@ function formatFirmaFecha(isoStr: string): string {
 
 // Convierte FirmaDetalle (con imagen) al formato para PDF
 export function firmaDetalleAParaPdf(firma: FirmaDetalle): FirmaParaPdf {
+  const e = firma.enterado
   return {
     png: firma.firma_png ?? '',
     firmante: firma.firmante,
-    fecha: formatFirmaFecha(firma.firmado_en),
+    fecha: firma.firmado_en ? formatFirmaFecha(firma.firmado_en) : '',
     sello: (firma.sello ?? '').slice(0, 12),
     estado: firma.estado,
+    enterado: e
+      ? {
+          png: e.firma_png ?? '',
+          firmante: e.firmante,
+          cargo: e.cargo,
+          capturadoPor: e.capturado_por,
+          fecha: formatFirmaFecha(e.firmado_en),
+          estado: e.estado,
+        }
+      : null,
   }
 }
 
@@ -71,6 +108,8 @@ const ERRORES_FIRMA_WARNING = [
   'Primero debe firmar',
   'Quien realizó',
   'Quien verificó',
+  'firma de enterado',
+  'La firma está vacía',
   'El registro cambió',
   'no admite firmas',
   'no puede firmar registros',
@@ -102,6 +141,18 @@ export async function obtenerFirmasParaPdf(modulo: string, ids: string[]): Promi
     }
     if (data && typeof data === 'object') {
       Object.assign(resultado, data)
+    }
+  }
+
+  // Los generadores solo leen realizo/verifico: el enterado viaja dentro de ellos.
+  // Si no hay firma Realizó, un marcador vacío (png '') se imprime igual que "sin firma".
+  for (const reg of Object.values(resultado)) {
+    const ent = reg?.enterado
+    if (!ent) continue
+    if (reg.realizo) reg.realizo.enterado = ent
+    else reg.realizo = {
+      estado: 'vigente', firmante: '', rol_usuario: '', profile_id: '',
+      firmado_en: '', sello: '', enterado: ent,
     }
   }
 

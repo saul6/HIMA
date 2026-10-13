@@ -7,7 +7,9 @@ import { supabase } from '@/lib/supabase'
 import {
   type FirmasDeRegistro,
   type FirmaDetalle,
+  type FirmaEnterado,
 } from '@/hooks/useFirmasRegistro'
+import { BottomSheet } from '@/app/components/BottomSheet'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { useConexion } from '@/hooks/useConexion'
 import { FirmaPad, type FirmaPadRef } from '@/app/components/FirmaPad'
@@ -35,6 +37,8 @@ const ERRORES_FIRMA_WARNING = [
   'Primero debe firmar',
   'Quien realizó',
   'Quien verificó',
+  'firma de enterado',
+  'La firma está vacía',
   'El registro cambió',
   'no admite firmas',
   'no puede firmar registros',
@@ -73,7 +77,9 @@ function formatFirmaFecha(isoStr: string): string {
 
 // ── Sub-componente: chip de estado de firma ───────────────────────────────────
 
-function FirmaEstadoChip({ firma, label }: { firma: FirmaDetalle | null | undefined; label: string }) {
+function FirmaEstadoChip({ firma, label }: { firma: FirmaDetalle | FirmaEnterado | null | undefined; label: string }) {
+  const cargo = firma && 'cargo' in firma ? firma.cargo : null
+  const capturadoPor = firma && 'capturado_por' in firma ? firma.capturado_por : null
   const reducedMotion = useReducedMotion()
   const [resaltado, setResaltado] = useState(false)
   const firmaVigenteRef = useRef(firma?.estado === 'vigente')
@@ -132,9 +138,17 @@ function FirmaEstadoChip({ firma, label }: { firma: FirmaDetalle | null | undefi
           {firma.firmante}
         </p>
       </div>
+      {cargo && (
+        <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>{cargo}</p>
+      )}
       <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
         {formatFirmaFecha(firma.firmado_en)}
       </p>
+      {capturadoPor && (
+        <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+          Capturada por {capturadoPor}
+        </p>
+      )}
     </motion.div>
   )
 }
@@ -195,6 +209,14 @@ export function FirmasRegistro({
   const [firmaPadInfo, setFirmaPadInfo] = useState({ vacia: true, puntos: 0 })
   const [guardandoFirmaLocal, setGuardandoFirmaLocal] = useState(false)
 
+  // Firma de enterado (persona sin cuenta)
+  const [enteradoAbierto, setEnteradoAbierto] = useState(false)
+  const [enteradoNombre, setEnteradoNombre] = useState('')
+  const [enteradoCargo, setEnteradoCargo] = useState('')
+  const [enteradoPad, setEnteradoPad] = useState({ vacia: true, puntos: 0 })
+  const [firmandoEnterado, setFirmandoEnterado] = useState(false)
+  const enteradoPadRef = useRef<FirmaPadRef>(null)
+
   // Historial
   const [mostrarHistorial, setMostrarHistorial] = useState(false)
   const [historial, setHistorial] = useState<any[]>([])
@@ -211,6 +233,10 @@ export function FirmasRegistro({
     firma?.realizo?.estado === 'vigente' &&
     firma?.realizo?.profile_id !== profile?.id &&
     firma?.verifico?.estado !== 'vigente'
+
+  const puedeFirmarEnterado = !esAuditor && firma?.enterado?.estado !== 'vigente'
+  const puedeEnviarEnterado =
+    !firmandoEnterado && enteradoNombre.trim() !== '' && enteradoCargo.trim() !== '' && enteradoPad.puntos >= 15
 
   function avisarSinConexion(): boolean {
     if (online) return false
@@ -297,6 +323,57 @@ export function FirmasRegistro({
     }
   }
 
+  function abrirEnterado() {
+    if (avisarSinConexion()) return
+    setEnteradoNombre('')
+    setEnteradoCargo('')
+    setEnteradoPad({ vacia: true, puntos: 0 })
+    setEnteradoAbierto(true)
+  }
+
+  function cerrarEnterado() {
+    if (firmandoEnterado) return
+    setEnteradoAbierto(false)
+  }
+
+  async function handleFirmarEnterado() {
+    if (!enteradoPadRef.current) return
+    if (avisarSinConexion()) return
+    const nombre = enteradoNombre.trim()
+    const cargo = enteradoCargo.trim()
+    if (!nombre || !cargo) return
+    const { png, trazos } = enteradoPadRef.current.exportar()
+    setFirmandoEnterado(true)
+    try {
+      const { error } = await (supabase as any).rpc('registro_firmar_enterado', {
+        p_modulo: modulo,
+        p_registro_id: registroId,
+        p_nombre: nombre,
+        p_cargo: cargo,
+        p_firma_png: png,
+        p_trazos: trazos,
+        p_n_puntos: enteradoPad.puntos,
+        p_contenido_sha256: firma?.contenido_sha256 ?? null,
+        p_event_id: crypto.randomUUID(),
+      })
+      if (error) throw error
+      toast.success('Firma de enterado registrada')
+      setEnteradoAbierto(false)
+      onFirmado?.()
+    } catch (err: any) {
+      const msg: string = err?.message ?? ''
+      if (msg && !/fetch|network|timeout/i.test(msg)) {
+        // Mensajes de negocio del servidor, ya en español
+        toast.warning(msg)
+      } else {
+        console.error('[FirmasRegistro] firmar enterado error:', err)
+        toast.error('No se pudo registrar la firma de enterado')
+      }
+    } finally {
+      setFirmandoEnterado(false)
+    }
+  }
+
   async function toggleHistorial() {
     if (mostrarHistorial) {
       setMostrarHistorial(false)
@@ -343,10 +420,23 @@ export function FirmasRegistro({
     <div className="border-t border-border mt-3 pt-3">
 
       {/* Estado de firmas */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-3 gap-2 mb-3">
         <FirmaEstadoChip firma={firma?.realizo} label="Realizó" />
         <FirmaEstadoChip firma={firma?.verifico} label="Verificó" />
+        <FirmaEstadoChip firma={firma?.enterado} label="Enterado (Productor)" />
       </div>
+
+      {puedeFirmarEnterado && (
+        <div className="mb-3">
+          <button
+            onClick={abrirEnterado}
+            className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
+            style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+          >
+            {online ? 'Firma de enterado' : 'Necesitas conexión para firmar'}
+          </button>
+        </div>
+      )}
 
       {/* Botones de acción */}
       {(puedeRealizarFirma || puedeVerificarFirma) && panelActivo === null && (
@@ -437,6 +527,71 @@ export function FirmasRegistro({
         </div>
       )}
 
+      {/* Hoja de firma de enterado */}
+      <BottomSheet open={enteradoAbierto} onClose={cerrarEnterado} height="85%" title="Firma de enterado">
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+          <div className="space-y-1">
+            <label htmlFor="enterado-nombre" className="text-xs font-semibold">Nombre completo</label>
+            <input
+              id="enterado-nombre"
+              type="text"
+              value={enteradoNombre}
+              onChange={(e) => setEnteradoNombre(e.target.value)}
+              maxLength={120}
+              autoComplete="off"
+              className="w-full h-10 rounded-lg border border-border px-3 text-sm"
+              style={{ backgroundColor: 'var(--input-background)' }}
+            />
+          </div>
+          <div className="space-y-1">
+            <label htmlFor="enterado-cargo" className="text-xs font-semibold">Cargo</label>
+            <input
+              id="enterado-cargo"
+              type="text"
+              list="enterado-cargos"
+              value={enteradoCargo}
+              onChange={(e) => setEnteradoCargo(e.target.value)}
+              maxLength={80}
+              autoComplete="off"
+              className="w-full h-10 rounded-lg border border-border px-3 text-sm"
+              style={{ backgroundColor: 'var(--input-background)' }}
+            />
+            <datalist id="enterado-cargos">
+              <option value="Productor" />
+              <option value="Encargado" />
+              <option value="Mayordomo" />
+            </datalist>
+          </div>
+
+          <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+            Al firmar, {enteradoNombre.trim() || '[nombre]'} ({enteradoCargo.trim() || '[cargo]'}) declara estar
+            enterado del registro de {modulo}. La firma se captura en el dispositivo de{' '}
+            {profile?.nombre_completo ?? 'quien registra'}.
+          </p>
+
+          {enteradoAbierto && (
+            <FirmaPad ref={enteradoPadRef} onChange={(info) => setEnteradoPad(info)} />
+          )}
+        </div>
+        <div className="flex gap-2 px-4 py-3 border-t border-border flex-shrink-0">
+          <button
+            onClick={cerrarEnterado}
+            className="flex-1 h-10 rounded-lg text-sm border transition-colors"
+            style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleFirmarEnterado}
+            disabled={!puedeEnviarEnterado}
+            className="flex-1 h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 disabled:opacity-40 transition-colors"
+            style={{ backgroundColor: 'var(--primary)', color: 'white' }}
+          >
+            {firmandoEnterado ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Firmar'}
+          </button>
+        </div>
+      </BottomSheet>
+
       {/* Toggle historial */}
       <button
         onClick={toggleHistorial}
@@ -484,10 +639,18 @@ export function FirmasRegistro({
                     {h.estado === 'vigente' ? 'Vigente' : 'Desactualizada'}
                   </span>
                   <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                    · {h.rol_firma === 'realizo' ? 'Realizó' : 'Verificó'}
+                    · {h.rol_firma === 'realizo' ? 'Realizó' : h.rol_firma === 'enterado' ? 'Enterado (Productor)' : 'Verificó'}
                   </span>
                 </div>
                 <p className="text-xs" style={{ color: 'var(--foreground)' }}>{h.firmante}</p>
+                {h.rol_firma === 'enterado' && h.cargo && (
+                  <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>{h.cargo}</p>
+                )}
+                {h.rol_firma === 'enterado' && h.capturado_por && (
+                  <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                    Capturada por {h.capturado_por}
+                  </p>
+                )}
                 <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
                   {formatFirmaFecha(h.firmado_en)}
                 </p>
