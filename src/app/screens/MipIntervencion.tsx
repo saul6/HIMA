@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, FileDown, X, Loader2 } from 'lucide-react'
+import { Plus, FileDown, X, Loader2, WifiOff } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { toast } from 'sonner'
@@ -10,6 +10,9 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { useM55MipIntervencion, useM55Items } from '@/hooks/useM55MipIntervencion'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 import { generarMipIntervencionPDF, generarMipIntervencionConsolidadoPDF } from '@/lib/pdf/m55/generarMipIntervencionPDF'
 import { Fab } from '@/app/components/Fab'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
@@ -89,6 +92,8 @@ export function MipIntervencion() {
   const mostrarSkeleton = useMostrarCarga(loading, registros.length > 0)
   const { items } = useM55Items()
   const orgNombre = useOrganizacion(orgId)
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M55')
 
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
@@ -127,12 +132,74 @@ export function MipIntervencion() {
     setMarcas(m => ({ ...m, [itemId]: { ...(m[itemId] ?? MARCAS_INIT), [campo]: !(m[itemId]?.[campo] ?? false) } }))
   }
 
+  function armarResultados(registroId: string): any[] {
+    const batch: any[] = [
+      ...items
+        .filter(item => {
+          const m = marcas[item.id]
+          return m && (m.maleza || m.insectos || m.enfermedades || m.vertebrados || m.comentario.trim())
+        })
+        .map(item => {
+          const m = marcas[item.id]!
+          return {
+            org_id: orgId,
+            registro_id: registroId,
+            item_id: item.id,
+            tecnica_otra: null,
+            contra_maleza: m.maleza,
+            contra_insectos: m.insectos,
+            contra_enfermedades: m.enfermedades,
+            contra_vertebrados: m.vertebrados,
+            comentario: m.comentario.trim() || null,
+          }
+        }),
+    ]
+
+    if (otra.texto.trim() && (otra.maleza || otra.insectos || otra.enfermedades || otra.vertebrados || otra.comentario.trim())) {
+      batch.push({
+        org_id: orgId,
+        registro_id: registroId,
+        item_id: null,
+        tecnica_otra: otra.texto.trim(),
+        contra_maleza: otra.maleza,
+        contra_insectos: otra.insectos,
+        contra_enfermedades: otra.enfermedades,
+        contra_vertebrados: otra.vertebrados,
+        comentario: otra.comentario.trim() || null,
+      })
+    }
+    return batch
+  }
+
   async function guardar() {
     if (!orgId) return
     if (!form.rancho_id) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
 
     setGuardando(true)
     try {
+      if (!online) {
+        const registroId = crypto.randomUUID()
+        const rancho = ranchos.find(r => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `MIP Intervención · ${rancho?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [
+            opInsert('m55_registro', {
+              id: registroId,
+              rancho_id: form.rancho_id,
+              fecha: form.fecha,
+              producto: form.producto.trim() || null,
+              region: form.region.trim() || null,
+              realizo: form.realizo.trim() || null,
+              observaciones: form.observaciones.trim() || null,
+            }),
+            ...armarResultados(registroId).map(({ org_id: _org, ...r }) => opInsert('m55_resultados', r)),
+          ],
+        })
+        if (ok) { setSheetOpen(false); setSheetPaso('form') }
+        return
+      }
+
       const { data: regData, error: regErr } = await (supabase as any)
         .from('m55_registro')
         .insert({
@@ -150,41 +217,7 @@ export function MipIntervencion() {
       if (regErr) throw regErr
       const registroId = (regData as any).id as string
 
-      const batch: any[] = [
-        ...items
-          .filter(item => {
-            const m = marcas[item.id]
-            return m && (m.maleza || m.insectos || m.enfermedades || m.vertebrados || m.comentario.trim())
-          })
-          .map(item => {
-            const m = marcas[item.id]!
-            return {
-              org_id: orgId,
-              registro_id: registroId,
-              item_id: item.id,
-              tecnica_otra: null,
-              contra_maleza: m.maleza,
-              contra_insectos: m.insectos,
-              contra_enfermedades: m.enfermedades,
-              contra_vertebrados: m.vertebrados,
-              comentario: m.comentario.trim() || null,
-            }
-          }),
-      ]
-
-      if (otra.texto.trim() && (otra.maleza || otra.insectos || otra.enfermedades || otra.vertebrados || otra.comentario.trim())) {
-        batch.push({
-          org_id: orgId,
-          registro_id: registroId,
-          item_id: null,
-          tecnica_otra: otra.texto.trim(),
-          contra_maleza: otra.maleza,
-          contra_insectos: otra.insectos,
-          contra_enfermedades: otra.enfermedades,
-          contra_vertebrados: otra.vertebrados,
-          comentario: otra.comentario.trim() || null,
-        })
-      }
+      const batch: any[] = armarResultados(registroId)
 
       if (batch.length > 0) {
         const { error: resErr } = await (supabase as any).from('m55_resultados').insert(batch)
@@ -213,6 +246,7 @@ export function MipIntervencion() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (obligatoria && !firmas[id]?.realizo) {
       toast.info('Firma el registro antes de generar el PDF')
       return
@@ -229,6 +263,7 @@ export function MipIntervencion() {
 
   async function exportarConsolidado() {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setExportando(true)
     try {
       const rancho = ranchos.find(r => r.id === consolidadoForm.rancho_id)
@@ -491,7 +526,8 @@ export function MipIntervencion() {
             style={{ backgroundColor: 'var(--primary)' }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar
+            {!guardando && !online && <WifiOff className="w-4 h-4" />}
+            {online ? 'Guardar' : 'Guardar sin conexión'}
           </button>
         </div>
         </>)}

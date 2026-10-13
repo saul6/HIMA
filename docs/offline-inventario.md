@@ -506,3 +506,23 @@ Clases: **C** = necesaria para capturar/ver lo capturado · **R** = solo con red
 - Confirmar que `sync_aplicar_lote` permite las tablas `m20_accidentes`, `m20_accidente_fotos`, `m49_calibracion_bombas`, `m50_calibracion_equipos`, `m51_calibracion_basculas` y `m52_calibracion_volumetricos`; si no, el lote se rechaza con `SYNC_TABLA_NO_PERMITIDA`. No se verificó desde el front.
 
 Resultado: los cinco módulos quedan completos; ninguno sale de `MODULOS_OFFLINE`.
+
+
+## Auditoría de lecturas Fase 3a — Bloque 1 (cabecera + resultados, sin mes)
+
+Clases: **C** = necesaria para capturar/ver lo capturado · **R** = solo con red · **V** = validación
+
+### M53 MipPreventivo, M54 MipObservacion, M55 MipIntervencion, M59 PlanSuelo
+
+| Lectura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m53/m54/m55/m59_registro` + `ranchos(nombre)` (lista) | `useM53…`, `useM54…`, `useM55…`, `useM59…` | C | ✅ `leerConCache` (clave `mXX_registro`) + precarga |
+| SELECT `mXX_items_catalogo` (ítems de la matriz) | `useMXXItems` | C | ✅ `leerConCache` (clave `mXX_items_catalogo`) + precarga |
+| SELECT `ranchos` (selector de sitio) | `useRanchos` | C | ✅ ya cacheado |
+| SELECT `organizaciones.nombre` (consolidado) | `useOrganizacion` | C | ✅ ya cacheado |
+| RPC `org_tarea_detalle` (banner de tarea de origen) | `BannerTareaOrigen` | R | ✅ solo si se llega desde una tarea; sin red muestra "Tarea asignada" |
+| RPC `registro_firmas_ver`, `registro_firmar`, `mi_firma` | `useFirmasRegistro`, `FirmasRegistro` | R | ✅ firmar sin red muestra "Necesitas conexión para firmar" |
+| `generar*PDF` / `generar*ConsolidadoPDF` | pantallas | R | ✅ sin red: "Necesitas conexión para generar el PDF" |
+| INSERT `mXX_registro` + `mXX_resultados` | pantallas | — | ✅ offline: `opInsert` de cabecera y resultados en el **mismo lote** (ids locales; sin `org_id`/`creado_por`) |
+
+Camino en línea: mismos `insert`, validaciones, toasts, firma y PDF. Lo único que cambió es que el armado de los resultados salió a `armarResultados(registroId)` (mismo contenido), reutilizado por la rama offline.

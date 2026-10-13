@@ -158,6 +158,32 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
           return data ?? []
         },
       })),
+      // Bloque 1 (cabecera + resultados): lista de registros y catálogo de ítems
+      ...([['m53', 'texto'], ['m54', 'texto'], ['m55', 'texto'], ['m59', 'descripcion']] as const).flatMap(([m, campo]) => [
+        {
+          clave: `${m}_registro`,
+          fetcher: async () => {
+            const { data } = await (supabase as any)
+              .from(`${m}_registro`)
+              .select('*, ranchos(nombre)')
+              .eq('org_id', orgId)
+              .order('fecha', { ascending: false })
+              .order('created_at', { ascending: false })
+            return data ?? []
+          },
+        },
+        {
+          clave: `${m}_items_catalogo`,
+          fetcher: async () => {
+            const { data } = await (supabase as any)
+              .from(`${m}_items_catalogo`)
+              .select(`id, numero, ${campo}`)
+              .eq('activo', true)
+              .order('numero', { ascending: true })
+            return data ?? []
+          },
+        },
+      ]),
     ])
 
     // Precarga de días M9 para todos los registros del mes actual

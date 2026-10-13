@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, FileDown, X, Loader2 } from 'lucide-react'
+import { Plus, FileDown, X, Loader2, WifiOff } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -12,6 +12,9 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { useM59PlanSuelo, useM59Items } from '@/hooks/useM59PlanSuelo'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 import { generarPlanSueloPDF } from '@/lib/pdf/m59/generarPlanSueloPDF'
 import { generarPlanSueloConsolidadoPDF } from '@/lib/pdf/m59/generarPlanSueloPDF'
 import { Fab } from '@/app/components/Fab'
@@ -80,6 +83,8 @@ export function PlanSuelo() {
   const mostrarSkeleton = useMostrarCarga(loading, registros.length > 0)
   const { items } = useM59Items()
   const orgNombre = useOrganizacion(orgId)
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M59')
 
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
@@ -114,6 +119,16 @@ export function PlanSuelo() {
     setPendienteFirmaId(null)
   }
 
+  function armarResultados(registroId: string) {
+    return items.map(item => ({
+      org_id: orgId,
+      registro_id: registroId,
+      item_id: item.id,
+      respuesta: valores[item.id] ?? 'si',
+      comentario: comentarios[item.id]?.trim() || null,
+    }))
+  }
+
   async function guardar() {
     if (!orgId) return
     if (!form.rancho_id) {
@@ -123,6 +138,27 @@ export function PlanSuelo() {
 
     setGuardando(true)
     try {
+      if (!online) {
+        const registroId = crypto.randomUUID()
+        const rancho = ranchos.find(r => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Plan de suelo · ${rancho?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
+          operaciones: [
+            opInsert('m59_registro', {
+              id: registroId,
+              rancho_id: form.rancho_id,
+              fecha: form.fecha,
+              realizo: form.realizo.trim() || null,
+              observaciones: form.observaciones.trim() || null,
+            }),
+            ...armarResultados(registroId).map(({ org_id: _org, ...r }) => opInsert('m59_resultados', r)),
+          ],
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       // Paso 1: insertar cabecera
       const { data: regData, error: regErr } = await (supabase as any)
         .from('m59_registro')
@@ -140,13 +176,7 @@ export function PlanSuelo() {
       const registroId = (regData as any).id as string
 
       // Paso 2: insertar resultados (llamada separada para que la RLS valide la cabecera)
-      const batch = items.map(item => ({
-        org_id: orgId,
-        registro_id: registroId,
-        item_id: item.id,
-        respuesta: valores[item.id] ?? 'si',
-        comentario: comentarios[item.id]?.trim() || null,
-      }))
+      const batch = armarResultados(registroId)
       const { error: resErr } = await (supabase as any).from('m59_resultados').insert(batch)
       if (resErr) throw resErr
 
@@ -172,6 +202,7 @@ export function PlanSuelo() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (obligatoria && !firmas[id]?.realizo) {
       toast.info('Firma el registro antes de generar el PDF')
       return
@@ -188,6 +219,7 @@ export function PlanSuelo() {
 
   async function exportarConsolidado() {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setExportando(true)
     try {
       const rancho = ranchos.find(r => r.id === consolidadoForm.rancho_id)
@@ -392,7 +424,8 @@ export function PlanSuelo() {
             style={{ backgroundColor: 'var(--primary)' }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            Guardar
+            {!guardando && !online && <WifiOff className="w-4 h-4" />}
+            {online ? 'Guardar' : 'Guardar sin conexión'}
           </button>
         </div>
         </>)}
