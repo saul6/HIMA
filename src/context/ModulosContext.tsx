@@ -424,6 +424,8 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
     await precargarAuditoriasInternas(userId, orgId!)
     // Precarga de M21 (estaciones con nfc_token, indicador NFC, catálogos y revisiones) para trabajar y escanear sin red
     await precargarM21(userId, orgId!)
+    // Precarga de listas de trazabilidad M48 por sitio (LR, LPT, LC, FE)
+    await precargarM48(userId, orgId!)
   }, [userId, orgId])
 
   async function precargarDiasM9(userId: string, orgId: string) {
@@ -495,6 +497,53 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
         ),
       ),
     )
+  }
+
+  async function precargarM48(userId: string, orgId: string) {
+    const { data: ranchos } = await supabase
+      .from('ranchos')
+      .select('id')
+      .eq('org_id', orgId)
+      .eq('activo', true)
+    if (!ranchos) return
+    const sb = supabase as any
+    const lista = async (tabla: string, select: string, ranchoId: string) => {
+      const { data, error } = await sb.from(tabla).select(select).eq('org_id', orgId).eq('rancho_id', ranchoId)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    }
+    await Promise.allSettled(ranchos.flatMap((r: any) => [
+      leerConCache(`m48_lr:${r.id}`, userId, orgId, async () =>
+        (await lista('m48_lotes_recepcion', '*, ranchos(nombre)', r.id))
+          .map((x: any) => ({ ...x, rancho_nombre: x.ranchos?.nombre ?? '—' }))),
+      leerConCache(`m48_lpt:${r.id}`, userId, orgId, async () =>
+        (await lista('m48_lotes_producto', '*, m48_lotes_recepcion(codigo), m48_lotes_compuestos(codigo)', r.id))
+          .map((x: any) => ({ ...x, lr_codigo: x.m48_lotes_recepcion?.codigo ?? null, lc_codigo: x.m48_lotes_compuestos?.codigo ?? null }))),
+      leerConCache(`m48_lc:${r.id}`, userId, orgId, async () =>
+        (await lista('m48_lotes_compuestos', '*, m48_lc_lr(lr_id, m48_lotes_recepcion(id, codigo, proveedor_nombre, fecha))', r.id))
+          .map((x: any) => ({
+            ...x,
+            lotes_recepcion: (x.m48_lc_lr ?? []).map((rel: any) => ({
+              id: rel.m48_lotes_recepcion?.id ?? rel.lr_id,
+              codigo: rel.m48_lotes_recepcion?.codigo ?? '—',
+              proveedor_nombre: rel.m48_lotes_recepcion?.proveedor_nombre ?? '—',
+              fecha: rel.m48_lotes_recepcion?.fecha ?? '',
+            })),
+          }))),
+      leerConCache(`m48_fe:${r.id}`, userId, orgId, async () =>
+        (await lista('m48_folios_embarque', '*, m48_fe_lpt(lpt_id, numero_tarima, cantidad, cliente, m48_lotes_producto(codigo))', r.id))
+          .map((x: any) => ({
+            ...x,
+            lotes_producto: (x.m48_fe_lpt ?? []).map((rel: any) => ({
+              lpt_id: rel.lpt_id,
+              lpt_codigo: rel.m48_lotes_producto?.codigo ?? '—',
+              numero_tarima: rel.numero_tarima ?? null,
+              cantidad: rel.cantidad ?? null,
+              cliente: rel.cliente ?? null,
+            })),
+          }))),
+    ]))
   }
 
   async function precargarM21(userId: string, orgId: string) {

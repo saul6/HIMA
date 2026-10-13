@@ -1,5 +1,12 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useAuthContext } from '@/context/AuthContext'
+import { useOutbox } from '@/hooks/useOutbox'
+import { leerConCache } from '@/lib/offline/cacheLectura'
+import { cacheGet } from '@/lib/offline/db'
+import { SYNC_OK_EVENT } from '@/lib/offline/sync'
+import { codigoProvisional } from '@/lib/offline/codigoProvisional'
+import type { LoteOutbox } from '@/lib/offline/tipos'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -23,7 +30,8 @@ export interface M48LoteRecepcion {
   observaciones: string | null
   codigo: string
   consecutivo: number
-  created_at: string
+  created_at: string  /** Capturado sin conexión: el código es provisional hasta que el servidor genere el real */
+  sin_subir?: boolean
 }
 
 export interface M48LoteProducto {
@@ -46,7 +54,8 @@ export interface M48LoteProducto {
   responsable: string | null
   observaciones: string | null
   codigo: string
-  created_at: string
+  created_at: string  /** Capturado sin conexión: el código es provisional hasta que el servidor genere el real */
+  sin_subir?: boolean
 }
 
 export interface M48LrEnLC {
@@ -65,7 +74,8 @@ export interface M48LoteCompuesto {
   observaciones: string | null
   codigo: string
   lotes_recepcion: M48LrEnLC[]
-  created_at: string
+  created_at: string  /** Capturado sin conexión: el código es provisional hasta que el servidor genere el real */
+  sin_subir?: boolean
 }
 
 export interface M48LptEnFE {
@@ -94,7 +104,8 @@ export interface M48FolioEmbarque {
   observaciones: string | null
   codigo: string
   lotes_producto: M48LptEnFE[]
-  created_at: string
+  created_at: string  /** Capturado sin conexión: el código es provisional hasta que el servidor genere el real */
+  sin_subir?: boolean
 }
 
 export interface TrazabilidadNodo {
@@ -112,128 +123,293 @@ export interface TrazabilidadNodo {
 }
 
 // ── Hooks ────────────────────────────────────────────────────────────────────
+// Lectura con caché + registros capturados sin conexión (outbox). Sin red, los lotes nuevos
+// se muestran con un código provisional local (PROV-xxxxxx); el código real (LR, LC, LPT, FE)
+// lo genera el servidor al sincronizar y se vuelve a leer al terminar la sincronización.
+
+function useRecargarAlSincronizar(recargar: () => void) {
+  useEffect(() => {
+    const h = () => recargar()
+    window.addEventListener(SYNC_OK_EVENT, h)
+    return () => window.removeEventListener(SYNC_OK_EVENT, h)
+  }, [recargar])
+}
+
+// Códigos reales (id → codigo) de otras listas M48 ya en caché, para rotular relaciones
+function useCodigosEnCache(orgId: string | null, ranchoId: string | null, prefijos: string[]) {
+  const { user } = useAuthContext()
+  const userId = user?.id ?? null
+  const [mapa, setMapa] = useState<Map<string, string>>(new Map())
+  const clave = prefijos.join('|')
+  useEffect(() => {
+    if (!orgId || !ranchoId || !userId) { setMapa(new Map()); return }
+    let activo = true
+    ;(async () => {
+      const m = new Map<string, string>()
+      for (const p of clave.split('|')) {
+        try {
+          const entrada = await cacheGet<{ datos: any[]; userId: string; orgId: string }>(`${p}:${ranchoId}`)
+          if (!entrada || entrada.userId !== userId || entrada.orgId !== orgId) continue
+          for (const x of entrada.datos) if (x?.id && x?.codigo) m.set(x.id, x.codigo)
+        } catch { /* sin caché de esa lista */ }
+      }
+      if (activo) setMapa(m)
+    })()
+    return () => { activo = false }
+  }, [orgId, ranchoId, userId, clave])
+  return mapa
+}
+
+function filasPendientes(pendientes: LoteOutbox[], tabla: string, ranchoId: string | null) {
+  const out: Array<{ fila: Record<string, any>; lote: LoteOutbox }> = []
+  for (const lote of pendientes) {
+    for (const op of lote.operaciones) {
+      if (op.tabla !== tabla) continue
+      const fila = op.fila as Record<string, any>
+      if (ranchoId && fila.rancho_id && fila.rancho_id !== ranchoId) continue
+      out.push({ fila, lote })
+    }
+  }
+  return out
+}
 
 export function useM48LotesRecepcion(orgId: string | null, ranchoId: string | null) {
-  const [lotes, setLotes] = useState<M48LoteRecepcion[]>([])
+  const { user } = useAuthContext()
+  const userId = user?.id ?? null
+  const { pendientes } = useOutbox()
+  const [base, setBase] = useState<M48LoteRecepcion[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!orgId || !ranchoId) { setLotes([]); return }
+    if (!orgId || !ranchoId || !userId) { setBase([]); return }
     setLoading(true); setError(null)
     try {
-      const { data, error: err } = await tbl('m48_lotes_recepcion')
-        .select('*, ranchos(nombre)')
-        .eq('org_id', orgId)
-        .eq('rancho_id', ranchoId)
-        .order('created_at', { ascending: false })
-      if (err) throw err
-      setLotes(((data ?? []) as any[]).map((r: any) => ({
-        ...r,
-        rancho_nombre: r.ranchos?.nombre ?? '—',
-      })))
+      const r = await leerConCache<any[]>(`m48_lr:${ranchoId}`, userId, orgId, async () => {
+        const { data, error: err } = await tbl('m48_lotes_recepcion')
+          .select('*, ranchos(nombre)')
+          .eq('org_id', orgId)
+          .eq('rancho_id', ranchoId)
+          .order('created_at', { ascending: false })
+        if (err) throw err
+        return (data ?? []).map((x: any) => ({ ...x, rancho_nombre: x.ranchos?.nombre ?? '—' }))
+      })
+      setBase(r.datos as M48LoteRecepcion[])
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al cargar LR')
+      setError((e as { message?: string })?.message ?? 'Error al cargar LR')
     } finally { setLoading(false) }
-  }, [orgId, ranchoId])
+  }, [orgId, ranchoId, userId])
 
   useEffect(() => { cargar() }, [cargar])
+  useRecargarAlSincronizar(cargar)
+
+  const lotes = useMemo(() => {
+    const nuevos: M48LoteRecepcion[] = filasPendientes(pendientes, 'm48_lotes_recepcion', ranchoId)
+      .filter(({ fila }) => !base.some(b => b.id === fila.id))
+      .map(({ fila, lote }) => ({
+        ...(fila as any),
+        org_id: orgId ?? '',
+        rancho_nombre: (lote.metadatos as any)?.rancho_nombre ?? '—',
+        codigo: codigoProvisional(fila.id),
+        consecutivo: 0,
+        created_at: lote.capturadoEn,
+        sin_subir: true,
+      }))
+    return nuevos.length === 0 ? base : [...nuevos.reverse(), ...base]
+  }, [base, pendientes, ranchoId, orgId])
+
   return { lotes, loading, error, refetch: cargar }
 }
 
 export function useM48LotesProducto(orgId: string | null, ranchoId: string | null) {
-  const [lotes, setLotes] = useState<M48LoteProducto[]>([])
+  const { user } = useAuthContext()
+  const userId = user?.id ?? null
+  const { pendientes } = useOutbox()
+  const [base, setBase] = useState<M48LoteProducto[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const codigos = useCodigosEnCache(orgId, ranchoId, ['m48_lr', 'm48_lc'])
 
   const cargar = useCallback(async () => {
-    if (!orgId || !ranchoId) { setLotes([]); return }
+    if (!orgId || !ranchoId || !userId) { setBase([]); return }
     setLoading(true); setError(null)
     try {
-      const { data, error: err } = await tbl('m48_lotes_producto')
-        .select('*, m48_lotes_recepcion(codigo), m48_lotes_compuestos(codigo)')
-        .eq('org_id', orgId)
-        .eq('rancho_id', ranchoId)
-        .order('created_at', { ascending: false })
-      if (err) throw err
-      setLotes(((data ?? []) as any[]).map((r: any) => ({
-        ...r,
-        lr_codigo: r.m48_lotes_recepcion?.codigo ?? null,
-        lc_codigo: r.m48_lotes_compuestos?.codigo ?? null,
-      })))
+      const r = await leerConCache<any[]>(`m48_lpt:${ranchoId}`, userId, orgId, async () => {
+        const { data, error: err } = await tbl('m48_lotes_producto')
+          .select('*, m48_lotes_recepcion(codigo), m48_lotes_compuestos(codigo)')
+          .eq('org_id', orgId)
+          .eq('rancho_id', ranchoId)
+          .order('created_at', { ascending: false })
+        if (err) throw err
+        return (data ?? []).map((x: any) => ({
+          ...x,
+          lr_codigo: x.m48_lotes_recepcion?.codigo ?? null,
+          lc_codigo: x.m48_lotes_compuestos?.codigo ?? null,
+        }))
+      })
+      setBase(r.datos as M48LoteProducto[])
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al cargar LPT')
+      setError((e as { message?: string })?.message ?? 'Error al cargar LPT')
     } finally { setLoading(false) }
-  }, [orgId, ranchoId])
+  }, [orgId, ranchoId, userId])
 
   useEffect(() => { cargar() }, [cargar])
+  useRecargarAlSincronizar(cargar)
+
+  const lotes = useMemo(() => {
+    const codigoDe = (id: string | null) => id ? (codigos.get(id) ?? codigoProvisional(id)) : null
+    const nuevos: M48LoteProducto[] = filasPendientes(pendientes, 'm48_lotes_producto', ranchoId)
+      .filter(({ fila }) => !base.some(b => b.id === fila.id))
+      .map(({ fila, lote }) => ({
+        ...(fila as any),
+        org_id: orgId ?? '',
+        lr_codigo: codigoDe(fila.lr_id ?? null),
+        lc_codigo: codigoDe(fila.lc_id ?? null),
+        codigo: codigoProvisional(fila.id),
+        created_at: lote.capturadoEn,
+        sin_subir: true,
+      }))
+    return nuevos.length === 0 ? base : [...nuevos.reverse(), ...base]
+  }, [base, pendientes, ranchoId, orgId, codigos])
+
   return { lotes, loading, error, refetch: cargar }
 }
 
 export function useM48LotesCompuestos(orgId: string | null, ranchoId: string | null) {
-  const [lotes, setLotes] = useState<M48LoteCompuesto[]>([])
+  const { user } = useAuthContext()
+  const userId = user?.id ?? null
+  const { pendientes } = useOutbox()
+  const [base, setBase] = useState<M48LoteCompuesto[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const codigos = useCodigosEnCache(orgId, ranchoId, ['m48_lr'])
 
   const cargar = useCallback(async () => {
-    if (!orgId || !ranchoId) { setLotes([]); return }
+    if (!orgId || !ranchoId || !userId) { setBase([]); return }
     setLoading(true); setError(null)
     try {
-      const { data, error: err } = await tbl('m48_lotes_compuestos')
-        .select('*, m48_lc_lr(lr_id, m48_lotes_recepcion(id, codigo, proveedor_nombre, fecha))')
-        .eq('org_id', orgId)
-        .eq('rancho_id', ranchoId)
-        .order('created_at', { ascending: false })
-      if (err) throw err
-      setLotes(((data ?? []) as any[]).map((r: any) => ({
-        ...r,
-        lotes_recepcion: ((r.m48_lc_lr ?? []) as any[]).map((rel: any) => ({
-          id: rel.m48_lotes_recepcion?.id ?? rel.lr_id,
-          codigo: rel.m48_lotes_recepcion?.codigo ?? '—',
-          proveedor_nombre: rel.m48_lotes_recepcion?.proveedor_nombre ?? '—',
-          fecha: rel.m48_lotes_recepcion?.fecha ?? '',
-        })),
-      })))
+      const r = await leerConCache<any[]>(`m48_lc:${ranchoId}`, userId, orgId, async () => {
+        const { data, error: err } = await tbl('m48_lotes_compuestos')
+          .select('*, m48_lc_lr(lr_id, m48_lotes_recepcion(id, codigo, proveedor_nombre, fecha))')
+          .eq('org_id', orgId)
+          .eq('rancho_id', ranchoId)
+          .order('created_at', { ascending: false })
+        if (err) throw err
+        return (data ?? []).map((x: any) => ({
+          ...x,
+          lotes_recepcion: ((x.m48_lc_lr ?? []) as any[]).map((rel: any) => ({
+            id: rel.m48_lotes_recepcion?.id ?? rel.lr_id,
+            codigo: rel.m48_lotes_recepcion?.codigo ?? '—',
+            proveedor_nombre: rel.m48_lotes_recepcion?.proveedor_nombre ?? '—',
+            fecha: rel.m48_lotes_recepcion?.fecha ?? '',
+          })),
+        }))
+      })
+      setBase(r.datos as M48LoteCompuesto[])
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al cargar LC')
+      setError((e as { message?: string })?.message ?? 'Error al cargar LC')
     } finally { setLoading(false) }
-  }, [orgId, ranchoId])
+  }, [orgId, ranchoId, userId])
 
   useEffect(() => { cargar() }, [cargar])
+  useRecargarAlSincronizar(cargar)
+
+  const lotes = useMemo(() => {
+    const lrsPend = filasPendientes(pendientes, 'm48_lotes_recepcion', null)
+    const nuevos: M48LoteCompuesto[] = filasPendientes(pendientes, 'm48_lotes_compuestos', ranchoId)
+      .filter(({ fila }) => !base.some(b => b.id === fila.id))
+      .map(({ fila, lote }) => {
+        const rels = lote.operaciones
+          .filter(o => o.tabla === 'm48_lc_lr' && (o.fila as any).lc_id === fila.id)
+          .map(o => (o.fila as any).lr_id as string)
+        return {
+          ...(fila as any),
+          org_id: orgId ?? '',
+          codigo: codigoProvisional(fila.id),
+          created_at: lote.capturadoEn,
+          sin_subir: true,
+          lotes_recepcion: rels.map(lrId => {
+            const lrLocal = lrsPend.find(x => x.fila.id === lrId)?.fila
+            return {
+              id: lrId,
+              codigo: codigos.get(lrId) ?? codigoProvisional(lrId),
+              proveedor_nombre: lrLocal?.proveedor_nombre ?? '—',
+              fecha: lrLocal?.fecha ?? '',
+            }
+          }),
+        }
+      })
+    return nuevos.length === 0 ? base : [...nuevos.reverse(), ...base]
+  }, [base, pendientes, ranchoId, orgId, codigos])
+
   return { lotes, loading, error, refetch: cargar }
 }
 
 export function useM48FoliosEmbarque(orgId: string | null, ranchoId: string | null) {
-  const [folios, setFolios] = useState<M48FolioEmbarque[]>([])
+  const { user } = useAuthContext()
+  const userId = user?.id ?? null
+  const { pendientes } = useOutbox()
+  const [base, setBase] = useState<M48FolioEmbarque[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const codigos = useCodigosEnCache(orgId, ranchoId, ['m48_lpt'])
 
   const cargar = useCallback(async () => {
-    if (!orgId || !ranchoId) { setFolios([]); return }
+    if (!orgId || !ranchoId || !userId) { setBase([]); return }
     setLoading(true); setError(null)
     try {
-      const { data, error: err } = await tbl('m48_folios_embarque')
-        .select('*, m48_fe_lpt(lpt_id, numero_tarima, cantidad, cliente, m48_lotes_producto(codigo))')
-        .eq('org_id', orgId)
-        .eq('rancho_id', ranchoId)
-        .order('created_at', { ascending: false })
-      if (err) throw err
-      setFolios(((data ?? []) as any[]).map((r: any) => ({
-        ...r,
-        lotes_producto: ((r.m48_fe_lpt ?? []) as any[]).map((rel: any) => ({
-          lpt_id: rel.lpt_id,
-          lpt_codigo: rel.m48_lotes_producto?.codigo ?? '—',
-          numero_tarima: rel.numero_tarima ?? null,
-          cantidad: rel.cantidad ?? null,
-          cliente: rel.cliente ?? null,
-        })),
-      })))
+      const r = await leerConCache<any[]>(`m48_fe:${ranchoId}`, userId, orgId, async () => {
+        const { data, error: err } = await tbl('m48_folios_embarque')
+          .select('*, m48_fe_lpt(lpt_id, numero_tarima, cantidad, cliente, m48_lotes_producto(codigo))')
+          .eq('org_id', orgId)
+          .eq('rancho_id', ranchoId)
+          .order('created_at', { ascending: false })
+        if (err) throw err
+        return (data ?? []).map((x: any) => ({
+          ...x,
+          lotes_producto: ((x.m48_fe_lpt ?? []) as any[]).map((rel: any) => ({
+            lpt_id: rel.lpt_id,
+            lpt_codigo: rel.m48_lotes_producto?.codigo ?? '—',
+            numero_tarima: rel.numero_tarima ?? null,
+            cantidad: rel.cantidad ?? null,
+            cliente: rel.cliente ?? null,
+          })),
+        }))
+      })
+      setBase(r.datos as M48FolioEmbarque[])
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al cargar FE')
+      setError((e as { message?: string })?.message ?? 'Error al cargar FE')
     } finally { setLoading(false) }
-  }, [orgId, ranchoId])
+  }, [orgId, ranchoId, userId])
 
   useEffect(() => { cargar() }, [cargar])
+  useRecargarAlSincronizar(cargar)
+
+  const folios = useMemo(() => {
+    const nuevos: M48FolioEmbarque[] = filasPendientes(pendientes, 'm48_folios_embarque', ranchoId)
+      .filter(({ fila }) => !base.some(b => b.id === fila.id))
+      .map(({ fila, lote }) => ({
+        ...(fila as any),
+        org_id: orgId ?? '',
+        codigo: codigoProvisional(fila.id),
+        created_at: lote.capturadoEn,
+        sin_subir: true,
+        lotes_producto: lote.operaciones
+          .filter(o => o.tabla === 'm48_fe_lpt' && (o.fila as any).fe_id === fila.id)
+          .map(o => {
+            const rel = o.fila as any
+            return {
+              lpt_id: rel.lpt_id,
+              lpt_codigo: codigos.get(rel.lpt_id) ?? codigoProvisional(rel.lpt_id),
+              numero_tarima: rel.numero_tarima ?? null,
+              cantidad: rel.cantidad ?? null,
+              cliente: rel.cliente ?? null,
+            }
+          }),
+      }))
+    return nuevos.length === 0 ? base : [...nuevos.reverse(), ...base]
+  }, [base, pendientes, ranchoId, orgId, codigos])
+
   return { folios, loading, error, refetch: cargar }
 }
 

@@ -718,3 +718,17 @@ Limitaciones: (1) sin red, un chip de otra organización se reporta como "Chip n
 | `m39_lineas.codigo_trazabilidad` (copia del código LR) | `useM39Recepciones` | — | ✅ se sube vacío y, ya con red, se completa desde el LR tras `SYNC_OK` (la RLS de `m39_lineas` permite el UPDATE a la org). Sin ese paso el PDF de almacén saldría sin código |
 
 Sin red la tarjeta muestra el código provisional (`PROV-xxxxxx`, de `codigoProvisional(id)`) con el chip "Código al sincronizar"; M39 no imprime etiquetas, solo el PDF, que queda deshabilitado hasta que se suba.
+
+### M48 TrazabilidadProducto
+
+| Lectura / escritura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m48_lotes_recepcion`, `m48_lotes_producto`, `m48_lotes_compuestos`(+`m48_lc_lr`), `m48_folios_embarque`(+`m48_fe_lpt`) por sitio | `useM48*` | C | ✅ `leerConCache` (`m48_lr/lpt/lc/fe:{rancho}`) + precarga; los lotes sin subir se agregan desde el outbox con código provisional y se vuelve a leer en `SYNC_OK` para mostrar el real |
+| Códigos de origen (LR/LC en LPT, LPT en FE) | `useCodigosEnCache` | C | ✅ se resuelven con las otras listas en caché; los que aún no existen se muestran como `PROV-xxxxxx` |
+| Consulta de trazabilidad por código (`consultarTrazabilidad`) | `handleBuscarTraz` | R | ✅ sin red: "Necesitas conexión para consultar la trazabilidad" |
+| Vista previa / generar / imprimir etiqueta (QR) | `handleVerPreview`, `handleGenerarEtiqueta`, `handleImprimirEtiqueta` | R | ✅ sin red: "Necesitas conexión…"; un LPT sin subir los deshabilita con "La etiqueta estará disponible cuando se suba el lote" |
+| INSERT LR / LPT | `handleGuardarLR`, `handleGuardarLPT` | — | ✅ offline: `opInsert`, **sin** `codigo`/`consecutivo` (los generan los triggers `m48_gen_codigo_*`) |
+| INSERT LC + `m48_lc_lr` | `handleGuardarLC` | — | ✅ offline: un lote con ids locales |
+| INSERT FE + `m48_fe_lpt` | `handleGuardarFE` | — | ✅ offline: un lote con ids locales |
+
+Corrección en el camino en línea: `m48_lc_lr` y `m48_fe_lpt` tienen `org_id` y `rancho_id` NOT NULL sin default ni trigger, y `handleGuardarLC`/`handleGuardarFE` no los mandaban (las cuatro tablas de LC/FE tienen 0 filas en producción, nunca se había guardado un LC/FE con éxito). Se agregaron `org_id` y `rancho_id` a esas filas relacionales; es el único cambio al camino con red.

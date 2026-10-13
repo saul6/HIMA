@@ -9,6 +9,10 @@ import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert } from '@/lib/offline/construirOperaciones'
+import { TEXTO_ETIQUETA_PENDIENTE } from '@/lib/offline/codigoProvisional'
 import { hoyMX } from '@/lib/fecha'
 import {
   useM48LotesRecepcion, useM48LotesProducto,
@@ -154,6 +158,8 @@ export function TrazabilidadProducto() {
   const orgId = profile?.org_id ?? null
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M48')
 
   const [ranchoId, setRanchoId] = useState<string>('')
   const [tab, setTab] = useState<Tab>('lr')
@@ -232,6 +238,17 @@ export function TrazabilidadProducto() {
         responsable: formLR.responsable.trim() || null,
         observaciones: formLR.observaciones.trim() || null,
       }
+      if (!online) {
+        // El código LR lo genera el servidor al sincronizar (no se manda `codigo`)
+        const { org_id: _org, ...fila } = payload
+        const ok = await guardarOffline({
+          descripcion: `Trazabilidad · Lote de recepción · ${payload.proveedor_nombre} · ${payload.fecha}`,
+          metadatos: { rancho_id: ranchoId, rancho_nombre: ranchos.find(r => r.id === ranchoId)?.nombre, fecha: payload.fecha },
+          operaciones: [opInsert('m48_lotes_recepcion', fila)],
+        })
+        if (ok) { setSheetLR(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLR(LR_VACÍO) }
+        return
+      }
       const { data, error } = await tbl('m48_lotes_recepcion').insert(payload).select().single()
       if (error) throw error
       if (!data) throw new Error('No se pudo guardar el registro')
@@ -277,6 +294,16 @@ export function TrazabilidadProducto() {
         responsable: formLPT.responsable.trim() || null,
         observaciones: formLPT.observaciones.trim() || null,
       }
+      if (!online) {
+        const { org_id: _org, ...fila } = payload
+        const ok = await guardarOffline({
+          descripcion: `Trazabilidad · Lote de producto · ${payload.presentacion ?? ''} · ${payload.fecha_empaque}`,
+          metadatos: { rancho_id: ranchoId, rancho_nombre: ranchos.find(r => r.id === ranchoId)?.nombre, fecha: payload.fecha_empaque },
+          operaciones: [opInsert('m48_lotes_producto', fila)],
+        })
+        if (ok) { setSheetLPT(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLPT(LPT_VACÍO) }
+        return
+      }
       const { data, error } = await tbl('m48_lotes_producto').insert(payload).select().single()
       if (error) throw error
       if (!data) throw new Error('No se pudo guardar el registro')
@@ -297,6 +324,25 @@ export function TrazabilidadProducto() {
     if (formLC.lr_ids.length < 2) { toast.error('Selecciona al menos 2 LR para componer'); return }
     setGuardando(true)
     try {
+      if (!online) {
+        const lcIdOff = crypto.randomUUID()
+        const ok = await guardarOffline({
+          descripcion: `Trazabilidad · Lote compuesto · ${formLC.fecha || hoyMX()}`,
+          metadatos: { rancho_id: ranchoId, rancho_nombre: ranchos.find(r => r.id === ranchoId)?.nombre, fecha: formLC.fecha || hoyMX() },
+          operaciones: [
+            opInsert('m48_lotes_compuestos', {
+              id: lcIdOff,
+              rancho_id: ranchoId,
+              fecha: formLC.fecha || hoyMX(),
+              motivo: formLC.motivo.trim() || null,
+              observaciones: formLC.observaciones.trim() || null,
+            }),
+            ...formLC.lr_ids.map(lr_id => opInsert('m48_lc_lr', { lc_id: lcIdOff, lr_id, rancho_id: ranchoId })),
+          ],
+        })
+        if (ok) { setSheetLC(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLC(LC_VACÍO) }
+        return
+      }
       const { data: lc, error } = await tbl('m48_lotes_compuestos').insert({
         org_id: orgId, rancho_id: ranchoId,
         fecha: formLC.fecha || hoyMX(),
@@ -306,7 +352,8 @@ export function TrazabilidadProducto() {
       if (error) throw error
       if (!lc) throw new Error('No se pudo guardar el registro')
       // Insert relations
-      const rels = formLC.lr_ids.map(lr_id => ({ lc_id: lc.id, lr_id }))
+      // org_id y rancho_id son NOT NULL en m48_lc_lr
+      const rels = formLC.lr_ids.map(lr_id => ({ lc_id: lc.id, lr_id, org_id: orgId, rancho_id: ranchoId }))
       const { error: relErr } = await tbl('m48_lc_lr').insert(rels)
       if (relErr) throw relErr
       toast.success(`LC registrado: ${lc.codigo}`)
@@ -327,6 +374,39 @@ export function TrazabilidadProducto() {
     if (lineasValidas.length === 0) { toast.error('Agrega al menos un LPT al folio'); return }
     setGuardando(true)
     try {
+      if (!online) {
+        const feIdOff = crypto.randomUUID()
+        const ok = await guardarOffline({
+          descripcion: `Trazabilidad · Folio de embarque · ${formFE.cliente.trim()} · ${formFE.fecha || hoyMX()}`,
+          metadatos: { rancho_id: ranchoId, rancho_nombre: ranchos.find(r => r.id === ranchoId)?.nombre, fecha: formFE.fecha || hoyMX() },
+          operaciones: [
+            opInsert('m48_folios_embarque', {
+              id: feIdOff,
+              rancho_id: ranchoId,
+              fecha: formFE.fecha || hoyMX(),
+              cliente: formFE.cliente.trim() || null,
+              transporte_linea: formFE.transporte_linea.trim() || null,
+              transporte_placas: formFE.transporte_placas.trim() || null,
+              transporte_caja: formFE.transporte_caja.trim() || null,
+              chofer: formFE.chofer.trim() || null,
+              condiciones_limpieza: formFE.condiciones_limpieza.trim() || null,
+              sello: formFE.sello.trim() || null,
+              equipo_temp: formFE.equipo_temp.trim() || null,
+              condiciones_embarque: formFE.condiciones_embarque.trim() || null,
+              total_embarcado: formFE.total_embarcado ? parseFloat(formFE.total_embarcado) : null,
+              observaciones: formFE.observaciones.trim() || null,
+            }),
+            ...lineasValidas.map(l => opInsert('m48_fe_lpt', {
+              fe_id: feIdOff, lpt_id: l.lpt_id, rancho_id: ranchoId,
+              numero_tarima: l.numero_tarima ? parseInt(l.numero_tarima) : null,
+              cantidad: l.cantidad ? parseFloat(l.cantidad) : null,
+              cliente: l.cliente.trim() || null,
+            })),
+          ],
+        })
+        if (ok) { setSheetFE(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormFE(FE_VACÍO) }
+        return
+      }
       const { data: fe, error } = await tbl('m48_folios_embarque').insert({
         org_id: orgId, rancho_id: ranchoId,
         fecha: formFE.fecha || hoyMX(),
@@ -344,8 +424,9 @@ export function TrazabilidadProducto() {
       }).select().single()
       if (error) throw error
       if (!fe) throw new Error('No se pudo guardar el registro')
+      // org_id y rancho_id son NOT NULL en m48_fe_lpt
       const rels = lineasValidas.map(l => ({
-        fe_id: fe.id, lpt_id: l.lpt_id,
+        fe_id: fe.id, lpt_id: l.lpt_id, org_id: orgId, rancho_id: ranchoId,
         numero_tarima: l.numero_tarima ? parseInt(l.numero_tarima) : null,
         cantidad: l.cantidad ? parseFloat(l.cantidad) : null,
         cliente: l.cliente.trim() || null,
@@ -366,6 +447,8 @@ export function TrazabilidadProducto() {
 
   async function handleGenerarEtiqueta() {
     if (!sheetEtiqueta || !orgId || !ranchoId) return
+    if (sheetEtiqueta.lpt.sin_subir) { toast.warning(TEXTO_ETIQUETA_PENDIENTE); return }
+    if (!online) { toast.warning('Necesitas conexión para generar la etiqueta'); return }
     if (!formEtiqueta.verificado_por.trim()) { toast.error('Ingresa quien verifica'); return }
     setGuardando(true)
     try {
@@ -386,6 +469,7 @@ export function TrazabilidadProducto() {
 
   const handleBuscarTraz = useCallback(async () => {
     if (!busqueda.trim() || !orgId) return
+    if (!online) { toast.warning('Necesitas conexión para consultar la trazabilidad'); return }
     setBuscandoTraz(true); setResultadoTraz(null)
     try {
       const result = await consultarTrazabilidad(busqueda.trim(), orgId)
@@ -394,12 +478,14 @@ export function TrazabilidadProducto() {
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error en la consulta')
     } finally { setBuscandoTraz(false) }
-  }, [busqueda, orgId])
+  }, [busqueda, orgId, online])
 
   // ── Imprimir etiqueta ───────────────────────────────────────────────────────
 
   async function handleImprimirEtiqueta() {
     if (!sheetEtiqueta || !orgId || !ranchoId) return
+    if (sheetEtiqueta.lpt.sin_subir) { toast.warning(TEXTO_ETIQUETA_PENDIENTE); return }
+    if (!online) { toast.warning('Necesitas conexión para imprimir la etiqueta'); return }
     if (!formEtiqueta.verificado_por.trim()) { toast.error('Ingresa quien verifica'); return }
     setGuardando(true)
     try {
@@ -420,6 +506,8 @@ export function TrazabilidadProducto() {
 
   async function handleVerPreview(lpt: M48LoteProducto) {
     if (!orgId) return
+    if (lpt.sin_subir) { toast.warning(TEXTO_ETIQUETA_PENDIENTE); return }
+    if (!online) { toast.warning('Necesitas conexión para ver la etiqueta'); return }
     setLoadingPreview(lpt.id)
     try {
       const orgRes = await tbl('organizaciones').select('nombre').eq('id', orgId).single()
@@ -550,6 +638,7 @@ export function TrazabilidadProducto() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-sm font-mono" style={{ fontWeight: 700, color: 'var(--primary)' }}>{lr.codigo}</p>
+                {lr.sin_subir && <span className="text-[10px] px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>Código al sincronizar</span>}
                     <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>{lr.proveedor_nombre}</p>
                     <p className="text-xs text-muted-foreground">{fmtFecha(lr.fecha)}{lr.hora ? ` · ${lr.hora}` : ''}{lr.proveedor_origen ? ` · ${lr.proveedor_origen}` : ''}</p>
                     {lr.cantidad && <p className="text-xs text-muted-foreground">{lr.cantidad} {lr.unidad ?? ''}</p>}
@@ -560,7 +649,7 @@ export function TrazabilidadProducto() {
                     </span>
                   )}
                 </div>
-                <FirmasRegistro modulo="M48" registroId={lr.id} firma={firmas[lr.id]} loadingFirmas={loadingFirmas} fechaRegistro={lr.fecha} onFirmado={refetchFirmas} />
+                {!lr.sin_subir && <FirmasRegistro modulo="M48" registroId={lr.id} firma={firmas[lr.id]} loadingFirmas={loadingFirmas} fechaRegistro={lr.fecha} onFirmado={refetchFirmas} />}
               </div>
             )) : loadingLR ? (
               <div style={{ minHeight: '160px' }} />
@@ -590,6 +679,7 @@ export function TrazabilidadProducto() {
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="min-w-0">
                       <p className="text-sm font-mono" style={{ fontWeight: 700, color: 'var(--primary)' }}>{lpt.codigo}</p>
+                {lpt.sin_subir && <span className="text-[10px] px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>Código al sincronizar</span>}
                       <p className="text-sm text-foreground">{lpt.presentacion ?? '—'}</p>
                       <p className="text-xs text-muted-foreground">
                         {fmtFecha(lpt.fecha_empaque)} · Turno {lpt.turno}
@@ -599,10 +689,10 @@ export function TrazabilidadProducto() {
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <button
                         onClick={() => handleVerPreview(lpt)}
-                        disabled={loadingPreview === lpt.id}
-                        className="p-2 rounded-lg"
+                        disabled={loadingPreview === lpt.id || lpt.sin_subir}
+                        className="p-2 rounded-lg disabled:opacity-40"
                         style={{ background: 'var(--muted)', color: 'var(--muted-foreground)' }}
-                        title="Vista previa de etiqueta"
+                        title={lpt.sin_subir ? TEXTO_ETIQUETA_PENDIENTE : 'Vista previa de etiqueta'}
                       >
                         {loadingPreview === lpt.id
                           ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -610,17 +700,19 @@ export function TrazabilidadProducto() {
                       </button>
                       <button
                         onClick={() => { setSheetEtiqueta({ lpt }); setFormEtiqueta({ verificado_por: profile?.nombre_completo ?? '', cantidad_etiquetas: '1' }) }}
-                        className="p-2 rounded-lg"
+                        disabled={lpt.sin_subir}
+                        className="p-2 rounded-lg disabled:opacity-40"
                         style={{ background: 'var(--muted)', color: 'var(--primary)' }}
-                        title="Generar etiqueta PDF"
+                        title={lpt.sin_subir ? TEXTO_ETIQUETA_PENDIENTE : 'Generar etiqueta PDF'}
                       >
                         <FileDown className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => { setSheetEtiqueta({ lpt }); setFormEtiqueta({ verificado_por: profile?.nombre_completo ?? '', cantidad_etiquetas: '1' }) }}
-                        className="p-2 rounded-lg"
+                        disabled={lpt.sin_subir}
+                        className="p-2 rounded-lg disabled:opacity-40"
                         style={{ background: 'var(--muted)', color: 'var(--primary)' }}
-                        title="Imprimir etiqueta"
+                        title={lpt.sin_subir ? TEXTO_ETIQUETA_PENDIENTE : 'Imprimir etiqueta'}
                       >
                         <Printer className="w-4 h-4" />
                       </button>
@@ -636,7 +728,7 @@ export function TrazabilidadProducto() {
                       Empacado: {lpt.cant_empacada} · Merma: {lpt.rechazo_merma ?? 0} · Pendiente: {lpt.pendiente_retenido ?? 0}
                     </p>
                   )}
-                  <FirmasRegistro modulo="M48" registroId={lpt.id} firma={firmas[lpt.id]} loadingFirmas={loadingFirmas} fechaRegistro={lpt.fecha_empaque} onFirmado={refetchFirmas} />
+                  {!lpt.sin_subir && <FirmasRegistro modulo="M48" registroId={lpt.id} firma={firmas[lpt.id]} loadingFirmas={loadingFirmas} fechaRegistro={lpt.fecha_empaque} onFirmado={refetchFirmas} />}
                 </div>
               )
             }) : loadingLPT ? (
@@ -655,6 +747,7 @@ export function TrazabilidadProducto() {
             ) : lotesLC.length > 0 ? lotesLC.map(lc => (
               <div key={lc.id} className="bg-card border border-border rounded-xl p-4">
                 <p className="text-sm font-mono" style={{ fontWeight: 700, color: 'var(--primary)' }}>{lc.codigo}</p>
+                {lc.sin_subir && <span className="text-[10px] px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>Código al sincronizar</span>}
                 <p className="text-xs text-muted-foreground">{fmtFecha(lc.fecha)}{lc.motivo ? ` · ${lc.motivo}` : ''}</p>
                 <div className="mt-2 space-y-1">
                   {lc.lotes_recepcion.map(lr => (
@@ -664,7 +757,7 @@ export function TrazabilidadProducto() {
                     </div>
                   ))}
                 </div>
-                <FirmasRegistro modulo="M48" registroId={lc.id} firma={firmas[lc.id]} loadingFirmas={loadingFirmas} fechaRegistro={lc.fecha} onFirmado={refetchFirmas} />
+                {!lc.sin_subir && <FirmasRegistro modulo="M48" registroId={lc.id} firma={firmas[lc.id]} loadingFirmas={loadingFirmas} fechaRegistro={lc.fecha} onFirmado={refetchFirmas} />}
               </div>
             )) : loadingLC ? (
               <div style={{ minHeight: '160px' }} />
@@ -682,6 +775,7 @@ export function TrazabilidadProducto() {
             ) : feFolios.length > 0 ? feFolios.map(fe => (
               <div key={fe.id} className="bg-card border border-border rounded-xl p-4">
                 <p className="text-sm font-mono" style={{ fontWeight: 700, color: 'var(--primary)' }}>{fe.codigo}</p>
+                {fe.sin_subir && <span className="text-[10px] px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>Código al sincronizar</span>}
                 <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>{fe.cliente ?? '—'}</p>
                 <p className="text-xs text-muted-foreground">{fmtFecha(fe.fecha)}{fe.transporte_placas ? ` · ${fe.transporte_placas}` : ''}</p>
                 {fe.lotes_producto.length > 0 && (
@@ -695,7 +789,7 @@ export function TrazabilidadProducto() {
                     ))}
                   </div>
                 )}
-                <FirmasRegistro modulo="M48" registroId={fe.id} firma={firmas[fe.id]} loadingFirmas={loadingFirmas} fechaRegistro={fe.fecha} onFirmado={refetchFirmas} />
+                {!fe.sin_subir && <FirmasRegistro modulo="M48" registroId={fe.id} firma={firmas[fe.id]} loadingFirmas={loadingFirmas} fechaRegistro={fe.fecha} onFirmado={refetchFirmas} />}
               </div>
             )) : loadingFE ? (
               <div style={{ minHeight: '160px' }} />
