@@ -475,3 +475,34 @@ Hallazgos con cambio de comportamiento en línea (corregidos en el commit `fix(o
 | M75 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
 | M76 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
 | M77 | no | Revisión estática del diff + build limpio; prueba manual en vivo pendiente | — |
+
+## Auditoría de lecturas Lote A2 (M20, M49, M50, M51, M52, 2026-10-13)
+
+Pantallas: `RegistroAccidentesLaborales` (M20), `CalibracionBombas` (M49), `CalibracionEquipos` (M50), `CalibracionBasculas` (M51), `CalibracionVolumetricos` (M52). Se revisaron pantalla, hook, componentes hijos y generadores de PDF.
+
+Clases: **C** = necesaria para capturar/ver lo capturado · **R** = solo con red · **V** = validación
+
+| Módulo | Lectura | Archivo | Clase | Estado |
+|---|---|---|---|---|
+| M20 | SELECT `m20_accidentes` + `m20_accidente_fotos` (lista) | `useM20Accidentes` | C | ✅ `leerConCache` + precarga (`m20_accidentes`) |
+| M49 | SELECT `m49_calibracion_bombas` (lista) | `useM49CalibracionBombas` | C | ✅ `leerConCache` + precarga |
+| M50 | SELECT `m50_calibracion_equipos` (lista) | `useM50CalibracionEquipos` | C | ✅ `leerConCache` + precarga |
+| M51 | SELECT `m51_calibracion_basculas` (lista) | `useM51CalibracionBasculas` | C | ✅ `leerConCache` + precarga |
+| M52 | SELECT `m52_calibracion_volumetricos` (lista) | `useM52CalibracionVolumetricos` | C | ✅ `leerConCache` + precarga |
+| M20, M49–M52 | SELECT `ranchos` (selector de sitio) | `useRanchos` | C | ✅ ya cacheado |
+| M20, M49–M52 | SELECT `organizaciones.nombre` (encabezado de cards) | `useOrganizacion` | C | ✅ **este fix**: `leerConCache` (clave `org_nombre:<org>`) + precarga. Con red hace la misma consulta |
+| M20 | `getSignedUrls` (miniaturas de fotos guardadas) | `GaleriaFotos` | R | ✅ sin red muestra el ícono de aviso en lugar de la foto, sin error |
+| M20, M49–M52 | `generar*PDF` / `generar*ConsolidadoPDF` (consultan `supabase`) | pantallas | R | ✅ **este fix**: sin red muestran "Necesitas conexión para generar el PDF" |
+| M20, M49–M52 | RPC `registro_firmas_ver`, `registro_firmar`, `org_firma_config`, `mi_firma` | `useFirmasRegistro`, `useFirmaObligatoria` | R | ⚠️ sin red degradan sin romper (firmas vacías; firmar muestra el error genérico). Componente compartido por los 44 módulos; no se tocó |
+| M20 | INSERT `m20_accidentes` + `m20_accidente_fotos` | `RegistroAccidentesLaborales` | R | ✅ guarda offline |
+| M49–M52 | INSERT `m49…m52_*` | pantallas | R | ✅ guarda offline |
+
+### Fotos de M20 (mismo patrón que M13)
+- Las fotos se comprimen y se pasan como `adjuntos` del lote (`{ uid, blob, path, bucket: 'incidencias' }`); `sincronizarLote` sube los adjuntos **antes** de aplicar `sync_aplicar_lote`.
+- Ruta: `${org_id}/m20/${accidenteId}/${uuid}.jpg`. Offline el `accidenteId` es el UUID local que también va en la fila de `m20_accidentes`, así que ruta y filas de `m20_accidente_fotos` coinciden al sincronizar.
+- Con red el flujo no cambió: INSERT del accidente, subida de fotos, INSERT de fotos, rollback si falla.
+
+### Para Saúl
+- Confirmar que `sync_aplicar_lote` permite las tablas `m20_accidentes`, `m20_accidente_fotos`, `m49_calibracion_bombas`, `m50_calibracion_equipos`, `m51_calibracion_basculas` y `m52_calibracion_volumetricos`; si no, el lote se rechaza con `SYNC_TABLA_NO_PERMITIDA`. No se verificó desde el front.
+
+Resultado: los cinco módulos quedan completos; ninguno sale de `MODULOS_OFFLINE`.

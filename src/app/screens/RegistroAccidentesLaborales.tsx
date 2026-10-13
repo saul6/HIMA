@@ -530,6 +530,7 @@ export function RegistroAccidentesLaborales() {
 
   async function handlePDF(id: string) {
     if (!profile?.org_id) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setCargandoPDF(id)
     try {
       await generarAccidenteLaboralPDF(id, profile.org_id, codigoClave ?? '')
@@ -546,6 +547,7 @@ export function RegistroAccidentesLaborales() {
     if (!consolidadoRanchoId) { toast.error(`Selecciona ${terminosSitio.genero === 'f' ? 'una' : 'un'} ${terminosSitio.singular}`); return }
     if (!consolidadoDesde || !consolidadoHasta) { toast.error('Selecciona el rango de fechas'); return }
     if (!profile?.org_id) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     const rancho = ranchos.find((r) => r.id === consolidadoRanchoId)
     setCargandoConsolidado(true)
     try {

@@ -163,6 +163,7 @@ export function CalibracionEquipos() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (obligatoria && !firmas[id]?.realizo) {
       toast.info('Firma este registro antes de descargar el PDF')
       return
@@ -185,6 +186,7 @@ export function CalibracionEquipos() {
 
   async function exportarConsolidado() {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setExportando(true)
     try {
       const rancho = ranchos.find(r => r.id === consolidadoForm.rancho_id)

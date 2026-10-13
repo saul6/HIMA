@@ -126,6 +126,38 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
           return data ?? []
         },
       },
+      {
+        clave: `org_nombre:${orgId}`,
+        fetcher: async () => {
+          const { data, error } = await supabase.from('organizaciones').select('nombre').eq('id', orgId).single()
+          if (error || !data) throw error ?? new Error('Organización no encontrada')
+          return data.nombre as string
+        },
+      },
+      {
+        clave: 'm20_accidentes',
+        fetcher: async () => {
+          const { data } = await (supabase as any)
+            .from('m20_accidentes')
+            .select('*, ranchos(nombre, codigo), m20_accidente_fotos(id, storage_path, orden)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          return data ?? []
+        },
+      },
+      ...(['m49_calibracion_bombas', 'm50_calibracion_equipos', 'm51_calibracion_basculas', 'm52_calibracion_volumetricos'] as const).map(tabla => ({
+        clave: tabla,
+        fetcher: async () => {
+          const { data } = await (supabase as any)
+            .from(tabla)
+            .select('*, ranchos(nombre)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          return data ?? []
+        },
+      })),
     ])
 
     // Precarga de días M9 para todos los registros del mes actual
