@@ -121,9 +121,14 @@ export function CalendarioConsolidado() {
     ;(async () => {
       try {
         const { data } = await tbl('aud_calendario_tipos')
-          .select('event_type, descripcion')
-          .order('event_type')
-        setCalendarioTipos(data ?? [])
+          .select('tipo, descripcion')
+          .order('orden')
+        setCalendarioTipos(
+          ((data ?? []) as { tipo: string; descripcion: string }[]).map((t) => ({
+            event_type: t.tipo,
+            descripcion: t.descripcion,
+          })),
+        )
       } catch (e) {
         console.error('[CalendarioConsolidado] tipos', e)
       }
