@@ -10,6 +10,7 @@ import { useIntroTransition } from "@/context/IntroTransitionContext";
 import { MadyLogo } from "@/app/components/MadyLogo";
 import { BottomSheet, fabMenuItemVariants } from "@/app/components/BottomSheet";
 import { CampanaNotificaciones } from "@/app/components/CampanaNotificaciones";
+import { AuditorBusqueda } from "@/app/screens/auditor/AuditorBusqueda";
 import { CATEGORIA_MAP } from "@/lib/categoriasModulos";
 import { useConexion } from "@/hooks/useConexion";
 import { useOutbox } from "@/hooks/useOutbox";
@@ -47,6 +48,7 @@ function getInitials(name: string): string {
 
 const ROL_LABELS: Record<string, string> = {
   admin_org: 'Administrador',
+  auditor: 'Auditor',
   super_admin: 'Super Admin',
   asesor_tecnico: 'Asesor técnico',
   operario: 'Operario',
@@ -76,6 +78,7 @@ export function Layout() {
   const { totalPendientes } = useOutbox();
   const esAuditor = profile?.rol === 'auditor';
   const esAdmin   = profile?.rol === 'admin_org';
+  const isAuditorHome = esAuditor && location.pathname === '/auditor';
   const initials  = profile?.nombre_completo ? getInitials(profile.nombre_completo) : '—';
   const fechaHoy = new Date().toLocaleDateString('es-MX', {
     weekday: 'long', day: 'numeric', month: 'long',
@@ -256,7 +259,7 @@ export function Layout() {
           <div className="min-w-0">
             <AnimatePresence mode="wait" initial={false}>
               <motion.p
-                key={isHome ? 'home-greeting' : topbarTitulo}
+                key={isHome || isAuditorHome ? 'home-greeting' : topbarTitulo}
                 initial={reducedMotion ? false : { opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={reducedMotion ? undefined : { opacity: 0, y: -4 }}
@@ -264,18 +267,23 @@ export function Layout() {
                 className="text-sm"
                 style={{ color: 'var(--foreground)', fontWeight: 600 }}
               >
-                {isHome
+                {isHome || isAuditorHome
                   ? `Hola, ${profile?.nombre_completo?.split(' ')[0] ?? '—'}`
                   : topbarTitulo}
               </motion.p>
             </AnimatePresence>
             <p className="text-xs text-muted-foreground">
-              {terminosSitio.singular !== 'Rancho' ? 'Instalaciones' : 'Campo'} · M.A.D.Y
+              {esAuditor ? 'Auditores' : terminosSitio.singular !== 'Rancho' ? 'Instalaciones' : 'Campo'} · M.A.D.Y
             </p>
           </div>
 
-          {/* Center: search — desktop + home route only */}
+          {/* Center: search — desktop + home route only (auditor: su propio buscador) */}
           <div className="flex justify-center">
+            {isAuditorHome && (
+              <div className="w-full max-w-xs">
+                <AuditorBusqueda />
+              </div>
+            )}
             {isHome && (
               <div className="hidden lg:flex w-full max-w-xs relative">
                 <Search

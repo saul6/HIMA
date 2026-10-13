@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Navigate } from 'react-router'
 import {
-  Building2, ChevronRight, Plus,
+  Building2, ChevronRight,
   AlertCircle, Calendar, CheckCircle2, RefreshCw, PlayCircle, Layers,
 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
@@ -14,6 +14,7 @@ import { ahora, ms, emitirEvento, markResume } from '@/lib/telemetria'
 import { AuditorNuevaAuditoriaSheet } from './AuditorNuevaAuditoriaSheet'
 import { AuditorCampana } from './AuditorCampana'
 import { AuditorBusqueda } from './AuditorBusqueda'
+import { Fab } from '@/app/components/Fab'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -225,17 +226,17 @@ export function AuditorHome() {
   return (
     <div className="flex flex-col min-h-screen pb-24" style={{ backgroundColor: 'var(--background)' }}>
 
-      {/* Header */}
+      {/* Header — solo móvil; en escritorio lo da el header del Layout */}
       <header
-        className="sticky top-0 z-10 border-b border-border flex items-center gap-3 px-4 py-3"
+        className="md:hidden sticky top-0 z-10 border-b border-border flex items-center gap-3 px-4 py-3"
         style={{ backgroundColor: 'var(--card)' }}
       >
         <div className="flex-1 min-w-0">
           <h1 className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>
-            Inicio
+            Hola, {profile?.nombre_completo?.split(' ')[0] ?? '—'}
           </h1>
           <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-            {profile?.nombre_completo?.split(' ')[0] ?? '—'} · Auditor
+            Auditores · M.A.D.Y
           </p>
         </div>
         <AuditorBusqueda />
@@ -245,14 +246,6 @@ export function AuditorHome() {
           aria-label="Calendario"
         >
           <Calendar size={16} style={{ color: 'var(--muted-foreground)' }} />
-        </button>
-        <button
-          onClick={() => setShowSheet(true)}
-          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg"
-          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-        >
-          <Plus size={13} />
-          Nueva
         </button>
         <AuditorCampana />
       </header>
@@ -590,6 +583,8 @@ export function AuditorHome() {
         )}
 
       </main>
+
+      <Fab onClick={() => setShowSheet(true)} aria-label="Nueva auditoría" />
 
       {showSheet && (
         <AuditorNuevaAuditoriaSheet
