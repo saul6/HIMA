@@ -706,3 +706,15 @@ Hallazgos / acciones correctivas: el flujo legacy M14–M18 **no** crea `aud_hal
 Cambio de infraestructura: `vite.config.ts` ya no excluye `/nfc/` del `navigateFallback` del Service Worker; sin eso, escanear un chip sin red mostraba la página de "sin conexión" del navegador en lugar de abrir la app.
 
 Limitaciones: (1) sin red, un chip de otra organización se reporta como "Chip no reconocido" (esas estaciones no están en la caché por RLS; el motivo `SIN_ACCESO` solo lo distingue el servidor). (2) Offline el hallazgo crea siempre un reporte M13 nuevo; con red se reutiliza el reporte M13 del día.
+
+### M39 RecepcionFruta
+
+| Lectura / escritura | Archivo | Clase | Estado |
+|---|---|---|---|
+| SELECT `m39_recepciones` + `ranchos(nombre)` + `m39_lineas` (totales) | `useM39Recepciones` | C | ✅ `leerConCache` + precarga; las recepciones sin subir se agregan desde el outbox |
+| Detección almacén/cuarto frío (`modulos`) | `RecepcionFruta` | C | ✅ `get_mis_modulos` ya en caché |
+| PDF individual / consolidado | `generarRecepcionFruta*PDF` | R | ✅ sin red: "Necesitas conexión para generar el PDF" |
+| INSERT `m39_recepciones` + `m48_lotes_recepcion` (una por línea, almacén) + `m39_lineas` | `guardar` | — | ✅ offline: un lote, relaciones por ids locales (`lr_id`, `recepcion_id`); **no** se manda `codigo`/`consecutivo` del LR (el trigger `m48_gen_codigo_lr` los genera) |
+| `m39_lineas.codigo_trazabilidad` (copia del código LR) | `useM39Recepciones` | — | ✅ se sube vacío y, ya con red, se completa desde el LR tras `SYNC_OK` (la RLS de `m39_lineas` permite el UPDATE a la org). Sin ese paso el PDF de almacén saldría sin código |
+
+Sin red la tarjeta muestra el código provisional (`PROV-xxxxxx`, de `codigoProvisional(id)`) con el chip "Código al sincronizar"; M39 no imprime etiquetas, solo el PDF, que queda deshabilitado hasta que se suba.

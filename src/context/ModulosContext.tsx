@@ -324,6 +324,18 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
         },
       },
       {
+        clave: 'm39_recepciones',
+        fetcher: async () => {
+          const { data } = await (supabase as any)
+            .from('m39_recepciones')
+            .select('id, rancho_id, fecha, empresa, hoja_no, ranchos(nombre), m39_lineas(cant_6oz, cant_12oz, cant_18oz, cajas, piezas)')
+            .eq('org_id', orgId)
+            .order('fecha', { ascending: false })
+            .order('created_at', { ascending: false })
+          return data ?? []
+        },
+      },
+      {
         clave: 'm40_registros',
         fetcher: async () => {
           const { data } = await (supabase as any)

@@ -15,6 +15,9 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { useM39Recepciones } from '@/hooks/useM39Recepciones'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
+import { useConexion } from '@/hooks/useConexion'
+import { useGuardarOffline } from '@/hooks/useGuardarOffline'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 import { generarRecepcionFrutaPDF } from '@/lib/pdf/m39/generarRecepcionFrutaPDF'
 import { generarRecepcionFrutaConsolidadoPDF } from '@/lib/pdf/m39/generarRecepcionFrutaConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
@@ -183,11 +186,13 @@ export function RecepcionFruta() {
   const { recepciones, loading, error, refetch } = useM39Recepciones()
   const orgNombre = useOrganizacion(orgId)
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const { online } = useConexion()
+  const { guardar: guardarOffline } = useGuardarOffline('M39')
 
   // Almacén sector → simplified variant; cuarto frío → original
   const esAlmacen = modulos.some(m => m.sector_clave === 'almacen')
 
-  const todosIds = useMemo(() => recepciones.map(r => r.id), [recepciones])
+  const todosIds = useMemo(() => recepciones.filter(r => !r.sin_subir).map(r => r.id), [recepciones])
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M39', todosIds)
 
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -259,6 +264,90 @@ export function RecepcionFruta() {
     savingRef.current = true
     setGuardando(true)
     try {
+      if (!online) {
+        // Sin red: recepción + LR de M48 (almacén) + líneas en un solo lote, ligados por ids locales.
+        // El código LR lo genera el servidor al sincronizar: no se manda `codigo` ni `consecutivo`.
+        const recIdOff = crypto.randomUUID()
+        const recOff: any = {
+          id: recIdOff,
+          rancho_id: form.rancho_id,
+          fecha: form.fecha,
+          empresa: form.empresa.trim() || null,
+          observaciones: form.observaciones.trim() || null,
+        }
+        if (esAlmacen) recOff.hoja_no = form.hoja_no.trim() || ''
+        const ops = [opInsert('m39_recepciones', recOff)]
+        if (esAlmacen) {
+          const filtradas = lineas.filter(l => l.cultivo.trim() || l.cajas || l.piezas || l.entrega.trim())
+          filtradas.forEach((l, i) => {
+            let lrId = l.lr_id
+            if (!lrId) {
+              lrId = crypto.randomUUID()
+              const partes = [
+                l.limp_be !== null ? `BE:${l.limp_be ? 'Si' : 'No'}` : null,
+                l.limp_l  !== null ? `L:${l.limp_l  ? 'Si' : 'No'}` : null,
+                l.limp_lp !== null ? `LP:${l.limp_lp ? 'Si' : 'No'}` : null,
+              ].filter(Boolean)
+              ops.push(opInsert('m48_lotes_recepcion', {
+                id: lrId,
+                rancho_id: form.rancho_id,
+                fecha: form.fecha,
+                hora: l.hora || null,
+                proveedor_nombre: form.empresa.trim(),
+                proveedor_origen: null,
+                proveedor_codigo: 'P000',
+                cantidad: l.cajas !== '' ? parseInt(l.cajas, 10) : null,
+                unidad: l.cajas !== '' ? 'cajas' : null,
+                condicion_vehiculo: partes.length > 0 ? partes.join(' ') : null,
+                resultado: l.limp_lp === false ? 'rechazado' : 'aceptado',
+                responsable: null,
+                observaciones: form.observaciones.trim() || null,
+              }))
+            }
+            ops.push(opInsert('m39_lineas', {
+              recepcion_id: recIdOff,
+              orden: i + 1,
+              hora: l.hora || null,
+              cultivo: l.cultivo.trim() || null,
+              cajas: l.cajas !== '' ? parseInt(l.cajas, 10) : null,
+              piezas: l.piezas !== '' ? parseInt(l.piezas, 10) : null,
+              entrega: l.entrega.trim() || null,
+              limp_be: l.limp_be,
+              limp_l: l.limp_l,
+              limp_lp: l.limp_lp,
+              lr_id: lrId,
+              // codigo_trazabilidad se completa con el código real del LR al sincronizar
+              codigo_trazabilidad: l.codigo_trazabilidad || null,
+            }))
+          })
+        } else {
+          lineas.filter(l =>
+            l.producto.trim() || l.codigo_productor.trim() || l.cant_6oz || l.cant_12oz || l.cant_18oz
+          ).forEach((l, i) => {
+            ops.push(opInsert('m39_lineas', {
+              recepcion_id: recIdOff,
+              orden: i + 1,
+              hora: l.hora || null,
+              codigo_productor: l.codigo_productor.trim() || null,
+              tipo: l.tipo,
+              pase_anden: l.pase_anden,
+              producto: l.producto.trim() || null,
+              cant_6oz:  l.cant_6oz  !== '' ? parseInt(l.cant_6oz,  10) : null,
+              cant_12oz: l.cant_12oz !== '' ? parseInt(l.cant_12oz, 10) : null,
+              cant_18oz: l.cant_18oz !== '' ? parseInt(l.cant_18oz, 10) : null,
+            }))
+          })
+        }
+        const ranchoOff = ranchos.find(r => r.id === form.rancho_id)
+        const ok = await guardarOffline({
+          descripcion: `Recepción de fruta · ${ranchoOff?.nombre ?? ''} · ${form.fecha}`,
+          metadatos: { rancho_id: form.rancho_id, rancho_nombre: ranchoOff?.nombre, fecha: form.fecha },
+          operaciones: ops,
+        })
+        if (ok) handleCerrarSheet()
+        return
+      }
+
       const recepcionPayload: any = {
         org_id: orgId,
         rancho_id: form.rancho_id,
@@ -398,6 +487,7 @@ export function RecepcionFruta() {
 
   async function descargarPDF(id: string) {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     if (obligatoria && !firmas[id]?.realizo) {
       toast.info('Firma el registro antes de descargar el PDF')
       return
@@ -414,6 +504,7 @@ export function RecepcionFruta() {
 
   async function exportarConsolidado() {
     if (!orgId) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
     setExportando(true)
     try {
       const rancho = ranchos.find(r => r.id === consolidadoForm.rancho_id)
@@ -472,7 +563,7 @@ export function RecepcionFruta() {
         ) : (
           recepciones.map(r => {
             const esAL = r.hoja_no !== null
-            const pendienteFirma = obligatoria && !firmas[r.id]?.realizo
+            const pendienteFirma = !r.sin_subir && obligatoria && !firmas[r.id]?.realizo
             return (
               <div key={r.id} className="bg-card border border-border rounded-xl p-4">
                 <div className="flex items-start justify-between gap-2">
@@ -488,6 +579,14 @@ export function RecepcionFruta() {
                       <p className="text-xs text-muted-foreground mt-0.5">Hoja No.: {r.hoja_no}</p>
                     )}
                     <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                      {r.sin_subir && (
+                        <span className="text-xs px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                          {r.codigos_provisionales && r.codigos_provisionales.length > 0
+                            ? `Código al sincronizar · ${r.codigos_provisionales.join(', ')}`
+                            : 'Sin subir'}
+                        </span>
+                      )}
                       {pendienteFirma && (
                         <span className="text-xs px-2 py-0.5 rounded-full"
                           style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
@@ -518,7 +617,7 @@ export function RecepcionFruta() {
                   </div>
                   <button
                     onClick={() => descargarPDF(r.id)}
-                    disabled={pdfLoading === r.id}
+                    disabled={pdfLoading === r.id || r.sin_subir}
                     className="p-2 rounded-lg border border-border flex-shrink-0 disabled:opacity-50"
                   >
                     {pdfLoading === r.id
@@ -527,7 +626,7 @@ export function RecepcionFruta() {
                     }
                   </button>
                 </div>
-                <FirmasRegistro modulo="M39" registroId={r.id} fechaRegistro={r.fecha} firma={firmas[r.id]} loadingFirmas={loadingFirmas} onFirmado={refetchFirmas} />
+                {!r.sin_subir && <FirmasRegistro modulo="M39" registroId={r.id} fechaRegistro={r.fecha} firma={firmas[r.id]} loadingFirmas={loadingFirmas} onFirmado={refetchFirmas} />}
               </div>
             )
           })
@@ -906,7 +1005,7 @@ export function RecepcionFruta() {
             style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            {guardando ? 'Guardando…' : 'Guardar'}
+            {guardando ? 'Guardando…' : online ? 'Guardar' : 'Guardar sin conexión'}
           </button>
         </div>
         </>)}
