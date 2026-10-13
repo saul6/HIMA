@@ -196,7 +196,8 @@ export async function fetchBandeja(orgId: string): Promise<NcBandejaItem[]> {
   return bandeja
 }
 
-export function useAccionesCorrectivas() {
+/** `habilitado=false` evita cargar la bandeja (p. ej. M25 solo la necesita con el detalle abierto). */
+export function useAccionesCorrectivas(habilitado = true) {
   const { profile, user } = useAuthContext()
   const userId = user?.id ?? null
   const { pendientes } = useOutbox('M26')
@@ -205,7 +206,7 @@ export function useAccionesCorrectivas() {
   const [error, setError] = useState<string | null>(null)
 
   const cargar = useCallback(async () => {
-    if (!profile?.org_id || !userId) { setLoading(false); return }
+    if (!habilitado || !profile?.org_id || !userId) { setLoading(false); return }
     setLoading(true)
     setError(null)
     try {
@@ -217,7 +218,7 @@ export function useAccionesCorrectivas() {
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id, userId])
+  }, [habilitado, profile?.org_id, userId])
 
   useEffect(() => { cargar() }, [cargar])
 

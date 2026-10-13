@@ -581,8 +581,9 @@ function DetalleSheet({
     if (editForm.titulo.trim() !== t.titulo) cambios.titulo = editForm.titulo.trim()
     if (editForm.descripcion !== (t.descripcion ?? '')) cambios.descripcion = editForm.descripcion || null
     if (editForm.prioridad && editForm.prioridad !== t.prioridad) cambios.prioridad = editForm.prioridad
-    if (editForm.fecha_limite !== (t.fecha_limite ?? '')) cambios.fecha_limite = editForm.fecha_limite || null
-    if (editForm.asignado_a !== t.asignado_a) cambios.asignado_a = editForm.asignado_a
+    const deHallazgo = esTareaDeHallazgo(t)
+    if (!deHallazgo && editForm.fecha_limite !== (t.fecha_limite ?? '')) cambios.fecha_limite = editForm.fecha_limite || null
+    if (!deHallazgo && editForm.asignado_a !== t.asignado_a) cambios.asignado_a = editForm.asignado_a
     if (Object.keys(cambios).length === 0) { setAccion(null); return }
     setGuardando(true)
     const res = await hook.editar(tareaId, cambios)
@@ -1081,6 +1082,7 @@ function DetalleSheet({
                 onCancel={() => setAccion(null)}
                 onSave={handleEditar}
                 guardando={guardando}
+                bloqueado={esTareaDeHallazgo(det?.tarea)}
               />
             )}
 
@@ -1344,6 +1346,11 @@ function DetalleSheet({
   )
 }
 
+/** Tareas creadas por la asignación de hallazgos (título "Hallazgo {numeral} · …", módulo M26) */
+function esTareaDeHallazgo(t: { titulo: string; modulo_codigo: string | null } | undefined): boolean {
+  return !!t && t.modulo_codigo === 'M26' && t.titulo.startsWith('Hallazgo ')
+}
+
 // ── EditarForm / NuevaTareaForm ───────────────────────────────────────────────
 
 interface TareaFormState {
@@ -1365,8 +1372,11 @@ function EditarForm({
   onCancel,
   onSave,
   guardando,
+  bloqueado = false,
 }: {
   form: TareaFormState
+  /** Tarea nacida de un hallazgo: responsable y fecha se cambian desde el hallazgo */
+  bloqueado?: boolean
   onChange: (f: TareaFormState) => void
   colaboradores: { id: string; nombre: string }[]
   ranchos: { id: string; nombre: string }[]
@@ -1427,8 +1437,9 @@ function EditarForm({
           <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Asignada a *</label>
           <select
             value={form.asignado_a}
+            disabled={bloqueado}
             onChange={e => onChange({ ...form, asignado_a: e.target.value })}
-            style={{ ...inputSt, marginTop: '0.25rem' }}
+            style={{ ...inputSt, marginTop: '0.25rem', opacity: bloqueado ? 0.6 : 1 }}
           >
             <option value="">Seleccionar...</option>
             {colaboradores.map(c => (
@@ -1442,9 +1453,15 @@ function EditarForm({
         <input
           type="date"
           value={form.fecha_limite}
+          disabled={bloqueado}
           onChange={e => onChange({ ...form, fecha_limite: e.target.value })}
-          style={{ ...inputSt, marginTop: '0.25rem' }}
+          style={{ ...inputSt, marginTop: '0.25rem', opacity: bloqueado ? 0.6 : 1 }}
         />
+        {bloqueado && (
+          <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
+            Se cambia desde el hallazgo
+          </p>
+        )}
       </div>
       {ranchos.length > 0 && (
         <div>

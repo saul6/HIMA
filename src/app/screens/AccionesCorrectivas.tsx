@@ -33,6 +33,9 @@ import {
   generarAccionesCorrectivasPDF,
 } from '@/lib/pdf/m26/generarAccionesCorrectivasPDF'
 import { hoyMX } from '@/lib/fecha'
+import { useAsignacionHallazgos } from '@/hooks/useAsignacionHallazgos'
+import { AsignarHallazgoSheet } from '@/app/components/hallazgos/AsignarHallazgoSheet'
+import { esModuloAsignable, formatFechaLimite } from '@/lib/hallazgos/asignacion'
 import type { AccionCorrectivaFoto } from '@/types/database.types'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -164,6 +167,8 @@ export function AccionesCorrectivas() {
     useAccionesCorrectivas()
 
   const { online } = useConexion()
+  const asig = useAsignacionHallazgos(items)
+  const [itemAsignar, setItemAsignar] = useState<NcBandejaItem | null>(null)
   const { guardar: guardarOffline } = useGuardarOffline('M26')
   const [filtro, setFiltro] = useState<FiltroEstado>('pendientes')
   const [sheetAbierto, setSheetAbierto] = useState(false)
@@ -217,6 +222,12 @@ export function AccionesCorrectivas() {
     setTipoFotoNueva('evidencia_correccion')
     setLeyendaFotoNueva('')
     setSheetAbierto(true)
+  }
+
+  function abrirAsignar(item: NcBandejaItem) {
+    if (!online) { toast.warning('Necesitas conexión para asignar un hallazgo'); return }
+    setItemAsignar(item)
+    asig.cargarColaboradores()
   }
 
   function cerrarSheet() {
@@ -473,6 +484,29 @@ export function AccionesCorrectivas() {
                       {item.rancho_nombre} · {formatFecha(item.fecha_auditoria)}
                     </p>
                   </button>
+                  {esModuloAsignable(item.modulo) && (() => {
+                    const est = asig.estados[item.respuesta_id]
+                    const fecha = est?.fecha_limite
+                    return (
+                      <div className="mt-2 pt-2 border-t border-border flex items-center justify-between gap-2">
+                        <p className="text-xs text-muted-foreground min-w-0">
+                          <span style={{ fontWeight: 600 }}>Responsable · Fecha límite:</span>{' '}
+                          {est?.owner_user_id
+                            ? `${est.owner_nombre ?? 'Colaborador'}${fecha ? ` · ${formatFechaLimite(fecha)}` : ''}`
+                            : 'Sin asignar'}
+                        </p>
+                        {asig.puedeAsignar && item.estado !== 'cerrada' && (
+                          <button
+                            onClick={() => abrirAsignar(item)}
+                            className="h-8 px-3 rounded-lg text-xs text-primary border border-primary hover:bg-primary/5 transition-colors flex-shrink-0"
+                            style={{ fontWeight: 600 }}
+                          >
+                            {est?.owner_user_id ? 'Editar asignación' : 'Asignar'}
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })()}
                   {item.accion && (
                     <div className="mt-2 pt-2 border-t border-border flex items-center justify-between gap-2">
                       {item.accion.fotosSinSubir ? (
@@ -498,6 +532,16 @@ export function AccionesCorrectivas() {
           </div>
         )}
       </div>
+
+      <AsignarHallazgoSheet
+        item={itemAsignar}
+        colaboradores={asig.colaboradores}
+        cargandoColab={asig.cargandoColab}
+        errorColab={asig.errorColab}
+        onRecargarColab={asig.cargarColaboradores}
+        onGuardado={async () => { await Promise.all([asig.recargarEstados(), refetch()]) }}
+        onClose={() => setItemAsignar(null)}
+      />
 
       {/* Bottom Sheet — Detalle / Captura */}
       <BottomSheet open={sheetAbierto} onClose={cerrarSheet} height="95%">

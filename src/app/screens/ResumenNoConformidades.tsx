@@ -21,6 +21,11 @@ import { generarResumenNoConformidadesPDF } from '@/lib/pdf/m25/generarResumenNo
 import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
+import { useAccionesCorrectivas, type NcBandejaItem } from '@/hooks/useAccionesCorrectivas'
+import { useAsignacionHallazgos } from '@/hooks/useAsignacionHallazgos'
+import { AsignarHallazgoSheet } from '@/app/components/hallazgos/AsignarHallazgoSheet'
+import { resolverHallazgoVisita, formatFechaLimite } from '@/lib/hallazgos/asignacion'
+import { useConexion } from '@/hooks/useConexion'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -82,6 +87,20 @@ export function ResumenNoConformidades() {
   const [loadingDisponibles, setLoadingDisponibles] = useState(false)
   const [buscandoDisponibles, setBuscandoDisponibles] = useState(false)
   const [generandoPDF, setGenerandoPDF] = useState(false)
+
+  // ── Asignación de hallazgos (solo con el detalle abierto) ──────────────────
+
+  const { online } = useConexion()
+  const bandeja = useAccionesCorrectivas(sheetDetalleAbierto)
+  const itemsVisita = bandeja.items.filter((i) => i.visita_id === visitaDetalle?.id)
+  const asig = useAsignacionHallazgos(itemsVisita, sheetDetalleAbierto)
+  const [itemAsignar, setItemAsignar] = useState<NcBandejaItem | null>(null)
+
+  function abrirAsignar(item: NcBandejaItem) {
+    if (!online) { toast.warning('Necesitas conexión para asignar un hallazgo'); return }
+    setItemAsignar(item)
+    asig.cargarColaboradores()
+  }
 
   // ── Funciones de apertura ──────────────────────────────────────────────────
 
@@ -664,6 +683,12 @@ export function ResumenNoConformidades() {
                       >
                         Comentario
                       </th>
+                      <th
+                        className="text-left px-3 py-2 text-muted-foreground border-b border-border whitespace-nowrap"
+                        style={{ fontWeight: 600 }}
+                      >
+                        Responsable · Fecha límite
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -687,6 +712,33 @@ export function ResumenNoConformidades() {
                         </td>
                         <td className="px-3 py-2 text-muted-foreground" style={{ minWidth: '140px' }}>
                           {ncr.comentario}
+                        </td>
+                        <td className="px-3 py-2 text-foreground" style={{ minWidth: '170px' }}>
+                          {(() => {
+                            if (bandeja.loading) return <span className="text-muted-foreground">Cargando…</span>
+                            const origen = resolverHallazgoVisita(ncr, itemsVisita, visitaDetalle?.id)
+                            if (!origen) return <span className="text-muted-foreground">Origen pendiente de verificar</span>
+                            const est = asig.estados[origen.respuesta_id]
+                            return (
+                              <div className="space-y-1.5">
+                                <p>
+                                  {est?.owner_user_id
+                                    ? `${est.owner_nombre ?? 'Colaborador'}${est.fecha_limite ? ` · ${formatFechaLimite(est.fecha_limite)}` : ''}`
+                                    : 'Sin asignar'}
+                                </p>
+                                {asig.puedeAsignar && origen.estado !== 'cerrada' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => abrirAsignar(origen)}
+                                    className="h-8 px-3 rounded-lg text-xs text-primary border border-primary hover:bg-primary/5 transition-colors"
+                                    style={{ fontWeight: 600 }}
+                                  >
+                                    {est?.owner_user_id ? 'Editar asignación' : 'Asignar'}
+                                  </button>
+                                )}
+                              </div>
+                            )
+                          })()}
                         </td>
                       </tr>
                     ))}
@@ -714,6 +766,16 @@ export function ResumenNoConformidades() {
           </button>
         </div>
       </BottomSheet>
+
+      <AsignarHallazgoSheet
+        item={itemAsignar}
+        colaboradores={asig.colaboradores}
+        cargandoColab={asig.cargandoColab}
+        errorColab={asig.errorColab}
+        onRecargarColab={asig.cargarColaboradores}
+        onGuardado={async () => { await Promise.all([asig.recargarEstados(), bandeja.refetch()]) }}
+        onClose={() => setItemAsignar(null)}
+      />
 
     </div>
   )
