@@ -1,3 +1,4 @@
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 import { Document, Page, View, Text } from '@react-pdf/renderer'
 import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
 import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
@@ -60,7 +61,7 @@ function HC({ w, children, right = true, last = false }: { w: number; children?:
 function DC({ w, children, bg, right = true }: { w: number; children?: React.ReactNode; bg?: string; right?: boolean }) {
   return (
     <View style={{ width: w, minWidth: w, padding: '3px 3px', backgroundColor: bg ?? PC.white, borderRightWidth: right ? 1 : 0, borderRightColor: PC.border }}>
-      <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{children ?? ''}</Text>
+      <Text style={{ fontSize: 6.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{children ?? ''}</Text>
     </View>
   )
 }
