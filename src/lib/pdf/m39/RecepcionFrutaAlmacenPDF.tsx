@@ -124,90 +124,35 @@ export function RecepcionFrutaAlmacenPDF({
 
         <PdfSectionBanner>2. Líneas de recepción</PdfSectionBanner>
 
-        {d.lineas.map((linea, idx) => (
-          <View key={idx} style={{ marginBottom: 5, borderWidth: 1, borderColor: PC.border }}>
-            {/* Line label */}
-            <View style={{ backgroundColor: PC.folioBox, paddingVertical: 3, paddingHorizontal: 5, borderBottomWidth: 1, borderBottomColor: PC.border }}>
-              <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.titleNavy }}>
-                {`Línea de recepción ${String(linea.orden).padStart(2, '0')}`}
-              </Text>
-            </View>
-
-            {/* Column headers */}
-            <View style={{ flexDirection: 'row' }}>
-              <View style={[TH, { width: 50 }]}>
-                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Hora</Text>
+        <View style={{ borderWidth: 1, borderColor: PC.border, marginTop: 4, marginBottom: 6 }}>
+          <View style={{ flexDirection: 'row' }} fixed>
+            {[
+              { w: 28, l: 'No.' }, { w: 45, l: 'Hora' }, { w: 0, l: 'Cultivo' }, { w: 50, l: 'Cajas' },
+              { w: 50, l: 'Piezas' }, { w: 120, l: 'Entrega' }, { w: 45, l: 'Limp. BE' },
+              { w: 45, l: 'Limp. L' }, { w: 45, l: 'Limp. LP' }, { w: 170, l: 'Código de trazabilidad', last: true },
+            ].map((c) => (
+              <View key={c.l} style={[TH, c.w ? { width: c.w } : { flex: 1 }, c.last ? { borderRightWidth: 0 } : {}]}>
+                <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.white }}>{c.l}</Text>
               </View>
-              <View style={[TH, { flex: 1 }]}>
-                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Cultivo</Text>
-              </View>
-              <View style={[TH, { width: 50 }]}>
-                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Cajas</Text>
-              </View>
-              <View style={[TH, { width: 50 }]}>
-                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Piezas</Text>
-              </View>
-              <View style={[TH, { width: 90 }]}>
-                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Entrega</Text>
-              </View>
-              <View style={[TH, { width: 48 }]}>
-                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Limp. BE</Text>
-              </View>
-              <View style={[TH, { width: 48 }]}>
-                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Limp. L</Text>
-              </View>
-              <View style={[TH, { width: 48, borderRightWidth: 0 }]}>
-                <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.white }}>Limp. LP</Text>
-              </View>
-            </View>
-
-            {/* Data row */}
-            <View style={{ flexDirection: 'row' }}>
-              <View style={[TD, { width: 50 }]}>
-                <Text style={{ fontSize: 7, color: PC.fieldValue }}>{t(linea.hora)}</Text>
-              </View>
-              <View style={[TD, { flex: 1 }]}>
-                <Text style={{ fontSize: 7, color: PC.fieldValue }}>{t(linea.cultivo)}</Text>
-              </View>
-              <View style={[TD, { width: 50 }]}>
-                <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{n(linea.cajas)}</Text>
-              </View>
-              <View style={[TD, { width: 50 }]}>
-                <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{n(linea.piezas)}</Text>
-              </View>
-              <View style={[TD, { width: 90 }]}>
-                <Text style={{ fontSize: 7, color: PC.fieldValue }}>{t(linea.entrega)}</Text>
-              </View>
-              <View style={[TD, { width: 48 }]}>
-                <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{b3(linea.limp_be)}</Text>
-              </View>
-              <View style={[TD, { width: 48 }]}>
-                <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{b3(linea.limp_l)}</Text>
-              </View>
-              <View style={[TD, { width: 48, borderRightWidth: 0 }]}>
-                <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{b3(linea.limp_lp)}</Text>
-              </View>
-            </View>
-
-            {/* Trazabilidad — highlighted */}
-            <View style={{
-              backgroundColor: TRAZ_FILL,
-              borderTopWidth: 1,
-              borderTopColor: TRAZ_BORD,
-              paddingVertical: 5,
-              paddingHorizontal: 6,
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}>
-              <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: PC.textSub, marginRight: 8 }}>
-                Código de trazabilidad:
-              </Text>
-              <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: TRAZ_TEXT }}>
-                {linea.codigo_trazabilidad || '—'}
-              </Text>
-            </View>
+            ))}
           </View>
-        ))}
+          {d.lineas.map((linea, idx) => (
+            <View key={idx} wrap={false} style={{ flexDirection: 'row', backgroundColor: idx % 2 === 1 ? ROW_ALT : PC.white, borderBottomWidth: 1, borderBottomColor: PC.border }}>
+              <View style={[TD, { width: 28 }]}><Text style={{ fontSize: 8, color: PC.fieldValue, textAlign: 'center' }}>{linea.orden}</Text></View>
+              <View style={[TD, { width: 45 }]}><Text style={{ fontSize: 8, color: PC.fieldValue }}>{t(linea.hora)}</Text></View>
+              <View style={[TD, { flex: 1 }]}><Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{t(linea.cultivo)}</Text></View>
+              <View style={[TD, { width: 50 }]}><Text style={{ fontSize: 8, color: PC.fieldValue, textAlign: 'center' }}>{n(linea.cajas)}</Text></View>
+              <View style={[TD, { width: 50 }]}><Text style={{ fontSize: 8, color: PC.fieldValue, textAlign: 'center' }}>{n(linea.piezas)}</Text></View>
+              <View style={[TD, { width: 120 }]}><Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{t(linea.entrega)}</Text></View>
+              <View style={[TD, { width: 45 }]}><Text style={{ fontSize: 8, color: PC.fieldValue, textAlign: 'center' }}>{b3(linea.limp_be)}</Text></View>
+              <View style={[TD, { width: 45 }]}><Text style={{ fontSize: 8, color: PC.fieldValue, textAlign: 'center' }}>{b3(linea.limp_l)}</Text></View>
+              <View style={[TD, { width: 45 }]}><Text style={{ fontSize: 8, color: PC.fieldValue, textAlign: 'center' }}>{b3(linea.limp_lp)}</Text></View>
+              <View style={[TD, { width: 170, backgroundColor: TRAZ_FILL, borderRightWidth: 0 }]}>
+                <Text style={{ fontSize: 8.5, fontFamily: 'Helvetica-Bold', color: TRAZ_TEXT }} hyphenationCallback={partirPalabraLarga}>{linea.codigo_trazabilidad || '—'}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
 
         {cultivoEntries.length > 0 && (
           <>
@@ -236,11 +181,12 @@ export function RecepcionFrutaAlmacenPDF({
 
         {d.observaciones ? (
           <View style={{ borderWidth: 1, borderColor: PC.border, padding: 4, marginTop: 4, marginBottom: 4 }}>
-            <Text style={{ fontSize: 5.5, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>OBSERVACIONES</Text>
-            <Text style={{ fontSize: 6.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{d.observaciones}</Text>
+            <Text style={{ fontSize: 8, color: PC.section, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>OBSERVACIONES</Text>
+            <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{d.observaciones}</Text>
           </View>
         ) : null}
 
+        <View wrap={false}>
         <PdfSectionBanner>4. Firmas y responsables</PdfSectionBanner>
         <PdfSignatures
           signatures={[
@@ -248,6 +194,7 @@ export function RecepcionFrutaAlmacenPDF({
             { label: '', nombre: '', caption: 'Responsable de la Empresa — Firma', firma: firmaVerifico ?? null },
           ]}
         />
+        </View>
       </Page>
     </Document>
   )
