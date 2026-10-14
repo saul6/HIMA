@@ -42,14 +42,14 @@ async function construirDatos(id: string, orgId: string): Promise<RegistroDatos>
   if (e1) throw e1
 
   const { data: resultados, error: e2 } = await tbl('m73_resultados')
-    .select('*, m73_items_catalogo(nombre)')
+    .select('*, m73_botiquin_catalogo!material_id(nombre)')
     .eq('registro_id', id)
-    .order('created_at', { ascending: true })
+    .order('id', { ascending: true })
   if (e2) throw e2
 
   const r = reg as any
   const materiales: M73MaterialFilaPDF[] = (resultados as any[]).map((row) => ({
-    nombre: row.m73_items_catalogo?.nombre ?? row.material_otro ?? '—',
+    nombre: row.m73_botiquin_catalogo?.nombre ?? row.material_otro ?? '—',
     sale: row.sale ?? null,
     entra: row.entra ?? null,
     total: row.total ?? null,
