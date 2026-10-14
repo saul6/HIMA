@@ -38,11 +38,20 @@ export async function fotoADataUri(storagePath: string): Promise<string> {
   }
 }
 
-// Descarga todas las fotos en paralelo. Los fallos se resuelven como '' (placeholder).
+// Descarga las fotos con concurrencia acotada (muchas fotos en paralelo saturan memoria y congelan la página).
+// Los fallos se resuelven como '' (placeholder).
+const CONCURRENCIA_FOTOS_PDF = 4
+
 export async function fotosADataUris(paths: string[]): Promise<Record<string, string>> {
   if (paths.length === 0) return {}
-  const results = await Promise.all(
-    paths.map(async (path) => [path, await fotoADataUri(path)] as const)
-  )
-  return Object.fromEntries(results)
+  const salida: Record<string, string> = {}
+  let siguiente = 0
+  async function worker() {
+    while (siguiente < paths.length) {
+      const path = paths[siguiente++]
+      salida[path] = await fotoADataUri(path)
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCIA_FOTOS_PDF, paths.length) }, worker))
+  return salida
 }

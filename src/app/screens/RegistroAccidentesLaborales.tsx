@@ -47,6 +47,9 @@ import { WifiOff } from 'lucide-react'
 
 const TITULO_MODULO = 'Registro de Accidentes Laborales'
 const MAX_FOTO_BYTES = 5.5 * 1024 * 1024
+// Tope de fotos por accidente (valor provisional hasta que Saúl defina el límite definitivo en BD)
+const MAX_FOTOS_ACCIDENTE = 10
+const LOTE_SUBIDA_FOTOS = 4
 
 const ATENCIONES_UI = [
   'Ninguna',
@@ -355,7 +358,15 @@ export function RegistroAccidentesLaborales() {
   async function handleFotoInput(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
     e.target.value = ''
-    for (const raw of files) {
+    const disponibles = MAX_FOTOS_ACCIDENTE - fotosLocal.length
+    if (disponibles <= 0) {
+      toast.warning(`Máximo ${MAX_FOTOS_ACCIDENTE} fotos por accidente`)
+      return
+    }
+    if (files.length > disponibles) {
+      toast.warning(`Máximo ${MAX_FOTOS_ACCIDENTE} fotos por accidente: se agregarán ${disponibles} de ${files.length}`)
+    }
+    for (const raw of files.slice(0, disponibles)) {
       const toastId = toast.loading('Optimizando foto...')
       try {
         const compressed = await comprimirImagen(raw, 5.5)
@@ -485,16 +496,28 @@ export function RegistroAccidentesLaborales() {
       accidenteId = (ins as any).id as string
 
       // 2. Subir fotos
-      for (let i = 0; i < fotosLocal.length; i++) {
-        const foto = fotosLocal[i]
-        const path = `${orgId}/m20/${accidenteId}/${crypto.randomUUID()}.jpg`
-        await subirFoto(path, foto.file)
-        pathsSubidos.push(path)
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any)
-          .from('m20_accidente_fotos')
-          .insert({ accidente_id: accidenteId, org_id: orgId, storage_path: path, orden: i })
+      const idAccidente = accidenteId
+      const toastSubida = fotosLocal.length > 0 ? toast.loading(`Subiendo fotos 0/${fotosLocal.length}...`) : null
+      let subidas = 0
+      try {
+        for (let ini = 0; ini < fotosLocal.length; ini += LOTE_SUBIDA_FOTOS) {
+          await Promise.all(
+            fotosLocal.slice(ini, ini + LOTE_SUBIDA_FOTOS).map(async (foto, k) => {
+              const path = `${orgId}/m20/${idAccidente}/${crypto.randomUUID()}.jpg`
+              await subirFoto(path, foto.file)
+              pathsSubidos.push(path)
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const { error: errFoto } = await (supabase as any)
+                .from('m20_accidente_fotos')
+                .insert({ accidente_id: idAccidente, org_id: orgId, storage_path: path, orden: ini + k })
+              if (errFoto) throw errFoto
+              subidas++
+              if (toastSubida) toast.loading(`Subiendo fotos ${subidas}/${fotosLocal.length}...`, { id: toastSubida })
+            })
+          )
+        }
+      } finally {
+        if (toastSubida) toast.dismiss(toastSubida)
       }
 
       // 3. Refetch + cierre + transición firma
@@ -827,7 +850,7 @@ export function RegistroAccidentesLaborales() {
             {/* Fotos */}
             <div className="flex flex-col gap-2">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Evidencia fotográfica (opcional)
+                Evidencia fotográfica (opcional) · {fotosLocal.length}/{MAX_FOTOS_ACCIDENTE}
               </label>
 
               {fotosLocal.length > 0 && (
