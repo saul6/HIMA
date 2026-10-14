@@ -232,14 +232,16 @@ export function LimpiezaPreenfrioPagina({
         Nota: Concentracion cloro recomendada 100-200 ppm. Ajuste si la concentracion esta fuera del rango. En caso de hallazgo de plaga se registra incidencia en M13.
       </Text>
 
-      <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
-      <PdfSignatures
-        signatures={[
-          { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
-          { label: '', nombre: '', caption: 'Aprobo', firma: firmaVerifico ?? null },
-          { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
-        ]}
-      />
+      <View wrap={false}>
+        <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
+        <PdfSignatures
+          signatures={[
+            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Aprobo', firma: firmaVerifico ?? null },
+            { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
+          ]}
+        />
+      </View>
     </Page>
   )
 }

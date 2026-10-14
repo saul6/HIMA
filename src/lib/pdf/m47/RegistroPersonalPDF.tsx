@@ -312,13 +312,15 @@ export function RegistroPersonalPDF({
           <PdfLegend entradas={legendEntradas} />
         )}
 
-        <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
-        <PdfSignatures
-          signatures={[
-            { label: '', nombre: '', caption: 'Responsable de Recursos Humanos', firma: firmaRealizo ?? null },
-            { label: '', nombre: '', caption: 'Jefe de la instalacion', firma: firmaVerifico ?? null },
-          ]}
-        />
+        <View wrap={false}>
+          <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
+          <PdfSignatures
+            signatures={[
+              { label: '', nombre: '', caption: 'Responsable de Recursos Humanos', firma: firmaRealizo ?? null },
+              { label: '', nombre: '', caption: 'Jefe de la instalacion', firma: firmaVerifico ?? null },
+            ]}
+          />
+        </View>
       </Page>
     </Document>
   )

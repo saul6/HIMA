@@ -223,14 +223,16 @@ export function LimpiezaAduanaPagina({
         </View>
       ) : null}
 
-      <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
-      <PdfSignatures
-        signatures={[
-          { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
-          { label: '', nombre: '', caption: 'Aprobo', firma: firmaVerifico ?? null },
-          { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
-        ]}
-      />
+      <View wrap={false}>
+        <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
+        <PdfSignatures
+          signatures={[
+            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Aprobo', firma: firmaVerifico ?? null },
+            { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
+          ]}
+        />
+      </View>
     </Page>
   )
 }

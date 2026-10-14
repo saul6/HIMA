@@ -102,16 +102,16 @@ export function LimpiezaBanosPagina({
 
       {/* Tabla de baños */}
       <View style={{ borderLeftWidth: 1, borderLeftColor: PC.border, borderTopWidth: 1, borderTopColor: PC.border, marginTop: 4, marginBottom: 8 }}>
-        {/* Encabezado */}
-        <View style={{ flexDirection: 'row' }}>
+        {/* Encabezado (se repite en cada página) */}
+        <View style={{ flexDirection: 'row' }} fixed>
           <View style={[thStyle, { width: 45, backgroundColor: PC.section }]}>
-            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>N.{'°'} Bano</Text>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>N.{'°'} Baño</Text>
           </View>
           <View style={[thStyle, { flex: 2, backgroundColor: PC.section }]}>
             <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>Limpieza{'\n'}(Lavar y tallar)</Text>
           </View>
           <View style={[thStyle, { flex: 2, backgroundColor: PC.section }]}>
-            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>Desinfeccion{'\n'}(3 ml cloro/L)</Text>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>Desinfección{'\n'}(3 ml cloro/L)</Text>
           </View>
           <View style={[thStyle, { width: 55, backgroundColor: PC.section }]}>
             <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>Conc.{'\n'}(ppm)</Text>
@@ -123,7 +123,7 @@ export function LimpiezaBanosPagina({
             <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>Abasto{'\n'}Papel</Text>
           </View>
           <View style={[thStyle, { flex: 1.5, backgroundColor: PC.section }]}>
-            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>Succion</Text>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white, textAlign: 'center' }}>Succión</Text>
           </View>
         </View>
 
@@ -131,7 +131,7 @@ export function LimpiezaBanosPagina({
         {banos.map((b, i) => {
           const bg = i % 2 === 1 ? ROW_ALT : PC.white
           return (
-            <View key={i} style={{ flexDirection: 'row', backgroundColor: bg }}>
+            <View key={i} wrap={false} style={{ flexDirection: 'row', backgroundColor: bg }}>
               <View style={[tdStyle, { width: 45, backgroundColor: bg }]}>
                 <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', textAlign: 'center', color: PC.fieldValue }}>{b.bano_numero}</Text>
               </View>
@@ -158,13 +158,15 @@ export function LimpiezaBanosPagina({
         })}
       </View>
 
-      <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
-      <PdfSignatures
-        signatures={[
-          { label: '', nombre: '', caption: 'Realizo la limpieza', firma: firmaRealizo ?? null },
-          { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
-        ]}
-      />
+      <View wrap={false}>
+        <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
+        <PdfSignatures
+          signatures={[
+            { label: '', nombre: '', caption: 'Realizó la limpieza', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
+          ]}
+        />
+      </View>
     </Page>
   )
 }

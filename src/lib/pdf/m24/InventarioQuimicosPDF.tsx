@@ -183,14 +183,16 @@ export function InventarioQuimicosPagina({
             )}
           </View>
 
-          <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
-          <PdfSignatures
-            signatures={[
-              { label: '', nombre: '', caption: 'Encargado de limpieza', firma: firmaRealizo ?? null },
-              { label: '', nombre: '', caption: 'Gerente Administrativo', firma: firmaVerifico ?? null },
-              { label: '', nombre: '', caption: 'Gerente General' },
-            ]}
-          />
+          <View wrap={false}>
+            <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
+            <PdfSignatures
+              signatures={[
+                { label: '', nombre: '', caption: 'Encargado de limpieza', firma: firmaRealizo ?? null },
+                { label: '', nombre: '', caption: 'Gerente Administrativo', firma: firmaVerifico ?? null },
+                { label: '', nombre: '', caption: 'Gerente General' },
+              ]}
+            />
+          </View>
 
         </View>
       </PdfPageFrame>

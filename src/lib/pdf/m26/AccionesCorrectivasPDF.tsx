@@ -220,7 +220,7 @@ function FichaNC({ accion }: { accion: AccionPDFFila }) {
 function IshikawaDiagram({ nc, ishikawa }: { nc: string; ishikawa: Record<string, string> }) {
   const ncLines = svgLineas(nc, 22, 4)
   return (
-    <View style={{ marginBottom: 14 }}>
+    <View style={{ marginBottom: 14 }} wrap={false}>
       <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: PC.fieldValue, textTransform: 'uppercase', marginBottom: 6, borderBottomWidth: 1, borderBottomColor: PC.border, paddingBottom: 3 }}>
         Analisis de causa — Diagrama de Ishikawa
       </Text>

@@ -320,14 +320,16 @@ function MttoPreventivoPaginaContent({
         </View>
       ) : null}
 
-      <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
-      <PdfSignatures
-        signatures={[
-          { label: '', nombre: '', caption: 'Responsable del Area', firma: firmaRealizo ?? null },
-          { label: '', nombre: '', caption: 'Jefe de Mantenimiento', firma: firmaVerifico ?? null },
-          { label: '', nombre: '', caption: 'Gerente de Operaciones' },
-        ]}
-      />
+      <View wrap={false}>
+        <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
+        <PdfSignatures
+          signatures={[
+            { label: '', nombre: '', caption: 'Responsable del Area', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Jefe de Mantenimiento', firma: firmaVerifico ?? null },
+            { label: '', nombre: '', caption: 'Gerente de Operaciones' },
+          ]}
+        />
+      </View>
     </>
   )
 }

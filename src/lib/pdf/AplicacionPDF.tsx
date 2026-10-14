@@ -289,26 +289,28 @@ export function AplicacionPDF({
             )}
 
             {/* ── Sección 6/7 — Firmas y responsables ── */}
-            <PdfSectionBanner>{numFirmas}. FIRMAS Y RESPONSABLES</PdfSectionBanner>
-            <PdfSignatures
-              signatures={[
-                {
-                  label: 'Nombre(s) del aplicador',
-                  nombre: val(ap.aplicadores),
-                  caption: 'Firma del aplicador',
-                },
-                {
-                  label: 'Asesor técnico',
-                  nombre: val(asesor?.nombre_completo),
-                  caption: 'Firma del asesor técnico',
-                },
-                {
-                  label: 'Responsable de inocuidad',
-                  nombre: val(responsable?.nombre_completo),
-                  caption: 'Firma del responsable de inocuidad',
-                },
-              ]}
-            />
+            <View wrap={false}>
+              <PdfSectionBanner>{numFirmas}. FIRMAS Y RESPONSABLES</PdfSectionBanner>
+              <PdfSignatures
+                signatures={[
+                  {
+                    label: 'Nombre(s) del aplicador',
+                    nombre: val(ap.aplicadores),
+                    caption: 'Firma del aplicador',
+                  },
+                  {
+                    label: 'Asesor técnico',
+                    nombre: val(asesor?.nombre_completo),
+                    caption: 'Firma del asesor técnico',
+                  },
+                  {
+                    label: 'Responsable de inocuidad',
+                    nombre: val(responsable?.nombre_completo),
+                    caption: 'Firma del responsable de inocuidad',
+                  },
+                ]}
+              />
+            </View>
 
           </View>
         </PdfPageFrame>

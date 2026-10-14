@@ -197,13 +197,15 @@ export function RondinesVigilanciaPDF({
           </View>
         ) : null}
 
-        <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
-        <PdfSignatures
-          signatures={[
-            { label: '', nombre: '', caption: 'Firma del vigilante', firma: firmaRealizo ?? null },
-            { label: '', nombre: '', caption: 'Jefe de Seguridad', firma: firmaVerifico ?? null },
-          ]}
-        />
+        <View wrap={false}>
+          <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
+          <PdfSignatures
+            signatures={[
+              { label: '', nombre: '', caption: 'Firma del vigilante', firma: firmaRealizo ?? null },
+              { label: '', nombre: '', caption: 'Jefe de Seguridad', firma: firmaVerifico ?? null },
+            ]}
+          />
+        </View>
       </Page>
     </Document>
   )

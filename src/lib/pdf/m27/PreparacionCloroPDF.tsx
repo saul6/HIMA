@@ -140,13 +140,15 @@ export function PreparacionCloroPagina({
             </Text>
           </View>
 
-          <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
-          <PdfSignatures
-            signatures={[
-              { label: 'Elaboro', nombre: '', caption: 'Firma', firma: firmaRealizo ?? null },
-              { label: '', nombre: '', caption: 'Verifico — Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
-            ]}
-          />
+          <View wrap={false}>
+            <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
+            <PdfSignatures
+              signatures={[
+                { label: 'Elaboro', nombre: '', caption: 'Firma', firma: firmaRealizo ?? null },
+                { label: '', nombre: '', caption: 'Verifico — Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
+              ]}
+            />
+          </View>
 
         </View>
       </PdfPageFrame>

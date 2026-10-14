@@ -187,13 +187,13 @@ export function RecepcionFrutaAlmacenPDF({
         ) : null}
 
         <View wrap={false}>
-        <PdfSectionBanner>4. Firmas y responsables</PdfSectionBanner>
-        <PdfSignatures
-          signatures={[
-            { label: '', nombre: '', caption: 'Responsable de Empaque — Firma', firma: firmaRealizo ?? null },
-            { label: '', nombre: '', caption: 'Responsable de la Empresa — Firma', firma: firmaVerifico ?? null },
-          ]}
-        />
+          <PdfSectionBanner>4. Firmas y responsables</PdfSectionBanner>
+          <PdfSignatures
+            signatures={[
+              { label: '', nombre: '', caption: 'Responsable de Empaque — Firma', firma: firmaRealizo ?? null },
+              { label: '', nombre: '', caption: 'Responsable de la Empresa — Firma', firma: firmaVerifico ?? null },
+            ]}
+          />
         </View>
       </Page>
     </Document>

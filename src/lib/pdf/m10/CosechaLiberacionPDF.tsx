@@ -234,23 +234,25 @@ export function CosechaLiberacionPagina({
             )}
           </View>
 
-          <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
-          <PdfSignatures
-            signatures={[
-              {
-                label: 'Responsable que realizó el registro',
-                nombre: '',
-                caption: 'Realizó — Firma',
-                firma: firmaRealizo ?? null,
-              },
-              {
-                label: '',
-                nombre: '',
-                caption: 'Responsable de Inocuidad — Verificó',
-                firma: firmaVerifico ?? null,
-              },
-            ]}
-          />
+          <View wrap={false}>
+            <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
+            <PdfSignatures
+              signatures={[
+                {
+                  label: 'Responsable que realizó el registro',
+                  nombre: '',
+                  caption: 'Realizó — Firma',
+                  firma: firmaRealizo ?? null,
+                },
+                {
+                  label: '',
+                  nombre: '',
+                  caption: 'Responsable de Inocuidad — Verificó',
+                  firma: firmaVerifico ?? null,
+                },
+              ]}
+            />
+          </View>
 
         </View>
       </PdfPageFrame>
