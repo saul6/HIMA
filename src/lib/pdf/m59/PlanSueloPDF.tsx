@@ -120,7 +120,7 @@ export function PlanSueloPage({
           <View style={[thStyle, { width: 45, backgroundColor: PC.section }]}>
             <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white }}>Respuesta</Text>
           </View>
-          <View style={[thStyle, { width: 130, backgroundColor: PC.section, alignItems: 'flex-start', borderRightWidth: 0 }]}>
+          <View style={[thStyle, { width: 220, backgroundColor: PC.section, alignItems: 'flex-start', borderRightWidth: 0 }]}>
             <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white }}>Comentario</Text>
           </View>
         </View>
@@ -141,7 +141,7 @@ export function PlanSueloPage({
                   {label}
                 </Text>
               </View>
-              <View style={[tdStyle, { width: 130, alignItems: 'flex-start', padding: 4, borderRightWidth: 0 }]}>
+              <View style={[tdStyle, { width: 220, alignItems: 'flex-start', padding: 4, borderRightWidth: 0 }]}>
                 <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.comentario ?? '—'}</Text>
               </View>
             </View>

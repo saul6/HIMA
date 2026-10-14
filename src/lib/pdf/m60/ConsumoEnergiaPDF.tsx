@@ -72,7 +72,7 @@ function fmtMes(iso: string): string {
   } catch { return iso }
 }
 
-const C = { MES: 65, TIPO: 75, LIT: 45, COST_C: 55, ACT: 90, COST_L: 50, KWH: 45, REAL: 75, OBS: 90 }
+const C = { MES: 65, TIPO: 75, LIT: 45, COST_C: 55, ACT: 150, COST_L: 50, KWH: 45, REAL: 90, OBS: 220 }
 
 export function ConsumoEnergiaPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Instalacion', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtMes(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`

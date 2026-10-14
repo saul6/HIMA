@@ -60,7 +60,7 @@ function fmtFecha(iso: string): string {
   } catch { return iso }
 }
 
-const C = { FECHA: 55, HORA: 40, P15: 45, P45: 45, POTRA: 45, LOTRA: 45, REAL: 80, OBS: 100 }
+const C = { FECHA: 55, HORA: 40, P15: 45, P45: 45, POTRA: 45, LOTRA: 45, REAL: 100, OBS: 300 }
 
 export function TensiometrosPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Instalacion', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
