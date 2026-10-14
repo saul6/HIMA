@@ -31,7 +31,7 @@ export function PdfSignatures({ signatures: signaturesProp, enterado: enteradoPr
         .map((s, i) => (i === idxUnica ? { ...s, caption: 'Realizo y verifico - Firma' } : s))
 
   return (
-    <View style={{ flexDirection: 'row', marginTop: 24 }}>
+    <View wrap={false} style={{ flexDirection: 'row', marginTop: 24 }}>
       {signatures.map((sig, i) => {
         const firma = sig.firma
         const tieneDigital = firma && firma.estado === 'vigente' && firma.png

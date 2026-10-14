@@ -4,6 +4,7 @@ import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
 import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 import { PC } from '@/lib/pdf/components/tokens'
 import { codigoFormato } from '@/lib/codigoFormato'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
@@ -175,6 +176,26 @@ export function SanitizacionCosechaPDF({ rows, orgNombre, desde, hasta, codigoCl
             )
           })}
         </View>
+
+        {rows.some((r) => r.observaciones) && (
+          <>
+            <PdfSectionBanner>3. Observaciones</PdfSectionBanner>
+            <View style={{ marginTop: 4, borderWidth: 1, borderColor: PC.border }}>
+              {rows.filter((r) => r.observaciones).map((r, i) => (
+                <View key={i} style={{ padding: 4, borderBottomWidth: 1, borderBottomColor: PC.border }}>
+                  {rows.length > 1 && (
+                    <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.textSub }}>
+                      {fmtFecha(r.fecha)} - {r.rancho} - {r.sector}
+                    </Text>
+                  )}
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>
+                    {r.observaciones}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         <PdfSignatures
           signatures={[
