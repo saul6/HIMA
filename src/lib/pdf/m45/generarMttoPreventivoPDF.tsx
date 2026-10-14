@@ -1,5 +1,6 @@
 import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 import {
   MttoPreventivoPDF,
   MttoPreventivoConsolidadoPDF,
@@ -14,6 +15,7 @@ export async function construirDatosM45(
   codigoClave: string,
 ): Promise<M45PaginaProps> {
   const tbl = supabase as any
+  const firmasReg = (await obtenerFirmasParaPdf('M45', [registroId]))[registroId]
   const [
     { data: reg, error: rErr },
     { data: itemsData, error: iErr },
@@ -94,6 +96,8 @@ export async function construirDatosM45(
     resultados,
     acciones,
     codigoClave,
+    firmaRealizo: firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null,
+    firmaVerifico: firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null,
   }
 }
 

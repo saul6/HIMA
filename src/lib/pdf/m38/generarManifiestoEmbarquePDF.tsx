@@ -1,6 +1,7 @@
 import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { ManifiestoEmbarquePDF, type M38ManifiestoDataPDF, type M38LineaPDF } from './ManifiestoEmbarquePDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
 
 function descargar(blob: Blob, filename: string) {
@@ -81,11 +82,27 @@ async function cargarDatos(id: string, orgId: string): Promise<M38ManifiestoData
 
 export async function generarManifiestoEmbarquePDF(id: string, orgId: string, codigoClave: string): Promise<void> {
   const d = await cargarDatos(id, orgId)
-  const blob = await pdf(<ManifiestoEmbarquePDF d={d} codigoClave={codigoClave} />).toBlob()
+  const firmasReg = (await obtenerFirmasParaPdf('M38', [id]))[id]
+  const blob = await pdf(
+    <ManifiestoEmbarquePDF
+      d={d}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
+  ).toBlob()
   descargar(blob, nombrePdf('Manifiesto_Embarque', d.fecha, d.instalacion))
 }
 
 export async function generarBlobManifiestoEmbarque(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const d = await cargarDatos(id, orgId)
-  return pdf(<ManifiestoEmbarquePDF d={d} codigoClave={codigoClave} />).toBlob()
+  const firmasReg = (await obtenerFirmasParaPdf('M38', [id]))[id]
+  return pdf(
+    <ManifiestoEmbarquePDF
+      d={d}
+      codigoClave={codigoClave}
+      firmaRealizo={firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null}
+      firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
+    />
+  ).toBlob()
 }

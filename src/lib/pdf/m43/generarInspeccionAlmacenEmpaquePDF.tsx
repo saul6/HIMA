@@ -1,5 +1,6 @@
 import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 import {
   InspeccionAlmacenEmpaquePDF,
   type InspeccionAlmacenEmpaquePaginaProps,
@@ -18,6 +19,7 @@ export async function construirDatosPaginaM43(
   codigoClave: string,
 ): Promise<InspeccionAlmacenEmpaquePaginaProps> {
   const tbl = supabase as any
+  const firmasReg = (await obtenerFirmasParaPdf('M43', [registroId]))[registroId]
   const [
     { data: reg,       error: rErr },
     { data: puntosData, error: pErr },
@@ -88,6 +90,8 @@ export async function construirDatosPaginaM43(
     matriz,
     accionesTomadas,
     codigoClave,
+    firmaRealizo: firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null,
+    firmaVerifico: firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null,
   }
 }
 

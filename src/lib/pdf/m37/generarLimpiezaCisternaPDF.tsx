@@ -7,6 +7,7 @@ import {
   type ValorM37PDF,
   type LimpiezaCisternaPaginaProps,
 } from './LimpiezaCisternaPDF'
+import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -32,8 +33,11 @@ export async function generarLimpiezaCisternaPDF(
   const mesStr = String(registro.mes).padStart(2, '0')
   const filename = `Limpieza_Cisterna_${registro.anio}-${mesStr}.pdf`
 
+  const firmasReg = (await obtenerFirmasParaPdf('M37', [registro.id]))[registro.id]
   const props: LimpiezaCisternaPaginaProps = {
     instalacion: registro.rancho_nombre,
+    firmaRealizo: firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null,
+    firmaVerifico: firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null,
     instalacionCodigo,
     anio: registro.anio,
     mes: registro.mes,
@@ -82,8 +86,11 @@ export async function generarBlobLimpiezaCisterna(id: string, orgId: string, cod
     }
   }
 
+  const firmasReg = (await obtenerFirmasParaPdf('M37', [id]))[id]
   const props: LimpiezaCisternaPaginaProps = {
     instalacion: (reg.ranchos as any)?.nombre ?? '—',
+    firmaRealizo: firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null,
+    firmaVerifico: firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null,
     instalacionCodigo: (reg.ranchos as any)?.codigo ?? '—',
     anio: reg.anio,
     mes: reg.mes,
