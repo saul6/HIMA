@@ -274,7 +274,7 @@ export function NuevaJornada() {
           style={{ backgroundColor: 'var(--card)' }}
         >
           {/* Nombre (opcional) */}
-          <input
+          <input maxLength={150}
             type="text"
             value={nombre}
             onChange={e => setNombre(e.target.value)}

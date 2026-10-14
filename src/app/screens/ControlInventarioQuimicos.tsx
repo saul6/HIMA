@@ -455,7 +455,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
               {/* Área */}
               <div>
                 <label className="block text-sm font-medium mb-1.5">Área</label>
-                <input
+                <input maxLength={150}
                   type="text"
                   value={movForm.area}
                   onChange={e => setMovForm(f => ({ ...f, area: e.target.value }))}
@@ -830,7 +830,7 @@ export function ControlInventarioQuimicos() {
             <div className="px-4 py-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1.5">Nombre</label>
-                <input
+                <input maxLength={150}
                   type="text"
                   value={quimicoForm.nombre}
                   onChange={e => setQuimicoForm(f => ({ ...f, nombre: e.target.value }))}
@@ -841,7 +841,7 @@ export function ControlInventarioQuimicos() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Unidad</label>
-                <input
+                <input maxLength={150}
                   type="text"
                   value={quimicoForm.unidad}
                   onChange={e => setQuimicoForm(f => ({ ...f, unidad: e.target.value }))}

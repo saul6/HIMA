@@ -25,6 +25,7 @@ import { SPRING_SUAVE } from '@/lib/motion'
 import { useContadorAnimado } from '@/hooks/useContadorAnimado'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -912,7 +913,7 @@ function DetalleSheet({
                   <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
                     Nota <span style={{ color: 'var(--muted-foreground)' }}>(opcional si hay foto)</span>
                   </label>
-                  <textarea
+                  <TextareaContador
                     value={reportarNota}
                     onChange={e => setReportarNota(e.target.value)}
                     rows={3}
@@ -988,7 +989,7 @@ function DetalleSheet({
                 <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Aprobar tarea</p>
                 <div>
                   <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Nota (opcional)</label>
-                  <textarea
+                  <TextareaContador
                     value={aprobarNota}
                     onChange={e => setAprobarNota(e.target.value)}
                     rows={2}
@@ -1017,7 +1018,7 @@ function DetalleSheet({
                 <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Regresar tarea</p>
                 <div>
                   <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Motivo <span style={{ color: 'var(--agro-danger-text)' }}>*</span></label>
-                  <textarea
+                  <TextareaContador
                     value={regresarMotivo}
                     onChange={e => setRegresarMotivo(e.target.value)}
                     rows={2}
@@ -1111,7 +1112,7 @@ function DetalleSheet({
                   <>
                     <div>
                       <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Motivo <span style={{ color: 'var(--agro-danger-text)' }}>*</span></label>
-                      <textarea
+                      <TextareaContador
                         value={cancelarMotivo}
                         onChange={e => setCancelarMotivo(e.target.value)}
                         rows={2}
@@ -1411,7 +1412,7 @@ function EditarForm({
       </div>
       <div>
         <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Descripción</label>
-        <textarea
+        <TextareaContador
           value={form.descripcion}
           onChange={e => onChange({ ...form, descripcion: e.target.value })}
           rows={2}

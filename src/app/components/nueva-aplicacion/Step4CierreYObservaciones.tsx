@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import { FormField } from "../FormField";
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 interface Props {
   formData: any;
@@ -157,7 +158,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
       </div>
 
       <div className="relative">
-        <textarea
+        <TextareaContador
           value={formData.observations}
           onChange={(e) => updateFormData({ observations: e.target.value })}
           placeholder="Observaciones adicionales..."

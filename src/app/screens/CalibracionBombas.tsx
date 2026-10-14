@@ -30,6 +30,7 @@ import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { WifiOff } from 'lucide-react'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 function formatFecha(iso: string): string {
   try {
@@ -384,7 +385,7 @@ export function CalibracionBombas() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium mb-1">Cultivo <span className="text-muted-foreground">(opcional)</span></label>
-              <input
+              <input maxLength={150}
                 type="text"
                 className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                 placeholder="Ej. Zarzamora"
@@ -469,7 +470,7 @@ export function CalibracionBombas() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Realizó</label>
-            <input
+            <input maxLength={150}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
@@ -479,7 +480,7 @@ export function CalibracionBombas() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Observaciones <span className="text-muted-foreground">(opcional)</span></label>
-            <textarea
+            <TextareaContador
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               rows={2}
               placeholder="Notas adicionales..."

@@ -43,6 +43,7 @@ import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { opCabecera, opInsert, opUpsert } from '@/lib/offline/construirOperaciones'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -874,7 +875,7 @@ export function VerificacionInsumos() {
 
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
             <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Observaciones del mes</h2>
-            <textarea
+            <TextareaContador
               value={obsLocal}
               onChange={(e) => setObsLocal(e.target.value)}
               rows={2}
@@ -954,13 +955,13 @@ export function VerificacionInsumos() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Verificó (Jefe del Cooler)</label>
-                  <input type="text" value={nVerificoNombre} onChange={(e) => setNVerificoNombre(e.target.value)}
+                  <input maxLength={150} type="text" value={nVerificoNombre} onChange={(e) => setNVerificoNombre(e.target.value)}
                     placeholder="Nombre completo"
                     className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Autorizó (Gerente)</label>
-                  <input type="text" value={nAutorizoNombre} onChange={(e) => setNAutorizoNombre(e.target.value)}
+                  <input maxLength={150} type="text" value={nAutorizoNombre} onChange={(e) => setNAutorizoNombre(e.target.value)}
                     placeholder="Nombre completo"
                     className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm" />
                 </div>
@@ -1116,7 +1117,7 @@ export function VerificacionInsumos() {
                   </button>
 
                   <div className="flex gap-2">
-                    <input
+                    <input maxLength={150}
                       type="text"
                       value={catNuevaArea}
                       onChange={(e) => setCatNuevaArea(e.target.value)}

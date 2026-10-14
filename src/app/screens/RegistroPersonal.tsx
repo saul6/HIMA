@@ -27,6 +27,7 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -665,7 +666,7 @@ export function RegistroPersonal() {
               </div>
               <div className="flex-1 space-y-1">
                 <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Puesto</label>
-                <input
+                <input maxLength={150}
                   type="text"
                   className={fieldCls}
                   placeholder="Ej: Operario"
@@ -684,7 +685,7 @@ export function RegistroPersonal() {
 
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Nombre completo *</label>
-              <input
+              <input maxLength={150}
                 type="text"
                 className={fieldCls}
                 placeholder="Nombre y apellidos"
@@ -745,7 +746,7 @@ export function RegistroPersonal() {
             </p>
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Nombre</label>
-              <input type="text" className={fieldCls} placeholder="Nombre de contacto"
+              <input maxLength={150} type="text" className={fieldCls} placeholder="Nombre de contacto"
                 value={form.emergencia_nombre} onChange={e => setF('emergencia_nombre', e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -817,7 +818,7 @@ export function RegistroPersonal() {
             <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
               Observaciones
             </p>
-            <textarea
+            <TextareaContador
               value={form.observaciones}
               onChange={e => setF('observaciones', e.target.value)}
               rows={2}
@@ -974,7 +975,7 @@ export function RegistroPersonal() {
                       ))}
                     </div>
                     <div className="flex gap-2">
-                      <input
+                      <input maxLength={150}
                         type="text"
                         className="flex-1 h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                         placeholder="Nombre del ítem"

@@ -29,6 +29,7 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -706,7 +707,7 @@ export function RecepcionFruta() {
               </div>
               <div className="flex-1 space-y-1">
                 <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{esAlmacen ? 'Empresa *' : 'Empresa'}</label>
-                <input
+                <input maxLength={150}
                   type="text"
                   className={fieldCls}
                   placeholder="Nombre de la empresa"
@@ -780,7 +781,7 @@ export function RecepcionFruta() {
                         </div>
                         <div className="space-y-1">
                           <label className="text-xs text-muted-foreground">Cultivo</label>
-                          <input
+                          <input maxLength={150}
                             type="text"
                             className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
                             placeholder="Ej: Zarzamora"
@@ -986,7 +987,7 @@ export function RecepcionFruta() {
             <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
               Observaciones
             </p>
-            <textarea
+            <TextareaContador
               value={form.observaciones}
               onChange={e => setF('observaciones', e.target.value)}
               rows={2}

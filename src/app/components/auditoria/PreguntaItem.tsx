@@ -70,9 +70,13 @@ export function PreguntaItem({
           type="text"
           placeholder="Comentario (opcional)"
           value={comentario ?? ''}
+          maxLength={1000}
           onChange={(e) => onComentario(pregunta.id, e.target.value)}
           className="w-full mt-2 h-8 px-2.5 text-xs rounded-lg bg-input-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
+      )}
+      {respuesta && (comentario?.length ?? 0) > 0 && (
+        <p className="text-[11px] text-right mt-0.5 text-muted-foreground">{comentario!.length} / 1000</p>
       )}
     </div>
   )

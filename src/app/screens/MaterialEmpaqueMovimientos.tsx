@@ -24,6 +24,7 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 const tbl = (name: string) => (supabase as any).from(name)
@@ -451,7 +452,7 @@ export function MaterialEmpaqueMovimientos() {
               {/* Empresa */}
               <div>
                 <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Empresa</label>
-                <input
+                <input maxLength={150}
                   type="text"
                   value={form.empresa}
                   onChange={e => setF({ empresa: e.target.value })}
@@ -584,7 +585,7 @@ export function MaterialEmpaqueMovimientos() {
                 <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   Observaciones
                 </label>
-                <textarea
+                <TextareaContador
                   value={form.observaciones}
                   onChange={e => setF({ observaciones: e.target.value })}
                   rows={3}

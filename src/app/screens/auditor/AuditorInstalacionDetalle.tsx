@@ -587,7 +587,7 @@ export function AuditorInstalacionDetalle() {
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Cultivo / Producto</label>
-                <input
+                <input maxLength={150}
                   type="text"
                   value={ranchoCultivo}
                   onChange={e => setRanchoCultivo(e.target.value)}

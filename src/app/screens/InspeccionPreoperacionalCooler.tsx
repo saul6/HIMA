@@ -47,6 +47,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { opCabecera, opInsert, opUpsert } from '@/lib/offline/construirOperaciones'
 import { leerConCache } from '@/lib/offline/cacheLectura'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -892,7 +893,7 @@ export function InspeccionPreoperacionalCooler() {
             <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>
               Observaciones del mes
             </h2>
-            <textarea
+            <TextareaContador
               value={obsLocal}
               onChange={(e) => setObsLocal(e.target.value)}
               rows={2}

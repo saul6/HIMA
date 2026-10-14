@@ -42,6 +42,7 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { WifiOff } from 'lucide-react'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -729,7 +730,7 @@ export function RegistroAccidentesLaborales() {
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Nombre del trabajador
               </label>
-              <input
+              <input maxLength={150}
                 type="text"
                 placeholder="Nombre completo"
                 className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
@@ -743,7 +744,7 @@ export function RegistroAccidentesLaborales() {
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Descripción del incidente
               </label>
-              <textarea
+              <TextareaContador
                 rows={3}
                 placeholder="Describe qué ocurrió, cómo y dónde..."
                 className="w-full rounded-lg border border-border bg-[var(--input-background)] px-3 py-2.5 text-sm text-foreground resize-none"

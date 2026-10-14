@@ -21,6 +21,7 @@ import { EvidenciaPanel } from './EvidenciaPanel'
 import { useReglasRama } from '@/hooks/useReglasRama'
 import { CapturaPreguntaAuditoria } from './CapturaPreguntaAuditoria'
 import type { CapturaPreguntaRef, AjusteInfo } from './CapturaPreguntaAuditoria'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -2130,7 +2131,7 @@ export function AuditorEjecucion() {
               <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
                 Descripción <span style={{ color: 'var(--agro-red)' }}>*</span>
               </label>
-              <textarea
+              <TextareaContador
                 value={formHallazgoDesc}
                 onChange={e => setFormHallazgoDesc(e.target.value)}
                 rows={4}
@@ -2240,7 +2241,7 @@ export function AuditorEjecucion() {
               ] as [keyof AudAccionCorrectivaCAPA, string][]).map(([campo, etiqueta]) => (
                 <div key={campo} className="flex flex-col gap-1">
                   <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>{etiqueta}</label>
-                  <textarea
+                  <TextareaContador
                     value={(formAccion[campo] as string) ?? ''}
                     onChange={e => setFormAccion(prev => ({ ...prev, [campo]: e.target.value || null }))}
                     rows={2}
@@ -2417,7 +2418,7 @@ export function AuditorEjecucion() {
                         ] as [keyof typeof formResultado, string][]).map(([campo, label]) => (
                           <div key={campo} className="flex flex-col gap-1">
                             <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>{label}</label>
-                            <textarea
+                            <TextareaContador
                               value={formResultado[campo]}
                               onChange={e => setFormResultado(p => ({ ...p, [campo]: e.target.value }))}
                               rows={2}

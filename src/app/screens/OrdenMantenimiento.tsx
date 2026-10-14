@@ -26,6 +26,7 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -470,7 +471,7 @@ export function OrdenMantenimiento() {
                 </div>
                 <div>
                   <label className="block text-xs text-muted-foreground mb-1.5">N° de Folio</label>
-                  <input
+                  <input maxLength={150}
                     type="text"
                     value={form.folio}
                     onChange={(e) => setF({ folio: e.target.value })}
@@ -483,7 +484,7 @@ export function OrdenMantenimiento() {
               {/* Descripción */}
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5">Descripción de la solicitud</label>
-                <textarea
+                <TextareaContador
                   value={form.descripcion_solicitud}
                   onChange={(e) => setF({ descripcion_solicitud: e.target.value })}
                   rows={3}
@@ -565,7 +566,7 @@ export function OrdenMantenimiento() {
               {/* Observaciones */}
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5">Observaciones (opcional)</label>
-                <textarea
+                <TextareaContador
                   value={form.observaciones}
                   onChange={(e) => setF({ observaciones: e.target.value })}
                   rows={2}

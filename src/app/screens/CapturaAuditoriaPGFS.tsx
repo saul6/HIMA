@@ -8,6 +8,7 @@ import type { AuditoriaDetalle } from '@/hooks/useAuditoriasPGFS'
 import type { AudBloque, AudPregunta, AudComentarioEsquema, AudRespuesta } from '@/types/database.types'
 import { LEYENDA_LEGAL_PGFS } from '@/lib/auditoriasPGFS'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 const ROLES_PERMITIDOS = ['auditor', 'admin_org', 'super_admin']
 
@@ -261,7 +262,7 @@ function PreguntaCard({
         <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
           Observación del auditor
         </label>
-        <textarea
+        <TextareaContador
           value={observacion}
           onChange={(e) => onObservacion(e.target.value)}
           onBlur={onBlur}

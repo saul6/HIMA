@@ -45,6 +45,7 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro, type MapaFirmas } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -426,7 +427,7 @@ function EstacionRevisionRow({
             <label className="text-xs font-semibold text-[var(--agro-danger-text)]">
               Descripción del hallazgo (para Reporte M13)
             </label>
-            <textarea
+            <TextareaContador
               rows={2}
               placeholder="Describe el hallazgo para vincularlo a M13..."
               className="w-full rounded-lg border border-[var(--agro-red)]/30 bg-[var(--agro-danger-fill)] px-3 py-2 text-sm text-foreground resize-none"
@@ -1330,7 +1331,7 @@ export function MonitoreoEstacionesPlagas() {
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Inspector
               </label>
-              <input
+              <input maxLength={150}
                 type="text"
                 placeholder="Nombre del inspector"
                 className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
@@ -1385,7 +1386,7 @@ export function MonitoreoEstacionesPlagas() {
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Observaciones generales
               </label>
-              <textarea
+              <TextareaContador
                 rows={3}
                 placeholder="Observaciones de la revisión (opcional)..."
                 className="w-full rounded-lg border border-border bg-[var(--input-background)] px-3 py-2.5 text-sm text-foreground resize-none"

@@ -19,6 +19,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 type FormState = {
   cultivo: string
@@ -379,7 +380,7 @@ export function ProductosAutorizados() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Cultivo</label>
-            <input
+            <input maxLength={150}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Zarzamora, Aguacate..."
@@ -401,7 +402,7 @@ export function ProductosAutorizados() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Nombre comercial</label>
-            <input
+            <input maxLength={150}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre del producto"
@@ -435,7 +436,7 @@ export function ProductosAutorizados() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Empresa / Fabricante</label>
-            <input
+            <input maxLength={150}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre del fabricante"
@@ -474,7 +475,7 @@ export function ProductosAutorizados() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Plagas que controla</label>
-            <textarea
+            <TextareaContador
               rows={3}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               placeholder="Descripcion de plagas o enfermedades que controla"

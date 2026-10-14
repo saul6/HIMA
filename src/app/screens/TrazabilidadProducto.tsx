@@ -37,6 +37,7 @@ import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { Portal } from '@/app/components/Portal'
 import { BottomSheet as SheetEstandar } from '@/app/components/BottomSheet'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -863,7 +864,7 @@ export function TrazabilidadProducto() {
             <input type="time" value={formLR.hora} onChange={e => setFormLR(f => ({ ...f, hora: e.target.value }))} className={inputCls} />
           </FormField>
           <FormField label="PROVEEDOR *">
-            <input value={formLR.proveedor_nombre} onChange={e => setFormLR(f => ({ ...f, proveedor_nombre: e.target.value }))} placeholder="Nombre del proveedor" className={inputCls} />
+            <input maxLength={150} value={formLR.proveedor_nombre} onChange={e => setFormLR(f => ({ ...f, proveedor_nombre: e.target.value }))} placeholder="Nombre del proveedor" className={inputCls} />
           </FormField>
           <FormField label="ORIGEN">
             <input value={formLR.proveedor_origen} onChange={e => setFormLR(f => ({ ...f, proveedor_origen: e.target.value }))} placeholder="Municipio / region de origen" className={inputCls} />
@@ -890,10 +891,10 @@ export function TrazabilidadProducto() {
             </select>
           </FormField>
           <FormField label="RESPONSABLE">
-            <input value={formLR.responsable} onChange={e => setFormLR(f => ({ ...f, responsable: e.target.value }))} placeholder="Nombre de quien recibe" className={inputCls} />
+            <input maxLength={150} value={formLR.responsable} onChange={e => setFormLR(f => ({ ...f, responsable: e.target.value }))} placeholder="Nombre de quien recibe" className={inputCls} />
           </FormField>
           <FormField label="OBSERVACIONES">
-            <textarea value={formLR.observaciones} onChange={e => setFormLR(f => ({ ...f, observaciones: e.target.value }))} rows={2} className={inputCls + ' resize-none'} />
+            <TextareaContador value={formLR.observaciones} onChange={e => setFormLR(f => ({ ...f, observaciones: e.target.value }))} rows={2} className={inputCls + ' resize-none'} />
           </FormField>
           <SaveBtn loading={guardando} onClick={handleGuardarLR} label="Registrar LR" />
           </>)}
@@ -994,10 +995,10 @@ export function TrazabilidadProducto() {
           </div>
 
           <FormField label="RESPONSABLE">
-            <input value={formLPT.responsable} onChange={e => setFormLPT(f => ({ ...f, responsable: e.target.value }))} placeholder="Nombre del responsable de empaque" className={inputCls} />
+            <input maxLength={150} value={formLPT.responsable} onChange={e => setFormLPT(f => ({ ...f, responsable: e.target.value }))} placeholder="Nombre del responsable de empaque" className={inputCls} />
           </FormField>
           <FormField label="OBSERVACIONES">
-            <textarea value={formLPT.observaciones} onChange={e => setFormLPT(f => ({ ...f, observaciones: e.target.value }))} rows={2} className={inputCls + ' resize-none'} />
+            <TextareaContador value={formLPT.observaciones} onChange={e => setFormLPT(f => ({ ...f, observaciones: e.target.value }))} rows={2} className={inputCls + ' resize-none'} />
           </FormField>
           <SaveBtn loading={guardando} onClick={handleGuardarLPT} label="Registrar LPT" />
           </>)}
@@ -1048,7 +1049,7 @@ export function TrazabilidadProducto() {
             </div>
           </FormField>
           <FormField label="OBSERVACIONES">
-            <textarea value={formLC.observaciones} onChange={e => setFormLC(f => ({ ...f, observaciones: e.target.value }))} rows={2} className={inputCls + ' resize-none'} />
+            <TextareaContador value={formLC.observaciones} onChange={e => setFormLC(f => ({ ...f, observaciones: e.target.value }))} rows={2} className={inputCls + ' resize-none'} />
           </FormField>
           <SaveBtn loading={guardando} onClick={handleGuardarLC} label="Registrar LC" />
           </>)}
@@ -1078,14 +1079,14 @@ export function TrazabilidadProducto() {
             <input type="date" value={formFE.fecha} onChange={e => setFormFE(f => ({ ...f, fecha: e.target.value }))} className={inputCls} />
           </FormField>
           <FormField label="CLIENTE / DESTINO">
-            <input value={formFE.cliente} onChange={e => setFormFE(f => ({ ...f, cliente: e.target.value }))} placeholder="Nombre del cliente o destino" className={inputCls} />
+            <input maxLength={150} value={formFE.cliente} onChange={e => setFormFE(f => ({ ...f, cliente: e.target.value }))} placeholder="Nombre del cliente o destino" className={inputCls} />
           </FormField>
           <div className="flex gap-2">
             <FormField label="LINEA DE TRANSPORTE" className="flex-1">
               <input value={formFE.transporte_linea} onChange={e => setFormFE(f => ({ ...f, transporte_linea: e.target.value }))} className={inputCls} />
             </FormField>
             <FormField label="PLACAS" className="w-28">
-              <input value={formFE.transporte_placas} onChange={e => setFormFE(f => ({ ...f, transporte_placas: e.target.value }))} className={inputCls} />
+              <input maxLength={150} value={formFE.transporte_placas} onChange={e => setFormFE(f => ({ ...f, transporte_placas: e.target.value }))} className={inputCls} />
             </FormField>
           </div>
           <div className="flex gap-2">
@@ -1093,7 +1094,7 @@ export function TrazabilidadProducto() {
               <input value={formFE.transporte_caja} onChange={e => setFormFE(f => ({ ...f, transporte_caja: e.target.value }))} className={inputCls} />
             </FormField>
             <FormField label="CHOFER" className="flex-1">
-              <input value={formFE.chofer} onChange={e => setFormFE(f => ({ ...f, chofer: e.target.value }))} className={inputCls} />
+              <input maxLength={150} value={formFE.chofer} onChange={e => setFormFE(f => ({ ...f, chofer: e.target.value }))} className={inputCls} />
             </FormField>
           </div>
           <FormField label="CONDICIONES DE LIMPIEZA">
@@ -1156,7 +1157,7 @@ export function TrazabilidadProducto() {
           </div>
 
           <FormField label="OBSERVACIONES">
-            <textarea value={formFE.observaciones} onChange={e => setFormFE(f => ({ ...f, observaciones: e.target.value }))} rows={2} className={inputCls + ' resize-none'} />
+            <TextareaContador value={formFE.observaciones} onChange={e => setFormFE(f => ({ ...f, observaciones: e.target.value }))} rows={2} className={inputCls + ' resize-none'} />
           </FormField>
           <SaveBtn loading={guardando} onClick={handleGuardarFE} label="Registrar FE" />
           </>)}

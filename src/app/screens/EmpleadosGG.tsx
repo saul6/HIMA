@@ -31,6 +31,7 @@ import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -419,7 +420,7 @@ export function EmpleadosGG() {
           {/* Nombre */}
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>NOMBRE COMPLETO *</label>
-            <input
+            <input maxLength={150}
               type="text"
               value={form.nombre}
               onChange={(e) => { setForm((f) => ({ ...f, nombre: e.target.value })); setErrNombre(false) }}
@@ -449,7 +450,7 @@ export function EmpleadosGG() {
           {/* Domicilio */}
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DOMICILIO</label>
-            <textarea value={form.domicilio} onChange={setF('domicilio')} rows={2} placeholder="Dirección del empleado"
+            <TextareaContador value={form.domicilio} onChange={setF('domicilio')} rows={2} placeholder="Dirección del empleado"
               className="w-full rounded-xl border px-3 py-2 text-sm focus:outline-none resize-none"
               style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
           </div>
@@ -465,7 +466,7 @@ export function EmpleadosGG() {
           {/* Observaciones */}
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
-            <textarea value={form.observaciones} onChange={setF('observaciones')} rows={2} placeholder="Observaciones adicionales…"
+            <TextareaContador value={form.observaciones} onChange={setF('observaciones')} rows={2} placeholder="Observaciones adicionales…"
               className="w-full rounded-xl border px-3 py-2 text-sm focus:outline-none resize-none"
               style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
           </div>

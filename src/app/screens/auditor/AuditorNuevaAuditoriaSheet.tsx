@@ -231,7 +231,7 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
             <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
               Nombre *
             </label>
-            <input
+            <input maxLength={150}
               type="text"
               value={nombre}
               onChange={e => setNombre(e.target.value)}
@@ -245,7 +245,7 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
             <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
               Ubicación
             </label>
-            <input
+            <input maxLength={150}
               type="text"
               value={ubicacion}
               onChange={e => setUbicacion(e.target.value)}

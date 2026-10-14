@@ -27,6 +27,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -378,7 +379,7 @@ export function SanitizacionCosecha() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Sector</label>
-            <input
+            <input maxLength={150}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Bloque A, Parcela 3..."
@@ -484,7 +485,7 @@ export function SanitizacionCosecha() {
             <label className="block text-xs font-medium mb-1">
               Realizo <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <input
+            <input maxLength={150}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre de quien realizo"
@@ -497,7 +498,7 @@ export function SanitizacionCosecha() {
             <label className="block text-xs font-medium mb-1">
               Observaciones <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <textarea
+            <TextareaContador
               rows={3}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}

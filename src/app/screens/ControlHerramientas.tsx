@@ -27,6 +27,7 @@ import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -409,7 +410,7 @@ export function ControlHerramientas() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Quien entrega</label>
-            <input
+            <input maxLength={150}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre de quien entrega"
@@ -420,7 +421,7 @@ export function ControlHerramientas() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Quien recibe</label>
-            <input
+            <input maxLength={150}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre de quien recibe"
@@ -460,7 +461,7 @@ export function ControlHerramientas() {
             <label className="block text-xs font-medium mb-1">
               Realizo <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <input
+            <input maxLength={150}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre de quien registro"
@@ -473,7 +474,7 @@ export function ControlHerramientas() {
             <label className="block text-xs font-medium mb-1">
               Observaciones <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <textarea
+            <TextareaContador
               rows={3}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}

@@ -38,6 +38,7 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -731,7 +732,7 @@ export function InspeccionPreoperacionalCosecha() {
             <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>
               Observaciones del mes
             </h2>
-            <textarea
+            <TextareaContador
               value={obsLocal}
               onChange={(e) => setObsLocal(e.target.value)}
               rows={2}

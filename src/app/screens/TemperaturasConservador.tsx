@@ -24,6 +24,7 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 const HORAS = Array.from({ length: 24 }, (_, i) => i + 1)
@@ -572,7 +573,7 @@ export function TemperaturasConservador() {
                 <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   Observaciones
                 </label>
-                <textarea
+                <TextareaContador
                   value={form.observaciones}
                   onChange={e => setForm(f => ({ ...f, observaciones: e.target.value }))}
                   rows={3}

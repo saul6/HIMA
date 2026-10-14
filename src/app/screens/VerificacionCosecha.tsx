@@ -42,6 +42,7 @@ import {
   generarVerificacionCosechaPDF,
   generarVerificacionCosechaConsolidadoPDF,
 } from '@/lib/pdf/m69/generarVerificacionCosechaPDF'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -679,7 +680,7 @@ export function VerificacionCosecha() {
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
                   Cultivo
                 </label>
-                <input
+                <input maxLength={150}
                   type="text"
                   value={dCultivo}
                   onChange={(e) => setDCultivo(e.target.value)}
@@ -697,7 +698,7 @@ export function VerificacionCosecha() {
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
                 ¿Quién realizó?
               </label>
-              <input
+              <input maxLength={150}
                 type="text"
                 value={dRealizo}
                 onChange={(e) => setDRealizo(e.target.value)}
@@ -714,7 +715,7 @@ export function VerificacionCosecha() {
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
                 Observaciones
               </label>
-              <textarea
+              <TextareaContador
                 value={dObservaciones}
                 onChange={(e) => setDObservaciones(e.target.value)}
                 rows={2}
@@ -1047,7 +1048,7 @@ export function VerificacionCosecha() {
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
                   Cultivo
                 </label>
-                <input
+                <input maxLength={150}
                   type="text"
                   value={nCultivo}
                   onChange={(e) => setNCultivo(e.target.value)}
@@ -1062,7 +1063,7 @@ export function VerificacionCosecha() {
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
                   ¿Quién realizó?
                 </label>
-                <input
+                <input maxLength={150}
                   type="text"
                   value={nRealizo}
                   onChange={(e) => setNRealizo(e.target.value)}
@@ -1077,7 +1078,7 @@ export function VerificacionCosecha() {
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
                   Observaciones
                 </label>
-                <textarea
+                <TextareaContador
                   value={nObservaciones}
                   onChange={(e) => setNObservaciones(e.target.value)}
                   rows={2}

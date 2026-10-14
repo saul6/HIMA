@@ -1133,7 +1133,7 @@ export function RegistroFertilizacion() {
                       <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
                         Sector
                       </label>
-                      <input
+                      <input maxLength={150}
                         type="text"
                         value={sector}
                         onChange={(e) => setSector(e.target.value)}

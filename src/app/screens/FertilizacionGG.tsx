@@ -30,6 +30,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -425,7 +426,7 @@ export function FertilizacionGG() {
           {/* Cultivo */}
           <div>
             <label className={labelCls}>Cultivo</label>
-            <input
+            <input maxLength={150}
               type="text"
               className={inputCls}
               placeholder="Ej. Zarzamora, Fresa..."
@@ -515,7 +516,7 @@ export function FertilizacionGG() {
           {/* Unidades */}
           <div>
             <label className={labelCls}>Unidades (L, Kg, mL)</label>
-            <input
+            <input maxLength={150}
               type="text"
               className={inputCls}
               placeholder="L / Kg / mL / g..."
@@ -575,7 +576,7 @@ export function FertilizacionGG() {
           {/* Observaciones */}
           <div>
             <label className={labelCls}>Observaciones {optionalSpan}</label>
-            <textarea
+            <TextareaContador
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               rows={3}
               placeholder="Notas adicionales..."

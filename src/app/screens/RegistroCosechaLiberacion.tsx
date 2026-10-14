@@ -38,6 +38,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { WifiOff } from 'lucide-react'
 import { leerConCache } from '@/lib/offline/cacheLectura'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -876,7 +877,7 @@ export function RegistroCosechaLiberacion() {
                       {/* Sector */}
                       <div>
                         <label className="block text-xs text-muted-foreground mb-1">Sector</label>
-                        <input
+                        <input maxLength={150}
                           type="text"
                           value={lib.sector}
                           onChange={(e) => actualizarFila(idx, 'sector', e.target.value)}
@@ -944,7 +945,7 @@ export function RegistroCosechaLiberacion() {
                         <label className="block text-xs text-muted-foreground mb-1">
                           Marca y embalaje
                         </label>
-                        <input
+                        <input maxLength={150}
                           type="text"
                           value={lib.marca_embalaje}
                           onChange={(e) => actualizarFila(idx, 'marca_embalaje', e.target.value)}
@@ -1049,7 +1050,7 @@ export function RegistroCosechaLiberacion() {
                         <label className="block text-xs text-muted-foreground mb-1">
                           Observaciones (opcional)
                         </label>
-                        <textarea
+                        <TextareaContador
                           value={lib.observaciones}
                           onChange={(e) => actualizarFila(idx, 'observaciones', e.target.value)}
                           placeholder="Notas adicionales…"

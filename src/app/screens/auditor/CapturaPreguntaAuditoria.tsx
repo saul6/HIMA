@@ -16,6 +16,7 @@ import { SCORE_MATRIX, RESP_TO_CLASS } from '@/lib/scoring/matriz'
 import type { ScoreMatrixKey } from '@/lib/scoring/matriz'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { EvidenciaPanel } from './EvidenciaPanel'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -780,7 +781,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2">
-                    <textarea
+                    <TextareaContador
                       value={sugerenciaCExplicacion}
                       onChange={e => setSugerenciaCExplicacion(e.target.value)}
                       rows={2}
@@ -1002,7 +1003,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                       <label className="text-[10px] font-medium" style={{ color: 'var(--foreground)' }}>
                         Explicación <span style={{ color: 'var(--agro-red)' }}>*</span>
                       </label>
-                      <textarea
+                      <TextareaContador
                         value={reglaExplicacion}
                         onChange={e => setReglaExplicacion(e.target.value)}
                         rows={2}
@@ -1150,7 +1151,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                         <label className="text-[10px] font-medium" style={{ color: 'var(--foreground)' }}>
                           Motivo del retiro (opcional)
                         </label>
-                        <textarea
+                        <TextareaContador
                           value={motivoRetiro}
                           onChange={e => setMotivoRetiro(e.target.value)}
                           rows={2}
@@ -1397,7 +1398,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 <label className="text-[10px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
                   Motivo del ajuste{difiere && <span style={{ color: 'var(--agro-red)' }}> *</span>}
                 </label>
-                <textarea
+                <TextareaContador
                   value={motivoInput}
                   onChange={e => setMotivoInput(e.target.value)}
                   rows={2}
@@ -1700,7 +1701,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
             <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
               Observación del auditor
             </label>
-            <textarea
+            <TextareaContador
               value={observacion}
               onChange={e => handleObservacion(preguntaId, e.target.value)}
               onBlur={() => scheduleBlurSave(preguntaId)}

@@ -26,6 +26,7 @@ import { useAsignacionHallazgos } from '@/hooks/useAsignacionHallazgos'
 import { AsignarHallazgoSheet } from '@/app/components/hallazgos/AsignarHallazgoSheet'
 import { resolverHallazgoVisita, formatFechaLimite } from '@/lib/hallazgos/asignacion'
 import { useConexion } from '@/hooks/useConexion'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -399,7 +400,7 @@ export function ResumenNoConformidades() {
             <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
               AUDITOR
             </label>
-            <input
+            <input maxLength={150}
               type="text"
               value={auditor_nombre}
               onChange={(e) => setAuditorNombre(e.target.value)}
@@ -413,7 +414,7 @@ export function ResumenNoConformidades() {
             <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
               CLIENTE / REPRESENTANTE
             </label>
-            <input
+            <input maxLength={150}
               type="text"
               value={cliente_nombre}
               onChange={(e) => setClienteNombre(e.target.value)}
@@ -441,7 +442,7 @@ export function ResumenNoConformidades() {
             <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
               OBSERVACIONES
             </label>
-            <textarea
+            <TextareaContador
               value={observaciones}
               onChange={(e) => setObservaciones(e.target.value)}
               placeholder="Observaciones generales de la visita..."

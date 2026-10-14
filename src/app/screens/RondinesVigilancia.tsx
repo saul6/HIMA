@@ -38,6 +38,7 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -166,7 +167,7 @@ function ItemChecklist({
       </button>
       {esNovedad && (
         <div className="px-3 pb-3 pt-0" style={{ backgroundColor: 'var(--card)' }}>
-          <textarea
+          <TextareaContador
             value={descripcion}
             onChange={(e) => onDescripcion(e.target.value)}
             rows={2}
@@ -922,7 +923,7 @@ export function RondinesVigilancia() {
                 <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
                   Observaciones generales
                 </label>
-                <textarea
+                <TextareaContador
                   value={nObs}
                   onChange={(e) => setNObs(e.target.value)}
                   rows={2}
@@ -1039,7 +1040,7 @@ export function RondinesVigilancia() {
                     <p className="text-xs text-foreground" style={{ fontWeight: 600 }}>Agregar punto personalizado</p>
                     <div className="space-y-1">
                       <label className="text-xs text-muted-foreground">Área</label>
-                      <input
+                      <input maxLength={150}
                         type="text"
                         value={confArea}
                         onChange={(e) => setConfArea(e.target.value)}
@@ -1049,7 +1050,7 @@ export function RondinesVigilancia() {
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs text-muted-foreground">Nombre del punto</label>
-                      <input
+                      <input maxLength={150}
                         type="text"
                         value={confNombre}
                         onChange={(e) => setConfNombre(e.target.value)}

@@ -1,6 +1,9 @@
 import { createRoot } from "react-dom/client";
 import App from "./app/App.tsx";
 import "./styles/index.css";
+import { instalarTraduccionErroresBd } from "./lib/erroresBd";
+
+instalarTraduccionErroresBd();
 
 // Evita que el traductor del navegador (Google Translate) rompa React al reescribir
 // nodos de texto fuera del control de React → NotFoundError: removeChild / insertBefore.

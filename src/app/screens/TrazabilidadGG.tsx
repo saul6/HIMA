@@ -34,6 +34,7 @@ import {
   generarNotaTrazabilidadConsolidadoPDF,
 } from '@/lib/pdf/m78/generarNotaTrazabilidadPDF'
 import { useOrganizacion } from '@/hooks/useOrganizacion'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -436,7 +437,7 @@ export function TrazabilidadGG() {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>FOLIO</label>
-              <input type="text" value={form.folio} onChange={setF('folio')} placeholder="Ej: NT-001"
+              <input maxLength={150} type="text" value={form.folio} onChange={setF('folio')} placeholder="Ej: NT-001"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
                 style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
             </div>
@@ -482,13 +483,13 @@ export function TrazabilidadGG() {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>SECTOR</label>
-              <input type="text" value={form.sector} onChange={setF('sector')} placeholder="Sector"
+              <input maxLength={150} type="text" value={form.sector} onChange={setF('sector')} placeholder="Sector"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
                 style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>CULTIVO</label>
-              <input type="text" value={form.cultivo} onChange={setF('cultivo')} placeholder="Ej: Zarzamora"
+              <input maxLength={150} type="text" value={form.cultivo} onChange={setF('cultivo')} placeholder="Ej: Zarzamora"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
                 style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
             </div>
@@ -553,7 +554,7 @@ export function TrazabilidadGG() {
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>CHOFER</label>
-              <input type="text" value={form.chofer} onChange={setF('chofer')} placeholder="Nombre"
+              <input maxLength={150} type="text" value={form.chofer} onChange={setF('chofer')} placeholder="Nombre"
                 className="w-full h-11 px-2 rounded-xl border text-sm text-foreground focus:outline-none"
                 style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
             </div>
@@ -568,7 +569,7 @@ export function TrazabilidadGG() {
           {/* Observaciones */}
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
-            <textarea value={form.observaciones} onChange={setF('observaciones')} rows={2}
+            <TextareaContador value={form.observaciones} onChange={setF('observaciones')} rows={2}
               placeholder="Observaciones adicionales…"
               className="w-full rounded-xl border px-3 py-2 text-sm focus:outline-none resize-none"
               style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />

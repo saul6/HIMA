@@ -34,6 +34,7 @@ import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { generarInventarioBotiquinGGPDF, generarInventarioBotiquinGGConsolidadoPDF } from '@/lib/pdf/m73/generarInventarioBotiquinGGPDF'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -488,7 +489,7 @@ export function BotiquinGG() {
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>REALIZÓ</label>
-              <input
+              <input maxLength={150}
                 type="text"
                 value={nRealizo}
                 onChange={(e) => setNRealizo(e.target.value)}
@@ -632,7 +633,7 @@ export function BotiquinGG() {
           {/* Observaciones */}
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
-            <textarea
+            <TextareaContador
               value={nObservaciones}
               onChange={(e) => setNObservaciones(e.target.value)}
               rows={2}

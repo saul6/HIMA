@@ -35,6 +35,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { opCabecera, opInsert, opUpsert } from '@/lib/offline/construirOperaciones'
 import { leerConCache } from '@/lib/offline/cacheLectura'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -158,7 +159,7 @@ function TogglePunto({
       </button>
       {valor === 'no_cumple' && (
         <div className="px-3 pb-3 pt-0">
-          <textarea
+          <TextareaContador
             value={descripcion}
             onChange={(e) => onDescripcion(e.target.value)}
             rows={2}
@@ -800,7 +801,7 @@ export function InspeccionAlmacenEmpaque() {
             </div>
             <div>
               <label className="block text-xs text-muted-foreground mb-1">Observaciones</label>
-              <textarea
+              <TextareaContador
                 value={obsLocal}
                 onChange={(e) => setObsLocal(e.target.value)}
                 rows={2}
@@ -1011,7 +1012,7 @@ export function InspeccionAlmacenEmpaque() {
 
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5">Acciones tomadas (opcional)</label>
-                <textarea
+                <TextareaContador
                   value={dAcciones}
                   onChange={(e) => setDAcciones(e.target.value)}
                   rows={2}

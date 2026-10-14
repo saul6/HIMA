@@ -519,7 +519,7 @@ export function AuditoriaScreen({
                 <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
                   AUDITOR
                 </label>
-                <input
+                <input maxLength={150}
                   type="text"
                   placeholder="Nombre del auditor"
                   value={auditor_nombre}

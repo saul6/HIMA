@@ -31,6 +31,7 @@ import {
   generarMonitoreoPlaguasPDF,
   generarMonitoreoPlaguasConsolidadoPDF,
 } from '@/lib/pdf/m72/generarMonitoreoPlaguasPDF'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -419,7 +420,7 @@ export function MonitoreoPlaguasEnfermedades() {
                 <label className="block text-xs font-medium mb-1">
                   Etapa fenológica <span style={{ color: 'var(--muted-foreground)' }}>(opcional)</span>
                 </label>
-                <input
+                <input maxLength={150}
                   type="text"
                   className="w-full h-10 rounded-[0.625rem] border px-3 text-sm"
                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
@@ -434,7 +435,7 @@ export function MonitoreoPlaguasEnfermedades() {
                 <label className="block text-xs font-medium mb-1">
                   Realizó <span style={{ color: 'var(--muted-foreground)' }}>(opcional)</span>
                 </label>
-                <input
+                <input maxLength={150}
                   type="text"
                   className="w-full h-10 rounded-[0.625rem] border px-3 text-sm"
                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
@@ -449,7 +450,7 @@ export function MonitoreoPlaguasEnfermedades() {
                 <label className="block text-xs font-medium mb-1">
                   Organismos benéficos observados <span style={{ color: 'var(--muted-foreground)' }}>(opcional)</span>
                 </label>
-                <textarea
+                <TextareaContador
                   rows={2}
                   className="w-full rounded-[0.625rem] border px-3 py-2 text-sm resize-none"
                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
@@ -464,7 +465,7 @@ export function MonitoreoPlaguasEnfermedades() {
                 <label className="block text-xs font-medium mb-1">
                   Observaciones <span style={{ color: 'var(--muted-foreground)' }}>(opcional)</span>
                 </label>
-                <textarea
+                <TextareaContador
                   rows={2}
                   className="w-full rounded-[0.625rem] border px-3 py-2 text-sm resize-none"
                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
@@ -538,7 +539,7 @@ export function MonitoreoPlaguasEnfermedades() {
                   {filas.map((fila, idx) => (
                     <div key={fila.id} className="flex items-center gap-1 mb-1">
                       {/* Sector */}
-                      <input
+                      <input maxLength={150}
                         type="text"
                         className="w-28 h-9 shrink-0 rounded-[0.625rem] border px-2 text-xs"
                         style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}

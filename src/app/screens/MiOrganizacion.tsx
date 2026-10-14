@@ -577,7 +577,7 @@ export function MiOrganizacion() {
                 <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
                   NOMBRE {sGenero === 'f' ? 'DE LA' : 'DEL'} {sTermino.toUpperCase()} *
                 </label>
-                <input
+                <input maxLength={150}
                   value={form.nombre}
                   onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
                   placeholder={`Ej: ${sTermino} El Solar`}
@@ -631,7 +631,7 @@ export function MiOrganizacion() {
                 )}
                 {form.cultivo === CULTIVO_OTRO && (
                   <div className="mt-2">
-                    <input
+                    <input maxLength={150}
                       value={form.cultivoOtro}
                       onChange={(e) => setForm((f) => ({ ...f, cultivoOtro: e.target.value }))}
                       placeholder="Especifica el cultivo"

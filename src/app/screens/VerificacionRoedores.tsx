@@ -450,7 +450,7 @@ export function VerificacionRoedores() {
                   {/* Número de trampa */}
                   <div>
                     <label className="block text-xs font-medium mb-1">N° de trampa</label>
-                    <input
+                    <input maxLength={150}
                       type="text"
                       className="w-full h-9 rounded-[0.625rem] border px-3 text-sm"
                       style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}
@@ -487,7 +487,7 @@ export function VerificacionRoedores() {
                     <label className="block text-xs font-medium mb-1">
                       Verificó <span style={{ color: 'var(--muted-foreground)' }}>(opcional)</span>
                     </label>
-                    <input
+                    <input maxLength={150}
                       type="text"
                       className="w-full h-9 rounded-[0.625rem] border px-3 text-sm"
                       style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}

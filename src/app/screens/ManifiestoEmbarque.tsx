@@ -29,6 +29,7 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { TextareaContador } from '@/app/components/TextareaContador'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -565,7 +566,7 @@ export function ManifiestoEmbarque() {
               </div>
               <div className="flex-1 space-y-1">
                 <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Folio</label>
-                <input
+                <input maxLength={150}
                   type="text"
                   className={fieldCls}
                   placeholder="Ej: 001"
@@ -577,19 +578,19 @@ export function ManifiestoEmbarque() {
 
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Empresa / Cliente</label>
-              <input type="text" className={fieldCls} placeholder="Nombre del cliente"
+              <input maxLength={150} type="text" className={fieldCls} placeholder="Nombre del cliente"
                 value={form.empresa} onChange={e => setF('empresa', e.target.value)} />
             </div>
 
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Línea transportista</label>
-              <input type="text" className={fieldCls} placeholder="Nombre de la línea"
+              <input maxLength={150} type="text" className={fieldCls} placeholder="Nombre de la línea"
                 value={form.linea_transportista} onChange={e => setF('linea_transportista', e.target.value)} />
             </div>
 
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Nombre del chofer</label>
-              <input type="text" className={fieldCls} placeholder="Nombre completo"
+              <input maxLength={150} type="text" className={fieldCls} placeholder="Nombre completo"
                 value={form.nombre_chofer} onChange={e => setF('nombre_chofer', e.target.value)} />
             </div>
 
@@ -793,7 +794,7 @@ export function ManifiestoEmbarque() {
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
                     Descripción del hallazgo de plaga *
                   </label>
-                  <textarea
+                  <TextareaContador
                     value={form.plaga_descripcion}
                     onChange={e => setF('plaga_descripcion', e.target.value)}
                     rows={2}
@@ -831,7 +832,7 @@ export function ManifiestoEmbarque() {
             <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
               Observaciones
             </p>
-            <textarea
+            <TextareaContador
               value={form.observaciones}
               onChange={e => setF('observaciones', e.target.value)}
               rows={2}
