@@ -246,6 +246,7 @@ export function LimpiezaRecepcion() {
         .eq('org_id', orgId)
       if (e) throw e
       toast.success('Observaciones guardadas')
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar')
     } finally {
@@ -290,6 +291,7 @@ export function LimpiezaRecepcion() {
           [dia]: { ...(prev[dia] ?? {}), [itemId]: valor },
         }))
       }
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar resultado')
     } finally {
@@ -331,6 +333,7 @@ export function LimpiezaRecepcion() {
         },
       }))
       toast.success(`Día ${diaSeleccionado} guardado`)
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar día')
     } finally {

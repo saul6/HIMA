@@ -257,6 +257,7 @@ export function LimpiezaPreenfrio() {
         .eq('org_id', orgId)
       if (e) throw e
       toast.success('Observaciones guardadas')
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar')
     } finally {
@@ -306,6 +307,7 @@ export function LimpiezaPreenfrio() {
           [dia]: { ...(prev[dia] ?? {}), [itemId]: valor },
         }))
       }
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar resultado')
     } finally {
@@ -373,6 +375,7 @@ export function LimpiezaPreenfrio() {
       }))
       setIncidenciaIdMap((prev) => ({ ...prev, [cellKey]: incidenciaId }))
       toast.success('Plaga registrada e incidencia M13 creada')
+      void refetchFirmas()
       setPlagaSheet(false)
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al registrar plaga')
@@ -411,6 +414,7 @@ export function LimpiezaPreenfrio() {
         },
       }))
       toast.success(`Día ${diaSeleccionado} guardado`)
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar día')
     } finally {

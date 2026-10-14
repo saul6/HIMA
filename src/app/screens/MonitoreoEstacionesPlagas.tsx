@@ -837,8 +837,11 @@ export function MonitoreoEstacionesPlagas() {
       if (revisionId) {
         ;(supabase as any).from('m21_revision').delete().eq('id', revisionId).then(() => {})
       }
-      const msg = e instanceof Error ? e.message : 'Error al guardar la revisión'
-      if (msg.includes('FECHA_SOLO_HOY')) {
+      const err = e as { code?: string; message?: string } | null
+      const msg = err?.message ?? 'Error al guardar la revisión'
+      if (err?.code === '23505' || msg.includes('duplicate key')) {
+        toast.warning('Ya existe una revisión de este sitio para hoy. Ábrela para editarla.', { duration: 7000 })
+      } else if (msg.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
         toast.error(msg)

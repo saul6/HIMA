@@ -241,6 +241,7 @@ export function LimpiezaAlmacenEmpaque() {
         .eq('org_id', orgId)
       if (e) throw e
       toast.success('Observaciones guardadas')
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar')
     } finally {
@@ -290,6 +291,7 @@ export function LimpiezaAlmacenEmpaque() {
           [dia]: { ...(prev[dia] ?? {}), [itemId]: valor },
         }))
       }
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar resultado')
     } finally {
@@ -357,6 +359,7 @@ export function LimpiezaAlmacenEmpaque() {
       }))
       setIncidenciaIdMap((prev) => ({ ...prev, [cellKey]: incidenciaId }))
       toast.success('Daño registrado e incidencia M13 creada')
+      void refetchFirmas()
       setIncSheet(false)
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al registrar incidencia')
@@ -387,6 +390,7 @@ export function LimpiezaAlmacenEmpaque() {
         },
       }))
       toast.success(`Día ${diaSeleccionado} guardado`)
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar día')
     } finally {

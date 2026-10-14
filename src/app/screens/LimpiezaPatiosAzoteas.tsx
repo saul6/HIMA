@@ -225,6 +225,7 @@ export function LimpiezaPatiosAzoteas() {
         .eq('org_id', orgId)
       if (e) throw e
       toast.success('Observaciones guardadas')
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar')
     } finally {
@@ -269,6 +270,7 @@ export function LimpiezaPatiosAzoteas() {
           [dia]: { ...(prev[dia] ?? {}), [itemId]: valor },
         }))
       }
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar resultado')
     } finally {
@@ -299,6 +301,7 @@ export function LimpiezaPatiosAzoteas() {
         [diaSeleccionado]: { realizo: payload.realizo, aprobo: payload.aprobo },
       }))
       toast.success(`Día ${diaSeleccionado} guardado`)
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar día')
     } finally {

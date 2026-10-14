@@ -315,6 +315,7 @@ export function InspeccionPerimetral() {
       )
       refetch()
       toast.success('Observaciones guardadas')
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar')
     } finally {
