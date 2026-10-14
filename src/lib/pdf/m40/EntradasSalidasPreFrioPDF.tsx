@@ -71,7 +71,7 @@ const tdStyle = {
 
 const ROW_ALT = '#F5F9FE'
 
-const W = { cuarto: 60, fruta: 60, pres: 55, tar: 28, restos: 40, hora: 30, temp: 28, tiempo: 34 }
+const W = { cuarto: 90, fruta: 90, pres: 80, tar: 40, restos: 250, hora: 45, temp: 42, tiempo: 50 }
 
 export function EntradasSalidasPreFrioPDF({
   d, codigoClave, firmaRealizo, firmaVerifico,

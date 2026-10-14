@@ -55,7 +55,7 @@ const NA_COLOR = '#717182'
 const ROW_ALT  = '#F5F9FE'
 const MARGIN   = 20
 const PAGE_W   = 841.89 - MARGIN * 2
-const PUNTO_COL = 165
+const PUNTO_COL = 250
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -165,7 +165,7 @@ export function InspeccionAlmacenEmpaquePagina({
           return (
             <View key={punto.id} style={{ flexDirection: 'row', backgroundColor: bg }}>
               <View style={{ width: PUNTO_COL, padding: 3, borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, backgroundColor: bg }}>
-                <Text style={{ fontSize: 5.5, color: PC.fieldValue }}>{punto.orden}. {punto.texto}</Text>
+                <Text style={{ fontSize: 7, color: PC.fieldValue }}>{punto.orden}. {punto.texto}</Text>
               </View>
               {todosLosDias.map((d) => {
                 if (!inspeccionadosSet.has(d)) {
@@ -195,10 +195,10 @@ export function InspeccionAlmacenEmpaquePagina({
           <View style={{ borderWidth: 1, borderColor: PC.border, padding: 4, marginTop: 4 }}>
             {accionesEntries.map(([diaNum, texto]) => (
               <View key={diaNum} style={{ flexDirection: 'row', marginBottom: 2, alignItems: 'flex-start' }}>
-                <Text style={{ fontSize: 5.5, fontFamily: 'Helvetica-Bold', color: PC.fieldValue, width: 32 }}>
+                <Text style={{ fontSize: 6.5, fontFamily: 'Helvetica-Bold', color: PC.fieldValue, width: 32 }}>
                   Dia {diaNum}:
                 </Text>
-                <Text style={{ fontSize: 5.5, color: PC.fieldValue, flex: 1 }} hyphenationCallback={partirPalabraLarga}>{texto}</Text>
+                <Text style={{ fontSize: 6.5, color: PC.fieldValue, flex: 1 }} hyphenationCallback={partirPalabraLarga}>{texto}</Text>
               </View>
             ))}
           </View>
@@ -207,8 +207,8 @@ export function InspeccionAlmacenEmpaquePagina({
 
       {observaciones ? (
         <View style={{ borderWidth: 1, borderColor: PC.border, padding: 4, marginTop: 4, minHeight: 20 }}>
-          <Text style={{ fontSize: 5.5, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>OBSERVACIONES</Text>
-          <Text style={{ fontSize: 6.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{observaciones}</Text>
+          <Text style={{ fontSize: 7, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>OBSERVACIONES</Text>
+          <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{observaciones}</Text>
         </View>
       ) : null}
 
