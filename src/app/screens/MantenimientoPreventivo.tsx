@@ -30,6 +30,8 @@ import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { TextareaContador } from '@/app/components/TextareaContador'
@@ -174,6 +176,8 @@ export function MantenimientoPreventivo() {
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM45MttoPreventivo()
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map((r) => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M45', todosIds)
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M45')
   const { guardar: guardarOffline } = useGuardarOffline('M45')
@@ -306,6 +310,7 @@ export function MantenimientoPreventivo() {
         .eq('org_id', profile.org_id)
       if (err) throw err
       toast.success('Guardado')
+      void refetchFirmas()
       setRegistroActivo((prev) => prev ? { ...prev, observaciones: obsLocal.trim() || null } : null)
       await refetch()
     } catch (e: unknown) {
@@ -471,6 +476,7 @@ export function MantenimientoPreventivo() {
         .upsert(batch, { onConflict: 'registro_id,item_id,dia' })
       if (err) throw err
       toast.success(`Día ${dia} guardado`)
+      void refetchFirmas()
       setSheetDia(false)
       cargarDetalle(registroActivo.id)
     } catch (e: unknown) {
@@ -533,6 +539,7 @@ export function MantenimientoPreventivo() {
         .upsert(batch, { onConflict: 'registro_id,item_id' })
       if (err) throw err
       toast.success('Acciones del mes guardadas')
+      void refetchFirmas()
       setSheetAcciones(false)
       setAccionesMap({ ...accionesLocal })
     } catch (e: unknown) {
@@ -668,29 +675,45 @@ export function MantenimientoPreventivo() {
                 </div>
               ))}
               {registros.map((reg) => (
-                <button
-                  key={reg.id}
-                  onClick={() => abrirDetalle(reg)}
-                  className="w-full text-left bg-card rounded-xl p-4 border border-border"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span
-                          className="text-xs px-2 py-0.5 rounded"
-                          style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
-                        >
-                          {mesLabel(reg.anio, reg.mes)}
+                <div key={reg.id} className="bg-card rounded-xl border border-border">
+                  <button
+                    onClick={() => abrirDetalle(reg)}
+                    className="w-full text-left p-4"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span
+                            className="text-xs px-2 py-0.5 rounded"
+                            style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+                          >
+                            {mesLabel(reg.anio, reg.mes)}
+                          </span>
+                        </div>
+                        <span className="text-sm text-foreground truncate block" style={{ fontWeight: 600 }}>
+                          {reg.rancho_nombre}
                         </span>
+                        <span className="text-xs text-muted-foreground">{reg.rancho_codigo}</span>
+                        {obligatoria && !firmas[reg.id]?.realizo && (
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                            Pendiente de firma
+                          </span>
+                        )}
                       </div>
-                      <span className="text-sm text-foreground truncate block" style={{ fontWeight: 600 }}>
-                        {reg.rancho_nombre}
-                      </span>
-                      <span className="text-xs text-muted-foreground">{reg.rancho_codigo}</span>
+                      <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />
                     </div>
-                    <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />
+                  </button>
+                  <div className="px-4 pb-4">
+                    <FirmasRegistro
+                      modulo="M45"
+                      registroId={reg.id}
+                      fechaRegistro={`${reg.anio}-${String(reg.mes).padStart(2, '0')}-01`}
+                      firma={firmas[reg.id]}
+                      loadingFirmas={loadingFirmas}
+                      onFirmado={async () => { await refetch(); await refetchFirmas() }}
+                    />
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           )}
@@ -831,16 +854,19 @@ export function MantenimientoPreventivo() {
               <div className="flex-1 overflow-y-auto px-4 pb-6">
                 <PasoFirmaRegistro
                   modulo="M45"
-                  registroId={pendienteFirmaId}
+                  ids={[pendienteFirmaId]}
                   descripcion={`Mantenimiento Preventivo ${nMes}`}
-                  onFirmadoYPDF={() => {
+                  obligatoria={obligatoria}
+                  onFirmadoYPDF={async () => {
+                    await refetchFirmas()
                     handleCerrarSheetCrear()
                     if (pendienteReg) abrirDetalle(pendienteReg)
                   }}
-                  onDespues={() => {
+                  onDespues={!obligatoria ? () => {
+                    void refetchFirmas()
                     handleCerrarSheetCrear()
                     if (pendienteReg) abrirDetalle(pendienteReg)
-                  }}
+                  } : undefined}
                 />
               </div>
             )}
