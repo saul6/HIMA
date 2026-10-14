@@ -7,6 +7,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import { codigoFormato } from '@/lib/codigoFormato'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface UsoEppRow {
   fecha: string
@@ -142,7 +143,7 @@ export function UsoEppPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoS
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{fmtFecha(r.fecha)}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.RANCHO, alignItems: 'flex-start', padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.rancho}</Text>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.rancho}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.APLIC, alignItems: 'flex-start', padding: 4 }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.aplicador}</Text>
@@ -166,7 +167,7 @@ export function UsoEppPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoS
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{okLabel(r.mascarilla_ok)}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.REAL, alignItems: 'flex-start', padding: 4, borderRightWidth: 0 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.realizo ?? '—'}</Text>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.realizo ?? '—'}</Text>
                 </View>
               </View>
             )

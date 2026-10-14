@@ -6,6 +6,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M68MatrizRow {
   criterio_numero: number
@@ -156,7 +157,7 @@ export function MonitoreoRoedoresPage({
         <>
           <PdfSectionBanner>3. Observaciones y/o accion correctiva</PdfSectionBanner>
           <View style={{ marginTop: 4, padding: 8, borderWidth: 1, borderColor: PC.border, borderRadius: 4 }}>
-            <Text style={{ fontSize: 8, color: PC.fieldValue }}>{observaciones}</Text>
+            <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{observaciones}</Text>
           </View>
         </>
       )}

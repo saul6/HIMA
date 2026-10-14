@@ -7,6 +7,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import { codigoFormato } from '@/lib/codigoFormato'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface ProductoAutorizadoRow {
   cultivo: string
@@ -137,13 +138,13 @@ export function ProductosAutorizadosPDF({ orgNombre, productos, codigoClave, cul
                         <Text style={{ fontSize: 6, color: PC.fieldValue }}>{p.ingrediente_activo}</Text>
                       </View>
                       <View style={[tdStyle, { width: C.COM, alignItems: 'flex-start', padding: 4 }]}>
-                        <Text style={{ fontSize: 6, color: PC.fieldValue }}>{p.nombre_comercial}</Text>
+                        <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{p.nombre_comercial}</Text>
                       </View>
                       <View style={[tdStyle, { width: C.CONC, alignItems: 'flex-start', padding: 4 }]}>
                         <Text style={{ fontSize: 6, color: PC.fieldValue }}>{p.concentracion}</Text>
                       </View>
                       <View style={[tdStyle, { width: C.EMP, alignItems: 'flex-start', padding: 4 }]}>
-                        <Text style={{ fontSize: 6, color: PC.fieldValue }}>{p.empresa}</Text>
+                        <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{p.empresa}</Text>
                       </View>
                       <View style={[tdStyle, { width: C.DOS, alignItems: 'flex-start', padding: 4 }]}>
                         <Text style={{ fontSize: 6, color: PC.fieldValue }}>{p.dosis_ha}</Text>
@@ -152,7 +153,7 @@ export function ProductosAutorizadosPDF({ orgNombre, productos, codigoClave, cul
                         <Text style={{ fontSize: 6, color: PC.fieldValue }}>{p.intervalo_seguridad_dias != null ? `${p.intervalo_seguridad_dias}d` : '—'}</Text>
                       </View>
                       <View style={[tdStyle, { width: C.PLA, alignItems: 'flex-start', padding: 4 }]}>
-                        <Text style={{ fontSize: 6, color: PC.fieldValue }}>{p.plagas_control}</Text>
+                        <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{p.plagas_control}</Text>
                       </View>
                       <View style={[tdStyle, { width: C.MER, alignItems: 'flex-start', padding: 4, borderRightWidth: 0 }]}>
                         <Text style={{ fontSize: 6, color: PC.fieldValue }}>{p.mercado}</Text>

@@ -7,6 +7,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface EquipoRow {
   fecha: string
@@ -162,12 +163,12 @@ export function CalibracionEquiposPDF({
 
         {registros[0]?.realizo && (
           <View style={{ marginTop: 6 }}>
-            <Text style={{ fontSize: 7, color: PC.fieldLabel }}>Realizó: <Text style={{ color: PC.fieldValue }}>{registros[0].realizo}</Text></Text>
+            <Text style={{ fontSize: 7, color: PC.fieldLabel }}>Realizó: <Text style={{ color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{registros[0].realizo}</Text></Text>
           </View>
         )}
         {registros[0]?.observaciones && (
           <View style={{ marginTop: 4 }}>
-            <Text style={{ fontSize: 7, color: PC.fieldLabel }}>Observaciones: <Text style={{ color: PC.fieldValue }}>{registros[0].observaciones}</Text></Text>
+            <Text style={{ fontSize: 7, color: PC.fieldLabel }}>Observaciones: <Text style={{ color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{registros[0].observaciones}</Text></Text>
           </View>
         )}
 

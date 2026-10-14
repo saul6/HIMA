@@ -10,6 +10,7 @@ import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
 import { PC } from '@/lib/pdf/components/tokens'
 import { formatPortadaM15, formatPortadaM16, formatPortadaM17, type PortadaLinea } from './portadaConfig'
 import type { ModuloAuditoria } from '@/hooks/useAuditoria'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 // ── Tipos internos ────────────────────────────────────────────────────────────
 
@@ -460,16 +461,16 @@ export function AuditoriaPagina({
                   : ''
 
                 return (
-                  <View key={preg.id} style={rowStyle} wrap={false}>
+                  <View key={preg.id} style={rowStyle}>
                     <Text style={[s.qCell, { width: C_CODIGO, fontSize: 7 }]}>{preg.codigo}</Text>
-                    <Text style={[s.qCell, { width: C_PREGUNTA }]}>{preg.texto}</Text>
+                    <Text style={[s.qCell, { width: C_PREGUNTA }]} hyphenationCallback={partirPalabraLarga}>{preg.texto}</Text>
                     <Text style={[s.qCell, { width: C_PUNTOS, textAlign: 'center' }]}>
                       {preg.puntos > 0 ? String(preg.puntos) : 'Info'}
                     </Text>
                     <Text style={[s.qCell, { width: C_RESULT, textAlign: 'center' }, resColor]}>
                       {resStr}{ptsLabel}
                     </Text>
-                    <Text style={[s.qCell, { width: C_COMENT, borderRightWidth: 0 }]}>
+                    <Text style={[s.qCell, { width: C_COMENT, borderRightWidth: 0 }]} hyphenationCallback={partirPalabraLarga}>
                       {resp?.comentario ?? ''}
                     </Text>
                   </View>
@@ -493,7 +494,7 @@ export function AuditoriaPagina({
 
       {/* ── Nota final / aviso legal ─────────────────────────────────────── */}
       <View style={{ marginTop: 20, borderTopWidth: 1, borderTopColor: PC.border, borderTopStyle: 'solid', paddingTop: 6 }}>
-        <Text style={{ fontSize: 6, color: PC.textSub, textAlign: 'center' }}>
+        <Text style={{ fontSize: 6, color: PC.textSub, textAlign: 'center' }} hyphenationCallback={partirPalabraLarga}>
           {notaFinal ?? 'INFORME INTERNO DE PREPARACION. M.A.D.Y. no certifica, no sustituye al auditor autorizado ni al organismo de certificacion.'}
         </Text>
       </View>

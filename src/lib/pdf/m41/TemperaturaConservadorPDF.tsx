@@ -7,6 +7,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M41LecturaPDF {
   hora: number
@@ -139,7 +140,7 @@ export function TemperaturaConservadorPDF({
         {d.observaciones ? (
           <View style={{ marginTop: 10, borderWidth: 1, borderColor: PC.border, padding: 6 }}>
             <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.fieldValue, marginBottom: 3 }}>Observaciones</Text>
-            <Text style={{ fontSize: 7, color: PC.fieldValue }}>{d.observaciones}</Text>
+            <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{d.observaciones}</Text>
           </View>
         ) : null}
 

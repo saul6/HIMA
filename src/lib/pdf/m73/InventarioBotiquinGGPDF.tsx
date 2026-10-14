@@ -6,6 +6,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M73MaterialFilaPDF {
   nombre: string
@@ -130,7 +131,7 @@ export function InventarioBotiquinGGPagina({ rancho, orgNombre, fecha, botiquin_
       {observaciones && (
         <View style={{ marginTop: 6 }}>
           <Text style={{ fontSize: 7, color: PC.textSub, fontFamily: 'Helvetica-Bold' }}>Observaciones:</Text>
-          <Text style={{ fontSize: 7.5, color: PC.fieldValue, marginTop: 2 }}>{observaciones}</Text>
+          <Text style={{ fontSize: 7.5, color: PC.fieldValue, marginTop: 2 }} hyphenationCallback={partirPalabraLarga}>{observaciones}</Text>
         </View>
       )}
 
@@ -201,19 +202,19 @@ export function InventarioBotiquinGGConsolidadoPDF({ filas, orgNombre }: {
                   <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{formatFecha(f.fecha)}</Text>
                 </View>
                 <View style={{ width: COL2.rancho, padding: '3px 4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
-                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.rancho}</Text>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{f.rancho}</Text>
                 </View>
                 <View style={{ width: COL2.botiquin, padding: '3px 4px', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.botiquin_num ?? '—'}</Text>
                 </View>
                 <View style={{ width: COL2.realizo, padding: '3px 4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
-                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.realizo ?? '—'}</Text>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{f.realizo ?? '—'}</Text>
                 </View>
                 <View style={{ width: COL2.total, padding: '3px 4px', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
-                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{String(f.total_materiales)}</Text>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{String(f.total_materiales)}</Text>
                 </View>
                 <View style={{ width: COL2.obs, padding: '3px 4px', backgroundColor: bg }}>
-                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.observaciones ?? ''}</Text>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{f.observaciones ?? ''}</Text>
                 </View>
               </View>
             )

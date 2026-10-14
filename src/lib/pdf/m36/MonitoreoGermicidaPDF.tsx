@@ -7,6 +7,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface MonitoreoRow {
   fecha: string
@@ -126,7 +127,7 @@ export function MonitoreoGermicidaPDF({ rancho, orgNombre, desde, hasta, monitor
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{m.tipo_germicida}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.USO, alignItems: 'flex-start', padding: 4 }]}>
-                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{m.uso}</Text>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{m.uso}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.PPM, padding: 4 }]}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{m.concentracion} ppm</Text>

@@ -11,6 +11,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -153,7 +154,7 @@ export function LimpiezaOficinasPagina({
           return (
             <View key={item.id} style={{ flexDirection: 'row', backgroundColor: bg }}>
               <View style={{ width: ITEM_COL_W, padding: 3, borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, justifyContent: 'center', backgroundColor: bg }}>
-                <Text style={{ fontSize: 6, color: PC.fieldValue }}>{item.nombre}</Text>
+                <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.nombre}</Text>
                 <Text style={{ fontSize: 5.5, color: PC.textSub, marginTop: 0.5 }}>Frec: {item.frecuencia}</Text>
               </View>
               {days.map(d => {
@@ -209,7 +210,7 @@ export function LimpiezaOficinasPagina({
       {observaciones ? (
         <View style={{ borderWidth: 1, borderColor: PC.border, padding: 4, marginTop: 4, minHeight: 20 }}>
           <Text style={{ fontSize: 5.5, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>OBSERVACIONES</Text>
-          <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{observaciones}</Text>
+          <Text style={{ fontSize: 6.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{observaciones}</Text>
         </View>
       ) : null}
 

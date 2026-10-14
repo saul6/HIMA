@@ -7,6 +7,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import { codigoFormato } from '@/lib/codigoFormato'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface ControlHerramientasRow {
   fecha: string
@@ -135,7 +136,7 @@ export function ControlHerramientasPDF({ rows, orgNombre, desde, hasta, codigoCl
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{fmtFecha(r.fecha)}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.RANCHO, alignItems: 'flex-start', padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.rancho}</Text>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.rancho}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.TRAB, alignItems: 'flex-start', padding: 4 }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.trabajador}</Text>
@@ -147,10 +148,10 @@ export function ControlHerramientasPDF({ rows, orgNombre, desde, hasta, codigoCl
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.cantidad}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.ENT, alignItems: 'flex-start', padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.entrega_nombre}</Text>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.entrega_nombre}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.REC, alignItems: 'flex-start', padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.recibe_nombre}</Text>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.recibe_nombre}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.DEV, padding: 4 }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.devuelto ? 'Si' : 'No'}</Text>

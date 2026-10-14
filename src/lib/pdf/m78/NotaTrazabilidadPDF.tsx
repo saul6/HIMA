@@ -5,6 +5,7 @@ import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface NotaTrazabilidadPDFProps {
   folio: string | null
@@ -108,7 +109,7 @@ export function NotaTrazabilidadPage({
           </View>
           <View style={{ flex: 2, padding: 5 }}>
             <Text style={{ fontSize: 7, color: PC.fieldLabel, fontFamily: 'Helvetica-Bold' }}>Productor</Text>
-            <Text style={{ fontSize: 9, color: PC.fieldValue, marginTop: 2 }}>{productor ?? ''}</Text>
+            <Text style={{ fontSize: 9, color: PC.fieldValue, marginTop: 2 }} hyphenationCallback={partirPalabraLarga}>{productor ?? ''}</Text>
           </View>
         </View>
 
@@ -132,11 +133,11 @@ export function NotaTrazabilidadPage({
         <View style={{ flexDirection: 'row' }}>
           <View style={{ flex: 2, padding: 5, borderRightWidth: 1, borderRightColor: PC.border }}>
             <Text style={{ fontSize: 7, color: PC.fieldLabel, fontFamily: 'Helvetica-Bold' }}>Rancho</Text>
-            <Text style={{ fontSize: 9, color: PC.fieldValue, marginTop: 2 }}>{rancho}</Text>
+            <Text style={{ fontSize: 9, color: PC.fieldValue, marginTop: 2 }} hyphenationCallback={partirPalabraLarga}>{rancho}</Text>
           </View>
           <View style={{ flex: 1, padding: 5, borderRightWidth: 1, borderRightColor: PC.border }}>
             <Text style={{ fontSize: 7, color: PC.fieldLabel, fontFamily: 'Helvetica-Bold' }}>Sector</Text>
-            <Text style={{ fontSize: 9, color: PC.fieldValue, marginTop: 2 }}>{sector ?? ''}</Text>
+            <Text style={{ fontSize: 9, color: PC.fieldValue, marginTop: 2 }} hyphenationCallback={partirPalabraLarga}>{sector ?? ''}</Text>
           </View>
           <View style={{ flex: 1, padding: 5 }}>
             <Text style={{ fontSize: 7, color: PC.fieldLabel, fontFamily: 'Helvetica-Bold' }}>Cultivo</Text>
@@ -209,10 +210,10 @@ export function NotaTrazabilidadPage({
             <Text style={{ fontSize: 9, color: PC.fieldValue }}>{peso_neto != null ? String(peso_neto) : ''}</Text>
           </View>
           <View style={{ flex: 1, padding: 7, borderRightWidth: 1, borderRightColor: PC.border, alignItems: 'center' }}>
-            <Text style={{ fontSize: 9, color: PC.fieldValue }}>{total_producto ?? ''}</Text>
+            <Text style={{ fontSize: 9, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{total_producto ?? ''}</Text>
           </View>
           <View style={{ flex: 1, padding: 7 }}>
-            <Text style={{ fontSize: 9, color: PC.fieldValue }}>{observaciones ?? ''}</Text>
+            <Text style={{ fontSize: 9, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{observaciones ?? ''}</Text>
           </View>
         </View>
       </View>
@@ -242,7 +243,7 @@ export function NotaTrazabilidadPage({
               alignItems: 'center',
             }}
           >
-            <Text style={{ fontSize: 8, color: PC.fieldValue, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>
+            <Text style={{ fontSize: 8, color: PC.fieldValue, fontFamily: 'Helvetica-Bold', marginBottom: 2 }} hyphenationCallback={partirPalabraLarga}>
               {f.nombre ?? ''}
             </Text>
             <View style={{ borderBottomWidth: 1, borderBottomColor: PC.border, width: '100%', height: 28 }} />

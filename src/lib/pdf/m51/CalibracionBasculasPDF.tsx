@@ -7,6 +7,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface BasculaRow {
   fecha: string
@@ -139,7 +140,7 @@ export function CalibracionBasculasPDF({
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{fmtFecha(r.fecha)}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.USO, alignItems: 'flex-start' }]}>
-                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{r.uso_bascula}</Text>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.uso_bascula}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.PATRON }]}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{fmtNum(r.pesa_patron_kg, 3)}</Text>
@@ -163,12 +164,12 @@ export function CalibracionBasculasPDF({
 
         {registros[0]?.realizo && (
           <View style={{ marginTop: 6 }}>
-            <Text style={{ fontSize: 7, color: PC.fieldLabel }}>Realizó: <Text style={{ color: PC.fieldValue }}>{registros[0].realizo}</Text></Text>
+            <Text style={{ fontSize: 7, color: PC.fieldLabel }}>Realizó: <Text style={{ color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{registros[0].realizo}</Text></Text>
           </View>
         )}
         {registros[0]?.observaciones && (
           <View style={{ marginTop: 4 }}>
-            <Text style={{ fontSize: 7, color: PC.fieldLabel }}>Observaciones: <Text style={{ color: PC.fieldValue }}>{registros[0].observaciones}</Text></Text>
+            <Text style={{ fontSize: 7, color: PC.fieldLabel }}>Observaciones: <Text style={{ color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{registros[0].observaciones}</Text></Text>
           </View>
         )}
 

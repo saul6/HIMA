@@ -6,6 +6,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface TensiometrosRow {
   fecha: string
@@ -143,10 +144,10 @@ export function TensiometrosPDF({ rancho, orgNombre, desde, hasta, registros, te
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{r.lectura_otra != null ? String(r.lectura_otra) : '—'}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.REAL, alignItems: 'flex-start', padding: 4 }]}>
-                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{r.realizo ?? '—'}</Text>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.realizo ?? '—'}</Text>
                 </View>
                 <View style={[tdStyle, { flex: 1, alignItems: 'flex-start', padding: 4, borderRightWidth: 0 }]}>
-                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{r.observaciones ?? '—'}</Text>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.observaciones ?? '—'}</Text>
                 </View>
               </View>
             )

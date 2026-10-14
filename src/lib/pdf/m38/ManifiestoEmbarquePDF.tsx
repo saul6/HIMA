@@ -6,6 +6,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M38LineaPDF {
   orden: number
@@ -180,7 +181,7 @@ export function ManifiestoEmbarquePDF({
                 <View key={i} style={{ flexDirection: 'row', backgroundColor: i % 2 === 1 ? ROW_ALT : PC.white }}>
                   <Text style={[tdStyle, { width: TW.ord }]}>{l.orden}</Text>
                   <Text style={[tdStyle, { width: TW.tar }]}>{l.tarima}</Text>
-                  <Text style={[tdStyle, { flex: 1 }]}>{l.producto}</Text>
+                  <Text style={[tdStyle, { flex: 1 }]} hyphenationCallback={partirPalabraLarga}>{l.producto}</Text>
                   <Text style={[tdStyle, { width: TW.pres }]}>{l.presentacion}</Text>
                   <Text style={[tdStyle, { width: TW.cajas }]}>{n(l.cajas)}</Text>
                   <Text style={[tdStyle, { width: TW.ts }]}>{n(l.temp_superior)}</Text>
@@ -212,7 +213,7 @@ export function ManifiestoEmbarquePDF({
                 <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.titleNavy, marginBottom: 2 }}>
                   Observaciones
                 </Text>
-                <Text style={{ fontSize: 7.5, color: PC.fieldValue }}>{d.observaciones}</Text>
+                <Text style={{ fontSize: 7.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{d.observaciones}</Text>
               </View>
             )}
           </View>

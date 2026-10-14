@@ -12,6 +12,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PdfLegend } from '@/lib/pdf/components/PdfLegend'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -165,7 +166,7 @@ function FilaCeboInteriorMecanica({
       <Text style={[tdCell, { flex: 1 }]}>
         {est.estado_trampa ? labelDesde(est.estado_trampa, catalogoEstado) : ''}
       </Text>
-      <Text style={[tdCell, { width: 60 }]}>
+      <Text style={[tdCell, { width: 60 }]} hyphenationCallback={partirPalabraLarga}>
         {est.condiciones ? labelDesde(est.condiciones, catalogoCondiciones) : ''}
       </Text>
       <Text style={[tdCell, { width: 65 }]}>{est.senalizacion ?? ''}</Text>
@@ -191,7 +192,7 @@ function FilaLuz({
       <Text style={[tdCell, { flex: 1 }]}>
         {est.estado_lampara ? labelDesde(est.estado_lampara, catalogoEstado) : ''}
       </Text>
-      <Text style={[tdCell, { flex: 2 }]}>{plagasLabel}</Text>
+      <Text style={[tdCell, { flex: 2 }]} hyphenationCallback={partirPalabraLarga}>{plagasLabel}</Text>
       <Text style={[tdCell, { width: 50, borderRightWidth: 0, textAlign: 'center',
         ...(est.tiene_hallazgo ? { backgroundColor: HALLAZGO_BG, color: HALLAZGO_TEXT, fontFamily: 'Helvetica-Bold' } : {}) }]}>
         {est.tiene_hallazgo ? 'Si' : ''}
@@ -299,7 +300,7 @@ export function MonitoreoEstacionesPagina({
             paddingTop: 5, paddingBottom: 5, paddingLeft: 6, paddingRight: 6,
             minHeight: 24,
           }}>
-            <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }}>{observaciones}</Text>
+            <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }} hyphenationCallback={partirPalabraLarga}>{observaciones}</Text>
           </View>
         </>
       )}

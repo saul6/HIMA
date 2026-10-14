@@ -1,5 +1,6 @@
 ﻿import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import { codigoFormato } from '@/lib/codigoFormato'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M39LineaPDF {
   orden: number
@@ -72,7 +73,7 @@ export function RecepcionFrutaPDF({ d, codigoClave }: { d: M39RecepcionDataPDF; 
           <View style={{ flex: 1 }}>
             <Text style={s.title}>Recepcion Diaria de Fruta</Text>
             <Text style={s.codigo}>{codigoFormato('F-FRUS-PRO-02', codigoClave)}</Text>
-            <Text style={s.meta}>{d.orgNombre}</Text>
+            <Text style={s.meta} hyphenationCallback={partirPalabraLarga}>{d.orgNombre}</Text>
             <Text style={s.meta}>Instalacion: {d.instalacion}</Text>
             {d.empresa ? <Text style={s.meta}>Empresa: {d.empresa}</Text> : null}
           </View>
@@ -100,10 +101,10 @@ export function RecepcionFrutaPDF({ d, codigoClave }: { d: M39RecepcionDataPDF; 
             <View key={i} style={s.row}>
               <Text style={[s.td, { width: 22 }]}>{l.orden}</Text>
               <Text style={[s.td, { width: 38 }]}>{t(l.hora)}</Text>
-              <Text style={[s.td, { width: 62 }]}>{t(l.codigo_productor)}</Text>
+              <Text style={[s.td, { width: 62 }]} hyphenationCallback={partirPalabraLarga}>{t(l.codigo_productor)}</Text>
               <Text style={[s.td, { width: 36 }]}>{l.tipo === 'organico' ? 'Org' : 'Conv'}</Text>
               <Text style={[s.td, { width: 44 }]}>{l.pase_anden ? 'Si' : 'No'}</Text>
-              <Text style={[s.td, { flex: 1 }]}>{t(l.producto)}</Text>
+              <Text style={[s.td, { flex: 1 }]} hyphenationCallback={partirPalabraLarga}>{t(l.producto)}</Text>
               <Text style={[s.td, { width: 36 }]}>{n(l.cant_6oz)}</Text>
               <Text style={[s.td, { width: 36 }]}>{n(l.cant_12oz)}</Text>
               <Text style={[s.td, { width: 36 }]}>{n(l.cant_18oz)}</Text>
@@ -137,7 +138,7 @@ export function RecepcionFrutaPDF({ d, codigoClave }: { d: M39RecepcionDataPDF; 
         {d.observaciones ? (
           <View style={{ marginBottom: 8 }}>
             <Text style={s.secTitle}>Observaciones</Text>
-            <Text style={{ fontSize: 7.5, color: '#333333' }}>{d.observaciones}</Text>
+            <Text style={{ fontSize: 7.5, color: '#333333' }} hyphenationCallback={partirPalabraLarga}>{d.observaciones}</Text>
           </View>
         ) : null}
 

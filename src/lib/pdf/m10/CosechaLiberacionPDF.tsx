@@ -11,6 +11,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -201,7 +202,7 @@ export function CosechaLiberacionPagina({
               liberaciones.map((lib, i) => (
                 <View key={i} style={{ flexDirection: 'row', backgroundColor: i % 2 !== 0 ? '#F5F9FE' : PC.white }}>
                   <Text style={[cell, { width: W.fecha, textAlign: 'center' }]}>{fecha}</Text>
-                  <Text style={[cell, { width: W.sector }]}>{lib.sector ?? '—'}</Text>
+                  <Text style={[cell, { width: W.sector }]} hyphenationCallback={partirPalabraLarga}>{lib.sector ?? '—'}</Text>
                   <Text style={[cell, { width: W.bandejas, textAlign: 'center' }]}>
                     {lib.cantidad_bandejas ?? '—'}
                   </Text>
@@ -221,11 +222,11 @@ export function CosechaLiberacionPagina({
                   <Text style={[cell, { width: W.frutaKg, textAlign: 'center' }]}>
                     {lib.fruta_proceso_kg != null ? lib.fruta_proceso_kg.toString() : '—'}
                   </Text>
-                  <Text style={[cell, { width: W.encargado, fontSize: 6.5 }]}>
+                  <Text style={[cell, { width: W.encargado, fontSize: 6.5 }]} hyphenationCallback={partirPalabraLarga}>
                     {lib.encargado_nombre ?? '—'}
                   </Text>
                   <CeldaSiNo width={W.verif} valor={lib.verificacion_semanal} />
-                  <Text style={[cell, { width: W.observaciones, fontSize: 6.5 }]}>
+                  <Text style={[cell, { width: W.observaciones, fontSize: 6.5 }]} hyphenationCallback={partirPalabraLarga}>
                     {formatObservaciones(lib.hora_inicio_cosecha, lib.hora_fin_cosecha, lib.observaciones)}
                   </Text>
                 </View>

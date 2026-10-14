@@ -11,6 +11,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -168,7 +169,7 @@ export function RondinesVigilanciaPDF({
                   return (
                     <View key={item.id} style={{ flexDirection: 'row', backgroundColor: bg }}>
                       <View style={[tdStyle, { width: COL_PUNTO, backgroundColor: bg }]}>
-                        <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{item.nombre}</Text>
+                        <Text style={{ fontSize: 6.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.nombre}</Text>
                       </View>
                       {RONDAS.map((n) => {
                         const val = resMap[`${item.id}|${n}`] ?? 'sin_novedad'
@@ -192,7 +193,7 @@ export function RondinesVigilanciaPDF({
         {observaciones ? (
           <View style={{ borderWidth: 1, borderColor: PC.border, padding: 4, marginTop: 6, minHeight: 20 }}>
             <Text style={{ fontSize: 5.5, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>OBSERVACIONES</Text>
-            <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{observaciones}</Text>
+            <Text style={{ fontSize: 6.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{observaciones}</Text>
           </View>
         ) : null}
 

@@ -7,6 +7,7 @@ import { PdfMonthlyMatrix } from '@/lib/pdf/components/PdfMonthlyMatrix'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M75ItemPDF {
   id: string
@@ -148,7 +149,7 @@ export function InspeccionAlmacenEmpaqueGGPagina({
                     <Text style={{ fontSize: 7, color: PC.fieldValue }}>{a.dia}</Text>
                   </View>
                   <View style={{ flex: 1, padding: 4, borderBottomWidth: 1, borderBottomColor: PC.border }}>
-                    <Text style={{ fontSize: 7, color: PC.fieldValue }}>{a.texto}</Text>
+                    <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{a.texto}</Text>
                   </View>
                 </View>
               ))}

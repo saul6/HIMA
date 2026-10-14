@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 // Archivo requerido: public/images/logo-los-gemelos.png
 // Sin ese archivo el PDF falla al generar (Image no puede cargar la URL).
@@ -124,7 +125,7 @@ export function EtiquetaLPTPDF({ d }: { d: EtiquetaLPTData }) {
             </View>
             <View style={s.titleCell}>
               <Text style={s.titleText}>Etiqueta de trazabilidad</Text>
-              <Text style={s.subtitleText}>{d.orgNombre}</Text>
+              <Text style={s.subtitleText} hyphenationCallback={partirPalabraLarga}>{d.orgNombre}</Text>
             </View>
           </View>
 
@@ -132,11 +133,11 @@ export function EtiquetaLPTPDF({ d }: { d: EtiquetaLPTData }) {
           <View style={[s.row, { height: 36 }]}>
             <View style={s.cell}>
               <Text style={s.cLabel}>PRODUCTO</Text>
-              <Text style={s.cVal}>{d.producto}</Text>
+              <Text style={s.cVal} hyphenationCallback={partirPalabraLarga}>{d.producto}</Text>
             </View>
             <View style={s.cell}>
               <Text style={s.cLabel}>PRESENTACION</Text>
-              <Text style={s.cValSm}>{d.presentacion ?? 'Caja / segun cliente'}</Text>
+              <Text style={s.cValSm} hyphenationCallback={partirPalabraLarga}>{d.presentacion ?? 'Caja / segun cliente'}</Text>
             </View>
             <View style={s.cellLast}>
               <Text style={s.cLabel}>TURNO</Text>
@@ -168,7 +169,7 @@ export function EtiquetaLPTPDF({ d }: { d: EtiquetaLPTData }) {
             </View>
             <View style={s.clienteCell}>
               <Text style={s.cLabel}>CLIENTE / DESTINO</Text>
-              <Text style={[s.cValSm, { fontSize: 7 }]}>{d.clienteDestino}</Text>
+              <Text style={[s.cValSm, { fontSize: 7 }]} hyphenationCallback={partirPalabraLarga}>{d.clienteDestino}</Text>
             </View>
           </View>
 

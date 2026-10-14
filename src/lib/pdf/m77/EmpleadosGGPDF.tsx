@@ -4,6 +4,7 @@ import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
 import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface EmpleadoGGFilaPDF {
   id: string
@@ -67,7 +68,7 @@ function TablaEmpleados({ empleados }: { empleados: EmpleadoGGFilaPDF[] }) {
         return (
           <View key={emp.id} style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: PC.border, minHeight: h }}>
             <View style={{ width: COL.nombre, padding: '4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
-              <Text style={{ fontSize: 7.5, color: PC.fieldValue, fontFamily: 'Helvetica-Bold' }}>{emp.nombre}</Text>
+              <Text style={{ fontSize: 7.5, color: PC.fieldValue, fontFamily: 'Helvetica-Bold' }} hyphenationCallback={partirPalabraLarga}>{emp.nombre}</Text>
             </View>
             <View style={{ width: COL.fecha, padding: '4px', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
               <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{formatFecha(emp.fecha_ingreso)}</Text>
@@ -112,7 +113,7 @@ export function EmpleadosGGPagina({ rancho, orgNombre, empleados, firmaRealizo }
 
       {orgNombre && (
         <View style={{ paddingHorizontal: 4, marginBottom: 4 }}>
-          <Text style={{ fontSize: 8, color: PC.textSub }}>Empresa: <Text style={{ color: PC.fieldValue, fontFamily: 'Helvetica-Bold' }}>{orgNombre}</Text></Text>
+          <Text style={{ fontSize: 8, color: PC.textSub }}>Empresa: <Text style={{ color: PC.fieldValue, fontFamily: 'Helvetica-Bold' }} hyphenationCallback={partirPalabraLarga}>{orgNombre}</Text></Text>
         </View>
       )}
 

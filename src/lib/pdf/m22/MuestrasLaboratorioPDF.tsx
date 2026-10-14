@@ -8,6 +8,7 @@ import { PdfLegend } from '@/lib/pdf/components/PdfLegend'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface MicroorganismoPDF {
   codigo: string
@@ -165,14 +166,14 @@ function DataRow({ muestra, num, indicadores, patogenos, alt }: { muestra: Muest
       <View style={[tdStyle, { width: NUM_W }]}><Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{num}</Text></View>
       <View style={[tdStyle, { width: FECHA_W, alignItems: 'flex-start', padding: 3 }]}><Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{formatFecha(muestra.fecha_muestreo)}</Text></View>
       <View style={[tdStyle, { width: HORA_W, alignItems: 'flex-start', padding: 3 }]}><Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{muestra.hora_muestreo ?? ''}</Text></View>
-      <View style={[tdStyle, { width: DESC_W, alignItems: 'flex-start', padding: 3 }]}><Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{muestra.descripcion_muestra}</Text></View>
+      <View style={[tdStyle, { width: DESC_W, alignItems: 'flex-start', padding: 3 }]}><Text style={{ fontSize: 6.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{muestra.descripcion_muestra}</Text></View>
       {allMicro.map((m) => (
         <View key={m.codigo} style={[tdStyle, { width: MICRO_W }]}>
           <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{muestra.microorganismos.includes(m.codigo) ? 'X' : ''}</Text>
         </View>
       ))}
       <View style={[tdStyle, { width: LAB_W, alignItems: 'flex-start', padding: 3 }]}><Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{muestra.laboratorio}</Text></View>
-      <View style={[tdStyle, { width: SOL_W, alignItems: 'flex-start', padding: 3, borderRightWidth: 0 }]}><Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{muestra.solicitante_nombre}</Text></View>
+      <View style={[tdStyle, { width: SOL_W, alignItems: 'flex-start', padding: 3, borderRightWidth: 0 }]}><Text style={{ fontSize: 6.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{muestra.solicitante_nombre}</Text></View>
     </View>
   )
 }

@@ -6,6 +6,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface FuentesAguaItemRow {
   numero: number
@@ -134,7 +135,7 @@ export function FuentesAguaPage({
                   <Text style={{ fontSize: 8, color: PC.fieldValue }}>{item.numero}</Text>
                 </View>
                 <View style={[tdStyle, { flex: 1, alignItems: 'flex-start', padding: 4 }]}>
-                  <Text style={{ fontSize: 8, color: PC.fieldValue }}>{item.descripcion}</Text>
+                  <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.descripcion}</Text>
                 </View>
                 <View style={[tdStyle, { width: 45, padding: 4 }]}>
                   <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: item.respuesta === 'no' ? '#C02A2A' : PC.fieldValue }}>
@@ -142,7 +143,7 @@ export function FuentesAguaPage({
                   </Text>
                 </View>
                 <View style={[tdStyle, { width: 130, alignItems: 'flex-start', padding: 4, borderRightWidth: 0 }]}>
-                  <Text style={{ fontSize: 8, color: PC.fieldValue }}>{item.comentario ?? '—'}</Text>
+                  <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.comentario ?? '—'}</Text>
                 </View>
               </View>
             )

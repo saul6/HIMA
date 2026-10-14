@@ -6,6 +6,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M40LineaPDF {
   orden: number
@@ -129,7 +130,7 @@ export function EntradasSalidasPreFrioPDF({
               <Text style={[tdStyle, { width: W.fruta }]}>{t(l.fruta)}</Text>
               <Text style={[tdStyle, { width: W.pres }]}>{t(l.presentacion)}</Text>
               <Text style={[tdStyle, { width: W.tar }]}>{n(l.num_tarimas)}</Text>
-              <Text style={[tdStyle, { width: W.restos }]}>{t(l.restos)}</Text>
+              <Text style={[tdStyle, { width: W.restos }]} hyphenationCallback={partirPalabraLarga}>{t(l.restos)}</Text>
               <Text style={[tdStyle, { width: W.hora }]}>{t(l.entrada_hora)}</Text>
               <Text style={[tdStyle, { width: W.temp }]}>{n(l.entrada_temp)}</Text>
               <Text style={[tdStyle, { width: W.hora }]}>{t(l.salida_hora)}</Text>
@@ -145,7 +146,7 @@ export function EntradasSalidasPreFrioPDF({
             <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.titleNavy, marginBottom: 2 }}>
               Observaciones
             </Text>
-            <Text style={{ fontSize: 7.5, color: PC.fieldValue }}>{d.observaciones}</Text>
+            <Text style={{ fontSize: 7.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{d.observaciones}</Text>
           </View>
         ) : null}
 

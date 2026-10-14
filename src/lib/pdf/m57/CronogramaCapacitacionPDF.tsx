@@ -3,6 +3,7 @@ import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
 import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
 import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PC } from '@/lib/pdf/components/tokens'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M57RowPDF {
   cargo: string
@@ -106,7 +107,7 @@ export function CronogramaCapacitacionPDF({ orgNombre, registros }: CronogramaCa
                     <Text style={{ fontSize: 7, color: PC.fieldValue }}>{row.mes_programado}</Text>
                   </View>
                   <View style={[tdStyle, { flex: 2, borderRightWidth: 0 }]}>
-                    <Text style={{ fontSize: 7, color: PC.fieldValue }}>{row.observaciones ?? ''}</Text>
+                    <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{row.observaciones ?? ''}</Text>
                   </View>
                 </View>
               )

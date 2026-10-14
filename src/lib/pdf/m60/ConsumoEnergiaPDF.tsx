@@ -6,6 +6,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface ConsumoEnergiaRow {
   mes: string
@@ -152,7 +153,7 @@ export function ConsumoEnergiaPDF({ rancho, orgNombre, desde, hasta, registros, 
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{r.costo_combustible != null ? `$${r.costo_combustible}` : '—'}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.ACT, alignItems: 'flex-start', padding: 4 }]}>
-                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{r.actividad ?? '—'}</Text>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.actividad ?? '—'}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.COST_L, padding: 4 }]}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{r.luz_costo != null ? `$${r.luz_costo}` : '—'}</Text>
@@ -161,10 +162,10 @@ export function ConsumoEnergiaPDF({ rancho, orgNombre, desde, hasta, registros, 
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{r.luz_kwh != null ? String(r.luz_kwh) : '—'}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.REAL, alignItems: 'flex-start', padding: 4 }]}>
-                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{r.realizo ?? '—'}</Text>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.realizo ?? '—'}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.OBS, alignItems: 'flex-start', padding: 4, borderRightWidth: 0 }]}>
-                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{r.observaciones ?? '—'}</Text>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.observaciones ?? '—'}</Text>
                 </View>
               </View>
             )

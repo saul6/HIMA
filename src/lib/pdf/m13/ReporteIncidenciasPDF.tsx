@@ -9,6 +9,7 @@ import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
 import { PC } from '@/lib/pdf/components/tokens'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import type { FirmaParaPdf, FirmaEnteradoParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -217,7 +218,7 @@ export function ReporteIncidenciasPagina({
             {/* Columna derecha: descripcion */}
             <View style={s.cellIncidencia}>
               <Text style={s.numIncidencia}>Incidencia {inc.orden}</Text>
-              <Text style={s.descripcion}>{inc.descripcion}</Text>
+              <Text style={s.descripcion} hyphenationCallback={partirPalabraLarga}>{inc.descripcion}</Text>
             </View>
           </View>
         ))}

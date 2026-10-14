@@ -6,6 +6,7 @@ import { Document, Page, View, Text, Image } from '@react-pdf/renderer'
 import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
 import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
 import { PC } from '@/lib/pdf/components/tokens'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -169,11 +170,11 @@ export function ResumenNoConformidadesPDF({
           <View style={{ flexDirection: 'row' }}>
             <View style={infoCell}>
               <Text style={{ fontSize: 6, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>ORGANIZACION</Text>
-              <Text style={{ fontSize: 9, color: PC.fieldValue }}>{orgNombre}</Text>
+              <Text style={{ fontSize: 9, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{orgNombre}</Text>
             </View>
             <View style={[infoCell, { borderRightWidth: 0 }]}>
               <Text style={{ fontSize: 6, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>OPERACION / {terminoSitio.toUpperCase()}</Text>
-              <Text style={{ fontSize: 9, color: PC.fieldValue }}>{ranchoNombre}</Text>
+              <Text style={{ fontSize: 9, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{ranchoNombre}</Text>
             </View>
           </View>
           <View style={{ flexDirection: 'row' }}>
@@ -183,13 +184,13 @@ export function ResumenNoConformidadesPDF({
             </View>
             <View style={[infoCell, { borderRightWidth: 0 }]}>
               <Text style={{ fontSize: 6, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>AUDITOR</Text>
-              <Text style={{ fontSize: 9, color: PC.fieldValue }}>{auditorNombre || '—'}</Text>
+              <Text style={{ fontSize: 9, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{auditorNombre || '—'}</Text>
             </View>
           </View>
           <View style={{ flexDirection: 'row' }}>
             <View style={infoCell}>
               <Text style={{ fontSize: 6, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>CLIENTE / REPRESENTANTE</Text>
-              <Text style={{ fontSize: 9, color: PC.fieldValue }}>{clienteNombre || '—'}</Text>
+              <Text style={{ fontSize: 9, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{clienteNombre || '—'}</Text>
             </View>
             <View style={[infoCell, { borderRightWidth: 0 }]}>
               <Text style={{ fontSize: 6, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>TOTAL DE NO-CONFORMIDADES</Text>
@@ -222,7 +223,7 @@ export function ResumenNoConformidadesPDF({
             </View>
           ) : (
             ncrs.map((ncr, i) => (
-              <View key={ncr.ncr} style={{ flexDirection: 'row', backgroundColor: i % 2 !== 0 ? ROW_ALT : PC.white }} wrap={false}>
+              <View key={ncr.ncr} style={{ flexDirection: 'row', backgroundColor: i % 2 !== 0 ? ROW_ALT : PC.white }}>
                 <Text style={[tdCell, { width: 42, textAlign: 'center', fontFamily: 'Helvetica-Bold',
                   color: DANGER_TEXT, backgroundColor: DANGER_FILL }]}>
                   NCR{ncr.ncr}
@@ -232,10 +233,10 @@ export function ResumenNoConformidadesPDF({
                     {ncr.modulo.toUpperCase()} — {ncr.seccion}
                   </Text>
                   <Text style={{ fontSize: 7, color: PC.textSub, marginTop: 1 }}>{ncr.codigo_pregunta}</Text>
-                  <Text style={{ marginTop: 2 }}>{ncr.texto_pregunta}</Text>
+                  <Text style={{ marginTop: 2 }} hyphenationCallback={partirPalabraLarga}>{ncr.texto_pregunta}</Text>
                 </View>
                 <View style={[tdCell, { flex: 2, borderRightWidth: 0 }]}>
-                  <Text>{ncr.comentario || '—'}</Text>
+                  <Text hyphenationCallback={partirPalabraLarga}>{ncr.comentario || '—'}</Text>
                 </View>
               </View>
             ))
@@ -263,13 +264,13 @@ export function ResumenNoConformidadesPDF({
           <View style={{ flex: 1, marginRight: 16 }}>
             <View style={{ borderTopWidth: 1, borderTopColor: PC.fieldValue, marginTop: 36, paddingTop: 4 }}>
               <Text style={{ fontSize: 7, color: PC.textSub }}>Firma del Cliente</Text>
-              <Text style={{ fontSize: 7, color: PC.textSub, marginTop: 2 }}>{clienteNombre || ' '}</Text>
+              <Text style={{ fontSize: 7, color: PC.textSub, marginTop: 2 }} hyphenationCallback={partirPalabraLarga}>{clienteNombre || ' '}</Text>
             </View>
           </View>
           <View style={{ flex: 1 }}>
             <View style={{ borderTopWidth: 1, borderTopColor: PC.fieldValue, marginTop: 36, paddingTop: 4 }}>
               <Text style={{ fontSize: 7, color: PC.textSub }}>Firma del Auditor</Text>
-              <Text style={{ fontSize: 7, color: PC.textSub, marginTop: 2 }}>{auditorNombre || ' '}</Text>
+              <Text style={{ fontSize: 7, color: PC.textSub, marginTop: 2 }} hyphenationCallback={partirPalabraLarga}>{auditorNombre || ' '}</Text>
             </View>
           </View>
         </View>

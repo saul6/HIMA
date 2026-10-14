@@ -6,6 +6,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface FertilizacionGGRow {
   fecha: string
@@ -144,7 +145,7 @@ export function FertilizacionGGPDF({ rancho, orgNombre, desde, hasta, registros,
                 <View style={[tdStyle, { width: C.CULTIVO }]}><Text style={TD_TEXT}>{r.cultivo}</Text></View>
                 <View style={[tdStyle, { width: C.BLOQUE }]}><Text style={TD_TEXT}>{r.bloque ?? '—'}</Text></View>
                 <View style={[tdStyle, { width: C.HA }]}><Text style={TD_TEXT}>{r.superficie_ha != null ? String(r.superficie_ha) : '—'}</Text></View>
-                <View style={[tdStyle, { width: C.PRODUCTO }]}><Text style={TD_TEXT}>{r.producto}</Text></View>
+                <View style={[tdStyle, { width: C.PRODUCTO }]}><Text style={TD_TEXT} hyphenationCallback={partirPalabraLarga}>{r.producto}</Text></View>
                 <View style={[tdStyle, { width: C.FABRIC }]}><Text style={TD_TEXT}>{r.fabricante ?? '—'}</Text></View>
                 <View style={[tdStyle, { width: C.FORMULA }]}><Text style={TD_TEXT}>{r.formula ?? '—'}</Text></View>
                 <View style={[tdStyle, { width: C.CANT }]}><Text style={TD_TEXT}>{r.cantidad_total != null ? String(r.cantidad_total) : '—'}</Text></View>
@@ -153,7 +154,7 @@ export function FertilizacionGGPDF({ rancho, orgNombre, desde, hasta, registros,
                 <View style={[tdStyle, { width: C.MAQUINA }]}><Text style={TD_TEXT}>{r.maquinaria ?? '—'}</Text></View>
                 <View style={[tdStyle, { width: C.METODO }]}><Text style={TD_TEXT}>{r.metodo_aplicacion ?? '—'}</Text></View>
                 <View style={[tdStyle, { width: C.OPERARIO }]}><Text style={TD_TEXT}>{r.operario ?? '—'}</Text></View>
-                <View style={[tdStyle, { width: C.OBS, borderRightWidth: 0 }]}><Text style={TD_TEXT}>{r.observaciones ?? '—'}</Text></View>
+                <View style={[tdStyle, { width: C.OBS, borderRightWidth: 0 }]}><Text style={TD_TEXT} hyphenationCallback={partirPalabraLarga}>{r.observaciones ?? '—'}</Text></View>
               </View>
             )
           })}

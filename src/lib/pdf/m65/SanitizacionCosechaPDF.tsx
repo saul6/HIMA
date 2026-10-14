@@ -143,10 +143,10 @@ export function SanitizacionCosechaPDF({ rows, orgNombre, desde, hasta, codigoCl
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{fmtFecha(r.fecha)}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.RANCHO, alignItems: 'flex-start', padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.rancho}</Text>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.rancho}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.SECT, alignItems: 'flex-start', padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.sector}</Text>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.sector}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.EG, padding: 4 }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.empaque_o_granel}</Text>
@@ -161,7 +161,7 @@ export function SanitizacionCosechaPDF({ rows, orgNombre, desde, hasta, codigoCl
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.herramientas_sanitizadas}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.PROD, alignItems: 'flex-start', padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.producto_sanitizante}</Text>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.producto_sanitizante}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.PPM, padding: 4 }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.ppm}</Text>
@@ -170,7 +170,7 @@ export function SanitizacionCosechaPDF({ rows, orgNombre, desde, hasta, codigoCl
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.hora ?? '—'}</Text>
                 </View>
                 <View style={[tdStyle, { width: C.REAL, alignItems: 'flex-start', padding: 4, borderRightWidth: 0 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.realizo ?? '—'}</Text>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.realizo ?? '—'}</Text>
                 </View>
               </View>
             )

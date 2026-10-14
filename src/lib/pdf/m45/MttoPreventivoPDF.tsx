@@ -11,6 +11,7 @@ import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M45ItemPDFRow {
   id: string
@@ -275,7 +276,7 @@ function MttoPreventivoPaginaContent({
             return (
               <View key={item.id} style={{ flexDirection: 'row', backgroundColor: bg }}>
                 <View style={[itemCellStyle, { backgroundColor: bg }]}>
-                  <Text style={{ fontSize: 5.5, color: PC.fieldValue }}>{item.nombre}</Text>
+                  <Text style={{ fontSize: 5.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.nombre}</Text>
                 </View>
                 <View style={[frecCellStyle, { backgroundColor: bg }]}>
                   <Text style={{ fontSize: 5, color: PC.textSub }}>{frecLabel(item.frecuencia)}</Text>
@@ -315,7 +316,7 @@ function MttoPreventivoPaginaContent({
       {observaciones ? (
         <View style={{ borderWidth: 1, borderColor: PC.border, padding: 4, marginTop: 8, marginBottom: 4 }}>
           <Text style={{ fontSize: 5.5, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>OBSERVACIONES</Text>
-          <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{observaciones}</Text>
+          <Text style={{ fontSize: 6.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{observaciones}</Text>
         </View>
       ) : null}
 

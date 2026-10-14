@@ -1,6 +1,7 @@
 import { View, Text } from '@react-pdf/renderer'
 import type { ReactNode } from 'react'
 import { PC } from './tokens'
+import { partirPalabraLarga } from './texto'
 
 // ── PdfFieldGrid ─────────────────────────────────────────────────────────────
 // Wrapper exterior con borde completo. Envuelve filas de campos.
@@ -72,7 +73,7 @@ export function PdfField({ label, value, fullWidth = false }: PdfFieldProps) {
       >
         {label}
       </Text>
-      <Text style={{ fontSize: 9, color: PC.fieldValue }}>
+      <Text style={{ fontSize: 9, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>
         {value}
       </Text>
     </View>

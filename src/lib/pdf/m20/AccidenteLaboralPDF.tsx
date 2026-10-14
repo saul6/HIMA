@@ -11,6 +11,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -141,7 +142,7 @@ export function AccidenteLaboralPagina({
         borderBottomWidth: 1, borderBottomColor: PC.border,
         padding: 6, minHeight: 48, marginBottom: 2,
       }}>
-        <Text style={{ fontSize: 9, color: PC.fieldValue, lineHeight: 1.45 }}>
+        <Text style={{ fontSize: 9, color: PC.fieldValue, lineHeight: 1.45 }} hyphenationCallback={partirPalabraLarga}>
           {descripcionIncidente || '—'}
         </Text>
       </View>
@@ -189,7 +190,7 @@ export function AccidenteLaboralPagina({
           </Text>
         </View>
         <View style={{ flex: 1, padding: 5, minHeight: 28 }}>
-          <Text style={{ fontSize: 9, color: PC.fieldValue }}>
+          <Text style={{ fontSize: 9, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>
             {requirioIncapacidad && incapacidadMotivo ? incapacidadMotivo : ''}
           </Text>
         </View>
@@ -216,7 +217,7 @@ export function AccidenteLaboralPagina({
           </Text>
         </View>
         <View style={{ flex: 1, padding: 5, minHeight: 28 }}>
-          <Text style={{ fontSize: 9, color: PC.fieldValue }}>
+          <Text style={{ fontSize: 9, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>
             {requirioLimpieza && limpiezaDescripcion ? limpiezaDescripcion : ''}
           </Text>
         </View>
@@ -238,7 +239,7 @@ export function AccidenteLaboralPagina({
           width: 40, textAlign: 'center',
           backgroundColor: productoInvolucrado ? SI_BG : NO_BG,
         }}>
-          <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: productoInvolucrado ? SI_TEXT : NO_TEXT }}>
+          <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: productoInvolucrado ? SI_TEXT : NO_TEXT }} hyphenationCallback={partirPalabraLarga}>
             {productoInvolucrado ? 'Si' : 'No'}
           </Text>
         </View>

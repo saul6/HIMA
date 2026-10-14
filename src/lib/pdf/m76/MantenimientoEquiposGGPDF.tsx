@@ -6,6 +6,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface MantenimientoEquiposGGFilaPDF {
   id: string
@@ -142,13 +143,13 @@ export function MantenimientoEquiposGGPagina({ fila, orgNombre, firmaRealizo }: 
       {fila.descripcion_trabajo && (
         <View style={{ marginTop: 8 }}>
           <Text style={{ fontSize: 7.5, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>Descripcion del trabajo:</Text>
-          <Text style={{ fontSize: 8, color: PC.fieldValue }}>{fila.descripcion_trabajo}</Text>
+          <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{fila.descripcion_trabajo}</Text>
         </View>
       )}
       {fila.observaciones && (
         <View style={{ marginTop: 6 }}>
           <Text style={{ fontSize: 7.5, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>Observaciones:</Text>
-          <Text style={{ fontSize: 8, color: PC.fieldValue }}>{fila.observaciones}</Text>
+          <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{fila.observaciones}</Text>
         </View>
       )}
 
@@ -238,7 +239,7 @@ export function MantenimientoEquiposGGConsolidadoPDF({ filas, orgNombre }: {
                   <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{formatFechaCorta(f.fecha)}</Text>
                 </View>
                 <View style={{ width: COL.rancho, padding: '3px 4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
-                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.rancho}</Text>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{f.rancho}</Text>
                 </View>
                 <View style={{ width: COL.equipo, padding: '3px 4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.equipo ?? '—'}</Text>
@@ -255,10 +256,10 @@ export function MantenimientoEquiposGGConsolidadoPDF({ filas, orgNombre }: {
                   )
                 })}
                 <View style={{ width: COL.realizo, padding: '3px 4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
-                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.realizo ?? '—'}</Text>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{f.realizo ?? '—'}</Text>
                 </View>
                 <View style={{ flex: 1, padding: '3px 4px', backgroundColor: bg }}>
-                  <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.descripcion_trabajo ?? ''}</Text>
+                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{f.descripcion_trabajo ?? ''}</Text>
                 </View>
               </View>
             )

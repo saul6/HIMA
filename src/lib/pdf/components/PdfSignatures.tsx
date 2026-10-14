@@ -1,6 +1,7 @@
 import { View, Text, Image } from '@react-pdf/renderer'
 import { PC } from './tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 interface SignatureItem {
   label: string
@@ -64,7 +65,7 @@ export function PdfSignatures({ signatures: signaturesProp, enterado: enteradoPr
                       color: PC.fieldValue,
                       marginTop: 2,
                     }}
-                  >
+                   hyphenationCallback={partirPalabraLarga}>
                     {sig.nombre}
                   </Text>
                 </>

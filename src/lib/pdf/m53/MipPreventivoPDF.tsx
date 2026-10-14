@@ -6,6 +6,7 @@ import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFie
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface MipItemRow {
   numero: number | null
@@ -147,7 +148,7 @@ export function MipPreventivoPDFPage({
                 <Text style={{ fontSize: 7, color: PC.fieldValue }}>{item.numero ?? '—'}</Text>
               </View>
               <View style={[tdStyle, { flex: 1, alignItems: 'flex-start', padding: 3 }]}>
-                <Text style={{ fontSize: 7, color: PC.fieldValue }}>{item.texto}</Text>
+                <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.texto}</Text>
               </View>
               <View style={[tdStyle, { width: 60 }]}>
                 <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: item.contra_maleza ? PC.section : PC.fieldValue }}>
@@ -170,7 +171,7 @@ export function MipPreventivoPDFPage({
                 </Text>
               </View>
               <View style={[tdStyle, { width: 130, alignItems: 'flex-start', borderRightWidth: 0 }]}>
-                <Text style={{ fontSize: 7, color: PC.fieldValue }}>{item.comentario ?? ''}</Text>
+                <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.comentario ?? ''}</Text>
               </View>
             </View>
           )

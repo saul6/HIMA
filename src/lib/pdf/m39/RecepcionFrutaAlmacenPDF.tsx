@@ -10,6 +10,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M39LineaAlmacenPDF {
   orden: number
@@ -236,7 +237,7 @@ export function RecepcionFrutaAlmacenPDF({
         {d.observaciones ? (
           <View style={{ borderWidth: 1, borderColor: PC.border, padding: 4, marginTop: 4, marginBottom: 4 }}>
             <Text style={{ fontSize: 5.5, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>OBSERVACIONES</Text>
-            <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{d.observaciones}</Text>
+            <Text style={{ fontSize: 6.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{d.observaciones}</Text>
           </View>
         ) : null}
 

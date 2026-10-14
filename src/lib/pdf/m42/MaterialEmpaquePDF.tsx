@@ -6,6 +6,7 @@ import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M42MovimientoPDF {
   orgNombre: string
@@ -161,7 +162,7 @@ export function MaterialEmpaquePDF({
             <Text style={[thStyle, { flex: 1, borderRightWidth: 0 }]}>Recibe</Text>
           </View>
           <View style={{ flexDirection: 'row' }}>
-            <Text style={[tdStyle, { width: 90 }]}>{d.descripcion_material ?? '—'}</Text>
+            <Text style={[tdStyle, { width: 90 }]} hyphenationCallback={partirPalabraLarga}>{d.descripcion_material ?? '—'}</Text>
             <Text style={[tdStyle, { width: 45, textAlign: 'center' }]}>{nn(d.entrada)}</Text>
             <Text style={[tdStyle, { width: 45, textAlign: 'center' }]}>{nn(d.salida)}</Text>
             <Text style={[tdStyle, { width: 45, textAlign: 'center' }]}>{nn(d.total)}</Text>
@@ -182,7 +183,7 @@ export function MaterialEmpaquePDF({
             <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.titleNavy, marginBottom: 2 }}>
               Observaciones
             </Text>
-            <Text style={{ fontSize: 7.5, color: PC.fieldValue }}>{d.observaciones}</Text>
+            <Text style={{ fontSize: 7.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{d.observaciones}</Text>
           </View>
         ) : null}
 

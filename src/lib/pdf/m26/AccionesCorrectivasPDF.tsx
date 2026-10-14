@@ -6,6 +6,7 @@ import { Document, Page, View, Text, Image, Svg, Line, Rect, Path, G } from '@re
 import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
 import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
 import { PC } from '@/lib/pdf/components/tokens'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -128,11 +129,11 @@ function InfoGrid({ orgNombre, ranchoNombre, fechaTitulo, terminoSitio }: {
     <View style={{ borderLeftWidth: 1, borderLeftColor: PC.border, borderTopWidth: 1, borderTopColor: PC.border, flexDirection: 'row', marginBottom: 10 }}>
       <View style={cellBase}>
         <Text style={{ fontSize: 6, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>ORGANIZACION</Text>
-        <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.fieldValue }}>{fmt(orgNombre)}</Text>
+        <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{fmt(orgNombre)}</Text>
       </View>
       <View style={cellBase}>
         <Text style={{ fontSize: 6, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>INSTALACION / {terminoSitio.toUpperCase()}</Text>
-        <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.fieldValue }}>{fmt(ranchoNombre)}</Text>
+        <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{fmt(ranchoNombre)}</Text>
       </View>
       <View style={{ ...cellBase, borderRightWidth: 0 }}>
         <Text style={{ fontSize: 6, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>FECHA</Text>
@@ -156,18 +157,18 @@ function AccionesTabla({ acciones }: { acciones: AccionPDFFila[] }) {
         <Text style={[thCell, { flex: 1, borderRightWidth: 0 }]}>Verifico</Text>
       </View>
       {acciones.map((a, i) => (
-        <View key={i} style={{ flexDirection: 'row', backgroundColor: i % 2 === 1 ? ROW_ALT : PC.white }} wrap={false}>
+        <View key={i} style={{ flexDirection: 'row', backgroundColor: i % 2 === 1 ? ROW_ALT : PC.white }}>
           <View style={[tdCell, { flex: 0.8 }]}><Text>{fmtFecha(a.fecha_deteccion)}</Text></View>
           <View style={[tdCell, { flex: 1.8 }]}>
             <Text style={{ fontSize: 7, color: PC.section, marginBottom: 2 }}>{a.codigo_pregunta}</Text>
-            <Text>{fmt(a.no_conformidad)}</Text>
+            <Text hyphenationCallback={partirPalabraLarga}>{fmt(a.no_conformidad)}</Text>
           </View>
-          <View style={[tdCell, { flex: 1.6 }]}><Text>{fmt(a.causa)}</Text></View>
-          <View style={[tdCell, { flex: 1.6 }]}><Text>{fmt(a.accion_correctiva)}</Text></View>
-          <View style={[tdCell, { flex: 1.6 }]}><Text>{fmt(a.accion_preventiva)}</Text></View>
+          <View style={[tdCell, { flex: 1.6 }]}><Text hyphenationCallback={partirPalabraLarga}>{fmt(a.causa)}</Text></View>
+          <View style={[tdCell, { flex: 1.6 }]}><Text hyphenationCallback={partirPalabraLarga}>{fmt(a.accion_correctiva)}</Text></View>
+          <View style={[tdCell, { flex: 1.6 }]}><Text hyphenationCallback={partirPalabraLarga}>{fmt(a.accion_preventiva)}</Text></View>
           <View style={[tdCell, { flex: 0.8 }]}><Text>{fmtFecha(a.fecha_cumplimiento)}</Text></View>
-          <View style={[tdCell, { flex: 1 }]}><Text>{fmt(a.realizo)}</Text></View>
-          <View style={[tdCell, { flex: 1, borderRightWidth: 0 }]}><Text>{fmt(a.verifico)}</Text></View>
+          <View style={[tdCell, { flex: 1 }]}><Text hyphenationCallback={partirPalabraLarga}>{fmt(a.realizo)}</Text></View>
+          <View style={[tdCell, { flex: 1, borderRightWidth: 0 }]}><Text hyphenationCallback={partirPalabraLarga}>{fmt(a.verifico)}</Text></View>
         </View>
       ))}
     </View>
@@ -178,19 +179,19 @@ function FichaNC({ accion }: { accion: AccionPDFFila }) {
   const hdrAmbar = { backgroundColor: WARN_FILL, borderBottomWidth: 1, borderBottomColor: WARN_BORDER, paddingHorizontal: 8, paddingVertical: 5 }
   const hdrBlue  = { backgroundColor: INFO_FILL, borderBottomWidth: 1, borderBottomColor: PC.section, paddingHorizontal: 8, paddingVertical: 5 }
   return (
-    <View style={{ marginBottom: 14, borderWidth: 1, borderColor: PC.border, borderRadius: 3 }} wrap={false}>
+    <View style={{ marginBottom: 14, borderWidth: 1, borderColor: PC.border, borderRadius: 3 }}>
       <View style={hdrAmbar}>
         <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: WARN_TEXT }}>No conformidad observada.</Text>
       </View>
       <View style={{ padding: 8 }}>
-        <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.section, marginBottom: 3 }}>{accion.codigo_pregunta}</Text>
-        <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }}>{fmt(accion.no_conformidad)}</Text>
+        <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.section, marginBottom: 3 }} hyphenationCallback={partirPalabraLarga}>{accion.codigo_pregunta}</Text>
+        <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }} hyphenationCallback={partirPalabraLarga}>{fmt(accion.no_conformidad)}</Text>
       </View>
       <View style={hdrBlue}>
         <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: INFO_TEXT }}>Accion correctiva.</Text>
       </View>
       <View style={{ padding: 8 }}>
-        <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }}>{fmt(accion.accion_correctiva)}</Text>
+        <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }} hyphenationCallback={partirPalabraLarga}>{fmt(accion.accion_correctiva)}</Text>
       </View>
       <View style={hdrBlue}>
         <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: INFO_TEXT }}>Evidencia.</Text>
@@ -206,7 +207,7 @@ function FichaNC({ accion }: { accion: AccionPDFFila }) {
                 <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', marginTop: 3, textAlign: 'center', color: PC.textSub }}>
                   {f.tipo === 'no_conformidad' ? 'No conformidad' : 'Evidencia de correccion'}
                 </Text>
-                {f.leyenda ? <Text style={{ fontSize: 7, color: PC.fieldValue, marginTop: 2, textAlign: 'center' }}>{f.leyenda}</Text> : null}
+                {f.leyenda ? <Text style={{ fontSize: 7, color: PC.fieldValue, marginTop: 2, textAlign: 'center' }} hyphenationCallback={partirPalabraLarga}>{f.leyenda}</Text> : null}
               </View>
             ))}
           </View>

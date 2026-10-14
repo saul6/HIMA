@@ -12,6 +12,7 @@ import { PdfLegend } from '@/lib/pdf/components/PdfLegend'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -258,13 +259,13 @@ export function RegistroPersonalPDF({
                   <Text style={{ fontSize: 6, color: PC.fieldValue, textAlign: 'center' }}>{w.numero}</Text>
                 </View>
                 <View style={[tdStyle, { width: COL_PUESTO, backgroundColor: bg }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.puesto)}</Text>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{t(w.puesto)}</Text>
                 </View>
                 <View style={[tdStyle, { width: COL_NOMBRE, backgroundColor: bg }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue, fontFamily: 'Helvetica-Bold' }}>{w.nombre}</Text>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue, fontFamily: 'Helvetica-Bold' }} hyphenationCallback={partirPalabraLarga}>{w.nombre}</Text>
                 </View>
                 <View style={[tdStyle, { width: COL_DIR, backgroundColor: bg }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.direccion)}</Text>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{t(w.direccion)}</Text>
                 </View>
                 <View style={[tdStyle, { width: COL_TCASA, backgroundColor: bg }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.telefono_casa)}</Text>
@@ -276,7 +277,7 @@ export function RegistroPersonalPDF({
                   <Text style={{ fontSize: 6, color: PC.fieldValue, textAlign: 'center' }}>{fmtFecha(w.fecha_nacimiento)}</Text>
                 </View>
                 <View style={[tdStyle, { width: COL_EM_NOM, backgroundColor: bg }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.emergencia_nombre)}</Text>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{t(w.emergencia_nombre)}</Text>
                 </View>
                 <View style={[tdStyle, { width: COL_EM_PAR, backgroundColor: bg }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.emergencia_parentesco)}</Text>
@@ -299,7 +300,7 @@ export function RegistroPersonalPDF({
                   </View>
                 ))}
                 <View style={[tdStyle, { width: COL_OBS, backgroundColor: bg, borderRightWidth: 0 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.observaciones)}</Text>
+                  <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{t(w.observaciones)}</Text>
                 </View>
               </View>
             )
