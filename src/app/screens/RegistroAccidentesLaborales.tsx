@@ -43,15 +43,15 @@ import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { WifiOff } from 'lucide-react'
 import { TextareaContador } from '@/app/components/TextareaContador'
-import { limiteTexto } from '@/lib/limitesTexto'
+import { limiteTexto, MAX_FOTOS } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
 const TITULO_MODULO = 'Registro de Accidentes Laborales'
 const MAX_FOTO_BYTES = 5.5 * 1024 * 1024
-// Tope de fotos por accidente (valor provisional hasta que Saúl defina el límite definitivo en BD)
-const MAX_FOTOS_ACCIDENTE = 10
+// Tope de fotos por accidente (la BD rechaza la 21.ª con FOTOS_MAXIMO)
+const MAX_FOTOS_ACCIDENTE = MAX_FOTOS.m20PorAccidente
 const LOTE_SUBIDA_FOTOS = 4
 
 const ATENCIONES_UI = [
@@ -909,6 +909,7 @@ export function RegistroAccidentesLaborales() {
                 <button
                   type="button"
                   onClick={() => fotoCamaraRef.current?.click()}
+                  disabled={fotosLocal.length >= MAX_FOTOS_ACCIDENTE}
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-3 rounded-lg border border-dashed border-border bg-[var(--input-background)] text-sm text-muted-foreground hover:bg-muted transition-colors"
                 >
                   <Camera className="w-4 h-4" />
@@ -917,6 +918,7 @@ export function RegistroAccidentesLaborales() {
                 <button
                   type="button"
                   onClick={() => fotoGaleriaRef.current?.click()}
+                  disabled={fotosLocal.length >= MAX_FOTOS_ACCIDENTE}
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-3 rounded-lg border border-dashed border-border bg-[var(--input-background)] text-sm text-muted-foreground hover:bg-muted transition-colors"
                 >
                   <Image className="w-4 h-4" />

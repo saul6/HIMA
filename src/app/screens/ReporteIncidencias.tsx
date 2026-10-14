@@ -41,13 +41,13 @@ import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { Portal } from '@/app/components/Portal'
 import { TextareaContador } from '@/app/components/TextareaContador'
-import { limiteTexto } from '@/lib/limitesTexto'
+import { limiteTexto, MAX_FOTOS } from '@/lib/limitesTexto'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
 const TITULO_MODULO = 'Reporte de Incidencias'
 const CLAVE_MODULO = 'M.A.D.Y · Por evento'
-const MAX_FOTOS_INCIDENCIA = 6   // Tope duro por incidencia (el formulario bloquea al llegar)
+const MAX_FOTOS_INCIDENCIA = MAX_FOTOS.m13PorIncidencia   // Tope duro por incidencia (el formulario bloquea al llegar)
 const MAX_FOTO_BYTES = 5.5 * 1024 * 1024
 const MAX_REINTENTOS_FOTO = 3
 
@@ -245,7 +245,7 @@ function IncidenciaForm({
           style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
         >
           <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-          Máximo de 6 fotos por incidencia alcanzado. Agrega otra incidencia para subir más.
+          Máximo de {MAX_FOTOS_INCIDENCIA} fotos por incidencia alcanzado. Agrega otra incidencia para subir más.
         </div>
       )}
 
