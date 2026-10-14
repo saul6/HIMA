@@ -708,16 +708,17 @@ export function RondinesVigilancia() {
               <div className="flex-1 overflow-y-auto px-4 pb-6 pt-4">
                 <PasoFirmaRegistro
                   modulo="M46"
-                  registroId={pendienteFirmaId}
+                  ids={[pendienteFirmaId]}
                   descripcion={`Rondín de Vigilancia del ${nFecha}`}
+                  obligatoria={obligatoria}
                   onFirmadoYPDF={async () => {
                     await generarRondinesVigilanciaPDF(pendienteFirmaId, orgId!, codigoClave)
                     handleCerrarSheetNuevo()
                     await refetchFirmas()
                   }}
-                  onDespues={() => {
+                  onDespues={!obligatoria ? () => {
                     handleCerrarSheetNuevo()
-                  }}
+                  } : undefined}
                 />
               </div>
             )}

@@ -658,16 +658,17 @@ export function RecepcionFruta() {
           <div className="px-4 pb-6">
             <PasoFirmaRegistro
               modulo="M39"
-              registroId={pendienteFirmaId}
+              ids={[pendienteFirmaId]}
               descripcion={`Recepción Fruta del ${form.fecha}`}
+              obligatoria={obligatoria}
               onFirmadoYPDF={async () => {
                 await generarRecepcionFrutaPDF(pendienteFirmaId, orgId!, codigoClave)
                 handleCerrarSheet()
                 await refetchFirmas()
               }}
-              onDespues={() => {
+              onDespues={!obligatoria ? () => {
                 handleCerrarSheet()
-              }}
+              } : undefined}
             />
           </div>
         )}

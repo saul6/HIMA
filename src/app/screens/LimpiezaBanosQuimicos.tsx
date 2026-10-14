@@ -980,16 +980,17 @@ export function LimpiezaBanosQuimicos() {
           {sheetNuevoPaso === 'firma_decision' && pendienteFirmaId && (
             <PasoFirmaRegistro
               modulo="M28"
-              registroId={pendienteFirmaId}
+              ids={[pendienteFirmaId]}
               descripcion={`Registro mensual ${MESES[(nMes ?? 1) - 1]} ${nAnio}`}
-              onFirmadoYPDF={() => {
+              obligatoria={obligatoria}
+              onFirmadoYPDF={async () => {
                 handleCerrarSheetNuevo()
                 if (pendienteNuevo) abrirDetalle(pendienteNuevo)
               }}
-              onDespues={() => {
+              onDespues={!obligatoria ? () => {
                 handleCerrarSheetNuevo()
                 if (pendienteNuevo) abrirDetalle(pendienteNuevo)
-              }}
+              } : undefined}
             />
           )}
 
