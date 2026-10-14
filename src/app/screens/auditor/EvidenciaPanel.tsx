@@ -88,7 +88,8 @@ export function EvidenciaPanel({
   const [viewSnap, setViewSnap] = useState<AudEvidenciaSnapshot | null>(null)
 
   // Upload form
-  const [uploadFile, setUploadFile] = useState<File | null>(null)
+  const [uploadFiles, setUploadFiles] = useState<File[]>([])
+  const [progresoSubida, setProgresoSubida] = useState<{ hechas: number; total: number } | null>(null)
   const [uploadTipo, setUploadTipo] = useState<AudEvidenciaTipo>('documento_procedimiento')
   const [uploadCodigo, setUploadCodigo] = useState('')
   const [subiendo, setSubiendo] = useState(false)
@@ -250,25 +251,41 @@ export function EvidenciaPanel({
   }
 
   async function handleSubirExterno() {
-    if (!uploadFile) return
+    if (uploadFiles.length === 0) return
     setSubiendo(true)
-    try {
-      await hook.subirExterno({
-        file: uploadFile,
-        orgId,
-        auditoriaId,
-        evidenciaTipo: uploadTipo,
-        documentoCodigo: uploadCodigo,
-      })
-      setUploadFile(null)
+    const archivos = [...uploadFiles]
+    const fallidos: { file: File; motivo: string }[] = []
+    let hechas = 0
+    setProgresoSubida({ hechas: 0, total: archivos.length })
+    for (const file of archivos) {
+      try {
+        await hook.subirExterno({
+          file,
+          orgId,
+          auditoriaId,
+          evidenciaTipo: uploadTipo,
+          documentoCodigo: uploadCodigo,
+        })
+        hechas += 1
+      } catch (e) {
+        console.error('[EvidenciaPanel] subirExterno', file.name, e)
+        const msg = (e as { message?: string } | null)?.message ?? ''
+        fallidos.push({ file, motivo: /size|tamaño|too large|payload/i.test(msg) ? 'el archivo es demasiado grande' : (msg || 'error al subir') })
+      }
+      setProgresoSubida({ hechas: hechas + fallidos.length, total: archivos.length })
+    }
+    setProgresoSubida(null)
+    setSubiendo(false)
+    setUploadFiles(fallidos.map(f => f.file))
+    if (fallidos.length === 0) {
       setUploadCodigo('')
       setShowUpload(false)
-      toast.success('Evidencia añadida')
-    } catch (e) {
-      console.error('[EvidenciaPanel] subirExterno', e)
-      toast.error('No se pudo subir la evidencia. Reintenta.')
-    } finally {
-      setSubiendo(false)
+      toast.success(hechas === 1 ? 'Evidencia añadida' : `${hechas} evidencias añadidas`)
+    } else {
+      toast.error(
+        `${hechas > 0 ? `${hechas} subida${hechas !== 1 ? 's' : ''}. ` : ''}No se pudo subir: ${fallidos.map(f => `${f.file.name} (${f.motivo})`).join('; ')}. Reintenta.`,
+        { duration: 9000 },
+      )
     }
   }
 
@@ -330,6 +347,94 @@ export function EvidenciaPanel({
 
       {abierto && (
         <div className="border-t border-border flex flex-col">
+          {/* Botones de acción */}
+          {!cerrada && (canUpload || canLink) && (
+            <div className="px-4 py-3 flex gap-2 flex-wrap border-t border-border">
+              {canUpload && (
+                <button
+                  onClick={() => { setShowUpload(v => !v); setShowGateway(false) }}
+                  className="flex items-center gap-1.5 text-[11px] font-semibold h-8 px-3 rounded-lg"
+                  style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                >
+                  <Upload size={12} />
+                  Subir evidencia
+                </button>
+              )}
+              {canLink && (
+                <button
+                  onClick={() => { setShowGateway(v => !v); setShowFallback(true); setShowUpload(false) }}
+                  className="flex items-center gap-1 text-[10px] font-semibold h-7 px-3 rounded-lg"
+                  style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
+                >
+                  <Database size={10} />
+                  Buscar en otro módulo
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Formulario: subir evidencia externa */}
+          {showUpload && (
+            <div className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
+              <div className="flex items-center justify-between pt-3">
+                <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>Subir evidencia externa</p>
+                <button onClick={() => setShowUpload(false)}><X size={14} style={{ color: 'var(--muted-foreground)' }} /></button>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Tipo</label>
+                <select
+                  value={uploadTipo}
+                  onChange={e => setUploadTipo(e.target.value as AudEvidenciaTipo)}
+                  style={{ ...inputBase, height: '2.25rem' }}
+                >
+                  {(Object.keys(TIPO_LABELS) as AudEvidenciaTipo[]).map(k => (
+                    <option key={k} value={k}>{TIPO_LABELS[k]}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Código de documento (opcional)</label>
+                <input
+                  type="text"
+                  value={uploadCodigo}
+                  onChange={e => setUploadCodigo(e.target.value)}
+                  placeholder="Ej. F-FRUS-CAL-07"
+                  style={{ ...inputBase, height: '2.25rem' }}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
+                  Archivos <span style={{ color: 'var(--agro-red)' }}>*</span> (puedes elegir varios)
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.csv,.txt"
+                  onChange={e => setUploadFiles(Array.from(e.target.files ?? []))}
+                  className="text-[11px]"
+                  style={{ color: 'var(--foreground)' }}
+                />
+                {uploadFiles.length > 0 && (
+                  <ul className="text-[10px] flex flex-col gap-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                    {uploadFiles.map((f, i) => (
+                      <li key={`${f.name}-${i}`}>{f.name} ({(f.size / 1024).toFixed(0)} KB)</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <button
+                onClick={handleSubirExterno}
+                disabled={subiendo || uploadFiles.length === 0}
+                className="w-full h-9 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+                style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+              >
+                {subiendo
+                  ? <><Loader size={12} className="animate-spin" />Subiendo {progresoSubida ? `${progresoSubida.hechas}/${progresoSubida.total}` : '…'}</>
+                  : uploadFiles.length > 1 ? `Subir ${uploadFiles.length} evidencias` : 'Subir evidencia'}
+              </button>
+            </div>
+          )}
+
           {/* Lista de evidencias vinculadas */}
           {hook.cargando ? (
             <div className="flex items-center gap-2 px-4 py-4">
@@ -584,89 +689,6 @@ export function EvidenciaPanel({
                   })}
                 </div>
               ) : null}
-            </div>
-          )}
-
-          {/* Botones de acción */}
-          {!cerrada && (canUpload || canLink) && (
-            <div className="px-4 py-3 flex gap-2 flex-wrap border-t border-border">
-              {canUpload && (
-                <button
-                  onClick={() => { setShowUpload(v => !v); setShowGateway(false) }}
-                  className="flex items-center gap-1 text-[10px] font-semibold h-7 px-3 rounded-lg"
-                  style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-                >
-                  <Upload size={10} />
-                  Añadir evidencia externa
-                </button>
-              )}
-              {canLink && (
-                <button
-                  onClick={() => { setShowGateway(v => !v); setShowFallback(true); setShowUpload(false) }}
-                  className="flex items-center gap-1 text-[10px] font-semibold h-7 px-3 rounded-lg"
-                  style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-                >
-                  <Database size={10} />
-                  Buscar en otro módulo
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Formulario: subir evidencia externa */}
-          {showUpload && (
-            <div className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
-              <div className="flex items-center justify-between pt-3">
-                <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>Subir evidencia externa</p>
-                <button onClick={() => setShowUpload(false)}><X size={14} style={{ color: 'var(--muted-foreground)' }} /></button>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Tipo</label>
-                <select
-                  value={uploadTipo}
-                  onChange={e => setUploadTipo(e.target.value as AudEvidenciaTipo)}
-                  style={{ ...inputBase, height: '2.25rem' }}
-                >
-                  {(Object.keys(TIPO_LABELS) as AudEvidenciaTipo[]).map(k => (
-                    <option key={k} value={k}>{TIPO_LABELS[k]}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Código de documento (opcional)</label>
-                <input
-                  type="text"
-                  value={uploadCodigo}
-                  onChange={e => setUploadCodigo(e.target.value)}
-                  placeholder="Ej. F-FRUS-CAL-07"
-                  style={{ ...inputBase, height: '2.25rem' }}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
-                  Archivo <span style={{ color: 'var(--agro-red)' }}>*</span>
-                </label>
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.csv,.txt"
-                  onChange={e => setUploadFile(e.target.files?.[0] ?? null)}
-                  className="text-[11px]"
-                  style={{ color: 'var(--foreground)' }}
-                />
-                {uploadFile && (
-                  <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
-                    {uploadFile.name} ({(uploadFile.size / 1024).toFixed(0)} KB)
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={handleSubirExterno}
-                disabled={subiendo || !uploadFile}
-                className="w-full h-9 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-                style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-              >
-                {subiendo ? <><Loader size={12} className="animate-spin" />Subiendo…</> : 'Subir y vincular'}
-              </button>
             </div>
           )}
 
