@@ -117,7 +117,6 @@ export async function generarManifiestoEmbarqueConsolidadoPDF(
 
   const bytes = await merged.save()
   const blob = new Blob([bytes], { type: 'application/pdf' })
-  const slug = instalacionNombre.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '')
-  const filename = `Manifiesto_Embarque_consolidado_${desde}_${hasta}${slug ? '_' + slug : ''}.pdf`
+  const filename = `manifiesto-embarque-consolidado-${desde}-${hasta}.pdf`
   descargar(blob, filename)
 }

@@ -2,7 +2,6 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { ManifiestoEmbarquePDF, type M38ManifiestoDataPDF, type M38LineaPDF } from './ManifiestoEmbarquePDF'
 import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
-import { nombrePdf } from '@/lib/pdf/nombrePdf'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -91,7 +90,7 @@ export async function generarManifiestoEmbarquePDF(id: string, orgId: string, co
       firmaVerifico={firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null}
     />
   ).toBlob()
-  descargar(blob, nombrePdf('Manifiesto_Embarque', d.fecha, d.instalacion))
+  descargar(blob, `manifiesto-embarque-${d.fecha}.pdf`)
 }
 
 export async function generarBlobManifiestoEmbarque(id: string, orgId: string, codigoClave: string): Promise<Blob> {

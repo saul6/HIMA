@@ -97,7 +97,6 @@ export async function generarEntradasSalidasPreFrioConsolidadoPDF(
 
   const bytes = await merged.save()
   const blob = new Blob([bytes], { type: 'application/pdf' })
-  const slug = instalacionNombre.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '')
-  const filename = `Entradas_Salidas_Prefrio_consolidado_${desde}_${hasta}${slug ? '_' + slug : ''}.pdf`
+  const filename = `Entradas_Salidas_Prefrio-consolidado-${desde}-${hasta}.pdf`
   descargar(blob, filename)
 }

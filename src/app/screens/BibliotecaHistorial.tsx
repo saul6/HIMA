@@ -84,10 +84,6 @@ function formatFecha(iso: string): string {
   } catch { return iso }
 }
 
-function slugify(s: string): string {
-  return s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-}
-
 // Número de resultados del botón Exportar — cuenta del valor anterior al
 // nuevo con el mismo contador animado de Inicio (ver useContadorAnimado).
 function ContadorRegistros({ value, reducedMotion }: { value: number; reducedMotion: boolean }) {
@@ -1071,7 +1067,7 @@ export function BibliotecaHistorial() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${reg.modulo.toLowerCase()}-${reg.fecha.replaceAll('-', '')}-${slugify(reg.rancho_nombre)}.pdf`
+      a.download = `${reg.modulo.toLowerCase()}-${reg.fecha.replaceAll('-', '')}.pdf`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
