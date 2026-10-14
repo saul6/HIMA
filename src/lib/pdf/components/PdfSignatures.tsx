@@ -14,12 +14,14 @@ interface PdfSignaturesProps {
   signatures: SignatureItem[]
   /** Firma de enterado (Productor). Si se omite, se toma de la que viaja dentro de Realizó/Verificó. */
   enterado?: FirmaParaPdf['enterado']
+  /** Líneas de firma de ancho fijo (más cortas) y firma más grande. */
+  lineaCorta?: boolean
 }
 
 // Evita que react-pdf parta "Sello 9ce1..." con guion al final de línea
 const sinGuion = (word: string) => [word]
 
-export function PdfSignatures({ signatures: signaturesProp, enterado: enteradoProp }: PdfSignaturesProps) {
+export function PdfSignatures({ signatures: signaturesProp, enterado: enteradoProp, lineaCorta = false }: PdfSignaturesProps) {
   const enterado = enteradoProp ?? signaturesProp.map((s) => s.firma?.enterado).find(Boolean) ?? null
   const enteradoDigital = enterado && enterado.estado === 'vigente' && enterado.png
 
@@ -42,17 +44,17 @@ export function PdfSignatures({ signatures: signaturesProp, enterado: enteradoPr
           <View
             key={i}
             style={{
-              flex: 1,
+              ...(lineaCorta ? { width: 200 } : { flex: 1 }),
               marginRight: i < signatures.length - 1 || enterado ? 16 : 0,
             }}
           >
             {/* Contenedor de altura fija para que la línea de firma quede siempre alineada */}
-            <View style={{ height: 32 }}>
+            <View style={{ height: lineaCorta ? 44 : 32 }}>
               {tieneDigital ? (
                 /* Imagen de firma digital */
                 <Image
                   src={firma.png}
-                  style={{ height: 32, objectFit: 'contain', marginBottom: 2 }}
+                  style={{ height: lineaCorta ? 44 : 32, objectFit: 'contain', marginBottom: 2 }}
                 />
               ) : (
                 /* Sin firma digital: mostrar label y nombre como antes */

@@ -173,6 +173,7 @@ export function CalibracionEquiposPDF({
         )}
 
         <PdfSignatures
+          lineaCorta
           signatures={[
             { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
             { label: '', nombre: '', caption: 'Verificó: Responsable técnico', firma: firmaVerifico ?? null },
