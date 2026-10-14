@@ -21,6 +21,7 @@ import { EvidenciaPanel } from './EvidenciaPanel'
 import { useReglasRama } from '@/hooks/useReglasRama'
 import { CapturaPreguntaAuditoria } from './CapturaPreguntaAuditoria'
 import type { CapturaPreguntaRef, AjusteInfo } from './CapturaPreguntaAuditoria'
+import { traducirErrorBd } from '@/lib/erroresBd'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -1273,6 +1274,8 @@ export function AuditorEjecucion() {
   function traducirError(err: unknown): string {
     const e = err as { message?: string; code?: string; details?: string; hint?: string }
     const msg = e?.message ?? String(err)
+    const bd = traducirErrorBd(msg)
+    if (bd) return bd
     if (e?.code === '42501' || msg.toLowerCase().includes('row-level security') || msg.toLowerCase().includes('policy')) {
       return 'No tienes permiso para guardar en esta empresa (revisa que la auditoría pertenezca a una empresa asignada).'
     }

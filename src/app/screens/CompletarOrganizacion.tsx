@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react'
 import { useNavigate, useLocation } from 'react-router'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { mensajeErrorBd } from '@/lib/erroresBd'
 
 export function CompletarOrganizacion() {
   const { profile, refreshProfile } = useAuthContext()
@@ -33,14 +34,14 @@ export function CompletarOrganizacion() {
       })
 
       if (rpcError) {
-        setError(rpcError.message)
+        setError(mensajeErrorBd(rpcError))
         return
       }
 
       await refreshProfile()
       navigate('/', { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al crear la organización')
+      setError(mensajeErrorBd(err, 'Error al crear la organización'))
     } finally {
       setSubmitting(false)
     }

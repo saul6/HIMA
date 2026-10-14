@@ -18,6 +18,7 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { EvidenciaPanel } from './EvidenciaPanel'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { traducirErrorBd } from '@/lib/erroresBd'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -91,6 +92,8 @@ const VALID_MAX_SET: Set<number> = new Set([15, 10, 5, 3])
 function traducirError(err: unknown): string {
   const e = err as { message?: string; code?: string }
   const msg = e?.message ?? String(err)
+  const bd = traducirErrorBd(msg)
+  if (bd) return bd
   if (e?.code === '42501' || msg.toLowerCase().includes('row-level security') || msg.toLowerCase().includes('policy')) {
     return 'Sin permiso para guardar en esta empresa.'
   }

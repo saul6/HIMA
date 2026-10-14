@@ -10,6 +10,7 @@ import { LEYENDA_LEGAL_PGFS } from '@/lib/auditoriasPGFS'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { traducirErrorBd } from '@/lib/erroresBd'
 
 const ROLES_PERMITIDOS = ['auditor', 'admin_org', 'super_admin']
 
@@ -38,6 +39,8 @@ const RESP_TOOLTIPS: Record<AudRespuesta, string> = {
 function mensajeErrorSeguro(err: unknown): string {
   if (!err || typeof err !== 'object') return 'No se pudo guardar. Reintenta.'
   const e = err as { code?: string; message?: string }
+  const bd = traducirErrorBd(e.message ?? '')
+  if (bd) return bd
   if (e.code === '42501' || e.message?.includes('permission') || e.message?.includes('RLS')) {
     return 'No tienes permiso para guardar en esta empresa.'
   }

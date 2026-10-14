@@ -11,6 +11,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { traducirErrorBd } from '@/lib/erroresBd'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -198,6 +199,8 @@ export function AuditorInstalacionDetalle() {
   function traducirError(err: unknown): string {
     const e = err as { message?: string; code?: string }
     const msg = e?.message ?? String(err)
+    const bd = traducirErrorBd(msg)
+    if (bd) return bd
     if (e?.code === '42501' || msg.toLowerCase().includes('policy') || msg.toLowerCase().includes('permission')) {
       return 'Sin permiso para realizar esta operación.'
     }
