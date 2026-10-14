@@ -35,7 +35,7 @@ const MARGIN = 20
 type CheckVal = 'si' | 'no' | 'na'
 
 const TIPO_LABELS: Record<string, string> = {
-  verificacion: 'Verificacion',
+  verificacion: 'Verificación',
   preventivo: 'Preventivo',
   correctivo: 'Correctivo',
 }
@@ -73,7 +73,7 @@ function TipoActividadBloque({ tipo }: { tipo: string | null }) {
 }
 
 function CheckTabla({ fila }: { fila: MantenimientoEquiposGGFilaPDF }) {
-  const COL = { label: 280, si: 70, no: 70, na: 70 }
+  const COL = { label: 345, si: 70, no: 70, na: 70 }
   return (
     <View style={{ borderWidth: 1, borderColor: PC.border }}>
       <View style={{ flexDirection: 'row' }}>
@@ -142,7 +142,7 @@ export function MantenimientoEquiposGGPagina({ fila, orgNombre, firmaRealizo }: 
 
       {fila.descripcion_trabajo && (
         <View style={{ marginTop: 8 }}>
-          <Text style={{ fontSize: 7.5, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>Descripcion del trabajo:</Text>
+          <Text style={{ fontSize: 7.5, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>Descripción del trabajo:</Text>
           <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{fila.descripcion_trabajo}</Text>
         </View>
       )}

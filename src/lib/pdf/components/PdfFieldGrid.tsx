@@ -50,6 +50,7 @@ interface PdfFieldProps {
 }
 
 export function PdfField({ label, value, fullWidth = false }: PdfFieldProps) {
+  const esObs = /^observaciones/i.test(label)
   return (
     <View
       style={{
@@ -63,8 +64,8 @@ export function PdfField({ label, value, fullWidth = false }: PdfFieldProps) {
     >
       <Text
         style={{
-          fontSize: 6.5,
-          color: PC.fieldLabel,
+          fontSize: esObs ? 8 : 6.5,
+          color: esObs ? PC.section : PC.fieldLabel,
           fontFamily: 'Helvetica-Bold',
           textTransform: 'uppercase',
           letterSpacing: 0.3,

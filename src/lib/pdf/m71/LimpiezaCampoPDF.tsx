@@ -46,7 +46,7 @@ function diaToISO(mesDate: string, dia: number): string {
 }
 
 function normalizar(val: string): string {
-  if (val === 'si' || val === 'SI') return 'Si'
+  if (val === 'si' || val === 'SI') return 'Sí'
   if (val === 'no' || val === 'NO') return 'No'
   return 'N/A'
 }
@@ -85,7 +85,7 @@ export function LimpiezaCampoPagina({
       <PdfFooter moduloCodigo="REG-10" />
       <TopBar />
       <PdfHeader
-        titulo="LIMPIEZA Y DESINFECCION EN GENERAL / DERRAMES EN CAMPO"
+        titulo="LIMPIEZA Y DESINFECCIÓN EN GENERAL / DERRAMES EN CAMPO"
         subtitulo={`REG-10 · GlobalG.A.P. v6 | ${rancho}`}
         codigoFormato="REG-10"
         folio={mesLabel}
@@ -95,10 +95,10 @@ export function LimpiezaCampoPagina({
       <PdfSectionBanner>Datos generales</PdfSectionBanner>
       <PdfFieldGrid>
         <PdfFieldRow>
-          {orgNombre && <PdfField label="Compania" value={orgNombre} />}
+          {orgNombre && <PdfField label="Compañía" value={orgNombre} />}
           <PdfField label="Rancho" value={rancho} />
           <PdfField label="Mes y Año" value={mesLabel} />
-          {realizoNombre && <PdfField label="Realizo" value={realizoNombre} />}
+          {realizoNombre && <PdfField label="Realizó" value={realizoNombre} />}
         </PdfFieldRow>
       </PdfFieldGrid>
 

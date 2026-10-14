@@ -175,7 +175,7 @@ export function CalibracionEquiposPDF({
         <PdfSignatures
           signatures={[
             { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
-            { label: '', nombre: '', caption: 'Verifico: Responsable técnico', firma: firmaVerifico ?? null },
+            { label: '', nombre: '', caption: 'Verificó: Responsable técnico', firma: firmaVerifico ?? null },
           ]}
         />
       </Page>

@@ -48,7 +48,7 @@ function diaToISO(mesDate: string, dia: number): string {
 }
 
 function normalizar(val: string): string {
-  if (val === 'si' || val === 'SI') return 'Si'
+  if (val === 'si' || val === 'SI') return 'Sí'
   if (val === 'no' || val === 'NO') return 'No'
   return 'N/A'
 }
@@ -89,7 +89,7 @@ export function VerificacionCosechaPagina({
       <PdfFooter moduloCodigo="REG-13" />
       <TopBar />
       <PdfHeader
-        titulo="VERIFICACION DIARIA DE COSECHA"
+        titulo="VERIFICACIÓN DIARIA DE COSECHA"
         subtitulo={`REG-13 · GlobalG.A.P. v6 | ${rancho}`}
         codigoFormato="REG-13"
         folio={mesLabel}
@@ -99,9 +99,9 @@ export function VerificacionCosechaPagina({
       <PdfSectionBanner>Datos generales</PdfSectionBanner>
       <PdfFieldGrid>
         <PdfFieldRow>
-          {orgNombre && <PdfField label="Compania" value={orgNombre} />}
+          {orgNombre && <PdfField label="Compañía" value={orgNombre} />}
           <PdfField label="Rancho" value={rancho} />
-          {codigo && <PdfField label="Codigo" value={codigo} />}
+          {codigo && <PdfField label="Código" value={codigo} />}
           {cultivo && <PdfField label="Cultivo" value={cultivo} />}
           <PdfField label="Mes y Año" value={mesLabel} />
         </PdfFieldRow>
@@ -140,7 +140,7 @@ export function VerificacionCosechaPagina({
       <PdfSignatures
         signatures={[
           { label: '', nombre: realizoNombre ?? '', caption: 'Realizado por', firma: firmaRealizo ?? null },
-          { label: '', nombre: '', caption: 'Responsable de la Verificacion', firma: firmaVerifico ?? null },
+          { label: '', nombre: '', caption: 'Responsable de la Verificación', firma: firmaVerifico ?? null },
         ]}
       />
     </Page>

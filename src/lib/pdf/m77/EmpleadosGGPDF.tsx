@@ -1,4 +1,4 @@
-import { Document, Page, View, Text } from '@react-pdf/renderer'
+import { Document, Page, View, Text , Image } from '@react-pdf/renderer'
 import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
 import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
 import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
@@ -57,9 +57,9 @@ function TablaEmpleados({ empleados }: { empleados: EmpleadoGGFilaPDF[] }) {
       <View style={{ flexDirection: 'row' }}>
         <HC w={COL.nombre}>Nombre</HC>
         <HC w={COL.fecha}>Fecha Ingreso</HC>
-        <HC w={COL.telefono}>Telefono</HC>
+        <HC w={COL.telefono}>Teléfono</HC>
         <HC w={COL.domicilio}>Domicilio</HC>
-        <HC w={COL.contacto}>Contacto emergencia</HC>
+        <HC w={COL.contacto}>Contacto de emergencia</HC>
         <HC w={COL.firma} right={false}>Firma</HC>
       </View>
       {empleados.map((emp, i) => {
@@ -104,7 +104,7 @@ export function EmpleadosGGPagina({ rancho, orgNombre, empleados, firmaRealizo }
       <PdfFooter moduloCodigo="REG-ASIP-26" />
       <TopBar />
       <PdfHeader
-        titulo="IDENTIFICACION DE EMPLEADOS"
+        titulo="IDENTIFICACIÓN DE EMPLEADOS"
         subtitulo={`REG-ASIP-26 · GlobalGAP | ${rancho}`}
         codigoFormato="REG-ASIP-26"
         folio={rancho}
@@ -122,17 +122,16 @@ export function EmpleadosGGPagina({ rancho, orgNombre, empleados, firmaRealizo }
 
       <View style={{ marginTop: 6 }}>
         <Text style={{ fontSize: 6.5, color: PC.textSub, fontStyle: 'italic' }}>
-          La columna "Firma" debe ser firmada de manera fisica por cada empleado al momento de leer y aceptar las politicas de la empresa.
+          La columna "Firma" debe ser firmada de manera física por cada empleado al momento de leer y aceptar las políticas de la empresa.
         </Text>
       </View>
 
       {firmaRealizo && (
         <View style={{ marginTop: 20 }}>
-          <View style={{ width: 160, alignItems: 'center' }}>
-            {firmaRealizo.estado === 'vigente' && firmaRealizo.png && (
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              <></>
-            )}
+          <View style={{ width: 130, alignItems: 'center' }}>
+            {firmaRealizo.estado === 'vigente' && firmaRealizo.png ? (
+              <Image src={firmaRealizo.png} style={{ height: 36, objectFit: 'contain', marginBottom: 2 }} />
+            ) : null}
             <View style={{ borderTopWidth: 1, borderTopColor: PC.border, paddingTop: 4, width: '100%', alignItems: 'center' }}>
               <Text style={{ fontSize: 7, color: PC.textSub }}>Nombre y firma del responsable</Text>
             </View>

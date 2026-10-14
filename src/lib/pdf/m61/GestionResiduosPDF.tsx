@@ -60,7 +60,7 @@ function fmtFecha(iso: string): string {
   } catch { return iso }
 }
 
-const C = { FECHA: 55, FUENTE: 90, DESC: 100, CLAS: 80, DEST: 90, CANT: 55, REAL: 75, OBS: 90 }
+const C = { FECHA: 70, FUENTE: 140, DESC: 190, CLAS: 110, DEST: 140, CANT: 70, REAL: 82 }
 
 export function GestionResiduosPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Instalacion', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
@@ -116,9 +116,6 @@ export function GestionResiduosPDF({ rancho, orgNombre, desde, hasta, registros,
             <View style={[thStyle, { width: C.REAL, backgroundColor: PC.section, alignItems: 'flex-start' }]}>
               <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white }}>Realizo</Text>
             </View>
-            <View style={[thStyle, { width: C.OBS, backgroundColor: PC.section, alignItems: 'flex-start', borderRightWidth: 0 }]}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: PC.white }}>Observaciones</Text>
-            </View>
           </View>
 
           {registros.map((r, i) => {
@@ -146,13 +143,30 @@ export function GestionResiduosPDF({ rancho, orgNombre, desde, hasta, registros,
                 <View style={[tdStyle, { width: C.REAL, alignItems: 'flex-start', padding: 4 }]}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.realizo ?? '—'}</Text>
                 </View>
-                <View style={[tdStyle, { width: C.OBS, alignItems: 'flex-start', padding: 4, borderRightWidth: 0 }]}>
-                  <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.observaciones ?? '—'}</Text>
-                </View>
               </View>
             )
           })}
         </View>
+
+        {registros.some((r) => r.observaciones) && (
+          <>
+            <PdfSectionBanner>3. Observaciones</PdfSectionBanner>
+            <View style={{ marginTop: 4, borderWidth: 1, borderColor: PC.border }}>
+              {registros.filter((r) => r.observaciones).map((r, i) => (
+                <View key={i} style={{ padding: 4, borderBottomWidth: 1, borderBottomColor: PC.border }}>
+                  {registros.length > 1 && (
+                    <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.textSub }}>
+                      {fmtFecha(r.fecha)} - {r.fuente_residuo}
+                    </Text>
+                  )}
+                  <Text style={{ fontSize: 7.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>
+                    {r.observaciones}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         <PdfSignatures
           signatures={[
