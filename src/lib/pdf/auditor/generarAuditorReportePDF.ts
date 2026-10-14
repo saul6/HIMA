@@ -4,7 +4,8 @@
 
 import { pdf, Document } from '@react-pdf/renderer'
 import { createElement } from 'react'
-import { AuditoriaPagina, type AuditoriaPaginaProps } from '@/lib/pdf/auditoria/AuditoriaPDF'
+import { AuditoriaPagina, type AuditoriaPaginaProps, type DetalleAuditorPDF } from '@/lib/pdf/auditoria/AuditoriaPDF'
+import imageCompression from 'browser-image-compression'
 import { SCORE_MATRIX, RESP_TO_CLASS, type ScoreMatrixKey } from '@/lib/scoring/matriz'
 import { supabase } from '@/lib/supabase'
 import type { AuditorAuditoriaDetalle, HerenciaInfo } from '@/hooks/useAuditorAuditoria'
@@ -16,6 +17,42 @@ const HERENCIA_EXCLUIR = new Set(['sin_confirmar', 'conflicto', 'revalidar', 're
 
 const NOTA_FINAL =
   'M.A.D.Y organiza, valida y da seguimiento. No sustituye a PrimusGFS, a Azzule Systems, al auditor autorizado ni al organismo de certificacion. La decision oficial corresponde al proceso externo.'
+
+const BUCKET_EVIDENCIA = 'auditoria-evidencia'
+const EXT_IMAGEN = /\.(jpe?g|png)$/i
+const CONCURRENCIA_EVIDENCIAS = 4
+
+// Descarga y reduce una imagen de evidencia (≈600 px) para embeberla en el PDF; '' si falla.
+async function evidenciaAUri(path: string): Promise<string | null> {
+  try {
+    const { data, error } = await supabase.storage.from(BUCKET_EVIDENCIA).download(path)
+    if (error || !data) return null
+    const file = new File([data], 'evidencia.jpg', { type: data.type || 'image/jpeg' })
+    const reducida = await imageCompression(file, {
+      maxWidthOrHeight: 600,
+      maxSizeMB: 0.12,
+      fileType: 'image/jpeg',
+      initialQuality: 0.6,
+      useWebWorker: false,
+    })
+    return await imageCompression.getDataUrlFromFile(reducida)
+  } catch {
+    return null
+  }
+}
+
+async function enParalelo<T, R>(items: T[], limite: number, fn: (x: T) => Promise<R>): Promise<R[]> {
+  const out: R[] = new Array(items.length)
+  let i = 0
+  async function worker() {
+    while (i < items.length) {
+      const idx = i++
+      out[idx] = await fn(items[idx])
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limite, items.length) }, worker))
+  return out
+}
 
 export interface GenerarParams {
   auditoria: AuditorAuditoriaDetalle
@@ -133,10 +170,10 @@ export async function generarAuditorReportePDF({ auditoria }: GenerarParams): Pr
     // herencia no disponible — continuar sin filtrar
   }
 
-  // 6. Valores de campos mínimos y observaciones
-  const comentariosMap = new Map<string, string>()
+  // 6. Detalle por pregunta: comentarios (cada campo aparte), observación, evidencias y hallazgos
+  const detalleMap = new Map<string, DetalleAuditorPDF>()
   if (instIds.length > 0) {
-    const [valRes, obsRes] = await Promise.all([
+    const [valRes, obsRes, evRes, hzRes] = await Promise.all([
       tbl('aud_instancia_valores')
         .select('instancia_id, esquema_id, valor_texto')
         .in('instancia_id', instIds)
@@ -144,6 +181,13 @@ export async function generarAuditorReportePDF({ auditoria }: GenerarParams): Pr
       tbl('aud_observaciones')
         .select('instancia_id, observacion')
         .in('instancia_id', instIds),
+      tbl('aud_evidencia_uso')
+        .select('entity_id, aud_evidencia(storage_path, evidencia_tipo, documento_codigo), aud_evidencia_snapshot(source_module_code, criterion_code)')
+        .eq('entity_type', 'INSTANCIA')
+        .in('entity_id', instIds),
+      tbl('aud_hallazgos')
+        .select('pregunta_id, instancia_id, clasificacion, descripcion, estado, criterion_code')
+        .eq('auditoria_id', aid),
     ])
 
     const instIdToPreg = new Map<string, string>(instancias.map((i: any) => [i.id, i.pregunta_id]))
@@ -162,20 +206,66 @@ export async function generarAuditorReportePDF({ auditoria }: GenerarParams): Pr
       if (o.observacion?.trim()) obsByInst.set(o.instancia_id, o.observacion)
     }
 
+    // Evidencias: imágenes con miniatura, el resto (documentos, registros M.A.D.Y) solo con nombre
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const evUsos: any[] = (evRes.data ?? []) as any[]
+    const imagenes = evUsos
+      .map((u) => u.aud_evidencia?.storage_path as string | undefined)
+      .filter((pth): pth is string => !!pth && EXT_IMAGEN.test(pth))
+    const urisImagen = new Map<string, string | null>()
+    await enParalelo(imagenes, CONCURRENCIA_EVIDENCIAS, async (pth) => {
+      urisImagen.set(pth, await evidenciaAUri(pth))
+    })
+    const evByInst = new Map<string, Array<{ nombre: string; uri: string | null }>>()
+    for (const u of evUsos) {
+      const lista = evByInst.get(u.entity_id) ?? []
+      const asset = u.aud_evidencia
+      const snap = u.aud_evidencia_snapshot
+      if (asset?.storage_path) {
+        const archivo = (asset.storage_path as string).split('/').pop() ?? 'archivo'
+        const nombre = asset.documento_codigo ? `${asset.documento_codigo} (${archivo})` : archivo
+        lista.push({ nombre, uri: urisImagen.get(asset.storage_path) ?? null })
+      } else if (snap) {
+        lista.push({ nombre: `Registro M.A.D.Y${snap.source_module_code ? ' · ' + String(snap.source_module_code).toUpperCase() : ''}`, uri: null })
+      }
+      evByInst.set(u.entity_id, lista)
+    }
+
+    // Hallazgos por pregunta
+    const hzByPreg = new Map<string, DetalleAuditorPDF['hallazgos']>()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const h of (hzRes.data ?? []) as any[]) {
+      const pid = h.pregunta_id ?? (h.instancia_id ? instIdToPreg.get(h.instancia_id) : null)
+      if (!pid) continue
+      const lista = hzByPreg.get(pid) ?? []
+      lista.push({
+        numeral: h.criterion_code ?? 'Hallazgo',
+        clasificacion: String(h.clasificacion ?? 'sin clasificar').replace(/_/g, ' '),
+        descripcion: h.descripcion ?? '',
+        estado: String(h.estado ?? '').replace(/_/g, ' '),
+      })
+      hzByPreg.set(pid, lista)
+    }
+
     for (const inst of instancias) {
       const pregId = instIdToPreg.get(inst.id)
       if (!pregId) continue
       const esqs = (esquemasByPreg.get(pregId) ?? []).sort((a, b) => a.orden - b.orden)
       const vals = valsByInst.get(inst.id) ?? new Map<string, string>()
-      const lines: string[] = []
+      const campos: DetalleAuditorPDF['campos'] = []
       for (const esq of esqs) {
         if (herenciaExcluir.has(`${pregId}:${esq.id}`)) continue
         const v = vals.get(esq.id)
-        if (v?.trim()) lines.push(`${esq.etiqueta}: ${v}`)
+        if (v?.trim()) campos.push({ etiqueta: esq.etiqueta, valor: v })
       }
-      const obs = obsByInst.get(inst.id)
-      if (obs?.trim()) lines.push(obs)
-      if (lines.length > 0) comentariosMap.set(pregId, lines.join('\n'))
+      const detalle: DetalleAuditorPDF = {
+        campos,
+        observacion: obsByInst.get(inst.id)?.trim() ? obsByInst.get(inst.id)! : null,
+        nota: inst.origen_na === 'rama' || inst.estado_aplicabilidad === 'na_rama' ? 'N/A por regla de rama' : null,
+        evidencias: evByInst.get(inst.id) ?? [],
+        hallazgos: hzByPreg.get(pregId) ?? [],
+      }
+      detalleMap.set(pregId, detalle)
     }
   }
 
@@ -226,12 +316,8 @@ export async function generarAuditorReportePDF({ auditoria }: GenerarParams): Pr
       const resp: string = inst.respuesta
       const maxPts: number = (p.max_puntos as number) ?? 0
       const pts = resp === 'na' ? 0 : calcPuntosOtorgados(maxPts, resp)
-      let comentario: string | null = comentariosMap.get(p.id as string) ?? null
-      if (inst.origenNa === 'rama' || inst.estadoAp === 'na_rama') {
-        const prefix = 'N/A por regla de rama'
-        comentario = comentario ? `${prefix}\n${comentario}` : prefix
-      }
-      return [{ pregunta_id: p.id as string, respuesta: resp, comentario, puntos_otorgados: pts }]
+      const detalle = detalleMap.get(p.id as string) ?? { campos: [], observacion: null, nota: null, evidencias: [], hallazgos: [] }
+      return [{ pregunta_id: p.id as string, respuesta: resp, comentario: null, puntos_otorgados: pts, detalle }]
     })
 
     // Totales del módulo

@@ -16,7 +16,15 @@ import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 interface SeccionRow  { id: string; codigo: string; nombre: string; orden: number }
 interface PreguntaRow { id: string; seccion_id: string; codigo: string; texto: string; puntos: number; orden_seccion: number }
-interface RespuestaRow { pregunta_id: string; respuesta: string; comentario: string | null; puntos_otorgados: number }
+/** Detalle del reporte del auditor (motor aud_*): cada dato en su propia fila, a ancho completo. */
+export interface DetalleAuditorPDF {
+  campos: Array<{ etiqueta: string; valor: string }>
+  observacion: string | null
+  nota: string | null
+  evidencias: Array<{ nombre: string; uri: string | null }>
+  hallazgos: Array<{ numeral: string; clasificacion: string; descripcion: string; estado: string }>
+}
+interface RespuestaRow { pregunta_id: string; respuesta: string; comentario: string | null; puntos_otorgados: number; detalle?: DetalleAuditorPDF }
 
 export interface AuditoriaPaginaProps {
   modulo?: ModuloAuditoria
@@ -288,6 +296,71 @@ const s = StyleSheet.create({
 
 // ── AuditoriaPagina ───────────────────────────────────────────────────────────
 
+// ── Bloque de detalle del auditor (comentarios, observación, evidencias, hallazgos) ─────────
+
+const dEtiqueta = { fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.textSub, marginBottom: 1 } as const
+const dValor = { fontSize: 8, color: PC.fieldValue, lineHeight: 1.3 } as const
+const dTitulo = { fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.section, marginBottom: 3 } as const
+
+function DetalleCampo({ etiqueta, valor }: { etiqueta: string; valor: string }) {
+  return (
+    <View style={{ marginBottom: 5 }}>
+      <Text style={dEtiqueta}>{etiqueta}</Text>
+      <Text style={dValor} hyphenationCallback={partirPalabraLarga}>{valor}</Text>
+    </View>
+  )
+}
+
+function DetalleAuditorBloque({ d }: { d: DetalleAuditorPDF }) {
+  return (
+    <View
+      style={{
+        paddingVertical: 6, paddingHorizontal: 10,
+        borderBottomWidth: 1, borderBottomColor: PC.border, borderBottomStyle: 'solid',
+        backgroundColor: '#FAFCFE',
+      }}
+    >
+      {d.nota ? <DetalleCampo etiqueta="Nota" valor={d.nota} /> : null}
+      {d.campos.length > 0 && (
+        <View style={{ marginBottom: 4 }}>
+          <Text style={dTitulo} minPresenceAhead={40}>COMENTARIOS</Text>
+          {d.campos.map((c, i) => <DetalleCampo key={i} etiqueta={c.etiqueta} valor={c.valor} />)}
+        </View>
+      )}
+      {d.observacion ? (
+        <View style={{ marginBottom: 4 }}>
+          <Text style={dTitulo} minPresenceAhead={40}>OBSERVACIÓN DEL AUDITOR</Text>
+          <Text style={dValor} hyphenationCallback={partirPalabraLarga}>{d.observacion}</Text>
+        </View>
+      ) : null}
+      {d.hallazgos.length > 0 && (
+        <View style={{ marginBottom: 4 }}>
+          <Text style={dTitulo} minPresenceAhead={40}>HALLAZGOS</Text>
+          {d.hallazgos.map((h, i) => (
+            <View key={i} style={{ marginBottom: 4 }}>
+              <Text style={dEtiqueta}>{h.numeral} · {h.clasificacion} · {h.estado}</Text>
+              <Text style={dValor} hyphenationCallback={partirPalabraLarga}>{h.descripcion}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+      {d.evidencias.length > 0 && (
+        <View>
+          <Text style={dTitulo} minPresenceAhead={40}>EVIDENCIAS</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+            {d.evidencias.map((e, i) => (
+              <View key={i} style={{ width: e.uri ? 110 : 230 }} wrap={false}>
+                {e.uri ? <Image src={e.uri} style={{ width: 110, height: 80, objectFit: 'contain', borderWidth: 1, borderColor: PC.border }} /> : null}
+                <Text style={{ fontSize: 6.5, color: PC.textSub, marginTop: 1 }} hyphenationCallback={partirPalabraLarga}>{e.nombre}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+    </View>
+  )
+}
+
 export function AuditoriaPagina({
   modulo, auditoriaId, ranchoNombre, ranchoCodigo, fecha, auditorNombre,
   puntos_obtenidos, puntos_posibles, porcentaje, portada,
@@ -309,6 +382,7 @@ export function AuditoriaPagina({
 
   const respsMap = new Map<string, RespuestaRow>()
   for (const r of respuestas) respsMap.set(r.pregunta_id, r)
+  const modoDetalle = respuestas.some((r) => r.detalle)
 
   const secsSorted = [...secciones].sort((a, b) => a.orden - b.orden)
 
@@ -414,12 +488,14 @@ export function AuditoriaPagina({
         {/* Encabezado de columnas — se repite en cada página */}
         <View style={s.thRow} fixed>
           <Text style={[s.thCell, { width: C_CODIGO }]}>P#</Text>
-          <Text style={[s.thCell, { width: C_PREGUNTA }]}>PREGUNTA</Text>
+          <Text style={[s.thCell, { width: modoDetalle ? C_PREGUNTA + C_COMENT - 25 : C_PREGUNTA }]}>PREGUNTA</Text>
           <Text style={[s.thCell, { width: C_PUNTOS, textAlign: 'center' }]}>PTS</Text>
-          <Text style={[s.thCell, { width: C_RESULT, textAlign: 'center' }]}>RESULTADO</Text>
-          <Text style={[s.thCell, { width: C_COMENT, borderRightWidth: 0 }]}>
-            COMENTARIOS DEL AUDITOR
-          </Text>
+          <Text style={[s.thCell, modoDetalle ? { width: C_RESULT + 25, textAlign: 'center', borderRightWidth: 0 } : { width: C_RESULT, textAlign: 'center' }]}>RESULTADO</Text>
+          {!modoDetalle && (
+            <Text style={[s.thCell, { width: C_COMENT, borderRightWidth: 0 }]}>
+              COMENTARIOS DEL AUDITOR
+            </Text>
+          )}
         </View>
 
         {/* Secciones + preguntas */}
@@ -459,6 +535,26 @@ export function AuditoriaPagina({
                 const ptsLabel = preg.puntos > 0 && resp
                   ? `\n${resp.puntos_otorgados}/${preg.puntos} pts`
                   : ''
+
+                if (modoDetalle) {
+                  const d = resp?.detalle
+                  const hayDetalle = !!d && (d.campos.length > 0 || !!d.observacion || !!d.nota || d.evidencias.length > 0 || d.hallazgos.length > 0)
+                  return (
+                    <View key={preg.id}>
+                      <View style={rowStyle} wrap={false}>
+                        <Text style={[s.qCell, { width: C_CODIGO, fontSize: 7 }]}>{preg.codigo}</Text>
+                        <Text style={[s.qCell, { width: C_PREGUNTA + C_COMENT - 25 }]} hyphenationCallback={partirPalabraLarga}>{preg.texto}</Text>
+                        <Text style={[s.qCell, { width: C_PUNTOS, textAlign: 'center' }]}>
+                          {preg.puntos > 0 ? String(preg.puntos) : 'Info'}
+                        </Text>
+                        <Text style={[s.qCell, { width: C_RESULT + 25, textAlign: 'center', borderRightWidth: 0 }, resColor]}>
+                          {resStr}{ptsLabel}
+                        </Text>
+                      </View>
+                      {hayDetalle && d && <DetalleAuditorBloque d={d} />}
+                    </View>
+                  )
+                }
 
                 return (
                   <View key={preg.id} style={rowStyle} wrap={false}>
