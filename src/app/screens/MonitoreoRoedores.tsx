@@ -61,11 +61,13 @@ function CeldaCheck({ valor, onToggle }: { valor: boolean; onToggle: () => void 
       onClick={onToggle}
       className="w-9 h-9 rounded-md border flex items-center justify-center shrink-0 transition-colors"
       style={{
-        borderColor: valor ? 'var(--primary)' : 'var(--border)',
-        backgroundColor: valor ? 'var(--primary)' : 'var(--card)',
+        borderColor: valor ? 'var(--primary)' : 'var(--agro-red)',
+        backgroundColor: valor ? 'var(--primary)' : 'var(--agro-danger-fill)',
       }}
+      aria-pressed={valor}
+      aria-label={valor ? 'Cumple' : 'No cumple'}
     >
-      {valor && <Check className="w-4 h-4 text-white" />}
+      {valor ? <Check className="w-4 h-4 text-white" /> : <X className="w-4 h-4" style={{ color: 'var(--agro-red)' }} />}
     </button>
   )
 }
@@ -132,9 +134,11 @@ function MatrizMonitoreo({
           </div>
           <div className="flex items-center gap-1.5">
             <div
-              className="w-4 h-4 rounded border"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}
-            />
+              className="w-4 h-4 rounded border flex items-center justify-center"
+              style={{ borderColor: 'var(--agro-red)', backgroundColor: 'var(--agro-danger-fill)' }}
+            >
+              <X className="w-2.5 h-2.5" style={{ color: 'var(--agro-red)' }} />
+            </div>
             <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>No cumple</span>
           </div>
         </div>
