@@ -777,7 +777,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
-      <div className="flex flex-col gap-4">
+      <div id={`preg-${preguntaId}`} className="flex flex-col gap-4" style={{ scrollMarginTop: "5rem" }}>
         <div
           className="rounded-xl border border-border bg-card px-4 py-4 flex flex-col gap-3"
           style={falla ? { borderColor: 'var(--agro-red)', borderWidth: '1.5px' } : undefined}

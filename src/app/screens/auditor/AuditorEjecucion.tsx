@@ -330,7 +330,7 @@ function PanelValidacion({
   }
 
   return (
-    <div
+    <div id="panel-validacion"
       className="rounded-xl border overflow-hidden"
       style={{
         backgroundColor: reviewLoadError ? 'var(--agro-danger-fill)' : tieneBlockers ? 'var(--agro-danger-fill)' : 'var(--card)',
@@ -1361,11 +1361,19 @@ export function AuditorEjecucion() {
       console.error('[handleCambiarEstado]', e)
       const errMsg = (e as { message?: string })?.message ?? ''
       if (errMsg.includes('CIERRE_BLOQUEADO')) {
-        // Recargar issues para mostrar qué falta
-        const result = await loadReviewIssues()
-        if (result.ok) setReviewIssues(result.issues)
+        // Mostrar exactamente qué falta: correr la revisión, leer aud_review_issues y abrir el panel
         setPanelValidacionVisible(true)
-        toast.error(errMsg.split(': ').slice(1).join(': ') || 'No se pudo cerrar la auditoría.')
+        setValidando(true)
+        try {
+          await supabase.rpc('aud_run_review', { p_auditoria_id: auditoria.id })
+          const result = await loadReviewIssues()
+          if (result.ok) { setReviewIssues(result.issues); setReviewLoadError(false) }
+          else setReviewLoadError(true)
+        } finally {
+          setValidando(false)
+        }
+        toast.error(errMsg.split(': ').slice(1).join(': ') || 'No se pudo cerrar la auditoría. Revisa el panel de validación.')
+        setTimeout(() => document.getElementById('panel-validacion')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150)
       } else if (errMsg.includes('AUDITORIA_CERRADA')) {
         toast.error(errMsg.split(': ').slice(1).join(': ') || 'La auditoría ya está cerrada.')
       } else {
