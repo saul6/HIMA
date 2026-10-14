@@ -56,17 +56,17 @@ export interface CosechaLiberacionConsolidadoPDFProps {
 // encargado(81) + verif(44) + observaciones(118) = 764
 const W = {
   fecha:         44,
-  sector:        59,
-  bandejas:      44,
-  loteLib:       44,
-  comprobante:   73,
-  trazabilidad:  78,
-  marcaEmbalaje: 64,
-  destino:       68,
-  frutaKg:       47,
-  encargado:     81,
-  verif:         44,
-  observaciones: 118,
+  sector:        50,
+  bandejas:      36,
+  loteLib:       36,
+  comprobante:   60,
+  trazabilidad:  66,
+  marcaEmbalaje: 54,
+  destino:       58,
+  frutaKg:       40,
+  encargado:     70,
+  verif:         36,
+  observaciones: 214,
 } as const
 
 function formatFechaPDF(iso: string): string {
@@ -200,7 +200,7 @@ export function CosechaLiberacionPagina({
               </View>
             ) : (
               liberaciones.map((lib, i) => (
-                <View key={i} style={{ flexDirection: 'row', backgroundColor: i % 2 !== 0 ? '#F5F9FE' : PC.white }}>
+                <View key={i} wrap={false} style={{ flexDirection: 'row', backgroundColor: i % 2 !== 0 ? '#F5F9FE' : PC.white }}>
                   <Text style={[cell, { width: W.fecha, textAlign: 'center' }]}>{fecha}</Text>
                   <Text style={[cell, { width: W.sector }]} hyphenationCallback={partirPalabraLarga}>{lib.sector ?? '—'}</Text>
                   <Text style={[cell, { width: W.bandejas, textAlign: 'center' }]}>

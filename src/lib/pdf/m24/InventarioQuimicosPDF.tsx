@@ -164,7 +164,7 @@ export function InventarioQuimicosPagina({
               </View>
             ) : (
               filas.map((f, i) => (
-                <View key={i} style={{ flexDirection: 'row', backgroundColor: i % 2 !== 0 ? '#F5F9FE' : PC.white }}>
+                <View key={i} wrap={false} style={{ flexDirection: 'row', backgroundColor: i % 2 !== 0 ? '#F5F9FE' : PC.white }}>
                   <Text style={[tdCell, { width: W_FECHA, textAlign: 'center' }]}>{fmt(f.fecha)}</Text>
                   <Text style={[tdCell, { width: W_PERSONA }]}>{f.persona_solicita}</Text>
                   <Text style={[tdCell, { width: W_AREA }]}>{f.area}</Text>

@@ -144,7 +144,7 @@ export function InspeccionAlmacenEmpaqueGGPagina({
                 </View>
               </View>
               {acciones.map((a, i) => (
-                <View key={i} style={{ flexDirection: 'row', backgroundColor: i % 2 === 0 ? PC.white : '#F5F9FE' }}>
+                <View key={i} wrap={false} style={{ flexDirection: 'row', backgroundColor: i % 2 === 0 ? PC.white : '#F5F9FE' }}>
                   <View style={{ width: 40, padding: 4, borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border }}>
                     <Text style={{ fontSize: 7, color: PC.fieldValue }}>{a.dia}</Text>
                   </View>

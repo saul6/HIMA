@@ -124,7 +124,7 @@ export function EntradasSalidasPreFrioPDF({
             <Text style={[thStyle, { width: W.tiempo, borderRightWidth: 0 }]}>Tiempo</Text>
           </View>
           {d.lineas.map((l, i) => (
-            <View key={i} style={{ flexDirection: 'row', backgroundColor: i % 2 === 1 ? ROW_ALT : PC.white }}>
+            <View key={i} wrap={false} style={{ flexDirection: 'row', backgroundColor: i % 2 === 1 ? ROW_ALT : PC.white }}>
               <Text style={[tdStyle, { width: 22 }]}>{l.orden}</Text>
               <Text style={[tdStyle, { width: W.cuarto }]}>{t(l.cuarto_prefrio)}</Text>
               <Text style={[tdStyle, { width: W.fruta }]}>{t(l.fruta)}</Text>

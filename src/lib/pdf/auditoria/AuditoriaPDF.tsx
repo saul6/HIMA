@@ -79,11 +79,11 @@ const NOCUMPLE_FG = '#854F0B'
 
 // ── Anchos de columna (contenido A4 portrait = 595.28 - 50 - 50 = 495pt) ─────
 
-const C_CODIGO   = 42
-const C_PREGUNTA = 220
-const C_PUNTOS   = 35
-const C_RESULT   = 100
-const C_COMENT   = 98
+const C_CODIGO   = 38
+const C_PREGUNTA = 170
+const C_PUNTOS   = 30
+const C_RESULT   = 62
+const C_COMENT   = 195
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -461,7 +461,7 @@ export function AuditoriaPagina({
                   : ''
 
                 return (
-                  <View key={preg.id} style={rowStyle}>
+                  <View key={preg.id} style={rowStyle} wrap={false}>
                     <Text style={[s.qCell, { width: C_CODIGO, fontSize: 7 }]}>{preg.codigo}</Text>
                     <Text style={[s.qCell, { width: C_PREGUNTA }]} hyphenationCallback={partirPalabraLarga}>{preg.texto}</Text>
                     <Text style={[s.qCell, { width: C_PUNTOS, textAlign: 'center' }]}>
@@ -471,7 +471,7 @@ export function AuditoriaPagina({
                       {resStr}{ptsLabel}
                     </Text>
                     <Text style={[s.qCell, { width: C_COMENT, borderRightWidth: 0 }]} hyphenationCallback={partirPalabraLarga}>
-                      {resp?.comentario ?? ''}
+                      {(resp?.comentario ?? '').length > 1200 ? `${(resp?.comentario ?? '').slice(0, 1200)}...` : (resp?.comentario ?? '')}
                     </Text>
                   </View>
                 )

@@ -178,7 +178,7 @@ export function ManifiestoEmbarquePDF({
                 <Text style={[thStyle, { width: TW.ti, borderRightWidth: 0 }]}>T. Inf.</Text>
               </View>
               {d.lineas.map((l, i) => (
-                <View key={i} style={{ flexDirection: 'row', backgroundColor: i % 2 === 1 ? ROW_ALT : PC.white }}>
+                <View key={i} wrap={false} style={{ flexDirection: 'row', backgroundColor: i % 2 === 1 ? ROW_ALT : PC.white }}>
                   <Text style={[tdStyle, { width: TW.ord }]}>{l.orden}</Text>
                   <Text style={[tdStyle, { width: TW.tar }]}>{l.tarima}</Text>
                   <Text style={[tdStyle, { flex: 1 }]} hyphenationCallback={partirPalabraLarga}>{l.producto}</Text>
@@ -234,7 +234,7 @@ export function ManifiestoEmbarquePDF({
                 { label: 'Carga',   hora: d.carga_hora,   temp: d.carga_temp   },
                 { label: 'Salida',  hora: d.salida_hora,  temp: d.salida_temp  },
               ] as const).map((row, i) => (
-                <View key={i} style={{ flexDirection: 'row', backgroundColor: i % 2 === 1 ? ROW_ALT : PC.white }}>
+                <View key={i} wrap={false} style={{ flexDirection: 'row', backgroundColor: i % 2 === 1 ? ROW_ALT : PC.white }}>
                   <Text style={[tdStyle, { width: 46 }]}>{row.label}</Text>
                   <Text style={[tdStyle, { width: TEMP_COL }]}>{t(row.hora)}</Text>
                   <Text style={[tdStyle, { flex: 1, borderRightWidth: 0 }]}>{n(row.temp)}</Text>
