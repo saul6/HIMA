@@ -209,10 +209,7 @@ export function useAuditoriaV2(modulo: ModuloAuditoria) {
         .eq('org_id', profile.org_id)
       if (err) throw err
 
-      await tbl('aud_auditoria_modulos')
-        .update({ estado: params.estado })
-        .eq('auditoria_id', params.auditoriaId)
-        .eq('modulo_norma_id', moduloNormaId)
+      // aud_auditoria_modulos no tiene columna `estado`: el estado vive en aud_auditorias (daba PATCH 400).
 
       auditoriaId = params.auditoriaId
     } else {

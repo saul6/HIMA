@@ -136,7 +136,7 @@ export function useAuditoriasPGFS() {
   }> {
     const [blRes, preRes] = await Promise.all([
       tbl('aud_bloques').select('*').eq('modulo_norma_id', moduloNormaId).order('orden'),
-      tbl('aud_preguntas').select('*').eq('modulo_norma_id', moduloNormaId).order('orden', { nullsFirst: false }).order('codigo'),
+      tbl('aud_preguntas').select('*').eq('modulo_norma_id', moduloNormaId).order('orden', { nullsFirst: false }).order('question_id'),
     ])
     if (blRes.error) throw blRes.error
     if (preRes.error) throw preRes.error
@@ -304,9 +304,7 @@ export function useAuditoriasPGFS() {
       .eq('id', auditoriaId)
       .eq('org_id', profile.org_id)
     if (err) throw err
-    await tbl('aud_auditoria_modulos')
-      .update({ estado: 'cerrada' })
-      .eq('auditoria_id', auditoriaId)
+    // El cierre vive en aud_auditorias; aud_auditoria_modulos no tiene columna `estado` (daba PATCH 400).
   }
 
   return {
