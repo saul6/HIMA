@@ -27,6 +27,8 @@ import { useFirmaContext } from '@/context/FirmaContext'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -407,7 +409,7 @@ export function MipObservacion() {
                 <label className="block text-xs font-medium mb-1">
                   Producto / Cultivo <span className="text-muted-foreground">(opcional)</span>
                 </label>
-                <input
+                <InputContador limite={limiteTexto('m54_registro', 'producto')}
                   type="text"
                   className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                   placeholder="Ej. Zarzamora, Tomate..."
@@ -420,7 +422,7 @@ export function MipObservacion() {
                 <label className="block text-xs font-medium mb-1">
                   Región <span className="text-muted-foreground">(opcional)</span>
                 </label>
-                <input
+                <input maxLength={limiteTexto('m54_registro', 'region')}
                   type="text"
                   className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                   placeholder="Ej. Norte, Sector A..."
@@ -433,7 +435,7 @@ export function MipObservacion() {
                 <label className="block text-xs font-medium mb-1">
                   Realizó <span className="text-muted-foreground">(opcional)</span>
                 </label>
-                <input maxLength={150}
+                <input maxLength={limiteTexto('m54_registro', 'realizo')}
                   type="text"
                   className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                   placeholder="Nombre completo"
@@ -446,7 +448,7 @@ export function MipObservacion() {
                 <label className="block text-xs font-medium mb-1">
                   Observaciones <span className="text-muted-foreground">(opcional)</span>
                 </label>
-                <TextareaContador
+                <TextareaContador limite={limiteTexto('m54_registro', 'observaciones')}
                   rows={2}
                   className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
                   value={form.observaciones}
@@ -480,7 +482,7 @@ export function MipObservacion() {
                             <ToggleBtn activo={m.enfermedades} label="Enfermedades" onToggle={() => toggleMarca(item.id, 'enfermedades')} />
                             <ToggleBtn activo={m.vertebrados} label="Vertebrados" onToggle={() => toggleMarca(item.id, 'vertebrados')} />
                           </div>
-                          <input
+                          <InputContador limite={limiteTexto('m54_resultados', 'comentario')}
                             type="text"
                             className="w-full h-8 rounded-lg border border-border bg-input-background px-3 text-xs"
                             placeholder="Comentario (opcional)"
@@ -506,7 +508,7 @@ export function MipObservacion() {
                         <ToggleBtn activo={otra.enfermedades} label="Enfermedades" onToggle={() => setOtra(o => ({ ...o, enfermedades: !o.enfermedades }))} />
                         <ToggleBtn activo={otra.vertebrados} label="Vertebrados" onToggle={() => setOtra(o => ({ ...o, vertebrados: !o.vertebrados }))} />
                       </div>
-                      <input
+                      <InputContador limite={limiteTexto('m54_resultados', 'comentario')}
                         type="text"
                         className="w-full h-8 rounded-lg border border-border bg-input-background px-3 text-xs"
                         placeholder="Comentario (opcional)"

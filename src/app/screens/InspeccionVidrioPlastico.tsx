@@ -45,6 +45,8 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { BannerLimiteOffline } from '@/app/components/BannerLimiteOffline'
 import { WifiOff } from 'lucide-react'
 import { leerConCache } from '@/lib/offline/cacheLectura'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -119,12 +121,14 @@ function SuggestionInput({
   suggestions,
   placeholder,
   error,
+  maxLength,
 }: {
   value: string
   onChange: (v: string) => void
   suggestions: string[]
   placeholder?: string
   error?: boolean
+  maxLength?: number
 }) {
   const [open, setOpen] = useState(false)
   const filtered = suggestions.filter(
@@ -138,6 +142,7 @@ function SuggestionInput({
       <input
         type="text"
         value={value}
+        maxLength={maxLength}
         onChange={(e) => { onChange(e.target.value); setOpen(true) }}
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
@@ -242,7 +247,7 @@ function MaterialRowInspeccion({
         </div>
       </div>
 
-      <input
+      <InputContador limite={limiteTexto('m7_vidrio_plastico', 'observaciones')}
         type="text"
         value={fila.observaciones}
         onChange={(e) => onChange({ ...fila, observaciones: e.target.value })}
@@ -939,6 +944,7 @@ export function InspeccionVidrioPlastico() {
                           onChange={(v) => { setNuevaArea(v); setErrNuevaArea(false) }}
                           suggestions={areasSugerencias}
                           placeholder="Área (ej: Camionetas)"
+                          maxLength={limiteTexto('m7_materiales_rancho', 'area')}
                           error={errNuevaArea}
                         />
                         {errNuevaArea && (
@@ -953,6 +959,7 @@ export function InspeccionVidrioPlastico() {
                           onChange={(v) => { setNuevaMaterial(v); setErrNuevaMaterial(false) }}
                           suggestions={materialesSugerencias}
                           placeholder="Material / Equipo (ej: Faros)"
+                          maxLength={limiteTexto('m7_materiales_rancho', 'material')}
                           error={errNuevaMaterial}
                         />
                         {errNuevaMaterial && (

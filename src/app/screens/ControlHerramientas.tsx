@@ -28,6 +28,7 @@ import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -375,7 +376,7 @@ export function ControlHerramientas() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Trabajador</label>
-            <input
+            <input maxLength={limiteTexto('m64_control_herramientas', 'trabajador')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre del trabajador"
@@ -386,7 +387,7 @@ export function ControlHerramientas() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Herramienta</label>
-            <input
+            <input maxLength={limiteTexto('m64_control_herramientas', 'herramienta')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Tijeras de poda, cuchillo..."
@@ -410,7 +411,7 @@ export function ControlHerramientas() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Quien entrega</label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m64_control_herramientas', 'entrega_nombre')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre de quien entrega"
@@ -421,7 +422,7 @@ export function ControlHerramientas() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Quien recibe</label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m64_control_herramientas', 'recibe_nombre')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre de quien recibe"
@@ -461,7 +462,7 @@ export function ControlHerramientas() {
             <label className="block text-xs font-medium mb-1">
               Realizo <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m64_control_herramientas', 'realizo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre de quien registro"
@@ -474,7 +475,7 @@ export function ControlHerramientas() {
             <label className="block text-xs font-medium mb-1">
               Observaciones <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m64_control_herramientas', 'observaciones')}
               rows={3}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}

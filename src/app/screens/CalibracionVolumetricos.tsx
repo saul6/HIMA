@@ -31,6 +31,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { WifiOff } from 'lucide-react'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 function formatFecha(iso: string): string {
   try {
@@ -354,7 +355,7 @@ export function CalibracionVolumetricos() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Uso / Artículo</label>
-            <input
+            <input maxLength={limiteTexto('m52_calibracion_volumetricos', 'uso_articulo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Probeta 100 ml, Bureta..."
@@ -375,7 +376,7 @@ export function CalibracionVolumetricos() {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1">Unidad</label>
-              <input maxLength={150}
+              <input maxLength={limiteTexto('m52_calibracion_volumetricos', 'unidad')}
                 type="text"
                 className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                 placeholder="Ej. ml, L"
@@ -428,7 +429,7 @@ export function CalibracionVolumetricos() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Realizó</label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m52_calibracion_volumetricos', 'realizo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
@@ -438,7 +439,7 @@ export function CalibracionVolumetricos() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Observaciones <span className="text-muted-foreground">(opcional)</span></label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m52_calibracion_volumetricos', 'observaciones')}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               rows={2}
               placeholder="Notas adicionales..."

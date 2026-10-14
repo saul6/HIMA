@@ -43,6 +43,7 @@ import {
   generarLimpiezaCampoConsolidadoPDF,
 } from '@/lib/pdf/m71/generarLimpiezaCampoPDF'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -612,7 +613,7 @@ export function LimpiezaCampo() {
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
                 ¿Quién realizó?
               </label>
-              <input maxLength={150}
+              <input maxLength={limiteTexto('m71_registro', 'realizo')}
                 type="text"
                 value={dRealizo}
                 onChange={(e) => setDRealizo(e.target.value)}
@@ -629,7 +630,7 @@ export function LimpiezaCampo() {
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
                 Observaciones
               </label>
-              <TextareaContador
+              <TextareaContador limite={limiteTexto('m71_registro', 'observaciones')}
                 value={dObservaciones}
                 onChange={(e) => setDObservaciones(e.target.value)}
                 rows={2}
@@ -937,7 +938,7 @@ export function LimpiezaCampo() {
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
                 ¿Quién realizó?
               </label>
-              <input maxLength={150}
+              <input maxLength={limiteTexto('m71_registro', 'realizo')}
                 type="text"
                 value={nRealizo}
                 onChange={(e) => setNRealizo(e.target.value)}
@@ -952,7 +953,7 @@ export function LimpiezaCampo() {
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
                 Observaciones
               </label>
-              <TextareaContador
+              <TextareaContador limite={limiteTexto('m71_registro', 'observaciones')}
                 value={nObservaciones}
                 onChange={(e) => setNObservaciones(e.target.value)}
                 rows={2}

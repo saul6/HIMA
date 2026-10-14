@@ -28,6 +28,7 @@ import { useFirmaContext } from '@/context/FirmaContext'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -457,7 +458,7 @@ export function MonitoreoRoedores() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Ubicación</label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m68_roedores_registro', 'ubicacion')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Bodega norte, Área de carga..."
@@ -482,7 +483,7 @@ export function MonitoreoRoedores() {
             <label className="block text-xs font-medium mb-1">
               Responsable <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m68_roedores_registro', 'responsable')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
@@ -495,7 +496,7 @@ export function MonitoreoRoedores() {
             <label className="block text-xs font-medium mb-1">
               Observaciones y/o acción correctiva <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m68_roedores_registro', 'observaciones')}
               rows={2}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}

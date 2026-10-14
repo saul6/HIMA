@@ -32,6 +32,7 @@ import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -474,7 +475,7 @@ export function MantenimientoEquiposGG() {
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>EQUIPO</label>
-              <input type="text" value={form.equipo} onChange={(e) => setF('equipo', e.target.value)} placeholder="Ej: Bomba A1"
+              <input maxLength={limiteTexto('m76_mantenimiento_equipos', 'equipo')} type="text" value={form.equipo} onChange={(e) => setF('equipo', e.target.value)} placeholder="Ej: Bomba A1"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
                 style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
             </div>
@@ -483,7 +484,7 @@ export function MantenimientoEquiposGG() {
           {/* Realizó */}
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>REALIZÓ</label>
-            <input maxLength={150} type="text" value={form.realizo} onChange={(e) => setF('realizo', e.target.value)} placeholder="Nombre del responsable"
+            <input maxLength={limiteTexto('m76_mantenimiento_equipos', 'realizo')} type="text" value={form.realizo} onChange={(e) => setF('realizo', e.target.value)} placeholder="Nombre del responsable"
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
               style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
           </div>
@@ -533,7 +534,7 @@ export function MantenimientoEquiposGG() {
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
               DESCRIPCIÓN DEL TRABAJO
             </label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m76_mantenimiento_equipos', 'descripcion_trabajo')}
               value={form.descripcion_trabajo}
               onChange={(e) => setF('descripcion_trabajo', e.target.value)}
               rows={3}
@@ -546,7 +547,7 @@ export function MantenimientoEquiposGG() {
           {/* Observaciones */}
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
-            <TextareaContador value={form.observaciones} onChange={(e) => setF('observaciones', e.target.value)} rows={2}
+            <TextareaContador limite={limiteTexto('m76_mantenimiento_equipos', 'observaciones')} value={form.observaciones} onChange={(e) => setF('observaciones', e.target.value)} rows={2}
               placeholder="Observaciones adicionales…"
               className="w-full rounded-xl border px-3 py-2 text-sm focus:outline-none resize-none"
               style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />

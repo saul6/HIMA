@@ -39,6 +39,7 @@ import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -732,7 +733,7 @@ export function InspeccionPreoperacionalCosecha() {
             <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>
               Observaciones del mes
             </h2>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m11_registro_mensual', 'observaciones')}
               value={obsLocal}
               onChange={(e) => setObsLocal(e.target.value)}
               rows={2}

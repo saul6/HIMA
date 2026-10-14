@@ -33,6 +33,7 @@ import { useFirmaContext } from '@/context/FirmaContext'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -717,7 +718,7 @@ export function MantenimientoPreventivo() {
           {/* Observaciones */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
             <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Observaciones del mes</h2>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m45_registro_mensual', 'observaciones')}
               value={obsLocal}
               onChange={(e) => setObsLocal(e.target.value)}
               rows={2}

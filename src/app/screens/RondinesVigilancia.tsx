@@ -39,6 +39,7 @@ import { useFirmaContext } from '@/context/FirmaContext'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -167,7 +168,7 @@ function ItemChecklist({
       </button>
       {esNovedad && (
         <div className="px-3 pb-3 pt-0" style={{ backgroundColor: 'var(--card)' }}>
-          <TextareaContador
+          <TextareaContador limite={limiteTexto('m13_incidencias', 'descripcion')}
             value={descripcion}
             onChange={(e) => onDescripcion(e.target.value)}
             rows={2}
@@ -766,7 +767,7 @@ export function RondinesVigilancia() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Turno</label>
-                    <input
+                    <input maxLength={limiteTexto('m46_rondines', 'turno')}
                       type="text"
                       value={nTurno}
                       onChange={(e) => setNTurno(e.target.value)}
@@ -779,7 +780,7 @@ export function RondinesVigilancia() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Vigilante *</label>
-                    <input
+                    <input maxLength={limiteTexto('m46_rondines', 'vigilante')}
                       type="text"
                       value={nVigilante}
                       onChange={(e) => { setNVigilante(e.target.value); setNErrVigilante(false) }}
@@ -923,7 +924,7 @@ export function RondinesVigilancia() {
                 <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
                   Observaciones generales
                 </label>
-                <TextareaContador
+                <TextareaContador limite={limiteTexto('m46_rondines', 'observaciones')}
                   value={nObs}
                   onChange={(e) => setNObs(e.target.value)}
                   rows={2}
@@ -1040,7 +1041,7 @@ export function RondinesVigilancia() {
                     <p className="text-xs text-foreground" style={{ fontWeight: 600 }}>Agregar punto personalizado</p>
                     <div className="space-y-1">
                       <label className="text-xs text-muted-foreground">Área</label>
-                      <input maxLength={150}
+                      <input maxLength={limiteTexto('m46_items', 'area')}
                         type="text"
                         value={confArea}
                         onChange={(e) => setConfArea(e.target.value)}
@@ -1050,7 +1051,7 @@ export function RondinesVigilancia() {
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs text-muted-foreground">Nombre del punto</label>
-                      <input maxLength={150}
+                      <input maxLength={limiteTexto('m46_items', 'nombre')}
                         type="text"
                         value={confNombre}
                         onChange={(e) => setConfNombre(e.target.value)}

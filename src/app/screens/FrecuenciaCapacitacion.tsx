@@ -17,6 +17,7 @@ import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const ANIO_ACTUAL = new Date().getFullYear()
@@ -304,7 +305,7 @@ export function FrecuenciaCapacitacion() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Tema</label>
-            <input
+            <input maxLength={limiteTexto('m56_frecuencia_capacitacion', 'tema')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Higiene personal, BPA..."
@@ -344,7 +345,7 @@ export function FrecuenciaCapacitacion() {
             <label className="block text-xs font-medium mb-1">
               Capacitador <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <input
+            <input maxLength={limiteTexto('m56_frecuencia_capacitacion', 'capacitador')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre del instructor"
@@ -372,7 +373,7 @@ export function FrecuenciaCapacitacion() {
             <label className="block text-xs font-medium mb-1">
               Observaciones <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m56_frecuencia_capacitacion', 'observaciones')}
               rows={3}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}

@@ -37,6 +37,7 @@ import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -227,14 +228,14 @@ function FilaFertilizanteForm({
 
       {/* Ingrediente activo + Concentración */}
       <div className="grid grid-cols-2 gap-2">
-        <input
+        <input maxLength={limiteTexto('fertilizantes_org', 'ingrediente_activo')}
           type="text"
           value={fila.ingrediente_activo}
           onChange={(e) => onChange({ ...fila, ingrediente_activo: e.target.value })}
           placeholder="Ingrediente activo"
           className="h-9 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
         />
-        <input
+        <input maxLength={limiteTexto('fertilizantes_org', 'concentracion')}
           type="text"
           value={fila.concentracion}
           onChange={(e) => onChange({ ...fila, concentracion: e.target.value })}
@@ -1133,7 +1134,7 @@ export function RegistroFertilizacion() {
                       <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
                         Sector
                       </label>
-                      <input maxLength={150}
+                      <input maxLength={limiteTexto('m8_fertilizacion', 'sector')}
                         type="text"
                         value={sector}
                         onChange={(e) => setSector(e.target.value)}

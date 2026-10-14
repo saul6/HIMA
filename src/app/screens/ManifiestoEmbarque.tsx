@@ -30,6 +30,8 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -566,7 +568,7 @@ export function ManifiestoEmbarque() {
               </div>
               <div className="flex-1 space-y-1">
                 <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Folio</label>
-                <input maxLength={150}
+                <input maxLength={limiteTexto('m38_manifiestos', 'folio')}
                   type="text"
                   className={fieldCls}
                   placeholder="Ej: 001"
@@ -578,19 +580,19 @@ export function ManifiestoEmbarque() {
 
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Empresa / Cliente</label>
-              <input maxLength={150} type="text" className={fieldCls} placeholder="Nombre del cliente"
+              <input maxLength={limiteTexto('m38_manifiestos', 'empresa')} type="text" className={fieldCls} placeholder="Nombre del cliente"
                 value={form.empresa} onChange={e => setF('empresa', e.target.value)} />
             </div>
 
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Línea transportista</label>
-              <input maxLength={150} type="text" className={fieldCls} placeholder="Nombre de la línea"
+              <input maxLength={limiteTexto('m38_manifiestos', 'linea_transportista')} type="text" className={fieldCls} placeholder="Nombre de la línea"
                 value={form.linea_transportista} onChange={e => setF('linea_transportista', e.target.value)} />
             </div>
 
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Nombre del chofer</label>
-              <input maxLength={150} type="text" className={fieldCls} placeholder="Nombre completo"
+              <input maxLength={limiteTexto('m38_manifiestos', 'nombre_chofer')} type="text" className={fieldCls} placeholder="Nombre completo"
                 value={form.nombre_chofer} onChange={e => setF('nombre_chofer', e.target.value)} />
             </div>
 
@@ -694,7 +696,7 @@ export function ManifiestoEmbarque() {
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
                       <label className="text-xs text-muted-foreground">Tarima</label>
-                      <input type="text"
+                      <input maxLength={limiteTexto('m38_lineas', 'tarima')} type="text"
                         className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
                         placeholder="Ej: T-01"
                         value={l.tarima}
@@ -711,7 +713,7 @@ export function ManifiestoEmbarque() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs text-muted-foreground">Producto</label>
-                    <input type="text"
+                    <InputContador limite={limiteTexto('m38_lineas', 'producto')} type="text"
                       className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
                       placeholder="Nombre del producto"
                       value={l.producto}
@@ -719,7 +721,7 @@ export function ManifiestoEmbarque() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs text-muted-foreground">Presentación</label>
-                    <input type="text"
+                    <input maxLength={limiteTexto('m38_lineas', 'presentacion')} type="text"
                       className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
                       placeholder="Ej: Caja 8 lbs"
                       value={l.presentacion}
@@ -794,7 +796,7 @@ export function ManifiestoEmbarque() {
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
                     Descripción del hallazgo de plaga *
                   </label>
-                  <TextareaContador
+                  <TextareaContador limite={limiteTexto('m13_incidencias', 'descripcion')}
                     value={form.plaga_descripcion}
                     onChange={e => setF('plaga_descripcion', e.target.value)}
                     rows={2}
@@ -832,7 +834,7 @@ export function ManifiestoEmbarque() {
             <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
               Observaciones
             </p>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m38_manifiestos', 'observaciones')}
               value={form.observaciones}
               onChange={e => setF('observaciones', e.target.value)}
               rows={2}

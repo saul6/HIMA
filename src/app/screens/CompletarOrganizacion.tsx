@@ -66,7 +66,7 @@ export function CompletarOrganizacion() {
             <label className="text-xs text-muted-foreground block" style={{ fontWeight: 600 }}>
               Nombre de tu organización
             </label>
-            <input maxLength={150}
+            <input
               type="text"
               value={nombreOrg}
               onChange={(e) => setNombreOrg(e.target.value)}

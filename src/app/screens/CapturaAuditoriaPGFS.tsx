@@ -9,6 +9,7 @@ import type { AudBloque, AudPregunta, AudComentarioEsquema, AudRespuesta } from 
 import { LEYENDA_LEGAL_PGFS } from '@/lib/auditoriasPGFS'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 const ROLES_PERMITIDOS = ['auditor', 'admin_org', 'super_admin']
 
@@ -262,7 +263,7 @@ function PreguntaCard({
         <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
           Observación del auditor
         </label>
-        <TextareaContador
+        <TextareaContador limite={limiteTexto('aud_observaciones', 'observacion')}
           value={observacion}
           onChange={(e) => onObservacion(e.target.value)}
           onBlur={onBlur}

@@ -36,6 +36,7 @@ import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { SkeletonFilas } from '@/app/components/SkeletonFilas'
 import { Skeleton } from '@/app/components/ui/skeleton'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -443,7 +444,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
               {/* Persona */}
               <div>
                 <label className="block text-sm font-medium mb-1.5">Persona que solicita</label>
-                <input
+                <input maxLength={limiteTexto('m24_movimientos', 'persona_solicita')}
                   type="text"
                   value={movForm.persona_solicita}
                   readOnly
@@ -455,7 +456,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
               {/* Área */}
               <div>
                 <label className="block text-sm font-medium mb-1.5">Área</label>
-                <input maxLength={150}
+                <input maxLength={limiteTexto('m24_movimientos', 'area')}
                   type="text"
                   value={movForm.area}
                   onChange={e => setMovForm(f => ({ ...f, area: e.target.value }))}
@@ -830,7 +831,7 @@ export function ControlInventarioQuimicos() {
             <div className="px-4 py-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1.5">Nombre</label>
-                <input maxLength={150}
+                <input maxLength={limiteTexto('m24_quimicos', 'nombre')}
                   type="text"
                   value={quimicoForm.nombre}
                   onChange={e => setQuimicoForm(f => ({ ...f, nombre: e.target.value }))}
@@ -841,7 +842,7 @@ export function ControlInventarioQuimicos() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Unidad</label>
-                <input maxLength={150}
+                <input maxLength={limiteTexto('m24_quimicos', 'unidad')}
                   type="text"
                   value={quimicoForm.unidad}
                   onChange={e => setQuimicoForm(f => ({ ...f, unidad: e.target.value }))}

@@ -41,6 +41,7 @@ import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { Portal } from '@/app/components/Portal'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -224,7 +225,7 @@ function IncidenciaForm({
       </div>
 
       {/* Descripción */}
-      <TextareaContador
+      <TextareaContador limite={limiteTexto('m13_incidencias', 'descripcion')}
         value={inc.descripcion}
         onChange={(e) => onChange({ descripcion: e.target.value })}
         placeholder="Describe la incidencia observada..."
@@ -1247,7 +1248,7 @@ export function ReporteIncidencias() {
                 <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
                   AUDITOR / QUIEN REALIZÓ EL RECORRIDO
                 </label>
-                <input maxLength={150}
+                <input maxLength={limiteTexto('m13_reportes', 'auditor_nombre')}
                   type="text"
                   value={auditorNombre}
                   onChange={(e) => setAuditorNombre(e.target.value)}

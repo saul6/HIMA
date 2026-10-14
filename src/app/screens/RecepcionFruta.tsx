@@ -30,6 +30,8 @@ import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -707,7 +709,7 @@ export function RecepcionFruta() {
               </div>
               <div className="flex-1 space-y-1">
                 <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{esAlmacen ? 'Empresa *' : 'Empresa'}</label>
-                <input maxLength={150}
+                <input maxLength={limiteTexto('m39_recepciones', 'empresa')}
                   type="text"
                   className={fieldCls}
                   placeholder="Nombre de la empresa"
@@ -720,7 +722,7 @@ export function RecepcionFruta() {
             {esAlmacen && (
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Hoja No.</label>
-                <input
+                <input maxLength={limiteTexto('m39_recepciones', 'hoja_no')}
                   type="text"
                   className={fieldCls}
                   placeholder="Ej: 001"
@@ -781,7 +783,7 @@ export function RecepcionFruta() {
                         </div>
                         <div className="space-y-1">
                           <label className="text-xs text-muted-foreground">Cultivo</label>
-                          <input maxLength={150}
+                          <input maxLength={limiteTexto('m39_lineas', 'cultivo')}
                             type="text"
                             className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
                             placeholder="Ej: Zarzamora"
@@ -820,7 +822,7 @@ export function RecepcionFruta() {
 
                       <div className="space-y-1">
                         <label className="text-xs text-muted-foreground">Entrega</label>
-                        <input
+                        <input maxLength={limiteTexto('m39_lineas', 'entrega')}
                           type="text"
                           className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
                           placeholder="Nombre o referencia de entrega"
@@ -869,7 +871,7 @@ export function RecepcionFruta() {
                         </div>
                         <div className="space-y-1">
                           <label className="text-xs text-muted-foreground">Cód. Productor</label>
-                          <input
+                          <input maxLength={limiteTexto('m39_lineas', 'codigo_productor')}
                             type="text"
                             className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
                             placeholder="Ej: P-001"
@@ -891,7 +893,7 @@ export function RecepcionFruta() {
 
                       <div className="space-y-1">
                         <label className="text-xs text-muted-foreground">Producto</label>
-                        <input
+                        <InputContador limite={limiteTexto('m39_lineas', 'producto')}
                           type="text"
                           className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
                           placeholder="Nombre del producto"
@@ -987,7 +989,7 @@ export function RecepcionFruta() {
             <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
               Observaciones
             </p>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m39_recepciones', 'observaciones')}
               value={form.observaciones}
               onChange={e => setF('observaciones', e.target.value)}
               rows={2}

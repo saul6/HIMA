@@ -31,6 +31,8 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { WifiOff } from 'lucide-react'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 function formatFecha(iso: string): string {
   try {
@@ -347,7 +349,7 @@ export function CalibracionEquipos() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">N° de equipo</label>
-            <input
+            <input maxLength={limiteTexto('m50_calibracion_equipos', 'num_equipo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. 001"
@@ -380,7 +382,7 @@ export function CalibracionEquipos() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium mb-1">Boquilla <span className="text-muted-foreground">(opcional)</span></label>
-              <input
+              <input maxLength={limiteTexto('m50_calibracion_equipos', 'boquilla')}
                 type="text"
                 className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                 placeholder="Tipo de boquilla"
@@ -401,7 +403,7 @@ export function CalibracionEquipos() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Resultado <span className="text-muted-foreground">(opcional)</span></label>
-            <input
+            <InputContador limite={limiteTexto('m50_calibracion_equipos', 'resultado')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Aprobado, Requiere ajuste..."
@@ -411,7 +413,7 @@ export function CalibracionEquipos() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Realizó</label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m50_calibracion_equipos', 'realizo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
@@ -421,7 +423,7 @@ export function CalibracionEquipos() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Observaciones <span className="text-muted-foreground">(opcional)</span></label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m50_calibracion_equipos', 'observaciones')}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               rows={2}
               placeholder="Notas adicionales..."

@@ -45,6 +45,7 @@ import {
   generarInspeccionAlmacenEmpaqueGGConsolidadoPDF,
 } from '@/lib/pdf/m75/generarInspeccionAlmacenEmpaqueGGPDF'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -613,14 +614,14 @@ export function AlmacenEmpaqueGG() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>Cultivo</label>
-                <input maxLength={150} type="text" value={dCultivo} onChange={(e) => setDCultivo(e.target.value)}
+                <input maxLength={limiteTexto('m75_registro', 'cultivo')} type="text" value={dCultivo} onChange={(e) => setDCultivo(e.target.value)}
                   placeholder="Cultivo"
                   className="w-full h-9 px-3 rounded-lg border text-sm focus:outline-none"
                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
               </div>
               <div className="space-y-1">
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>Realizó</label>
-                <input maxLength={150} type="text" value={dRealizo} onChange={(e) => setDRealizo(e.target.value)}
+                <input maxLength={limiteTexto('m75_registro', 'realizo')} type="text" value={dRealizo} onChange={(e) => setDRealizo(e.target.value)}
                   placeholder="Responsable"
                   className="w-full h-9 px-3 rounded-lg border text-sm focus:outline-none"
                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
@@ -628,7 +629,7 @@ export function AlmacenEmpaqueGG() {
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>Observaciones</label>
-              <TextareaContador value={dObservaciones} onChange={(e) => setDObservaciones(e.target.value)} rows={2}
+              <TextareaContador limite={limiteTexto('m75_registro', 'observaciones')} value={dObservaciones} onChange={(e) => setDObservaciones(e.target.value)} rows={2}
                 placeholder="Observaciones generales del mes…"
                 className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none resize-none"
                 style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
@@ -757,7 +758,7 @@ export function AlmacenEmpaqueGG() {
                     >
                       Día {dia}
                     </div>
-                    <TextareaContador
+                    <TextareaContador limite={limiteTexto('m75_acciones', 'texto')}
                       value={acciones[dia] ?? ''}
                       onChange={(e) => setAccion(dia, e.target.value)}
                       rows={3}
@@ -896,7 +897,7 @@ export function AlmacenEmpaqueGG() {
               {/* Cultivo */}
               <div className="space-y-1">
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>CULTIVO</label>
-                <input maxLength={150} type="text" value={nCultivo} onChange={(e) => setNCultivo(e.target.value)} placeholder="Ej: Zarzamora"
+                <input maxLength={limiteTexto('m75_registro', 'cultivo')} type="text" value={nCultivo} onChange={(e) => setNCultivo(e.target.value)} placeholder="Ej: Zarzamora"
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
               </div>
@@ -904,7 +905,7 @@ export function AlmacenEmpaqueGG() {
               {/* Realizó */}
               <div className="space-y-1">
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>REALIZÓ</label>
-                <input maxLength={150} type="text" value={nRealizo} onChange={(e) => setNRealizo(e.target.value)} placeholder="Nombre del responsable"
+                <input maxLength={limiteTexto('m75_registro', 'realizo')} type="text" value={nRealizo} onChange={(e) => setNRealizo(e.target.value)} placeholder="Nombre del responsable"
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
               </div>
@@ -912,7 +913,7 @@ export function AlmacenEmpaqueGG() {
               {/* Observaciones */}
               <div className="space-y-1">
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
-                <TextareaContador value={nObservaciones} onChange={(e) => setNObservaciones(e.target.value)} rows={2}
+                <TextareaContador limite={limiteTexto('m75_registro', 'observaciones')} value={nObservaciones} onChange={(e) => setNObservaciones(e.target.value)} rows={2}
                   placeholder="Observaciones generales…"
                   className="w-full rounded-xl border px-3 py-2 text-sm focus:outline-none resize-none"
                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />

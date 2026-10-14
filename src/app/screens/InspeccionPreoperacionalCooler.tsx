@@ -48,6 +48,8 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { opCabecera, opInsert, opUpsert } from '@/lib/offline/construirOperaciones'
 import { leerConCache } from '@/lib/offline/cacheLectura'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -167,7 +169,7 @@ function ToggleItemM19({
             placeholder="Cód. correctivo (opcional)"
             className="w-full h-8 px-2 rounded-lg border border-border bg-input-background text-xs text-foreground focus:outline-none focus:border-primary"
           />
-          <input
+          <InputContador limite={limiteTexto('m13_incidencias', 'descripcion')}
             type="text"
             value={incidenciaDesc}
             onChange={(e) => onIncidenciaDesc(e.target.value)}
@@ -893,7 +895,7 @@ export function InspeccionPreoperacionalCooler() {
             <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>
               Observaciones del mes
             </h2>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m19_registro_mensual', 'observaciones')}
               value={obsLocal}
               onChange={(e) => setObsLocal(e.target.value)}
               rows={2}

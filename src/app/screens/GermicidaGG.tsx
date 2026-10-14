@@ -35,6 +35,8 @@ import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -447,7 +449,7 @@ export function GermicidaGG() {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>PRODUCTO</label>
-              <input type="text" value={form.producto} onChange={set('producto')} placeholder="Nombre del producto"
+              <InputContador limite={limiteTexto('m74_germicida', 'producto')} type="text" value={form.producto} onChange={set('producto')} placeholder="Nombre del producto"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
                 style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
             </div>
@@ -463,13 +465,13 @@ export function GermicidaGG() {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>MATERIAL UTILIZADO</label>
-              <input type="text" value={form.material_utilizado} onChange={set('material_utilizado')} placeholder="Ej: Cubeta"
+              <input maxLength={limiteTexto('m74_germicida', 'material_utilizado')} type="text" value={form.material_utilizado} onChange={set('material_utilizado')} placeholder="Ej: Cubeta"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
                 style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>SECTOR</label>
-              <input maxLength={150} type="text" value={form.sector} onChange={set('sector')} placeholder="Ej: Empaque"
+              <input maxLength={limiteTexto('m74_germicida', 'sector')} type="text" value={form.sector} onChange={set('sector')} placeholder="Ej: Empaque"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
                 style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
             </div>
@@ -512,7 +514,7 @@ export function GermicidaGG() {
           {/* Realizó */}
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>REALIZÓ</label>
-            <input maxLength={150} type="text" value={form.realizo} onChange={set('realizo')} placeholder="Nombre del responsable"
+            <input maxLength={limiteTexto('m74_germicida', 'realizo')} type="text" value={form.realizo} onChange={set('realizo')} placeholder="Nombre del responsable"
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
               style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
           </div>
@@ -520,7 +522,7 @@ export function GermicidaGG() {
           {/* Observaciones */}
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
-            <TextareaContador value={form.observaciones} onChange={set('observaciones')} rows={2}
+            <TextareaContador limite={limiteTexto('m74_germicida', 'observaciones')} value={form.observaciones} onChange={set('observaciones')} rows={2}
               placeholder="Observaciones…"
               className="w-full rounded-xl border px-3 py-2 text-sm text-foreground focus:outline-none resize-none"
               style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />

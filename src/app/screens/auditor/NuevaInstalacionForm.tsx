@@ -77,7 +77,7 @@ export function NuevaInstalacionForm({ onClose }: { onClose: () => void }) {
       <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
         Nombre *
       </label>
-      <input maxLength={150}
+      <input
         type="text"
         value={nombre}
         onChange={e => setNombre(e.target.value)}
@@ -91,7 +91,7 @@ export function NuevaInstalacionForm({ onClose }: { onClose: () => void }) {
       <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
         Ubicación
       </label>
-      <input maxLength={150}
+      <input
         type="text"
         value={ubicacion}
         onChange={e => setUbicacion(e.target.value)}

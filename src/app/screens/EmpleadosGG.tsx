@@ -32,6 +32,7 @@ import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -420,7 +421,7 @@ export function EmpleadosGG() {
           {/* Nombre */}
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>NOMBRE COMPLETO *</label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m77_empleados', 'nombre')}
               type="text"
               value={form.nombre}
               onChange={(e) => { setForm((f) => ({ ...f, nombre: e.target.value })); setErrNombre(false) }}
@@ -441,7 +442,7 @@ export function EmpleadosGG() {
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>TELÉFONO</label>
-              <input type="tel" value={form.telefono} onChange={setF('telefono')} placeholder="10 dígitos"
+              <input maxLength={limiteTexto('m77_empleados', 'telefono')} type="tel" value={form.telefono} onChange={setF('telefono')} placeholder="10 dígitos"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
                 style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
             </div>
@@ -450,7 +451,7 @@ export function EmpleadosGG() {
           {/* Domicilio */}
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DOMICILIO</label>
-            <TextareaContador value={form.domicilio} onChange={setF('domicilio')} rows={2} placeholder="Dirección del empleado"
+            <TextareaContador limite={limiteTexto('m77_empleados', 'domicilio')} value={form.domicilio} onChange={setF('domicilio')} rows={2} placeholder="Dirección del empleado"
               className="w-full rounded-xl border px-3 py-2 text-sm focus:outline-none resize-none"
               style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
           </div>
@@ -458,7 +459,7 @@ export function EmpleadosGG() {
           {/* Persona de contacto */}
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>PERSONA DE CONTACTO EN CASO DE EMERGENCIA</label>
-            <input type="text" value={form.persona_contacto} onChange={setF('persona_contacto')} placeholder="Nombre y teléfono"
+            <input maxLength={limiteTexto('m77_empleados', 'persona_contacto')} type="text" value={form.persona_contacto} onChange={setF('persona_contacto')} placeholder="Nombre y teléfono"
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
               style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
           </div>
@@ -466,7 +467,7 @@ export function EmpleadosGG() {
           {/* Observaciones */}
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
-            <TextareaContador value={form.observaciones} onChange={setF('observaciones')} rows={2} placeholder="Observaciones adicionales…"
+            <TextareaContador limite={limiteTexto('m77_empleados', 'observaciones')} value={form.observaciones} onChange={setF('observaciones')} rows={2} placeholder="Observaciones adicionales…"
               className="w-full rounded-xl border px-3 py-2 text-sm focus:outline-none resize-none"
               style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
           </div>

@@ -31,6 +31,8 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -426,7 +428,7 @@ export function FertilizacionGG() {
           {/* Cultivo */}
           <div>
             <label className={labelCls}>Cultivo</label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m67_fertilizacion_gg', 'cultivo')}
               type="text"
               className={inputCls}
               placeholder="Ej. Zarzamora, Fresa..."
@@ -438,7 +440,7 @@ export function FertilizacionGG() {
           {/* Bloque */}
           <div>
             <label className={labelCls}>Bloque / Sector {optionalSpan}</label>
-            <input
+            <input maxLength={limiteTexto('m67_fertilizacion_gg', 'bloque')}
               type="text"
               className={inputCls}
               placeholder="Ej. Bloque A, Sector 3..."
@@ -465,7 +467,7 @@ export function FertilizacionGG() {
           {/* Producto */}
           <div>
             <label className={labelCls}>Nombre comercial</label>
-            <input
+            <InputContador limite={limiteTexto('m67_fertilizacion_gg', 'producto')}
               type="text"
               className={inputCls}
               placeholder="Nombre del producto"
@@ -477,7 +479,7 @@ export function FertilizacionGG() {
           {/* Fabricante */}
           <div>
             <label className={labelCls}>Fabricante {optionalSpan}</label>
-            <input
+            <input maxLength={limiteTexto('m67_fertilizacion_gg', 'fabricante')}
               type="text"
               className={inputCls}
               placeholder="Empresa fabricante"
@@ -489,7 +491,7 @@ export function FertilizacionGG() {
           {/* Fórmula */}
           <div>
             <label className={labelCls}>Fórmula del fertilizante {optionalSpan}</label>
-            <input
+            <input maxLength={limiteTexto('m67_fertilizacion_gg', 'formula')}
               type="text"
               className={inputCls}
               placeholder="Ej. 20-10-20, NPK 15-15-15..."
@@ -516,7 +518,7 @@ export function FertilizacionGG() {
           {/* Unidades */}
           <div>
             <label className={labelCls}>Unidades (L, Kg, mL)</label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m67_fertilizacion_gg', 'unidad')}
               type="text"
               className={inputCls}
               placeholder="L / Kg / mL / g..."
@@ -528,7 +530,7 @@ export function FertilizacionGG() {
           {/* Fertilizante cantidad/ha */}
           <div>
             <label className={labelCls}>Fertilizante cantidad/ha {optionalSpan}</label>
-            <input
+            <input maxLength={limiteTexto('m67_fertilizacion_gg', 'cantidad_ha')}
               type="text"
               className={inputCls}
               placeholder="Ej. 25 L/ha"
@@ -540,7 +542,7 @@ export function FertilizacionGG() {
           {/* Maquinaria */}
           <div>
             <label className={labelCls}>Maquinaria {optionalSpan}</label>
-            <input
+            <input maxLength={limiteTexto('m67_fertilizacion_gg', 'maquinaria')}
               type="text"
               className={inputCls}
               placeholder="Ej. Bomba de mochila, tractor..."
@@ -552,7 +554,7 @@ export function FertilizacionGG() {
           {/* Método de aplicación */}
           <div>
             <label className={labelCls}>Método de aplicación {optionalSpan}</label>
-            <input
+            <input maxLength={limiteTexto('m67_fertilizacion_gg', 'metodo_aplicacion')}
               type="text"
               className={inputCls}
               placeholder="Ej. Fertirriego, foliar, drench..."
@@ -564,7 +566,7 @@ export function FertilizacionGG() {
           {/* Operario */}
           <div>
             <label className={labelCls}>Operario</label>
-            <input
+            <input maxLength={limiteTexto('m67_fertilizacion_gg', 'operario')}
               type="text"
               className={inputCls}
               placeholder="Nombre completo"
@@ -576,7 +578,7 @@ export function FertilizacionGG() {
           {/* Observaciones */}
           <div>
             <label className={labelCls}>Observaciones {optionalSpan}</label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m67_fertilizacion_gg', 'observaciones')}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               rows={3}
               placeholder="Notas adicionales..."

@@ -10,7 +10,6 @@ import type { ActividadItem } from '@/hooks/useActividadEquipo'
 import { marcarCorreccion } from '@/lib/queries'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
-import { TextareaContador } from '@/app/components/TextareaContador'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -396,7 +395,7 @@ export function ActividadEquipo() {
                 <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
                   {itemSeleccionado.requiere_correccion ? 'ACTUALIZAR COMENTARIO' : 'QUÉ DEBE CORREGIRSE *'}
                 </label>
-                <TextareaContador
+                <textarea
                   value={comentario}
                   onChange={(e) => setComentario(e.target.value)}
                   rows={4}

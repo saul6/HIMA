@@ -31,6 +31,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { WifiOff } from 'lucide-react'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -394,7 +395,7 @@ export function RegistroMuestrasLaboratorio() {
               {/* Descripción */}
               <div>
                 <label className="block text-xs font-medium mb-1">Descripción de la muestra</label>
-                <TextareaContador
+                <TextareaContador limite={limiteTexto('m22_muestras', 'descripcion_muestra')}
                   rows={3}
                   className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
                   placeholder="Describe la muestra..."
@@ -453,7 +454,7 @@ export function RegistroMuestrasLaboratorio() {
               {/* Laboratorio */}
               <div>
                 <label className="block text-xs font-medium mb-1">Laboratorio</label>
-                <input
+                <input maxLength={limiteTexto('m22_muestras', 'laboratorio')}
                   type="text"
                   className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                   placeholder="Nombre del laboratorio"
@@ -465,7 +466,7 @@ export function RegistroMuestrasLaboratorio() {
               {/* Solicitante */}
               <div>
                 <label className="block text-xs font-medium mb-1">Nombre del solicitante</label>
-                <input maxLength={150}
+                <input maxLength={limiteTexto('m22_muestras', 'solicitante_nombre')}
                   type="text"
                   className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                   placeholder="Nombre completo"

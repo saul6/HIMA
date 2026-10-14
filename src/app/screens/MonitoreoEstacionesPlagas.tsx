@@ -46,6 +46,7 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro, type MapaFirmas } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -291,7 +292,7 @@ function EstacionRevisionRow({
             {/* Tipo de consumo */}
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold text-muted-foreground">Tipo de consumo</label>
-              <input
+              <input maxLength={limiteTexto('m21_resultado', 'tipo_consumo')}
                 type="text"
                 placeholder="Ej. Parcial, Total, Sin consumo"
                 className="w-full h-9 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
@@ -371,7 +372,7 @@ function EstacionRevisionRow({
             {/* Estado del equipo */}
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold text-muted-foreground">Estado del equipo</label>
-              <input
+              <input maxLength={limiteTexto('m21_resultado', 'estado_equipo')}
                 type="text"
                 placeholder="Ej. Funcional, Dañado"
                 className="w-full h-9 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
@@ -382,7 +383,7 @@ function EstacionRevisionRow({
             {/* Estado de la lámpara */}
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold text-muted-foreground">Estado de la lámpara</label>
-              <input
+              <input maxLength={limiteTexto('m21_resultado', 'estado_lampara')}
                 type="text"
                 placeholder="Ej. Encendida, Fundida"
                 className="w-full h-9 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
@@ -427,7 +428,7 @@ function EstacionRevisionRow({
             <label className="text-xs font-semibold text-[var(--agro-danger-text)]">
               Descripción del hallazgo (para Reporte M13)
             </label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m13_incidencias', 'descripcion')}
               rows={2}
               placeholder="Describe el hallazgo para vincularlo a M13..."
               className="w-full rounded-lg border border-[var(--agro-red)]/30 bg-[var(--agro-danger-fill)] px-3 py-2 text-sm text-foreground resize-none"
@@ -1331,7 +1332,7 @@ export function MonitoreoEstacionesPlagas() {
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Inspector
               </label>
-              <input maxLength={150}
+              <input maxLength={limiteTexto('m21_revision', 'inspector_nombre')}
                 type="text"
                 placeholder="Nombre del inspector"
                 className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
@@ -1386,7 +1387,7 @@ export function MonitoreoEstacionesPlagas() {
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Observaciones generales
               </label>
-              <TextareaContador
+              <TextareaContador limite={limiteTexto('m21_revision', 'observaciones')}
                 rows={3}
                 placeholder="Observaciones de la revisión (opcional)..."
                 className="w-full rounded-lg border border-border bg-[var(--input-background)] px-3 py-2.5 text-sm text-foreground resize-none"

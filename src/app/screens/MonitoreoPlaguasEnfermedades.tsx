@@ -32,6 +32,7 @@ import {
   generarMonitoreoPlaguasConsolidadoPDF,
 } from '@/lib/pdf/m72/generarMonitoreoPlaguasPDF'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -420,7 +421,7 @@ export function MonitoreoPlaguasEnfermedades() {
                 <label className="block text-xs font-medium mb-1">
                   Etapa fenológica <span style={{ color: 'var(--muted-foreground)' }}>(opcional)</span>
                 </label>
-                <input maxLength={150}
+                <input maxLength={limiteTexto('m72_registro', 'etapa_fenologica')}
                   type="text"
                   className="w-full h-10 rounded-[0.625rem] border px-3 text-sm"
                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
@@ -435,7 +436,7 @@ export function MonitoreoPlaguasEnfermedades() {
                 <label className="block text-xs font-medium mb-1">
                   Realizó <span style={{ color: 'var(--muted-foreground)' }}>(opcional)</span>
                 </label>
-                <input maxLength={150}
+                <input maxLength={limiteTexto('m72_registro', 'realizo')}
                   type="text"
                   className="w-full h-10 rounded-[0.625rem] border px-3 text-sm"
                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
@@ -450,7 +451,7 @@ export function MonitoreoPlaguasEnfermedades() {
                 <label className="block text-xs font-medium mb-1">
                   Organismos benéficos observados <span style={{ color: 'var(--muted-foreground)' }}>(opcional)</span>
                 </label>
-                <TextareaContador
+                <TextareaContador limite={limiteTexto('m72_registro', 'beneficos')}
                   rows={2}
                   className="w-full rounded-[0.625rem] border px-3 py-2 text-sm resize-none"
                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
@@ -465,7 +466,7 @@ export function MonitoreoPlaguasEnfermedades() {
                 <label className="block text-xs font-medium mb-1">
                   Observaciones <span style={{ color: 'var(--muted-foreground)' }}>(opcional)</span>
                 </label>
-                <TextareaContador
+                <TextareaContador limite={limiteTexto('m72_registro', 'observaciones')}
                   rows={2}
                   className="w-full rounded-[0.625rem] border px-3 py-2 text-sm resize-none"
                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
@@ -539,7 +540,7 @@ export function MonitoreoPlaguasEnfermedades() {
                   {filas.map((fila, idx) => (
                     <div key={fila.id} className="flex items-center gap-1 mb-1">
                       {/* Sector */}
-                      <input maxLength={150}
+                      <input maxLength={limiteTexto('m72_resultados', 'sector')}
                         type="text"
                         className="w-28 h-9 shrink-0 rounded-[0.625rem] border px-2 text-xs"
                         style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}

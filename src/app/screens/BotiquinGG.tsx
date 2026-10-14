@@ -35,6 +35,8 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { generarInventarioBotiquinGGPDF, generarInventarioBotiquinGGConsolidadoPDF } from '@/lib/pdf/m73/generarInventarioBotiquinGGPDF'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -478,7 +480,7 @@ export function BotiquinGG() {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>N° BOTIQUÍN</label>
-              <input
+              <input maxLength={limiteTexto('m73_registro', 'botiquin_num')}
                 type="text"
                 value={nBotiquinNum}
                 onChange={(e) => setNBotiquinNum(e.target.value)}
@@ -489,7 +491,7 @@ export function BotiquinGG() {
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>REALIZÓ</label>
-              <input maxLength={150}
+              <input maxLength={limiteTexto('m73_registro', 'realizo')}
                 type="text"
                 value={nRealizo}
                 onChange={(e) => setNRealizo(e.target.value)}
@@ -557,7 +559,7 @@ export function BotiquinGG() {
                         placeholder="0"
                       />
                     ))}
-                    <input
+                    <input maxLength={limiteTexto('m73_resultados', 'usuario')}
                       type="text"
                       value={fila.usuario}
                       onChange={(e) => actualizarFilaCatalogo(idx, 'usuario', e.target.value)}
@@ -579,7 +581,7 @@ export function BotiquinGG() {
                       gap: '0.5rem',
                     }}
                   >
-                    <input
+                    <InputContador limite={limiteTexto('m73_resultados', 'material_otro')}
                       type="text"
                       value={fila.material_otro}
                       onChange={(e) => actualizarFilaExtra(idx, 'material_otro', e.target.value)}
@@ -600,7 +602,7 @@ export function BotiquinGG() {
                         placeholder="0"
                       />
                     ))}
-                    <input
+                    <input maxLength={limiteTexto('m73_resultados', 'usuario')}
                       type="text"
                       value={fila.usuario}
                       onChange={(e) => actualizarFilaExtra(idx, 'usuario', e.target.value)}
@@ -633,7 +635,7 @@ export function BotiquinGG() {
           {/* Observaciones */}
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m73_registro', 'observaciones')}
               value={nObservaciones}
               onChange={(e) => setNObservaciones(e.target.value)}
               rows={2}

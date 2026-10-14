@@ -39,6 +39,7 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { WifiOff } from 'lucide-react'
 import { leerConCache } from '@/lib/offline/cacheLectura'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -877,7 +878,7 @@ export function RegistroCosechaLiberacion() {
                       {/* Sector */}
                       <div>
                         <label className="block text-xs text-muted-foreground mb-1">Sector</label>
-                        <input maxLength={150}
+                        <input maxLength={limiteTexto('aplicaciones', 'sector')}
                           type="text"
                           value={lib.sector}
                           onChange={(e) => actualizarFila(idx, 'sector', e.target.value)}
@@ -917,7 +918,7 @@ export function RegistroCosechaLiberacion() {
                         <label className="block text-xs text-muted-foreground mb-1">
                           No. de comprobante o vale interno
                         </label>
-                        <input
+                        <input maxLength={limiteTexto('m10_cosecha_liberacion', 'numero_comprobante')}
                           type="text"
                           value={lib.numero_comprobante}
                           onChange={(e) => actualizarFila(idx, 'numero_comprobante', e.target.value)}
@@ -931,7 +932,7 @@ export function RegistroCosechaLiberacion() {
                         <label className="block text-xs text-muted-foreground mb-1">
                           Código de trazabilidad
                         </label>
-                        <input
+                        <input maxLength={limiteTexto('m10_cosecha_liberacion', 'codigo_trazabilidad')}
                           type="text"
                           value={lib.codigo_trazabilidad}
                           onChange={(e) => actualizarFila(idx, 'codigo_trazabilidad', e.target.value)}
@@ -945,7 +946,7 @@ export function RegistroCosechaLiberacion() {
                         <label className="block text-xs text-muted-foreground mb-1">
                           Marca y embalaje
                         </label>
-                        <input maxLength={150}
+                        <input maxLength={limiteTexto('m10_cosecha_liberacion', 'marca_embalaje')}
                           type="text"
                           value={lib.marca_embalaje}
                           onChange={(e) => actualizarFila(idx, 'marca_embalaje', e.target.value)}
@@ -959,7 +960,7 @@ export function RegistroCosechaLiberacion() {
                         <label className="block text-xs text-muted-foreground mb-1">
                           Destino final
                         </label>
-                        <input
+                        <input maxLength={limiteTexto('m10_cosecha_liberacion', 'destino_final')}
                           type="text"
                           value={lib.destino_final}
                           onChange={(e) => actualizarFila(idx, 'destino_final', e.target.value)}
@@ -1050,7 +1051,7 @@ export function RegistroCosechaLiberacion() {
                         <label className="block text-xs text-muted-foreground mb-1">
                           Observaciones (opcional)
                         </label>
-                        <TextareaContador
+                        <TextareaContador limite={limiteTexto('aplicaciones', 'observaciones')}
                           value={lib.observaciones}
                           onChange={(e) => actualizarFila(idx, 'observaciones', e.target.value)}
                           placeholder="Notas adicionales…"

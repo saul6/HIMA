@@ -31,6 +31,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { WifiOff } from 'lucide-react'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 function formatFecha(iso: string): string {
   try {
@@ -352,7 +353,7 @@ export function CalibracionBasculas() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Uso de la báscula</label>
-            <input
+            <input maxLength={limiteTexto('m51_calibracion_basculas', 'uso_bascula')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Pesaje de fruta, Control de insumos..."
@@ -373,7 +374,7 @@ export function CalibracionBasculas() {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1">Punto calibración</label>
-              <input
+              <input maxLength={limiteTexto('m51_calibracion_basculas', 'punto_calibracion')}
                 type="text"
                 className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                 placeholder="Ej. Cero, Máximo..."
@@ -418,7 +419,7 @@ export function CalibracionBasculas() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Realizó</label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m51_calibracion_basculas', 'realizo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
@@ -428,7 +429,7 @@ export function CalibracionBasculas() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Observaciones <span className="text-muted-foreground">(opcional)</span></label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m51_calibracion_basculas', 'observaciones')}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               rows={2}
               placeholder="Notas adicionales..."

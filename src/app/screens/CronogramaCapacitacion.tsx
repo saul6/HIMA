@@ -17,6 +17,7 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 const PERIODICIDADES = ['Mensual', 'Bimestral', 'Trimestral', 'Semestral', 'Anual']
 
@@ -277,7 +278,7 @@ export function CronogramaCapacitacion() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Cargo</label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m57_cronograma_capacitacion', 'cargo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Operario, Supervisor..."
@@ -288,7 +289,7 @@ export function CronogramaCapacitacion() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Temática</label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m57_cronograma_capacitacion', 'tematica')}
               rows={3}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               placeholder="Describe la temática de la capacitación..."
@@ -315,7 +316,7 @@ export function CronogramaCapacitacion() {
             <label className="block text-xs font-medium mb-1">
               Mes programado <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <input
+            <input maxLength={limiteTexto('m57_cronograma_capacitacion', 'mes_programado')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Enero, Marzo-Abril..."
@@ -328,7 +329,7 @@ export function CronogramaCapacitacion() {
             <label className="block text-xs font-medium mb-1">
               Observaciones <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m57_cronograma_capacitacion', 'observaciones')}
               rows={3}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}

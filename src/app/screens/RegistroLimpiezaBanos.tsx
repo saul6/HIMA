@@ -33,6 +33,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { useLimiteProactivo } from '@/hooks/useLimiteProactivo'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { BannerLimiteOffline } from '@/app/components/BannerLimiteOffline'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -729,7 +730,7 @@ export function RegistroLimpiezaBanos() {
                         <label className="block text-xs text-muted-foreground mb-1">
                           Número / identificador del baño
                         </label>
-                        <input
+                        <input maxLength={limiteTexto('m12_limpieza_banos', 'bano_numero')}
                           type="text"
                           value={bano.bano_numero}
                           onChange={(e) => actualizarBano(idx, 'bano_numero', e.target.value)}

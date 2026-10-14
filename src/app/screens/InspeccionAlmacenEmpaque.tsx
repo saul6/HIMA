@@ -36,6 +36,7 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { opCabecera, opInsert, opUpsert } from '@/lib/offline/construirOperaciones'
 import { leerConCache } from '@/lib/offline/cacheLectura'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -159,7 +160,7 @@ function TogglePunto({
       </button>
       {valor === 'no_cumple' && (
         <div className="px-3 pb-3 pt-0">
-          <TextareaContador
+          <TextareaContador limite={limiteTexto('m13_incidencias', 'descripcion')}
             value={descripcion}
             onChange={(e) => onDescripcion(e.target.value)}
             rows={2}
@@ -801,7 +802,7 @@ export function InspeccionAlmacenEmpaque() {
             </div>
             <div>
               <label className="block text-xs text-muted-foreground mb-1">Observaciones</label>
-              <TextareaContador
+              <TextareaContador limite={limiteTexto('m43_registro_mensual', 'observaciones')}
                 value={obsLocal}
                 onChange={(e) => setObsLocal(e.target.value)}
                 rows={2}
@@ -920,7 +921,7 @@ export function InspeccionAlmacenEmpaque() {
               </div>
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5">Realizado por</label>
-                <input
+                <input maxLength={limiteTexto('m43_registro_mensual', 'realizado_por')}
                   type="text"
                   value={nRealizadoPor}
                   onChange={(e) => setNRealizadoPor(e.target.value)}
@@ -930,7 +931,7 @@ export function InspeccionAlmacenEmpaque() {
               </div>
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5">Verifica</label>
-                <input
+                <input maxLength={limiteTexto('m43_registro_mensual', 'verifica')}
                   type="text"
                   value={nVerifica}
                   onChange={(e) => setNVerifica(e.target.value)}
@@ -940,7 +941,7 @@ export function InspeccionAlmacenEmpaque() {
               </div>
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5">Autoriza (opcional)</label>
-                <input
+                <input maxLength={limiteTexto('m43_registro_mensual', 'autoriza')}
                   type="text"
                   value={nAutoriza}
                   onChange={(e) => setNAutoriza(e.target.value)}
@@ -1012,7 +1013,7 @@ export function InspeccionAlmacenEmpaque() {
 
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5">Acciones tomadas (opcional)</label>
-                <TextareaContador
+                <TextareaContador limite={limiteTexto('m43_dias', 'acciones_tomadas')}
                   value={dAcciones}
                   onChange={(e) => setDAcciones(e.target.value)}
                   rows={2}

@@ -28,6 +28,7 @@ import { useFirmaContext } from '@/context/FirmaContext'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -363,7 +364,7 @@ export function FuentesAgua() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Tipo de fuente</label>
-            <input
+            <input maxLength={limiteTexto('m62_registro', 'tipo_fuente')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Pozo, Canal, Río..."
@@ -376,7 +377,7 @@ export function FuentesAgua() {
             <label className="block text-xs font-medium mb-1">
               Realizó <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m62_registro', 'realizo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
@@ -389,7 +390,7 @@ export function FuentesAgua() {
             <label className="block text-xs font-medium mb-1">
               Observaciones <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m62_registro', 'observaciones')}
               rows={2}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}

@@ -20,6 +20,7 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 type FormState = {
   cultivo: string
@@ -380,7 +381,7 @@ export function ProductosAutorizados() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Cultivo</label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m66_productos_autorizados', 'cultivo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Zarzamora, Aguacate..."
@@ -391,7 +392,7 @@ export function ProductosAutorizados() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Ingrediente activo</label>
-            <input
+            <input maxLength={limiteTexto('m66_productos_autorizados', 'ingrediente_activo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Clorpirifos, Imidacloprid..."
@@ -402,7 +403,7 @@ export function ProductosAutorizados() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Nombre comercial</label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m66_productos_autorizados', 'nombre_comercial')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre del producto"
@@ -414,7 +415,7 @@ export function ProductosAutorizados() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium mb-1">Concentracion</label>
-              <input
+              <input maxLength={limiteTexto('m66_productos_autorizados', 'concentracion')}
                 type="text"
                 className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                 placeholder="Ej. 480 g/L"
@@ -424,7 +425,7 @@ export function ProductosAutorizados() {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1">Dosis/ha</label>
-              <input
+              <input maxLength={limiteTexto('m66_productos_autorizados', 'dosis_ha')}
                 type="text"
                 className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                 placeholder="Ej. 1.5 L/ha"
@@ -436,7 +437,7 @@ export function ProductosAutorizados() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Empresa / Fabricante</label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m66_productos_autorizados', 'empresa')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre del fabricante"
@@ -463,7 +464,7 @@ export function ProductosAutorizados() {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1">Mercado objetivo</label>
-              <input
+              <input maxLength={limiteTexto('m66_productos_autorizados', 'mercado')}
                 type="text"
                 className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                 placeholder="Ej. USA, Mexico, UE..."
@@ -475,7 +476,7 @@ export function ProductosAutorizados() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Plagas que controla</label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m66_productos_autorizados', 'plagas_control')}
               rows={3}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               placeholder="Descripcion de plagas o enfermedades que controla"

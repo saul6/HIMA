@@ -135,7 +135,7 @@ export function NuevaAuditoriaPGFS() {
               <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                 Nombre del auditor *
               </label>
-              <input maxLength={150}
+              <input
                 type="text"
                 value={auditorNombre}
                 onChange={(e) => setAuditorNombre(e.target.value)}

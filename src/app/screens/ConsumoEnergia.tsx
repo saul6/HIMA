@@ -28,6 +28,7 @@ import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 function mesActual(): string {
   const d = new Date()
@@ -348,7 +349,7 @@ export function ConsumoEnergia() {
             <label className="block text-xs font-medium mb-1">
               Tipo de combustible <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <input
+            <input maxLength={limiteTexto('m60_consumo_energia', 'tipo_combustible')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Diesel, Gas LP..."
@@ -393,7 +394,7 @@ export function ConsumoEnergia() {
             <label className="block text-xs font-medium mb-1">
               Actividad <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <input
+            <input maxLength={limiteTexto('m60_consumo_energia', 'actividad')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Riego, Bombeo..."
@@ -438,7 +439,7 @@ export function ConsumoEnergia() {
             <label className="block text-xs font-medium mb-1">
               Realizó <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m60_consumo_energia', 'realizo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
@@ -451,7 +452,7 @@ export function ConsumoEnergia() {
             <label className="block text-xs font-medium mb-1">
               Observaciones <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m60_consumo_energia', 'observaciones')}
               rows={2}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}

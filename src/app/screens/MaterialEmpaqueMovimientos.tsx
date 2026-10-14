@@ -25,6 +25,8 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 const tbl = (name: string) => (supabase as any).from(name)
@@ -452,7 +454,7 @@ export function MaterialEmpaqueMovimientos() {
               {/* Empresa */}
               <div>
                 <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Empresa</label>
-                <input maxLength={150}
+                <input maxLength={limiteTexto('m42_movimientos', 'empresa')}
                   type="text"
                   value={form.empresa}
                   onChange={e => setF({ empresa: e.target.value })}
@@ -467,7 +469,7 @@ export function MaterialEmpaqueMovimientos() {
                 <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   Descripción del material
                 </label>
-                <input
+                <InputContador limite={limiteTexto('m42_movimientos', 'descripcion_material')}
                   type="text"
                   value={form.descripcion_material}
                   onChange={e => setF({ descripcion_material: e.target.value })}
@@ -502,7 +504,7 @@ export function MaterialEmpaqueMovimientos() {
               <div className="flex gap-3">
                 <div className="flex-1">
                   <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Entrega</label>
-                  <input
+                  <input maxLength={limiteTexto('m42_movimientos', 'entrega')}
                     type="text"
                     value={form.entrega}
                     onChange={e => setF({ entrega: e.target.value })}
@@ -513,7 +515,7 @@ export function MaterialEmpaqueMovimientos() {
                 </div>
                 <div className="flex-1">
                   <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Recibe</label>
-                  <input
+                  <input maxLength={limiteTexto('m42_movimientos', 'recibe')}
                     type="text"
                     value={form.recibe}
                     onChange={e => setF({ recibe: e.target.value })}
@@ -541,7 +543,7 @@ export function MaterialEmpaqueMovimientos() {
                 )}
                 <div className="mt-2">
                   <label className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Otros (explique)</label>
-                  <input
+                  <InputContador limite={limiteTexto('m42_movimientos', 'mat_otros')}
                     type="text"
                     value={form.mat_otros}
                     onChange={e => setF({ mat_otros: e.target.value })}
@@ -569,7 +571,7 @@ export function MaterialEmpaqueMovimientos() {
                 )}
                 <div className="mt-2">
                   <label className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Otros (explique)</label>
-                  <input
+                  <InputContador limite={limiteTexto('m42_movimientos', 'tr_otros')}
                     type="text"
                     value={form.tr_otros}
                     onChange={e => setF({ tr_otros: e.target.value })}
@@ -585,7 +587,7 @@ export function MaterialEmpaqueMovimientos() {
                 <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   Observaciones
                 </label>
-                <TextareaContador
+                <TextareaContador limite={limiteTexto('m42_movimientos', 'observaciones')}
                   value={form.observaciones}
                   onChange={e => setF({ observaciones: e.target.value })}
                   rows={3}

@@ -177,7 +177,7 @@ export function Registro() {
               </label>
               <div className="relative">
                 <User className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
-                <input maxLength={150}
+                <input
                   type="text"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
@@ -257,7 +257,7 @@ export function Registro() {
               </label>
               <div className="relative">
                 <Building2 className={iconCls} style={{ color: 'var(--auth-icon-color)' }} />
-                <input maxLength={150}
+                <input
                   type="text"
                   value={nombreOrg}
                   onChange={(e) => setNombreOrg(e.target.value)}

@@ -31,6 +31,7 @@ import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -588,7 +589,7 @@ export function PreparacionCloro() {
             <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
               ÁREA / PUNTO DE APLICACIÓN *
             </label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m27_preparaciones', 'area')}
               type="text"
               value={area}
               onChange={(e) => { setArea(e.target.value); setErrArea(false) }}
@@ -666,7 +667,7 @@ export function PreparacionCloro() {
             <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
               RESPONSABLE
             </label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m27_preparaciones', 'responsable')}
               type="text"
               value={responsable}
               onChange={(e) => setResponsable(e.target.value)}
@@ -680,7 +681,7 @@ export function PreparacionCloro() {
             <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
               OBSERVACIONES
             </label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m27_preparaciones', 'observaciones')}
               value={observaciones}
               onChange={(e) => setObservaciones(e.target.value)}
               placeholder="Observaciones adicionales..."

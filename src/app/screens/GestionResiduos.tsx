@@ -29,6 +29,8 @@ import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -343,7 +345,7 @@ export function GestionResiduos() {
 
           <div>
             <label className="block text-xs font-medium mb-1">Fuente de residuo</label>
-            <input
+            <input maxLength={limiteTexto('m61_gestion_residuos', 'fuente_residuo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Área de empaque, Comedor..."
@@ -356,7 +358,7 @@ export function GestionResiduos() {
             <label className="block text-xs font-medium mb-1">
               Descripción <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <input
+            <InputContador limite={limiteTexto('m61_gestion_residuos', 'descripcion')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Breve descripción del residuo"
@@ -369,7 +371,7 @@ export function GestionResiduos() {
             <label className="block text-xs font-medium mb-1">
               Clasificación <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <input
+            <input maxLength={limiteTexto('m61_gestion_residuos', 'clasificacion')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Orgánico, Inorgánico, Peligroso..."
@@ -382,7 +384,7 @@ export function GestionResiduos() {
             <label className="block text-xs font-medium mb-1">
               Destino final <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <input
+            <input maxLength={limiteTexto('m61_gestion_residuos', 'destino_final')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Relleno sanitario, Recolector..."
@@ -395,7 +397,7 @@ export function GestionResiduos() {
             <label className="block text-xs font-medium mb-1">
               Cantidad <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <input
+            <input maxLength={limiteTexto('m61_gestion_residuos', 'cantidad')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. 50 kg, 3 bolsas..."
@@ -408,7 +410,7 @@ export function GestionResiduos() {
             <label className="block text-xs font-medium mb-1">
               Realizó <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m61_gestion_residuos', 'realizo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
@@ -421,7 +423,7 @@ export function GestionResiduos() {
             <label className="block text-xs font-medium mb-1">
               Observaciones <span className="text-muted-foreground">(opcional)</span>
             </label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m61_gestion_residuos', 'observaciones')}
               rows={2}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}

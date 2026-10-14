@@ -40,6 +40,7 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { opCabecera } from '@/lib/offline/construirOperaciones'
 import { leerConCache } from '@/lib/offline/cacheLectura'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -857,7 +858,7 @@ export function LimpiezaBanosQuimicos() {
                 <div className="flex gap-3">
                   <div className="flex-1 space-y-1">
                     <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Realizó</label>
-                    <input maxLength={150}
+                    <input maxLength={limiteTexto('m28_dias', 'realizo')}
                       type="text"
                       value={diaRealizo}
                       onChange={(e) => setDiaRealizo(e.target.value)}
@@ -867,7 +868,7 @@ export function LimpiezaBanosQuimicos() {
                   </div>
                   <div className="flex-1 space-y-1">
                     <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Aprobó</label>
-                    <input maxLength={150}
+                    <input maxLength={limiteTexto('m28_dias', 'aprobo')}
                       type="text"
                       value={diaAprobo}
                       onChange={(e) => setDiaAprobo(e.target.value)}
@@ -938,7 +939,7 @@ export function LimpiezaBanosQuimicos() {
               {/* Observaciones del mes */}
               <div className="bg-card border border-border rounded-xl p-4 space-y-3">
                 <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Observaciones del mes</h2>
-                <TextareaContador
+                <TextareaContador limite={limiteTexto('m28_registro_mensual', 'observaciones')}
                   value={obsLocal}
                   onChange={(e) => setObsLocal(e.target.value)}
                   rows={2}
@@ -1112,7 +1113,7 @@ export function LimpiezaBanosQuimicos() {
                   <p className="text-xs text-foreground" style={{ fontWeight: 600 }}>Agregar ítem personalizado</p>
                   <div className="space-y-1">
                     <label className="text-xs text-muted-foreground">Nombre de actividad</label>
-                    <input maxLength={150}
+                    <input maxLength={limiteTexto('m28_items', 'nombre')}
                       type="text"
                       value={catNombre}
                       onChange={(e) => setCatNombre(e.target.value)}

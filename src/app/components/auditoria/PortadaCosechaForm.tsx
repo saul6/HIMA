@@ -104,7 +104,7 @@ export function PortadaCosechaForm({ value, onChange }: PortadaCosechaFormProps)
         <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
           NOMBRE DEL CAMPO
         </p>
-        <input maxLength={150}
+        <input
           type="text"
           value={value.nombre_campo ?? ''}
           onChange={(e) => up({ nombre_campo: e.target.value })}

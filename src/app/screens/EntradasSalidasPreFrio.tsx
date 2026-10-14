@@ -30,6 +30,8 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -407,7 +409,7 @@ export function EntradasSalidasPreFrio() {
               </div>
               <div className="flex-1 space-y-1">
                 <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Empresa</label>
-                <input maxLength={150}
+                <input maxLength={limiteTexto('m40_registros', 'empresa')}
                   type="text"
                   className={fieldCls}
                   placeholder="Nombre de la empresa"
@@ -456,7 +458,7 @@ export function EntradasSalidasPreFrio() {
                   {/* Cuarto Pre-frío */}
                   <div className="space-y-1">
                     <label className="text-xs text-muted-foreground">Cuarto de pre-frío</label>
-                    <input type="text" className={inputSm}
+                    <input maxLength={limiteTexto('m40_lineas', 'cuarto_prefrio')} type="text" className={inputSm}
                       placeholder="Ej: Cuarto 1"
                       value={l.cuarto_prefrio}
                       onChange={e => actualizarLinea(l._key, 'cuarto_prefrio', e.target.value)} />
@@ -466,14 +468,14 @@ export function EntradasSalidasPreFrio() {
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
                       <label className="text-xs text-muted-foreground">Fruta</label>
-                      <input type="text" className={inputSm}
+                      <input maxLength={limiteTexto('m40_lineas', 'fruta')} type="text" className={inputSm}
                         placeholder="Ej: Zarzamora"
                         value={l.fruta}
                         onChange={e => actualizarLinea(l._key, 'fruta', e.target.value)} />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs text-muted-foreground">Presentación</label>
-                      <input type="text" className={inputSm}
+                      <input maxLength={limiteTexto('m40_lineas', 'presentacion')} type="text" className={inputSm}
                         placeholder="Ej: 6 oz"
                         value={l.presentacion}
                         onChange={e => actualizarLinea(l._key, 'presentacion', e.target.value)} />
@@ -491,7 +493,7 @@ export function EntradasSalidasPreFrio() {
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs text-muted-foreground">Restos</label>
-                      <input type="text" className={inputSm}
+                      <InputContador limite={limiteTexto('m40_lineas', 'restos')} type="text" className={inputSm}
                         placeholder="Descripción"
                         value={l.restos}
                         onChange={e => actualizarLinea(l._key, 'restos', e.target.value)} />
@@ -566,7 +568,7 @@ export function EntradasSalidasPreFrio() {
             <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
               Observaciones
             </p>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m40_registros', 'observaciones')}
               value={form.observaciones}
               onChange={e => setF('observaciones', e.target.value)}
               rows={2}

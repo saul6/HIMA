@@ -43,6 +43,8 @@ import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { WifiOff } from 'lucide-react'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -730,7 +732,7 @@ export function RegistroAccidentesLaborales() {
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Nombre del trabajador
               </label>
-              <input maxLength={150}
+              <input maxLength={limiteTexto('m20_accidentes', 'trabajador_nombre')}
                 type="text"
                 placeholder="Nombre completo"
                 className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
@@ -744,7 +746,7 @@ export function RegistroAccidentesLaborales() {
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Descripción del incidente
               </label>
-              <TextareaContador
+              <TextareaContador limite={limiteTexto('m20_accidentes', 'descripcion_incidente')}
                 rows={3}
                 placeholder="Describe qué ocurrió, cómo y dónde..."
                 className="w-full rounded-lg border border-border bg-[var(--input-background)] px-3 py-2.5 text-sm text-foreground resize-none"
@@ -798,7 +800,7 @@ export function RegistroAccidentesLaborales() {
                 />
               </div>
               {form.requirioIncapacidad && (
-                <input
+                <InputContador limite={limiteTexto('m20_accidentes', 'incapacidad_motivo')}
                   type="text"
                   placeholder="Motivo / días de incapacidad"
                   className="w-full h-10 rounded-lg border border-border bg-card px-3 text-sm text-foreground mt-1"
@@ -818,7 +820,7 @@ export function RegistroAccidentesLaborales() {
                 />
               </div>
               {form.requirioLimpieza && (
-                <input
+                <InputContador limite={limiteTexto('m20_accidentes', 'limpieza_descripcion')}
                   type="text"
                   placeholder="Describe la limpieza realizada"
                   className="w-full h-10 rounded-lg border border-border bg-card px-3 text-sm text-foreground mt-1"
@@ -838,7 +840,7 @@ export function RegistroAccidentesLaborales() {
                 />
               </div>
               {form.productoInvolucrado && (
-                <input
+                <InputContador limite={limiteTexto('m20_accidentes', 'disposicion_producto')}
                   type="text"
                   placeholder="Disposición del producto afectado"
                   className="w-full h-10 rounded-lg border border-border bg-card px-3 text-sm text-foreground mt-1"

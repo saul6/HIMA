@@ -37,7 +37,6 @@ import { useAsignacionHallazgos } from '@/hooks/useAsignacionHallazgos'
 import { AsignarHallazgoSheet } from '@/app/components/hallazgos/AsignarHallazgoSheet'
 import { esModuloAsignable, formatFechaLimite } from '@/lib/hallazgos/asignacion'
 import type { AccionCorrectivaFoto } from '@/types/database.types'
-import { TextareaContador } from '@/app/components/TextareaContador'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -602,7 +601,7 @@ export function AccionesCorrectivas() {
             <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
               NO CONFORMIDAD (incumplimiento observado)
             </label>
-            <TextareaContador
+            <textarea
               value={fNoConformidad}
               onChange={(e) => setFNoConformidad(e.target.value)}
               rows={3}
@@ -616,7 +615,7 @@ export function AccionesCorrectivas() {
             <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
               CAUSA (¿por qué ocurrió?)
             </label>
-            <TextareaContador
+            <textarea
               value={fCausa}
               onChange={(e) => setFCausa(e.target.value)}
               rows={2}
@@ -630,7 +629,7 @@ export function AccionesCorrectivas() {
             <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
               ACCIÓN CORRECTIVA (¿cómo se corrigió?)
             </label>
-            <TextareaContador
+            <textarea
               value={fAccionCorrectiva}
               onChange={(e) => setFAccionCorrectiva(e.target.value)}
               rows={3}
@@ -644,7 +643,7 @@ export function AccionesCorrectivas() {
             <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
               ACCIÓN PREVENTIVA (¿cómo evitar que se repita?)
             </label>
-            <TextareaContador
+            <textarea
               value={fAccionPreventiva}
               onChange={(e) => setFAccionPreventiva(e.target.value)}
               rows={2}
@@ -672,7 +671,7 @@ export function AccionesCorrectivas() {
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
                 REALIZÓ
               </label>
-              <input maxLength={150}
+              <input
                 type="text"
                 value={fRealizo}
                 onChange={(e) => setFRealizo(e.target.value)}
@@ -684,7 +683,7 @@ export function AccionesCorrectivas() {
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
                 VERIFICÓ
               </label>
-              <input maxLength={150}
+              <input
                 type="text"
                 value={fverifico}
                 onChange={(e) => setFverifico(e.target.value)}

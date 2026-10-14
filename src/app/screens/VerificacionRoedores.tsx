@@ -28,6 +28,8 @@ import {
   generarVerificacionRoedoresPDF,
   generarVerificacionRoedoresConsolidadoPDF,
 } from '@/lib/pdf/m70/generarVerificacionRoedoresPDF'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -450,7 +452,7 @@ export function VerificacionRoedores() {
                   {/* Número de trampa */}
                   <div>
                     <label className="block text-xs font-medium mb-1">N° de trampa</label>
-                    <input maxLength={150}
+                    <input maxLength={limiteTexto('m70_verificacion_roedores', 'num_trampa')}
                       type="text"
                       className="w-full h-9 rounded-[0.625rem] border px-3 text-sm"
                       style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}
@@ -487,7 +489,7 @@ export function VerificacionRoedores() {
                     <label className="block text-xs font-medium mb-1">
                       Verificó <span style={{ color: 'var(--muted-foreground)' }}>(opcional)</span>
                     </label>
-                    <input maxLength={150}
+                    <input maxLength={limiteTexto('m70_verificacion_roedores', 'verifico')}
                       type="text"
                       className="w-full h-9 rounded-[0.625rem] border px-3 text-sm"
                       style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}
@@ -502,7 +504,7 @@ export function VerificacionRoedores() {
                     <label className="block text-xs font-medium mb-1">
                       Observaciones <span style={{ color: 'var(--muted-foreground)' }}>(opcional)</span>
                     </label>
-                    <input
+                    <InputContador limite={limiteTexto('m70_verificacion_roedores', 'observaciones')}
                       type="text"
                       className="w-full h-9 rounded-[0.625rem] border px-3 text-sm"
                       style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}

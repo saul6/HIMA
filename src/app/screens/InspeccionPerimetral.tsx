@@ -40,6 +40,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { opCabecera, opUpsert } from '@/lib/offline/construirOperaciones'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -796,7 +797,7 @@ export function InspeccionPerimetral() {
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
                 Observaciones
               </label>
-              <TextareaContador
+              <TextareaContador limite={limiteTexto('m9_registro_mensual', 'observaciones')}
                 value={obsLocal}
                 onChange={(e) => setObsLocal(e.target.value)}
                 rows={2}
@@ -808,7 +809,7 @@ export function InspeccionPerimetral() {
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
                 Otro
               </label>
-              <TextareaContador
+              <TextareaContador limite={limiteTexto('m9_registro_mensual', 'otro')}
                 value={otroLocal}
                 onChange={(e) => setOtroLocal(e.target.value)}
                 rows={2}

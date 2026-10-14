@@ -28,6 +28,8 @@ import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -367,7 +369,7 @@ export function MonitoreoGermicida() {
 
               <div>
                 <label className="block text-xs font-medium mb-1">Tipo de germicida</label>
-                <input
+                <input maxLength={limiteTexto('m36_monitoreos', 'tipo_germicida')}
                   type="text"
                   className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                   placeholder="Ej. Cloro, Amonio cuaternario..."
@@ -378,7 +380,7 @@ export function MonitoreoGermicida() {
 
               <div>
                 <label className="block text-xs font-medium mb-1">Uso</label>
-                <input
+                <InputContador limite={limiteTexto('m36_monitoreos', 'uso')}
                   type="text"
                   className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                   placeholder="Para qué o dónde se usó"
@@ -405,7 +407,7 @@ export function MonitoreoGermicida() {
                 <label className="block text-xs font-medium mb-1">
                   Corrección <span className="text-muted-foreground">(opcional)</span>
                 </label>
-                <input
+                <InputContador limite={limiteTexto('m36_monitoreos', 'correccion')}
                   type="text"
                   className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                   placeholder="Ajuste realizado si estuvo fuera de rango"
@@ -416,7 +418,7 @@ export function MonitoreoGermicida() {
 
               <div>
                 <label className="block text-xs font-medium mb-1">Preparado por</label>
-                <input
+                <input maxLength={limiteTexto('m36_monitoreos', 'preparado_por')}
                   type="text"
                   className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                   placeholder="Nombre completo"

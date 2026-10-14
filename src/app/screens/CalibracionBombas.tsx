@@ -31,6 +31,8 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { WifiOff } from 'lucide-react'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 function formatFecha(iso: string): string {
   try {
@@ -364,7 +366,7 @@ export function CalibracionBombas() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Tipo de equipo / bomba</label>
-            <input
+            <input maxLength={limiteTexto('m49_calibracion_bombas', 'equipo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Aspersora de mochila"
@@ -374,7 +376,7 @@ export function CalibracionBombas() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">N° de equipo</label>
-            <input
+            <input maxLength={limiteTexto('m49_calibracion_bombas', 'num_equipo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. 001"
@@ -385,7 +387,7 @@ export function CalibracionBombas() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium mb-1">Cultivo <span className="text-muted-foreground">(opcional)</span></label>
-              <input maxLength={150}
+              <input maxLength={limiteTexto('m49_calibracion_bombas', 'cultivo')}
                 type="text"
                 className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                 placeholder="Ej. Zarzamora"
@@ -395,7 +397,7 @@ export function CalibracionBombas() {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1">Parcela <span className="text-muted-foreground">(opcional)</span></label>
-              <input
+              <input maxLength={limiteTexto('m49_calibracion_bombas', 'parcela')}
                 type="text"
                 className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                 placeholder="Ej. A-1"
@@ -460,7 +462,7 @@ export function CalibracionBombas() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Resultado <span className="text-muted-foreground">(opcional)</span></label>
-            <input
+            <InputContador limite={limiteTexto('m49_calibracion_bombas', 'resultado')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Ej. Aprobado, Requiere ajuste..."
@@ -470,7 +472,7 @@ export function CalibracionBombas() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Realizó</label>
-            <input maxLength={150}
+            <input maxLength={limiteTexto('m49_calibracion_bombas', 'realizo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
@@ -480,7 +482,7 @@ export function CalibracionBombas() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Observaciones <span className="text-muted-foreground">(opcional)</span></label>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m49_calibracion_bombas', 'observaciones')}
               className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
               rows={2}
               placeholder="Notas adicionales..."

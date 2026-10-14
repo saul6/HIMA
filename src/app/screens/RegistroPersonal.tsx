@@ -28,6 +28,8 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -666,7 +668,7 @@ export function RegistroPersonal() {
               </div>
               <div className="flex-1 space-y-1">
                 <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Puesto</label>
-                <input maxLength={150}
+                <input maxLength={limiteTexto('m47_trabajadores', 'puesto')}
                   type="text"
                   className={fieldCls}
                   placeholder="Ej: Operario"
@@ -685,7 +687,7 @@ export function RegistroPersonal() {
 
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Nombre completo *</label>
-              <input maxLength={150}
+              <input maxLength={limiteTexto('m47_items', 'nombre')}
                 type="text"
                 className={fieldCls}
                 placeholder="Nombre y apellidos"
@@ -696,7 +698,7 @@ export function RegistroPersonal() {
 
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Dirección</label>
-              <input
+              <InputContador limite={limiteTexto('m47_trabajadores', 'direccion')}
                 type="text"
                 className={fieldCls}
                 placeholder="Calle, número, colonia"
@@ -708,7 +710,7 @@ export function RegistroPersonal() {
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Tel. casa</label>
-                <input
+                <input maxLength={limiteTexto('m47_trabajadores', 'telefono_casa')}
                   type="tel"
                   className={fieldCls}
                   placeholder="Teléfono"
@@ -718,7 +720,7 @@ export function RegistroPersonal() {
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Celular</label>
-                <input
+                <input maxLength={limiteTexto('m47_trabajadores', 'celular')}
                   type="tel"
                   className={fieldCls}
                   placeholder="Celular"
@@ -746,18 +748,18 @@ export function RegistroPersonal() {
             </p>
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Nombre</label>
-              <input maxLength={150} type="text" className={fieldCls} placeholder="Nombre de contacto"
+              <input maxLength={limiteTexto('m47_trabajadores', 'emergencia_nombre')} type="text" className={fieldCls} placeholder="Nombre de contacto"
                 value={form.emergencia_nombre} onChange={e => setF('emergencia_nombre', e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Parentesco</label>
-                <input type="text" className={fieldCls} placeholder="Ej: Esposo/a"
+                <input maxLength={limiteTexto('m47_trabajadores', 'emergencia_parentesco')} type="text" className={fieldCls} placeholder="Ej: Esposo/a"
                   value={form.emergencia_parentesco} onChange={e => setF('emergencia_parentesco', e.target.value)} />
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Teléfono</label>
-                <input type="tel" className={fieldCls} placeholder="Teléfono"
+                <input maxLength={limiteTexto('m47_trabajadores', 'emergencia_telefono')} type="tel" className={fieldCls} placeholder="Teléfono"
                   value={form.emergencia_telefono} onChange={e => setF('emergencia_telefono', e.target.value)} />
               </div>
             </div>
@@ -818,7 +820,7 @@ export function RegistroPersonal() {
             <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
               Observaciones
             </p>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m47_trabajadores', 'observaciones')}
               value={form.observaciones}
               onChange={e => setF('observaciones', e.target.value)}
               rows={2}
@@ -975,7 +977,7 @@ export function RegistroPersonal() {
                       ))}
                     </div>
                     <div className="flex gap-2">
-                      <input maxLength={150}
+                      <input maxLength={limiteTexto('m47_items', 'nombre')}
                         type="text"
                         className="flex-1 h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
                         placeholder="Nombre del ítem"

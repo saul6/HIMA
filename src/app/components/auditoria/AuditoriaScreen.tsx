@@ -20,6 +20,7 @@ import { SeccionAccordion } from './SeccionAccordion'
 import { ResumenPuntaje } from './ResumenPuntaje'
 import { generarAuditoriaPDF, generarAuditoriaConsolidadoPDF } from '@/lib/pdf/auditoria/generarAuditoriaPDF'
 import type { RespuestaAuditoria, EstadoAuditoria } from '@/types/database.types'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -519,7 +520,7 @@ export function AuditoriaScreen({
                 <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
                   AUDITOR
                 </label>
-                <input maxLength={150}
+                <input maxLength={limiteTexto('m14_auditorias', 'auditor_nombre')}
                   type="text"
                   placeholder="Nombre del auditor"
                   value={auditor_nombre}

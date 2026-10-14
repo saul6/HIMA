@@ -177,7 +177,7 @@ export function Perfil() {
             <div className="flex-1 min-w-0">
               {editando ? (
                 <div className="flex items-center gap-2">
-                  <input maxLength={150}
+                  <input
                     value={nuevoNombre}
                     onChange={(e) => setNuevoNombre(e.target.value)}
                     autoFocus

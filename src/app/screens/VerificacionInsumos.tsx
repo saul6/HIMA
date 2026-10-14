@@ -44,6 +44,8 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { opCabecera, opInsert, opUpsert } from '@/lib/offline/construirOperaciones'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { InputContador } from '@/app/components/InputContador'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -146,7 +148,7 @@ function ToggleInsumo({
             placeholder="Cód. correctivo (opcional)"
             className="w-full h-8 px-2 rounded-lg border border-border bg-input-background text-xs"
           />
-          <input
+          <InputContador limite={limiteTexto('m13_incidencias', 'descripcion')}
             type="text"
             value={incidenciaDesc}
             onChange={(e) => onIncidenciaDesc(e.target.value)}
@@ -875,7 +877,7 @@ export function VerificacionInsumos() {
 
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
             <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Observaciones del mes</h2>
-            <TextareaContador
+            <TextareaContador limite={limiteTexto('m23_registro_mensual', 'observaciones')}
               value={obsLocal}
               onChange={(e) => setObsLocal(e.target.value)}
               rows={2}
@@ -955,13 +957,13 @@ export function VerificacionInsumos() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Verificó (Jefe del Cooler)</label>
-                  <input maxLength={150} type="text" value={nVerificoNombre} onChange={(e) => setNVerificoNombre(e.target.value)}
+                  <input maxLength={limiteTexto('m23_registro_mensual', 'verifico_nombre')} type="text" value={nVerificoNombre} onChange={(e) => setNVerificoNombre(e.target.value)}
                     placeholder="Nombre completo"
                     className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Autorizó (Gerente)</label>
-                  <input maxLength={150} type="text" value={nAutorizoNombre} onChange={(e) => setNAutorizoNombre(e.target.value)}
+                  <input maxLength={limiteTexto('m23_registro_mensual', 'autorizo_nombre')} type="text" value={nAutorizoNombre} onChange={(e) => setNAutorizoNombre(e.target.value)}
                     placeholder="Nombre completo"
                     className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm" />
                 </div>
@@ -1117,7 +1119,7 @@ export function VerificacionInsumos() {
                   </button>
 
                   <div className="flex gap-2">
-                    <input maxLength={150}
+                    <input maxLength={limiteTexto('m23_insumos', 'area')}
                       type="text"
                       value={catNuevaArea}
                       onChange={(e) => setCatNuevaArea(e.target.value)}

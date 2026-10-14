@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import { FormField } from "../FormField";
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 interface Props {
   formData: any;
@@ -158,7 +159,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
       </div>
 
       <div className="relative">
-        <TextareaContador
+        <TextareaContador limite={limiteTexto('aplicaciones', 'observaciones')}
           value={formData.observations}
           onChange={(e) => updateFormData({ observations: e.target.value })}
           placeholder="Observaciones adicionales..."
