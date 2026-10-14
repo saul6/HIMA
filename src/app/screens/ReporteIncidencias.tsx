@@ -45,8 +45,7 @@ import { Portal } from '@/app/components/Portal'
 
 const TITULO_MODULO = 'Reporte de Incidencias'
 const CLAVE_MODULO = 'M.A.D.Y · Por evento'
-const MAX_FOTOS_AVISO = 6
-const MAX_FOTOS_REPORTE = 150   // Hard cap: total de fotos por reporte (todas las incidencias)
+const MAX_FOTOS_INCIDENCIA = 6   // Tope duro por incidencia (el formulario bloquea al llegar)
 const MAX_FOTO_BYTES = 5.5 * 1024 * 1024
 const MAX_REINTENTOS_FOTO = 3
 
@@ -142,17 +141,15 @@ function IncidenciaForm({
   index,
   onChange,
   onQuitar,
-  totalFotosReporte,
 }: {
   inc: IncidenciaLocal
   index: number
   onChange: (upd: Partial<IncidenciaLocal>) => void
   onQuitar: () => void
-  totalFotosReporte: number
 }) {
   const inputCamaraRef = useRef<HTMLInputElement>(null)
   const inputGaleriaRef = useRef<HTMLInputElement>(null)
-  const atLimit = totalFotosReporte >= MAX_FOTOS_REPORTE
+  const atLimit = inc.fotos.length >= MAX_FOTOS_INCIDENCIA
   const reducedMotion = useReducedMotion()
 
   useEffect(() => {
@@ -162,10 +159,10 @@ function IncidenciaForm({
   async function handleFiles(files: FileList | null) {
     if (!files) return
 
-    const slotsRestantes = MAX_FOTOS_REPORTE - totalFotosReporte
+    const slotsRestantes = MAX_FOTOS_INCIDENCIA - inc.fotos.length
     if (slotsRestantes <= 0) {
       toast.warning(
-        'Alcanzaste el máximo de 150 fotos por reporte. Para subir más, crea otro reporte.',
+        `Máximo ${MAX_FOTOS_INCIDENCIA} fotos por incidencia. Agrega otra incidencia para subir más evidencia.`,
         { duration: 6000 }
       )
       return
@@ -180,7 +177,7 @@ function IncidenciaForm({
     const aAgregar = candidatas.slice(0, slotsRestantes)
     if (aAgregar.length < candidatas.length) {
       toast.warning(
-        'Alcanzaste el máximo de 150 fotos por reporte. Para subir más, crea otro reporte.',
+        `Máximo ${MAX_FOTOS_INCIDENCIA} fotos por incidencia: se agregaron ${aAgregar.length} de ${candidatas.length}.`,
         { duration: 6000 }
       )
     }
@@ -200,10 +197,6 @@ function IncidenciaForm({
     )
     toast.dismiss(toastId)
 
-    const totalEnEstaInc = inc.fotos.length + nuevas.length
-    if (totalEnEstaInc > MAX_FOTOS_AVISO && !atLimit) {
-      toast.warning('Límite recomendado: máximo 6 fotos por incidencia', { duration: 4000 })
-    }
     onChange({ fotos: [...inc.fotos, ...nuevas] })
   }
 
@@ -244,22 +237,13 @@ function IncidenciaForm({
           Se requiere al menos 1 foto como evidencia
         </p>
       )}
-      {inc.fotos.length >= MAX_FOTOS_AVISO && !atLimit && (
-        <div
-          className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs"
-          style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
-        >
-          <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-          Límite recomendado alcanzado (6 fotos). Puedes agregar más, pero puede afectar el rendimiento.
-        </div>
-      )}
       {atLimit && (
         <div
           className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs"
           style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
         >
           <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-          Máximo de 150 fotos por reporte alcanzado. Para subir más, crea otro reporte.
+          Máximo de 6 fotos por incidencia alcanzado. Agrega otra incidencia para subir más.
         </div>
       )}
 
@@ -683,6 +667,7 @@ export function ReporteIncidencias() {
       // PASO 3: Subir fotos secuencialmente con reintento (hasta MAX_REINTENTOS_FOTO por foto)
       let procesadas = 0
       let fallidas = 0
+      const detalleFallos: string[] = []
       let sesionExpirada = false
 
       for (let i = 0; i < incidencias.length && !sesionExpirada; i++) {
@@ -693,6 +678,7 @@ export function ReporteIncidencias() {
           const fotoLocal = inc.fotos[j]
           const path = `${orgId}/${reporteId}/${incidenciaId}/${crypto.randomUUID()}.jpg`
           let subida = false
+          let motivoFallo = 'error desconocido'
 
           for (let intento = 0; intento < MAX_REINTENTOS_FOTO; intento++) {
             try {
@@ -722,7 +708,8 @@ export function ReporteIncidencias() {
               break
             } catch (e) {
               console.error(`M13 foto ${j + 1} intento ${intento + 1}/${MAX_REINTENTOS_FOTO}:`, e)
-              const msg = e instanceof Error ? e.message : ''
+              const msg = (e as { message?: string } | null)?.message ?? ''
+              if (msg) motivoFallo = msg
               // Detectar sesión expirada (401/JWT) — abortar subida sin rollback
               if (msg.includes('401') || msg.includes('JWT') || msg.toLowerCase().includes('token')) {
                 sesionExpirada = true
@@ -733,7 +720,10 @@ export function ReporteIncidencias() {
             }
           }
 
-          if (!subida) fallidas++
+          if (!subida) {
+            fallidas++
+            detalleFallos.push(`Foto ${j + 1} de la incidencia ${i + 1}: ${motivoFallo}`)
+          }
           procesadas++
           setProgreso({ total: totalFotosASubir, procesadas, fallidas })
         }
@@ -756,8 +746,8 @@ export function ReporteIncidencias() {
         toast.success('Reporte guardado correctamente')
       } else {
         toast.warning(
-          `Reporte guardado. ${fallidas} foto(s) no se pudieron subir — el reporte y sus comentarios están guardados.`,
-          { duration: 8000 }
+          `Reporte guardado. ${fallidas} foto(s) no se pudieron subir (${detalleFallos.slice(0, 3).join('; ')}${detalleFallos.length > 3 ? '…' : ''}). El reporte y sus comentarios están guardados.`,
+          { duration: 12000 }
         )
       }
 
@@ -796,7 +786,7 @@ export function ReporteIncidencias() {
       setSheetPaso('firma_decision')
 
     } catch (err: unknown) {
-      const mensaje = err instanceof Error ? err.message : 'No se pudo guardar el reporte'
+      const mensaje = (err as { message?: string } | null)?.message || 'No se pudo guardar el reporte'
       if (mensaje.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
@@ -1272,34 +1262,10 @@ export function ReporteIncidencias() {
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
                     INCIDENCIAS *
                   </label>
-                  <span
-                    className="text-xs"
-                    style={{
-                      fontWeight: 600,
-                      color: totalFotos >= MAX_FOTOS_REPORTE
-                        ? 'var(--agro-danger-text)'
-                        : totalFotos >= MAX_FOTOS_REPORTE * 0.8
-                          ? 'var(--agro-warning-text)'
-                          : 'var(--muted-foreground)',
-                    }}
-                  >
-                    {totalFotos} / {MAX_FOTOS_REPORTE} fotos
+                  <span className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                    {totalFotos} foto{totalFotos !== 1 ? 's' : ''} (máx. {MAX_FOTOS_INCIDENCIA} por incidencia)
                   </span>
                 </div>
-
-                {/* Banner de límite alcanzado */}
-                {totalFotos >= MAX_FOTOS_REPORTE && (
-                  <div
-                    className="flex items-start gap-2 rounded-lg px-3 py-2 mb-3 text-xs"
-                    style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
-                  >
-                    <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" />
-                    <span>
-                      Alcanzaste el máximo de {MAX_FOTOS_REPORTE} fotos por reporte.
-                      Para subir más evidencia, crea otro reporte.
-                    </span>
-                  </div>
-                )}
 
                 <div className="space-y-3">
                   {incidencias.map((inc, idx) => (
@@ -1309,7 +1275,6 @@ export function ReporteIncidencias() {
                       index={idx}
                       onChange={(upd) => actualizarIncidencia(inc.uid, upd)}
                       onQuitar={() => quitarIncidencia(inc.uid)}
-                      totalFotosReporte={totalFotos}
                     />
                   ))}
                 </div>
