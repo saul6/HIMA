@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, marcarSesionCerrada } from '@/lib/supabase'
 import { useAuth, type UseAuthReturn } from '@/hooks/useAuth'
 
 interface AuthContextValue extends UseAuthReturn {
@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut(): Promise<void> {
+    marcarSesionCerrada(true)
     await supabase.auth.signOut({ scope: 'local' })
   }
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { type User } from '@supabase/supabase-js'
-import { supabase, initialAuthParams } from '@/lib/supabase'
+import { supabase, initialAuthParams, marcarSesionCerrada } from '@/lib/supabase'
 import type { Profile, Productor } from '@/types/database.types'
 import { devLog } from '@/lib/log'
 import { cacheGet, cachePut, cacheClearUser } from '@/lib/offline/db'
@@ -239,6 +239,7 @@ export function useAuth(): UseAuthReturn {
               setState({ user: session.user, ...datosPerfil, loading: false, isRecovery: true })
             }
           }
+          if (event === 'SIGNED_IN') marcarSesionCerrada(false)
           if (event === 'SIGNED_IN' && session?.access_token !== initialSession?.access_token) {
             // Solo para logins nuevos — la sesión de recarga ya fue manejada por getSession
             const datosPerfil = await cargarDatosPerfil(session!.user.id)
