@@ -123,19 +123,19 @@ export function MipPreventivoPDFPage({
           <View style={[thStyle, { flex: 1, backgroundColor: PC.section, alignItems: 'flex-start' }]}>
             <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>Tecnica preventiva</Text>
           </View>
-          <View style={[thStyle, { width: 60, backgroundColor: PC.section }]}>
+          <View style={[thStyle, { width: 56, backgroundColor: PC.section }]}>
             <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white, textAlign: 'center' }}>Maleza</Text>
           </View>
-          <View style={[thStyle, { width: 60, backgroundColor: PC.section }]}>
+          <View style={[thStyle, { width: 56, backgroundColor: PC.section }]}>
             <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white, textAlign: 'center' }}>Insectos e{'\n'}Invertebrados</Text>
           </View>
-          <View style={[thStyle, { width: 60, backgroundColor: PC.section }]}>
+          <View style={[thStyle, { width: 56, backgroundColor: PC.section }]}>
             <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white, textAlign: 'center' }}>Enfermedades y{'\n'}Nematodos</Text>
           </View>
-          <View style={[thStyle, { width: 60, backgroundColor: PC.section }]}>
+          <View style={[thStyle, { width: 56, backgroundColor: PC.section }]}>
             <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white, textAlign: 'center' }}>Plagas{'\n'}Vertebradas</Text>
           </View>
-          <View style={[thStyle, { width: 130, backgroundColor: PC.section, alignItems: 'flex-start', borderRightWidth: 0 }]}>
+          <View style={[thStyle, { width: 190, backgroundColor: PC.section, alignItems: 'flex-start', borderRightWidth: 0 }]}>
             <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>Comentario</Text>
           </View>
         </View>
@@ -144,34 +144,34 @@ export function MipPreventivoPDFPage({
           const bg = i % 2 === 1 ? ROW_ALT : PC.white
           return (
             <View key={i} style={{ flexDirection: 'row', backgroundColor: bg }}>
-              <View style={[tdStyle, { width: 20, padding: 3 }]}>
-                <Text style={{ fontSize: 7, color: PC.fieldValue }}>{item.numero ?? '—'}</Text>
+              <View style={[tdStyle, { width: 20, padding: 5 }]}>
+                <Text style={{ fontSize: 8, color: PC.fieldValue }}>{item.numero ?? '—'}</Text>
               </View>
-              <View style={[tdStyle, { flex: 1, alignItems: 'flex-start', padding: 3 }]}>
-                <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.texto}</Text>
+              <View style={[tdStyle, { flex: 1, alignItems: 'flex-start', padding: 5 }]}>
+                <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.texto}</Text>
               </View>
-              <View style={[tdStyle, { width: 60 }]}>
+              <View style={[tdStyle, { width: 56 }]}>
                 <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: item.contra_maleza ? PC.section : PC.fieldValue }}>
                   {marca(item.contra_maleza)}
                 </Text>
               </View>
-              <View style={[tdStyle, { width: 60 }]}>
+              <View style={[tdStyle, { width: 56 }]}>
                 <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: item.contra_insectos ? PC.section : PC.fieldValue }}>
                   {marca(item.contra_insectos)}
                 </Text>
               </View>
-              <View style={[tdStyle, { width: 60 }]}>
+              <View style={[tdStyle, { width: 56 }]}>
                 <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: item.contra_enfermedades ? PC.section : PC.fieldValue }}>
                   {marca(item.contra_enfermedades)}
                 </Text>
               </View>
-              <View style={[tdStyle, { width: 60 }]}>
+              <View style={[tdStyle, { width: 56 }]}>
                 <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: item.contra_vertebrados ? PC.section : PC.fieldValue }}>
                   {marca(item.contra_vertebrados)}
                 </Text>
               </View>
-              <View style={[tdStyle, { width: 130, alignItems: 'flex-start', borderRightWidth: 0 }]}>
-                <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.comentario ?? ''}</Text>
+              <View style={[tdStyle, { width: 190, alignItems: 'flex-start', borderRightWidth: 0 }]}>
+                <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.comentario ?? ''}</Text>
               </View>
             </View>
           )

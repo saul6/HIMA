@@ -57,12 +57,12 @@ export interface MuestrasLaboratorioConsolidadoProps {
 const MARGIN = 14
 
 const NUM_W = 20
-const FECHA_W = 44
-const HORA_W = 28
-const DESC_W = 90
-const MICRO_W = 28
-const LAB_W = 60
-const SOL_W = 56
+const FECHA_W = 56
+const HORA_W = 36
+const DESC_W = 130
+const MICRO_W = 38
+const LAB_W = 90
+const SOL_W = 80
 
 const LABEL_MAP: Record<string, string> = {
   m_aerobias: 'M. aerobias',
@@ -116,10 +116,10 @@ function GrupoHeaderRow({ indicadores, patogenos }: { indicadores: Microorganism
     <View style={{ flexDirection: 'row', backgroundColor: PC.section }}>
       <View style={[thStyle, { width: NUM_W + FECHA_W + HORA_W + DESC_W, backgroundColor: PC.section }]} />
       <View style={[thStyle, { width: indW, backgroundColor: PC.section }]}>
-        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.white }}>m.o. Indicadores</Text>
+        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7.5, color: PC.white }}>m.o. Indicadores</Text>
       </View>
       <View style={[thStyle, { width: patW, backgroundColor: PC.section }]}>
-        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.white }}>m.o. Patogenos</Text>
+        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7.5, color: PC.white }}>m.o. Patogenos</Text>
       </View>
       <View style={{ width: LAB_W + SOL_W, backgroundColor: PC.section }} />
     </View>
@@ -130,29 +130,29 @@ function ColumnHeaderRow({ indicadores, patogenos }: { indicadores: Microorganis
   return (
     <View style={{ flexDirection: 'row', backgroundColor: HDR_BG }}>
       <View style={[thStyle, { width: NUM_W, backgroundColor: HDR_BG }]}>
-        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.fieldValue }}>No.</Text>
+        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7.5, color: PC.fieldValue }}>No.</Text>
       </View>
       <View style={[thStyle, { width: FECHA_W, backgroundColor: HDR_BG, alignItems: 'flex-start' }]}>
-        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.fieldValue }}>Fecha de muestreo</Text>
+        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7.5, color: PC.fieldValue }}>Fecha de muestreo</Text>
       </View>
       <View style={[thStyle, { width: HORA_W, backgroundColor: HDR_BG, alignItems: 'flex-start' }]}>
-        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.fieldValue }}>Hora</Text>
+        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7.5, color: PC.fieldValue }}>Hora</Text>
       </View>
       <View style={[thStyle, { width: DESC_W, backgroundColor: HDR_BG, alignItems: 'flex-start' }]}>
-        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.fieldValue }}>Descripcion de la muestra</Text>
+        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7.5, color: PC.fieldValue }}>Descripcion de la muestra</Text>
       </View>
       {[...indicadores, ...patogenos].map((m) => (
         <View key={m.codigo} style={[thStyle, { width: MICRO_W, backgroundColor: HDR_BG }]}>
-          <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.fieldValue, textAlign: 'center' }}>
+          <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.fieldValue, textAlign: 'center' }}>
             {LABEL_MAP[m.codigo] ?? m.label ?? m.codigo}
           </Text>
         </View>
       ))}
       <View style={[thStyle, { width: LAB_W, backgroundColor: HDR_BG, alignItems: 'flex-start' }]}>
-        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.fieldValue }}>Laboratorio</Text>
+        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7.5, color: PC.fieldValue }}>Laboratorio</Text>
       </View>
       <View style={[thStyle, { width: SOL_W, backgroundColor: HDR_BG, alignItems: 'flex-start', borderRightWidth: 0 }]}>
-        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.fieldValue }}>Solicitante</Text>
+        <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7.5, color: PC.fieldValue }}>Solicitante</Text>
       </View>
     </View>
   )
@@ -163,17 +163,17 @@ function DataRow({ muestra, num, indicadores, patogenos, alt }: { muestra: Muest
   const bg = alt ? ROW_ALT : PC.white
   return (
     <View style={{ flexDirection: 'row', backgroundColor: bg }}>
-      <View style={[tdStyle, { width: NUM_W }]}><Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{num}</Text></View>
-      <View style={[tdStyle, { width: FECHA_W, alignItems: 'flex-start', padding: 3 }]}><Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{formatFecha(muestra.fecha_muestreo)}</Text></View>
-      <View style={[tdStyle, { width: HORA_W, alignItems: 'flex-start', padding: 3 }]}><Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{muestra.hora_muestreo ?? ''}</Text></View>
-      <View style={[tdStyle, { width: DESC_W, alignItems: 'flex-start', padding: 3 }]}><Text style={{ fontSize: 6.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{muestra.descripcion_muestra}</Text></View>
+      <View style={[tdStyle, { width: NUM_W }]}><Text style={{ fontSize: 7.5, color: PC.fieldValue }}>{num}</Text></View>
+      <View style={[tdStyle, { width: FECHA_W, alignItems: 'flex-start', padding: 3 }]}><Text style={{ fontSize: 7.5, color: PC.fieldValue }}>{formatFecha(muestra.fecha_muestreo)}</Text></View>
+      <View style={[tdStyle, { width: HORA_W, alignItems: 'flex-start', padding: 3 }]}><Text style={{ fontSize: 7.5, color: PC.fieldValue }}>{muestra.hora_muestreo ?? ''}</Text></View>
+      <View style={[tdStyle, { width: DESC_W, alignItems: 'flex-start', padding: 3 }]}><Text style={{ fontSize: 7.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{muestra.descripcion_muestra}</Text></View>
       {allMicro.map((m) => (
         <View key={m.codigo} style={[tdStyle, { width: MICRO_W }]}>
-          <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{muestra.microorganismos.includes(m.codigo) ? 'X' : ''}</Text>
+          <Text style={{ fontSize: 7.5, color: PC.fieldValue }}>{muestra.microorganismos.includes(m.codigo) ? 'X' : ''}</Text>
         </View>
       ))}
-      <View style={[tdStyle, { width: LAB_W, alignItems: 'flex-start', padding: 3 }]}><Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{muestra.laboratorio}</Text></View>
-      <View style={[tdStyle, { width: SOL_W, alignItems: 'flex-start', padding: 3, borderRightWidth: 0 }]}><Text style={{ fontSize: 6.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{muestra.solicitante_nombre}</Text></View>
+      <View style={[tdStyle, { width: LAB_W, alignItems: 'flex-start', padding: 3 }]}><Text style={{ fontSize: 7.5, color: PC.fieldValue }}>{muestra.laboratorio}</Text></View>
+      <View style={[tdStyle, { width: SOL_W, alignItems: 'flex-start', padding: 3, borderRightWidth: 0 }]}><Text style={{ fontSize: 7.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{muestra.solicitante_nombre}</Text></View>
     </View>
   )
 }
