@@ -432,7 +432,7 @@ export function AuditoriaPagina({
           return (
             <View key={sec.id}>
               {/* Encabezado de sección */}
-              <View style={s.secRow} wrap={false}>
+              <View style={s.secRow} wrap={false} minPresenceAhead={60}>
                 <Text style={s.secCell}>{sec.codigo} - {sec.nombre}</Text>
                 <Text style={s.secScore}>
                   {pos > 0
