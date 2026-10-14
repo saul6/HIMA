@@ -200,19 +200,19 @@ export function InventarioBotiquinGGConsolidadoPDF({ filas, orgNombre }: {
                 <View style={{ width: COL2.fecha, padding: '3px 4px', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{formatFecha(f.fecha)}</Text>
                 </View>
-                <View style={{ width: COL2.rancho, padding: '3px 4px', backgroundColor: bg, justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
+                <View style={{ width: COL2.rancho, padding: '3px 4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.rancho}</Text>
                 </View>
                 <View style={{ width: COL2.botiquin, padding: '3px 4px', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.botiquin_num ?? '—'}</Text>
                 </View>
-                <View style={{ width: COL2.realizo, padding: '3px 4px', backgroundColor: bg, justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
+                <View style={{ width: COL2.realizo, padding: '3px 4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.realizo ?? '—'}</Text>
                 </View>
                 <View style={{ width: COL2.total, padding: '3px 4px', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{String(f.total_materiales)}</Text>
                 </View>
-                <View style={{ width: COL2.obs, padding: '3px 4px', backgroundColor: bg, justifyContent: 'center' }}>
+                <View style={{ width: COL2.obs, padding: '3px 4px', backgroundColor: bg }}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.observaciones ?? ''}</Text>
                 </View>
               </View>

@@ -243,7 +243,7 @@ export function MantenimientoEquiposGGConsolidadoPDF({ filas, orgNombre }: {
                 <View style={{ width: COL.equipo, padding: '3px 4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{f.equipo ?? '—'}</Text>
                 </View>
-                <View style={{ width: COL.actividad, padding: '3px 4px', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
+                <View style={{ width: COL.actividad, padding: '3px 4px', backgroundColor: bg, alignItems: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
                   <Text style={{ fontSize: 7, color: PC.fieldValue }}>{tipo}</Text>
                 </View>
                 {CHECK_COLS.map(({ key }) => {
