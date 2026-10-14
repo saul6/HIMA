@@ -67,7 +67,7 @@ function formatFechaPDF(iso: string): string {
 // Celda con fondo de color para Estado e indicador Protegido
 function CeldaColor({ width, text, bg, color }: { width: number; text: string; bg: string; color: string }) {
   return (
-    <View style={{ width, borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, paddingVertical: 3, paddingHorizontal: 3, justifyContent: 'center', backgroundColor: bg }}>
+    <View style={{ width, borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, paddingVertical: 3, paddingHorizontal: 3, backgroundColor: bg }}>
       <Text style={{ fontSize: 8, color, textAlign: 'center', fontFamily: 'Helvetica-Bold' }}>{text}</Text>
     </View>
   )

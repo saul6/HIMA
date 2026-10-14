@@ -1,6 +1,7 @@
 import { View, Text } from '@react-pdf/renderer'
 import type { ReactNode } from 'react'
 import { PC } from './tokens'
+import { partirPalabraLarga } from './texto'
 
 // ── PdfTable ─────────────────────────────────────────────────────────────────
 
@@ -106,6 +107,7 @@ export function PdfTableCell({ children, width, align = 'center' }: PdfTableCell
           color: PC.fieldValue,
           textAlign: align,
         }}
+        hyphenationCallback={partirPalabraLarga}
       >
         {children}
       </Text>

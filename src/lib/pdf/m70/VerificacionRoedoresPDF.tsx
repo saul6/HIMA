@@ -4,6 +4,7 @@ import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
 import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
 import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
 import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
@@ -80,7 +81,7 @@ function SubHC({ label }: { label: string }) {
 
 function BoolCell({ val, bg }: { val: boolean; bg: string }) {
   return (
-    <View style={{ width: COL.boolW, minWidth: COL.boolW, backgroundColor: bg, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border, padding: '3px 2px' }}>
+    <View style={{ width: COL.boolW, minWidth: COL.boolW, backgroundColor: bg, alignItems: 'center', borderRightWidth: 1, borderRightColor: PC.border, padding: '3px 2px' }}>
       <Text style={{ fontSize: 7, color: PC.fieldValue, fontFamily: 'Helvetica-Bold' }}>{val ? 'X' : ''}</Text>
     </View>
   )
@@ -89,7 +90,7 @@ function BoolCell({ val, bg }: { val: boolean; bg: string }) {
 function DC({ w, children, bg, right = true }: { w: number; children?: React.ReactNode; bg?: string; right?: boolean }) {
   return (
     <View style={{ width: w, minWidth: w, padding: '3px 4px', backgroundColor: bg ?? PC.white, borderRightWidth: right ? 1 : 0, borderRightColor: PC.border }}>
-      <Text style={{ fontSize: 7, color: PC.fieldValue }}>{children ?? ''}</Text>
+      <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{children ?? ''}</Text>
     </View>
   )
 }

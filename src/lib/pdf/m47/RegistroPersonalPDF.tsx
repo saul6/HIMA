@@ -254,7 +254,7 @@ export function RegistroPersonalPDF({
             const bg = idx % 2 === 1 ? ROW_ALT : PC.white
             return (
               <View key={idx} style={{ flexDirection: 'row', backgroundColor: bg }}>
-                <View style={[tdStyle, { width: COL_NO, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }]}>
+                <View style={[tdStyle, { width: COL_NO, backgroundColor: bg, alignItems: 'center' }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue, textAlign: 'center' }}>{w.numero}</Text>
                 </View>
                 <View style={[tdStyle, { width: COL_PUESTO, backgroundColor: bg }]}>
@@ -266,33 +266,33 @@ export function RegistroPersonalPDF({
                 <View style={[tdStyle, { width: COL_DIR, backgroundColor: bg }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.direccion)}</Text>
                 </View>
-                <View style={[tdStyle, { width: COL_TCASA, backgroundColor: bg, justifyContent: 'center' }]}>
+                <View style={[tdStyle, { width: COL_TCASA, backgroundColor: bg }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.telefono_casa)}</Text>
                 </View>
-                <View style={[tdStyle, { width: COL_CEL, backgroundColor: bg, justifyContent: 'center' }]}>
+                <View style={[tdStyle, { width: COL_CEL, backgroundColor: bg }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.celular)}</Text>
                 </View>
-                <View style={[tdStyle, { width: COL_FNAC, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }]}>
+                <View style={[tdStyle, { width: COL_FNAC, backgroundColor: bg, alignItems: 'center' }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue, textAlign: 'center' }}>{fmtFecha(w.fecha_nacimiento)}</Text>
                 </View>
                 <View style={[tdStyle, { width: COL_EM_NOM, backgroundColor: bg }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.emergencia_nombre)}</Text>
                 </View>
-                <View style={[tdStyle, { width: COL_EM_PAR, backgroundColor: bg, justifyContent: 'center' }]}>
+                <View style={[tdStyle, { width: COL_EM_PAR, backgroundColor: bg }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.emergencia_parentesco)}</Text>
                 </View>
-                <View style={[tdStyle, { width: COL_EM_TEL, backgroundColor: bg, justifyContent: 'center' }]}>
+                <View style={[tdStyle, { width: COL_EM_TEL, backgroundColor: bg }]}>
                   <Text style={{ fontSize: 6, color: PC.fieldValue }}>{t(w.emergencia_telefono)}</Text>
                 </View>
                 {documentos.map((d) => (
-                  <View key={d.id} style={[tdStyle, { width: COL_ITEM, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }]}>
+                  <View key={d.id} style={[tdStyle, { width: COL_ITEM, backgroundColor: bg, alignItems: 'center' }]}>
                     <Text style={{ fontSize: 6, color: PC.fieldValue, textAlign: 'center' }}>
                       {w.checklist[d.id] ? 'Si' : ''}
                     </Text>
                   </View>
                 ))}
                 {capacitaciones.map((c) => (
-                  <View key={c.id} style={[tdStyle, { width: COL_ITEM, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }]}>
+                  <View key={c.id} style={[tdStyle, { width: COL_ITEM, backgroundColor: bg, alignItems: 'center' }]}>
                     <Text style={{ fontSize: 6, color: PC.fieldValue, textAlign: 'center' }}>
                       {w.checklist[c.id] ? 'Si' : ''}
                     </Text>

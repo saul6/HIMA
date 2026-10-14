@@ -590,14 +590,21 @@ export function RegistroPersonal() {
           <div className="px-4 pb-6">
             <PasoFirmaRegistro
               modulo="M47"
-              registroId={pendienteFirmaId}
+              ids={[pendienteFirmaId]}
               descripcion={`Registro Personal — ${form.nombre}`}
-              onFirmadoYPDF={() => {
+              obligatoria={obligatoria}
+              onFirmadoYPDF={async () => {
+                const ranchoId = form.rancho_id
                 handleCerrarSheet()
+                if (orgId && ranchoId) {
+                  try {
+                    await generarRegistroPersonalPDF(ranchoId, orgId, codigoClave)
+                  } catch (e: any) {
+                    toast.error(e?.message ?? 'Error al generar PDF')
+                  }
+                }
               }}
-              onDespues={() => {
-                handleCerrarSheet()
-              }}
+              onDespues={!obligatoria ? () => handleCerrarSheet() : undefined}
             />
           </div>
         )}
