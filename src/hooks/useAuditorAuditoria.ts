@@ -388,23 +388,26 @@ export function useAuditorAuditoria(auditoriaId: string | undefined) {
     const orgId = auditoria?.org_id
     if (!orgId) throw new Error('No se pudo identificar la empresa auditada')
 
-    // Asegurar que exista la instancia (sin cambiar respuesta ni aplicabilidad)
-    const { data: instData, error: instErr } = await tbl('aud_instancia_pregunta')
-      .upsert(
-        { org_id: orgId, auditoria_id: auditoriaId, pregunta_id: params.preguntaId },
-        { onConflict: 'auditoria_id,pregunta_id', ignoreDuplicates: true }
-      )
-      .select('id')
-      .single()
-
-    // Si no existe todavía (ignoreDuplicates no devuelve data), buscarlo
-    let instanciaId: string | undefined = (instData as { id: string } | null)?.id
-    if (instErr || !instanciaId) {
+    // Asegurar que exista la instancia (sin cambiar respuesta ni aplicabilidad).
+    // Primero el mapa local; si no está, upsert con maybeSingle (ignoreDuplicates no devuelve fila
+    // cuando ya existe y .single() respondía 406) y, de último, búsqueda directa.
+    let instanciaId: string | undefined = instanciasMap.get(params.preguntaId)
+    if (!instanciaId) {
+      const { data: instData } = await tbl('aud_instancia_pregunta')
+        .upsert(
+          { org_id: orgId, auditoria_id: auditoriaId, pregunta_id: params.preguntaId },
+          { onConflict: 'auditoria_id,pregunta_id', ignoreDuplicates: true }
+        )
+        .select('id')
+        .maybeSingle()
+      instanciaId = (instData as { id: string } | null)?.id
+    }
+    if (!instanciaId) {
       const { data: existente } = await tbl('aud_instancia_pregunta')
         .select('id')
         .eq('auditoria_id', auditoriaId)
         .eq('pregunta_id', params.preguntaId)
-        .single()
+        .maybeSingle()
       instanciaId = (existente as { id: string } | null)?.id
     }
     if (!instanciaId) throw new Error('No se pudo obtener la instancia')

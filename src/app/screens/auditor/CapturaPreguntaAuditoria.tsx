@@ -18,7 +18,8 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { EvidenciaPanel } from './EvidenciaPanel'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
-import { traducirErrorBd } from '@/lib/erroresBd'
+import { traducirErrorBd, mensajeErrorBd } from '@/lib/erroresBd'
+import { guardarBorradorAuditor, cargarBorradorAuditor, borrarBorradorAuditor, claveBorradorAuditor } from '@/lib/idb/auditorBorradorStore'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -89,9 +90,22 @@ const CLASS_TO_RESP: Partial<Record<string, AudRespuesta>> = {
 
 const VALID_MAX_SET: Set<number> = new Set([15, 10, 5, 3])
 
+// Tiempo máximo de un guardado: si el servidor o la sesión no responden, se avisa en vez de girar sin fin.
+const GUARDADO_TIMEOUT_MS = 20000
+
+function conTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error('GUARDADO_TIMEOUT')), ms)
+    p.then(v => { clearTimeout(t); resolve(v) }, e => { clearTimeout(t); reject(e) })
+  })
+}
+
 function traducirError(err: unknown): string {
   const e = err as { message?: string; code?: string }
   const msg = e?.message ?? String(err)
+  if (msg === 'GUARDADO_TIMEOUT') {
+    return 'No se guardó: tardó demasiado. Revisa tu conexión o vuelve a iniciar sesión y pulsa Reintentar. Lo escrito está guardado en este dispositivo.'
+  }
   const bd = traducirErrorBd(msg)
   if (bd) return bd
   if (e?.code === '42501' || msg.toLowerCase().includes('row-level security') || msg.toLowerCase().includes('policy')) {
@@ -145,15 +159,26 @@ function CampoEsquema({
           <option value="">Seleccionar…</option>
           {esquema.opciones.map(op => <option key={op} value={op}>{op}</option>)}
         </select>
-      ) : (
+      ) : esquema.tipo === 'fecha' || esquema.tipo_campo === 'number' ? (
         <input
-          type={esquema.tipo === 'fecha' ? 'date' : esquema.tipo_campo === 'number' ? 'number' : 'text'}
+          type={esquema.tipo === 'fecha' ? 'date' : 'number'}
           value={value}
           onChange={e => onChange(e.target.value)}
           onBlur={onBlur}
           disabled={disabled}
           placeholder={esquema.info_minima ?? undefined}
           style={{ ...base, height: '2.25rem' }}
+        />
+      ) : (
+        <TextareaContador
+          limite={limiteTexto('aud_instancia_valores', 'valor_texto')!}
+          rows={2}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          onBlur={onBlur}
+          disabled={disabled}
+          placeholder={esquema.info_minima ?? undefined}
+          style={{ ...base, minHeight: '2.25rem', resize: 'vertical' }}
         />
       )}
     </div>
@@ -215,29 +240,120 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
 
     const pendingRef = useRef<{
       pregId: string | null
-      args: { resp: AudRespuesta; vals: Map<string, string>; obs: string | undefined; obsExistia: boolean } | null
+      args: { resp: AudRespuesta | null } | null
       timer: ReturnType<typeof setTimeout> | null
       promise: Promise<void> | null
     }>({ pregId: null, args: null, timer: null, promise: null })
 
+    // Cola: un solo guardado a la vez por pregunta (los siguientes esperan al anterior)
+    const colaRef = useRef<Promise<unknown>>(Promise.resolve())
+    // Cuenta de ediciones: el borrador local solo se borra si no se escribió nada después de guardar
+    const editSeqRef = useRef(0)
+    const borradorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+    type ArgsGuardado = { resp: AudRespuesta | null; vals: Map<string, string>; obs: string | undefined; obsExistia: boolean }
+
+    // Lee SIEMPRE lo último que hay en pantalla (todos los campos juntos) al momento de guardar
+    function leerArgs(pregId: string, resp: AudRespuesta | null): ArgsGuardado {
+      return {
+        resp,
+        vals: valsRef.current.get(pregId) ?? new Map<string, string>(),
+        obs: obsRef.current.get(pregId),
+        obsExistia: obsRef.current.has(pregId),
+      }
+    }
+
+    // ── Borrador local (IndexedDB): lo escrito sobrevive a una recarga hasta confirmar el guardado ──
+    function programarBorrador(pregId: string) {
+      editSeqRef.current += 1
+      if (borradorTimerRef.current) clearTimeout(borradorTimerRef.current)
+      borradorTimerRef.current = setTimeout(() => {
+        borradorTimerRef.current = null
+        void guardarBorradorAuditor(claveBorradorAuditor(auditoriaId, pregId), {
+          savedAt: Date.now(),
+          valores: Array.from((valsRef.current.get(pregId) ?? new Map<string, string>()).entries()),
+          observacion: obsRef.current.get(pregId),
+        })
+      }, 400)
+    }
+
+    // Recuperar borrador al abrir la pregunta (solo si difiere de lo ya guardado)
+    useEffect(() => {
+      if (cargando || cerrada) return
+      let cancelado = false
+      void cargarBorradorAuditor(claveBorradorAuditor(auditoriaId, preguntaId)).then(b => {
+        if (cancelado || !b) return
+        const actuales = valsRef.current.get(preguntaId) ?? new Map<string, string>()
+        const difValores = b.valores.filter(([k, v]) => (actuales.get(k) ?? '') !== v)
+        const difObs = b.observacion !== undefined && b.observacion !== (obsRef.current.get(preguntaId) ?? '')
+        if (difValores.length === 0 && !difObs) {
+          void borrarBorradorAuditor(claveBorradorAuditor(auditoriaId, preguntaId))
+          return
+        }
+        if (difValores.length > 0) {
+          setValoresMap(prev => {
+            const next = new Map(prev)
+            const campos = new Map(next.get(preguntaId) ?? [])
+            for (const [k, v] of difValores) campos.set(k, v)
+            next.set(preguntaId, campos)
+            return next
+          })
+        }
+        if (difObs) setObservacionesMap(prev => new Map(prev).set(preguntaId, b.observacion as string))
+        setSaveStatus('error')
+        setSaveMessage('Se recuperó lo que escribiste y no se había guardado. Pulsa Reintentar para guardarlo.')
+        onEstadoGuardado?.('error')
+      })
+      return () => { cancelado = true }
+    }, [cargando, cerrada, auditoriaId, preguntaId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Al cerrar o recargar la pestaña, escribe el borrador de inmediato
+    useEffect(() => {
+      const alSalir = () => {
+        if (borradorTimerRef.current === null) return
+        clearTimeout(borradorTimerRef.current)
+        borradorTimerRef.current = null
+        void guardarBorradorAuditor(claveBorradorAuditor(auditoriaId, preguntaId), {
+          savedAt: Date.now(),
+          valores: Array.from((valsRef.current.get(preguntaId) ?? new Map<string, string>()).entries()),
+          observacion: obsRef.current.get(preguntaId),
+        })
+      }
+      window.addEventListener('pagehide', alSalir)
+      return () => window.removeEventListener('pagehide', alSalir)
+    }, [auditoriaId, preguntaId])
+
     const executeSave = useCallback(async (
       pregId: string,
-      args: { resp: AudRespuesta; vals: Map<string, string>; obs: string | undefined; obsExistia: boolean },
+      args: ArgsGuardado,
     ): Promise<void> => {
       setSaveStatus('saving')
       setSaveMessage('')
+      onEstadoGuardado?.('saving')
+      const seq = editSeqRef.current
       const allPregs = modulosData.flatMap(m => m.preguntas)
       const preg = allPregs.find(p => p.id === pregId)
-      const promise = guardarRespuesta({
-        preguntaId: pregId,
-        respuesta: args.resp,
-        trigger: preg?.trigger_falla_automatica ?? 'ninguno',
-        valoresMap: args.vals,
-        observacion: args.obs,
-        obsExistia: args.obsExistia,
-      })
+      const hacer = () => args.resp
+        ? guardarRespuesta({
+            preguntaId: pregId,
+            respuesta: args.resp,
+            trigger: preg?.trigger_falla_automatica ?? 'ninguno',
+            valoresMap: args.vals,
+            observacion: args.obs,
+            obsExistia: args.obsExistia,
+          })
+        : guardarComentarios({
+            preguntaId: pregId,
+            valoresMap: args.vals,
+            observacion: args.obs,
+            obsExistia: args.obsExistia,
+          })
+      const turno = colaRef.current.catch(() => {}).then(() => conTimeout(hacer(), GUARDADO_TIMEOUT_MS))
+      colaRef.current = turno
+      const promise = turno
         .then(() => {
           pendingRef.current.promise = null
+          if (editSeqRef.current === seq) void borrarBorradorAuditor(claveBorradorAuditor(auditoriaId, pregId))
           setSaveStatus('saved')
           setSaveMessage('')
           onEstadoGuardado?.('saved')
@@ -256,7 +372,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
         })
       pendingRef.current.promise = promise
       return promise
-    }, [guardarRespuesta, modulosData, onEstadoGuardado, onAfterSave, onScoringInvalidated]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [guardarRespuesta, guardarComentarios, modulosData, auditoriaId, onEstadoGuardado, onAfterSave, onScoringInvalidated]) // eslint-disable-line react-hooks/exhaustive-deps
 
     const flushPendientes = useCallback(async (): Promise<boolean> => {
       const p = pendingRef.current
@@ -265,8 +381,8 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
         p.timer = null
       }
       if (p.args !== null && p.pregId !== null) {
-        const args   = p.args
         const pregId = p.pregId
+        const args   = leerArgs(pregId, p.args.resp)
         p.args = null
         try {
           await executeSave(pregId, args)
@@ -292,61 +408,46 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
     }), [flushPendientes, saveStatus])
 
     function scheduleSave(pregId: string, resp: AudRespuesta) {
-      const vals      = valsRef.current.get(pregId) ?? new Map<string, string>()
-      const obs       = obsRef.current.get(pregId)
-      const obsExistia = obsRef.current.has(pregId)
-      const args = { resp, vals, obs, obsExistia }
-
       if (pendingRef.current.timer !== null) {
         clearTimeout(pendingRef.current.timer)
         pendingRef.current.timer = null
       }
       pendingRef.current.pregId = pregId
-      pendingRef.current.args   = args
+      pendingRef.current.args   = { resp }
 
       const timer = setTimeout(() => {
         pendingRef.current.args  = null
         pendingRef.current.timer = null
-        executeSave(pregId, args).catch(() => { /* handled in executeSave */ })
+        executeSave(pregId, leerArgs(pregId, resp)).catch(() => { /* handled in executeSave */ })
       }, 50)
       pendingRef.current.timer = timer
     }
 
+    // Al salir de un campo: un solo guardado en cola por pregunta que junta todos los campos
+    // (comentarios + observación), con o sin respuesta.
     function scheduleBlurSave(pregId: string) {
       if (pendingRef.current.timer !== null) {
         clearTimeout(pendingRef.current.timer)
         pendingRef.current.timer = null
       }
-      const resp = respRef.current.get(pregId)
-      if (resp) {
-        const vals       = valsRef.current.get(pregId) ?? new Map<string, string>()
-        const obs        = obsRef.current.get(pregId)
-        const obsExistia = obsRef.current.has(pregId)
-        const args = { resp, vals, obs, obsExistia }
-        pendingRef.current.pregId = pregId
-        pendingRef.current.args   = args
-        const timer = setTimeout(() => {
-          pendingRef.current.args  = null
-          pendingRef.current.timer = null
-          executeSave(pregId, args).catch(() => { /* handled */ })
-        }, 400)
-        pendingRef.current.timer = timer
-      } else {
-        const vals       = valsRef.current.get(pregId) ?? new Map<string, string>()
-        const obs        = obsRef.current.get(pregId)
-        const obsExistia = obsRef.current.has(pregId)
-        if (vals.size === 0 && obs === undefined) return
-        const timer = setTimeout(() => {
-          setSaveStatus('saving')
-          guardarComentarios({ preguntaId: pregId, valoresMap: vals, observacion: obs, obsExistia })
-            .then(() => {
-              setSaveStatus('saved')
-              setTimeout(() => setSaveStatus(s => s === 'saved' ? 'idle' : s), 2500)
-            })
-            .catch((err: unknown) => { setSaveStatus('error'); setSaveMessage(traducirError(err)) })
-        }, 400)
-        pendingRef.current.timer = timer
+      const resp = respRef.current.get(pregId) ?? null
+      if (!resp) {
+        const vals = valsRef.current.get(pregId)
+        if ((!vals || vals.size === 0) && obsRef.current.get(pregId) === undefined) return
       }
+      pendingRef.current.pregId = pregId
+      pendingRef.current.args   = { resp }
+      const timer = setTimeout(() => {
+        pendingRef.current.args  = null
+        pendingRef.current.timer = null
+        executeSave(pregId, leerArgs(pregId, respRef.current.get(pregId) ?? null)).catch(() => { /* handled */ })
+      }, 400)
+      pendingRef.current.timer = timer
+    }
+
+    function reintentarGuardado() {
+      const pregId = preguntaId
+      executeSave(pregId, leerArgs(pregId, respRef.current.get(pregId) ?? null)).catch(() => { /* handled */ })
     }
 
     // ── Handlers ──────────────────────────────────────────────────────────────
@@ -370,10 +471,12 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
         next.set(pregId, campos)
         return next
       })
+      programarBorrador(pregId)
     }
 
     function handleObservacion(pregId: string, v: string) {
       setObservacionesMap(prev => new Map(prev).set(pregId, v))
+      programarBorrador(pregId)
     }
 
     // ── Herencia state ────────────────────────────────────────────────────────
@@ -405,6 +508,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
         onScoringInvalidated?.()
       } catch (e) {
         console.error('[CapturaPregunta] confirmarHerencia', e)
+        toast.error(mensajeErrorBd(e, 'No se pudo confirmar el dato heredado. Reintenta.'))
       }
     }
 
@@ -416,17 +520,19 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
         onScoringInvalidated?.()
       } catch (e) {
         console.error('[CapturaPregunta] rechazarHerencia', e)
+        toast.error(mensajeErrorBd(e, 'No se pudo rechazar el dato heredado. Reintenta.'))
       }
     }
 
     async function handleResolverHerencia(valorId: string, res: 'propio' | 'propuesto') {
       try {
-        const { error } = await supabase.rpc('aud_herencia_resolver', { p_valor_id: valorId, p_resolucion: res })
+        const { error } = await supabase.rpc('aud_herencia_resolver', { p_valor_id: valorId, p_opcion: res })
         if (error) throw error
         await recargarHerencia()
         onScoringInvalidated?.()
       } catch (e) {
         console.error('[CapturaPregunta] resolverHerencia', e)
+        toast.error(mensajeErrorBd(e, 'No se pudo resolver el conflicto. Reintenta.'))
       }
     }
 
@@ -1748,8 +1854,16 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               <div className="field-error-shake flex items-center gap-2 w-full">
                 <span className="flex items-center gap-1 text-[11px] flex-1 min-w-0" style={{ color: 'var(--agro-danger-text)' }}>
                   <XCircle size={12} className="flex-shrink-0" />
-                  <span className="line-clamp-2">{saveMessage || 'No se pudo guardar. Reintenta.'}</span>
+                  <span className="line-clamp-3">{saveMessage || 'No se pudo guardar. Reintenta.'}</span>
                 </span>
+                <button
+                  type="button"
+                  onClick={reintentarGuardado}
+                  className="text-[11px] font-semibold px-2 py-1 rounded-lg flex-shrink-0"
+                  style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+                >
+                  Reintentar
+                </button>
               </div>
             )}
           </div>
