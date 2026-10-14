@@ -33,6 +33,8 @@ import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
+import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
@@ -112,6 +114,8 @@ export function LimpiezaBanosQuimicos() {
   const orgId = profile?.org_id ?? null
   const termino = terminosSitio.singular
   const { obligatoria, tengoFirma } = useFirmaContext()
+  const todosIds = registros.map((r) => r.id)
+  const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M28', todosIds)
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M28')
   const { guardar: guardarOffline } = useGuardarOffline('M28')
@@ -247,6 +251,7 @@ export function LimpiezaBanosQuimicos() {
         .eq('org_id', orgId)
       if (e) throw e
       toast.success('Observaciones guardadas')
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar')
     } finally {
@@ -292,6 +297,7 @@ export function LimpiezaBanosQuimicos() {
           [dia]: { ...(prev[dia] ?? {}), [itemId]: valor },
         }))
       }
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar resultado')
     } finally {
@@ -333,6 +339,7 @@ export function LimpiezaBanosQuimicos() {
         },
       }))
       toast.success(`Día ${diaSeleccionado} guardado`)
+      void refetchFirmas()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar día')
     } finally {
@@ -659,24 +666,40 @@ export function LimpiezaBanosQuimicos() {
                 </div>
               ))}
               {registros.map((reg) => (
-                <button
-                  key={reg.id}
-                  onClick={() => abrirDetalle(reg)}
-                  className="w-full text-left bg-card rounded-xl p-4 border border-border"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="mb-1">
-                        <span className="text-xs px-2 py-0.5 rounded"
-                          style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
-                          {formatMesLabel(reg.anio, reg.mes)}
-                        </span>
+                <div key={reg.id} className="bg-card rounded-xl border border-border">
+                  <button
+                    onClick={() => abrirDetalle(reg)}
+                    className="w-full text-left p-4"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="mb-1">
+                          <span className="text-xs px-2 py-0.5 rounded"
+                            style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                            {formatMesLabel(reg.anio, reg.mes)}
+                          </span>
+                        </div>
+                        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</span>
+                        {obligatoria && !firmas[reg.id]?.realizo && (
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                            Pendiente de firma
+                          </span>
+                        )}
                       </div>
-                      <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</span>
+                      <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />
                     </div>
-                    <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />
+                  </button>
+                  <div className="px-4 pb-4">
+                    <FirmasRegistro
+                      modulo="M28"
+                      registroId={reg.id}
+                      fechaRegistro={`${reg.anio}-${String(reg.mes).padStart(2, '0')}-01`}
+                      firma={firmas[reg.id]}
+                      loadingFirmas={loadingFirmas}
+                      onFirmado={async () => { await refetch(); await refetchFirmas() }}
+                    />
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           )}
@@ -984,6 +1007,7 @@ export function LimpiezaBanosQuimicos() {
               descripcion={`Registro mensual ${MESES[(nMes ?? 1) - 1]} ${nAnio}`}
               obligatoria={obligatoria}
               onFirmadoYPDF={async () => {
+                await refetchFirmas()
                 handleCerrarSheetNuevo()
                 if (pendienteNuevo) abrirDetalle(pendienteNuevo)
               }}
