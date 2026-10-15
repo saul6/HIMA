@@ -179,7 +179,7 @@ export function Login() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--auth-navy-dark)' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--auth-bg-base)' }}>
         <div className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>Cargando...</div>
       </div>
     )

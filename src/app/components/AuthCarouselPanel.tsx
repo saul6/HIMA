@@ -6,8 +6,8 @@
 // El bloque de título/subtítulo es FIJO (no cambia entre fotos); cada foto
 // rota detrás con un caption discreto de su área abajo, y Ken Burns + crossfade.
 
-import { useState, useEffect } from 'react'
 import { MadyLogo } from '@/app/components/MadyLogo'
+import { useAuthSlides } from '@/hooks/useAuthSlides'
 
 const SLIDES = [
   { src: '/images/campo.jpg', area: 'Campo' },
@@ -17,74 +17,51 @@ const SLIDES = [
   { src: '/images/almacen.jpg', area: 'Almacén' },
   { src: '/images/carnicos.jpg', area: 'Cárnicos' },
 ]
+const SLIDE_SRCS = SLIDES.map((s) => s.src)
 
 interface AuthCarouselPanelProps {
   className?: string
 }
 
 export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
-  const [active, setActive] = useState(0)
-  const [reducedMotion, setReducedMotion] = useState(false)
-  const [erroredSlides, setErroredSlides] = useState<Set<number>>(new Set())
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReducedMotion(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-
-  useEffect(() => {
-    SLIDES.forEach(({ src }, idx) => {
-      const img = new Image()
-      img.src = src
-      img.onerror = () => setErroredSlides((prev) => new Set([...prev, idx]))
-    })
-  }, [])
-
-  useEffect(() => {
-    if (reducedMotion) return
-    const valid = SLIDES.map((_, i) => i).filter((i) => !erroredSlides.has(i))
-    if (valid.length <= 1) return
-    const t = setInterval(() => {
-      setActive((prev) => {
-        const pos = valid.indexOf(prev)
-        return valid[(pos + 1) % valid.length]
-      })
-    }, 4500)
-    return () => clearInterval(t)
-  }, [reducedMotion, erroredSlides])
+  const { active, prev, loaded, reducedMotion, irA } = useAuthSlides(SLIDE_SRCS, 4500)
 
   return (
     <div
       className={`relative flex-col overflow-hidden ${className}`}
-      style={{
-        background: 'var(--auth-panel-dark)',
-        borderRight: 'var(--auth-divider-width) solid var(--auth-divider)',
-        boxShadow: `var(--auth-divider-glow)`,
-      }}
+      style={{ background: 'var(--auth-bg-base)' }}
     >
-      {SLIDES.map((slide, i) => (
-        <div
-          key={slide.src}
-          aria-hidden="true"
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: `url(${slide.src})`,
-            opacity: i === active && !erroredSlides.has(i) ? 1 : 0,
-            transform: reducedMotion ? 'none' : (i === active ? 'scale(1.035)' : 'scale(1)'),
-            transition: reducedMotion
-              ? 'none'
-              : 'opacity 1.4s ease-in-out, transform 4.5s ease-out',
-          }}
-        />
-      ))}
+      {/* Fotos + capas aparecen JUNTAS con fade cuando la foto activa ya
+          cargó: nunca la capa sola sobre el fondo vacío. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0"
+        style={{
+          opacity: loaded.has(active) ? 1 : 0,
+          transition: reducedMotion ? 'none' : 'opacity var(--motion-slow) ease',
+        }}
+      >
+        {[prev, active].map((i) =>
+          i === null ? null : (
+            <div
+              key={SLIDES[i].src}
+              className={`absolute inset-0 ${i === prev ? 'auth-slide-out' : prev !== null ? 'auth-slide-in' : ''}`}
+            >
+              <img
+                src={SLIDES[i].src}
+                alt=""
+                decoding="async"
+                fetchPriority={i === 0 ? 'high' : undefined}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          ),
+        )}
 
-      {/* Capa general (derivada del navy de marca) + scrim difuminado detrás
-          del logo — ambas por token, se funden sin verse como "parche". */}
-      <div aria-hidden="true" className="absolute inset-0" style={{ background: 'var(--auth-carousel-overlay)' }} />
-      <div aria-hidden="true" className="absolute inset-0" style={{ background: 'var(--auth-logo-scrim)' }} />
+        {/* Capa general + scrim difuminado detrás del logo — por token. */}
+        <div className="absolute inset-0" style={{ background: 'var(--auth-carousel-overlay)' }} />
+        <div className="absolute inset-0" style={{ background: 'var(--auth-logo-scrim)' }} />
+      </div>
 
       <div className="relative flex flex-col h-full p-10 xl:p-12 z-10">
         <div style={{ marginTop: -6, marginLeft: -4 }}>
@@ -127,7 +104,7 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
                 key={i}
                 type="button"
                 aria-label={`Slide ${i + 1}`}
-                onClick={() => setActive(i)}
+                onClick={() => { if (loaded.has(i)) irA(i) }}
                 className="no-press"
                 style={{
                   width: 8,

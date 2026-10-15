@@ -17,8 +17,8 @@
 // taparía. Separado así, el logo queda siempre visible sin importar el alto
 // de la tarjeta ni el ancho de pantalla.
 
-import { useState, useEffect } from 'react'
 import { MadyLogo } from '@/app/components/MadyLogo'
+import { useAuthSlides } from '@/hooks/useAuthSlides'
 
 const SLIDES = [
   '/images/campo.jpg',
@@ -34,55 +34,36 @@ interface AuthMobileBackdropProps {
 }
 
 export function AuthMobileBackdrop({ paused = false }: AuthMobileBackdropProps) {
-  const [active, setActive] = useState(0)
-  const [reducedMotion, setReducedMotion] = useState(false)
-  const [erroredSlides, setErroredSlides] = useState<Set<number>>(new Set())
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReducedMotion(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-
-  useEffect(() => {
-    SLIDES.forEach((src, idx) => {
-      const img = new Image()
-      img.src = src
-      img.onerror = () => setErroredSlides((prev) => new Set([...prev, idx]))
-    })
-  }, [])
-
-  useEffect(() => {
-    if (reducedMotion || paused) return
-    const valid = SLIDES.map((_, i) => i).filter((i) => !erroredSlides.has(i))
-    if (valid.length <= 1) return
-    // Rotación lenta — es un fondo, no debe distraer del formulario.
-    const t = setInterval(() => {
-      setActive((prev) => {
-        const pos = valid.indexOf(prev)
-        return valid[(pos + 1) % valid.length]
-      })
-    }, 8000)
-    return () => clearInterval(t)
-  }, [reducedMotion, paused, erroredSlides])
+  // Rotación lenta — es un fondo, no debe distraer del formulario.
+  const { active, prev, loaded, reducedMotion } = useAuthSlides(SLIDES, 8000, paused)
 
   return (
     <>
-      <div className="fixed inset-0 z-0 overflow-hidden" style={{ background: 'var(--auth-panel-dark)' }}>
-        <div aria-hidden="true" className="absolute inset-0">
-          {SLIDES.map((src, i) => (
-            <div
-              key={src}
-              className="absolute inset-0 bg-cover bg-center"
-              style={{
-                backgroundImage: `url(${src})`,
-                opacity: i === active && !erroredSlides.has(i) ? 1 : 0,
-                transition: reducedMotion ? 'none' : 'opacity 1.6s ease-in-out',
-              }}
-            />
-          ))}
+      <div className="fixed inset-0 z-0 overflow-hidden" style={{ background: 'var(--auth-bg-base)' }}>
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            opacity: loaded.has(active) ? 1 : 0,
+            transition: reducedMotion ? 'none' : 'opacity var(--motion-slow) ease',
+          }}
+        >
+          {[prev, active].map((i) =>
+            i === null ? null : (
+              <div
+                key={SLIDES[i]}
+                className={`absolute inset-0 ${i === prev ? 'auth-slide-out' : prev !== null ? 'auth-slide-in' : ''}`}
+              >
+                <img
+                  src={SLIDES[i]}
+                  alt=""
+                  decoding="async"
+                  fetchPriority={i === 0 ? 'high' : undefined}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            ),
+          )}
           <div className="absolute inset-0" style={{ background: 'var(--auth-mobile-bg-overlay)' }} />
         </div>
       </div>

@@ -80,6 +80,9 @@
      (.dark redefine --primary a sky #81BEE5, lo que filtraba sky como
      "superficie" del panel/scrim en vez de accent). -darker es un segundo
      escalón (derivado por color-mix, nunca hex suelto) para degradados. */
+  /* Fondo base de auth mientras carga la foto: casi negro neutro (el mismo
+     tono que tendrá la foto oscurecida) — evita el destello azul. */
+  --auth-bg-base: #0A0C0F;
   --auth-navy-dark: #173251;
   --auth-navy-darker: color-mix(in srgb, #173251 78%, black 22%);
   --auth-panel-dark: var(--auth-navy-dark);
@@ -356,6 +359,16 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .auth-intro-logo { animation: none; }
+}
+
+/* Fundido cruzado entre fotos del carrusel de auth — solo opacity. Se montan
+   únicamente la foto que sale y la que entra. */
+@keyframes authSlideIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes authSlideOut { from { opacity: 1; } to { opacity: 0; } }
+.auth-slide-in { animation: authSlideIn 1.4s ease-in-out both; }
+.auth-slide-out { animation: authSlideOut 1.4s ease-in-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .auth-slide-in, .auth-slide-out { animation: none; }
 }
 
 /* Fix de autofill de Chrome — el navegador pinta su propio fondo (blanco/
