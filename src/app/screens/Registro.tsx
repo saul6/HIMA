@@ -5,7 +5,6 @@ import { Mail, Lock, User, Building2, Eye, EyeOff, ArrowRight, ShieldCheck, Chec
 import { useAuthContext } from '@/context/AuthContext'
 import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
 import { AuthMobileBackdrop } from '@/app/components/AuthMobileBackdrop'
-import { AuthBerryDecor } from '@/app/components/AuthBerryDecor'
 
 const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -104,7 +103,6 @@ export function Registro() {
           className="auth-panel auth-card-enter relative z-10 w-[calc(100%-1.5rem)] min-[400px]:w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-8 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border p-5 lg:p-10"
           style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
         >
-          <AuthBerryDecor />
           <div className="w-full max-w-[380px] space-y-6 text-center">
             <h1 className="text-[28px] lg:text-[34px] font-bold leading-tight [letter-spacing:-0.01em]" style={{ color: 'var(--auth-heading-color)' }}>
               Revisa tu correo
@@ -149,7 +147,6 @@ export function Registro() {
         className="auth-panel auth-card-enter relative z-10 w-[calc(100%-1.5rem)] min-[400px]:w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-8 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border p-5 lg:p-10 transition-colors duration-150"
         style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
-        <AuthBerryDecor />
 
         {/* Nav superior — misma posición que en Login */}
         <div className="absolute top-6 right-6 lg:top-8 lg:right-10 text-sm">

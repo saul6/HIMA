@@ -115,9 +115,6 @@
     color-mix(in srgb, black 55%, transparent) 0%,
     color-mix(in srgb, black 25%, transparent) 55%,
     transparent 100%);
-  /* Ilustración de rama de berry detrás del formulario — trazo fino sky,
-     puramente ornamental (ver AuthBerryDecor.tsx). */
-  --auth-ornament: var(--auth-accent);
   /* Fondo móvil: carrusel a pantalla completa (ver AuthMobileBackdrop.tsx)
      detrás de una tarjeta "glass" flotante. Capa densa en todo el alto (el
      carrusel debe leerse como fondo, no competir con la tarjeta) para que el
