@@ -4,6 +4,7 @@ import { useTerminoSitio, resolverTerminos, type TerminosSitio } from '@/hooks/u
 import { useAuthContext } from '@/context/AuthContext'
 import { precargarCache, leerConCache } from '@/lib/offline/cacheLectura'
 import { supabase } from '@/lib/supabase'
+import { claveOrgNombre, fetchOrgNombre } from '@/lib/offline/orgNombre'
 import { getRanchos } from '@/lib/queries'
 import { fetchCatalogoProductos } from '@/hooks/useCatalogoProductos'
 import { fetchSaldosInventario } from '@/lib/offline/saldosInventario'
@@ -132,12 +133,8 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
         },
       },
       {
-        clave: `org_nombre:${orgId}`,
-        fetcher: async () => {
-          const { data, error } = await supabase.from('organizaciones').select('nombre').eq('id', orgId).single()
-          if (error || !data) throw error ?? new Error('Organización no encontrada')
-          return data.nombre as string
-        },
+        clave: claveOrgNombre(orgId),
+        fetcher: () => fetchOrgNombre(orgId),
       },
       {
         clave: 'm20_accidentes',

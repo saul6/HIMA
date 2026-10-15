@@ -665,8 +665,13 @@ export function Home() {
             <div className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
               {loading ? '…' : `Hola, ${profile?.nombre_completo?.split(' ')[0] ?? '—'}`}
             </div>
-            <div className="text-xs text-muted-foreground truncate">
-              {loading ? '…' : nombreOrg}
+            <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground min-w-0">
+              {loading ? '…' : (
+                <>
+                  {orgNombre && <span className="truncate min-w-0">{orgNombre}</span>}
+                  <span className="shrink-0">{orgNombre ? '· M.A.D.Y' : 'M.A.D.Y'}</span>
+                </>
+              )}
             </div>
           </div>
           <button

@@ -9,6 +9,9 @@ import { useTheme } from "@/context/ThemeContext";
 import { useIntroTransition } from "@/context/IntroTransitionContext";
 import { IntroDevReplay } from "@/app/components/IntroDevReplay";
 import { MadyLogo } from "@/app/components/MadyLogo";
+import { Skeleton } from "@/app/components/ui/skeleton";
+import { useOrgNombre } from "@/hooks/useOrgNombre";
+import { useMostrarCarga } from "@/hooks/useMostrarCarga";
 import { BottomSheet, fabMenuItemVariants } from "@/app/components/BottomSheet";
 import { CampanaNotificaciones } from "@/app/components/CampanaNotificaciones";
 import { AuditorBusqueda } from "@/app/screens/auditor/AuditorBusqueda";
@@ -82,6 +85,8 @@ export function Layout() {
   const { online } = useConexion();
   const { totalPendientes } = useOutbox();
   const esAuditor = profile?.rol === 'auditor';
+  const { nombre: orgNombre, cargando: orgCargando } = useOrgNombre(!esAuditor);
+  const mostrarSkeletonOrg = useMostrarCarga(orgCargando, false);
   const esAdmin   = profile?.rol === 'admin_org';
   const isAuditorHome = esAuditor && location.pathname === '/auditor';
   const initials  = profile?.nombre_completo ? getInitials(profile.nombre_completo) : '—';
@@ -280,9 +285,18 @@ export function Layout() {
                   : topbarTitulo}
               </motion.p>
             </AnimatePresence>
-            <p className="text-xs text-muted-foreground">
-              {esAuditor ? 'Auditores' : terminosSitio.singular !== 'Rancho' ? 'Instalaciones' : 'Campo'} · M.A.D.Y
-            </p>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0 h-4">
+              {esAuditor ? (
+                <span className="shrink-0">Auditores · M.A.D.Y</span>
+              ) : orgCargando ? (
+                mostrarSkeletonOrg && <Skeleton className="h-3 w-28" />
+              ) : (
+                <>
+                  {orgNombre && <span className="truncate min-w-0">{orgNombre}</span>}
+                  <span className="shrink-0">{orgNombre ? '· M.A.D.Y' : 'M.A.D.Y'}</span>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Center: search — desktop + home route only (auditor: su propio buscador) */}
