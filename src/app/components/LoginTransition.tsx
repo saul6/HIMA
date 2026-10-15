@@ -8,7 +8,10 @@
 //     encoge hasta el logo del sidebar (`data-intro-destino="sidebar-logo"`),
 //     medido durante la entrada, mientras el fondo se desvanece; al llegar,
 //     el del sidebar toma su lugar con un fundido;
-//   · móvil / sidebar no disponible: el logo crece apenas y se desvanece;
+//   · móvil (FLIP manual): igual, hacia el logo del header de Inicio
+//     (`data-intro-destino="header-logo"`), con un viaje un poco más corto;
+//   · destino no disponible (p. ej. el auditor en móvil): el logo crece apenas
+//     y se desvanece;
 //   · prefers-reduced-motion: el logo queda quieto y el overlay hace fade.
 // La salida es una secuencia imperativa (`animate` + promesas): el overlay se
 // desmonta SOLO cuando la última animación terminó. No se usa
@@ -28,8 +31,9 @@ const ENTER_MS = 1500
 // sidebar (120) = 970 ms de salida.
 const PAUSA_MS = 150
 const VIAJE_MS = 700
+const VIAJE_MOVIL_MS = 550
 const CAMBIO_LOGO_MS = 120
-const EXIT_MOVIL_MS = 450
+const EXIT_SIMPLE_MS = 450
 const EXIT_FADE_MS = 300
 // El fondo se desvanece mientras el logo viaja: empieza 100 ms después y dura 500.
 const BG_DELAY_MS = 100
@@ -55,13 +59,14 @@ const EASE_Y = [0.3, 0, 0.2, 1] as const
 const EASE_FADE_LOGO = [0.4, 0, 0.6, 1] as const
 const EASE_BG_MOVIL = 'cubic-bezier(0.4, 0, 1, 1)'
 
-type Modo = 'escritorio' | 'movil' | 'fade'
+type Modo = 'escritorio' | 'movil' | 'simple' | 'fade'
 
 interface Destino {
+  modo: 'escritorio' | 'movil'
   dx: number
   dy: number
   scale: number
-  // Logo del sidebar (varía con el tema): se funde sobre el de la intro.
+  // Logo del destino (varía con el tema): se funde sobre el de la intro.
   src: string | null
 }
 
@@ -75,7 +80,8 @@ interface LoginTransitionProps {
 
 const DURACION: Record<Modo, number> = {
   escritorio: PAUSA_MS + VIAJE_MS + CAMBIO_LOGO_MS,
-  movil: EXIT_MOVIL_MS,
+  movil: PAUSA_MS + VIAJE_MOVIL_MS + CAMBIO_LOGO_MS,
+  simple: EXIT_SIMPLE_MS,
   fade: EXIT_FADE_MS,
 }
 
@@ -103,12 +109,19 @@ export function LoginTransition({ appReady, onDone, onLanded, onSalida }: LoginT
   }
 
   function medir(): Destino | null {
-    const dest = document.querySelector<HTMLElement>('[data-intro-destino="sidebar-logo"]')
-    const d = dest?.getBoundingClientRect()
+    // Sidebar (escritorio) o header de Inicio (móvil): el que esté visible.
     const s = logoBoxRef.current?.getBoundingClientRect()
-    if (!dest || !d || !s || d.width <= 0 || d.height <= 0 || s.height <= 0) return null
+    if (!s || s.height <= 0) return null
+    let dest: HTMLElement | null = null
+    let d: DOMRect | null = null
+    for (const el of document.querySelectorAll<HTMLElement>('[data-intro-destino]')) {
+      const rect = el.getBoundingClientRect()
+      if (rect.width > 0 && rect.height > 0) { dest = el; d = rect; break }
+    }
+    if (!dest || !d) return null
     const destSrc = dest.getAttribute('src')
     return {
+      modo: dest.dataset.introDestino === 'sidebar-logo' ? 'escritorio' : 'movil',
       dx: d.left + d.width / 2 - (s.left + s.width / 2),
       dy: d.top + d.height / 2 - (s.top + s.height / 2),
       scale: d.height / s.height,
@@ -133,7 +146,6 @@ export function LoginTransition({ appReady, onDone, onLanded, onSalida }: LoginT
   // logo tiene tamaño real — así la salida no espera a medir.
   useEffect(() => {
     if (!appReady || medido || reducedMotion) return
-    if (!window.matchMedia('(min-width: 768px)').matches) { setMedido(true); return }
     let raf = 0
     const t0 = performance.now()
     const intentar = () => {
@@ -156,7 +168,7 @@ export function LoginTransition({ appReady, onDone, onLanded, onSalida }: LoginT
     if (reducedMotion) { setModo('fade'); return }
     if (!medido) return
     const fresco = medir() ?? destino
-    if (fresco) { setDestino(fresco); setModo('escritorio') } else setModo('movil')
+    if (fresco) { setDestino(fresco); setModo(fresco.modo) } else setModo('simple')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enterDone, appReady, modo, reducedMotion, medido])
 
@@ -175,9 +187,9 @@ export function LoginTransition({ appReady, onDone, onLanded, onSalida }: LoginT
     const mover = <T extends { stop: () => void }>(c: T): T => { controles.push(c); return c }
 
     async function salir() {
-      if (modo === 'escritorio' && destino) {
+      if ((modo === 'escritorio' || modo === 'movil') && destino) {
         const delay = PAUSA_MS / 1000
-        const duration = VIAJE_MS / 1000
+        const duration = (modo === 'movil' ? VIAJE_MOVIL_MS : VIAJE_MS) / 1000
         const viaje = [
           mover(animate(box!, { x: destino.dx }, { delay, duration, ease: [...EASE_X] })),
           mover(animate(box!, { y: destino.dy }, { delay, duration, ease: [...EASE_Y] })),
@@ -196,8 +208,8 @@ export function LoginTransition({ appReady, onDone, onLanded, onSalida }: LoginT
         // la intro se va.
         onLanded()
         await mover(animate(cede!, { opacity: 0 }, { duration: CAMBIO_LOGO_MS / 1000, ease: 'easeInOut' }))
-      } else if (modo === 'movil') {
-        const duration = EXIT_MOVIL_MS / 1000
+      } else if (modo === 'simple') {
+        const duration = EXIT_SIMPLE_MS / 1000
         await Promise.all([
           mover(animate(box!, { scale: 1.08 }, { duration, ease: [...EASE_OUT] })),
           mover(animate(box!, { opacity: 0, filter: 'blur(4px)' }, { duration, ease: [...EASE_FADE_LOGO] })),
@@ -210,7 +222,8 @@ export function LoginTransition({ appReady, onDone, onLanded, onSalida }: LoginT
     salir()
 
     // El contenido de la app aparece al mismo tiempo que se desvanece el fondo.
-    const tContenido = setTimeout(onSalida, modo === 'escritorio' ? BG_DELAY_MS : 0)
+    const viaja = modo === 'escritorio' || modo === 'movil'
+    const tContenido = setTimeout(onSalida, viaja ? BG_DELAY_MS : 0)
     // Red de seguridad: solo por si las animaciones no terminan (p. ej. la
     // pestaña pierde foco). Holgada para no cortar una animación retrasada.
     const tSeguro = setTimeout(finish, DURACION[modo] + SEGURO_EXTRA_MS)
@@ -225,9 +238,10 @@ export function LoginTransition({ appReady, onDone, onLanded, onSalida }: LoginT
 
   if (!ready) return null
 
-  const bgMs = modo === 'escritorio' ? BG_FADE_MS : modo ? DURACION[modo] : EXIT_FADE_MS
-  const bgDelay = modo === 'escritorio' ? BG_DELAY_MS : 0
-  const bgEase = modo === 'movil' ? EASE_BG_MOVIL : 'var(--ease-out)'
+  const viajando = modo === 'escritorio' || modo === 'movil'
+  const bgMs = viajando ? BG_FADE_MS : modo ? DURACION[modo] : EXIT_FADE_MS
+  const bgDelay = viajando ? BG_DELAY_MS : 0
+  const bgEase = modo === 'simple' ? EASE_BG_MOVIL : 'var(--ease-out)'
 
   return (
     <div
@@ -253,7 +267,7 @@ export function LoginTransition({ appReady, onDone, onLanded, onSalida }: LoginT
             {/* +40% vs. la v11 (84px → 118px), mismo fade+escala de entrada */}
             <MadyLogo theme="dark" className="auth-intro-logo" style={{ height: 118, width: 'auto' }} />
           </div>
-          {modo === 'escritorio' && destino?.src && (
+          {viajando && destino?.src && (
             <img
               ref={logoSidebarRef}
               src={destino.src}

@@ -20,6 +20,7 @@ import { useHomeSearch } from '@/context/HomeSearchContext'
 import { buscarPorInicio } from '@/lib/busquedaPorInicio'
 import { TextoResaltado } from '@/app/components/TextoResaltado'
 import { useTheme } from '@/context/ThemeContext'
+import { useIntroTransition } from '@/context/IntroTransitionContext'
 import { useContadorAnimado } from '@/hooks/useContadorAnimado'
 import { resolverIcono } from '@/app/components/iconos-modulos'
 import { MadyLogo } from '@/app/components/MadyLogo'
@@ -487,6 +488,7 @@ function UpsellModal({ modulo, onClose }: { modulo: ModuloVisible | null; onClos
 export function Home() {
   const { profile } = useAuthContext()
   const { theme, resolvedTheme, cycleTheme } = useTheme()
+  const { ocultarLogoSidebar, logoAsienta } = useIntroTransition()
   const ThemeIcon = theme === 'dark' ? Moon : Sun
   const themeLabel = theme === 'dark' ? 'Oscuro' : 'Claro'
   const { orgNombre, orgPlan, metricas, recientes, loading, error } = useHomeDashboard()
@@ -651,8 +653,13 @@ export function Home() {
             to="/"
             aria-label="Ir al inicio"
             className="flex-shrink-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            style={{ opacity: ocultarLogoSidebar ? 0 : 1, transition: 'opacity 120ms ease-in-out' }}
           >
-            <MadyLogo theme={resolvedTheme} className="h-8 w-auto" />
+            <MadyLogo
+              theme={resolvedTheme}
+              className={`h-8 w-auto${logoAsienta ? ' intro-asienta' : ''}`}
+              data-intro-destino="header-logo"
+            />
           </Link>
           <div className="text-right min-w-0 flex-1">
             <div className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
