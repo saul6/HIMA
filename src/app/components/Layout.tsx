@@ -164,7 +164,7 @@ export function Layout() {
           >
             <MadyLogo
               theme={resolvedTheme}
-              className={`h-7 w-auto lg:h-10${logoAsienta ? ' intro-asienta' : ''}`}
+              className={`h-7 w-auto lg:h-12${logoAsienta ? ' intro-asienta' : ''}`}
               data-intro-destino="sidebar-logo"
             />
           </Link>
