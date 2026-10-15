@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useMatches, Link } from "react-router";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
-import { Home, PlusCircle, Package, History, User, Users, Search, Sun, Moon, ClipboardCheck, X, Calendar, ListChecks, BarChart3, CloudUpload, WifiOff } from "lucide-react";
+import { Home, PlusCircle, Package, History, Users, Search, Sun, Moon, ClipboardCheck, X, Calendar, ListChecks, BarChart3, CloudUpload, WifiOff } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
 import { useHomeSearch } from "@/context/HomeSearchContext";
@@ -112,11 +112,8 @@ export function Layout() {
     ...(mostrarMetricas        ? [{ path: "/metricas",                        icon: BarChart3,      label: "Métricas"         }] : []),
   ];
 
-  // Todas las opciones para el menú del isotipo (navItems completos + Perfil)
-  const menuItems = [
-    ...navItems,
-    { path: "/perfil", icon: User, label: "Perfil" },
-  ];
+  // Opciones del menú del isotipo: Perfil se abre desde la fila del usuario.
+  const menuItems = navItems;
 
   const pageTitle = getPageTitle(location.pathname);
   const moduloActual = location.pathname.startsWith('/inocuidad/')
@@ -393,8 +390,14 @@ export function Layout() {
         </div>
 
         {/* Usuario */}
-        <div className="px-4 py-3 border-b border-border">
-          <div className="flex items-center gap-3">
+        <div className="border-b border-border">
+          <Link
+            to="/perfil"
+            aria-label="Ir a mi perfil"
+            onClick={() => setMenuAbierto(false)}
+            className="flex items-center gap-3 px-4 py-3 transition-[background-color,transform] duration-150 hover:bg-muted active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+            style={{ backgroundColor: isActive('/perfil') ? 'var(--accent)' : undefined }}
+          >
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold"
               style={{ backgroundColor: 'var(--accent)', color: 'var(--primary)' }}
@@ -416,7 +419,7 @@ export function Layout() {
                 {ROL_LABELS[profile?.rol ?? ''] ?? profile?.rol ?? '—'}
               </p>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Opciones de navegación */}
