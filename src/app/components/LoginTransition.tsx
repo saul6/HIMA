@@ -4,37 +4,40 @@
 // de la navegación de /login al dashboard (nunca vive dentro de Login.tsx).
 // Secuencia: fade + escala del logo (~1.5s) → espera a que el destino ya
 // autenticado avise que montó (`appReady`, ver Layout.tsx) → salida:
-//   · escritorio: pausa breve, el logo viaja en curva y se encoge hasta el
-//     logo del sidebar (`data-intro-destino="sidebar-logo"`) mientras el fondo
-//     se desvanece; al llegar, el del sidebar toma su lugar con un fundido;
+//   · escritorio (FLIP manual): el logo se queda quieto, viaja en curva y se
+//     encoge hasta el logo del sidebar (`data-intro-destino="sidebar-logo"`),
+//     medido durante la entrada, mientras el fondo se desvanece; al llegar,
+//     el del sidebar toma su lugar con un fundido;
 //   · móvil / sidebar no disponible: el logo crece apenas y se desvanece;
 //   · prefers-reduced-motion: el logo queda quieto y el overlay hace fade.
+// La salida es una secuencia imperativa (`animate` + promesas): el overlay se
+// desmonta SOLO cuando la última animación terminó. No se usa
+// `onAnimationComplete` de un <motion.div> porque se dispara al ARRANCAR un
+// cambio de `animate` (ver nota en `salir`), lo que cortaba el viaje a medias.
+// Los temporizadores son red de seguridad y terminan con fade, no con corte.
 // El contenido de la app empieza a aparecer junto con el desvanecido del
-// fondo (`onSalida`), no hasta que el logo llega. El overlay SOLO se
-// desmonta cuando termina su animación (onAnimationComplete); los
-// temporizadores son red de seguridad y siempre terminan con fade, no con corte.
-// Si `appReady` tarda más que la entrada, el overlay sostiene el logo ya
-// asentado hasta que llegue. Solo anima transform/opacity (y un blur leve
-// de 4px en la salida móvil).
+// fondo (`onSalida`). Solo anima transform/opacity (y un blur leve de 4px en
+// la salida móvil).
 
 import { useEffect, useRef, useState } from 'react'
-import { motion } from 'motion/react'
+import { animate } from 'motion/react'
 import { MadyLogo } from '@/app/components/MadyLogo'
 
 const ENTER_MS = 1500
-// Escritorio: pausa del logo (120) + viaje (650) + cambio por el logo del
-// sidebar (120) = 890 ms de salida (antes 600: +290 ms).
-const PAUSA_MS = 120
-const VIAJE_MS = 650
+// Escritorio: pausa del logo (150) + viaje (700) + cambio por el logo del
+// sidebar (120) = 970 ms de salida.
+const PAUSA_MS = 150
+const VIAJE_MS = 700
 const CAMBIO_LOGO_MS = 120
 const EXIT_MOVIL_MS = 450
 const EXIT_FADE_MS = 300
+// El fondo se desvanece mientras el logo viaja: empieza 100 ms después y dura 500.
+const BG_DELAY_MS = 100
+const BG_FADE_MS = 500
 // Margen de la red de seguridad sobre la duración de la salida: si el hilo
 // principal está ocupado montando la app, la animación puede ir retrasada y
 // un temporizador justo la cortaría a medias.
 const SEGURO_EXTRA_MS = 1500
-// Retraso del desvanecido del fondo en escritorio (el logo arranca a los 120).
-const BG_DELAY_MS = 100
 // Cuánto esperar a que el logo del sidebar esté montado y medible.
 const MEDIR_MAX_MS = 300
 // Red de seguridad si `appReady` nunca llegara (p. ej. el destino no pasa
@@ -43,9 +46,11 @@ const MEDIR_MAX_MS = 300
 const MAX_WAIT_MS = 6000
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
 // Curvas distintas en X y en Y para que el viaje dibuje una curva y no una
-// recta: Y arranca rápido (sube/baja primero), X acelera después.
-const EASE_X = [0.5, 0, 0.2, 1] as const
-const EASE_Y = [0.16, 1, 0.3, 1] as const
+// recta. Ambas arrancan suaves (primer punto de control en y=0): una curva
+// que arranca de golpe se ve como un brinco en el primer cuadro. Y se adelanta
+// a X, así el logo sube primero y luego se desliza al sidebar.
+const EASE_X = [0.55, 0, 0.25, 1] as const
+const EASE_Y = [0.3, 0, 0.2, 1] as const
 // Móvil: el logo se apaga más despacio que el fondo para que se alcance a ver.
 const EASE_FADE_LOGO = [0.4, 0, 0.6, 1] as const
 const EASE_BG_MOVIL = 'cubic-bezier(0.4, 0, 1, 1)'
@@ -82,10 +87,11 @@ export function LoginTransition({ appReady, onDone, onLanded, onSalida }: LoginT
   const [destino, setDestino] = useState<Destino | null>(null)
   // La medición del destino terminó (con éxito o sin sidebar disponible).
   const [medido, setMedido] = useState(false)
-  // Escritorio: el logo ya llegó y se cede el lugar al del sidebar.
-  const [cedido, setCedido] = useState(false)
   const doneRef = useRef(false)
+  const cedeRef = useRef<HTMLDivElement>(null)
   const logoBoxRef = useRef<HTMLDivElement>(null)
+  const logoRef = useRef<HTMLDivElement>(null)
+  const logoSidebarRef = useRef<HTMLImageElement>(null)
   const exiting = modo !== null
 
   function finish() {
@@ -95,11 +101,6 @@ export function LoginTransition({ appReady, onDone, onLanded, onSalida }: LoginT
     onLanded()
     onDone()
   }
-
-  useEffect(() => {
-    setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-    setReady(true)
-  }, [])
 
   function medir(): Destino | null {
     const dest = document.querySelector<HTMLElement>('[data-intro-destino="sidebar-logo"]')
@@ -114,6 +115,11 @@ export function LoginTransition({ appReady, onDone, onLanded, onSalida }: LoginT
       src: destSrc && !destSrc.includes('MADYOscuro') ? destSrc : null,
     }
   }
+
+  useEffect(() => {
+    setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+    setReady(true)
+  }, [])
 
   useEffect(() => {
     if (!ready) return
@@ -142,7 +148,9 @@ export function LoginTransition({ appReady, onDone, onLanded, onSalida }: LoginT
   }, [appReady, medido, reducedMotion])
 
   // La salida arranca cuando AMBAS condiciones se cumplieron: el logo ya
-  // terminó su entrada Y la app ya está montada debajo.
+  // terminó su entrada Y la app ya está montada debajo. Se vuelve a medir justo
+  // antes de salir; el logo parte EXACTAMENTE de donde terminó la entrada
+  // (x = y = 0, scale = 1): sin cambio de layout ni de clase, sin brinco.
   useEffect(() => {
     if (!enterDone || !appReady || modo) return
     if (reducedMotion) { setModo('fade'); return }
@@ -152,31 +160,74 @@ export function LoginTransition({ appReady, onDone, onLanded, onSalida }: LoginT
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enterDone, appReady, modo, reducedMotion, medido])
 
+  // Secuencia de salida. Nota: con <motion.div animate={...} onAnimationComplete>
+  // el callback se disparaba al ARRANCAR el cambio de `animate` (verificado
+  // cuadro por cuadro: el overlay se iba con el viaje al ~80 %), y el `delay`
+  // de nivel superior no llegaba a x/y/scale por tener transiciones propias.
+  // Con `animate()` imperativo cada fase espera de verdad a la anterior.
   useEffect(() => {
     if (!modo) return
+    const box = logoBoxRef.current
+    const cede = cedeRef.current
+    if (!box || !cede) { finish(); return }
+    const controles: { stop: () => void }[] = []
+    let cancelado = false
+    const mover = <T extends { stop: () => void }>(c: T): T => { controles.push(c); return c }
+
+    async function salir() {
+      if (modo === 'escritorio' && destino) {
+        const delay = PAUSA_MS / 1000
+        const duration = VIAJE_MS / 1000
+        const viaje = [
+          mover(animate(box!, { x: destino.dx }, { delay, duration, ease: [...EASE_X] })),
+          mover(animate(box!, { y: destino.dy }, { delay, duration, ease: [...EASE_Y] })),
+          mover(animate(box!, { scale: destino.scale }, { delay, duration, ease: [...EASE_X] })),
+        ]
+        if (destino.src && logoRef.current && logoSidebarRef.current) {
+          // Cambio de tema del logo (oscuro → claro) mientras viaja.
+          viaje.push(
+            mover(animate(logoRef.current, { opacity: 0 }, { delay, duration, ease: 'easeInOut' })),
+            mover(animate(logoSidebarRef.current, { opacity: 1 }, { delay, duration, ease: 'easeInOut' })),
+          )
+        }
+        await Promise.all(viaje)
+        if (cancelado) return
+        // Llegó: el logo del sidebar aparece (fundido + asentamiento) y el de
+        // la intro se va.
+        onLanded()
+        await mover(animate(cede!, { opacity: 0 }, { duration: CAMBIO_LOGO_MS / 1000, ease: 'easeInOut' }))
+      } else if (modo === 'movil') {
+        const duration = EXIT_MOVIL_MS / 1000
+        await Promise.all([
+          mover(animate(box!, { scale: 1.08 }, { duration, ease: [...EASE_OUT] })),
+          mover(animate(box!, { opacity: 0, filter: 'blur(4px)' }, { duration, ease: [...EASE_FADE_LOGO] })),
+        ])
+      } else {
+        await mover(animate(box!, { opacity: 0 }, { duration: EXIT_FADE_MS / 1000, ease: 'easeOut' }))
+      }
+      if (!cancelado) finish()
+    }
+    salir()
+
     // El contenido de la app aparece al mismo tiempo que se desvanece el fondo.
     const tContenido = setTimeout(onSalida, modo === 'escritorio' ? BG_DELAY_MS : 0)
-    // Red de seguridad: solo por si onAnimationComplete no dispara (p. ej. la
+    // Red de seguridad: solo por si las animaciones no terminan (p. ej. la
     // pestaña pierde foco). Holgada para no cortar una animación retrasada.
     const tSeguro = setTimeout(finish, DURACION[modo] + SEGURO_EXTRA_MS)
-    return () => { clearTimeout(tContenido); clearTimeout(tSeguro) }
+    return () => {
+      cancelado = true
+      controles.forEach(c => c.stop())
+      clearTimeout(tContenido)
+      clearTimeout(tSeguro)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modo])
 
   if (!ready) return null
 
-  const dur = (modo === 'escritorio' ? VIAJE_MS : modo ? DURACION[modo] : EXIT_FADE_MS) / 1000
+  const bgMs = modo === 'escritorio' ? BG_FADE_MS : modo ? DURACION[modo] : EXIT_FADE_MS
   const bgDelay = modo === 'escritorio' ? BG_DELAY_MS : 0
   const bgEase = modo === 'movil' ? EASE_BG_MOVIL : 'var(--ease-out)'
-  const objetivo =
-    modo === 'escritorio' && destino
-      ? { x: destino.dx, y: destino.dy, scale: destino.scale, opacity: 1 }
-      : modo === 'movil'
-        ? { x: 0, y: 0, scale: 1.08, opacity: 0, filter: 'blur(4px)' }
-        : modo === 'fade'
-          ? { opacity: 0 }
-          : { x: 0, y: 0, scale: 1, opacity: 1, filter: 'blur(0px)' }
-  const fundeSidebar = modo === 'escritorio' && !!destino?.src
 
   return (
     <div
@@ -189,66 +240,30 @@ export function LoginTransition({ appReady, onDone, onLanded, onSalida }: LoginT
         style={{
           background: 'var(--auth-bg-base)',
           opacity: exiting ? 0 : 1,
-          transition: `opacity ${dur * 1000}ms ${bgEase} ${bgDelay}ms`,
+          transition: `opacity ${bgMs}ms ${bgEase} ${bgDelay}ms`,
         }}
       />
-      <motion.div
-        initial={false}
-        animate={{ opacity: cedido ? 0 : 1 }}
-        transition={{ duration: CAMBIO_LOGO_MS / 1000, ease: 'easeInOut' }}
-        onAnimationComplete={() => { if (cedido) finish() }}
-      >
-        <motion.div
+      <div ref={cedeRef}>
+        <div
           ref={logoBoxRef}
           className="relative flex"
-          initial={false}
-          animate={objetivo}
-          transition={
-            modo === 'escritorio'
-              ? {
-                  delay: PAUSA_MS / 1000,
-                  x: { duration: dur, ease: EASE_X },
-                  y: { duration: dur, ease: EASE_Y },
-                  scale: { duration: dur, ease: EASE_X },
-                }
-              : modo === 'movil'
-                ? { duration: dur, ease: EASE_OUT, opacity: { duration: dur, ease: EASE_FADE_LOGO } }
-                : { duration: dur, ease: EASE_OUT }
-          }
           style={{ willChange: exiting ? 'transform, opacity' : undefined }}
-          onAnimationComplete={() => {
-            if (!exiting) return
-            if (modo === 'escritorio') {
-              // Llegó: el logo del sidebar aparece y el de la intro se va.
-              onLanded()
-              setCedido(true)
-            } else {
-              finish()
-            }
-          }}
         >
-          <motion.div
-            className="flex"
-            initial={false}
-            animate={{ opacity: fundeSidebar ? 0 : 1 }}
-            transition={{ duration: dur, delay: modo === 'escritorio' ? PAUSA_MS / 1000 : 0, ease: 'easeInOut' }}
-          >
+          <div ref={logoRef} className="flex">
             {/* +40% vs. la v11 (84px → 118px), mismo fade+escala de entrada */}
             <MadyLogo theme="dark" className="auth-intro-logo" style={{ height: 118, width: 'auto' }} />
-          </motion.div>
-          {fundeSidebar && destino?.src && (
-            <motion.img
+          </div>
+          {modo === 'escritorio' && destino?.src && (
+            <img
+              ref={logoSidebarRef}
               src={destino.src}
               alt=""
               className="absolute inset-0 h-full w-full"
-              style={{ objectFit: 'contain' }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: dur, delay: PAUSA_MS / 1000, ease: 'easeInOut' }}
+              style={{ objectFit: 'contain', opacity: 0 }}
             />
           )}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </div>
   )
 }
