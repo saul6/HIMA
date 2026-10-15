@@ -378,6 +378,17 @@
   .auth-intro-logo { animation: none; }
 }
 
+/* Tras la intro del login: el logo del sidebar se asienta (1.03 → 1) y el
+   contenido de la app entra con fade + subida de 8px, una sola vez. */
+@keyframes introAsienta { from { transform: scale(1.03); } to { transform: scale(1); } }
+.intro-asienta { animation: introAsienta 160ms var(--ease-out); }
+@keyframes introContenido { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.intro-contenido-oculto { opacity: 0; }
+.intro-contenido-entra { animation: introContenido 320ms var(--ease-out) backwards; }
+@media (prefers-reduced-motion: reduce) {
+  .intro-asienta, .intro-contenido-entra { animation: none; }
+}
+
 /* Fundido cruzado entre fotos del carrusel de auth — solo opacity. Se montan
    únicamente la foto que sale y la que entra. */
 @keyframes authSlideIn { from { opacity: 0; } to { opacity: 1; } }

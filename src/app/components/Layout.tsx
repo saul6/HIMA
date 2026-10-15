@@ -66,7 +66,7 @@ export function Layout() {
   const { theme, resolvedTheme, cycleTheme } = useTheme();
   const isHome = location.pathname === '/';
   const [menuAbierto, setMenuAbierto] = useState(false);
-  const { markAppReady, ocultarLogoSidebar } = useIntroTransition();
+  const { markAppReady, ocultarLogoSidebar, faseContenido } = useIntroTransition();
   const reducedMotion = useReducedMotion();
 
   // Señal determinística para el overlay de bienvenida (ver
@@ -161,9 +161,13 @@ export function Layout() {
             to="/"
             aria-label="Ir al inicio"
             className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
-            style={ocultarLogoSidebar ? { opacity: 0 } : undefined}
+            style={{ opacity: ocultarLogoSidebar ? 0 : 1, transition: 'opacity 120ms ease-in-out' }}
           >
-            <MadyLogo theme={resolvedTheme} className="h-7 w-auto lg:h-9" data-intro-destino="sidebar-logo" />
+            <MadyLogo
+              theme={resolvedTheme}
+              className={`h-7 w-auto lg:h-9${faseContenido === 'entra' ? ' intro-asienta' : ''}`}
+              data-intro-destino="sidebar-logo"
+            />
           </Link>
         </div>
 
@@ -353,7 +357,9 @@ export function Layout() {
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="w-full max-w-[390px] mx-auto md:max-w-none"
           >
-            <Outlet />
+            <div className={faseContenido === 'oculto' ? 'intro-contenido-oculto' : faseContenido === 'entra' ? 'intro-contenido-entra' : undefined}>
+              <Outlet />
+            </div>
           </motion.div>
         </div>
       </div>
