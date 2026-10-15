@@ -37,7 +37,7 @@ function StatusPanel({ iconBg, icon, title, titleSizeLg, message, ctaLabel, onCt
       </div>
       <AuthCarouselPanel className="hidden lg:flex lg:absolute lg:inset-0 lg:w-full lg:z-0" />
       <div
-        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-8 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl p-5 lg:p-10"
+        className="auth-panel auth-card-enter relative z-10 w-[calc(100%-1.5rem)] min-[400px]:w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-8 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl p-5 lg:p-10"
         style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
         <AuthLeavesDecor />
@@ -177,13 +177,13 @@ export function RestablecerContrasena() {
       <AuthCarouselPanel className="hidden lg:flex lg:absolute lg:inset-0 lg:w-full lg:z-0" />
 
       <div
-        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-8 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl p-5 lg:p-10 transition-colors duration-150"
+        className="auth-panel auth-card-enter relative z-10 w-[calc(100%-1.5rem)] min-[400px]:w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-8 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl p-5 lg:p-10 transition-colors duration-150"
         style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
         <AuthLeavesDecor />
         <div className="w-full max-w-[380px] space-y-7 lg:space-y-8">
 
-          <div className="space-y-1">
+          <div className="auth-rise space-y-1">
             <h1
               className="text-[26px] lg:text-[38px] font-bold leading-tight [letter-spacing:-0.01em]"
               style={{ color: 'var(--auth-heading-color)' }}
@@ -195,7 +195,7 @@ export function RestablecerContrasena() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-5" style={{ marginTop: 'var(--auth-form-gap-top)' }}>
+          <form onSubmit={handleSubmit} className="auth-stagger space-y-4 lg:space-y-5" style={{ marginTop: 'var(--auth-form-gap-top)' }}>
 
             <div className="space-y-[6px]">
               <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>

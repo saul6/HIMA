@@ -60,11 +60,13 @@ export function AuthMobileBackdrop({ paused = false }: AuthMobileBackdropProps) 
                   decoding="async"
                   fetchPriority={i === 0 ? 'high' : undefined}
                   className="h-full w-full object-cover"
+                  style={{ filter: 'saturate(.85) brightness(.9)' }}
                 />
               </div>
             ),
           )}
           <div className="absolute inset-0" style={{ background: 'var(--auth-mobile-bg-overlay)' }} />
+          <div className="absolute inset-0" style={{ background: 'var(--auth-vignette)' }} />
         </div>
       </div>
 

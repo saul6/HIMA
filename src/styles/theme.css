@@ -87,8 +87,8 @@
   --auth-navy-darker: color-mix(in srgb, #173251 78%, black 22%);
   --auth-panel-dark: var(--auth-navy-dark);
   /* Fondo de input: el navy del panel, apenas aclarado — no blanco-alpha. */
-  --auth-input-dark: color-mix(in srgb, var(--auth-navy-dark) 90%, white 10%);
-  --auth-border-dark: rgba(255, 255, 255, 0.14);
+  --auth-input-dark: color-mix(in srgb, var(--auth-card-deep) 86%, black 14%);
+  --auth-border-dark: rgba(255, 255, 255, 0.18);
   /* Gris claro derivado de --muted-foreground (NO azul/sky) — para que el texto
      secundario no compita con el título, igual que la referencia de diseño. */
   --auth-text-secondary-dark: color-mix(in srgb, #607286 55%, white 45%);
@@ -101,15 +101,19 @@
      texto), se desvanece hacia el resto. Token único — nunca inline en el
      componente. */
   --auth-carousel-overlay: radial-gradient(150% 150% at 0% 100%,
-    color-mix(in srgb, var(--auth-navy-darker) 80%, transparent) 0%,
-    color-mix(in srgb, var(--auth-navy-darker) 55%, transparent) 30%,
-    color-mix(in srgb, var(--auth-navy-darker) 34%, transparent) 60%,
-    color-mix(in srgb, var(--auth-navy-darker) 40%, transparent) 100%);
+    color-mix(in srgb, black 76%, transparent) 0%,
+    color-mix(in srgb, black 64%, transparent) 30%,
+    color-mix(in srgb, black 56%, transparent) 60%,
+    color-mix(in srgb, black 58%, transparent) 100%);
+  /* Viñeteado ligero: oscurece los bordes de la foto, sin tinte. */
+  --auth-vignette: radial-gradient(120% 120% at 50% 45%,
+    transparent 55%,
+    color-mix(in srgb, black 38%, transparent) 100%);
   /* Scrim detrás del logo (esquina superior-izquierda): muy difuminado, se funde
      con la capa general — nunca un "parche" de borde duro. */
   --auth-logo-scrim: radial-gradient(60% 55% at 12% 10%,
-    color-mix(in srgb, var(--auth-navy-darker) 55%, transparent) 0%,
-    color-mix(in srgb, var(--auth-navy-darker) 25%, transparent) 55%,
+    color-mix(in srgb, black 55%, transparent) 0%,
+    color-mix(in srgb, black 25%, transparent) 55%,
     transparent 100%);
   /* Motivo decorativo de hojas detrás del formulario — trazo sky a opacidad
      mínima, puramente ornamental (ver AuthLeavesDecor.tsx). */
@@ -120,16 +124,17 @@
      logo y la tarjeta resalten incluso en fotos claras (almacén, campo) —
      algo más ligera al centro que en los extremos. */
   --auth-mobile-bg-overlay: linear-gradient(180deg,
-    color-mix(in srgb, var(--auth-navy-darker) 70%, transparent) 0%,
-    color-mix(in srgb, var(--auth-navy-darker) 48%, transparent) 42%,
-    color-mix(in srgb, var(--auth-navy-darker) 56%, transparent) 65%,
-    color-mix(in srgb, var(--auth-navy-darker) 74%, transparent) 100%);
+    color-mix(in srgb, black 72%, transparent) 0%,
+    color-mix(in srgb, black 58%, transparent) 42%,
+    color-mix(in srgb, black 62%, transparent) 65%,
+    color-mix(in srgb, black 78%, transparent) 100%);
   /* Tarjeta glass del formulario — navy semitransparente + backdrop-blur (ver
      clase .auth-panel en cada screen), consistente en móvil Y escritorio: deja
      intuir la foto/carrusel de fondo sin sacrificar legibilidad. v11: dos
      escalones más oscura que la v10 (68% → 84%, +8pts cada paso) — sigue
      dejando asomar el carrusel de fondo, sutil, no un panel sólido. */
-  --auth-glass-bg: color-mix(in srgb, var(--auth-navy-dark) 84%, transparent);
+  --auth-card-deep: color-mix(in srgb, var(--auth-navy-dark) 28%, black 72%);
+  --auth-glass-bg: color-mix(in srgb, var(--auth-card-deep) 90%, transparent);
 
   /* Panel de formulario de auth (Login/Registro/Restablecer): tarjeta glass
      navy, mismo valor en todos los breakpoints — escritorio ya no vuelve a un
@@ -139,11 +144,11 @@
   --auth-heading-accent-color: var(--auth-accent);
   --auth-subtext-color: var(--auth-text-secondary-dark);
   --auth-label-color: #FFFFFF;
-  --auth-icon-color: rgba(255, 255, 255, 0.55);
+  --auth-icon-color: rgba(255, 255, 255, 0.65);
   --auth-input-bg: var(--auth-input-dark);
   --auth-input-border: var(--auth-border-dark);
   --auth-input-text: #FFFFFF;
-  --auth-input-placeholder: rgba(255, 255, 255, 0.4);
+  --auth-input-placeholder: rgba(255, 255, 255, 0.6);
   --auth-link-color: var(--auth-accent);
   /* CTA sky con degradado + texto navy oscuro (nunca navy sobre panel navy). */
   --auth-cta-bg: linear-gradient(135deg, var(--auth-accent) 0%, var(--auth-accent-hover) 100%);
@@ -333,7 +338,7 @@
 }
 .auth-cta:hover { opacity: 0.9; }
 .auth-cta:active { opacity: 0.8; }
-.auth-cta:disabled { opacity: 0.4; cursor: not-allowed; }
+.auth-cta:disabled { opacity: 0.55; cursor: not-allowed; }
 .auth-panel .auth-cta:hover:not(:disabled) {
   opacity: 1;
   background: var(--auth-accent-hover);
@@ -369,6 +374,27 @@
 .auth-slide-out { animation: authSlideOut 1.4s ease-in-out both; }
 @media (prefers-reduced-motion: reduce) {
   .auth-slide-in, .auth-slide-out { animation: none; }
+}
+
+/* Acercamiento lento de la foto activa (solo transform, en el contenedor de
+   la imagen — el filter vive en la <img>). Solo escritorio. */
+@keyframes authKenBurns { from { transform: scale(1); } to { transform: scale(1.06); } }
+.auth-kenburns { animation: authKenBurns 6.5s linear both; }
+
+/* Entrada única de la tarjeta de auth y de su contenido (opacity + translateY).
+   El contenido de los formularios entra escalonado (~40 ms). */
+@keyframes authRise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.auth-card-enter { animation: authRise 0.5s var(--ease-out) backwards; }
+.auth-rise { animation: authRise 0.45s var(--ease-out) 60ms backwards; }
+.auth-stagger > * { animation: authRise 0.45s var(--ease-out) backwards; }
+.auth-stagger > :nth-child(1) { animation-delay: 100ms; }
+.auth-stagger > :nth-child(2) { animation-delay: 140ms; }
+.auth-stagger > :nth-child(3) { animation-delay: 180ms; }
+.auth-stagger > :nth-child(4) { animation-delay: 220ms; }
+.auth-stagger > :nth-child(5) { animation-delay: 260ms; }
+.auth-stagger > :nth-child(n+6) { animation-delay: 300ms; }
+@media (prefers-reduced-motion: reduce) {
+  .auth-kenburns, .auth-card-enter, .auth-rise, .auth-stagger > * { animation: none; }
 }
 
 /* Fix de autofill de Chrome — el navegador pinta su propio fondo (blanco/

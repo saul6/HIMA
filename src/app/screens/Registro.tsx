@@ -102,7 +102,7 @@ export function Registro() {
         </div>
         <AuthCarouselPanel className="hidden lg:flex lg:absolute lg:inset-0 lg:w-full lg:z-0" />
         <div
-          className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-8 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl p-5 lg:p-10"
+          className="auth-panel auth-card-enter relative z-10 w-[calc(100%-1.5rem)] min-[400px]:w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-8 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl p-5 lg:p-10"
           style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
         >
           <AuthLeavesDecor />
@@ -147,7 +147,7 @@ export function Registro() {
 
       {/* ── PANEL: tarjeta glass flotante — móvil centrada, escritorio flotando a la derecha ── */}
       <div
-        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-8 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl p-5 lg:p-10 transition-colors duration-150"
+        className="auth-panel auth-card-enter relative z-10 w-[calc(100%-1.5rem)] min-[400px]:w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-8 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl p-5 lg:p-10 transition-colors duration-150"
         style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
         <AuthLeavesDecor />
@@ -161,7 +161,7 @@ export function Registro() {
         </div>
 
         <div className="w-full max-w-[380px] space-y-6">
-          <div className="space-y-1 mt-8 lg:mt-0">
+          <div className="auth-rise space-y-1 mt-8 lg:mt-0">
             <h1
               className="text-[26px] lg:text-[34px] font-bold leading-tight [letter-spacing:-0.01em]"
               style={{ color: 'var(--auth-heading-color)' }}
@@ -170,7 +170,7 @@ export function Registro() {
             </h1>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="auth-stagger space-y-4">
             <div className="space-y-[6px]">
               <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
                 Nombre completo
@@ -295,7 +295,7 @@ export function Registro() {
                   <Turnstile
                     ref={turnstileRef}
                     siteKey={SITE_KEY}
-                    options={{ theme: 'auto', size: isDesktop ? 'normal' : 'flexible' }}
+                    options={{ theme: 'dark', size: isDesktop ? 'normal' : 'flexible' }}
                     onSuccess={(token) => setCaptchaToken(token)}
                     onExpire={() => setCaptchaToken(null)}
                     onError={() => {

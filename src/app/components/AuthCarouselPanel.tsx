@@ -47,19 +47,24 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
               key={SLIDES[i].src}
               className={`absolute inset-0 ${i === prev ? 'auth-slide-out' : prev !== null ? 'auth-slide-in' : ''}`}
             >
-              <img
-                src={SLIDES[i].src}
-                alt=""
-                decoding="async"
-                fetchPriority={i === 0 ? 'high' : undefined}
-                className="h-full w-full object-cover"
-              />
+              {/* Acercamiento en el contenedor; filter estático en la <img>. */}
+              <div className={`h-full w-full ${reducedMotion ? '' : 'auth-kenburns'}`}>
+                <img
+                  src={SLIDES[i].src}
+                  alt=""
+                  decoding="async"
+                  fetchPriority={i === 0 ? 'high' : undefined}
+                  className="h-full w-full object-cover"
+                  style={{ filter: 'saturate(.85) brightness(.9)' }}
+                />
+              </div>
             </div>
           ),
         )}
 
         {/* Capa general + scrim difuminado detrás del logo — por token. */}
         <div className="absolute inset-0" style={{ background: 'var(--auth-carousel-overlay)' }} />
+        <div className="absolute inset-0" style={{ background: 'var(--auth-vignette)' }} />
         <div className="absolute inset-0" style={{ background: 'var(--auth-logo-scrim)' }} />
       </div>
 
@@ -74,7 +79,7 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
             <span className="block uppercase">INOCUIDAD</span>
             <span className="block uppercase" style={{ color: 'var(--auth-accent)' }}>INTELIGENTE</span>
           </h2>
-          <p className="mt-3 text-sm" style={{ color: 'rgba(255,255,255,0.75)' }}>
+          <p className="mt-3 text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>
             Tecnología para una operación agrícola más segura.
           </p>
         </div>
@@ -89,7 +94,7 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
                 key={slide.area}
                 className="absolute inset-x-0 top-0 text-xs"
                 style={{
-                  color: 'rgba(255,255,255,0.7)',
+                  color: 'rgba(255,255,255,0.8)',
                   opacity: i === active ? 1 : 0,
                   transition: reducedMotion ? 'none' : 'opacity 0.6s ease-in-out',
                 }}

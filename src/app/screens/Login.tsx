@@ -167,7 +167,7 @@ export function Login() {
           <Turnstile
             ref={ref}
             siteKey={SITE_KEY}
-            options={{ theme: 'auto', size: isDesktop ? 'normal' : 'flexible' }}
+            options={{ theme: 'dark', size: isDesktop ? 'normal' : 'flexible' }}
             onSuccess={(token) => onToken(token)}
             onExpire={() => onToken(null)}
             onError={() => { onToken(null); onFail() }}
@@ -201,7 +201,7 @@ export function Login() {
 
       {/* ── PANEL: tarjeta glass flotante — móvil centrada, escritorio flotando a la derecha ── */}
       <div
-        className="auth-panel relative z-10 w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-8 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl p-5 lg:p-10 transition-colors duration-150"
+        className="auth-panel auth-card-enter relative z-10 w-[calc(100%-1.5rem)] min-[400px]:w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-8 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl p-5 lg:p-10 transition-colors duration-150"
         style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
         <AuthLeavesDecor />
@@ -209,7 +209,7 @@ export function Login() {
         <div className="w-full max-w-[380px] space-y-7">
 
           {/* Título + subtítulo — cambia según login / recuperar acceso */}
-          <div className="space-y-1">
+          <div className="auth-rise space-y-1">
             {modoRecup ? (
               <>
                 <h1
@@ -283,7 +283,7 @@ export function Login() {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleRecuperar} className="space-y-4">
+                <form onSubmit={handleRecuperar} className="auth-stagger space-y-4">
                   <div className="space-y-[6px]">
                     <label className="text-xs font-semibold block" style={{ color: 'var(--auth-label-color)' }}>
                       Correo electrónico
@@ -335,7 +335,7 @@ export function Login() {
           )}
 
           {/* Formulario de login */}
-          {!modoRecup && <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-5" style={{ marginTop: 'var(--auth-form-gap-top)' }}>
+          {!modoRecup && <form onSubmit={handleSubmit} className="auth-stagger space-y-4 lg:space-y-5" style={{ marginTop: 'var(--auth-form-gap-top)' }}>
 
             {/* Correo */}
             <div className="space-y-[6px]">
