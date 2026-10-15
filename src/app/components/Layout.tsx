@@ -7,6 +7,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import { useHomeSearch } from "@/context/HomeSearchContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useIntroTransition } from "@/context/IntroTransitionContext";
+import { IntroDevReplay } from "@/app/components/IntroDevReplay";
 import { MadyLogo } from "@/app/components/MadyLogo";
 import { BottomSheet, fabMenuItemVariants } from "@/app/components/BottomSheet";
 import { CampanaNotificaciones } from "@/app/components/CampanaNotificaciones";
@@ -149,6 +150,7 @@ export function Layout() {
 
   return (
     <div className="h-screen flex flex-col md:flex-row overflow-hidden bg-background">
+      {import.meta.env.DEV && <IntroDevReplay />}
 
       {/* ── Desktop Sidebar ───────────────────────────────────────────────── */}
       <aside className="hidden md:flex flex-col md:w-[64px] lg:w-[220px] flex-shrink-0 border-r border-border bg-card">
