@@ -66,7 +66,7 @@ export function Layout() {
   const { theme, resolvedTheme, cycleTheme } = useTheme();
   const isHome = location.pathname === '/';
   const [menuAbierto, setMenuAbierto] = useState(false);
-  const { markAppReady, ocultarLogoSidebar, faseContenido } = useIntroTransition();
+  const { markAppReady, ocultarLogoSidebar, faseContenido, logoAsienta } = useIntroTransition();
   const reducedMotion = useReducedMotion();
 
   // Señal determinística para el overlay de bienvenida (ver
@@ -165,7 +165,7 @@ export function Layout() {
           >
             <MadyLogo
               theme={resolvedTheme}
-              className={`h-7 w-auto lg:h-9${faseContenido === 'entra' ? ' intro-asienta' : ''}`}
+              className={`h-7 w-auto lg:h-9${logoAsienta ? ' intro-asienta' : ''}`}
               data-intro-destino="sidebar-logo"
             />
           </Link>

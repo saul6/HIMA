@@ -19,6 +19,8 @@ interface IntroTransitionContextValue {
   // Fase del contenido de la app tras el login: 'oculto' mientras el logo
   // viaja, 'entra' (fade + subida, una sola vez) al aterrizar, null el resto.
   faseContenido: 'oculto' | 'entra' | null
+  // true un instante tras aterrizar el logo: el del sidebar se asienta 1.03 -> 1.
+  logoAsienta: boolean
 }
 
 const IntroTransitionContext = createContext<IntroTransitionContextValue | null>(null)
@@ -28,6 +30,7 @@ export function IntroTransitionProvider({ children }: { children: ReactNode }) {
   const [appReady, setAppReady] = useState(false)
   const [logoAterrizado, setLogoAterrizado] = useState(false)
   const [faseContenido, setFaseContenido] = useState<'oculto' | 'entra' | null>(null)
+  const [logoAsienta, setLogoAsienta] = useState(false)
 
   const start = useCallback(() => {
     setAppReady(false)
@@ -47,8 +50,21 @@ export function IntroTransitionProvider({ children }: { children: ReactNode }) {
 
   const logoLanded = useCallback(() => {
     setLogoAterrizado(true)
-    setFaseContenido('entra')
+    setLogoAsienta(true)
+    setFaseContenido(f => (f === 'oculto' ? 'entra' : f))
   }, [])
+
+  // Arranca la salida del overlay: el contenido entra junto con el fondo que
+  // se desvanece, sin esperar a que el logo llegue.
+  const salida = useCallback(() => {
+    setFaseContenido(f => (f === 'oculto' ? 'entra' : f))
+  }, [])
+
+  useEffect(() => {
+    if (!logoAsienta) return
+    const t = setTimeout(() => setLogoAsienta(false), 400)
+    return () => clearTimeout(t)
+  }, [logoAsienta])
 
   // La entrada del contenido ocurre una sola vez: pasada su animación se
   // limpia la fase, así navegar después no la repite.
@@ -59,9 +75,9 @@ export function IntroTransitionProvider({ children }: { children: ReactNode }) {
   }, [faseContenido])
 
   return (
-    <IntroTransitionContext.Provider value={{ start, markAppReady, ocultarLogoSidebar: active && !logoAterrizado, faseContenido }}>
+    <IntroTransitionContext.Provider value={{ start, markAppReady, ocultarLogoSidebar: active && !logoAterrizado, faseContenido, logoAsienta }}>
       {children}
-      {active && <LoginTransition appReady={appReady} onDone={finish} onLanded={logoLanded} />}
+      {active && <LoginTransition appReady={appReady} onDone={finish} onLanded={logoLanded} onSalida={salida} />}
     </IntroTransitionContext.Provider>
   )
 }
