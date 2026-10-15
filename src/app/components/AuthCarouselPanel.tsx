@@ -18,13 +18,15 @@ const SLIDES = [
   { src: '/images/carnicos.jpg', area: 'Cárnicos' },
 ]
 const SLIDE_SRCS = SLIDES.map((s) => s.src)
+// Misma duración para la rotación de fotos y para el relleno de la píldora.
+const SLIDE_INTERVAL_MS = 4500
 
 interface AuthCarouselPanelProps {
   className?: string
 }
 
 export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
-  const { active, prev, loaded, reducedMotion, irA } = useAuthSlides(SLIDE_SRCS, 4500)
+  const { active, prev, loaded, reducedMotion, irA, ciclo } = useAuthSlides(SLIDE_SRCS, SLIDE_INTERVAL_MS)
 
   return (
     <div
@@ -110,19 +112,29 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
                 type="button"
                 aria-label={`Slide ${i + 1}`}
                 onClick={() => { if (loaded.has(i)) irA(i) }}
-                className="no-press"
+                className="no-press relative overflow-hidden"
                 style={{
-                  width: 8,
+                  width: i === active ? 24 : 8,
                   height: 8,
-                  borderRadius: '50%',
-                  background: i === active ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.35)',
+                  borderRadius: 4,
+                  background: 'var(--auth-dot-idle)',
                   border: 'none',
                   padding: 0,
                   cursor: 'pointer',
                   flexShrink: 0,
-                  transition: reducedMotion ? 'none' : 'background 0.3s ease',
+                  transition: reducedMotion ? 'none' : 'width 0.3s var(--ease-out)',
                 }}
-              />
+              >
+                {i === active && (
+                  <span
+                    key={reducedMotion ? 'quieto' : ciclo}
+                    className="auth-dot-fill"
+                    style={reducedMotion || ciclo === 0
+                      ? { transform: reducedMotion ? 'none' : 'scaleX(0)' }
+                      : { animation: `authDotFill ${SLIDE_INTERVAL_MS}ms linear both` }}
+                  />
+                )}
+              </button>
             ))}
           </div>
         </div>

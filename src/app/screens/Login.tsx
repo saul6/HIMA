@@ -1,7 +1,8 @@
+import { AuthEyeToggle } from '@/app/components/AuthEyeToggle'
 import { useState, useRef, useEffect, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
-import { Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react'
+import { Loader2, Mail, Lock, ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
 import { AuthMobileBackdrop } from '@/app/components/AuthMobileBackdrop'
@@ -388,9 +389,7 @@ export function Login() {
                   style={{ color: 'var(--auth-icon-color)' }}
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
-                  {showPassword
-                    ? <EyeOff className="w-[17px] h-[17px]" />
-                    : <Eye className="w-[17px] h-[17px]" />}
+                  <AuthEyeToggle shown={showPassword} />
                 </button>
               </div>
               <div className="flex justify-end pt-[1px]">
@@ -425,7 +424,10 @@ export function Login() {
               style={{ borderRadius: 10, color: 'var(--auth-cta-text)' }}
             >
               {submitting ? (
-                'Iniciando sesión...'
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
+                  Iniciando sesión...
+                </>
               ) : (
                 <>
                   Iniciar sesión

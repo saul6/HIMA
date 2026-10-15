@@ -162,6 +162,9 @@
   --auth-link-color: var(--auth-accent);
   /* CTA sky con degradado + texto navy oscuro (nunca navy sobre panel navy). */
   --auth-cta-bg: linear-gradient(135deg, var(--auth-accent) 0%, var(--auth-accent-hover) 100%);
+  --auth-cta-hover-bg: var(--auth-accent-hover);
+  --auth-dot-active: rgba(255, 255, 255, 0.92);
+  --auth-dot-idle: rgba(255, 255, 255, 0.35);
   --auth-cta-text: var(--auth-navy-dark);
   /* Espacio extra antes del bloque de inputs, además del space-y del
      contenedor. Sigue por inline style porque un utility de margen no puede
@@ -343,22 +346,59 @@
    inline `background` gana siempre sobre cualquier regla de hoja de estilo,
    :hover incluido; con clase, la cascada normal sí puede sobreescribirlo. */
 .auth-cta {
+  position: relative;
+  isolation: isolate;
   background: var(--auth-cta-bg);
-  transition: opacity 150ms ease, background 150ms ease, transform 150ms ease;
+  transition: transform 100ms var(--ease-out);
 }
-.auth-cta:hover { opacity: 0.9; }
-.auth-cta:active { opacity: 0.8; }
+/* Hover: un degradado no se puede interpolar (pasar de `linear-gradient` a un
+   color plano parpadea a medio camino), así que el hover vive en una capa
+   interna que solo cambia su opacity. */
+.auth-cta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--auth-cta-hover-bg);
+  opacity: 0;
+  transition: opacity 150ms var(--ease-out);
+  pointer-events: none;
+}
+.auth-cta:hover:not(:disabled)::before { opacity: 1; }
+.auth-cta:active:not(:disabled) { transform: scale(0.98); }
 .auth-cta:disabled { opacity: 0.55; cursor: not-allowed; }
-.auth-panel .auth-cta:hover:not(:disabled) {
-  opacity: 1;
-  background: var(--auth-accent-hover);
-}
-.auth-panel .auth-cta:active:not(:disabled) {
-  transform: scale(0.97);
-}
 @media (prefers-reduced-motion: reduce) {
-  .auth-cta { transition: none; }
-  .auth-panel .auth-cta:active:not(:disabled) { transform: none; }
+  .auth-cta, .auth-cta::before { transition: none; }
+  .auth-cta:active:not(:disabled) { transform: none; }
+}
+
+/* Ojo de la contraseña: los dos íconos conviven y se cruzan con fundido y
+   escala (~150 ms) en vez de un salto. */
+.auth-eye-icon {
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 150ms var(--ease-out), transform 150ms var(--ease-out);
+}
+.auth-eye-icon[data-on='true'] { opacity: 1; transform: scale(1); }
+@media (prefers-reduced-motion: reduce) {
+  .auth-eye-icon { transition: none; }
+}
+
+/* Puntos del carrusel de auth: el activo es una píldora que se llena a lo
+   largo de lo que dura la foto (scaleX en una capa interna). */
+@keyframes authDotFill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.auth-dot-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: left center;
+  background: var(--auth-dot-active);
 }
 
 /* Overlay de bienvenida tras login exitoso (ver LoginTransition.tsx) — logo
@@ -455,11 +495,12 @@
 .auth-input:-webkit-autofill:hover,
 .auth-input:-webkit-autofill:focus,
 .auth-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px var(--auth-input-bg) inset !important;
-  box-shadow: 0 0 0 1000px var(--auth-input-bg) inset !important;
   -webkit-text-fill-color: var(--auth-input-text) !important;
   caret-color: var(--auth-input-text);
-  transition: background-color 5000s ease-in-out 0s;
+  /* Chrome/Edge pintan su propio fondo (blanco/amarillo/azul) al autocompletar;
+     la transición casi infinita lo deja sin llegar a pintarse y el campo
+     conserva su grafito translúcido, sin sombras. */
+  transition: background-color 600000s 0s, color 600000s 0s;
 }
 
 /* Mobile nav safe-area offsets — used by screens and fixed elements */

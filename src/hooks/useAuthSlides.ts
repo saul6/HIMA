@@ -10,6 +10,9 @@ export function useAuthSlides(srcs: string[], intervalMs: number, paused = false
   const [prev, setPrev] = useState<number | null>(null)
   const [loaded, setLoaded] = useState<Set<number>>(new Set())
   const [reducedMotion, setReducedMotion] = useState(false)
+  // Cuenta cada vez que arranca un intervalo de rotación: la píldora de
+  // progreso la usa de `key` para reiniciar su relleno junto con el temporizador.
+  const [ciclo, setCiclo] = useState(0)
   const prevTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -54,7 +57,8 @@ export function useAuthSlides(srcs: string[], intervalMs: number, paused = false
   useEffect(() => () => { if (prevTimer.current) clearTimeout(prevTimer.current) }, [])
 
   useEffect(() => {
-    if (reducedMotion || paused) return
+    if (reducedMotion || paused) { setCiclo(0); return }
+    if (srcs.filter((_, i) => loaded.has(i)).length > 1) setCiclo(c => c + 1)
     const t = setInterval(() => {
       const valid = srcs.map((_, i) => i).filter((i) => loaded.has(i))
       if (valid.length <= 1) return
@@ -64,5 +68,5 @@ export function useAuthSlides(srcs: string[], intervalMs: number, paused = false
     return () => clearInterval(t)
   }, [reducedMotion, paused, loaded, active, irA, intervalMs, srcs])
 
-  return { active, prev, loaded, reducedMotion, irA }
+  return { active, prev, loaded, reducedMotion, irA, ciclo }
 }

@@ -1,6 +1,7 @@
+import { AuthEyeToggle } from '@/app/components/AuthEyeToggle'
 import { useState, useEffect, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
-import { Lock, Eye, EyeOff, CheckCircle2, ArrowRight, AlertCircle } from 'lucide-react'
+import { Lock, CheckCircle2, ArrowRight, AlertCircle } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
@@ -218,9 +219,7 @@ export function RestablecerContrasena() {
                   style={{ color: 'var(--auth-icon-color)' }}
                   aria-label={showNueva ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
-                  {showNueva
-                    ? <EyeOff className="w-[17px] h-[17px]" />
-                    : <Eye className="w-[17px] h-[17px]" />}
+                  <AuthEyeToggle shown={showNueva} />
                 </button>
               </div>
             </div>
@@ -250,9 +249,7 @@ export function RestablecerContrasena() {
                   style={{ color: 'var(--auth-icon-color)' }}
                   aria-label={showConfirmar ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
-                  {showConfirmar
-                    ? <EyeOff className="w-[17px] h-[17px]" />
-                    : <Eye className="w-[17px] h-[17px]" />}
+                  <AuthEyeToggle shown={showConfirmar} />
                 </button>
               </div>
             </div>

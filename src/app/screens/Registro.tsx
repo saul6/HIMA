@@ -1,7 +1,8 @@
+import { AuthEyeToggle } from '@/app/components/AuthEyeToggle'
 import { useState, useRef, useEffect, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
-import { Mail, Lock, User, Building2, Eye, EyeOff, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react'
+import { Mail, Lock, User, Building2, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { AuthCarouselPanel } from '@/app/components/AuthCarouselPanel'
 import { AuthMobileBackdrop } from '@/app/components/AuthMobileBackdrop'
@@ -240,9 +241,7 @@ export function Registro() {
                   style={{ color: 'var(--auth-icon-color)' }}
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
-                  {showPassword
-                    ? <EyeOff className="w-[17px] h-[17px]" />
-                    : <Eye className="w-[17px] h-[17px]" />}
+                  <AuthEyeToggle shown={showPassword} />
                 </button>
               </div>
             </div>
