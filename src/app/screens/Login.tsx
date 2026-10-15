@@ -201,7 +201,7 @@ export function Login() {
 
       {/* ── PANEL: tarjeta glass flotante — móvil centrada, escritorio flotando a la derecha ── */}
       <div
-        className="auth-panel auth-card-enter relative z-10 w-[calc(100%-1.5rem)] min-[400px]:w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-8 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border backdrop-blur-xl p-5 lg:p-10 transition-colors duration-150"
+        className="auth-panel auth-card-enter relative z-10 w-[calc(100%-1.5rem)] min-[400px]:w-[calc(100%-2rem)] max-w-[400px] mx-auto lg:mx-0 lg:mr-8 lg:w-[38%] lg:min-w-[420px] lg:max-w-[560px] flex flex-col items-center justify-center rounded-2xl border p-5 lg:p-10 transition-colors duration-150"
         style={{ background: 'var(--auth-panel-bg)', borderColor: 'var(--auth-border-dark)' }}
       >
         <AuthLeavesDecor />

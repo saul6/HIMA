@@ -87,11 +87,11 @@
   --auth-navy-darker: color-mix(in srgb, #173251 78%, black 22%);
   --auth-panel-dark: var(--auth-navy-dark);
   /* Fondo de input: el navy del panel, apenas aclarado — no blanco-alpha. */
-  --auth-input-dark: color-mix(in srgb, var(--auth-card-deep) 86%, black 14%);
+  --auth-input-dark: color-mix(in srgb, var(--auth-card-tint) 60%, black 40%);
   --auth-border-dark: rgba(255, 255, 255, 0.18);
   /* Gris claro derivado de --muted-foreground (NO azul/sky) — para que el texto
      secundario no compita con el título, igual que la referencia de diseño. */
-  --auth-text-secondary-dark: color-mix(in srgb, #607286 55%, white 45%);
+  --auth-text-secondary-dark: color-mix(in srgb, #607286 40%, white 60%);
   /* Línea divisoria: fina + glow sky suave (no barra sólida). */
   --auth-divider: color-mix(in srgb, var(--auth-accent) 40%, transparent);
   --auth-divider-width: 2px;
@@ -134,12 +134,24 @@
      escalones más oscura que la v10 (68% → 84%, +8pts cada paso) — sigue
      dejando asomar el carrusel de fondo, sutil, no un panel sólido. */
   --auth-card-deep: color-mix(in srgb, var(--auth-navy-dark) 28%, black 72%);
-  --auth-glass-bg: color-mix(in srgb, var(--auth-card-deep) 90%, transparent);
+  /* v12 "liquid glass": navy de auth con un toque del azul de marca (#2B7AB5,
+     NO --primary: cambia con el tema), ~78% de opacidad. El desenfoque vive
+     en la clase .auth-panel (blur + saturate). */
+  --auth-card-tint: color-mix(in srgb, var(--auth-navy-dark) 80%, #2B7AB5 20%);
+  --auth-glass-bg: color-mix(in srgb, var(--auth-card-tint) 78%, transparent);
+  /* Brillo casi invisible arriba, para dar sensación de vidrio. */
+  --auth-card-sheen: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 38%);
+  /* Borde de luz de 1px: más brillante arriba, tenue abajo (ver .auth-panel). */
+  --auth-card-edge: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.34) 0%,
+    rgba(255, 255, 255, 0.10) 55%,
+    rgba(255, 255, 255, 0.06) 100%);
 
-  /* Panel de formulario de auth (Login/Registro/Restablecer): tarjeta glass
-     navy, mismo valor en todos los breakpoints — escritorio ya no vuelve a un
-     panel sólido edge-to-edge, queda consistente con móvil. */
-  --auth-panel-bg: var(--auth-glass-bg);
+  /* Panel de formulario de auth (Login/Registro/Restablecer): tarjeta de
+     vidrio, mismo valor en todos los breakpoints. */
+  --auth-panel-bg: var(--auth-card-sheen), var(--auth-glass-bg);
   --auth-heading-color: #FFFFFF;
   --auth-heading-accent-color: var(--auth-accent);
   --auth-subtext-color: var(--auth-text-secondary-dark);
@@ -380,6 +392,26 @@
    la imagen — el filter vive en la <img>). Solo escritorio. */
 @keyframes authKenBurns { from { transform: scale(1); } to { transform: scale(1.06); } }
 .auth-kenburns { animation: authKenBurns 6.5s linear both; }
+
+/* Tarjeta de vidrio: desenfoque + saturación, y borde de luz de 1px con
+   degradado (máscara que deja solo el aro). Sin sombras. */
+.auth-panel {
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  backdrop-filter: blur(24px) saturate(1.4);
+  border-color: transparent !important;
+}
+.auth-panel::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--auth-card-edge);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
 
 /* Entrada única de la tarjeta de auth y de su contenido (opacity + translateY).
    El contenido de los formularios entra escalonado (~40 ms). */
