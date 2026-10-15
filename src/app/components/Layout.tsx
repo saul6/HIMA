@@ -452,8 +452,12 @@ export function Layout() {
         </div>
 
         {/* Campana */}
-        <div className="px-4 py-3 border-t border-border flex items-center gap-4">
-          <CampanaNotificaciones />
+        <div className="px-4 py-1.5 border-t border-border flex items-center gap-4">
+          {/* La caja de la campana (32px) se desplaza para que el ícono de 20px
+              quede en la misma columna que los de la lista. */}
+          <div className="-ml-1.5 mr-[-6px]">
+            <CampanaNotificaciones iconClassName="w-5 h-5" />
+          </div>
           <span className="text-sm" style={{ color: 'var(--foreground)' }}>Notificaciones</span>
         </div>
 
@@ -474,16 +478,14 @@ export function Layout() {
         )}
 
         {/* Switch de tema */}
-        <div className="px-4 py-3 border-t border-border">
-          <button
-            onClick={e => { cycleTheme(e.currentTarget as HTMLElement); }}
-            className="w-full flex items-center gap-4 py-2 rounded-lg hover:bg-muted transition-colors"
-            aria-label={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
-          >
-            <ThemeIcon className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
-            <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{themeLabel}</span>
-          </button>
-        </div>
+        <button
+          onClick={e => { cycleTheme(e.currentTarget as HTMLElement); }}
+          className="w-full flex items-center gap-4 px-4 py-3 border-t border-border hover:bg-muted transition-colors text-left"
+          aria-label={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
+        >
+          <ThemeIcon className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+          <span className="text-sm" style={{ color: 'var(--foreground)' }}>{themeLabel}</span>
+        </button>
       </BottomSheet>
     </div>
   );

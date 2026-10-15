@@ -20,7 +20,7 @@ interface Notif {
   created_at: string
 }
 
-export function CampanaNotificaciones() {
+export function CampanaNotificaciones({ iconClassName = 'w-4 h-4' }: { iconClassName?: string } = {}) {
   const { profile } = useAuthContext()
   const navigate = useNavigate()
   const [abierto, setAbierto] = useState(false)
@@ -85,7 +85,7 @@ export function CampanaNotificaciones() {
         className="relative w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         aria-label={`Notificaciones${noLeidas > 0 ? ` (${noLeidas} no leídas)` : ''}`}
       >
-        <Bell className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
+        <Bell className={iconClassName} style={{ color: 'var(--muted-foreground)' }} />
         {noLeidas > 0 && (
           <span
             className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[10px] font-bold px-0.5 leading-none"
