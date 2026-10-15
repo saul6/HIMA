@@ -55,3 +55,5 @@ export async function fotosADataUris(paths: string[]): Promise<Record<string, st
   await Promise.all(Array.from({ length: Math.min(CONCURRENCIA_FOTOS_PDF, paths.length) }, worker))
   return salida
 }
+
+export { dimensionesDeDataUri } from './dimensionesImagen'

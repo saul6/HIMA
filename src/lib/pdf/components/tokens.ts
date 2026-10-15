@@ -13,4 +13,11 @@ export const PC = {  // PDF Colors
   border:     '#E3E9EF',
   white:      '#FFFFFF',
   footerGray: '#9AA4AE',
+
+  // ── Rediseño M13 (Reporte de Incidencias) — solo lo usa src/lib/pdf/m13 ──
+  m13Navy:       '#173251',  // --auth-navy-dark (theme.css)
+  m13Menta:      '#2AAD95',  // --secondary (theme.css)
+  m13MentaSuave: '#E4F5F1',  // menta al ~12 % sobre blanco
+  m13Texto:      '#2A3742',  // = fieldValue
+  m13Fondo:      '#F4F7FA',  // gris azulado muy claro (franja de datos)
 } as const
