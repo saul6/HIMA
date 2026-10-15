@@ -12,7 +12,7 @@ interface SignatureItem {
 
 interface PdfSignaturesProps {
   signatures: SignatureItem[]
-  /** Firma de enterado (Productor). Si se omite, se toma de la que viaja dentro de Realizó/Verificó. */
+  /** Firma de enterado (Encargado). Si se omite, se toma de la que viaja dentro de Realizó/Verificó. */
   enterado?: FirmaParaPdf['enterado']
   /** Líneas de firma de ancho fijo (más cortas) y firma más grande. */
   lineaCorta?: boolean
@@ -111,7 +111,7 @@ export function PdfSignatures({ signatures: signaturesProp, enterado: enteradoPr
             {enteradoDigital ? (
               <Image src={enterado.png} style={{ height: 32, objectFit: 'contain', marginBottom: 2 }} />
             ) : (
-              <Text style={{ fontSize: 7, color: PC.textSub }}>Enterado (Productor)</Text>
+              <Text style={{ fontSize: 7, color: PC.textSub }}>Enterado (Encargado)</Text>
             )}
           </View>
 
@@ -123,7 +123,7 @@ export function PdfSignatures({ signatures: signaturesProp, enterado: enteradoPr
               paddingTop: 4,
             }}
           >
-            <Text style={{ fontSize: 7, color: PC.textSub }}>Enterado (Productor)</Text>
+            <Text style={{ fontSize: 7, color: PC.textSub }}>Enterado (Encargado)</Text>
             {enteradoDigital ? (
               <>
                 <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.fieldValue, marginTop: 2 }}>

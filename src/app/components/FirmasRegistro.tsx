@@ -441,7 +441,7 @@ export function FirmasRegistro({
             <FirmaEstadoChip firma={firma?.verifico} label="Verificó" />
           </>
         )}
-        <FirmaEstadoChip firma={firma?.enterado} label="Enterado (Productor)" />
+        <FirmaEstadoChip firma={firma?.enterado} label="Enterado (Encargado)" />
       </div>
 
       {puedeFirmarEnterado && (
@@ -589,8 +589,8 @@ export function FirmasRegistro({
               style={{ backgroundColor: 'var(--input-background)' }}
             />
             <datalist id="enterado-cargos">
-              <option value="Productor" />
               <option value="Encargado" />
+              <option value="Productor" />
               <option value="Mayordomo" />
             </datalist>
           </div>
@@ -671,7 +671,7 @@ export function FirmasRegistro({
                     {h.estado === 'vigente' ? 'Vigente' : 'Desactualizada'}
                   </span>
                   <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                    · {h.rol_firma === 'realizo' ? 'Realizó' : h.rol_firma === 'enterado' ? 'Enterado (Productor)' : 'Verificó'}
+                    · {h.rol_firma === 'realizo' ? 'Realizó' : h.rol_firma === 'enterado' ? 'Enterado (Encargado)' : 'Verificó'}
                     {h.firma_unica && h.rol_firma !== 'enterado' ? ' (firma única)' : ''}
                   </span>
                 </div>
