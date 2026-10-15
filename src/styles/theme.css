@@ -87,7 +87,7 @@
   --auth-navy-darker: color-mix(in srgb, #173251 78%, black 22%);
   --auth-panel-dark: var(--auth-navy-dark);
   /* Fondo de input: el navy del panel, apenas aclarado — no blanco-alpha. */
-  --auth-input-dark: color-mix(in srgb, var(--auth-card-tint) 60%, black 40%);
+  --auth-input-dark: color-mix(in srgb, #06080A 55%, transparent);
   --auth-border-dark: rgba(255, 255, 255, 0.18);
   /* Gris claro derivado de --muted-foreground (NO azul/sky) — para que el texto
      secundario no compita con el título, igual que la referencia de diseño. */
@@ -137,17 +137,17 @@
   /* v12 "liquid glass": navy de auth con un toque del azul de marca (#2B7AB5,
      NO --primary: cambia con el tema), ~78% de opacidad. El desenfoque vive
      en la clase .auth-panel (blur + saturate). */
-  --auth-card-tint: color-mix(in srgb, var(--auth-navy-dark) 80%, #2B7AB5 20%);
-  --auth-glass-bg: color-mix(in srgb, var(--auth-card-tint) 78%, transparent);
+  --auth-card-tint: color-mix(in srgb, #0B0D10 88%, #2B7AB5 12%);
+  --auth-glass-bg: color-mix(in srgb, var(--auth-card-tint) 60%, transparent);
   /* Brillo casi invisible arriba, para dar sensación de vidrio. */
   --auth-card-sheen: linear-gradient(180deg,
-    rgba(255, 255, 255, 0.06) 0%,
-    transparent 38%);
+    rgba(255, 255, 255, 0.025) 0%,
+    transparent 30%);
   /* Borde de luz de 1px: más brillante arriba, tenue abajo (ver .auth-panel). */
-  --auth-card-edge: linear-gradient(180deg,
-    rgba(255, 255, 255, 0.34) 0%,
-    rgba(255, 255, 255, 0.10) 55%,
-    rgba(255, 255, 255, 0.06) 100%);
+  --auth-card-edge: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.42) 0%,
+    rgba(255, 255, 255, 0.12) 40%,
+    rgba(255, 255, 255, 0.04) 100%);
 
   /* Panel de formulario de auth (Login/Registro/Restablecer): tarjeta de
      vidrio, mismo valor en todos los breakpoints. */
@@ -159,6 +159,7 @@
   --auth-icon-color: rgba(255, 255, 255, 0.65);
   --auth-input-bg: var(--auth-input-dark);
   --auth-input-border: var(--auth-border-dark);
+  --auth-input-focus: var(--auth-accent);
   --auth-input-text: #FFFFFF;
   --auth-input-placeholder: rgba(255, 255, 255, 0.6);
   --auth-link-color: var(--auth-accent);
@@ -407,8 +408,8 @@
 /* Tarjeta de vidrio: desenfoque + saturación, y borde de luz de 1px con
    degradado (máscara que deja solo el aro). Sin sombras. */
 .auth-panel {
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
-  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  backdrop-filter: blur(20px) saturate(1.2);
   border-color: transparent !important;
 }
 .auth-panel::before {
@@ -424,10 +425,13 @@
   pointer-events: none;
 }
 
-/* Entrada única de la tarjeta de auth y de su contenido (opacity + translateY).
-   El contenido de los formularios entra escalonado (~40 ms). */
+/* Entrada única de la tarjeta de auth: el vidrio (la propia tarjeta) solo se
+   funde y no se mueve; el contenido sube. El contenido de los formularios
+   entra escalonado (~40 ms). */
 @keyframes authRise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-.auth-card-enter { animation: authRise 0.5s var(--ease-out) backwards; }
+@keyframes authGlassIn { from { opacity: 0; } to { opacity: 1; } }
+.auth-card-enter { animation: authGlassIn 0.5s var(--ease-out) backwards; }
+.auth-card-enter > * { animation: authRise 0.5s var(--ease-out) backwards; }
 .auth-rise { animation: authRise 0.45s var(--ease-out) 60ms backwards; }
 .auth-stagger > * { animation: authRise 0.45s var(--ease-out) backwards; }
 .auth-stagger > :nth-child(1) { animation-delay: 100ms; }
@@ -437,7 +441,7 @@
 .auth-stagger > :nth-child(5) { animation-delay: 260ms; }
 .auth-stagger > :nth-child(n+6) { animation-delay: 300ms; }
 @media (prefers-reduced-motion: reduce) {
-  .auth-kenburns, .auth-card-enter, .auth-rise, .auth-stagger > * { animation: none; }
+  .auth-kenburns, .auth-card-enter, .auth-card-enter > *, .auth-rise, .auth-stagger > * { animation: none; }
 }
 
 /* Fix de autofill de Chrome — el navegador pinta su propio fondo (blanco/

@@ -15,10 +15,9 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 function getInputStyle(focused: boolean): React.CSSProperties {
   return {
     background: 'var(--auth-input-bg)',
-    borderColor: focused ? 'var(--auth-accent)' : 'var(--auth-input-border)',
-    boxShadow: focused
-      ? '0 0 0 3px color-mix(in srgb, var(--auth-accent) 18%, transparent)'
-      : 'none',
+    borderColor: focused ? 'var(--auth-input-focus)' : 'var(--auth-input-border)',
+    outline: focused ? '1px solid var(--auth-input-focus)' : 'none',
+    outlineOffset: -1,
     color: 'var(--auth-input-text)',
     borderRadius: 10,
   }
