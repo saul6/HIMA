@@ -13,6 +13,9 @@ interface IntroTransitionContextValue {
   // Llamado por el destino ya autenticado (ver Layout.tsx) en su montaje —
   // señal determinística de "la app ya está lista detrás del overlay".
   markAppReady: () => void
+  // true mientras el logo de la intro viaja hacia el sidebar: el logo del
+  // sidebar queda en opacity 0 para que nunca se vean dos a la vez.
+  ocultarLogoSidebar: boolean
 }
 
 const IntroTransitionContext = createContext<IntroTransitionContextValue | null>(null)
@@ -20,9 +23,11 @@ const IntroTransitionContext = createContext<IntroTransitionContextValue | null>
 export function IntroTransitionProvider({ children }: { children: ReactNode }) {
   const [active, setActive] = useState(false)
   const [appReady, setAppReady] = useState(false)
+  const [logoAterrizado, setLogoAterrizado] = useState(false)
 
   const start = useCallback(() => {
     setAppReady(false)
+    setLogoAterrizado(false)
     setActive(true)
   }, [])
 
@@ -35,10 +40,12 @@ export function IntroTransitionProvider({ children }: { children: ReactNode }) {
     setAppReady(false)
   }, [])
 
+  const logoLanded = useCallback(() => setLogoAterrizado(true), [])
+
   return (
-    <IntroTransitionContext.Provider value={{ start, markAppReady }}>
+    <IntroTransitionContext.Provider value={{ start, markAppReady, ocultarLogoSidebar: active && !logoAterrizado }}>
       {children}
-      {active && <LoginTransition appReady={appReady} onDone={finish} />}
+      {active && <LoginTransition appReady={appReady} onDone={finish} onLanded={logoLanded} />}
     </IntroTransitionContext.Provider>
   )
 }

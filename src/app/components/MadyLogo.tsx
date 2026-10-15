@@ -4,11 +4,12 @@ export function MadyLogo({
   theme = 'light',
   className,
   style,
+  ...rest
 }: {
   theme?: LogoTheme
   className?: string
   style?: React.CSSProperties
-}) {
+} & Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt' | 'className' | 'style'>) {
   // Selecciona la imagen de public/images según el tema
   const logoSrc = theme === 'dark' 
     ? '/images/MADYOscuro.png'  // Cambia por el nombre exacto de tu archivo
@@ -18,6 +19,7 @@ export function MadyLogo({
     <img
       src={logoSrc}
       alt="Logo M.A.D.Y"
+      {...rest}
       className={className}
       style={{
         objectFit: 'contain',
