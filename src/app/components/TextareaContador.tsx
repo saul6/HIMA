@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { TextareaContador } from '@/app/components/TextareaContador'
+import { Textarea } from '@/app/components/ui/textarea'
 
 interface Props extends React.ComponentProps<'textarea'> {
   /** Máximo de caracteres según la BD: usa limiteTexto('<tabla>', '<columna>'). */
@@ -12,7 +12,7 @@ export function TextareaContador({ limite, value, ...props }: Props) {
   const cerca = largo >= limite * 0.9
   return (
     <>
-      <TextareaContador {...props} value={value} maxLength={limite} />
+      <Textarea {...props} value={value} maxLength={limite} />
       <p
         className="text-[11px] text-right mt-0.5"
         style={{ color: cerca ? 'var(--agro-warning-text)' : 'var(--muted-foreground)' }}
