@@ -807,6 +807,9 @@ export function AccionesCorrectivas() {
                   <Image className="w-4 h-4" /> Galería
                 </button>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Si la app se cierra al tomar la foto, tómala con la cámara del teléfono y súbela con Galería.
+              </p>
             </div>
           </div>
         </div>

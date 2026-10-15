@@ -451,7 +451,8 @@ function DetalleSheet({
     for (const raw of files) {
       if (!raw.type.startsWith('image/')) { toast.warning('Solo se permiten imágenes'); continue }
       if (raw.size > 10 * 1024 * 1024) { toast.warning('La imagen supera 10 MB'); continue }
-      const compressed = await comprimirImagen(raw, 9.5)
+      const toastId = toast.loading('Optimizando foto…')
+      const compressed = await comprimirImagen(raw, 9.5).finally(() => toast.dismiss(toastId))
       const uid = crypto.randomUUID()
       const preview = URL.createObjectURL(compressed)
       setFotosLocales(prev => [...prev, { uid, file: compressed, preview }])
@@ -940,6 +941,9 @@ function DetalleSheet({
                     className="hidden"
                     onChange={agregarFoto}
                   />
+                  <p className="text-xs mt-1.5" style={{ color: 'var(--muted-foreground)' }}>
+                    Si la app se cierra al tomar la foto, tómala con la cámara del teléfono y súbela con el selector de archivos.
+                  </p>
                 </div>
                 <div className="flex gap-2">
                   <button

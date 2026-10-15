@@ -369,8 +369,9 @@ export function RegistroAccidentesLaborales() {
     if (files.length > disponibles) {
       toast.warning(`Máximo ${MAX_FOTOS_ACCIDENTE} fotos por accidente: se agregarán ${disponibles} de ${files.length}`)
     }
-    for (const raw of files.slice(0, disponibles)) {
-      const toastId = toast.loading('Optimizando foto...')
+    const lote = files.slice(0, disponibles)
+    for (const [idx, raw] of lote.entries()) {
+      const toastId = toast.loading(`Optimizando foto ${idx + 1} de ${lote.length}…`)
       try {
         const compressed = await comprimirImagen(raw, 5.5)
         if (compressed.size > MAX_FOTO_BYTES) {
@@ -925,6 +926,9 @@ export function RegistroAccidentesLaborales() {
                   Galería
                 </button>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Si la app se cierra al tomar la foto, tómala con la cámara del teléfono y súbela con Galería.
+              </p>
             </div>
 
           </div>

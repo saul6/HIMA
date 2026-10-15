@@ -11,7 +11,7 @@ import { FotoEvidencia } from '@/app/components/FotoEvidencia'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { toast } from 'sonner'
-import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
+import { comprimirImagen, comprimirImagenesSecuencial } from '@/lib/fotos/comprimirImagen'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -159,6 +159,7 @@ function IncidenciaForm({
   }, [])
 
   async function handleFiles(files: FileList | null) {
+    try { sessionStorage.removeItem('m13:camara') } catch { /* ignore */ }
     if (!files) return
 
     const slotsRestantes = MAX_FOTOS_INCIDENCIA - inc.fotos.length
@@ -186,18 +187,20 @@ function IncidenciaForm({
 
     if (aAgregar.length === 0) return
 
-    const toastId = toast.loading('Optimizando foto...')
-    const nuevas: FotoLocal[] = await Promise.all(
-      aAgregar.map(async (file) => {
-        const comprimido = await comprimirImagen(file)
-        return {
-          uid: crypto.randomUUID(),
-          file: comprimido,
-          preview: URL.createObjectURL(comprimido),
-        }
+    const toastId = toast.loading(`Optimizando foto 1 de ${aAgregar.length}…`)
+    let comprimidas: File[]
+    try {
+      comprimidas = await comprimirImagenesSecuencial(aAgregar, 5.5, (n, total) => {
+        toast.loading(`Optimizando foto ${n} de ${total}…`, { id: toastId })
       })
-    )
-    toast.dismiss(toastId)
+    } finally {
+      toast.dismiss(toastId)
+    }
+    const nuevas: FotoLocal[] = comprimidas.map((comprimido) => ({
+      uid: crypto.randomUUID(),
+      file: comprimido,
+      preview: URL.createObjectURL(comprimido),
+    }))
 
     onChange({ fotos: [...inc.fotos, ...nuevas] })
   }
@@ -309,7 +312,10 @@ function IncidenciaForm({
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => inputCamaraRef.current?.click()}
+            onClick={() => {
+              try { sessionStorage.setItem('m13:camara', '1') } catch { /* ignore */ }
+              inputCamaraRef.current?.click()
+            }}
             className="flex-1 h-10 flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
           >
             <Camera className="w-4 h-4" />
@@ -324,6 +330,11 @@ function IncidenciaForm({
             Galería
           </button>
         </div>
+      )}
+      {!atLimit && (
+        <p className="text-xs text-muted-foreground">
+          Si la app se cierra al tomar la foto, tómala con la cámara del teléfono y súbela con Galería.
+        </p>
       )}
     </div>
   )
@@ -401,7 +412,17 @@ export function ReporteIncidencias() {
     if (!draftKey) return
     limpiarBorradoresViejos().catch(() => {})
     cargarBorrador(draftKey)
-      .then((draft) => { if (draft) setHayBorrador(true) })
+      .then((draft) => {
+        if (!draft) return
+        setHayBorrador(true)
+        // Si la cámara estaba abierta y la página se recargó, avisar una vez
+        let reinicio = false
+        try {
+          reinicio = sessionStorage.getItem('m13:camara') === '1'
+          sessionStorage.removeItem('m13:camara')
+        } catch { /* ignore */ }
+        if (reinicio) toast.info('La app se reinició al abrir la cámara. Recuperamos tu borrador.', { duration: 8000 })
+      })
       .catch(() => {})
   }, [draftKey])
 
@@ -685,7 +706,10 @@ export function ReporteIncidencias() {
           for (let intento = 0; intento < MAX_REINTENTOS_FOTO; intento++) {
             try {
               let archivoASubir: File
-              archivoASubir = await comprimirImagen(fotoLocal.file, 5.5)
+              archivoASubir =
+                fotoLocal.file.type === 'image/jpeg' && fotoLocal.file.size <= 1.5 * 1024 * 1024
+                  ? fotoLocal.file
+                  : await comprimirImagen(fotoLocal.file, 5.5)
               if (archivoASubir.size > MAX_FOTO_BYTES) {
                 throw new Error(
                   `La foto ${j + 1} de la incidencia ${i + 1} es demasiado grande (${(archivoASubir.size / 1024 / 1024).toFixed(1)} MB). Usa una foto con menor resolución.`
