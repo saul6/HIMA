@@ -4,14 +4,8 @@
 // PreoperacionalPDF:    documento individual.
 // PreoperacionalConsolidadoPDF: multi-página.
 
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfMonthlyMatrix } from '@/lib/pdf/components/PdfMonthlyMatrix'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
-import { PC } from '@/lib/pdf/components/tokens'
+import { Document } from '@react-pdf/renderer'
+import { PaginaMatrizMensual } from '@/lib/pdf/disenoNuevo/PaginaMatrizMensual'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
@@ -47,23 +41,6 @@ export interface PreoperacionalConsolidadoPDFProps {
   hasta: string
 }
 
-// A4 landscape: 841.89 × 595.28 — márgenes 20pt para acomodar 31 columnas de días
-const MARGIN     = 20
-const PAGE_W     = 841.89 - MARGIN * 2  // ~801.89
-const ITEM_COL_W = 160
-
-function diasDelMes(mesDate: string): string[] {
-  const d = new Date(mesDate + 'T12:00:00')
-  const year = d.getFullYear()
-  const month = d.getMonth()
-  const total = new Date(year, month + 1, 0).getDate()
-  const result: string[] = []
-  for (let i = 1; i <= total; i++) {
-    result.push(`${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`)
-  }
-  return result
-}
-
 // ── PreoperacionalPagina ──────────────────────────────────────────────────────
 
 export function PreoperacionalPagina({
@@ -72,84 +49,35 @@ export function PreoperacionalPagina({
   folio, codigoClave = 'MXA', terminoSitio = 'Rancho',
   firmaRealizo, firmaVerifico,
 }: PreoperacionalPaginaProps) {
-  const emision = new Date().toLocaleDateString('es-MX')
-  const codigoFmt = `${codigoClave}-F-SC-SIG`
-  const folioDisplay = folio ?? mesLabel
-
-  const todosLosDias = diasDelMes(mesDate)
-  const dW = Math.floor((PAGE_W - ITEM_COL_W) / Math.max(todosLosDias.length, 1))
-  const inspeccionadosSet = new Set(diasInspeccionados)
-
   return (
-    <Page
-      size="A4"
-      orientation="landscape"
-      style={{ fontFamily: 'Helvetica', fontSize: 8, padding: MARGIN, paddingBottom: 50, backgroundColor: PC.white }}
-    >
-      <PdfFooter moduloCodigo="M11" />
-
-      <TopBar />
-
-      <PdfHeader
-        titulo="INSPECCIÓN PREOPERACIONAL DE COSECHA"
-        subtitulo={`Formato operativo | ${rancho}`}
-        codigoFormato={codigoFmt}
-        folio={folioDisplay}
-        fecha={emision}
-      />
-
-      <PdfSectionBanner>1. Datos del sitio y mes</PdfSectionBanner>
-      <PdfFieldGrid>
-        <PdfFieldRow>
-          <PdfField label={terminoSitio} value={rancho} />
-          <PdfField label="Código" value={ranchoCodigo || '—'} />
-          <PdfField label="Mes de inspección" value={mesLabel} />
-          <PdfField label="Días inspeccionados" value={String(diasInspeccionados.length)} />
-          <PdfField label="Realizó" value={realizadoPor ?? '—'} />
-        </PdfFieldRow>
-      </PdfFieldGrid>
-
-      <PdfSectionBanner>2. Inspección preoperacional de cosecha</PdfSectionBanner>
-      <PdfMonthlyMatrix
-        items={items}
-        todosLosDias={todosLosDias}
-        inspeccionadosSet={inspeccionadosSet}
-        matriz={matriz}
-        itemColW={ITEM_COL_W}
-        dayColW={dW}
-        defaultVal="Si"
-      />
-
-      <PdfSectionBanner>3. Códigos correctivos y firmas</PdfSectionBanner>
-
-      {codigosCorrectivos.length > 0 && (
-        <View style={{ marginTop: 6, paddingHorizontal: 4 }}>
-          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.textSub, marginBottom: 3 }}>
-            CODIGOS CORRECTIVOS:
-          </Text>
-          {codigosCorrectivos.map((cc, i) => (
-            <Text key={i} style={{ fontSize: 6, color: PC.fieldValue, marginBottom: 1 }}>
-              Dia {cc.diaNum} — {cc.itemLabel}: {cc.codigo}
-            </Text>
-          ))}
-        </View>
-      )}
-
-      {observaciones && (
-        <PdfFieldGrid>
-          <PdfFieldRow>
-            <PdfField label="Observaciones" value={observaciones} />
-          </PdfFieldRow>
-        </PdfFieldGrid>
-      )}
-
-      <PdfSignatures
-        signatures={[
-          { label: 'Realizó la inspección', nombre: realizadoPor ?? '', caption: 'Firma', firma: firmaRealizo ?? null },
-          { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
-        ]}
-      />
-    </Page>
+    <PaginaMatrizMensual
+      titulo="INSPECCIÓN PREOPERACIONAL DE COSECHA"
+      subtitulo={`Formato operativo | ${rancho}`}
+      codigoFmt={`${codigoClave}-F-SC-SIG`}
+      folio={folio ?? mesLabel}
+      emision={new Date().toLocaleDateString('es-MX')}
+      campos={[
+        { icono: 'ubicacion', etiqueta: terminoSitio, valor: rancho },
+        { icono: 'codigo', etiqueta: 'Código', valor: ranchoCodigo || '—' },
+        { icono: 'calendario', etiqueta: 'Mes de inspección', valor: mesLabel },
+        { etiqueta: 'Días inspeccionados', valor: String(diasInspeccionados.length) },
+        { icono: 'usuario', etiqueta: 'Realizó', valor: realizadoPor ?? '—' },
+      ]}
+      seccion1="1. Datos del sitio y mes"
+      seccion2="2. Inspección preoperacional de cosecha"
+      seccion3="3. Códigos correctivos y firmas"
+      items={items}
+      mesDate={mesDate}
+      diasInspeccionados={diasInspeccionados}
+      matriz={matriz}
+      defaultVal="Si"
+      codigosCorrectivos={codigosCorrectivos}
+      notas={observaciones ? [{ etiqueta: 'Observaciones', valor: observaciones }] : []}
+      firmas={[
+        { label: 'Realizó la inspección', nombre: realizadoPor ?? '', caption: 'Firma', firma: firmaRealizo ?? null },
+        { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
+      ]}
+    />
   )
 }
 
