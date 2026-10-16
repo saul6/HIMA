@@ -113,7 +113,7 @@ export function MatrizMensual({
                     return <View key={fecha} style={{ ...celda, width: dayColW }} />
                   }
                   const val = matriz[fecha]?.[item.id] ?? defaultVal
-                  const color = /^si$/i.test(val) ? PC.m13Navy : PC.textSub
+                  const color = /^s[ií]$/i.test(val) ? PC.m13Navy : PC.textSub
                   return (
                     <View key={fecha} style={{ ...celda, width: dayColW, alignItems: 'center', justifyContent: 'center', paddingVertical: 2 }}>
                       <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color, ...estiloNegativo(val) }}>{val}</Text>

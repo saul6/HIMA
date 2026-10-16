@@ -1,10 +1,10 @@
-import { Document, Page, View, Text , Image } from '@react-pdf/renderer'
-import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
+// PDF M77 — Identificación de empleados GlobalGAP, REG-ASIP-26 (diseño nuevo: lib/pdf/disenoNuevo).
+import { Document, Text, View } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface EmpleadoGGFilaPDF {
   id: string
@@ -24,9 +24,7 @@ export interface EmpleadosGGPDFProps {
   firmaRealizo?: FirmaParaPdf | null
 }
 
-const MARGIN = 20
-
-// Portrait A4, usable ≈ 555 pt
+// Anchos relativos de columna (la tabla se escala al ancho útil de la hoja)
 const COL = {
   nombre: 130,
   fecha: 65,
@@ -35,7 +33,6 @@ const COL = {
   contacto: 100,
   firma: 80,
 }
-// Total: 130+65+70+110+100+80 = 555
 
 function formatFecha(iso: string | null): string {
   if (!iso) return '—'
@@ -43,102 +40,53 @@ function formatFecha(iso: string | null): string {
   catch { return iso }
 }
 
-function HC({ w, children, right = true }: { w: number; children?: React.ReactNode; right?: boolean }) {
-  return (
-    <View style={{ width: w, minWidth: w, backgroundColor: PC.section, alignItems: 'center', justifyContent: 'center', borderRightWidth: right ? 1 : 0, borderRightColor: '#5599CC', padding: '3px 4px' }}>
-      <Text style={{ fontSize: 6.5, fontFamily: 'Helvetica-Bold', color: PC.white, textAlign: 'center' }}>{children ?? ''}</Text>
-    </View>
-  )
-}
-
-function TablaEmpleados({ empleados }: { empleados: EmpleadoGGFilaPDF[] }) {
-  return (
-    <View style={{ borderWidth: 1, borderColor: PC.border }}>
-      <View style={{ flexDirection: 'row' }}>
-        <HC w={COL.nombre}>Nombre</HC>
-        <HC w={COL.fecha}>Fecha Ingreso</HC>
-        <HC w={COL.telefono}>Teléfono</HC>
-        <HC w={COL.domicilio}>Domicilio</HC>
-        <HC w={COL.contacto}>Contacto de emergencia</HC>
-        <HC w={COL.firma} right={false}>Firma</HC>
-      </View>
-      {empleados.map((emp, i) => {
-        const bg = i % 2 === 0 ? PC.white : '#F5F9FE'
-        const h = 24
-        return (
-          <View key={emp.id} style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: PC.border, minHeight: h }}>
-            <View style={{ width: COL.nombre, padding: '4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
-              <Text style={{ fontSize: 7.5, color: PC.fieldValue, fontFamily: 'Helvetica-Bold' }} hyphenationCallback={partirPalabraLarga}>{emp.nombre}</Text>
-            </View>
-            <View style={{ width: COL.fecha, padding: '4px', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
-              <Text style={{ fontSize: 7, color: PC.fieldValue, textAlign: 'center' }}>{formatFecha(emp.fecha_ingreso)}</Text>
-            </View>
-            <View style={{ width: COL.telefono, padding: '4px', backgroundColor: bg, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border }}>
-              <Text style={{ fontSize: 7, color: PC.fieldValue }}>{emp.telefono ?? ''}</Text>
-            </View>
-            <View style={{ width: COL.domicilio, padding: '4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
-              <Text style={{ fontSize: 7, color: PC.fieldValue }}>{emp.domicilio ?? ''}</Text>
-            </View>
-            <View style={{ width: COL.contacto, padding: '4px', backgroundColor: bg, borderRightWidth: 1, borderRightColor: PC.border }}>
-              <Text style={{ fontSize: 7, color: PC.fieldValue }}>{emp.persona_contacto ?? ''}</Text>
-            </View>
-            {/* Firma — blank for physical signature */}
-            <View style={{ width: COL.firma, padding: '4px', backgroundColor: bg, minHeight: h }} />
-          </View>
-        )
-      })}
-      {empleados.length === 0 && (
-        <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: PC.border }}>
-          <View style={{ flex: 1, padding: '8px 4px', alignItems: 'center' }}>
-            <Text style={{ fontSize: 7.5, color: PC.textSub, fontStyle: 'italic' }}>Sin empleados registrados</Text>
-          </View>
-        </View>
-      )}
-    </View>
-  )
-}
+const COLS: ColumnaDato[] = [
+  { texto: 'Nombre', ancho: COL.nombre },
+  { texto: 'Fecha Ingreso', ancho: COL.fecha, align: 'center' },
+  { texto: 'Teléfono', ancho: COL.telefono, align: 'center' },
+  { texto: 'Domicilio', ancho: COL.domicilio },
+  { texto: 'Contacto de emergencia', ancho: COL.contacto },
+  { texto: 'Firma', ancho: COL.firma },
+]
 
 export function EmpleadosGGPagina({ rancho, orgNombre, empleados, firmaRealizo }: EmpleadosGGPDFProps) {
   return (
-    <Page size="A4" style={{ fontFamily: 'Helvetica', fontSize: 8, padding: MARGIN, paddingBottom: 50, backgroundColor: PC.white }}>
-      <PdfFooter moduloCodigo="REG-ASIP-26" />
-      <TopBar />
-      <PdfHeader
-        titulo="IDENTIFICACIÓN DE EMPLEADOS"
-        subtitulo={`REG-ASIP-26 · GlobalGAP | ${rancho}`}
-        codigoFormato="REG-ASIP-26"
-        folio={rancho}
-        fecha=""
-      />
+    <PaginaEstandar
+      orientacion="portrait"
+      titulo="IDENTIFICACIÓN DE EMPLEADOS"
+      subtitulo={`REG-ASIP-26 · GlobalGAP | ${rancho}`}
+      codigoFmt="REG-ASIP-26"
+      folio={rancho}
+      emision=""
+      etiquetaEmision="Fecha"
+      camposDatos={orgNombre ? [{ icono: 'usuario', etiqueta: 'Empresa', valor: orgNombre }] : []}
+    >
+      <Seccion titulo={`LISTADO DE EMPLEADOS — ${rancho}`.toUpperCase()}>
+        <TablaDatos
+          columnas={COLS}
+          anchoTotal={ANCHO_UTIL.portrait}
+          sinNegativos
+          vacio="Sin empleados registrados"
+          filas={empleados.map((emp) => [
+            { texto: emp.nombre, negrita: true },
+            formatFecha(emp.fecha_ingreso),
+            emp.telefono ?? '',
+            emp.domicilio ?? '',
+            emp.persona_contacto ?? '',
+            // Celda en blanco para la firma física de cada empleado
+            { nodo: <View style={{ height: 20 }} /> },
+          ])}
+        />
+      </Seccion>
 
-      {orgNombre && (
-        <View style={{ paddingHorizontal: 4, marginBottom: 4 }}>
-          <Text style={{ fontSize: 8, color: PC.textSub }}>Empresa: <Text style={{ color: PC.fieldValue, fontFamily: 'Helvetica-Bold' }} hyphenationCallback={partirPalabraLarga}>{orgNombre}</Text></Text>
-        </View>
-      )}
-
-      <PdfSectionBanner>Listado de empleados — {rancho}</PdfSectionBanner>
-      <TablaEmpleados empleados={empleados} />
-
-      <View style={{ marginTop: 6 }}>
-        <Text style={{ fontSize: 6.5, color: PC.textSub, fontStyle: 'italic' }}>
-          La columna "Firma" debe ser firmada de manera física por cada empleado al momento de leer y aceptar las políticas de la empresa.
-        </Text>
-      </View>
+      <Text style={{ fontSize: 6.5, color: PC.textSub, fontFamily: 'Helvetica-Oblique', marginBottom: 8 }}>
+        La columna "Firma" debe ser firmada de manera física por cada empleado al momento de leer y aceptar las políticas de la empresa.
+      </Text>
 
       {firmaRealizo && (
-        <View style={{ marginTop: 20 }}>
-          <View style={{ width: 130, alignItems: 'center' }}>
-            {firmaRealizo.estado === 'vigente' && firmaRealizo.png ? (
-              <Image src={firmaRealizo.png} style={{ height: 36, objectFit: 'contain', marginBottom: 2 }} />
-            ) : null}
-            <View style={{ borderTopWidth: 1, borderTopColor: PC.border, paddingTop: 4, width: '100%', alignItems: 'center' }}>
-              <Text style={{ fontSize: 7, color: PC.textSub }}>Nombre y firma del responsable</Text>
-            </View>
-          </View>
-        </View>
+        <PdfFirmas signatures={[{ label: '', nombre: '', caption: 'Nombre y firma del responsable', firma: firmaRealizo }]} />
       )}
-    </Page>
+    </PaginaEstandar>
   )
 }
 
@@ -159,7 +107,6 @@ export function EmpleadosGGConsolidadoPDF({ empleados, orgNombre }: {
     if (!ranchoMap.has(emp.rancho)) ranchoMap.set(emp.rancho, [])
     ranchoMap.get(emp.rancho)!.push(emp)
   }
-
   return (
     <Document>
       {[...ranchoMap.entries()].map(([rancho, emps]) => (

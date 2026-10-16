@@ -1,11 +1,5 @@
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfMonthlyMatrix } from '@/lib/pdf/components/PdfMonthlyMatrix'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
-import { PC } from '@/lib/pdf/components/tokens'
+import { Document } from '@react-pdf/renderer'
+import { PaginaMatrizMensual } from '@/lib/pdf/disenoNuevo/PaginaMatrizMensual'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface M71ItemPDF {
@@ -28,10 +22,6 @@ export interface LimpiezaCampoPaginaProps {
   firmaRealizo?: FirmaParaPdf | null
   firmaVerifico?: FirmaParaPdf | null
 }
-
-const MARGIN = 20
-const PAGE_W = 841.89 - MARGIN * 2
-const ITEM_COL_W = 200
 
 function diasDelMes(mesDate: string): number {
   const d = new Date(mesDate + 'T12:00:00')
@@ -56,10 +46,7 @@ export function LimpiezaCampoPagina({
   items, diasConResultados, matriz,
   firmaRealizo, firmaVerifico,
 }: LimpiezaCampoPaginaProps) {
-  const totalDias = diasDelMes(mes)
-  const todosLosDias = Array.from({ length: totalDias }, (_, i) => diaToISO(mes, i + 1))
-  const inspeccionadosSet = new Set(Array.from(diasConResultados).map(d => diaToISO(mes, d)))
-  const dW = Math.floor((PAGE_W - ITEM_COL_W) / Math.max(totalDias, 1))
+  const inspeccionados = Array.from(diasConResultados).map(d => diaToISO(mes, d))
 
   const matrizISO: Record<string, Record<string, string>> = {}
   for (const [diaStr, vals] of Object.entries(matriz)) {
@@ -77,62 +64,32 @@ export function LimpiezaCampoPagina({
   }))
 
   return (
-    <Page
-      size="A4"
-      orientation="landscape"
-      style={{ fontFamily: 'Helvetica', fontSize: 8, padding: MARGIN, paddingBottom: 50, backgroundColor: PC.white }}
-    >
-      <PdfFooter moduloCodigo="REG-10" />
-      <TopBar />
-      <PdfHeader
-        titulo="LIMPIEZA Y DESINFECCIÓN EN GENERAL / DERRAMES EN CAMPO"
-        subtitulo={`REG-10 · GlobalG.A.P. v6 | ${rancho}`}
-        codigoFormato="REG-10"
-        folio={mesLabel}
-        fecha={mesLabel}
-      />
-
-      <PdfSectionBanner>Datos generales</PdfSectionBanner>
-      <PdfFieldGrid>
-        <PdfFieldRow>
-          {orgNombre && <PdfField label="Compañía" value={orgNombre} />}
-          <PdfField label="Rancho" value={rancho} />
-          <PdfField label="Mes y Año" value={mesLabel} />
-          {realizoNombre && <PdfField label="Realizó" value={realizoNombre} />}
-        </PdfFieldRow>
-      </PdfFieldGrid>
-
-      <View style={{ marginBottom: 3 }}>
-        <Text style={{ fontSize: 6.5, color: PC.textSub, fontStyle: 'italic' }}>
-          Colocar (Si) si se realiza la accion indicada, (X) si no se realiza y N/A si no aplica.
-        </Text>
-      </View>
-
-      <PdfMonthlyMatrix
-        items={matrixItems}
-        todosLosDias={todosLosDias}
-        inspeccionadosSet={inspeccionadosSet}
-        matriz={matrizISO}
-        itemColW={ITEM_COL_W}
-        dayColW={dW}
-        defaultVal="N/A"
-      />
-
-      {observaciones && (
-        <PdfFieldGrid>
-          <PdfFieldRow>
-            <PdfField label="Observaciones" value={observaciones} />
-          </PdfFieldRow>
-        </PdfFieldGrid>
-      )}
-
-      <PdfSignatures
-        signatures={[
-          { label: '', nombre: realizoNombre ?? '', caption: 'Nombre y Firma de quien verifica', firma: firmaRealizo ?? null },
-          { label: '', nombre: '', caption: 'Nombre y Firma de quien autoriza', firma: firmaVerifico ?? null },
-        ]}
-      />
-    </Page>
+    <PaginaMatrizMensual
+      titulo="LIMPIEZA Y DESINFECCIÓN EN GENERAL / DERRAMES EN CAMPO"
+      subtitulo={`REG-10 · GlobalG.A.P. v6 | ${rancho}`}
+      codigoFmt="REG-10"
+      folio={mesLabel}
+      emision={mesLabel}
+      etiquetaEmision="Fecha"
+      itemColW={200}
+      campos={[
+        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Compañía', valor: orgNombre }] : []),
+        { icono: 'ubicacion', etiqueta: 'Rancho', valor: rancho },
+        { icono: 'calendario', etiqueta: 'Mes y Año', valor: mesLabel },
+        ...(realizoNombre ? [{ icono: 'usuario' as const, etiqueta: 'Realizó', valor: realizoNombre }] : []),
+      ]}
+      notaAntes="Colocar (Si) si se realiza la accion indicada, (X) si no se realiza y N/A si no aplica."
+      items={matrixItems}
+      mesDate={mes}
+      diasInspeccionados={inspeccionados}
+      matriz={matrizISO}
+      defaultVal="N/A"
+      notas={observaciones ? [{ etiqueta: 'Observaciones', valor: observaciones }] : []}
+      firmas={[
+        { label: '', nombre: realizoNombre ?? '', caption: 'Nombre y Firma de quien verifica', firma: firmaRealizo ?? null },
+        { label: '', nombre: '', caption: 'Nombre y Firma de quien autoriza', firma: firmaVerifico ?? null },
+      ]}
+    />
   )
 }
 

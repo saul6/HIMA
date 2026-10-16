@@ -1,13 +1,9 @@
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfMonthlyMatrix } from '@/lib/pdf/components/PdfMonthlyMatrix'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+import { Document, Text } from '@react-pdf/renderer'
+import { PaginaMatrizMensual } from '@/lib/pdf/disenoNuevo/PaginaMatrizMensual'
+import { Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M75ItemPDF {
   id: string
@@ -36,9 +32,11 @@ export interface InspeccionAlmacenEmpaqueGGPaginaProps {
   firmaVerifico?: FirmaParaPdf | null
 }
 
-const MARGIN = 20
-const PAGE_W = 841.89 - MARGIN * 2
-const ITEM_COL_W = 220
+// Acciones tomadas: día y texto (anchos relativos)
+const COLS_ACCIONES: ColumnaDato[] = [
+  { texto: 'Dia', ancho: 40 },
+  { texto: 'Accion tomada', ancho: 700 },
+]
 
 function diasDelMes(mesDate: string): number {
   const d = new Date(mesDate + 'T12:00:00')
@@ -63,10 +61,7 @@ export function InspeccionAlmacenEmpaqueGGPagina({
   items, diasConResultados, matriz, acciones,
   firmaRealizo, firmaVerifico,
 }: InspeccionAlmacenEmpaqueGGPaginaProps) {
-  const totalDias = diasDelMes(mes)
-  const todosLosDias = Array.from({ length: totalDias }, (_, i) => diaToISO(mes, i + 1))
-  const inspeccionadosSet = new Set(Array.from(diasConResultados).map(d => diaToISO(mes, d)))
-  const dW = Math.floor((PAGE_W - ITEM_COL_W) / Math.max(totalDias, 1))
+  const inspeccionados = Array.from(diasConResultados).map(d => diaToISO(mes, d))
 
   const matrizISO: Record<string, Record<string, string>> = {}
   for (const [diaStr, vals] of Object.entries(matriz)) {
@@ -77,7 +72,6 @@ export function InspeccionAlmacenEmpaqueGGPagina({
     }
   }
 
-  // M75 no tiene secciones en catálogo — agrupamos todos bajo una misma sección
   const matrixItems = items.map(it => ({
     id: it.id,
     seccion_label: 'Inspección de Almacen de Empaque',
@@ -85,94 +79,46 @@ export function InspeccionAlmacenEmpaqueGGPagina({
   }))
 
   return (
-    <Page
-      size="A4"
-      orientation="landscape"
-      style={{ fontFamily: 'Helvetica', fontSize: 8, padding: MARGIN, paddingBottom: 50, backgroundColor: PC.white }}
-    >
-      <PdfFooter moduloCodigo="REG-22" />
-      <TopBar />
-      <PdfHeader
-        titulo="INSPECCION DE ALMACEN DE MATERIAL DE EMPAQUE Y/O EMBALAJE"
-        subtitulo={`REG-22 · GlobalG.A.P. v6 | ${rancho}`}
-        codigoFormato="REG-22"
-        folio={mesLabel}
-        fecha={mesLabel}
-      />
-
-      <PdfSectionBanner>Datos generales</PdfSectionBanner>
-      <PdfFieldGrid>
-        <PdfFieldRow>
-          {orgNombre && <PdfField label="Compania" value={orgNombre} />}
-          <PdfField label="Rancho" value={rancho} />
-          {cultivo && <PdfField label="Cultivo" value={cultivo} />}
-          <PdfField label="Mes y Año" value={mesLabel} />
-        </PdfFieldRow>
-      </PdfFieldGrid>
-
-      <View style={{ marginBottom: 3 }}>
-        <Text style={{ fontSize: 6.5, color: PC.textSub, fontStyle: 'italic' }}>
-          Si = cumple, No = no cumple, N/A = no aplica.
-        </Text>
-      </View>
-
-      <PdfMonthlyMatrix
-        items={matrixItems}
-        todosLosDias={todosLosDias}
-        inspeccionadosSet={inspeccionadosSet}
-        matriz={matrizISO}
-        itemColW={ITEM_COL_W}
-        dayColW={dW}
-        defaultVal="N/A"
-      />
-
-      {acciones.length > 0 && (
-        <>
-          <PdfSectionBanner>Acciones Tomadas</PdfSectionBanner>
-          <View style={{ marginTop: 4 }}>
-            <Text style={{ fontSize: 6.5, color: PC.textSub, fontStyle: 'italic', marginBottom: 3 }}>
+    <PaginaMatrizMensual
+      titulo="INSPECCION DE ALMACEN DE MATERIAL DE EMPAQUE Y/O EMBALAJE"
+      subtitulo={`REG-22 · GlobalG.A.P. v6 | ${rancho}`}
+      codigoFmt="REG-22"
+      folio={mesLabel}
+      emision={mesLabel}
+      etiquetaEmision="Fecha"
+      itemColW={220}
+      campos={[
+        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Compania', valor: orgNombre }] : []),
+        { icono: 'ubicacion', etiqueta: 'Rancho', valor: rancho },
+        ...(cultivo ? [{ etiqueta: 'Cultivo', valor: cultivo }] : []),
+        { icono: 'calendario', etiqueta: 'Mes y Año', valor: mesLabel },
+      ]}
+      notaAntes="Si = cumple, No = no cumple, N/A = no aplica."
+      items={matrixItems}
+      mesDate={mes}
+      diasInspeccionados={inspeccionados}
+      matriz={matrizISO}
+      defaultVal="N/A"
+      notas={observaciones ? [{ etiqueta: 'Observaciones', valor: observaciones }] : []}
+      extra={
+        acciones.length > 0 ? (
+          <Seccion titulo="ACCIONES TOMADAS">
+            <Text style={{ fontSize: 6.5, color: PC.textSub, fontFamily: 'Helvetica-Oblique', marginBottom: 3 }}>
               En caso de encontrar alguna incidencia inusual, especificar la ACCION CORRECTIVA tomada.
             </Text>
-            <View style={{ borderWidth: 1, borderColor: PC.border }}>
-              {/* Header */}
-              <View style={{ flexDirection: 'row', backgroundColor: PC.section }}>
-                <View style={{ width: 40, padding: 4, borderRightWidth: 1, borderRightColor: '#5599CC' }}>
-                  <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.white }}>Dia</Text>
-                </View>
-                <View style={{ flex: 1, padding: 4 }}>
-                  <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.white }}>Accion tomada</Text>
-                </View>
-              </View>
-              {acciones.map((a, i) => (
-                <View key={i} wrap={false} style={{ flexDirection: 'row', backgroundColor: i % 2 === 0 ? PC.white : '#F5F9FE' }}>
-                  <View style={{ width: 40, padding: 4, borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border }}>
-                    <Text style={{ fontSize: 7, color: PC.fieldValue }}>{a.dia}</Text>
-                  </View>
-                  <View style={{ flex: 1, padding: 4, borderBottomWidth: 1, borderBottomColor: PC.border }}>
-                    <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{a.texto}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-        </>
-      )}
-
-      {observaciones && (
-        <PdfFieldGrid>
-          <PdfFieldRow>
-            <PdfField label="Observaciones" value={observaciones} />
-          </PdfFieldRow>
-        </PdfFieldGrid>
-      )}
-
-      <PdfSignatures
-        signatures={[
-          { label: '', nombre: realizoNombre ?? '', caption: 'Nombre y firma de quien realiza', firma: firmaRealizo ?? null },
-          { label: '', nombre: '', caption: 'Nombre y firma de quien verifica', firma: firmaVerifico ?? null },
-        ]}
-      />
-    </Page>
+            <TablaDatos
+              columnas={COLS_ACCIONES}
+              fuente={7}
+              filas={acciones.map((a) => [String(a.dia), a.texto])}
+            />
+          </Seccion>
+        ) : undefined
+      }
+      firmas={[
+        { label: '', nombre: realizoNombre ?? '', caption: 'Nombre y firma de quien realiza', firma: firmaRealizo ?? null },
+        { label: '', nombre: '', caption: 'Nombre y firma de quien verifica', firma: firmaVerifico ?? null },
+      ]}
+    />
   )
 }
 
