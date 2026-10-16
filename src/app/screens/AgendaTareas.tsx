@@ -147,6 +147,7 @@ function TareaCard({
 
       <div className="flex flex-wrap items-center gap-2">
         <ChipEstado estado={tarea.estado} vencida={tarea.vencida} />
+        {esTareaDeChecklist(tarea) && <ChipChecklist />}
         {(tarea.acuse_estado === 'pendiente' || tarea.acuse_estado === 'desactualizado') && (
           <span
             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold leading-none"
@@ -582,7 +583,7 @@ function DetalleSheet({
     if (editForm.titulo.trim() !== t.titulo) cambios.titulo = editForm.titulo.trim()
     if (editForm.descripcion !== (t.descripcion ?? '')) cambios.descripcion = editForm.descripcion || null
     if (editForm.prioridad && editForm.prioridad !== t.prioridad) cambios.prioridad = editForm.prioridad
-    const deHallazgo = esTareaDeHallazgo(t)
+    const deHallazgo = esTareaDeHallazgo(t) || esTareaDeChecklist(t)
     if (!deHallazgo && editForm.fecha_limite !== (t.fecha_limite ?? '')) cambios.fecha_limite = editForm.fecha_limite || null
     if (!deHallazgo && editForm.asignado_a !== t.asignado_a) cambios.asignado_a = editForm.asignado_a
     if (Object.keys(cambios).length === 0) { setAccion(null); return }
@@ -644,6 +645,7 @@ function DetalleSheet({
         </div>
         <div className="flex flex-wrap gap-2 items-center">
           <ChipEstado estado={tarea.estado} vencida={tarea.vencida} />
+          {esTareaDeChecklist(tarea) && <ChipChecklist />}
           {tarea.regresada && (
             <span
               className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
@@ -787,8 +789,20 @@ function DetalleSheet({
           )}
         </div>
 
+        {esTareaDeChecklist(tarea) && (
+          <button
+            type="button"
+            onClick={() => { onClose(); navigate(`/inocuidad/checklist${tarea.rancho_id ? `?sitio=${tarea.rancho_id}` : ''}`) }}
+            className="w-full h-10 rounded-lg border border-border text-sm inline-flex items-center justify-center gap-2 transition-colors hover:bg-muted"
+            style={{ fontWeight: 600, color: 'var(--primary)' }}
+          >
+            <ExternalLink className="w-4 h-4" />
+            Abrir checklist
+          </button>
+        )}
+
         {/* Botón ir al formato */}
-        {tarea.modulo_ruta && (() => {
+        {!esTareaDeChecklist(tarea) && tarea.modulo_ruta && (() => {
           const moduloAccesible = modulos.some(
             (m) => m.ruta === tarea.modulo_ruta && m.desbloqueado,
           )
@@ -1046,7 +1060,13 @@ function DetalleSheet({
             )}
 
             {/* Admin + abierta → Editar y Cancelar */}
-            {esAdmin && (tarea.estado === 'pendiente' || tarea.estado === 'en_progreso') && accion === null && (
+            {esAdmin && esTareaDeChecklist(tarea) && (tarea.estado === 'pendiente' || tarea.estado === 'en_progreso') && accion === null && (
+              <p className="text-xs text-center" style={{ color: 'var(--muted-foreground)' }}>
+                Se cambia desde el checklist
+              </p>
+            )}
+
+            {esAdmin && !esTareaDeChecklist(tarea) && (tarea.estado === 'pendiente' || tarea.estado === 'en_progreso') && accion === null && (
               <div className="flex gap-2">
                 <button
                   onClick={() => setAccion('editar')}
@@ -1353,6 +1373,22 @@ function DetalleSheet({
 /** Tareas creadas por la asignación de hallazgos (título "Hallazgo {numeral} · …", módulo M26) */
 function esTareaDeHallazgo(t: { titulo: string; modulo_codigo: string | null } | undefined): boolean {
   return !!t && t.modulo_codigo === 'M26' && t.titulo.startsWith('Hallazgo ')
+}
+
+/** Tareas creadas por las visitas del checklist de documentos (módulo M80) */
+function esTareaDeChecklist(t: { modulo_codigo: string | null } | undefined): boolean {
+  return !!t && t.modulo_codigo === 'M80'
+}
+
+function ChipChecklist() {
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold leading-none"
+      style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+    >
+      Del checklist
+    </span>
+  )
 }
 
 // ── EditarForm / NuevaTareaForm ───────────────────────────────────────────────
