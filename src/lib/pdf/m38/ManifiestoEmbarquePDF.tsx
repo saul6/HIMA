@@ -1,8 +1,8 @@
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+// PDF M38 — Manifiesto de embarque (diseño nuevo: lib/pdf/disenoNuevo).
+import { Document, View, Text } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
@@ -63,36 +63,35 @@ const n = (v: number | null | undefined): string => v != null ? String(v) : '—
 const si = (v: boolean): string => v ? 'Si' : 'No'
 const bm = (v: string): string => v === 'bueno' ? 'Bueno' : 'Malo'
 
-const MARGIN = 20
+const ANCHO_DERECHA = 195
+const GAP = 12
 
-const thStyle = {
-  padding: 3,
-  borderRightWidth: 1,
-  borderRightColor: '#5599CC',
-  borderBottomWidth: 1,
-  borderBottomColor: '#5599CC',
-  justifyContent: 'center' as const,
-  alignItems: 'center' as const,
-  fontFamily: 'Helvetica-Bold',
-  fontSize: 6.5,
-  backgroundColor: PC.section,
-  color: PC.white,
-} as const
+const COLS_TARIMAS: ColumnaDato[] = [
+  { texto: 'No.', ancho: 20, align: 'center' },
+  { texto: 'Tarima', ancho: 38 },
+  { texto: 'Producto', ancho: 150 },
+  { texto: 'Presentacion', ancho: 60 },
+  { texto: 'Cajas', ancho: 28, align: 'center' },
+  { texto: 'T. Sup.', ancho: 34, align: 'center' },
+  { texto: 'T. Med.', ancho: 34, align: 'center' },
+  { texto: 'T. Inf.', ancho: 34, align: 'center' },
+]
 
-const tdStyle = {
-  borderRightWidth: 1,
-  borderRightColor: PC.border,
-  borderBottomWidth: 1,
-  borderBottomColor: PC.border,
-  padding: 3,
-  fontSize: 7,
-  color: PC.fieldValue,
-} as const
+const COLS_TEMP: ColumnaDato[] = [
+  { texto: 'Momento', ancho: 46 },
+  { texto: 'Hora', ancho: 40 },
+  { texto: 'Temp. (C)', ancho: 109 },
+]
 
-const ROW_ALT = '#F5F9FE'
-
-const TW = { ord: 20, tar: 38, cajas: 28, pres: 60, ts: 34, tm: 34, ti: 34 }
-const TEMP_COL = 40
+// Fila "etiqueta ........ valor" de las listas de condiciones; el valor malo sale en rojo suave
+function FilaCondicion({ label, valor, malo }: { label: string; valor: string; malo: boolean }) {
+  return (
+    <View wrap={false} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 3, borderBottomWidth: 0.5, borderBottomColor: PC.border }}>
+      <Text style={{ fontSize: 7.5, flex: 1, color: PC.fieldValue }}>{label}</Text>
+      <Text style={{ fontSize: 7.5, fontFamily: 'Helvetica-Bold', width: 32, textAlign: 'right', color: malo ? PC.negativo : PC.m13Navy }}>{valor}</Text>
+    </View>
+  )
+}
 
 export function ManifiestoEmbarquePDF({
   d,
@@ -118,88 +117,46 @@ export function ManifiestoEmbarquePDF({
 
   return (
     <Document>
-      <Page
-        size="A4"
-        orientation="landscape"
-        style={{
-          fontFamily: 'Helvetica',
-          fontSize: 7.5,
-          padding: MARGIN,
-          paddingBottom: 50,
-          backgroundColor: PC.white,
-        }}
+      <PaginaEstandar
+        titulo="MANIFIESTO DE EMBARQUE"
+        subtitulo={`Embarque | ${d.instalacion} | ${fmtFecha(d.fecha)}`}
+        codigoFmt={codigoFmt}
+        folio={d.folio ?? '—'}
+        emision={d.fecha}
+        etiquetaEmision="Fecha"
+        tituloDatos="DATOS DEL EMBARQUE"
+        camposDatos={[
+          { etiqueta: 'Empresa / Cliente', valor: t(d.empresa) },
+          { etiqueta: 'Linea transportista', valor: t(d.linea_transportista) },
+          { icono: 'usuario', etiqueta: 'Nombre del chofer', valor: t(d.nombre_chofer) },
+          { etiqueta: 'Placas del tractor', valor: t(d.placas_tractor) },
+          { etiqueta: 'Caja (pies)', valor: t(d.caja_pies) },
+          { etiqueta: 'Economico tractor', valor: t(d.econ_tractor) },
+          { etiqueta: 'Economico caja', valor: t(d.econ_caja) },
+          { etiqueta: 'No. sello', valor: t(d.num_sello) },
+          { etiqueta: 'No. chismografo', valor: t(d.num_chismografo) },
+        ]}
       >
-        <PdfFooter moduloCodigo="M38" />
-        <TopBar />
-        <PdfHeader
-          titulo="MANIFIESTO DE EMBARQUE"
-          subtitulo={`Embarque | ${d.instalacion} | ${fmtFecha(d.fecha)}`}
-          codigoFormato={codigoFmt}
-          folio={d.folio ?? '—'}
-          fecha={d.fecha}
-        />
+        {/* Cuerpo principal: tarimas (izquierda) + datos del camión y listas (derecha) */}
+        <View style={{ flexDirection: 'row' }}>
+          <View style={{ flex: 1, marginRight: GAP }}>
+            <Seccion titulo="TARIMAS EMBARCADAS">
+              <TablaDatos
+                columnas={COLS_TARIMAS}
+                anchoTotal={ANCHO_UTIL.landscape - ANCHO_DERECHA - GAP}
+                fuente={7.5}
+                filas={d.lineas.map((l) => [
+                  String(l.orden), l.tarima, l.producto, l.presentacion, n(l.cajas), n(l.temp_superior), n(l.temp_medio), n(l.temp_inferior),
+                ])}
+              />
+            </Seccion>
 
-        {/* Datos generales del embarque */}
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 6 }}>
-          {[
-            { label: 'Empresa / Cliente',    value: t(d.empresa),              w: '50%' },
-            { label: 'Linea transportista',  value: t(d.linea_transportista),  w: '50%' },
-            { label: 'Nombre del chofer',    value: t(d.nombre_chofer),        w: '50%' },
-            { label: 'Placas del tractor',   value: t(d.placas_tractor),       w: '50%' },
-            { label: 'Caja (pies)',          value: t(d.caja_pies),            w: '33%' },
-            { label: 'Economico tractor',    value: t(d.econ_tractor),         w: '33%' },
-            { label: 'Economico caja',       value: t(d.econ_caja),            w: '33%' },
-            { label: 'No. sello',            value: t(d.num_sello),            w: '50%' },
-            { label: 'No. chismografo',      value: t(d.num_chismografo),      w: '50%' },
-          ].map(({ label, value, w }) => (
-            <View key={label} style={{ width: w, paddingBottom: 3, paddingRight: 4 }}>
-              <Text style={{ fontSize: 6, color: PC.fieldLabel, marginBottom: 1 }}>{label}</Text>
-              <Text style={{ fontSize: 7.5, color: PC.fieldValue }}>{value}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Cuerpo principal: tarimas (izquierda) + datos del camion y checklists (derecha) */}
-        <View style={{ flexDirection: 'row', gap: 10, flex: 1 }}>
-
-          {/* Tabla de tarimas */}
-          <View style={{ flex: 1 }}>
-            <PdfSectionBanner>Tarimas embarcadas</PdfSectionBanner>
-            <View style={{ borderTopWidth: 1, borderTopColor: PC.section, borderLeftWidth: 1, borderLeftColor: PC.section }}>
-              {/* Header */}
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={[thStyle, { width: TW.ord }]}>No.</Text>
-                <Text style={[thStyle, { width: TW.tar }]}>Tarima</Text>
-                <Text style={[thStyle, { flex: 1 }]}>Producto</Text>
-                <Text style={[thStyle, { width: TW.pres }]}>Presentacion</Text>
-                <Text style={[thStyle, { width: TW.cajas }]}>Cajas</Text>
-                <Text style={[thStyle, { width: TW.ts }]}>T. Sup.</Text>
-                <Text style={[thStyle, { width: TW.tm }]}>T. Med.</Text>
-                <Text style={[thStyle, { width: TW.ti, borderRightWidth: 0 }]}>T. Inf.</Text>
-              </View>
-              {d.lineas.map((l, i) => (
-                <View key={i} wrap={false} style={{ flexDirection: 'row', backgroundColor: i % 2 === 1 ? ROW_ALT : PC.white }}>
-                  <Text style={[tdStyle, { width: TW.ord }]}>{l.orden}</Text>
-                  <Text style={[tdStyle, { width: TW.tar }]}>{l.tarima}</Text>
-                  <Text style={[tdStyle, { flex: 1 }]} hyphenationCallback={partirPalabraLarga}>{l.producto}</Text>
-                  <Text style={[tdStyle, { width: TW.pres }]}>{l.presentacion}</Text>
-                  <Text style={[tdStyle, { width: TW.cajas }]}>{n(l.cajas)}</Text>
-                  <Text style={[tdStyle, { width: TW.ts }]}>{n(l.temp_superior)}</Text>
-                  <Text style={[tdStyle, { width: TW.tm }]}>{n(l.temp_medio)}</Text>
-                  <Text style={[tdStyle, { width: TW.ti, borderRightWidth: 0 }]}>{n(l.temp_inferior)}</Text>
-                </View>
-              ))}
-            </View>
-
-            {/* Totales por producto */}
             {Object.keys(totales).length > 0 && (
-              <View style={{ marginTop: 5 }}>
-                <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.titleNavy, marginBottom: 2 }}>
-                  Total por producto
-                </Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              <View style={{ marginBottom: 6 }}>
+                <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, marginBottom: 2 }}>Total por producto</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                   {Object.entries(totales).map(([prod, cajas], i) => (
-                    <Text key={i} style={{ fontSize: 7.5, color: PC.fieldValue }}>
+                    <Text key={i} style={{ fontSize: 7.5, color: PC.fieldValue, marginRight: 10 }}>
                       {prod}: {cajas} cjs
                     </Text>
                   ))}
@@ -207,101 +164,59 @@ export function ManifiestoEmbarquePDF({
               </View>
             )}
 
-            {/* Observaciones */}
             {d.observaciones && (
-              <View style={{ marginTop: 6 }}>
-                <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.titleNavy, marginBottom: 2 }}>
-                  Observaciones
-                </Text>
+              <View style={{ marginTop: 4 }}>
+                <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, marginBottom: 2 }}>Observaciones</Text>
                 <Text style={{ fontSize: 7.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{d.observaciones}</Text>
               </View>
             )}
           </View>
 
           {/* Columna derecha */}
-          <View style={{ width: 195 }}>
+          <View style={{ width: ANCHO_DERECHA }}>
+            <Seccion titulo="TEMPERATURA DEL CAMION">
+              <TablaDatos
+                columnas={COLS_TEMP}
+                anchoTotal={ANCHO_DERECHA}
+                fuente={7.5}
+                encabezadoFijo={false}
+                filas={[
+                  ['Llegada', t(d.llegada_hora), n(d.llegada_temp)],
+                  ['Carga', t(d.carga_hora), n(d.carga_temp)],
+                  ['Salida', t(d.salida_hora), n(d.salida_temp)],
+                ]}
+              />
+            </Seccion>
 
-            {/* Temperatura del camion */}
-            <PdfSectionBanner>Temperatura del camion</PdfSectionBanner>
-            <View style={{ borderTopWidth: 1, borderTopColor: PC.section, borderLeftWidth: 1, borderLeftColor: PC.section, marginBottom: 8 }}>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={[thStyle, { width: 46 }]}>Momento</Text>
-                <Text style={[thStyle, { width: TEMP_COL }]}>Hora</Text>
-                <Text style={[thStyle, { flex: 1, borderRightWidth: 0 }]}>Temp. (C)</Text>
+            <Seccion titulo="CONDICIONES DEL TRANSPORTE">
+              <View style={{ marginBottom: 10 }}>
+                <FilaCondicion label="En buen estado" valor={si(d.cond_buen_estado)} malo={!d.cond_buen_estado} />
+                <FilaCondicion label="Limpio y sin malos olores" valor={si(d.cond_limpio)} malo={!d.cond_limpio} />
+                <FilaCondicion label="Presencia de plagas" valor={si(d.cond_presencia_plagas)} malo={d.cond_presencia_plagas} />
               </View>
-              {([
-                { label: 'Llegada', hora: d.llegada_hora, temp: d.llegada_temp },
-                { label: 'Carga',   hora: d.carga_hora,   temp: d.carga_temp   },
-                { label: 'Salida',  hora: d.salida_hora,  temp: d.salida_temp  },
-              ] as const).map((row, i) => (
-                <View key={i} wrap={false} style={{ flexDirection: 'row', backgroundColor: i % 2 === 1 ? ROW_ALT : PC.white }}>
-                  <Text style={[tdStyle, { width: 46 }]}>{row.label}</Text>
-                  <Text style={[tdStyle, { width: TEMP_COL }]}>{t(row.hora)}</Text>
-                  <Text style={[tdStyle, { flex: 1, borderRightWidth: 0 }]}>{n(row.temp)}</Text>
-                </View>
-              ))}
-            </View>
+            </Seccion>
 
-            {/* Condiciones del transporte */}
-            <PdfSectionBanner>Condiciones del transporte</PdfSectionBanner>
-            <View style={{ marginBottom: 8 }}>
-              {([
-                { label: 'En buen estado',            value: si(d.cond_buen_estado),     esNegativo: !d.cond_buen_estado },
-                { label: 'Limpio y sin malos olores', value: si(d.cond_limpio),           esNegativo: !d.cond_limpio },
-                { label: 'Presencia de plagas',       value: si(d.cond_presencia_plagas), esNegativo: d.cond_presencia_plagas },
-              ] as const).map((c, i) => (
-                <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2.5 }}>
-                  <Text style={{ fontSize: 7.5, flex: 1, color: PC.fieldValue }}>{c.label}</Text>
-                  <Text style={{
-                    fontSize: 7.5,
-                    fontFamily: 'Helvetica-Bold',
-                    width: 32,
-                    textAlign: 'right',
-                    color: c.esNegativo ? '#C02A2A' : PC.section,
-                  }}>
-                    {c.value}
-                  </Text>
-                </View>
-              ))}
-            </View>
-
-            {/* Condiciones de las tarimas */}
-            <PdfSectionBanner>Condiciones de las tarimas</PdfSectionBanner>
-            <View>
-              {([
-                { label: 'Remontado',              value: bm(d.tar_remontado)    },
-                { label: 'Flejado',                value: bm(d.tar_flejado)      },
-                { label: 'Limpieza',               value: bm(d.tar_limpieza)     },
-                { label: 'Condicion de la tarima', value: bm(d.tar_condicion)    },
-                { label: 'Distribucion embarque',  value: bm(d.tar_distribucion) },
-              ] as const).map((c, i) => (
-                <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2.5 }}>
-                  <Text style={{ fontSize: 7.5, flex: 1, color: PC.fieldValue }}>{c.label}</Text>
-                  <Text style={{
-                    fontSize: 7.5,
-                    fontFamily: 'Helvetica-Bold',
-                    width: 32,
-                    textAlign: 'right',
-                    color: c.value === 'Malo' ? '#C02A2A' : PC.section,
-                  }}>
-                    {c.value}
-                  </Text>
-                </View>
-              ))}
-            </View>
+            <Seccion titulo="CONDICIONES DE LAS TARIMAS">
+              <View>
+                <FilaCondicion label="Remontado" valor={bm(d.tar_remontado)} malo={bm(d.tar_remontado) === 'Malo'} />
+                <FilaCondicion label="Flejado" valor={bm(d.tar_flejado)} malo={bm(d.tar_flejado) === 'Malo'} />
+                <FilaCondicion label="Limpieza" valor={bm(d.tar_limpieza)} malo={bm(d.tar_limpieza) === 'Malo'} />
+                <FilaCondicion label="Condicion de la tarima" valor={bm(d.tar_condicion)} malo={bm(d.tar_condicion) === 'Malo'} />
+                <FilaCondicion label="Distribucion embarque" valor={bm(d.tar_distribucion)} malo={bm(d.tar_distribucion) === 'Malo'} />
+              </View>
+            </Seccion>
           </View>
         </View>
 
         {/* Firmas */}
-        <PdfSignatures
+        <PdfFirmas
           signatures={[
             { label: 'Responsable de la instalacion', nombre: firmaRealizo?.firmante ?? '', caption: 'Firma del responsable', firma: firmaRealizo ?? null },
             { label: 'Responsable de la empresa', nombre: firmaVerifico?.firmante ?? '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
             { label: 'Firma del chofer', nombre: '', caption: 'Firma del conductor' },
           ]}
         />
-
-      </Page>
+      </PaginaEstandar>
     </Document>
   )
 }

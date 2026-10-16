@@ -39,20 +39,22 @@ interface Props {
   sinNegativos?: boolean
   /** Fila de grupos sobre el encabezado (mismas unidades relativas que `ancho`; texto '' = hueco). */
   encabezadoSuperior?: { texto: string; ancho: number }[]
+  /** false = el encabezado no se repite en cada página (tablas chicas junto a otras). */
+  encabezadoFijo?: boolean
 }
 
 const PAD = 4
 
 export function TablaDatos({
   columnas, filas, anchoTotal = ANCHO_UTIL.landscape, vacio,
-  fuente = 8, fuenteEnc = 7, sinNegativos, encabezadoSuperior,
+  fuente = 8, fuenteEnc = 7, sinNegativos, encabezadoSuperior, encabezadoFijo = true,
 }: Props) {
   const suma = columnas.reduce((a, c) => a + c.ancho, 0) || 1
   const w = columnas.map((c) => (c.ancho * anchoTotal) / suma)
 
   return (
     <View style={{ marginBottom: 10 }}>
-      <View fixed style={{ backgroundColor: PC.m13Fondo, borderBottomWidth: 0.75, borderBottomColor: PC.m13Navy }}>
+      <View fixed={encabezadoFijo} style={{ backgroundColor: PC.m13Fondo, borderBottomWidth: 0.75, borderBottomColor: PC.m13Navy }}>
       {encabezadoSuperior && (
         <View style={{ flexDirection: 'row' }}>
           {encabezadoSuperior.map((g, i) => (

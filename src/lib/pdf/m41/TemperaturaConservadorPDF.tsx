@@ -1,13 +1,12 @@
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+// PDF M41 — Registro de temperaturas del conservador (diseño nuevo: lib/pdf/disenoNuevo).
+import { Document, Text } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
+import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M41LecturaPDF {
   hora: number
@@ -24,8 +23,6 @@ export interface M41RegistroDataPDF {
   lecturas: M41LecturaPDF[]
 }
 
-const MARGIN = 14
-
 function fmtFecha(iso: string): string {
   try {
     const [y, m, d] = iso.split('-')
@@ -35,27 +32,12 @@ function fmtFecha(iso: string): string {
 
 const t = (v: number | null | undefined): string => v != null ? String(v) : ''
 
-const thStyle = {
-  padding: 3,
-  borderRightWidth: 1,
-  borderRightColor: '#5599CC',
-  borderBottomWidth: 1,
-  borderBottomColor: '#5599CC',
-  justifyContent: 'center',
-  alignItems: 'center',
-} as const
-
-const tdStyle = {
-  borderRightWidth: 1,
-  borderRightColor: PC.border,
-  borderBottomWidth: 1,
-  borderBottomColor: PC.border,
-  alignItems: 'center',
-  padding: 1,
-} as const
-
 const HORAS = Array.from({ length: 24 }, (_, i) => i + 1)
-const LABEL_W = 48
+
+const COLS: ColumnaDato[] = [
+  { texto: 'Hora', ancho: 48 },
+  ...HORAS.map((h): ColumnaDato => ({ texto: `${String(h).padStart(2, '0')}:00`, ancho: 28, align: 'center' })),
+]
 
 export function TemperaturaConservadorPDF({
   d, codigoClave, terminoSitio = 'Instalación', firmaRealizo, firmaVerifico,
@@ -76,81 +58,43 @@ export function TemperaturaConservadorPDF({
 
   return (
     <Document>
-      <Page
-        size="A4"
-        orientation="landscape"
-        style={{ fontFamily: 'Helvetica', fontSize: 7, paddingHorizontal: MARGIN, paddingTop: MARGIN, paddingBottom: 50, backgroundColor: PC.white }}
+      <PaginaEstandar
+        titulo="REGISTRO DE TEMPERATURAS DEL CONSERVADOR"
+        subtitulo={`Temperaturas | ${d.instalacion} | ${fechaLabel}`}
+        codigoFmt={codigoFmt}
+        folio={fechaLabel}
+        emision={fechaLabel}
+        etiquetaEmision="Fecha"
+        tituloDatos="1. DATOS DEL SITIO"
+        porRenglon={5}
+        camposDatos={[
+          { icono: 'ubicacion', etiqueta: terminoSitio, valor: d.instalacion },
+          { icono: 'calendario', etiqueta: 'Fecha', valor: fechaLabel },
+          { etiqueta: 'Temp. minima', valor: rangoMin },
+          { etiqueta: 'Temp. maxima', valor: rangoMax },
+        ]}
       >
-        <PdfFooter moduloCodigo="M41" />
-        <TopBar />
-        <PdfHeader
-          titulo="REGISTRO DE TEMPERATURAS DEL CONSERVADOR"
-          subtitulo={`Temperaturas | ${d.instalacion} | ${fechaLabel}`}
-          codigoFormato={codigoFmt}
-          folio={fechaLabel}
-          fecha={fechaLabel}
-        />
+        <Seccion titulo="2. LECTURAS DE TEMPERATURA">
+          <Text style={{ fontSize: 6.5, color: PC.textSub, marginBottom: 4, fontFamily: 'Helvetica-Oblique' }}>
+            Instruccion: revisar temperatura al iniciar turno y cada 2 horas.
+          </Text>
+          <TablaDatos
+            columnas={COLS}
+            fuente={6.5}
+            fuenteEnc={6}
+            filas={[[{ texto: 'Temp. (C)', negrita: true }, ...HORAS.map((h) => t(lecturaPorHora[h]))]]}
+          />
+        </Seccion>
 
-        <PdfSectionBanner>1. Datos del sitio</PdfSectionBanner>
-        <PdfFieldGrid>
-          <PdfFieldRow>
-            <PdfField label={terminoSitio} value={d.instalacion} />
-            <PdfField label="Fecha" value={fechaLabel} />
-            <PdfField label="Temp. minima" value={rangoMin} />
-            <PdfField label="Temp. maxima" value={rangoMax} />
-          </PdfFieldRow>
-        </PdfFieldGrid>
+        {d.observaciones ? <FranjaDatos campos={[{ etiqueta: 'Observaciones', valor: d.observaciones }]} /> : null}
 
-        <PdfSectionBanner>2. Lecturas de temperatura</PdfSectionBanner>
-
-        <Text style={{ fontSize: 6.5, color: PC.textSub, marginTop: 4, marginBottom: 4, fontStyle: 'italic' }}>
-          Instruccion: revisar temperatura al iniciar turno y cada 2 horas.
-        </Text>
-
-        {/* Tabla 24 horas */}
-        <View style={{ borderWidth: 1, borderColor: PC.border }}>
-          {/* Header row: horas */}
-          <View style={{ flexDirection: 'row', backgroundColor: PC.section }}>
-            <View style={[thStyle, { width: LABEL_W, backgroundColor: PC.section, alignItems: 'flex-start' }]}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.white }}>Hora</Text>
-            </View>
-            {HORAS.map(h => (
-              <View key={h} style={[thStyle, { flex: 1, backgroundColor: PC.section }]}>
-                <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>
-                  {String(h).padStart(2, '0')}:00
-                </Text>
-              </View>
-            ))}
-          </View>
-
-          {/* Data row: temperaturas */}
-          <View style={{ flexDirection: 'row', backgroundColor: PC.white }}>
-            <View style={[tdStyle, { width: LABEL_W, alignItems: 'flex-start', padding: 3, borderBottomWidth: 0 }]}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.fieldValue }}>Temp. (C)</Text>
-            </View>
-            {HORAS.map(h => (
-              <View key={h} style={[tdStyle, { flex: 1, borderBottomWidth: 0 }]}>
-                <Text style={{ fontSize: 6.5, color: PC.fieldValue }}>{t(lecturaPorHora[h])}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Observaciones */}
-        {d.observaciones ? (
-          <View style={{ marginTop: 10, borderWidth: 1, borderColor: PC.border, padding: 6 }}>
-            <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.fieldValue, marginBottom: 3 }}>Observaciones</Text>
-            <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{d.observaciones}</Text>
-          </View>
-        ) : null}
-
-        <PdfSignatures
+        <PdfFirmas
           signatures={[
             { label: '', nombre: '', caption: 'Responsable de la instalacion', firma: firmaRealizo ?? null },
             { label: '', nombre: '', caption: 'Responsable de la empresa', firma: firmaVerifico ?? null },
           ]}
         />
-      </Page>
+      </PaginaEstandar>
     </Document>
   )
 }

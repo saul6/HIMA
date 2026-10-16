@@ -5,7 +5,7 @@
 import { View, Text } from '@react-pdf/renderer'
 import { PaginaEstandar, Seccion } from './PaginaEstandar'
 import { FranjaDatos } from './Franja'
-import { TablaDatos, type ColumnaDato } from './TablaDatos'
+import { TablaDatos, type ColumnaDato, type CeldaDato } from './TablaDatos'
 import { PdfFirmas } from './PdfFirmas'
 import { estiloColumnaCompacta } from './Encabezado'
 import { PC } from '@/lib/pdf/components/tokens'
@@ -45,6 +45,8 @@ interface Props {
   observaciones: string | null
   /** Valor de una celda distinto al estándar (OK / No / N/A) para ciertos ítems; null = usar el estándar. */
   formatoValor?: (v: ValorBitacora | undefined, item: any) => { texto: string; tono: TonoValor } | null
+  /** Registro diario propio del formato (si el estándar de personal / concentraciones no aplica). */
+  registroDiario?: { titulo: string; columnas: ColumnaDato[]; filas: CeldaDato[][] }
   /** Nota fija del formato, en una caja bajo la matriz (antes de las observaciones). */
   nota?: string
   /** true = la nota va después de las observaciones. */
@@ -88,7 +90,7 @@ const COLS_PERSONAL: ColumnaDato[] = [
 
 export function PaginaBitacoraMensual({
   titulo, codigoFmt, instalacion, instalacionCodigo, terminoSitio, anio, mes, area, items, resultados, diasData,
-  conConcentraciones, observaciones, formatoValor, nota, notaDespuesDeObs, firmaRealizo, firmaVerifico,
+  conConcentraciones, observaciones, formatoValor, registroDiario, nota, notaDespuesDeObs, firmaRealizo, firmaVerifico,
 }: Props) {
   const notaCaja = nota ? (
     <View wrap={false} style={{ marginTop: 4, marginBottom: 6, padding: 6, borderRadius: 6, backgroundColor: PC.m13Fondo }}>
@@ -162,7 +164,13 @@ export function PaginaBitacoraMensual({
         ))}
       </Seccion>
 
-      {dias.length > 0 && (
+      {registroDiario && registroDiario.filas.length > 0 && (
+        <Seccion titulo={registroDiario.titulo}>
+          <TablaDatos columnas={registroDiario.columnas} fuente={7} fuenteEnc={6.5} filas={registroDiario.filas} />
+        </Seccion>
+      )}
+
+      {!registroDiario && dias.length > 0 && (
         <Seccion titulo={conConcentraciones ? 'REGISTRO DIARIO DE CONCENTRACIONES Y PERSONAL' : 'REGISTRO DIARIO DE PERSONAL'}>
           <TablaDatos
             columnas={conConcentraciones ? COLS_CONC : COLS_PERSONAL}

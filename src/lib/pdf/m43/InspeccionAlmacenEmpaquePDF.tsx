@@ -1,13 +1,10 @@
-// PATRÓN INOCUIDAD — PDF M43 (plantilla homogénea M.A.D.Y)
-// Inspección de Almacén de Material de Empaque — A4 landscape, matriz mensual.
-// TopBar + PdfHeader + PdfSectionBanner + matriz inline (C/NC/N/A) + franja acciones + PdfFooter.
-
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+// PATRÓN INOCUIDAD — PDF M43 (diseño nuevo: lib/pdf/disenoNuevo)
+// Inspección de Almacén de Material de Empaque — A4 landscape, matriz mensual (C / NC / N/A).
+import { Document, View, Text } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
+import { estiloColumnaCompacta } from '@/lib/pdf/disenoNuevo/Encabezado'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
@@ -49,13 +46,10 @@ export interface InspeccionAlmacenEmpaqueConsolidadoPDFProps {
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
-const C_COLOR  = '#2E7D32'
-const NC_COLOR = '#C02A2A'
-const NA_COLOR = '#717182'
-const ROW_ALT  = '#F5F9FE'
-const MARGIN   = 20
-const PAGE_W   = 841.89 - MARGIN * 2
+// A4 horizontal con márgenes de 40 pt
+const PAGE_W = 841.89 - 80
 const PUNTO_COL = 250
+const LINEA = 0.5
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -76,15 +70,13 @@ function valorLabel(val: string): string {
 }
 
 function valorColor(val: string): string {
-  if (val === 'cumple')    return C_COLOR
-  if (val === 'no_cumple') return NC_COLOR
-  return NA_COLOR
+  if (val === 'cumple')    return PC.m13Navy
+  if (val === 'no_cumple') return PC.negativo
+  return PC.textSub
 }
 
-// ── Estilos de celda inline ───────────────────────────────────────────────────
-
-const thStyle = { padding: 3, borderRightWidth: 1, borderRightColor: '#5599CC', borderBottomWidth: 1, borderBottomColor: '#5599CC', justifyContent: 'center', alignItems: 'center' } as const
-const tdStyle = { borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, padding: 3 } as const
+const celda = { borderRightWidth: LINEA, borderRightColor: PC.border, borderBottomWidth: LINEA, borderBottomColor: PC.border } as const
+const fila = { flexDirection: 'row', borderLeftWidth: LINEA, borderLeftColor: PC.border } as const
 
 // ── InspeccionAlmacenEmpaquePagina ────────────────────────────────────────────
 
@@ -113,108 +105,86 @@ export function InspeccionAlmacenEmpaquePagina({
   ]
 
   return (
-    <Page
-      size="A4"
-      orientation="landscape"
-      style={{ fontFamily: 'Helvetica', fontSize: 7, padding: MARGIN, paddingBottom: 50, backgroundColor: PC.white }}
+    <PaginaEstandar
+      titulo="INSPECCIÓN DE ALMACÉN DE MATERIAL DE EMPAQUE"
+      subtitulo={`Inspeccion mensual | ${instalacion}`}
+      codigoFmt={codigoFmt}
+      folio={mesLabel}
+      emision={emision}
+      columnasCompactas={
+        <>
+          <Text style={{ ...estiloColumnaCompacta, fontSize: 6.5, width: PUNTO_COL, paddingLeft: 4 }}>Punto de inspeccion</Text>
+          {todosLosDias.map((d) => (
+            <Text key={d} style={{ ...estiloColumnaCompacta, fontSize: 6.5, width: dW, textAlign: 'center' }}>{d}</Text>
+          ))}
+        </>
+      }
+      tituloDatos="1. DATOS DEL SITIO Y MES"
+      porRenglon={5}
+      camposDatos={[
+        { icono: 'ubicacion', etiqueta: terminoSitio, valor: instalacion },
+        { icono: 'codigo', etiqueta: 'Codigo', valor: instalacionCodigo || '—' },
+        { icono: 'calendario', etiqueta: 'Mes / Año', valor: mesLabel },
+        { icono: 'usuario', etiqueta: 'Realizado por', valor: realizadoPor ?? '—' },
+        { icono: 'usuario', etiqueta: 'Verifica', valor: verifica ?? '—' },
+        ...(autoriza ? [{ icono: 'usuario' as const, etiqueta: 'Autoriza', valor: autoriza }] : []),
+      ]}
     >
-      <PdfFooter moduloCodigo="M43" />
-      <TopBar />
-
-      <PdfHeader
-        titulo="INSPECCIÓN DE ALMACÉN DE MATERIAL DE EMPAQUE"
-        subtitulo={`Inspeccion mensual | ${instalacion}`}
-        codigoFormato={codigoFmt}
-        folio={mesLabel}
-        fecha={emision}
-      />
-
-      <PdfSectionBanner>1. Datos del sitio y mes</PdfSectionBanner>
-      <PdfFieldGrid>
-        <PdfFieldRow>
-          <PdfField label={terminoSitio} value={instalacion} />
-          <PdfField label="Codigo" value={instalacionCodigo || '—'} />
-          <PdfField label="Mes / Año" value={mesLabel} />
-          <PdfField label="Realizado por" value={realizadoPor ?? '—'} />
-          <PdfField label="Verifica" value={verifica ?? '—'} />
-          {autoriza ? <PdfField label="Autoriza" value={autoriza} /> : null}
-        </PdfFieldRow>
-      </PdfFieldGrid>
-
-      <PdfSectionBanner>2. Puntos de inspeccion</PdfSectionBanner>
-
-      {/* Matriz mensual */}
-      <View style={{ borderLeftWidth: 1, borderLeftColor: PC.border, borderTopWidth: 1, borderTopColor: PC.border, marginTop: 4 }}>
-        {/* Encabezado */}
-        <View style={{ flexDirection: 'row' }}>
-          <View style={[thStyle, { width: PUNTO_COL, backgroundColor: PC.section }]}>
-            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, textAlign: 'center', color: PC.white }}>
-              Punto de inspeccion
-            </Text>
+      <Seccion titulo="2. PUNTOS DE INSPECCION">
+        {/* Encabezado de la matriz */}
+        <View wrap={false} style={{ ...fila, backgroundColor: PC.m13Fondo, borderTopWidth: LINEA, borderTopColor: PC.border }}>
+          <View style={{ ...celda, width: PUNTO_COL, padding: 3, justifyContent: 'center' }}>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.m13Navy }}>Punto de inspeccion</Text>
           </View>
           {todosLosDias.map((d) => (
-            <View key={d} style={[thStyle, { width: dW, backgroundColor: PC.section }]}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, textAlign: 'center', color: PC.white }}>{d}</Text>
+            <View key={d} style={{ ...celda, width: dW, padding: 3, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.m13Navy }}>{d}</Text>
             </View>
           ))}
         </View>
 
         {/* Filas — un punto por fila */}
-        {puntos.map((punto, idx) => {
-          const bg = idx % 2 === 1 ? ROW_ALT : PC.white
-          return (
-            <View key={punto.id} style={{ flexDirection: 'row', backgroundColor: bg }}>
-              <View style={{ width: PUNTO_COL, padding: 3, borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, backgroundColor: bg }}>
-                <Text style={{ fontSize: 7, color: PC.fieldValue }}>{punto.orden}. {punto.texto}</Text>
-              </View>
-              {todosLosDias.map((d) => {
-                if (!inspeccionadosSet.has(d)) {
-                  return <View key={d} style={[tdStyle, { width: dW, backgroundColor: bg }]} />
-                }
-                const rawVal = matriz[d]?.[punto.id]
-                if (!rawVal) return <View key={d} style={[tdStyle, { width: dW, backgroundColor: bg }]} />
-                const label = valorLabel(rawVal)
-                const color = valorColor(rawVal)
-                return (
-                  <View key={d} style={[tdStyle, { width: dW, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }]}>
-                    <Text style={{ fontSize: label === 'NC' ? 5 : 6, fontFamily: 'Helvetica-Bold', color, textAlign: 'center' }}>
-                      {label}
-                    </Text>
-                  </View>
-                )
-              })}
+        {puntos.map((punto, idx) => (
+          <View key={punto.id} wrap={false} style={{ ...fila, backgroundColor: idx % 2 === 1 ? PC.m13Fondo : PC.white }}>
+            <View style={{ ...celda, width: PUNTO_COL, padding: 3 }}>
+              <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{punto.orden}. {punto.texto}</Text>
             </View>
-          )
-        })}
-      </View>
+            {todosLosDias.map((d) => {
+              const rawVal = inspeccionadosSet.has(d) ? matriz[d]?.[punto.id] : undefined
+              if (!rawVal) return <View key={d} style={{ ...celda, width: dW }} />
+              const label = valorLabel(rawVal)
+              return (
+                <View key={d} style={{ ...celda, width: dW, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ fontSize: label === 'NC' ? 5 : 6, fontFamily: 'Helvetica-Bold', color: valorColor(rawVal) }}>{label}</Text>
+                </View>
+              )
+            })}
+          </View>
+        ))}
+      </Seccion>
 
-      {/* Franja de acciones tomadas */}
+      {/* Acciones tomadas */}
       {accionesEntries.length > 0 && (
-        <>
-          <PdfSectionBanner>3. Acciones tomadas</PdfSectionBanner>
-          <View style={{ borderWidth: 1, borderColor: PC.border, padding: 4, marginTop: 4 }}>
+        <Seccion titulo="3. ACCIONES TOMADAS">
+          <View style={{ backgroundColor: PC.m13Fondo, borderRadius: 6, padding: 8, marginBottom: 8 }}>
             {accionesEntries.map(([diaNum, texto]) => (
               <View key={diaNum} style={{ flexDirection: 'row', marginBottom: 2, alignItems: 'flex-start' }}>
-                <Text style={{ fontSize: 6.5, fontFamily: 'Helvetica-Bold', color: PC.fieldValue, width: 32 }}>
-                  Dia {diaNum}:
-                </Text>
+                <Text style={{ fontSize: 6.5, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, width: 32 }}>Dia {diaNum}:</Text>
                 <Text style={{ fontSize: 6.5, color: PC.fieldValue, flex: 1 }} hyphenationCallback={partirPalabraLarga}>{texto}</Text>
               </View>
             ))}
           </View>
-        </>
+        </Seccion>
       )}
 
-      {observaciones ? (
-        <View style={{ borderWidth: 1, borderColor: PC.border, padding: 4, marginTop: 4, minHeight: 20 }}>
-          <Text style={{ fontSize: 7, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>OBSERVACIONES</Text>
-          <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{observaciones}</Text>
-        </View>
-      ) : null}
+      {observaciones ? <FranjaDatos campos={[{ etiqueta: 'Observaciones', valor: observaciones }]} /> : null}
 
-      <PdfSectionBanner>4. Firmas y responsables</PdfSectionBanner>
-      <PdfSignatures signatures={firmas} />
-    </Page>
+      <View wrap={false}>
+        <Seccion titulo="4. FIRMAS Y RESPONSABLES">
+          <PdfFirmas signatures={firmas} />
+        </Seccion>
+      </View>
+    </PaginaEstandar>
   )
 }
 

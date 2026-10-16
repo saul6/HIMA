@@ -25,6 +25,8 @@ interface Props {
   camposDatos: CampoFranja[]
   /** false = el formato no tiene folio ni fecha de emisión propios: la franja lleva solo `camposDatos`. */
   trio?: boolean
+  /** Etiqueta del tercer dato de la franja (default "Emisión"); p. ej. "Fecha" o "Periodo". */
+  etiquetaEmision?: string
   /** Texto del encabezado compacto (páginas 2+) en lugar de "Folio: …". */
   detalleCompacto?: string
   /** Fila de encabezado de columnas que se repite en el encabezado compacto (p. ej. los días de una matriz). */
@@ -47,7 +49,7 @@ export function Seccion({ titulo, children }: { titulo: string; children?: React
 
 export function PaginaEstandar({
   orientacion = 'landscape', titulo, subtitulo, codigoFmt, folio, emision, pendienteSync,
-  tituloDatos, camposDatos, trio = true, detalleCompacto, columnasCompactas, porRenglon = 4, children,
+  tituloDatos, camposDatos, trio = true, etiquetaEmision = 'Emisión', detalleCompacto, columnasCompactas, porRenglon = 4, children,
 }: Props) {
   return (
     <Page size="A4" orientation={orientacion} style={estiloPagina}>
@@ -72,7 +74,7 @@ export function PaginaEstandar({
             ? [
                 { icono: 'codigo' as const, etiqueta: 'Formato', valor: codigoFmt },
                 { icono: 'folio' as const, etiqueta: 'Folio', valor: folio },
-                { icono: 'calendario' as const, etiqueta: 'Emisión', valor: emision },
+                { icono: 'calendario' as const, etiqueta: etiquetaEmision, valor: emision },
               ]
             : []),
           ...camposDatos,

@@ -1,12 +1,12 @@
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+// PDF M42 — Entradas y salidas de material de empaque (diseño nuevo: lib/pdf/disenoNuevo).
+import { Document, View, Text } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
+import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M42MovimientoPDF {
   orgNombre: string
@@ -45,31 +45,14 @@ function fmtFecha(iso: string): string {
 const sn = (v: boolean) => v ? 'Si' : 'No'
 const nn = (v: number | null | undefined) => v != null ? String(v) : '—'
 
-const MARGIN = 20
-
-const thStyle = {
-  padding: 3,
-  borderRightWidth: 1,
-  borderRightColor: '#5599CC',
-  borderBottomWidth: 1,
-  borderBottomColor: '#5599CC',
-  justifyContent: 'center' as const,
-  alignItems: 'center' as const,
-  fontFamily: 'Helvetica-Bold',
-  fontSize: 6.5,
-  backgroundColor: PC.section,
-  color: PC.white,
-} as const
-
-const tdStyle = {
-  borderRightWidth: 1,
-  borderRightColor: PC.border,
-  borderBottomWidth: 1,
-  borderBottomColor: PC.border,
-  padding: 3,
-  fontSize: 7,
-  color: PC.fieldValue,
-} as const
+const COLS: ColumnaDato[] = [
+  { texto: 'Descripcion del material', ancho: 180 },
+  { texto: 'Entrada', ancho: 60, align: 'center' },
+  { texto: 'Salida', ancho: 60, align: 'center' },
+  { texto: 'Total', ancho: 60, align: 'center' },
+  { texto: 'Entrega', ancho: 200 },
+  { texto: 'Recibe', ancho: 200 },
+]
 
 function ChecklistBlock({ d, tipo }: { d: M42MovimientoPDF; tipo: 'mat' | 'tr' }) {
   const integro = tipo === 'mat' ? d.mat_integro    : d.tr_integro
@@ -81,15 +64,8 @@ function ChecklistBlock({ d, tipo }: { d: M42MovimientoPDF; tipo: 'mat' | 'tr' }
   const titulo  = tipo === 'mat' ? 'Condicion del material' : 'Condicion del transporte'
 
   return (
-    <View style={{
-      flex: 1,
-      borderWidth: 1,
-      borderColor: PC.border,
-      padding: 6,
-    }}>
-      <Text style={{ fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: PC.titleNavy, marginBottom: 4 }}>
-        {titulo}
-      </Text>
+    <View wrap={false} style={{ flex: 1, backgroundColor: PC.m13Fondo, borderRadius: 6, padding: 8 }}>
+      <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, marginBottom: 4 }}>{titulo}</Text>
       {([
         ['Integro', integro],
         ['En buen estado', buen],
@@ -98,19 +74,13 @@ function ChecklistBlock({ d, tipo }: { d: M42MovimientoPDF; tipo: 'mat' | 'tr' }
         ['Libre de plagas', plagas],
       ] as [string, boolean][]).map(([label, val]) => (
         <View key={label} style={{ flexDirection: 'row', marginBottom: 2 }}>
-          <Text style={{ fontSize: 7, color: PC.textSub, width: 110 }}>{label}:</Text>
-          <Text style={{
-            fontSize: 7,
-            fontFamily: 'Helvetica-Bold',
-            color: val ? PC.section : '#C02A2A',
-          }}>
-            {sn(val)}
-          </Text>
+          <Text style={{ fontSize: 7.5, color: PC.textSub, width: 110 }}>{label}:</Text>
+          <Text style={{ fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: val ? PC.m13Navy : PC.negativo }}>{sn(val)}</Text>
         </View>
       ))}
       {otros ? (
         <View style={{ marginTop: 3 }}>
-          <Text style={{ fontSize: 6.5, color: PC.textSub }}>Otros: {otros}</Text>
+          <Text style={{ fontSize: 7, color: PC.textSub }}>Otros: {otros}</Text>
         </View>
       ) : null}
     </View>
@@ -129,73 +99,37 @@ export function MaterialEmpaquePDF({
 
   return (
     <Document>
-      <Page
-        size="A4"
-        orientation="landscape"
-        style={{
-          fontFamily: 'Helvetica',
-          fontSize: 7.5,
-          padding: MARGIN,
-          paddingBottom: 50,
-          backgroundColor: PC.white,
-        }}
+      <PaginaEstandar
+        titulo="ENTRADAS Y SALIDAS DE MATERIAL DE EMPAQUE"
+        subtitulo={`${d.instalacion}${d.empresa ? ` | ${d.empresa}` : ''} | ${fmtFecha(d.fecha)}`}
+        codigoFmt={codigoFmt}
+        folio={d.folio ?? '—'}
+        emision={d.fecha}
+        etiquetaEmision="Fecha"
+        camposDatos={[]}
       >
-        <PdfFooter moduloCodigo="M42" />
-        <TopBar />
-        <PdfHeader
-          titulo="ENTRADAS Y SALIDAS DE MATERIAL DE EMPAQUE"
-          subtitulo={`${d.instalacion}${d.empresa ? ` | ${d.empresa}` : ''} | ${fmtFecha(d.fecha)}`}
-          codigoFormato={codigoFmt}
-          folio={d.folio ?? '—'}
-          fecha={d.fecha}
-        />
+        <Seccion titulo="DATOS DEL MOVIMIENTO">
+          <TablaDatos
+            columnas={COLS}
+            filas={[[d.descripcion_material ?? '—', nn(d.entrada), nn(d.salida), nn(d.total), d.entrega ?? '—', d.recibe ?? '—']]}
+          />
+        </Seccion>
 
-        {/* Datos del movimiento */}
-        <PdfSectionBanner>Datos del movimiento</PdfSectionBanner>
-        <View style={{ borderTopWidth: 1, borderTopColor: PC.section, borderLeftWidth: 1, borderLeftColor: PC.section, marginBottom: 8 }}>
-          <View style={{ flexDirection: 'row' }}>
-            <Text style={[thStyle, { width: 90 }]}>Descripcion del material</Text>
-            <Text style={[thStyle, { width: 45 }]}>Entrada</Text>
-            <Text style={[thStyle, { width: 45 }]}>Salida</Text>
-            <Text style={[thStyle, { width: 45 }]}>Total</Text>
-            <Text style={[thStyle, { flex: 1 }]}>Entrega</Text>
-            <Text style={[thStyle, { flex: 1, borderRightWidth: 0 }]}>Recibe</Text>
-          </View>
-          <View style={{ flexDirection: 'row' }}>
-            <Text style={[tdStyle, { width: 90 }]} hyphenationCallback={partirPalabraLarga}>{d.descripcion_material ?? '—'}</Text>
-            <Text style={[tdStyle, { width: 45, textAlign: 'center' }]}>{nn(d.entrada)}</Text>
-            <Text style={[tdStyle, { width: 45, textAlign: 'center' }]}>{nn(d.salida)}</Text>
-            <Text style={[tdStyle, { width: 45, textAlign: 'center' }]}>{nn(d.total)}</Text>
-            <Text style={[tdStyle, { flex: 1 }]}>{d.entrega ?? '—'}</Text>
-            <Text style={[tdStyle, { flex: 1, borderRightWidth: 0 }]}>{d.recibe ?? '—'}</Text>
-          </View>
+        {/* Condiciones del material y del transporte */}
+        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+          <View style={{ flex: 1, marginRight: 16 }}><ChecklistBlock d={d} tipo="mat" /></View>
+          <View style={{ flex: 1 }}><ChecklistBlock d={d} tipo="tr" /></View>
         </View>
 
-        {/* Checklists condiciones */}
-        <View style={{ flexDirection: 'row', gap: 16, marginBottom: 8 }}>
-          <ChecklistBlock d={d} tipo="mat" />
-          <ChecklistBlock d={d} tipo="tr" />
-        </View>
+        {d.observaciones ? <FranjaDatos campos={[{ etiqueta: 'Observaciones', valor: d.observaciones }]} /> : null}
 
-        {/* Observaciones */}
-        {d.observaciones ? (
-          <View style={{ marginBottom: 8 }}>
-            <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.titleNavy, marginBottom: 2 }}>
-              Observaciones
-            </Text>
-            <Text style={{ fontSize: 7.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{d.observaciones}</Text>
-          </View>
-        ) : null}
-
-        {/* Firmas */}
-        <PdfSignatures
+        <PdfFirmas
           signatures={[
             { label: 'Responsable de la instalacion', nombre: firmaRealizo?.firmante ?? '', caption: 'Firma del responsable', firma: firmaRealizo ?? null },
             { label: 'Responsable de la empresa', nombre: firmaVerifico?.firmante ?? '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
           ]}
         />
-
-      </Page>
+      </PaginaEstandar>
     </Document>
   )
 }
