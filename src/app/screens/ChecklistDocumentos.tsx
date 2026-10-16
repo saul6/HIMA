@@ -12,6 +12,9 @@ import { ItemCard } from '@/app/components/checklist/ItemCard'
 import { ItemDetalleSheet } from '@/app/components/checklist/ItemDetalleSheet'
 import { AgregarSheet } from '@/app/components/checklist/AgregarSheet'
 import { AjustesSheet } from '@/app/components/checklist/AjustesSheet'
+import { VisitaCard } from '@/app/components/checklist/VisitaCard'
+import { VisitaAccionSheet, VisitasSheet, type ModoVisita } from '@/app/components/checklist/VisitaSheets'
+import { hoyMX } from '@/lib/fecha'
 import { cn } from '@/app/components/ui/utils'
 
 type FiltroChk = 'faltantes' | 'no_se_lleva' | 'firmas' | 'por_vencer'
@@ -65,11 +68,20 @@ export function ChecklistDocumentos() {
   const [modoRevisar, setModoRevisar] = useState(false)
   const [agregarAbierto, setAgregarAbierto] = useState(false)
   const [ajustesAbierto, setAjustesAbierto] = useState(false)
+  const [modoVisita, setModoVisita] = useState<ModoVisita | null>(null)
+  const [visitasAbierto, setVisitasAbierto] = useState(false)
+  const visitaParam = searchParams.get('visita')
 
   const { cargar } = hook
   useEffect(() => {
     if (permitido && sitioId) cargar(sitioId)
   }, [permitido, sitioId, cargar])
+
+  // Enlace de la campana (?visita=): abre la lista con esa visita desplegada
+  const { resumen: resumenCargado } = hook
+  useEffect(() => {
+    if (visitaParam && resumenCargado?.visitas.some(v => v.id === visitaParam)) setVisitasAbierto(true)
+  }, [visitaParam, resumenCargado])
 
   const recargar = useCallback(() => { if (sitioId) cargar(sitioId) }, [sitioId, cargar])
 
@@ -87,6 +99,12 @@ export function ChecklistDocumentos() {
   const items = resumen?.items ?? []
   const itemsFiltrados = filtro ? items.filter(i => coincide(i, filtro)) : items
   const detalle = items.find(i => i.id === detalleId) ?? null
+  const visitas = resumen?.visitas ?? []
+  const programadas = visitas.filter(v => v.estado === 'programada').sort((a, b) => a.fecha.localeCompare(b.fecha))
+  const proxima = programadas[0] ?? null
+  const hoy = resumen?.hoy ?? hoyMX()
+  // Visita abierta: la del enlace o la primera programada con fecha de hoy o anterior
+  const abierta = programadas.find(v => v.id === visitaParam) ?? programadas.find(v => v.fecha <= hoy) ?? null
 
   if (!profile) return null
   if (!permitido) return <Navigate to="/" replace />
@@ -135,6 +153,19 @@ export function ChecklistDocumentos() {
           </p>
         )}
 
+        {resumen && (
+          <VisitaCard
+            visita={proxima}
+            puedeEditar={puedeEditar}
+            hayVisitas={visitas.length > 0}
+            onProgramar={() => setModoVisita({ tipo: 'programar' })}
+            onTerminar={() => proxima && setModoVisita({ tipo: 'terminar', visita: proxima })}
+            onReprogramar={() => proxima && setModoVisita({ tipo: 'reprogramar', visita: proxima })}
+            onCancelar={() => proxima && setModoVisita({ tipo: 'cancelar', visita: proxima })}
+            onVerVisitas={() => setVisitasAbierto(true)}
+          />
+        )}
+
         {c && (
           <div className="flex flex-wrap gap-2">
             {pildoras.map(p => {
@@ -155,6 +186,16 @@ export function ChecklistDocumentos() {
                 </button>
               )
             })}
+            {c.visitas_atrasadas > 0 && (
+              <button
+                type="button"
+                onClick={() => setVisitasAbierto(true)}
+                className="h-8 px-3 rounded-full border text-xs transition-colors active:scale-[0.97]"
+                style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', borderColor: 'transparent', fontWeight: 600 }}
+              >
+                Visitas atrasadas · {c.visitas_atrasadas}
+              </button>
+            )}
           </div>
         )}
 
@@ -208,13 +249,27 @@ export function ChecklistDocumentos() {
             ranchoId={sitioId}
             codigoClave={codigoClave}
             puedeEditar={puedeEditar}
-            visitaAbierta={null}
+            visitaAbierta={abierta ? { id: abierta.id, fecha: abierta.fecha } : null}
             hook={hook}
             onClose={() => setDetalleId(null)}
             onCambio={recargar}
           />
+          <VisitasSheet
+            open={visitasAbierto}
+            visitas={visitas}
+            destacada={visitaParam ?? proxima?.id ?? null}
+            hook={hook}
+            onClose={() => setVisitasAbierto(false)}
+          />
           {puedeEditar && (
             <>
+              <VisitaAccionSheet
+                modo={modoVisita}
+                ranchoId={sitioId}
+                hook={hook}
+                onClose={() => setModoVisita(null)}
+                onGuardado={recargar}
+              />
               <AgregarSheet
                 open={agregarAbierto}
                 ranchoId={sitioId}
