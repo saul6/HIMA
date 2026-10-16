@@ -26,9 +26,12 @@ export type CeldaDato =
   | { texto: string | number; color?: string; negrita?: boolean }
   | { nodo: ReactNode }
 
+/** Fila de banda que cubre todas las columnas (p. ej. el nombre de un área). */
+export type FilaBanda = { banda: string }
+
 interface Props {
   columnas: ColumnaDato[]
-  filas: CeldaDato[][]
+  filas: (CeldaDato[] | FilaBanda)[]
   anchoTotal?: number
   /** Texto de una sola fila cuando no hay filas. */
   vacio?: string
@@ -103,6 +106,7 @@ export function TablaDatos({
         </View>
       ) : (
         filas.map((fila, r) => (
+          Array.isArray(fila) ? (
           <View key={r} wrap={false} style={{ flexDirection: 'row', borderBottomWidth: 0.5, borderBottomColor: PC.border }}>
             {fila.map((celda, i) => {
               if (celda != null && typeof celda === 'object' && 'nodo' in celda) {
@@ -136,6 +140,17 @@ export function TablaDatos({
               )
             })}
           </View>
+          ) : (
+            <View
+              key={r}
+              wrap={false}
+              minPresenceAhead={30}
+              style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: PC.m13MentaSuave, paddingVertical: 3, paddingRight: 4 }}
+            >
+              <View style={{ width: 2.5, alignSelf: 'stretch', backgroundColor: PC.m13Menta, marginRight: 4 }} />
+              <Text style={{ fontSize: fuente, fontFamily: 'Helvetica-Bold', color: PC.m13Navy }} hyphenationCallback={partirPalabraLarga}>{fila.banda}</Text>
+            </View>
+          )
         ))
       )}
     </View>

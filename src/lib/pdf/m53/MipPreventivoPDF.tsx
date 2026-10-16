@@ -1,12 +1,10 @@
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+import { Document } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
+import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface MipItemRow {
   numero: number | null
@@ -32,29 +30,6 @@ export interface MipPreventivoPDFProps {
   firmaVerifico?: FirmaParaPdf | null
 }
 
-const MARGIN = 24
-
-const thStyle = {
-  padding: 3,
-  borderRightWidth: 1,
-  borderRightColor: '#5599CC',
-  borderBottomWidth: 1,
-  borderBottomColor: '#5599CC',
-  justifyContent: 'center' as const,
-  alignItems: 'center' as const,
-}
-
-const tdStyle = {
-  borderRightWidth: 1,
-  borderRightColor: PC.border,
-  borderBottomWidth: 1,
-  borderBottomColor: PC.border,
-  alignItems: 'center' as const,
-  padding: 3,
-}
-
-const ROW_ALT = '#F5F9FE'
-
 function fmtFecha(iso: string): string {
   try {
     const [y, m, d] = iso.split('-')
@@ -62,7 +37,18 @@ function fmtFecha(iso: string): string {
   } catch { return iso }
 }
 
-function marca(v: boolean): string { return v ? 'X' : '' }
+// Marca de la técnica ("X"): es una selección, no un valor negativo
+const marca = (v: boolean) => (v ? { texto: 'X', color: PC.m13Navy, negrita: true } : '')
+
+const COLS: ColumnaDato[] = [
+  { texto: 'No.', ancho: 20, align: 'center' },
+  { texto: 'Tecnica preventiva', ancho: 300 },
+  { texto: 'Maleza', ancho: 56, align: 'center' },
+  { texto: 'Insectos e\nInvertebrados', ancho: 56, align: 'center' },
+  { texto: 'Enfermedades y\nNematodos', ancho: 56, align: 'center' },
+  { texto: 'Plagas\nVertebradas', ancho: 56, align: 'center' },
+  { texto: 'Comentario', ancho: 190 },
+]
 
 export function MipPreventivoPDFPage({
   rancho,
@@ -78,113 +64,50 @@ export function MipPreventivoPDFPage({
   firmaVerifico,
 }: MipPreventivoPDFProps) {
   return (
-    <Page
-      size="A4"
-      orientation="landscape"
-      style={{ fontFamily: 'Helvetica', fontSize: 8, padding: MARGIN, paddingBottom: 46, backgroundColor: PC.white }}
+    <PaginaEstandar
+      titulo="MIP - TÉCNICAS PREVENTIVAS"
+      subtitulo={`Manejo Integrado de Plagas | ${rancho}`}
+      codigoFmt="M53"
+      folio={fmtFecha(fecha)}
+      emision={fmtFecha(fecha)}
+      etiquetaEmision="Fecha"
+      tituloDatos="1. DATOS GENERALES"
+      camposDatos={[
+        { icono: 'ubicacion', etiqueta: terminoSitio, valor: rancho },
+        { etiqueta: 'Producto / Cultivo', valor: producto ?? '—' },
+        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organizacion', valor: orgNombre }] : []),
+        { icono: 'calendario', etiqueta: 'Fecha', valor: fmtFecha(fecha) },
+        { etiqueta: 'Region', valor: region ?? '—' },
+        { icono: 'usuario', etiqueta: 'Realizo', valor: realizo ?? '—' },
+      ]}
     >
-      <PdfFooter moduloCodigo="M53" />
-      <TopBar />
-      <PdfHeader
-        titulo="MIP - TÉCNICAS PREVENTIVAS"
-        subtitulo={`Manejo Integrado de Plagas | ${rancho}`}
-        codigoFormato="M53"
-        folio={fmtFecha(fecha)}
-        fecha={fmtFecha(fecha)}
-      />
+      {observaciones ? <FranjaDatos campos={[{ etiqueta: 'Observaciones', valor: observaciones }]} /> : null}
 
-      <PdfSectionBanner>1. Datos generales</PdfSectionBanner>
-      <PdfFieldGrid>
-        <PdfFieldRow>
-          <PdfField label={terminoSitio} value={rancho} />
-          <PdfField label="Producto / Cultivo" value={producto ?? '—'} />
-          {orgNombre && <PdfField label="Organizacion" value={orgNombre} />}
-        </PdfFieldRow>
-        <PdfFieldRow>
-          <PdfField label="Fecha" value={fmtFecha(fecha)} />
-          <PdfField label="Region" value={region ?? '—'} />
-          <PdfField label="Realizo" value={realizo ?? '—'} />
-        </PdfFieldRow>
-        {observaciones && (
-          <PdfFieldRow>
-            <PdfField label="Observaciones" value={observaciones} />
-          </PdfFieldRow>
-        )}
-      </PdfFieldGrid>
+      <Seccion titulo="2. MATRIZ DE TECNICAS PREVENTIVAS">
+        <TablaDatos
+          columnas={COLS}
+          fuente={8}
+          fuenteEnc={6}
+          sinNegativos
+          filas={items.map((item) => [
+            String(item.numero ?? '—'),
+            item.texto,
+            marca(item.contra_maleza),
+            marca(item.contra_insectos),
+            marca(item.contra_enfermedades),
+            marca(item.contra_vertebrados),
+            item.comentario ?? '',
+          ])}
+        />
+      </Seccion>
 
-      <PdfSectionBanner>2. Matriz de tecnicas preventivas</PdfSectionBanner>
-
-      <View style={{ marginTop: 4, borderWidth: 1, borderColor: PC.border }}>
-        {/* Header row */}
-        <View style={{ flexDirection: 'row', backgroundColor: PC.section }}>
-          <View style={[thStyle, { width: 20, backgroundColor: PC.section }]}>
-            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>No.</Text>
-          </View>
-          <View style={[thStyle, { flex: 1, backgroundColor: PC.section, alignItems: 'flex-start' }]}>
-            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>Tecnica preventiva</Text>
-          </View>
-          <View style={[thStyle, { width: 56, backgroundColor: PC.section }]}>
-            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white, textAlign: 'center' }}>Maleza</Text>
-          </View>
-          <View style={[thStyle, { width: 56, backgroundColor: PC.section }]}>
-            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white, textAlign: 'center' }}>Insectos e{'\n'}Invertebrados</Text>
-          </View>
-          <View style={[thStyle, { width: 56, backgroundColor: PC.section }]}>
-            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white, textAlign: 'center' }}>Enfermedades y{'\n'}Nematodos</Text>
-          </View>
-          <View style={[thStyle, { width: 56, backgroundColor: PC.section }]}>
-            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white, textAlign: 'center' }}>Plagas{'\n'}Vertebradas</Text>
-          </View>
-          <View style={[thStyle, { width: 190, backgroundColor: PC.section, alignItems: 'flex-start', borderRightWidth: 0 }]}>
-            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>Comentario</Text>
-          </View>
-        </View>
-
-        {items.map((item, i) => {
-          const bg = i % 2 === 1 ? ROW_ALT : PC.white
-          return (
-            <View key={i} style={{ flexDirection: 'row', backgroundColor: bg }}>
-              <View style={[tdStyle, { width: 20, padding: 5 }]}>
-                <Text style={{ fontSize: 8, color: PC.fieldValue }}>{item.numero ?? '—'}</Text>
-              </View>
-              <View style={[tdStyle, { flex: 1, alignItems: 'flex-start', padding: 5 }]}>
-                <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.texto}</Text>
-              </View>
-              <View style={[tdStyle, { width: 56 }]}>
-                <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: item.contra_maleza ? PC.section : PC.fieldValue }}>
-                  {marca(item.contra_maleza)}
-                </Text>
-              </View>
-              <View style={[tdStyle, { width: 56 }]}>
-                <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: item.contra_insectos ? PC.section : PC.fieldValue }}>
-                  {marca(item.contra_insectos)}
-                </Text>
-              </View>
-              <View style={[tdStyle, { width: 56 }]}>
-                <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: item.contra_enfermedades ? PC.section : PC.fieldValue }}>
-                  {marca(item.contra_enfermedades)}
-                </Text>
-              </View>
-              <View style={[tdStyle, { width: 56 }]}>
-                <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: item.contra_vertebrados ? PC.section : PC.fieldValue }}>
-                  {marca(item.contra_vertebrados)}
-                </Text>
-              </View>
-              <View style={[tdStyle, { width: 190, alignItems: 'flex-start', borderRightWidth: 0 }]}>
-                <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.comentario ?? ''}</Text>
-              </View>
-            </View>
-          )
-        })}
-      </View>
-
-      <PdfSignatures
+      <PdfFirmas
         signatures={[
           { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
           { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
         ]}
       />
-    </Page>
+    </PaginaEstandar>
   )
 }
 
