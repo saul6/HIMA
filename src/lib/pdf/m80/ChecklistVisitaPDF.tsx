@@ -117,10 +117,10 @@ const s = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: PC.m13Navy,
   },
-  td: { paddingTop: 4, paddingBottom: 4, paddingLeft: 6, paddingRight: 4 },
+  td: { paddingTop: 4, paddingBottom: 4, paddingLeft: 6, paddingRight: 4, flexShrink: 0 },
   fila: { flexDirection: 'row', borderBottomWidth: 0.5, borderBottomColor: PC.border },
   obs: { fontSize: 8, lineHeight: 1.3 },
-  nota: { fontSize: 7, color: PC.textSub, lineHeight: 1.3, marginTop: 1 },
+  nota: { fontSize: 7, color: PC.textSub, lineHeight: 1.3, marginTop: 3 },
 })
 
 // ── Fechas (sin Date: evita correr el día por zona horaria) ───────────────────
@@ -164,10 +164,10 @@ function Icono({ nombre, size = 10, color = PC.m13Navy }: { nombre: IconoNombre;
 
 // ── Estimación de alturas (conservadora, para repartir páginas) ───────────────
 
-const CAP_P1 = 499      // 595 - 40 - 56
-const CAP_RESTO = 430   // descuenta el encabezado compacto de las páginas 2+
+const CAP_P1 = 495      // 595 - 40 - 56
+const CAP_RESTO = 445   // descuenta el encabezado compacto de las páginas 2+
 const lineas = (texto: string, ancho: number, tam: number) => {
-  const porLinea = Math.max(1, Math.floor((ancho - 10) / (tam * 0.56)))
+  const porLinea = Math.max(1, Math.floor((ancho - 10) / (tam * 0.5)))
   return texto.split('\n').reduce((n, l) => n + Math.max(1, Math.ceil(l.length / porLinea)), 0)
 }
 
@@ -216,13 +216,13 @@ function TituloSeccion({ texto, salto }: { texto: string; salto?: boolean }) {
   )
 }
 
-interface Col { titulo: string; ancho?: number }
+interface Col { titulo: string; ancho?: number; resto?: number }
 
 function EncabezadoTabla({ cols, salto }: { cols: Col[]; salto?: boolean }) {
   return (
     <View break={salto} style={{ flexDirection: 'row', marginBottom: 2 }}>
       {cols.map((c, i) => (
-        <Text key={i} style={{ ...s.th, width: c.ancho, flexGrow: c.ancho ? 0 : 1 }}>{c.titulo}</Text>
+        <Text key={i} style={{ ...s.th, width: c.ancho ?? c.resto, flexShrink: 0 }}>{c.titulo}</Text>
       ))}
     </View>
   )
@@ -293,26 +293,26 @@ const COLS_FORMATOS: Col[] = [
   { titulo: 'FORMATO', ancho: 170 },
   { titulo: 'RESPONSABLE', ancho: 105 },
   { titulo: 'ESTADO', ancho: 75 },
-  { titulo: 'OBSERVACIONES' },
+  { titulo: 'OBSERVACIONES', resto: ANCHO - 520 },
 ]
 const COLS_DOCS: Col[] = [
   { titulo: 'DOCUMENTO', ancho: 230 },
   { titulo: 'VENCE EL', ancho: 95 },
   { titulo: 'ESTADO', ancho: 80 },
-  { titulo: 'OBSERVACIONES' },
+  { titulo: 'OBSERVACIONES', resto: ANCHO - 405 },
 ]
-const OBS_ANCHO = ANCHO - COLS_FORMATOS.slice(0, 5).reduce((a, c) => a + (c.ancho ?? 0), 0)
-const OBS_DOCS_ANCHO = ANCHO - COLS_DOCS.slice(0, 3).reduce((a, c) => a + (c.ancho ?? 0), 0)
+const OBS_ANCHO = ANCHO - 520
+const OBS_DOCS_ANCHO = ANCHO - 405
 
 function notasTexto(i: ReporteVisitaItem): string[] {
   return (i.revision?.notas_auto ?? []).map((n) => n.texto).filter(Boolean)
 }
 
-function CeldaObs({ item }: { item: ReporteVisitaItem }) {
+function CeldaObs({ item, width }: { item: ReporteVisitaItem; width: number }) {
   const obs = item.revision?.observacion?.trim()
   const notas = notasTexto(item)
   return (
-    <View style={{ flexGrow: 1, ...s.td }}>
+    <View style={{ ...s.td, width }}>
       {obs ? <Text style={s.obs} hyphenationCallback={partirPalabraLarga}>{obs}</Text> : null}
       {notas.map((n, i) => (
         <Text key={i} style={s.nota} hyphenationCallback={partirPalabraLarga}>{`- ${n}`}</Text>
@@ -347,7 +347,7 @@ function FilaFormato({ item, codigoClave }: { item: ReporteVisitaItem; codigoCla
       <Text style={{ ...s.td, width: 170, fontFamily: 'Helvetica-Bold' }} hyphenationCallback={partirPalabraLarga}>{item.nombre}</Text>
       <Text style={{ ...s.td, width: 105 }} hyphenationCallback={partirPalabraLarga}>{item.responsable ?? ''}</Text>
       <CeldaEstado estado={item.revision?.estado ?? null} ancho={75} />
-      <CeldaObs item={item} />
+      <CeldaObs item={item} width={OBS_ANCHO} />
     </View>
   )
 }
@@ -362,7 +362,7 @@ function FilaDocumento({ item, fechaVisita }: { item: ReporteVisitaItem; fechaVi
         {vencido && <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: C_ROJO, marginTop: 1 }}>Vencido</Text>}
       </View>
       <CeldaEstado estado={item.revision?.estado ?? null} ancho={80} />
-      <CeldaObs item={item} />
+      <CeldaObs item={item} width={OBS_DOCS_ANCHO} />
     </View>
   )
 }
@@ -427,7 +427,7 @@ export function ChecklistVisitaPDF({
   // Altura estimada de la parte alta de la página 1 (conservadora)
   const cursor = new Cursor()
   cursor.avanzar(
-    100 + 70 + 22 + (pildoras.length ? 24 : 0) +
+    88 + 66 + 22 + (pildoras.length ? 24 : 0) +
     (nota ? lineas(nota, ANCHO, 8) * 11 + 6 : 0) + reprog.length * 12 + 16,
   )
 
@@ -468,7 +468,7 @@ export function ChecklistVisitaPDF({
   const tablaSinRevisar = pares.length > 0 && (
     <Tabla
       titulo="SIN REVISAR EN ESTA VISITA"
-      cols={[{ titulo: 'FORMATO Y ÚLTIMA REVISIÓN' }]}
+      cols={[{ titulo: 'FORMATO Y ÚLTIMA REVISIÓN', resto: ANCHO }]}
       cursor={cursor}
       filas={pares.map((par, idx) => (
         <View key={idx} wrap={false} style={s.fila}>
