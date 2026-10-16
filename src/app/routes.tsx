@@ -143,6 +143,7 @@ import { MantenimientoEquiposGG } from "./screens/MantenimientoEquiposGG"
 import { EmpleadosGG } from "./screens/EmpleadosGG"
 import { TrazabilidadGG } from "./screens/TrazabilidadGG"
 import { AgendaTareas } from "./screens/AgendaTareas"
+import { ChecklistDocumentos } from "./screens/ChecklistDocumentos"
 import { Metricas } from "./screens/Metricas"
 import { AuditorHome } from "./screens/auditor/AuditorHome"
 import { AuditorOrgDetalle } from "./screens/auditor/AuditorOrgDetalle"
@@ -308,6 +309,7 @@ export const router = createBrowserRouter([
                   { path: "empleados-gg", Component: EmpleadosGG },
                   { path: "trazabilidad-gg", Component: TrazabilidadGG },
                   { path: "agenda", Component: AgendaTareas },
+                  { path: "checklist", Component: ChecklistDocumentos },
                 ],
               },
             ],

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useMatches, Link } from "react-router";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
-import { Home, PlusCircle, Package, History, Users, Search, Sun, Moon, ClipboardCheck, X, Calendar, ListChecks, BarChart3, CloudUpload, WifiOff } from "lucide-react";
+import { Home, PlusCircle, Package, History, Users, Search, Sun, Moon, ClipboardCheck, FileCheck2, X, Calendar, ListChecks, BarChart3, CloudUpload, WifiOff } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
 import { useHomeSearch } from "@/context/HomeSearchContext";
@@ -26,6 +26,7 @@ const PATH_TITLES: Record<string, string> = {
   '/historial': 'Historial',
   '/equipo/actividad': 'Actividad del equipo',
   '/inocuidad/agenda': 'Agenda',
+  '/inocuidad/checklist': 'Checklist de documentos',
   '/perfil': 'Perfil',
   '/perfil/mi-organizacion': 'Mi organización',
   '/metricas': 'Métricas',
@@ -100,6 +101,7 @@ export function Layout() {
   const mostrarAuditorias      = !esAuditor && ['admin_org', 'super_admin'].includes(profile?.rol ?? '');
   const mostrarAgendaTareas    = !esAuditor && !loadingModulos && modulos.some(m => m.clave === "agenda_tareas" && m.desbloqueado);
   const mostrarMetricas        = !esAuditor;
+  const mostrarChecklist       = !esAuditor && ['admin_org', 'asesor_tecnico'].includes(profile?.rol ?? '') && !loadingModulos && modulos.some(m => m.codigo === 'M80' && m.desbloqueado);
 
   const homeItem = esAuditor
     ? { path: "/auditor",  icon: Home, label: "Inicio" }
@@ -114,6 +116,7 @@ export function Layout() {
     ...(esAuditor              ? [] : [{ path: "/historial",                icon: History,        label: "Historial"        }]),
     ...(mostrarActividadEquipo ? [{ path: "/equipo/actividad",              icon: Users,          label: "Actividad"        }] : []),
     ...(mostrarAuditorias      ? [{ path: "/inocuidad/auditorias-primusgfs", icon: ClipboardCheck, label: "Auditorías"       }] : []),
+    ...(mostrarChecklist       ? [{ path: "/inocuidad/checklist",           icon: FileCheck2,     label: "Checklist"        }] : []),
     ...(mostrarMetricas        ? [{ path: "/metricas",                        icon: BarChart3,      label: "Métricas"         }] : []),
   ];
 
@@ -144,7 +147,8 @@ export function Layout() {
         location.pathname === "/" ||
         (location.pathname.startsWith("/inocuidad") &&
           !location.pathname.startsWith("/inocuidad/auditorias-primusgfs") &&
-          !location.pathname.startsWith("/inocuidad/agenda"))
+          !location.pathname.startsWith("/inocuidad/agenda") &&
+          !location.pathname.startsWith("/inocuidad/checklist"))
       )
     }
     return location.pathname.startsWith(path)
