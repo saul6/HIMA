@@ -12,7 +12,7 @@ export function EncabezadoPrimeraPagina({ titulo, subtitulo }: { titulo: string;
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <View style={{ flex: 1, paddingRight: 12 }}>
           <View style={{ width: 28, height: 3, backgroundColor: PC.m13Menta, marginBottom: 8 }} />
-          <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 20, color: PC.m13Navy }}>{titulo}</Text>
+          <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 20, color: PC.m13Navy }} hyphenationCallback={partirPalabraLarga}>{titulo}</Text>
           {subtitulo ? (
             <Text style={{ fontSize: 8, color: PC.textSub, marginTop: 4 }} hyphenationCallback={partirPalabraLarga}>
               {subtitulo}

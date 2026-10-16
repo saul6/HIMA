@@ -1,10 +1,7 @@
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
+import { Document, Text } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
@@ -28,18 +25,14 @@ export interface VerificacionRoedoresPDFProps {
   firmaVerifico?: FirmaParaPdf | null
 }
 
-const MARGIN = 20
-
-// Column widths (landscape A4 = 841.89, usable ≈ 801)
+// Anchos relativos de columna (la tabla se escala al ancho útil de la hoja)
 const COL = {
   fecha: 65,
   trampa: 75,
-  boolW: 36,    // each Sí/No sub-column
+  boolW: 36,    // cada subcolumna Si / No
   verifico: 160,
   obs: 160,
 }
-// 4 bool pairs: (roedor, insectos, otros, cambio) × 2 sub-cols each = 8 × 36 = 288
-// Fixed total: 65 + 75 + 288 + 160 + 160 = 748
 
 function formatFecha(f: string) {
   try {
@@ -54,132 +47,73 @@ const BOOL_GROUPS: { key: keyof VerificacionRoedorFilaPDF; label: string }[] = [
   { key: 'cambio', label: 'Cambio' },
 ]
 
-function HCGroup({ label }: { label: string }) {
-  const w = COL.boolW * 2
-  return (
-    <View style={{ width: w, backgroundColor: PC.section, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: '#5599CC', padding: '3px 2px' }}>
-      <Text style={{ fontSize: 6.5, fontFamily: 'Helvetica-Bold', color: PC.white }}>{label}</Text>
-    </View>
-  )
-}
+// La "X" marca la respuesta elegida (Si o No); no es un valor negativo
+const marca = (v: boolean) => (v ? { texto: 'X', color: PC.m13Navy, negrita: true } : '')
 
-function HC({ w, children, right = true }: { w: number; children?: React.ReactNode; right?: boolean }) {
-  return (
-    <View style={{ width: w, minWidth: w, backgroundColor: PC.section, alignItems: 'center', justifyContent: 'center', borderRightWidth: right ? 1 : 0, borderRightColor: '#5599CC', padding: '3px 4px' }}>
-      <Text style={{ fontSize: 6.5, fontFamily: 'Helvetica-Bold', color: PC.white, textAlign: 'center' }}>{children ?? ''}</Text>
-    </View>
-  )
-}
+const COLUMNAS: ColumnaDato[] = [
+  { texto: '', ancho: COL.fecha },
+  { texto: '', ancho: COL.trampa },
+  ...BOOL_GROUPS.flatMap(() => [
+    { texto: 'Si', ancho: COL.boolW, align: 'center' as const },
+    { texto: 'No', ancho: COL.boolW, align: 'center' as const },
+  ]),
+  { texto: '', ancho: COL.verifico },
+  { texto: '', ancho: COL.obs },
+]
 
-function SubHC({ label }: { label: string }) {
-  return (
-    <View style={{ width: COL.boolW, backgroundColor: '#EAF2FB', alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: PC.border, padding: '2px 2px' }}>
-      <Text style={{ fontSize: 6, color: PC.textSub }}>{label}</Text>
-    </View>
-  )
-}
-
-function BoolCell({ val, bg }: { val: boolean; bg: string }) {
-  return (
-    <View style={{ width: COL.boolW, minWidth: COL.boolW, backgroundColor: bg, alignItems: 'center', borderRightWidth: 1, borderRightColor: PC.border, padding: '3px 2px' }}>
-      <Text style={{ fontSize: 7, color: PC.fieldValue, fontFamily: 'Helvetica-Bold' }}>{val ? 'X' : ''}</Text>
-    </View>
-  )
-}
-
-function DC({ w, children, bg, right = true }: { w: number; children?: React.ReactNode; bg?: string; right?: boolean }) {
-  return (
-    <View style={{ width: w, minWidth: w, padding: '3px 4px', backgroundColor: bg ?? PC.white, borderRightWidth: right ? 1 : 0, borderRightColor: PC.border }}>
-      <Text style={{ fontSize: 7, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{children ?? ''}</Text>
-    </View>
-  )
-}
-
-function TablaRoedores({ filas }: { filas: VerificacionRoedorFilaPDF[] }) {
-  return (
-    <View style={{ borderWidth: 1, borderColor: PC.border }}>
-      {/* Fila cabecera 1 */}
-      <View style={{ flexDirection: 'row' }}>
-        <HC w={COL.fecha}>Fecha</HC>
-        <HC w={COL.trampa}># Trampa</HC>
-        {BOOL_GROUPS.map(g => <HCGroup key={g.key as string} label={g.label} />)}
-        <HC w={COL.verifico}>Verifico</HC>
-        <HC w={COL.obs} right={false}>Observaciones</HC>
-      </View>
-      {/* Fila sub-cabecera Si/No */}
-      <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: PC.border }}>
-        <View style={{ width: COL.fecha + COL.trampa, borderRightWidth: 1, borderRightColor: PC.border, backgroundColor: '#EAF2FB' }} />
-        {BOOL_GROUPS.map(g => (
-          <View key={g.key as string} style={{ flexDirection: 'row', borderRightWidth: 1, borderRightColor: PC.border }}>
-            <SubHC label="Si" />
-            <SubHC label="No" />
-          </View>
-        ))}
-        <View style={{ width: COL.verifico + COL.obs, backgroundColor: '#EAF2FB' }} />
-      </View>
-      {/* Filas de datos */}
-      {filas.map((f, i) => {
-        const bg = i % 2 === 0 ? PC.white : '#F5F9FE'
-        return (
-          <View key={f.id} style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: PC.border }}>
-            <DC w={COL.fecha} bg={bg}>{formatFecha(f.fecha)}</DC>
-            <DC w={COL.trampa} bg={bg}>{f.num_trampa}</DC>
-            {BOOL_GROUPS.map(g => {
-              const val = f[g.key] as boolean
-              return (
-                <View key={g.key as string} style={{ flexDirection: 'row', borderRightWidth: 1, borderRightColor: PC.border }}>
-                  <BoolCell val={val} bg={bg} />
-                  <BoolCell val={!val} bg={bg} />
-                </View>
-              )
-            })}
-            <DC w={COL.verifico} bg={bg}>{f.verifico ?? ''}</DC>
-            <DC w={COL.obs} bg={bg} right={false}>{f.observaciones ?? ''}</DC>
-          </View>
-        )
-      })}
-    </View>
-  )
-}
+const GRUPOS = [
+  { texto: 'Fecha', ancho: COL.fecha },
+  { texto: '# Trampa', ancho: COL.trampa },
+  ...BOOL_GROUPS.map((g) => ({ texto: g.label, ancho: COL.boolW * 2 })),
+  { texto: 'Verifico', ancho: COL.verifico },
+  { texto: 'Observaciones', ancho: COL.obs },
+]
 
 export function VerificacionRoedoresPagina({ rancho, orgNombre, filas, firmaRealizo, firmaVerifico }: VerificacionRoedoresPDFProps) {
   const folio = filas[0]?.fecha ?? '—'
-
   return (
-    <Page size="A4" orientation="landscape" style={{ fontFamily: 'Helvetica', fontSize: 8, padding: MARGIN, paddingBottom: 50, backgroundColor: PC.white }}>
-      <PdfFooter moduloCodigo="REG-24" />
-      <TopBar />
-      <PdfHeader
-        titulo="VERIFICACIÓN DE TRAMPAS PARA ROEDORES"
-        subtitulo={`REG-24 · Global G.A.P. v6 | ${rancho}`}
-        codigoFormato="REG-24"
-        folio={folio}
-        fecha={folio}
+    <PaginaEstandar
+      titulo="VERIFICACIÓN DE TRAMPAS PARA ROEDORES"
+      subtitulo={`REG-24 · Global G.A.P. v6 | ${rancho}`}
+      codigoFmt="REG-24"
+      folio={folio}
+      emision={folio}
+      etiquetaEmision="Fecha"
+      tituloDatos="DATOS GENERALES"
+      camposDatos={[
+        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Compania', valor: orgNombre }] : []),
+        { icono: 'ubicacion', etiqueta: 'Rancho', valor: rancho },
+      ]}
+    >
+      <TablaDatos
+        columnas={COLUMNAS}
+        encabezadoSuperior={GRUPOS}
+        sinNegativos
+        fuente={7}
+        fuenteEnc={6.5}
+        filas={filas.map((f) => [
+          formatFecha(f.fecha),
+          f.num_trampa,
+          ...BOOL_GROUPS.flatMap((g) => {
+            const val = f[g.key] as boolean
+            return [marca(val), marca(!val)]
+          }),
+          f.verifico ?? '',
+          f.observaciones ?? '',
+        ])}
       />
 
-      <PdfSectionBanner>Datos generales</PdfSectionBanner>
-      <PdfFieldGrid>
-        <PdfFieldRow>
-          {orgNombre && <PdfField label="Compania" value={orgNombre} />}
-          <PdfField label="Rancho" value={rancho} />
-        </PdfFieldRow>
-      </PdfFieldGrid>
+      <Text style={{ fontSize: 6, color: PC.textSub, fontFamily: 'Helvetica-Oblique', marginBottom: 6 }}>
+        El formato debe llenarse en cada verificacion y este formato debe mantenerse en cada trampa muestreada.
+      </Text>
 
-      <TablaRoedores filas={filas} />
-
-      <View style={{ marginTop: 4 }}>
-        <Text style={{ fontSize: 6, color: PC.textSub, fontStyle: 'italic' }}>
-          El formato debe llenarse en cada verificacion y este formato debe mantenerse en cada trampa muestreada.
-        </Text>
-      </View>
-
-      <PdfSignatures
+      <PdfFirmas
         signatures={[
           { label: '', nombre: '', caption: 'Nombre y firma de quien realiza', firma: firmaRealizo ?? null },
           { label: '', nombre: '', caption: 'Nombre y firma de quien verifica', firma: firmaVerifico ?? null },
         ]}
       />
-    </Page>
+    </PaginaEstandar>
   )
 }
 

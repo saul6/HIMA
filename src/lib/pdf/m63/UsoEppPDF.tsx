@@ -1,13 +1,10 @@
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
-import { PC } from '@/lib/pdf/components/tokens'
+import { Document } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
+import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface UsoEppRow {
   fecha: string
@@ -34,8 +31,6 @@ interface Props {
   firmaVerifico?: FirmaParaPdf | null
 }
 
-const MARGIN = 20
-
 function fmtFecha(iso: string): string {
   try {
     const [y, m, d] = iso.split('-')
@@ -47,28 +42,22 @@ function okLabel(val: boolean): string {
   return val ? 'Bueno' : 'Danado'
 }
 
-const thStyle = {
-  padding: 3,
-  borderRightWidth: 1,
-  borderRightColor: '#5599CC',
-  borderBottomWidth: 1,
-  borderBottomColor: '#5599CC',
-  justifyContent: 'center' as const,
-  alignItems: 'center' as const,
-}
+// Bueno normal; Danado en rojo suave (el texto no cambia)
+const okCelda = (v: boolean) => (v ? okLabel(v) : { texto: okLabel(v), color: PC.negativo, negrita: true })
 
-const tdStyle = {
-  borderRightWidth: 1,
-  borderRightColor: PC.border,
-  borderBottomWidth: 1,
-  borderBottomColor: PC.border,
-  alignItems: 'center' as const,
-  padding: 1,
-}
-
-const ROW_ALT = '#F5F9FE'
-
-const C = { FECHA: 50, RANCHO: 70, APLIC: 75, MOM: 45, BOTA: 40, OVE: 40, GUA: 40, LEN: 40, MAS: 42, REAL: 80 }
+// Anchos relativos de columna (la tabla se escala al ancho útil de la hoja)
+const COLS = (terminoSitio: string): ColumnaDato[] => [
+  { texto: 'Fecha', ancho: 50 },
+  { texto: terminoSitio, ancho: 70 },
+  { texto: 'Aplicador', ancho: 75 },
+  { texto: 'Momento', ancho: 45, align: 'center' },
+  { texto: 'Botas', ancho: 40, align: 'center' },
+  { texto: 'Overol', ancho: 40, align: 'center' },
+  { texto: 'Guantes', ancho: 40, align: 'center' },
+  { texto: 'Lentes', ancho: 40, align: 'center' },
+  { texto: 'Mascarilla', ancho: 42, align: 'center' },
+  { texto: 'Realizo', ancho: 80 },
+]
 
 export function UsoEppPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoSitio = 'Instalacion', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
@@ -76,111 +65,36 @@ export function UsoEppPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoS
 
   return (
     <Document>
-      <Page
-        size="A4"
-        orientation="landscape"
-        style={{ fontFamily: 'Helvetica', fontSize: 7, padding: MARGIN, paddingBottom: 50, backgroundColor: PC.white }}
+      <PaginaEstandar
+        titulo="USO DE EQUIPO DE PROTECCIÓN PERSONAL (EPP)"
+        subtitulo={"Registro de uso y estado del EPP"}
+        codigoFmt={codigoFmt}
+        folio={periodo}
+        emision={periodo}
+        etiquetaEmision="Periodo"
+        tituloDatos="1. INFORMACION GENERAL"
+        camposDatos={[
+          { icono: 'usuario', etiqueta: 'Organizacion', valor: orgNombre ?? '—' },
+          { icono: 'calendario', etiqueta: 'Periodo', valor: periodo },
+        ]}
       >
-        <PdfFooter moduloCodigo="M63" />
-        <TopBar />
-        <PdfHeader
-          titulo="USO DE EQUIPO DE PROTECCIÓN PERSONAL (EPP)"
-          subtitulo="Registro de uso y estado del EPP"
-          codigoFormato={codigoFmt}
-          folio={periodo}
-          fecha={periodo}
-        />
+        <Seccion titulo="2. REGISTROS">
+          <TablaDatos
+            columnas={COLS(terminoSitio)}
+            fuente={6.5}
+            filas={rows.map((r) => [
+              fmtFecha(r.fecha), r.rancho, r.aplicador, r.momento === 'inicio' ? 'Inicio' : 'Fin', okCelda(r.botas_ok), okCelda(r.overol_ok), okCelda(r.guantes_ok), okCelda(r.lentes_ok), okCelda(r.mascarilla_ok), r.realizo ?? '—',
+            ])}
+          />
+        </Seccion>
 
-        <PdfSectionBanner>1. Informacion general</PdfSectionBanner>
-        <PdfFieldGrid>
-          <PdfFieldRow>
-            <PdfField label="Organizacion" value={orgNombre ?? '—'} />
-            <PdfField label="Periodo" value={periodo} />
-          </PdfFieldRow>
-        </PdfFieldGrid>
-
-        <PdfSectionBanner>2. Registros</PdfSectionBanner>
-
-        <View style={{ marginTop: 4, borderWidth: 1, borderColor: PC.border }}>
-          <View style={{ flexDirection: 'row', backgroundColor: PC.section }}>
-            <View style={[thStyle, { width: C.FECHA, backgroundColor: PC.section, alignItems: 'flex-start' }]}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>Fecha</Text>
-            </View>
-            <View style={[thStyle, { width: C.RANCHO, backgroundColor: PC.section, alignItems: 'flex-start' }]}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>{terminoSitio}</Text>
-            </View>
-            <View style={[thStyle, { width: C.APLIC, backgroundColor: PC.section, alignItems: 'flex-start' }]}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>Aplicador</Text>
-            </View>
-            <View style={[thStyle, { width: C.MOM, backgroundColor: PC.section }]}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>Momento</Text>
-            </View>
-            <View style={[thStyle, { width: C.BOTA, backgroundColor: PC.section }]}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>Botas</Text>
-            </View>
-            <View style={[thStyle, { width: C.OVE, backgroundColor: PC.section }]}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>Overol</Text>
-            </View>
-            <View style={[thStyle, { width: C.GUA, backgroundColor: PC.section }]}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>Guantes</Text>
-            </View>
-            <View style={[thStyle, { width: C.LEN, backgroundColor: PC.section }]}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>Lentes</Text>
-            </View>
-            <View style={[thStyle, { width: C.MAS, backgroundColor: PC.section }]}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>Mascarilla</Text>
-            </View>
-            <View style={[thStyle, { width: C.REAL, backgroundColor: PC.section, alignItems: 'flex-start', borderRightWidth: 0 }]}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6, color: PC.white }}>Realizo</Text>
-            </View>
-          </View>
-
-          {rows.map((r, i) => {
-            const bg = i % 2 === 1 ? ROW_ALT : PC.white
-            return (
-              <View key={i} style={{ flexDirection: 'row', backgroundColor: bg }}>
-                <View style={[tdStyle, { width: C.FECHA, alignItems: 'flex-start', padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{fmtFecha(r.fecha)}</Text>
-                </View>
-                <View style={[tdStyle, { width: C.RANCHO, alignItems: 'flex-start', padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.rancho}</Text>
-                </View>
-                <View style={[tdStyle, { width: C.APLIC, alignItems: 'flex-start', padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.aplicador}</Text>
-                </View>
-                <View style={[tdStyle, { width: C.MOM, padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{r.momento === 'inicio' ? 'Inicio' : 'Fin'}</Text>
-                </View>
-                <View style={[tdStyle, { width: C.BOTA, padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{okLabel(r.botas_ok)}</Text>
-                </View>
-                <View style={[tdStyle, { width: C.OVE, padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{okLabel(r.overol_ok)}</Text>
-                </View>
-                <View style={[tdStyle, { width: C.GUA, padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{okLabel(r.guantes_ok)}</Text>
-                </View>
-                <View style={[tdStyle, { width: C.LEN, padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{okLabel(r.lentes_ok)}</Text>
-                </View>
-                <View style={[tdStyle, { width: C.MAS, padding: 4 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }}>{okLabel(r.mascarilla_ok)}</Text>
-                </View>
-                <View style={[tdStyle, { width: C.REAL, alignItems: 'flex-start', padding: 4, borderRightWidth: 0 }]}>
-                  <Text style={{ fontSize: 6, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{r.realizo ?? '—'}</Text>
-                </View>
-              </View>
-            )
-          })}
-        </View>
-
-        <PdfSignatures
+        <PdfFirmas
           signatures={[
             { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
             { label: '', nombre: '', caption: 'Verifico: Responsable de Inocuidad', firma: firmaVerifico ?? null },
           ]}
         />
-      </Page>
+      </PaginaEstandar>
     </Document>
   )
 }
