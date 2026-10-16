@@ -25,10 +25,12 @@ export function DatoFranja({ icono, etiqueta, valor, primero }: CampoFranja & { 
         borderLeftColor: PC.border,
       }}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 3 }}>
-        {icono ? <Icono nombre={icono} size={10} /> : null}
-        <Text style={{ fontSize: 7, color: PC.textSub, marginLeft: icono ? 4 : SANGRIA_ICONO }}>{etiqueta}</Text>
-      </View>
+      {etiqueta ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 3 }}>
+          {icono ? <Icono nombre={icono} size={10} /> : null}
+          <Text style={{ fontSize: 7, color: PC.textSub, marginLeft: icono ? 4 : SANGRIA_ICONO }}>{etiqueta}</Text>
+        </View>
+      ) : null}
       <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 9, color: PC.m13Navy }} hyphenationCallback={partirPalabraLarga}>
         {valor}
       </Text>

@@ -3,13 +3,10 @@
 // VidrioPlasticoPDF:    documento individual.
 // VidrioPlasticoConsolidadoPDF: documento multi-página.
 
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { PdfPageFrame, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfTable, PdfTableRow, PdfTableCell } from '@/lib/pdf/components/PdfTable'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+import { Document } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
@@ -39,19 +36,19 @@ export interface VidrioPlasticoConsolidadoPDFProps {
   hasta: string
 }
 
-// col widths: Área(120) + Material/Equipo(213) + Protegido(80) + Estado(100) + Observaciones(250) = 763 pt
-const COLS = [
-  { label: 'Área',              width: 120 },
-  { label: 'Material / Equipo', width: 213 },
-  { label: 'Protegido',         width:  80 },
-  { label: 'Estado',            width: 100 },
-  { label: 'Observaciones',     width: 250 },
+const COLS: ColumnaDato[] = [
+  { texto: 'Área', ancho: 120, align: 'left' },
+  { texto: 'Material / Equipo', ancho: 213, align: 'left' },
+  { texto: 'Protegido', ancho: 80, align: 'center' },
+  { texto: 'Estado', ancho: 100, align: 'center' },
+  { texto: 'Observaciones', ancho: 250, align: 'left' },
 ]
 
-const ESTADO_PALETTE: Record<string, { bg: string; color: string }> = {
-  'Bueno':       { bg: '#E3F2FD', color: '#0D5A8F' },
-  'Deteriorado': { bg: '#FAEEDA', color: '#854F0B' },
-  'Reemplazo':   { bg: '#FAECE7', color: '#993C1D' },
+// Color del texto del estado (solo color; el texto no cambia)
+const ESTADO_COLOR: Record<string, string> = {
+  'Bueno': PC.m13Navy,
+  'Deteriorado': PC.aviso,
+  'Reemplazo': PC.negativo,
 }
 
 function formatFechaPDF(iso: string): string {
@@ -62,15 +59,6 @@ function formatFechaPDF(iso: string): string {
   } catch {
     return iso
   }
-}
-
-// Celda con fondo de color para Estado e indicador Protegido
-function CeldaColor({ width, text, bg, color }: { width: number; text: string; bg: string; color: string }) {
-  return (
-    <View style={{ width, borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, paddingVertical: 3, paddingHorizontal: 3, backgroundColor: bg }}>
-      <Text style={{ fontSize: 8, color, textAlign: 'center', fontFamily: 'Helvetica-Bold' }}>{text}</Text>
-    </View>
-  )
 }
 
 // ── VidrioPlasticoPagina ──────────────────────────────────────────────────────
@@ -84,75 +72,43 @@ export function VidrioPlasticoPagina({
   const codigoFmt = `${codigoClave}-F-SC-SIG`
 
   return (
-    <Page size="A4" orientation="landscape" style={{ fontFamily: 'Helvetica', fontSize: 9, padding: 24, paddingBottom: 50, backgroundColor: PC.white }}>
-
-      <PdfFooter moduloCodigo="M7" />
-
-      <PdfPageFrame>
-        <PdfHeader
-          titulo="INSPECCIÓN DE VIDRIO Y PLÁSTICO DURO"
-          subtitulo={`Formato operativo | ${rancho}`}
-          codigoFormato={codigoFmt}
-          folio={folio}
-          fecha={emision}
+    <PaginaEstandar
+      titulo="INSPECCIÓN DE VIDRIO Y PLÁSTICO DURO"
+      subtitulo={`Formato operativo | ${rancho}`}
+      codigoFmt={codigoFmt}
+      folio={folio}
+      emision={emision}
+      tituloDatos="1. DATOS DEL SITIO E INSPECCIÓN"
+      camposDatos={[
+        { icono: 'ubicacion', etiqueta: terminoSitio, valor: rancho },
+        { icono: 'codigo', etiqueta: 'Código', valor: ranchoCodigo || '—' },
+        { icono: 'calendario', etiqueta: 'Fecha de inspección', valor: formatFechaPDF(fecha) },
+        { etiqueta: 'Total materiales', valor: String(materiales.length) },
+      ]}
+    >
+      <Seccion titulo="2. MATERIALES INSPECCIONADOS">
+        <TablaDatos
+          columnas={COLS}
+          vacio="Sin materiales registrados"
+          filas={materiales.map((m) => [
+            m.area,
+            m.material_equipo,
+            { texto: m.protegido ? 'Si' : 'No', color: m.protegido ? PC.m13Navy : PC.negativo, negrita: true },
+            { texto: m.estado, color: ESTADO_COLOR[m.estado] ?? PC.fieldValue, negrita: true },
+            m.observaciones ?? '',
+          ])}
         />
+      </Seccion>
 
-        <View style={{ padding: 14 }}>
-
-          <PdfSectionBanner>1. DATOS DEL SITIO E INSPECCIÓN</PdfSectionBanner>
-          <PdfFieldGrid>
-            <PdfFieldRow>
-              <PdfField label={terminoSitio} value={rancho} />
-              <PdfField label="Código" value={ranchoCodigo || '—'} />
-              <PdfField label="Fecha de inspección" value={formatFechaPDF(fecha)} />
-              <PdfField label="Total materiales" value={String(materiales.length)} />
-            </PdfFieldRow>
-          </PdfFieldGrid>
-
-          <PdfSectionBanner>2. MATERIALES INSPECCIONADOS</PdfSectionBanner>
-          <PdfTable columns={COLS}>
-            {materiales.length === 0 ? (
-              <PdfTableRow>
-                <PdfTableCell width={763} align="center">Sin materiales registrados</PdfTableCell>
-              </PdfTableRow>
-            ) : (
-              materiales.map((m, i) => {
-                const estadoPalette = ESTADO_PALETTE[m.estado] ?? { bg: PC.white, color: PC.fieldValue }
-                return (
-                  <PdfTableRow key={i} alt={i % 2 !== 0}>
-                    <PdfTableCell width={COLS[0].width} align="left">{m.area}</PdfTableCell>
-                    <PdfTableCell width={COLS[1].width} align="left">{m.material_equipo}</PdfTableCell>
-                    <CeldaColor
-                      width={COLS[2].width}
-                      text={m.protegido ? 'Si' : 'No'}
-                      bg={m.protegido ? '#E3F2FD' : '#FAECE7'}
-                      color={m.protegido ? '#0D5A8F' : '#993C1D'}
-                    />
-                    <CeldaColor
-                      width={COLS[3].width}
-                      text={m.estado}
-                      bg={estadoPalette.bg}
-                      color={estadoPalette.color}
-                    />
-                    <PdfTableCell width={COLS[4].width} align="left">{m.observaciones ?? ''}</PdfTableCell>
-                  </PdfTableRow>
-                )
-              })
-            )}
-          </PdfTable>
-
-          <PdfSectionBanner>3. FIRMAS Y RESPONSABLES</PdfSectionBanner>
-          <PdfSignatures
-            signatures={[
-              { label: 'Realizó la inspección', nombre: responsableNombre, caption: 'Firma', firma: firmaRealizo ?? null },
-              { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
-            ]}
-          />
-
-        </View>
-      </PdfPageFrame>
-
-    </Page>
+      <Seccion titulo="3. FIRMAS Y RESPONSABLES">
+        <PdfFirmas
+          signatures={[
+            { label: 'Realizó la inspección', nombre: responsableNombre, caption: 'Firma', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
+          ]}
+        />
+      </Seccion>
+    </PaginaEstandar>
   )
 }
 

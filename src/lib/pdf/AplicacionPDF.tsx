@@ -1,12 +1,9 @@
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { PdfPageFrame, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfTable, PdfTableRow, PdfTableCell } from '@/lib/pdf/components/PdfTable'
-import { PdfChecklist } from '@/lib/pdf/components/PdfChecklist'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
-import { PC } from '@/lib/pdf/components/tokens'
+import { Document, View } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
+import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { Checklist } from '@/lib/pdf/disenoNuevo/Checklist'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import type { Aplicacion, AplicacionProducto, CatalogoProducto, Rancho, Profile } from '@/types/database.types'
 import { formatFenologia } from '@/lib/fenologia'
 
@@ -41,17 +38,17 @@ const valNum = (v: number | null | undefined, fallback = '—') =>
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
-const PRODUCT_COLS: { label: string; width: number }[] = [
-  { label: 'Justificación / Plaga', width: 82 },
-  { label: 'Nivel infestación', width: 44 },
-  { label: 'Nombre Comercial', width: 98 },
-  { label: 'Ingrediente Activo', width: 93 },
-  { label: 'Dosis/ha', width: 46 },
-  { label: 'Dosis/barril (200L)', width: 62 },
-  { label: 'Dosis total', width: 55 },
-  { label: 'Días cosecha', width: 44 },
-  { label: 'Re-entrada (hrs)', width: 40 },
-  { label: 'RSCO/COFEPRIS', width: 96 },
+const PRODUCT_COLS: ColumnaDato[] = [
+  { texto: 'Justificación / Plaga', ancho: 82, align: 'left' },
+  { texto: 'Nivel infestación', ancho: 44, align: 'center' },
+  { texto: 'Nombre Comercial', ancho: 98, align: 'left' },
+  { texto: 'Ingrediente Activo', ancho: 93, align: 'left' },
+  { texto: 'Dosis/ha', ancho: 46, align: 'center' },
+  { texto: 'Dosis/barril (200L)', ancho: 62, align: 'center' },
+  { texto: 'Dosis total', ancho: 55, align: 'center' },
+  { texto: 'Días cosecha', ancho: 44, align: 'center' },
+  { texto: 'Re-entrada (hrs)', ancho: 40, align: 'center' },
+  { texto: 'RSCO/COFEPRIS', ancho: 96, align: 'left' },
 ]
 
 const EPP_ITEMS: { key: keyof Aplicacion; label: string }[] = [
@@ -95,227 +92,103 @@ export function AplicacionPDF({
       producer="M.A.D.Y. Inocuidad Inteligente"
       keywords="MADY, inocuidad, formato, aplicaciones"
     >
-      <Page
-        size="A4"
-        orientation="landscape"
-        style={{
-          fontFamily: 'Helvetica',
-          fontSize: 9,
-          padding: 24,
-          paddingBottom: 50,
-          backgroundColor: PC.white,
-        }}
+      <PaginaEstandar
+        titulo="REGISTRO DE APLICACIONES FOLIARES DE AGROQUÍMICOS"
+        subtitulo={`Formato operativo | ${rancho.nombre}`}
+        codigoFmt={codigoFmt}
+        folio={folio}
+        emision={emision}
+        pendienteSync={pendienteSync}
+        tituloDatos="1. DATOS DEL PRODUCTOR Y PARCELA"
+        camposDatos={[
+          { icono: 'usuario', etiqueta: 'Productor', valor: productorNombre },
+          { icono: 'ubicacion', etiqueta: labelSitio, valor: val(rancho.nombre) },
+          { etiqueta: 'Cultivo', valor: val(rancho.cultivo) },
+          { etiqueta: 'Variedad', valor: val(ap.variedad) },
+          { icono: 'codigo', etiqueta: 'Código de huerto', valor: val(rancho.codigo) },
+          { etiqueta: 'Sector', valor: val(ap.sector) },
+          { etiqueta: 'Superficie (ha)', valor: val(ap.superficie_ha) },
+          { etiqueta: 'Etapa fenológica', valor: formatFenologia(ap.fenologia ?? undefined) },
+        ]}
       >
-
-        {/* Footer fijo — va primero en el árbol para garantizar z-order correcto */}
-        <PdfFooter moduloCodigo="M1" pendienteSync={pendienteSync} />
-
-        {/* Marco exterior */}
-        <PdfPageFrame>
-
-          {/* Header */}
-          <PdfHeader
-            titulo="REGISTRO DE APLICACIONES FOLIARES DE AGROQUÍMICOS"
-            subtitulo={`Formato operativo | ${rancho.nombre}`}
-            codigoFormato={codigoFmt}
-            folio={folio}
-            fecha={emision}
+        <Seccion titulo="2. FECHAS, HORARIOS Y CONDICIONES DE APLICACIÓN">
+          <FranjaDatos
+            campos={[
+              { icono: 'calendario', etiqueta: 'Fecha recomendación asesor', valor: val(ap.fecha_recomendacion) },
+              { icono: 'calendario', etiqueta: 'Fecha real de aplicación', valor: val(ap.fecha_aplicacion) },
+              { etiqueta: 'Hora inicio', valor: val(ap.hora_inicio) },
+              { etiqueta: 'Hora fin', valor: val(ap.hora_fin) },
+              { etiqueta: 'Tipo de aplicación', valor: val(ap.tipo_aplicacion) },
+              { etiqueta: 'Total agua usada (L)', valor: val(ap.total_agua_l) },
+              { etiqueta: 'Equipo de aplicación', valor: val(ap.equipo) },
+              { etiqueta: 'Condición meteorológica', valor: val(ap.condicion_meteorologica) },
+              {
+                etiqueta: 'Cloración',
+                valor: ap.cloracion ? `Si — ${valNum(ap.cloro_cantidad_l)} ml · pH ${val(ap.cloro_ph)}` : 'No',
+              },
+            ]}
           />
+        </Seccion>
 
-          {/* Área de contenido */}
-          <View style={{ padding: 14 }}>
+        <Seccion titulo="3. PRODUCTOS APLICADOS">
+          <TablaDatos
+            columnas={PRODUCT_COLS}
+            vacio="Sin productos registrados"
+            filas={productos.map((p) => [
+              val(p.plaga_objetivo),
+              val(p.nivel_infestacion),
+              val(p.catalogo_productos.nombre_comercial),
+              val(p.catalogo_productos.ingrediente_activo),
+              valNum(p.dosis_ha),
+              valNum(p.dosis_200l),
+              valNum(p.total_producto),
+              val(p.dias_cosecha),
+              val(p.reentrada_hrs),
+              val(p.catalogo_productos.rsco),
+            ])}
+          />
+        </Seccion>
 
-            {/* ── Sección 1 — Datos del productor y parcela ── */}
-            <PdfSectionBanner>1. DATOS DEL PRODUCTOR Y PARCELA</PdfSectionBanner>
-            <PdfFieldGrid>
-              <PdfFieldRow>
-                <PdfField label="Productor" value={productorNombre} />
-                <PdfField label={labelSitio} value={val(rancho.nombre)} />
-              </PdfFieldRow>
-              <PdfFieldRow>
-                <PdfField label="Cultivo" value={val(rancho.cultivo)} />
-                <PdfField label="Variedad" value={val(ap.variedad)} />
-              </PdfFieldRow>
-              <PdfFieldRow>
-                <PdfField label="Código de huerto" value={val(rancho.codigo)} />
-                <PdfField label="Sector" value={val(ap.sector)} />
-              </PdfFieldRow>
-              <PdfFieldRow>
-                <PdfField label="Superficie (ha)" value={val(ap.superficie_ha)} />
-                <PdfField label="Etapa fenológica" value={formatFenologia(ap.fenologia ?? undefined)} />
-              </PdfFieldRow>
-            </PdfFieldGrid>
+        <Seccion titulo="4. EQUIPO DE PROTECCIÓN PERSONAL (EPP)">
+          <Checklist items={EPP_ITEMS.map(({ key, label }) => ({ label, checked: Boolean(ap[key]) }))} />
+        </Seccion>
 
-            {/* ── Sección 2 — Fechas, horarios y condiciones ── */}
-            <PdfSectionBanner>2. FECHAS, HORARIOS Y CONDICIONES DE APLICACIÓN</PdfSectionBanner>
-            <PdfFieldGrid>
-              <PdfFieldRow>
-                <PdfField label="Fecha recomendación asesor" value={val(ap.fecha_recomendacion)} />
-                <PdfField label="Fecha real de aplicación" value={val(ap.fecha_aplicacion)} />
-              </PdfFieldRow>
-              <PdfFieldRow>
-                <PdfField label="Hora inicio" value={val(ap.hora_inicio)} />
-                <PdfField label="Hora fin" value={val(ap.hora_fin)} />
-              </PdfFieldRow>
-              <PdfFieldRow>
-                <PdfField label="Tipo de aplicación" value={val(ap.tipo_aplicacion)} />
-                <PdfField label="Total agua usada (L)" value={val(ap.total_agua_l)} />
-              </PdfFieldRow>
-              <PdfFieldRow>
-                <PdfField label="Equipo de aplicación" value={val(ap.equipo)} />
-                <PdfField label="Condición meteorológica" value={val(ap.condicion_meteorologica)} />
-              </PdfFieldRow>
-              <PdfFieldRow>
-                <PdfField
-                  label="Cloración"
-                  value={
-                    ap.cloracion
-                      ? `Si — ${valNum(ap.cloro_cantidad_l)} ml · pH ${val(ap.cloro_ph)}`
-                      : 'No'
-                  }
-                  fullWidth
-                />
-              </PdfFieldRow>
-            </PdfFieldGrid>
+        <Seccion titulo="5. CALDOS SOBRANTES">
+          <FranjaDatos
+            campos={[
+              { etiqueta: '¿Hubo caldos sobrantes?', valor: ap.caldos_sobrantes ? 'Si' : 'No' },
+              ...(ap.caldos_sobrantes
+                ? [
+                    { etiqueta: 'Cantidad (L)', valor: val(ap.caldos_cantidad_l) },
+                    { etiqueta: 'Agua de lavado (L)', valor: val(ap.caldos_agua_lavado_l) },
+                    {
+                      etiqueta: '¿Eliminado en área designada?',
+                      valor: ap.caldos_area_designada === true ? 'Si' : ap.caldos_area_designada === false ? 'No' : '—',
+                    },
+                  ]
+                : []),
+            ]}
+          />
+        </Seccion>
 
-            {/* ── Sección 3 — Productos aplicados ── */}
-            <PdfSectionBanner>3. PRODUCTOS APLICADOS</PdfSectionBanner>
-            <PdfTable columns={PRODUCT_COLS}>
-              {productos.length === 0 ? (
-                <PdfTableRow>
-                  <View
-                    style={{
-                      flex: 1,
-                      borderRightWidth: 1,
-                      borderRightColor: PC.border,
-                      borderBottomWidth: 1,
-                      borderBottomColor: PC.border,
-                      padding: 6,
-                    }}
-                  >
-                    <Text style={{ fontSize: 8, color: PC.fieldLabel, textAlign: 'center' }}>
-                      Sin productos registrados
-                    </Text>
-                  </View>
-                </PdfTableRow>
-              ) : (
-                productos.map((p, i) => (
-                  <PdfTableRow key={p.id} alt={i % 2 !== 0}>
-                    <PdfTableCell width={PRODUCT_COLS[0].width} align="left">
-                      {val(p.plaga_objetivo)}
-                    </PdfTableCell>
-                    <PdfTableCell width={PRODUCT_COLS[1].width}>
-                      {val(p.nivel_infestacion)}
-                    </PdfTableCell>
-                    <PdfTableCell width={PRODUCT_COLS[2].width} align="left">
-                      {val(p.catalogo_productos.nombre_comercial)}
-                    </PdfTableCell>
-                    <PdfTableCell width={PRODUCT_COLS[3].width} align="left">
-                      {val(p.catalogo_productos.ingrediente_activo)}
-                    </PdfTableCell>
-                    <PdfTableCell width={PRODUCT_COLS[4].width}>
-                      {valNum(p.dosis_ha)}
-                    </PdfTableCell>
-                    <PdfTableCell width={PRODUCT_COLS[5].width}>
-                      {valNum(p.dosis_200l)}
-                    </PdfTableCell>
-                    <PdfTableCell width={PRODUCT_COLS[6].width}>
-                      {valNum(p.total_producto)}
-                    </PdfTableCell>
-                    <PdfTableCell width={PRODUCT_COLS[7].width}>
-                      {val(p.dias_cosecha)}
-                    </PdfTableCell>
-                    <PdfTableCell width={PRODUCT_COLS[8].width}>
-                      {val(p.reentrada_hrs)}
-                    </PdfTableCell>
-                    <PdfTableCell width={PRODUCT_COLS[9].width} align="left">
-                      {val(p.catalogo_productos.rsco)}
-                    </PdfTableCell>
-                  </PdfTableRow>
-                ))
-              )}
-            </PdfTable>
+        {tieneObservaciones && (
+          <Seccion titulo="6. OBSERVACIONES">
+            <FranjaDatos campos={[{ etiqueta: '', valor: ap.observaciones ?? '' }]} />
+          </Seccion>
+        )}
 
-            {/* ── Sección 4 — EPP ── */}
-            <PdfSectionBanner>4. EQUIPO DE PROTECCIÓN PERSONAL (EPP)</PdfSectionBanner>
-            <PdfChecklist
-              items={EPP_ITEMS.map(({ key, label }) => ({
-                label,
-                checked: Boolean(ap[key]),
-              }))}
+        <View wrap={false}>
+          <Seccion titulo={`${numFirmas}. FIRMAS Y RESPONSABLES`}>
+            <PdfFirmas
+              signatures={[
+                { label: 'Nombre(s) del aplicador', nombre: val(ap.aplicadores), caption: 'Firma del aplicador' },
+                { label: 'Asesor técnico', nombre: val(asesor?.nombre_completo), caption: 'Firma del asesor técnico' },
+                { label: 'Responsable de inocuidad', nombre: val(responsable?.nombre_completo), caption: 'Firma del responsable de inocuidad' },
+              ]}
             />
-
-            {/* ── Sección 5 — Caldos sobrantes ── */}
-            <PdfSectionBanner>5. CALDOS SOBRANTES</PdfSectionBanner>
-            <PdfFieldGrid>
-              <PdfFieldRow>
-                <PdfField
-                  label="¿Hubo caldos sobrantes?"
-                  value={ap.caldos_sobrantes ? 'Si' : 'No'}
-                />
-                {ap.caldos_sobrantes ? (
-                  <PdfField label="Cantidad (L)" value={val(ap.caldos_cantidad_l)} />
-                ) : (
-                  <PdfField label="" value="" />
-                )}
-              </PdfFieldRow>
-              {ap.caldos_sobrantes && (
-                <PdfFieldRow>
-                  <PdfField label="Agua de lavado (L)" value={val(ap.caldos_agua_lavado_l)} />
-                  <PdfField
-                    label="¿Eliminado en área designada?"
-                    value={
-                      ap.caldos_area_designada === true
-                        ? 'Si'
-                        : ap.caldos_area_designada === false
-                        ? 'No'
-                        : '—'
-                    }
-                  />
-                </PdfFieldRow>
-              )}
-            </PdfFieldGrid>
-
-            {/* ── Sección 6 — Observaciones (opcional) ── */}
-            {tieneObservaciones && (
-              <>
-                <PdfSectionBanner>6. OBSERVACIONES</PdfSectionBanner>
-                <PdfFieldGrid>
-                  <PdfFieldRow>
-                    <PdfField label="" value={ap.observaciones ?? ''} fullWidth />
-                  </PdfFieldRow>
-                </PdfFieldGrid>
-              </>
-            )}
-
-            {/* ── Sección 6/7 — Firmas y responsables ── */}
-            <View wrap={false}>
-              <PdfSectionBanner>{numFirmas}. FIRMAS Y RESPONSABLES</PdfSectionBanner>
-              <PdfSignatures
-                signatures={[
-                  {
-                    label: 'Nombre(s) del aplicador',
-                    nombre: val(ap.aplicadores),
-                    caption: 'Firma del aplicador',
-                  },
-                  {
-                    label: 'Asesor técnico',
-                    nombre: val(asesor?.nombre_completo),
-                    caption: 'Firma del asesor técnico',
-                  },
-                  {
-                    label: 'Responsable de inocuidad',
-                    nombre: val(responsable?.nombre_completo),
-                    caption: 'Firma del responsable de inocuidad',
-                  },
-                ]}
-              />
-            </View>
-
-          </View>
-        </PdfPageFrame>
-
-      </Page>
+          </Seccion>
+        </View>
+      </PaginaEstandar>
     </Document>
   )
 }

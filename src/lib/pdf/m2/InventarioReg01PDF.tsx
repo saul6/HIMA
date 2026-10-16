@@ -1,9 +1,6 @@
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { PdfPageFrame, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfTable, PdfTableRow, PdfTableCell } from '@/lib/pdf/components/PdfTable'
+import { Document, View, Text } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { InventarioMovimiento } from '@/types/database.types'
 
@@ -13,11 +10,11 @@ const v = (s: string | number | null | undefined, fallback = '—') =>
 const fmtN = (n: number | null | undefined) =>
   n == null ? '' : Number.isInteger(Number(n)) ? String(Number(n)) : Number(n).toFixed(2)
 
-const INV_COLS = [
-  { label: 'Fecha', width: 100 },
-  { label: 'Entrada', width: 120 },
-  { label: 'Salida', width: 120 },
-  { label: 'Existencia', width: 120 },
+const INV_COLS: ColumnaDato[] = [
+  { texto: 'Fecha', ancho: 100, align: 'center' },
+  { texto: 'Entrada', ancho: 120, align: 'center' },
+  { texto: 'Salida', ancho: 120, align: 'center' },
+  { texto: 'Existencia', ancho: 120, align: 'center' },
 ]
 
 export interface GrupoProductoReg01 {
@@ -56,108 +53,48 @@ export function InventarioReg01PDF({
       producer="M.A.D.Y. Inocuidad Inteligente"
       keywords="MADY, inocuidad, GlobalGAP, REG-01, inventario"
     >
-      <Page
-        size="A4"
-        style={{
-          fontFamily: 'Helvetica',
-          fontSize: 9,
-          padding: 24,
-          paddingBottom: 50,
-          backgroundColor: PC.white,
-        }}
+      <PaginaEstandar
+        orientacion="portrait"
+        titulo="INVENTARIO DE INSUMOS"
+        subtitulo={`REG-01 · GlobalG.A.P. v6 | ${ranchoNombre}${rango}`}
+        codigoFmt="GG-REG-01"
+        folio={emision}
+        emision={emision}
+        tituloDatos="DATOS GENERALES"
+        camposDatos={[
+          { icono: 'usuario', etiqueta: 'Compania', valor: v(orgNombre) },
+          { icono: 'ubicacion', etiqueta: 'Rancho / Huerto', valor: v(ranchoNombre) },
+          { etiqueta: 'Cultivo', valor: v(cultivo) },
+        ]}
       >
-        <PdfFooter moduloCodigo="REG-01 · GlobalG.A.P. v6" />
-        <PdfPageFrame>
-          <PdfHeader
-            titulo="INVENTARIO DE INSUMOS"
-            subtitulo={`REG-01 · GlobalG.A.P. v6 | ${ranchoNombre}${rango}`}
-            codigoFormato="GG-REG-01"
-            folio={emision}
-            fecha={emision}
-          />
+        <Text style={{ fontSize: 7, color: PC.textSub, fontFamily: 'Helvetica-Oblique', marginBottom: 6 }}>
+          Inventario debe ser actualizado al menos semanalmente o cada que sea necesario.
+        </Text>
 
-          <View style={{ padding: 14 }}>
-            <PdfSectionBanner>DATOS GENERALES</PdfSectionBanner>
-            <PdfFieldGrid>
-              <PdfFieldRow>
-                <PdfField label="Compania" value={v(orgNombre)} />
-                <PdfField label="Rancho / Huerto" value={v(ranchoNombre)} />
-              </PdfFieldRow>
-              <PdfFieldRow>
-                <PdfField label="Cultivo" value={v(cultivo)} fullWidth />
-              </PdfFieldRow>
-            </PdfFieldGrid>
+        {grupos.map((g) => (
+          <Seccion key={g.productoId} titulo={`${g.nombreComercial}${g.unidad ? ` | Unidad: ${g.unidad}` : ''}`.toUpperCase()}>
+            <TablaDatos
+              columnas={INV_COLS}
+              anchoTotal={ANCHO_UTIL.portrait}
+              vacio="Sin movimientos"
+              filas={g.movimientos.map((m) => {
+                const entrada =
+                  m.tipo === 'entrada' ? fmtN(m.cantidad) : m.tipo === 'ajuste' ? `Aj. +${fmtN(m.cantidad)}` : ''
+                const salida = m.tipo === 'salida' ? fmtN(m.cantidad) : ''
+                return [v(m.fecha), entrada, salida, fmtN(m.balance)]
+              })}
+            />
+          </Seccion>
+        ))}
 
-            <View
-              style={{
-                marginTop: 8,
-                marginBottom: 4,
-                padding: 6,
-                backgroundColor: PC.folioBox,
-                borderRadius: 4,
-              }}
-            >
-              <Text style={{ fontSize: 7, color: PC.textSub, fontFamily: 'Helvetica-Oblique' }}>
-                Inventario debe ser actualizado al menos semanalmente o cada que sea necesario.
-              </Text>
-            </View>
-
-            {grupos.map((g) => (
-              <View key={g.productoId}>
-                <PdfSectionBanner>
-                  {g.nombreComercial}{g.unidad ? ` | Unidad: ${g.unidad}` : ''}
-                </PdfSectionBanner>
-                <PdfTable columns={INV_COLS}>
-                  {g.movimientos.length === 0 ? (
-                    <PdfTableRow>
-                      <View
-                        style={{
-                          flex: 1,
-                          borderRightWidth: 1,
-                          borderRightColor: PC.border,
-                          borderBottomWidth: 1,
-                          borderBottomColor: PC.border,
-                          padding: 6,
-                        }}
-                      >
-                        <Text style={{ fontSize: 8, color: PC.fieldLabel, textAlign: 'center' }}>
-                          Sin movimientos
-                        </Text>
-                      </View>
-                    </PdfTableRow>
-                  ) : (
-                    g.movimientos.map((m, i) => {
-                      const entrada =
-                        m.tipo === 'entrada'
-                          ? fmtN(m.cantidad)
-                          : m.tipo === 'ajuste'
-                          ? `Aj. +${fmtN(m.cantidad)}`
-                          : ''
-                      const salida = m.tipo === 'salida' ? fmtN(m.cantidad) : ''
-                      return (
-                        <PdfTableRow key={m.id} alt={i % 2 !== 0}>
-                          <PdfTableCell width={INV_COLS[0].width}>{v(m.fecha)}</PdfTableCell>
-                          <PdfTableCell width={INV_COLS[1].width}>{entrada}</PdfTableCell>
-                          <PdfTableCell width={INV_COLS[2].width}>{salida}</PdfTableCell>
-                          <PdfTableCell width={INV_COLS[3].width}>{fmtN(m.balance)}</PdfTableCell>
-                        </PdfTableRow>
-                      )
-                    })
-                  )}
-                </PdfTable>
-              </View>
-            ))}
-
-            {grupos.length === 0 && (
-              <View style={{ padding: 20, alignItems: 'center' }}>
-                <Text style={{ fontSize: 9, color: PC.fieldLabel }}>
-                  Sin movimientos en el periodo seleccionado.
-                </Text>
-              </View>
-            )}
+        {grupos.length === 0 && (
+          <View style={{ padding: 20, alignItems: 'center' }}>
+            <Text style={{ fontSize: 9, color: PC.fieldLabel }}>
+              Sin movimientos en el periodo seleccionado.
+            </Text>
           </View>
-        </PdfPageFrame>
-      </Page>
+        )}
+      </PaginaEstandar>
     </Document>
   )
 }

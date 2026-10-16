@@ -3,13 +3,10 @@
 // BotiquinPDF:    documento individual (1 página).
 // BotiquinConsolidadoPDF: documento multi-página, una BotiquinPagina por registro.
 
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { PdfPageFrame, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfTable, PdfTableRow, PdfTableCell } from '@/lib/pdf/components/PdfTable'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+import { Document } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
@@ -49,11 +46,10 @@ const ARTICULOS: { key: ArticuloKey; label: string }[] = [
   { key: 'desinfectante',    label: 'Desinfectante' },
 ]
 
-// col widths: Artículo(563) + Tiene(100) + Llenar(100) = 763 pt (content width A4 landscape)
-const COLS = [
-  { label: 'Artículo',  width: 563 },
-  { label: 'Tiene',     width: 100 },
-  { label: 'Llenar',    width: 100 },
+const COLS: ColumnaDato[] = [
+  { texto: 'Artículo', ancho: 563, align: 'left' },
+  { texto: 'Tiene', ancho: 100, align: 'center' },
+  { texto: 'Llenar', ancho: 100, align: 'center' },
 ]
 
 function formatFechaPDF(iso: string): string {
@@ -64,17 +60,6 @@ function formatFechaPDF(iso: string): string {
   } catch {
     return iso
   }
-}
-
-// Celda con fondo de color para indicadores visuales Tiene/Llenar
-function CeldaIndicador({ width, text, active, tipo }: { width: number; text: string; active: boolean; tipo: 'tiene' | 'llenar' }) {
-  const bg   = active ? (tipo === 'tiene' ? '#E3F2FD' : '#FAEEDA') : PC.white
-  const color = active ? (tipo === 'tiene' ? '#0D5A8F'  : '#854F0B')  : PC.fieldValue
-  return (
-    <View style={{ width, borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border, paddingVertical: 3, paddingHorizontal: 3, justifyContent: 'center', backgroundColor: bg }}>
-      <Text style={{ fontSize: 8, color, textAlign: 'center', fontFamily: active ? 'Helvetica-Bold' : 'Helvetica' }}>{text}</Text>
-    </View>
-  )
 }
 
 // ── BotiquinPagina ────────────────────────────────────────────────────────────
@@ -94,69 +79,48 @@ export function BotiquinPagina({
   const presentes = Object.values(valores).filter(Boolean).length
 
   return (
-    <Page size="A4" orientation="landscape" style={{ fontFamily: 'Helvetica', fontSize: 9, padding: 24, paddingBottom: 50, backgroundColor: PC.white }}>
-
-      <PdfFooter moduloCodigo="M6" />
-
-      <PdfPageFrame>
-        <PdfHeader
-          titulo="REVISIÓN DE MATERIALES DE BOTIQUÍN DE PRIMEROS AUXILIOS"
-          subtitulo={`Formato operativo | ${rancho}`}
-          codigoFormato={codigoFmt}
-          folio={folio}
-          fecha={emision}
+    <PaginaEstandar
+      titulo="REVISIÓN DE MATERIALES DE BOTIQUÍN DE PRIMEROS AUXILIOS"
+      subtitulo={`Formato operativo | ${rancho}`}
+      codigoFmt={codigoFmt}
+      folio={folio}
+      emision={emision}
+      tituloDatos="1. DATOS DEL SITIO Y VERIFICACIÓN"
+      camposDatos={[
+        { icono: 'ubicacion', etiqueta: terminoSitio, valor: rancho },
+        { icono: 'codigo', etiqueta: 'Código', valor: ranchoCodigo || '—' },
+        { icono: 'calendario', etiqueta: 'Fecha de verificación', valor: formatFechaPDF(fechaVerificacion) },
+        { etiqueta: 'Artículos presentes', valor: `${presentes} / ${ARTICULOS.length}` },
+      ]}
+    >
+      <Seccion titulo="2. REVISIÓN DE MATERIALES">
+        <TablaDatos
+          columnas={COLS}
+          filas={ARTICULOS.map((art) => {
+            const tiene = valores[art.key]
+            return [
+              art.label,
+              tiene ? { texto: 'Si', color: PC.m13Navy, negrita: true } : '',
+              !tiene ? { texto: 'Si', color: PC.aviso, negrita: true } : '',
+            ]
+          })}
         />
+      </Seccion>
 
-        <View style={{ padding: 14 }}>
-
-          <PdfSectionBanner>1. DATOS DEL SITIO Y VERIFICACIÓN</PdfSectionBanner>
-          <PdfFieldGrid>
-            <PdfFieldRow>
-              <PdfField label={terminoSitio} value={rancho} />
-              <PdfField label="Código" value={ranchoCodigo || '—'} />
-            </PdfFieldRow>
-            <PdfFieldRow>
-              <PdfField label="Fecha de verificación" value={formatFechaPDF(fechaVerificacion)} />
-              <PdfField label="Artículos presentes" value={`${presentes} / ${ARTICULOS.length}`} />
-            </PdfFieldRow>
-          </PdfFieldGrid>
-
-          <PdfSectionBanner>2. REVISIÓN DE MATERIALES</PdfSectionBanner>
-          <PdfTable columns={COLS}>
-            {ARTICULOS.map((art, i) => {
-              const tiene = valores[art.key]
-              return (
-                <PdfTableRow key={art.key} alt={i % 2 !== 0}>
-                  <PdfTableCell width={COLS[0].width} align="left">{art.label}</PdfTableCell>
-                  <CeldaIndicador width={COLS[1].width} text={tiene ? 'Si' : ''} active={tiene} tipo="tiene" />
-                  <CeldaIndicador width={COLS[2].width} text={!tiene ? 'Si' : ''} active={!tiene} tipo="llenar" />
-                </PdfTableRow>
-              )
-            })}
-          </PdfTable>
-
-          <PdfSectionBanner>3. FIRMAS Y RESPONSABLES</PdfSectionBanner>
-          <PdfSignatures
-            signatures={[
-              {
-                label: 'Responsable que realizó la verificación',
-                nombre: responsableNombre,
-                caption: 'Firma del responsable',
-                firma: firmaRealizo ?? null,
-              },
-              {
-                label: '',
-                nombre: '',
-                caption: 'Responsable de Inocuidad — Firma',
-                firma: firmaVerifico ?? null,
-              },
-            ]}
-          />
-
-        </View>
-      </PdfPageFrame>
-
-    </Page>
+      <Seccion titulo="3. FIRMAS Y RESPONSABLES">
+        <PdfFirmas
+          signatures={[
+            {
+              label: 'Responsable que realizó la verificación',
+              nombre: responsableNombre,
+              caption: 'Firma del responsable',
+              firma: firmaRealizo ?? null,
+            },
+            { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
+          ]}
+        />
+      </Seccion>
+    </PaginaEstandar>
   )
 }
 

@@ -3,14 +3,10 @@
 // FertilizacionPDF:    documento individual.
 // FertilizacionConsolidadoPDF: documento multi-página.
 
-import { Document, Page, View } from '@react-pdf/renderer'
-import { PdfPageFrame, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfTable, PdfTableRow, PdfTableCell } from '@/lib/pdf/components/PdfTable'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
-import { PC } from '@/lib/pdf/components/tokens'
+import { Document } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface FertilizacionPDFProps {
@@ -42,14 +38,13 @@ export interface FertilizacionConsolidadoPDFProps {
   hasta: string
 }
 
-// col widths: NC(190) + IA(183) + Método(100) + Sup(80) + Dosis(110) + Total(100) = 763 pt
-const COLS = [
-  { label: 'Nombre Comercial',  width: 190 },
-  { label: 'Ingrediente Activo', width: 183 },
-  { label: 'Método',            width: 100 },
-  { label: 'Sup. (ha)',         width:  80 },
-  { label: 'Dosis',             width: 110 },
-  { label: 'Cantidad Total',    width: 100 },
+const COLS: ColumnaDato[] = [
+  { texto: 'Nombre Comercial', ancho: 190, align: 'left' },
+  { texto: 'Ingrediente Activo', ancho: 183, align: 'left' },
+  { texto: 'Método', ancho: 100, align: 'center' },
+  { texto: 'Sup. (ha)', ancho: 80, align: 'center' },
+  { texto: 'Dosis', ancho: 110, align: 'center' },
+  { texto: 'Cantidad Total', ancho: 100, align: 'center' },
 ]
 
 function formatFechaPDF(iso: string): string {
@@ -73,66 +68,46 @@ export function FertilizacionPagina({
   const codigoFmt = `${codigoClave}-F-SC-SIG`
 
   return (
-    <Page size="A4" orientation="landscape" style={{ fontFamily: 'Helvetica', fontSize: 9, padding: 24, paddingBottom: 50, backgroundColor: PC.white }}>
-
-      <PdfFooter moduloCodigo="M8" />
-
-      <PdfPageFrame>
-        <PdfHeader
-          titulo="REGISTRO DE FERTILIZACIÓN"
-          subtitulo={`Formato operativo | ${rancho}`}
-          codigoFormato={codigoFmt}
-          folio={folio}
-          fecha={emision}
+    <PaginaEstandar
+      titulo="REGISTRO DE FERTILIZACIÓN"
+      subtitulo={`Formato operativo | ${rancho}`}
+      codigoFmt={codigoFmt}
+      folio={folio}
+      emision={emision}
+      porRenglon={5}
+      tituloDatos="1. DATOS DEL SITIO Y JORNADA"
+      camposDatos={[
+        { icono: 'ubicacion', etiqueta: terminoSitio, valor: rancho },
+        { icono: 'codigo', etiqueta: 'Código', valor: ranchoCodigo || '—' },
+        { etiqueta: 'Sector', valor: sector ?? '—' },
+        { icono: 'calendario', etiqueta: 'Fecha de registro', valor: formatFechaPDF(fecha) },
+        { etiqueta: 'Total fertilizantes', valor: String(fertilizantes.length) },
+      ]}
+    >
+      <Seccion titulo="2. FERTILIZANTES APLICADOS">
+        <TablaDatos
+          columnas={COLS}
+          vacio="Sin fertilizantes registrados"
+          filas={fertilizantes.map((f) => [
+            f.nombre_comercial,
+            `${f.ingrediente_activo ?? '—'}${f.concentracion ? ` ${f.concentracion}` : ''}`,
+            f.metodo,
+            String(f.superficie_ha),
+            String(f.dosis_kg_l_ha),
+            f.cantidad_total.toFixed(2),
+          ])}
         />
+      </Seccion>
 
-        <View style={{ padding: 14 }}>
-
-          <PdfSectionBanner>1. DATOS DEL SITIO Y JORNADA</PdfSectionBanner>
-          <PdfFieldGrid>
-            <PdfFieldRow>
-              <PdfField label={terminoSitio} value={rancho} />
-              <PdfField label="Código" value={ranchoCodigo || '—'} />
-              <PdfField label="Sector" value={sector ?? '—'} />
-              <PdfField label="Fecha de registro" value={formatFechaPDF(fecha)} />
-              <PdfField label="Total fertilizantes" value={String(fertilizantes.length)} />
-            </PdfFieldRow>
-          </PdfFieldGrid>
-
-          <PdfSectionBanner>2. FERTILIZANTES APLICADOS</PdfSectionBanner>
-          <PdfTable columns={COLS}>
-            {fertilizantes.length === 0 ? (
-              <PdfTableRow>
-                <PdfTableCell width={763} align="center">Sin fertilizantes registrados</PdfTableCell>
-              </PdfTableRow>
-            ) : (
-              fertilizantes.map((f, i) => (
-                <PdfTableRow key={i} alt={i % 2 !== 0}>
-                  <PdfTableCell width={COLS[0].width} align="left">{f.nombre_comercial}</PdfTableCell>
-                  <PdfTableCell width={COLS[1].width} align="left">
-                    {f.ingrediente_activo ?? '—'}{f.concentracion ? ` ${f.concentracion}` : ''}
-                  </PdfTableCell>
-                  <PdfTableCell width={COLS[2].width}>{f.metodo}</PdfTableCell>
-                  <PdfTableCell width={COLS[3].width}>{String(f.superficie_ha)}</PdfTableCell>
-                  <PdfTableCell width={COLS[4].width}>{String(f.dosis_kg_l_ha)}</PdfTableCell>
-                  <PdfTableCell width={COLS[5].width}>{f.cantidad_total.toFixed(2)}</PdfTableCell>
-                </PdfTableRow>
-              ))
-            )}
-          </PdfTable>
-
-          <PdfSectionBanner>3. FIRMAS Y RESPONSABLES</PdfSectionBanner>
-          <PdfSignatures
-            signatures={[
-              { label: 'Realizó la aplicación', nombre: responsableNombre, caption: 'Firma', firma: firmaRealizo ?? null },
-              { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
-            ]}
-          />
-
-        </View>
-      </PdfPageFrame>
-
-    </Page>
+      <Seccion titulo="3. FIRMAS Y RESPONSABLES">
+        <PdfFirmas
+          signatures={[
+            { label: 'Realizó la aplicación', nombre: responsableNombre, caption: 'Firma', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
+          ]}
+        />
+      </Seccion>
+    </PaginaEstandar>
   )
 }
 
