@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { ChevronDown, Loader2 } from 'lucide-react'
+import { ChevronDown, FileText, Loader2 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { Input } from '@/app/components/ui/input'
+import { FirmasRegistro } from '@/app/components/FirmasRegistro'
+import { useFirmasRegistro, type MapaFirmas } from '@/hooks/useFirmasRegistro'
+import { useConexion } from '@/hooks/useConexion'
 import { hoyMX } from '@/lib/fecha'
 import { Pildora } from './Pildora'
 import { fechaLarga } from './constantes'
@@ -27,7 +30,51 @@ const TITULOS: Record<ModoVisita['tipo'], string> = {
   terminar: 'Terminar visita',
 }
 
-interface AccionProps {
+interface OpcionesPdf {
+  codigoClave?: string
+  terminoSitio?: string
+}
+
+/** Genera (descarga) o previsualiza el PDF de una visita; errores de la BD en toast tal cual. */
+function usePdfVisita(opc: OpcionesPdf) {
+  const { online } = useConexion()
+  const [generando, setGenerando] = useState<string | null>(null)
+
+  async function generar(visitaId: string, previa = false) {
+    if (generando) return
+    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
+    setGenerando(visitaId)
+    try {
+      // Import dinámico: @react-pdf pesa y solo se necesita al generar
+      const m = await import('@/lib/pdf/m80/generarChecklistVisitaPDF')
+      if (previa) await m.previsualizarChecklistVisitaPDF(visitaId, opc)
+      else await m.generarChecklistVisitaPDF(visitaId, opc)
+    } catch (e) {
+      toast.error(e instanceof Error && e.message ? e.message : 'No se pudo generar el PDF')
+    } finally {
+      setGenerando(null)
+    }
+  }
+  return { generando, generar }
+}
+
+function BotonPdf({ visitaId, previa, generando, onClick }: { visitaId: string; previa?: boolean; generando: string | null; onClick: () => void }) {
+  const ocupado = generando === visitaId
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!!generando}
+      className="h-8 px-3 rounded-lg border border-border bg-card text-xs text-foreground inline-flex items-center gap-1.5 transition-colors hover:bg-muted active:scale-[0.97] disabled:opacity-50"
+      style={{ fontWeight: 600 }}
+    >
+      {ocupado ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+      {previa ? 'Vista previa' : 'PDF'}
+    </button>
+  )
+}
+
+interface AccionProps extends OpcionesPdf {
   modo: ModoVisita | null
   ranchoId: string
   hook: Hook
@@ -36,14 +83,73 @@ interface AccionProps {
 }
 
 export function VisitaAccionSheet({ modo, ...resto }: AccionProps) {
+  // Tras terminar, el mismo sheet pasa a "Firmas de la visita"
+  const [firmasDe, setFirmasDe] = useState<ChkVisita | null>(null)
+  const cerrar = () => { setFirmasDe(null); resto.onClose() }
+
   return (
-    <BottomSheet open={!!modo} onClose={resto.onClose} title={modo ? TITULOS[modo.tipo] : ''}>
-      {modo && <FormularioAccion modo={modo} {...resto} />}
+    <BottomSheet
+      open={!!modo || !!firmasDe}
+      onClose={cerrar}
+      height={firmasDe ? '85%' : undefined}
+      title={firmasDe ? 'Firmas de la visita' : modo ? TITULOS[modo.tipo] : ''}
+    >
+      {firmasDe ? (
+        <PasoFirmasVisita visita={firmasDe} codigoClave={resto.codigoClave} terminoSitio={resto.terminoSitio} onCerrar={cerrar} />
+      ) : modo && (
+        <FormularioAccion modo={modo} {...resto} onClose={cerrar} onTerminada={setFirmasDe} />
+      )}
     </BottomSheet>
   )
 }
 
-function FormularioAccion({ modo, ranchoId, hook, onClose, onGuardado }: AccionProps & { modo: ModoVisita }) {
+function PasoFirmasVisita({ visita, codigoClave, terminoSitio, onCerrar }: OpcionesPdf & { visita: ChkVisita; onCerrar: () => void }) {
+  const { firmas, loading, refetch } = useFirmasRegistro('M80', [visita.id])
+  const { generando, generar } = usePdfVisita({ codigoClave, terminoSitio })
+
+  async function generarYCerrar() {
+    await generar(visita.id)
+    onCerrar()
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <p className="text-xs text-muted-foreground">
+        Visita del {fechaLarga(visita.fecha)}. Firma ahora o más tarde desde la lista de visitas.
+      </p>
+      <FirmasRegistro
+        modulo="M80"
+        registroId={visita.id}
+        fechaRegistro={visita.fecha}
+        firma={firmas[visita.id]}
+        loadingFirmas={loading}
+        onFirmado={refetch}
+      />
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={generarYCerrar}
+          disabled={!!generando}
+          className="flex-1 h-11 rounded-lg text-sm transition active:scale-[0.99] disabled:opacity-50"
+          style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
+        >
+          {generando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Generar PDF'}
+        </button>
+        <button
+          type="button"
+          onClick={onCerrar}
+          disabled={!!generando}
+          className="h-11 px-5 rounded-lg border border-border bg-card text-sm text-foreground transition-colors hover:bg-muted active:scale-[0.99]"
+          style={{ fontWeight: 600 }}
+        >
+          Después
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function FormularioAccion({ modo, ranchoId, hook, onClose, onGuardado, onTerminada }: AccionProps & { modo: ModoVisita; onTerminada: (v: ChkVisita) => void }) {
   const hoy = hoyMX()
   const { admins } = useColaboradoresChk(modo.tipo === 'programar' || modo.tipo === 'reprogramar')
   const visita = modo.tipo === 'programar' ? null : modo.visita
@@ -85,7 +191,8 @@ function FormularioAccion({ modo, ranchoId, hook, onClose, onGuardado }: AccionP
       terminar: 'Visita terminada',
     }[modo.tipo])
     onGuardado()
-    onClose()
+    if (modo.tipo === 'terminar') onTerminada(modo.visita)
+    else onClose()
   }
 
   const conFecha = modo.tipo === 'programar' || modo.tipo === 'reprogramar'
@@ -168,7 +275,7 @@ const ETIQUETA_EVENTO: Record<string, string> = {
   realizada: 'Realizada',
 }
 
-interface ListaProps {
+interface ListaProps extends OpcionesPdf {
   open: boolean
   visitas: ChkVisita[]
   destacada: string | null
@@ -176,23 +283,39 @@ interface ListaProps {
   onClose: () => void
 }
 
-export function VisitasSheet({ open, visitas, destacada, hook, onClose }: ListaProps) {
+export function VisitasSheet({ open, visitas, destacada, hook, onClose, codigoClave, terminoSitio }: ListaProps) {
   const [abierta, setAbierta] = useState<string | null>(destacada)
   useEffect(() => { if (open) setAbierta(destacada) }, [open, destacada])
+  const pdf = usePdfVisita({ codigoClave, terminoSitio })
+  // Firmas solo de las visitas realizadas, y solo con el sheet abierto
+  const idsRealizadas = open ? visitas.filter(v => v.estado === 'realizada').map(v => v.id) : []
+  const { firmas, loading: loadingFirmas, refetch } = useFirmasRegistro('M80', idsRealizadas)
 
   return (
     <BottomSheet open={open} onClose={onClose} height="85%" title="Visitas de revisión">
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {visitas.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">Aún no hay visitas.</p>}
         {visitas.map(v => (
-          <FilaVisita key={v.id} visita={v} abierta={abierta === v.id} onToggle={() => setAbierta(abierta === v.id ? null : v.id)} hook={hook} />
+          <FilaVisita key={v.id} visita={v} abierta={abierta === v.id} onToggle={() => setAbierta(abierta === v.id ? null : v.id)} hook={hook}
+            pdf={pdf} firmas={firmas} loadingFirmas={loadingFirmas} onFirmado={refetch} />
         ))}
       </div>
     </BottomSheet>
   )
 }
 
-function FilaVisita({ visita, abierta, onToggle, hook }: { visita: ChkVisita; abierta: boolean; onToggle: () => void; hook: Hook }) {
+interface FilaProps {
+  visita: ChkVisita
+  abierta: boolean
+  onToggle: () => void
+  hook: Hook
+  pdf: ReturnType<typeof usePdfVisita>
+  firmas: MapaFirmas
+  loadingFirmas: boolean
+  onFirmado: () => void
+}
+
+function FilaVisita({ visita, abierta, onToggle, hook, pdf, firmas, loadingFirmas, onFirmado }: FilaProps) {
   const [eventos, setEventos] = useState<ChkVisitaEvento[] | null>(null)
 
   useEffect(() => {
@@ -228,6 +351,16 @@ function FilaVisita({ visita, abierta, onToggle, hook }: { visita: ChkVisita; ab
       {abierta && (
         <div className="border-t border-border px-3 py-3 space-y-2">
           {visita.nota && <p className="text-xs text-foreground whitespace-pre-wrap">{visita.nota}</p>}
+          {(visita.estado === 'realizada' || visita.estado === 'programada') && (
+            <div className="flex justify-end">
+              <BotonPdf
+                visitaId={visita.id}
+                previa={visita.estado === 'programada'}
+                generando={pdf.generando}
+                onClick={() => pdf.generar(visita.id, visita.estado === 'programada')}
+              />
+            </div>
+          )}
           {eventos === null ? (
             <p className="text-xs text-muted-foreground">Cargando…</p>
           ) : eventos.length === 0 ? (
@@ -246,6 +379,16 @@ function FilaVisita({ visita, abierta, onToggle, hook }: { visita: ChkVisita; ab
                 </li>
               ))}
             </ul>
+          )}
+          {visita.estado === 'realizada' && (
+            <FirmasRegistro
+              modulo="M80"
+              registroId={visita.id}
+              fechaRegistro={visita.fecha}
+              firma={firmas[visita.id]}
+              loadingFirmas={loadingFirmas}
+              onFirmado={onFirmado}
+            />
           )}
         </div>
       )}

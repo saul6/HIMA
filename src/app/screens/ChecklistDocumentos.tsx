@@ -259,6 +259,8 @@ export function ChecklistDocumentos() {
             visitas={visitas}
             destacada={visitaParam ?? proxima?.id ?? null}
             hook={hook}
+            codigoClave={codigoClave}
+            terminoSitio={terminosSitio.singular}
             onClose={() => setVisitasAbierto(false)}
           />
           {puedeEditar && (
@@ -267,6 +269,8 @@ export function ChecklistDocumentos() {
                 modo={modoVisita}
                 ranchoId={sitioId}
                 hook={hook}
+                codigoClave={codigoClave}
+                terminoSitio={terminosSitio.singular}
                 onClose={() => setModoVisita(null)}
                 onGuardado={recargar}
               />
