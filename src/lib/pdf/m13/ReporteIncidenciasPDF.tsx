@@ -8,6 +8,7 @@
 import { Document, Page, View, Text, Image, Svg, Path, Rect, Circle, StyleSheet } from '@react-pdf/renderer'
 import type { ReactNode } from 'react'
 import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
+import { ISOTIPO_MARCA_AGUA } from './isotipoMarcaAgua'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf, FirmaEnteradoParaPdf } from '@/hooks/useFirmasRegistro'
 import { partirPalabraLarga } from '@/lib/pdf/components/texto'
@@ -250,15 +251,24 @@ function Tarjeta({ b }: { b: BloquePlan }) {
   )
 }
 
+// Marca de agua: isotipo a color, centrado, ~42 % del ancho de la página (A4 = 595 pt).
+// Va como primer hijo de <Page> para que todo lo demás se dibuje encima.
+const MARCA_AGUA_W = 250
+
+function MarcaDeAgua() {
+  return (
+    <View
+      fixed
+      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}
+    >
+      <Image src={ISOTIPO_MARCA_AGUA} style={{ width: MARCA_AGUA_W, height: MARCA_AGUA_W, opacity: 0.07 }} />
+    </View>
+  )
+}
+
 function PieM13() {
   return (
     <>
-      {/* Isotipo tenue en la esquina inferior derecha, en el margen (no tapa la paginación) */}
-      <Image
-        fixed
-        src={LOGO_MADY_PDF}
-        style={{ position: 'absolute', bottom: 2, right: 6, width: 42, height: 15, opacity: 0.08 }}
-      />
       <View
         fixed
         style={{
@@ -309,6 +319,8 @@ export function ReporteIncidenciasPagina({
 
   return (
     <Page size="A4" style={s.page}>
+
+      <MarcaDeAgua />
 
       {/* Encabezado compacto: solo páginas 2+ de este reporte (subPageNumber, no el global) */}
       <View
