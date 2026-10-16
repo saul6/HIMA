@@ -2,13 +2,10 @@
 // Preparación de Cloro a 200 ppm — A4 portrait.
 // PdfPageFrame + PdfHeader + tabla de preparaciones + PdfSignatures.
 
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { PdfPageFrame, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfTable, PdfTableRow, PdfTableCell } from '@/lib/pdf/components/PdfTable'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+import { Document, View, Text } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
@@ -46,15 +43,16 @@ function fmt(iso: string): string {
   } catch { return iso }
 }
 
-// Anchos de columna — contenido portrait PdfPageFrame ≈ 517pt
-const W_N    = 20
-const W_FECHA = 60
-const W_AREA  = 160
-const W_LITROS = 44
-const W_ML    = 44
-const W_RESP  = 100
-const W_OBS   = 89
-// Total: 20+60+160+44+44+100+89 = 517pt
+// Columnas (anchos relativos; la tabla se escala al ancho útil de la hoja)
+const COLS: ColumnaDato[] = [
+  { texto: 'N.', ancho: 20, align: 'center' },
+  { texto: 'Fecha', ancho: 60 },
+  { texto: 'Area / Punto de aplicacion', ancho: 160 },
+  { texto: 'Litros agua', ancho: 44, align: 'center' },
+  { texto: 'mL cloro', ancho: 44, align: 'center' },
+  { texto: 'Responsable', ancho: 100 },
+  { texto: 'Observaciones', ancho: 89 },
+]
 
 // ── PreparacionCloroPagina ────────────────────────────────────────────────────
 
@@ -68,91 +66,57 @@ export function PreparacionCloroPagina({
   const totalLabel = String(preparaciones.length)
 
   return (
-    <Page
-      size="A4"
-      orientation="portrait"
-      style={{ fontFamily: 'Helvetica', fontSize: 9, padding: 24, paddingBottom: 50, backgroundColor: PC.white }}
+    <PaginaEstandar
+      orientacion="portrait"
+      titulo="PREPARACIÓN DE CLORO A 200 ppm"
+      subtitulo={`Formato operativo | ${rancho}`}
+      codigoFmt={codigoFmt}
+      folio={desde}
+      emision={emision}
+      tituloDatos="1. DATOS GENERALES"
+      camposDatos={[
+        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organización', valor: orgNombre }] : []),
+        { icono: 'ubicacion', etiqueta: terminoSitio, valor: rancho },
+        { icono: 'calendario', etiqueta: 'Periodo', valor: periodoLabel },
+        { etiqueta: 'Total de preparaciones', valor: totalLabel },
+      ]}
     >
-      <PdfFooter moduloCodigo="M27" />
-
-      <PdfPageFrame>
-        <PdfHeader
-          titulo="PREPARACIÓN DE CLORO A 200 ppm"
-          subtitulo={`Formato operativo | ${rancho}`}
-          codigoFormato={codigoFmt}
-          folio={desde}
-          fecha={emision}
+      <Seccion titulo="2. REGISTRO DE PREPARACIONES">
+        <TablaDatos
+          columnas={COLS}
+          anchoTotal={ANCHO_UTIL.portrait}
+          vacio="Sin registros"
+          filas={preparaciones.map((p, i) => [
+            String(i + 1),
+            fmt(p.fecha),
+            p.area,
+            `${p.litros_agua} L`,
+            `${p.ml_cloro} mL`,
+            p.responsable ?? '',
+            p.observaciones ?? '',
+          ])}
         />
+      </Seccion>
 
-        <View style={{ padding: 14 }}>
+      {/* Nota de fórmula */}
+      <View wrap={false} style={{ marginBottom: 10, padding: 8, borderRadius: 6, backgroundColor: PC.m13Fondo }}>
+        <Text style={{ fontSize: 7, color: PC.textSub, lineHeight: 1.4 }}>
+          Nota: Para obtener 200 ppm con cloro comercial (~6%): 3.33 mL de cloro por litro de agua.{'\n'}
+          Formula: mL de cloro = Litros de agua x 10/3
+        </Text>
+      </View>
 
-          <PdfSectionBanner>1. Datos generales</PdfSectionBanner>
-          <PdfFieldGrid>
-            <PdfFieldRow>
-              {orgNombre ? <PdfField label="Organización" value={orgNombre} /> : null}
-              <PdfField label={terminoSitio} value={rancho} />
-              <PdfField label="Periodo" value={periodoLabel} />
-              <PdfField label="Total de preparaciones" value={totalLabel} />
-            </PdfFieldRow>
-          </PdfFieldGrid>
-
-          <PdfSectionBanner>2. Registro de preparaciones</PdfSectionBanner>
-
-          <View style={{ marginTop: 6 }}>
-            <PdfTable
-              columns={[
-                { label: 'N.', width: W_N },
-                { label: 'Fecha', width: W_FECHA },
-                { label: 'Area / Punto de aplicacion', width: W_AREA },
-                { label: 'Litros agua', width: W_LITROS },
-                { label: 'mL cloro', width: W_ML },
-                { label: 'Responsable', width: W_RESP },
-                { label: 'Observaciones', width: W_OBS },
-              ]}
-            >
-              {preparaciones.length === 0 ? (
-                <PdfTableRow>
-                  <PdfTableCell width={W_N + W_FECHA + W_AREA + W_LITROS + W_ML + W_RESP + W_OBS} align="center">
-                    Sin registros
-                  </PdfTableCell>
-                </PdfTableRow>
-              ) : (
-                preparaciones.map((p, i) => (
-                  <PdfTableRow key={i} alt={i % 2 === 1}>
-                    <PdfTableCell width={W_N} align="center">{String(i + 1)}</PdfTableCell>
-                    <PdfTableCell width={W_FECHA}>{fmt(p.fecha)}</PdfTableCell>
-                    <PdfTableCell width={W_AREA} align="left">{p.area}</PdfTableCell>
-                    <PdfTableCell width={W_LITROS} align="center">{String(p.litros_agua)} L</PdfTableCell>
-                    <PdfTableCell width={W_ML} align="center">{String(p.ml_cloro)} mL</PdfTableCell>
-                    <PdfTableCell width={W_RESP} align="left">{p.responsable ?? ''}</PdfTableCell>
-                    <PdfTableCell width={W_OBS} align="left">{p.observaciones ?? ''}</PdfTableCell>
-                  </PdfTableRow>
-                ))
-              )}
-            </PdfTable>
-          </View>
-
-          {/* Nota de fórmula */}
-          <View style={{ marginTop: 10, padding: 8, borderWidth: 1, borderColor: '#E0C860', borderRadius: 3, backgroundColor: '#FFFDE7' }}>
-            <Text style={{ fontSize: 7, color: '#6D4C00', lineHeight: 1.4 }}>
-              Nota: Para obtener 200 ppm con cloro comercial (~6%): 3.33 mL de cloro por litro de agua.{'\n'}
-              Formula: mL de cloro = Litros de agua x 10/3
-            </Text>
-          </View>
-
-          <View wrap={false}>
-            <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
-            <PdfSignatures
-              signatures={[
-                { label: 'Elaboro', nombre: '', caption: 'Firma', firma: firmaRealizo ?? null },
-                { label: '', nombre: '', caption: 'Verifico — Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
-              ]}
-            />
-          </View>
-
-        </View>
-      </PdfPageFrame>
-    </Page>
+      <View wrap={false}>
+        <Seccion titulo="3. FIRMAS Y RESPONSABLES">
+          <PdfFirmas
+            signatures={[
+              { label: 'Elaboro', nombre: '', caption: 'Firma', firma: firmaRealizo ?? null },
+              { label: '', nombre: '', caption: 'Verifico — Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
+            ]}
+          />
+        </Seccion>
+      </View>
+    </PaginaEstandar>
   )
 }
 

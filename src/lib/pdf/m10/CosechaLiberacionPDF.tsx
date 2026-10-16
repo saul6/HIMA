@@ -3,15 +3,12 @@
 // CosechaLiberacionPDF:    documento individual.
 // CosechaLiberacionConsolidadoPDF: documento multi-página.
 
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { PdfPageFrame, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
+import { Document, View } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -50,24 +47,21 @@ export interface CosechaLiberacionConsolidadoPDFProps {
   hasta: string
 }
 
-// col widths escalados de 781 → 764pt (content width con PdfPageFrame + padding 14)
-// fecha(44) + sector(59) + bandejas(44) + loteLib(44) + comprobante(73) +
-// trazabilidad(78) + marcaEmbalaje(64) + destino(68) + frutaKg(47) +
-// encargado(81) + verif(44) + observaciones(118) = 764
-const W = {
-  fecha:         44,
-  sector:        50,
-  bandejas:      36,
-  loteLib:       36,
-  comprobante:   60,
-  trazabilidad:  66,
-  marcaEmbalaje: 54,
-  destino:       58,
-  frutaKg:       40,
-  encargado:     70,
-  verif:         36,
-  observaciones: 214,
-} as const
+// Anchos relativos de columna (la tabla se escala al ancho útil de la hoja)
+const COLS: ColumnaDato[] = [
+  { texto: 'Fecha', ancho: 44, align: 'center' },
+  { texto: 'Sector', ancho: 50 },
+  { texto: 'Cant.\nBandejas', ancho: 36, align: 'center' },
+  { texto: 'Lote\nLib. S/N', ancho: 36, align: 'center' },
+  { texto: 'No. Comprobante\no Vale Interno', ancho: 60 },
+  { texto: 'Codigo de\nTrazabilidad', ancho: 66 },
+  { texto: 'Marca y\nEmbalaje', ancho: 54 },
+  { texto: 'Destino\nFinal', ancho: 58 },
+  { texto: 'Fruta\nProc. Kg', ancho: 40, align: 'center' },
+  { texto: 'Encargado de la\nLiberacion', ancho: 70 },
+  { texto: 'Verif.\nSemanal', ancho: 36, align: 'center' },
+  { texto: 'Observaciones\n(Hora inicio y final)', ancho: 214 },
+]
 
 function formatFechaPDF(iso: string): string {
   try {
@@ -86,25 +80,8 @@ function formatObservaciones(inicio: string | null, fin: string | null, obs: str
   return partes.join('\n') || '—'
 }
 
-// Celda con fondo de color para Lote Liberado y Verificación Semanal
-function CeldaSiNo({ width, valor }: { width: number; valor: boolean }) {
-  const bg    = valor ? '#E3F2FD' : '#FAECE7'
-  const color = valor ? '#0D5A8F' : '#993C1D'
-  return (
-    <View style={{
-      width,
-      borderRightWidth: 1, borderRightColor: PC.border,
-      borderBottomWidth: 1, borderBottomColor: PC.border,
-      paddingVertical: 4, paddingHorizontal: 3,
-      alignItems: 'center', justifyContent: 'center',
-      backgroundColor: bg,
-    }}>
-      <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color, textAlign: 'center' }}>
-        {siNo(valor)}
-      </Text>
-    </View>
-  )
-}
+// Si en navy, No en rojo suave (el texto no cambia)
+const siNoCelda = (v: boolean) => ({ texto: siNo(v), color: v ? PC.m13Navy : PC.negativo, negrita: true })
 
 // ── CosechaLiberacionPagina ───────────────────────────────────────────────────
 
@@ -117,146 +94,55 @@ export function CosechaLiberacionPagina({
   const codigoFmt = `${codigoClave}-F-SC-SIG`
   const folioDisplay = folio ?? fecha
 
-  const hdrCell = {
-    color: PC.white,
-    fontFamily: 'Helvetica-Bold' as const,
-    fontSize: 6,
-    paddingVertical: 4,
-    paddingHorizontal: 3,
-    borderRightWidth: 1,
-    borderRightColor: '#5599CC',
-    borderBottomWidth: 1,
-    borderBottomColor: '#5599CC',
-    textAlign: 'center' as const,
-  }
-  const cell = {
-    fontSize: 7,
-    paddingVertical: 4,
-    paddingHorizontal: 3,
-    borderRightWidth: 1,
-    borderRightColor: PC.border,
-    borderBottomWidth: 1,
-    borderBottomColor: PC.border,
-    color: PC.fieldValue,
-  }
-
   return (
-    <Page
-      size="A4"
-      orientation="landscape"
-      style={{ fontFamily: 'Helvetica', fontSize: 9, padding: 24, paddingBottom: 50, backgroundColor: PC.white }}
+    <PaginaEstandar
+      titulo="REGISTRO DE COSECHA Y LIBERACIÓN"
+      subtitulo={`Formato operativo | ${rancho}`}
+      codigoFmt={codigoFmt}
+      folio={folioDisplay}
+      emision={emision}
+      tituloDatos="1. DATOS DEL SITIO Y JORNADA"
+      camposDatos={[
+        { icono: 'ubicacion', etiqueta: terminoSitio, valor: rancho },
+        { icono: 'codigo', etiqueta: 'Código', valor: ranchoCodigo || '—' },
+        { icono: 'calendario', etiqueta: 'Fecha de registro', valor: formatFechaPDF(fecha) },
+        { etiqueta: 'Total liberaciones', valor: String(liberaciones.length) },
+      ]}
     >
-      <PdfFooter moduloCodigo="M10" />
-
-      <PdfPageFrame>
-        <PdfHeader
-          titulo="REGISTRO DE COSECHA Y LIBERACIÓN"
-          subtitulo={`Formato operativo | ${rancho}`}
-          codigoFormato={codigoFmt}
-          folio={folioDisplay}
-          fecha={emision}
+      <Seccion titulo="2. REGISTRO DE LIBERACIONES">
+        <TablaDatos
+          columnas={COLS}
+          fuente={7}
+          fuenteEnc={6}
+          vacio="Sin liberaciones registradas"
+          filas={liberaciones.map((lib) => [
+            fecha,
+            lib.sector ?? '—',
+            lib.cantidad_bandejas != null ? String(lib.cantidad_bandejas) : '—',
+            siNoCelda(lib.lote_liberado),
+            lib.numero_comprobante ?? '—',
+            lib.codigo_trazabilidad ?? '—',
+            lib.marca_embalaje ?? '—',
+            lib.destino_final ?? '—',
+            lib.fruta_proceso_kg != null ? lib.fruta_proceso_kg.toString() : '—',
+            lib.encargado_nombre ?? '—',
+            siNoCelda(lib.verificacion_semanal),
+            formatObservaciones(lib.hora_inicio_cosecha, lib.hora_fin_cosecha, lib.observaciones),
+          ])}
         />
+      </Seccion>
 
-        <View style={{ padding: 14 }}>
-
-          <PdfSectionBanner>1. Datos del sitio y jornada</PdfSectionBanner>
-          <PdfFieldGrid>
-            <PdfFieldRow>
-              <PdfField label={terminoSitio} value={rancho} />
-              <PdfField label="Código" value={ranchoCodigo || '—'} />
-              <PdfField label="Fecha de registro" value={formatFechaPDF(fecha)} />
-              <PdfField label="Total liberaciones" value={String(liberaciones.length)} />
-            </PdfFieldRow>
-          </PdfFieldGrid>
-
-          <PdfSectionBanner>2. Registro de liberaciones</PdfSectionBanner>
-
-          {/* Tabla de liberaciones */}
-          <View style={{
-            borderLeftWidth: 1, borderLeftColor: PC.border,
-            borderTopWidth: 1, borderTopColor: PC.border,
-            marginTop: 6,
-          }}>
-            {/* Encabezado */}
-            <View style={{ flexDirection: 'row', backgroundColor: PC.section }}>
-              <Text style={[hdrCell, { width: W.fecha }]}>Fecha</Text>
-              <Text style={[hdrCell, { width: W.sector }]}>Sector</Text>
-              <Text style={[hdrCell, { width: W.bandejas }]}>Cant.{'\n'}Bandejas</Text>
-              <Text style={[hdrCell, { width: W.loteLib }]}>Lote{'\n'}Lib. S/N</Text>
-              <Text style={[hdrCell, { width: W.comprobante }]}>No. Comprobante{'\n'}o Vale Interno</Text>
-              <Text style={[hdrCell, { width: W.trazabilidad }]}>Codigo de{'\n'}Trazabilidad</Text>
-              <Text style={[hdrCell, { width: W.marcaEmbalaje }]}>Marca y{'\n'}Embalaje</Text>
-              <Text style={[hdrCell, { width: W.destino }]}>Destino{'\n'}Final</Text>
-              <Text style={[hdrCell, { width: W.frutaKg }]}>Fruta{'\n'}Proc. Kg</Text>
-              <Text style={[hdrCell, { width: W.encargado }]}>Encargado de la{'\n'}Liberacion</Text>
-              <Text style={[hdrCell, { width: W.verif }]}>Verif.{'\n'}Semanal</Text>
-              <Text style={[hdrCell, { width: W.observaciones }]}>Observaciones{'\n'}(Hora inicio y final)</Text>
-            </View>
-
-            {/* Filas */}
-            {liberaciones.length === 0 ? (
-              <View style={{ flexDirection: 'row', paddingVertical: 8, paddingHorizontal: 4 }}>
-                <Text style={{ fontSize: 7, color: PC.textSub }}>Sin liberaciones registradas</Text>
-              </View>
-            ) : (
-              liberaciones.map((lib, i) => (
-                <View key={i} wrap={false} style={{ flexDirection: 'row', backgroundColor: i % 2 !== 0 ? '#F5F9FE' : PC.white }}>
-                  <Text style={[cell, { width: W.fecha, textAlign: 'center' }]}>{fecha}</Text>
-                  <Text style={[cell, { width: W.sector }]} hyphenationCallback={partirPalabraLarga}>{lib.sector ?? '—'}</Text>
-                  <Text style={[cell, { width: W.bandejas, textAlign: 'center' }]}>
-                    {lib.cantidad_bandejas ?? '—'}
-                  </Text>
-                  <CeldaSiNo width={W.loteLib} valor={lib.lote_liberado} />
-                  <Text style={[cell, { width: W.comprobante, fontSize: 6.5 }]}>
-                    {lib.numero_comprobante ?? '—'}
-                  </Text>
-                  <Text style={[cell, { width: W.trazabilidad, fontSize: 6.5 }]}>
-                    {lib.codigo_trazabilidad ?? '—'}
-                  </Text>
-                  <Text style={[cell, { width: W.marcaEmbalaje, fontSize: 6.5 }]}>
-                    {lib.marca_embalaje ?? '—'}
-                  </Text>
-                  <Text style={[cell, { width: W.destino, fontSize: 6.5 }]}>
-                    {lib.destino_final ?? '—'}
-                  </Text>
-                  <Text style={[cell, { width: W.frutaKg, textAlign: 'center' }]}>
-                    {lib.fruta_proceso_kg != null ? lib.fruta_proceso_kg.toString() : '—'}
-                  </Text>
-                  <Text style={[cell, { width: W.encargado, fontSize: 6.5 }]} hyphenationCallback={partirPalabraLarga}>
-                    {lib.encargado_nombre ?? '—'}
-                  </Text>
-                  <CeldaSiNo width={W.verif} valor={lib.verificacion_semanal} />
-                  <Text style={[cell, { width: W.observaciones, fontSize: 6.5 }]} hyphenationCallback={partirPalabraLarga}>
-                    {formatObservaciones(lib.hora_inicio_cosecha, lib.hora_fin_cosecha, lib.observaciones)}
-                  </Text>
-                </View>
-              ))
-            )}
-          </View>
-
-          <View wrap={false}>
-            <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
-            <PdfSignatures
-              signatures={[
-                {
-                  label: 'Responsable que realizó el registro',
-                  nombre: '',
-                  caption: 'Realizó — Firma',
-                  firma: firmaRealizo ?? null,
-                },
-                {
-                  label: '',
-                  nombre: '',
-                  caption: 'Responsable de Inocuidad — Verificó',
-                  firma: firmaVerifico ?? null,
-                },
-              ]}
-            />
-          </View>
-
-        </View>
-      </PdfPageFrame>
-    </Page>
+      <View wrap={false}>
+        <Seccion titulo="3. FIRMAS Y RESPONSABLES">
+          <PdfFirmas
+            signatures={[
+              { label: 'Responsable que realizó el registro', nombre: '', caption: 'Realizó — Firma', firma: firmaRealizo ?? null },
+              { label: '', nombre: '', caption: 'Responsable de Inocuidad — Verificó', firma: firmaVerifico ?? null },
+            ]}
+          />
+        </Seccion>
+      </View>
+    </PaginaEstandar>
   )
 }
 

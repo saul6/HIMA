@@ -3,7 +3,7 @@
 // página, si hay que reducir las fotos o si hay que partirla entre fotos.
 // Función pura, sin react-pdf.
 
-import { dimensionesDeDataUri } from './dimensionesImagen'
+import { dimensionesDeDataUri } from '@/lib/pdf/disenoNuevo/dimensionesImagen'
 
 export const COL_EVIDENCIA = 206          // 40 % de los 515 pt útiles (A4 con 40 pt de margen)
 export const PAD_CELDA = 8

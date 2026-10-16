@@ -30,25 +30,49 @@ interface Props {
   anchoTotal?: number
   /** Texto de una sola fila cuando no hay filas. */
   vacio?: string
+  /** Tamaño de letra de las celdas y del encabezado (default 8 / 7). */
+  fuente?: number
+  fuenteEnc?: number
+  /** Para columnas donde "X" es una marca y no un valor negativo. */
+  sinNegativos?: boolean
+  /** Fila de grupos sobre el encabezado (mismas unidades relativas que `ancho`; texto '' = hueco). */
+  encabezadoSuperior?: { texto: string; ancho: number }[]
 }
 
 const PAD = 4
 
-export function TablaDatos({ columnas, filas, anchoTotal = ANCHO_UTIL.landscape, vacio }: Props) {
+export function TablaDatos({
+  columnas, filas, anchoTotal = ANCHO_UTIL.landscape, vacio,
+  fuente = 8, fuenteEnc = 7, sinNegativos, encabezadoSuperior,
+}: Props) {
   const suma = columnas.reduce((a, c) => a + c.ancho, 0) || 1
   const w = columnas.map((c) => (c.ancho * anchoTotal) / suma)
 
   return (
     <View style={{ marginBottom: 10 }}>
-      <View
-        fixed
-        style={{
-          flexDirection: 'row',
-          backgroundColor: PC.m13Fondo,
-          borderBottomWidth: 0.75,
-          borderBottomColor: PC.m13Navy,
-        }}
-      >
+      <View fixed style={{ backgroundColor: PC.m13Fondo, borderBottomWidth: 0.75, borderBottomColor: PC.m13Navy }}>
+      {encabezadoSuperior && (
+        <View style={{ flexDirection: 'row' }}>
+          {encabezadoSuperior.map((g, i) => (
+            <Text
+              key={i}
+              style={{
+                width: (g.ancho * anchoTotal) / suma,
+                paddingTop: 4,
+                paddingHorizontal: PAD,
+                fontFamily: 'Helvetica-Bold',
+                fontSize: fuenteEnc,
+                color: PC.m13Navy,
+                textAlign: 'center',
+              }}
+              hyphenationCallback={partirPalabraLarga}
+            >
+              {g.texto}
+            </Text>
+          ))}
+        </View>
+      )}
+      <View style={{ flexDirection: 'row' }}>
         {columnas.map((c, i) => (
           <Text
             key={i}
@@ -57,14 +81,16 @@ export function TablaDatos({ columnas, filas, anchoTotal = ANCHO_UTIL.landscape,
               paddingVertical: 5,
               paddingHorizontal: PAD,
               fontFamily: 'Helvetica-Bold',
-              fontSize: 7,
+              fontSize: fuenteEnc,
               color: PC.m13Navy,
               textAlign: c.align ?? 'left',
             }}
+            hyphenationCallback={partirPalabraLarga}
           >
             {c.texto}
           </Text>
         ))}
+      </View>
       </View>
 
       {filas.length === 0 && vacio ? (
@@ -85,10 +111,10 @@ export function TablaDatos({ columnas, filas, anchoTotal = ANCHO_UTIL.landscape,
                     width: w[i],
                     paddingVertical: 4,
                     paddingHorizontal: PAD,
-                    fontSize: 8,
+                    fontSize: fuente,
                     color: PC.fieldValue,
                     textAlign: columnas[i].align ?? 'left',
-                    ...estiloNegativo(str),
+                    ...(sinNegativos ? {} : estiloNegativo(str)),
                     ...(obj && celda.color ? { color: celda.color } : {}),
                     ...(obj && celda.negrita ? { fontFamily: 'Helvetica-Bold' } : {}),
                   }}

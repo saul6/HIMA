@@ -56,4 +56,4 @@ export async function fotosADataUris(paths: string[]): Promise<Record<string, st
   return salida
 }
 
-export { dimensionesDeDataUri } from './dimensionesImagen'
+export { dimensionesDeDataUri } from '@/lib/pdf/disenoNuevo/dimensionesImagen'

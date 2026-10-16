@@ -3,16 +3,14 @@
 // Formato F-FRUS-CAL-19 Rev 01. Helvetica. Sin Unicode.
 // Una firma en blanco. PdfLegend al pie.
 
-import { Document, Page, View, Text } from '@react-pdf/renderer'
-import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfHeader } from '@/lib/pdf/components/PdfHeader'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
-import { PdfLegend } from '@/lib/pdf/components/PdfLegend'
+import { Document } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
+import { TablaDatos, type ColumnaDato, type CeldaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { Leyenda } from '@/lib/pdf/disenoNuevo/Leyenda'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -65,12 +63,6 @@ export interface MonitoreoEstacionesConsolidadoPDFProps {
   hasta: string
 }
 
-// ── Colores locales ───────────────────────────────────────────────────────────
-
-const HALLAZGO_BG   = '#FAECE7'
-const HALLAZGO_TEXT = '#993C1D'
-const ROW_ALT       = '#F5F9FE'
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatFechaPDF(iso: string): string {
@@ -85,131 +77,27 @@ export function labelDesde(codigo: string, catalogo: CatalogoCodigo[]): string {
   return catalogo.find((c) => c.codigo === codigo)?.label ?? codigo
 }
 
-// ── Estilos de tabla compartidos ──────────────────────────────────────────────
+// ── Columnas por tipo de trampa ───────────────────────────────────────────────
 
-const thCell = {
-  color: PC.white,
-  fontFamily: 'Helvetica-Bold' as const,
-  fontSize: 7,
-  paddingTop: 4,
-  paddingBottom: 4,
-  paddingLeft: 5,
-  paddingRight: 5,
-  borderRightWidth: 1,
-  borderRightColor: '#5599CC',
-  borderBottomWidth: 1,
-  borderBottomColor: '#5599CC',
-  textAlign: 'center' as const,
-}
+const COLS_GENERAL: ColumnaDato[] = [
+  { texto: 'No.', ancho: 40 },
+  { texto: 'Tipo de consumo', ancho: 120 },
+  { texto: 'Estado de la trampa', ancho: 120 },
+  { texto: 'Condiciones', ancho: 60 },
+  { texto: 'Senalizacion', ancho: 65 },
+  { texto: 'Hallazgo', ancho: 50, align: 'center' },
+]
 
-const tdCell = {
-  borderRightWidth: 1,
-  borderRightColor: PC.border,
-  paddingTop: 3,
-  paddingBottom: 3,
-  paddingLeft: 5,
-  paddingRight: 5,
-  fontSize: 7,
-  color: PC.fieldValue,
-}
+const COLS_LUZ: ColumnaDato[] = [
+  { texto: 'No.', ancho: 40 },
+  { texto: 'Estado del equipo', ancho: 120 },
+  { texto: 'Estado de la lampara', ancho: 120 },
+  { texto: 'Plaga detectada', ancho: 240 },
+  { texto: 'Hallazgo', ancho: 50, align: 'center' },
+]
 
-const tableWrap = {
-  borderLeftWidth: 1,
-  borderLeftColor: PC.border,
-  borderTopWidth: 1,
-  borderTopColor: PC.border,
-}
-
-const tableRow = {
-  flexDirection: 'row' as const,
-  borderBottomWidth: 1,
-  borderBottomColor: PC.border,
-}
-
-// ── Encabezados de columnas por tipo de trampa ────────────────────────────────
-
-function EncabezadoCeboInteriorMecanica() {
-  return (
-    <View style={{ flexDirection: 'row', backgroundColor: PC.section }}>
-      <Text style={[thCell, { width: 40 }]}>No.</Text>
-      <Text style={[thCell, { flex: 1 }]}>Tipo de consumo</Text>
-      <Text style={[thCell, { flex: 1 }]}>Estado de la trampa</Text>
-      <Text style={[thCell, { width: 60 }]}>Condiciones</Text>
-      <Text style={[thCell, { width: 65 }]}>Senalizacion</Text>
-      <Text style={[thCell, { width: 50, borderRightWidth: 0 }]}>Hallazgo</Text>
-    </View>
-  )
-}
-
-function EncabezadoLuz() {
-  return (
-    <View style={{ flexDirection: 'row', backgroundColor: PC.section }}>
-      <Text style={[thCell, { width: 40 }]}>No.</Text>
-      <Text style={[thCell, { flex: 1 }]}>Estado del equipo</Text>
-      <Text style={[thCell, { flex: 1 }]}>Estado de la lampara</Text>
-      <Text style={[thCell, { flex: 2 }]}>Plaga detectada</Text>
-      <Text style={[thCell, { width: 50, borderRightWidth: 0 }]}>Hallazgo</Text>
-    </View>
-  )
-}
-
-// ── Filas de datos ────────────────────────────────────────────────────────────
-
-function FilaCeboInteriorMecanica({
-  est, index, catalogoEstado, catalogoCondiciones,
-}: { est: EstacionResultadoPDF; index: number; catalogoEstado: CatalogoCodigo[]; catalogoCondiciones: CatalogoCodigo[] }) {
-  const bg = index % 2 === 1 ? ROW_ALT : PC.white
-  return (
-    <View style={[tableRow, { backgroundColor: bg }]}>
-      <Text style={[tdCell, { width: 40 }]}>{est.numero}</Text>
-      <Text style={[tdCell, { flex: 1 }]}>{est.tipo_consumo ?? ''}</Text>
-      <Text style={[tdCell, { flex: 1 }]}>
-        {est.estado_trampa ? labelDesde(est.estado_trampa, catalogoEstado) : ''}
-      </Text>
-      <Text style={[tdCell, { width: 60 }]} hyphenationCallback={partirPalabraLarga}>
-        {est.condiciones ? labelDesde(est.condiciones, catalogoCondiciones) : ''}
-      </Text>
-      <Text style={[tdCell, { width: 65 }]}>{est.senalizacion ?? ''}</Text>
-      <Text style={[tdCell, { width: 50, borderRightWidth: 0, textAlign: 'center',
-        ...(est.tiene_hallazgo ? { backgroundColor: HALLAZGO_BG, color: HALLAZGO_TEXT, fontFamily: 'Helvetica-Bold' } : {}) }]}>
-        {est.tiene_hallazgo ? 'Si' : ''}
-      </Text>
-    </View>
-  )
-}
-
-function FilaLuz({
-  est, index, catalogoEstado, catalogoPlagas,
-}: { est: EstacionResultadoPDF; index: number; catalogoEstado: CatalogoCodigo[]; catalogoPlagas: CatalogoCodigo[] }) {
-  const bg = index % 2 === 1 ? ROW_ALT : PC.white
-  const plagasLabel = (est.plaga_detectada ?? []).map((c) => labelDesde(c, catalogoPlagas)).join(', ')
-  return (
-    <View style={[tableRow, { backgroundColor: bg }]}>
-      <Text style={[tdCell, { width: 40 }]}>{est.numero}</Text>
-      <Text style={[tdCell, { flex: 1 }]}>
-        {est.estado_equipo ? labelDesde(est.estado_equipo, catalogoEstado) : ''}
-      </Text>
-      <Text style={[tdCell, { flex: 1 }]}>
-        {est.estado_lampara ? labelDesde(est.estado_lampara, catalogoEstado) : ''}
-      </Text>
-      <Text style={[tdCell, { flex: 2 }]} hyphenationCallback={partirPalabraLarga}>{plagasLabel}</Text>
-      <Text style={[tdCell, { width: 50, borderRightWidth: 0, textAlign: 'center',
-        ...(est.tiene_hallazgo ? { backgroundColor: HALLAZGO_BG, color: HALLAZGO_TEXT, fontFamily: 'Helvetica-Bold' } : {}) }]}>
-        {est.tiene_hallazgo ? 'Si' : ''}
-      </Text>
-    </View>
-  )
-}
-
-function FilaVacia() {
-  return (
-    <View style={[tableRow]}>
-      <Text style={[tdCell, { flex: 1, borderRightWidth: 0, color: PC.textSub }]}>
-        Sin estaciones registradas
-      </Text>
-    </View>
-  )
-}
+// Hallazgo: Si en rojo suave (el texto no cambia)
+const hallazgo = (v: boolean): CeldaDato => (v ? { texto: 'Si', color: PC.negativo, negrita: true } : '')
 
 // ── MonitoreoEstacionesPagina ─────────────────────────────────────────────────
 
@@ -238,84 +126,72 @@ export function MonitoreoEstacionesPagina({
   ]
 
   return (
-    <Page
-      size="A4"
-      orientation="landscape"
-      style={{ fontFamily: 'Helvetica', fontSize: 8, padding: 36, paddingBottom: 55, backgroundColor: PC.white }}
+    <PaginaEstandar
+      titulo="REVISIÓN DE ESTACIONES DE MONITOREO DE PLAGAS"
+      subtitulo={`Formato operativo | ${instalacion}`}
+      codigoFmt={codigoFmt}
+      folio={folio}
+      emision={emision}
+      tituloDatos="1. DATOS DEL SITIO Y FECHA"
+      camposDatos={[
+        { icono: 'ubicacion', etiqueta: terminoSitio, valor: instalacion },
+        { icono: 'codigo', etiqueta: 'Código', valor: instalacionCodigo || '—' },
+        { icono: 'calendario', etiqueta: 'Fecha de revisión', valor: formatFechaPDF(fecha) },
+        { icono: 'usuario', etiqueta: 'Inspector', valor: inspector ?? '—' },
+      ]}
     >
-      <PdfFooter moduloCodigo="M21" />
-
-      <TopBar />
-
-      <PdfHeader
-        titulo="REVISIÓN DE ESTACIONES DE MONITOREO DE PLAGAS"
-        subtitulo={`Formato operativo | ${instalacion}`}
-        codigoFormato={codigoFmt}
-        folio={folio}
-        fecha={emision}
-      />
-
-      <PdfSectionBanner>1. Datos del sitio y fecha</PdfSectionBanner>
-      <PdfFieldGrid>
-        <PdfFieldRow>
-          <PdfField label={terminoSitio} value={instalacion} />
-          <PdfField label="Código" value={instalacionCodigo || '—'} />
-          <PdfField label="Fecha de revisión" value={formatFechaPDF(fecha)} />
-          <PdfField label="Inspector" value={inspector ?? '—'} />
-        </PdfFieldRow>
-      </PdfFieldGrid>
-
       {/* Tablas por tipo de trampa */}
       {grupos.map((grupo) => (
-        <View key={grupo.tipo_trampa}>
-          <PdfSectionBanner>{grupo.label.toUpperCase()}</PdfSectionBanner>
-          <View style={tableWrap}>
-            {grupo.tipo_trampa === 'luz' ? (
-              <>
-                <EncabezadoLuz />
-                {grupo.estaciones.length === 0 ? <FilaVacia /> : grupo.estaciones.map((est, i) => (
-                  <FilaLuz key={est.numero} est={est} index={i} catalogoEstado={catalogoEstado} catalogoPlagas={catalogoPlagas} />
-                ))}
-              </>
-            ) : (
-              <>
-                <EncabezadoCeboInteriorMecanica />
-                {grupo.estaciones.length === 0 ? <FilaVacia /> : grupo.estaciones.map((est, i) => (
-                  <FilaCeboInteriorMecanica key={est.numero} est={est} index={i} catalogoEstado={catalogoEstado} catalogoCondiciones={catalogoCondiciones} />
-                ))}
-              </>
-            )}
-          </View>
-        </View>
+        <Seccion key={grupo.tipo_trampa} titulo={grupo.label.toUpperCase()}>
+          {grupo.tipo_trampa === 'luz' ? (
+            <TablaDatos
+              columnas={COLS_LUZ}
+              vacio="Sin estaciones registradas"
+              fuente={7}
+              filas={grupo.estaciones.map((est) => [
+                est.numero,
+                est.estado_equipo ? labelDesde(est.estado_equipo, catalogoEstado) : '',
+                est.estado_lampara ? labelDesde(est.estado_lampara, catalogoEstado) : '',
+                (est.plaga_detectada ?? []).map((c) => labelDesde(c, catalogoPlagas)).join(', '),
+                hallazgo(est.tiene_hallazgo),
+              ])}
+            />
+          ) : (
+            <TablaDatos
+              columnas={COLS_GENERAL}
+              vacio="Sin estaciones registradas"
+              fuente={7}
+              filas={grupo.estaciones.map((est) => [
+                est.numero,
+                est.tipo_consumo ?? '',
+                est.estado_trampa ? labelDesde(est.estado_trampa, catalogoEstado) : '',
+                est.condiciones ? labelDesde(est.condiciones, catalogoCondiciones) : '',
+                est.senalizacion ?? '',
+                hallazgo(est.tiene_hallazgo),
+              ])}
+            />
+          )}
+        </Seccion>
       ))}
 
       {/* Observaciones */}
       {observaciones && observaciones.trim() !== '' && (
-        <>
-          <PdfSectionBanner>Observaciones</PdfSectionBanner>
-          <View style={{
-            borderLeftWidth: 1, borderLeftColor: PC.border,
-            borderRightWidth: 1, borderRightColor: PC.border,
-            borderBottomWidth: 1, borderBottomColor: PC.border,
-            paddingTop: 5, paddingBottom: 5, paddingLeft: 6, paddingRight: 6,
-            minHeight: 24,
-          }}>
-            <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }} hyphenationCallback={partirPalabraLarga}>{observaciones}</Text>
-          </View>
-        </>
+        <Seccion titulo="OBSERVACIONES">
+          <FranjaDatos campos={[{ etiqueta: '', valor: observaciones }]} />
+        </Seccion>
       )}
 
       {/* Leyenda */}
-      <PdfLegend entradas={leyendaEntradas} />
+      <Leyenda entradas={leyendaEntradas} />
 
       {/* Firma */}
-      <PdfSignatures
+      <PdfFirmas
         signatures={[
           { label: '', nombre: '', caption: `Firma del Responsable del ${terminoSitio}`, firma: firmaRealizo ?? null },
           { label: '', nombre: '', caption: 'Verificó — Firma', firma: firmaVerifico ?? null },
         ]}
       />
-    </Page>
+    </PaginaEstandar>
   )
 }
 
