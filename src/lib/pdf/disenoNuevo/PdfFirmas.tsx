@@ -1,4 +1,4 @@
-// Firmas del M13 con el estilo minimalista del rediseño. Misma lógica y mismos
+// Firmas del diseño nuevo (antes PdfSignaturesM13), estilo minimalista. Misma lógica y mismos
 // datos que PdfSignatures (compartido, no se toca): imagen si la firma es vigente,
 // aviso si está desactualizada y línea en blanco si no hay firma.
 
@@ -24,7 +24,7 @@ const AVISO_DESACTUALIZADA = 'Firma digital desactualizada: el registro se modif
 
 const linea = { borderTopWidth: 0.75, borderTopColor: PC.m13Navy, marginTop: 14, paddingTop: 4 } as const
 
-export function PdfSignaturesM13({ signatures: signaturesProp, enterado: enteradoProp }: Props) {
+export function PdfFirmas({ signatures: signaturesProp, enterado: enteradoProp }: Props) {
   const enterado = enteradoProp ?? signaturesProp.map((s) => s.firma?.enterado).find(Boolean) ?? null
   const enteradoDigital = enterado && enterado.estado === 'vigente' && enterado.png
 

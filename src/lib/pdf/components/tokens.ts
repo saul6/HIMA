@@ -14,7 +14,8 @@ export const PC = {  // PDF Colors
   white:      '#FFFFFF',
   footerGray: '#9AA4AE',
 
-  // ── Rediseño M13 (Reporte de Incidencias) — solo lo usa src/lib/pdf/m13 ──
+  // ── Diseño nuevo (origen: M13) — lo usan src/lib/pdf/disenoNuevo y los PDF que lo adoptan ──
+  negativo:      '#993C1D',  // --agro-danger-text: valores negativos, legible en impresión
   m13Navy:       '#173251',  // --auth-navy-dark (theme.css)
   m13Menta:      '#2AAD95',  // --secondary (theme.css)
   m13MentaSuave: '#E4F5F1',  // menta al ~12 % sobre blanco
