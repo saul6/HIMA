@@ -86,9 +86,9 @@ export function PaginaMatrizMensual({
       <FranjaDatos
         porRenglon={porRenglon}
         campos={[
-          { icono: 'codigo', etiqueta: 'Código', valor: codigoFmt },
+          { icono: 'codigo', etiqueta: 'Formato', valor: codigoFmt },
           { icono: 'folio', etiqueta: 'Folio', valor: folio },
-          { icono: 'calendario', etiqueta: 'Fecha', valor: emision },
+          { icono: 'calendario', etiqueta: 'Emisión', valor: emision },
           ...campos,
         ]}
       />

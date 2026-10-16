@@ -2,9 +2,12 @@
 // Plan de Acciones Correctivas — A4 landscape, multi-página.
 // Encabezado fijo (TopBar + logo + meta), PdfFooter. Diagrama Ishikawa SVG.
 
-import { Document, Page, View, Text, Image, Svg, Line, Rect, Path, G } from '@react-pdf/renderer'
-import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
+import { Document, View, Text, Svg, Line, Rect, Path, G } from '@react-pdf/renderer'
+import { PaginaEstandar } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
+import { TituloSeccion } from '@/lib/pdf/disenoNuevo/TituloSeccion'
+import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { Fotos } from '@/lib/pdf/disenoNuevo/Fotos'
 import { PC } from '@/lib/pdf/components/tokens'
 import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
@@ -37,16 +40,6 @@ export interface AccionesCorrectivasPDFProps {
   terminoSitio?: string
 }
 
-// ── Colores semánticos locales ─────────────────────────────────────────────────
-
-const INFO_FILL   = '#E3F2FD'
-const INFO_TEXT   = '#0D5A8F'
-const WARN_FILL   = '#FAEEDA'
-const WARN_TEXT   = '#854F0B'
-const WARN_BORDER = '#F5A623'
-const ROW_ALT     = '#F5F9FE'
-const OK_FILL     = '#2E7D32'
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function fmt(s: string | null | undefined): string {
@@ -76,30 +69,6 @@ function svgLineas(text: string, maxChars: number, maxLines: number): string[] {
   return lines
 }
 
-// ── Estilos de tabla inline ───────────────────────────────────────────────────
-
-const thCell = {
-  color: PC.white,
-  fontFamily: 'Helvetica-Bold' as const,
-  fontSize: 7,
-  padding: 5,
-  borderRightWidth: 1,
-  borderRightColor: '#5599CC',
-  borderBottomWidth: 1,
-  borderBottomColor: '#5599CC',
-  textAlign: 'center' as const,
-}
-
-const tdCell = {
-  fontSize: 8,
-  padding: 5,
-  borderRightWidth: 1,
-  borderRightColor: PC.border,
-  borderBottomWidth: 1,
-  borderBottomColor: PC.border,
-  color: PC.fieldValue,
-}
-
 // ── Ishikawa constants ────────────────────────────────────────────────────────
 
 const ISH_W  = 710
@@ -121,96 +90,80 @@ const ISH_BELOW = [
 
 // ── Componentes internos ──────────────────────────────────────────────────────
 
-function InfoGrid({ orgNombre, ranchoNombre, fechaTitulo, terminoSitio }: {
-  orgNombre: string; ranchoNombre: string; fechaTitulo: string; terminoSitio: string
-}) {
-  const cellBase = { flex: 1, padding: 6, borderRightWidth: 1, borderRightColor: PC.border, borderBottomWidth: 1, borderBottomColor: PC.border }
-  return (
-    <View style={{ borderLeftWidth: 1, borderLeftColor: PC.border, borderTopWidth: 1, borderTopColor: PC.border, flexDirection: 'row', marginBottom: 10 }}>
-      <View style={cellBase}>
-        <Text style={{ fontSize: 6, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>ORGANIZACION</Text>
-        <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{fmt(orgNombre)}</Text>
-      </View>
-      <View style={cellBase}>
-        <Text style={{ fontSize: 6, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>INSTALACION / {terminoSitio.toUpperCase()}</Text>
-        <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{fmt(ranchoNombre)}</Text>
-      </View>
-      <View style={{ ...cellBase, borderRightWidth: 0 }}>
-        <Text style={{ fontSize: 6, color: PC.textSub, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>FECHA</Text>
-        <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.fieldValue }}>{fechaTitulo}</Text>
-      </View>
-    </View>
-  )
-}
+const COLS: ColumnaDato[] = [
+  { texto: 'Fecha deteccion', ancho: 80 },
+  { texto: 'No conformidad', ancho: 180 },
+  { texto: 'Causa', ancho: 160 },
+  { texto: 'Accion correctiva', ancho: 160 },
+  { texto: 'Accion preventiva', ancho: 160 },
+  { texto: 'Fecha cumplimiento', ancho: 80 },
+  { texto: 'Realizo', ancho: 100 },
+  { texto: 'Verifico', ancho: 100 },
+]
 
 function AccionesTabla({ acciones }: { acciones: AccionPDFFila[] }) {
   return (
-    <View style={{ borderLeftWidth: 1, borderLeftColor: PC.border, borderTopWidth: 1, borderTopColor: PC.border, marginBottom: 14 }}>
-      <View style={{ flexDirection: 'row', backgroundColor: PC.section }}>
-        <Text style={[thCell, { flex: 0.8 }]}>Fecha deteccion</Text>
-        <Text style={[thCell, { flex: 1.8 }]}>No conformidad</Text>
-        <Text style={[thCell, { flex: 1.6 }]}>Causa</Text>
-        <Text style={[thCell, { flex: 1.6 }]}>Accion correctiva</Text>
-        <Text style={[thCell, { flex: 1.6 }]}>Accion preventiva</Text>
-        <Text style={[thCell, { flex: 0.8 }]}>Fecha cumplimiento</Text>
-        <Text style={[thCell, { flex: 1 }]}>Realizo</Text>
-        <Text style={[thCell, { flex: 1, borderRightWidth: 0 }]}>Verifico</Text>
-      </View>
-      {acciones.map((a, i) => (
-        <View key={i} style={{ flexDirection: 'row', backgroundColor: i % 2 === 1 ? ROW_ALT : PC.white }}>
-          <View style={[tdCell, { flex: 0.8 }]}><Text>{fmtFecha(a.fecha_deteccion)}</Text></View>
-          <View style={[tdCell, { flex: 1.8 }]}>
-            <Text style={{ fontSize: 7, color: PC.section, marginBottom: 2 }}>{a.codigo_pregunta}</Text>
-            <Text hyphenationCallback={partirPalabraLarga}>{fmt(a.no_conformidad)}</Text>
-          </View>
-          <View style={[tdCell, { flex: 1.6 }]}><Text hyphenationCallback={partirPalabraLarga}>{fmt(a.causa)}</Text></View>
-          <View style={[tdCell, { flex: 1.6 }]}><Text hyphenationCallback={partirPalabraLarga}>{fmt(a.accion_correctiva)}</Text></View>
-          <View style={[tdCell, { flex: 1.6 }]}><Text hyphenationCallback={partirPalabraLarga}>{fmt(a.accion_preventiva)}</Text></View>
-          <View style={[tdCell, { flex: 0.8 }]}><Text>{fmtFecha(a.fecha_cumplimiento)}</Text></View>
-          <View style={[tdCell, { flex: 1 }]}><Text hyphenationCallback={partirPalabraLarga}>{fmt(a.realizo)}</Text></View>
-          <View style={[tdCell, { flex: 1, borderRightWidth: 0 }]}><Text hyphenationCallback={partirPalabraLarga}>{fmt(a.verifico)}</Text></View>
-        </View>
-      ))}
+    <TablaDatos
+      columnas={COLS}
+      filas={acciones.map((a) => [
+        fmtFecha(a.fecha_deteccion),
+        {
+          nodo: (
+            <>
+              <Text style={{ fontSize: 7, color: PC.m13Navy, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>{a.codigo_pregunta}</Text>
+              <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{fmt(a.no_conformidad)}</Text>
+            </>
+          ),
+        },
+        fmt(a.causa),
+        fmt(a.accion_correctiva),
+        fmt(a.accion_preventiva),
+        fmtFecha(a.fecha_cumplimiento),
+        fmt(a.realizo),
+        fmt(a.verifico),
+      ])}
+    />
+  )
+}
+
+// Barra de subtítulo de una ficha: barra menta + bold navy
+function SubtituloFicha({ texto }: { texto: string }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: PC.m13Fondo, paddingVertical: 5, paddingRight: 8 }}>
+      <View style={{ width: 2.5, alignSelf: 'stretch', backgroundColor: PC.m13Menta, marginRight: 6 }} />
+      <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: PC.m13Navy }}>{texto}</Text>
     </View>
   )
 }
 
 function FichaNC({ accion }: { accion: AccionPDFFila }) {
-  const hdrAmbar = { backgroundColor: WARN_FILL, borderBottomWidth: 1, borderBottomColor: WARN_BORDER, paddingHorizontal: 8, paddingVertical: 5 }
-  const hdrBlue  = { backgroundColor: INFO_FILL, borderBottomWidth: 1, borderBottomColor: PC.section, paddingHorizontal: 8, paddingVertical: 5 }
   return (
-    <View style={{ marginBottom: 14, borderWidth: 1, borderColor: PC.border, borderRadius: 3 }}>
-      <View style={hdrAmbar}>
-        <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: WARN_TEXT }}>No conformidad observada.</Text>
+    <View style={{ marginBottom: 14, borderWidth: 0.5, borderColor: PC.border, borderRadius: 6, overflow: 'hidden' }}>
+      <View wrap={false}>
+        <SubtituloFicha texto="No conformidad observada." />
+        <View style={{ padding: 8 }}>
+          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, marginBottom: 3 }} hyphenationCallback={partirPalabraLarga}>{accion.codigo_pregunta}</Text>
+          <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }} hyphenationCallback={partirPalabraLarga}>{fmt(accion.no_conformidad)}</Text>
+        </View>
       </View>
-      <View style={{ padding: 8 }}>
-        <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.section, marginBottom: 3 }} hyphenationCallback={partirPalabraLarga}>{accion.codigo_pregunta}</Text>
-        <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }} hyphenationCallback={partirPalabraLarga}>{fmt(accion.no_conformidad)}</Text>
+      <View wrap={false}>
+        <SubtituloFicha texto="Accion correctiva." />
+        <View style={{ padding: 8 }}>
+          <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }} hyphenationCallback={partirPalabraLarga}>{fmt(accion.accion_correctiva)}</Text>
+        </View>
       </View>
-      <View style={hdrBlue}>
-        <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: INFO_TEXT }}>Accion correctiva.</Text>
-      </View>
-      <View style={{ padding: 8 }}>
-        <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }} hyphenationCallback={partirPalabraLarga}>{fmt(accion.accion_correctiva)}</Text>
-      </View>
-      <View style={hdrBlue}>
-        <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: INFO_TEXT }}>Evidencia.</Text>
-      </View>
+      <SubtituloFicha texto="Evidencia." />
       <View style={{ padding: 8 }}>
         {accion.fotos.length === 0 ? (
           <Text style={{ fontSize: 7.5, color: PC.textSub }}>Sin evidencia fotografica.</Text>
         ) : (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {accion.fotos.map((f, fi) => (
-              <View key={fi} style={{ width: '48%', marginBottom: 8 }}>
-                <Image src={f.dataUri} style={{ width: '100%', height: 130, objectFit: 'cover', borderRadius: 3, borderWidth: 1, borderColor: PC.border }} />
-                <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', marginTop: 3, textAlign: 'center', color: PC.textSub }}>
-                  {f.tipo === 'no_conformidad' ? 'No conformidad' : 'Evidencia de correccion'}
-                </Text>
-                {f.leyenda ? <Text style={{ fontSize: 7, color: PC.fieldValue, marginTop: 2, textAlign: 'center' }} hyphenationCallback={partirPalabraLarga}>{f.leyenda}</Text> : null}
-              </View>
-            ))}
-          </View>
+          <Fotos
+            uris={accion.fotos.map((f) => f.dataUri)}
+            pies={accion.fotos.map((f) => ({
+              titulo: f.tipo === 'no_conformidad' ? 'No conformidad' : 'Evidencia de correccion',
+              leyenda: f.leyenda,
+            }))}
+          />
         )}
       </View>
     </View>
@@ -221,7 +174,7 @@ function IshikawaDiagram({ nc, ishikawa }: { nc: string; ishikawa: Record<string
   const ncLines = svgLineas(nc, 22, 4)
   return (
     <View style={{ marginBottom: 14 }} wrap={false}>
-      <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: PC.fieldValue, textTransform: 'uppercase', marginBottom: 6, borderBottomWidth: 1, borderBottomColor: PC.border, paddingBottom: 3 }}>
+      <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, textTransform: 'uppercase', marginBottom: 6, borderBottomWidth: 1, borderBottomColor: PC.border, paddingBottom: 3 }}>
         Analisis de causa — Diagrama de Ishikawa
       </Text>
       <Svg viewBox={`0 0 ${ISH_W} ${ISH_H}`} style={{ width: ISH_W, height: ISH_H }}>
@@ -230,8 +183,8 @@ function IshikawaDiagram({ nc, ishikawa }: { nc: string; ishikawa: Record<string
         <Path d={`M530 ${ISH_MY - 6} L548 ${ISH_MY} L530 ${ISH_MY + 6} Z`} fill={PC.fieldValue} />
 
         {/* Caja EFECTO */}
-        <Rect x="552" y={ISH_MY - 50} width="150" height="100" fill={INFO_FILL} stroke={PC.section} strokeWidth="1.5" rx="4" />
-        <Text x="627" y={ISH_MY - 32} textAnchor="middle" fontFamily="Helvetica-Bold" fontSize="8" fill={INFO_TEXT}>EFECTO</Text>
+        <Rect x="552" y={ISH_MY - 50} width="150" height="100" fill={PC.m13MentaSuave} stroke={PC.m13Navy} strokeWidth="1.5" rx="4" />
+        <Text x="627" y={ISH_MY - 32} textAnchor="middle" fontFamily="Helvetica-Bold" fontSize="8" fill={PC.m13Navy}>EFECTO</Text>
         {ncLines.map((line, i) => (
           <Text key={i} x="627" y={ISH_MY - 15 + i * 12} textAnchor="middle" fontFamily="Helvetica" fontSize="7" fill={PC.fieldValue}>{line}</Text>
         ))}
@@ -245,9 +198,9 @@ function IshikawaDiagram({ nc, ishikawa }: { nc: string; ishikawa: Record<string
           const contentLines = svgLineas(ishikawa[ISH_ABOVE[i].key] ?? '', 16, 2)
           return (
             <G key={`u${i}`}>
-              <Line x1={bx} y1={ISH_MY} x2={tx} y2={ty + 18} stroke={PC.section} strokeWidth="1.5" />
-              <Rect x={tx - 40} y={ty - 14} width="82" height="16" fill={WARN_FILL} stroke={WARN_BORDER} strokeWidth="0.8" rx="2" />
-              <Text x={tx + 1} y={ty - 4} textAnchor="middle" fontFamily="Helvetica-Bold" fontSize="6" fill={WARN_TEXT}>{ISH_ABOVE[i].label}</Text>
+              <Line x1={bx} y1={ISH_MY} x2={tx} y2={ty + 18} stroke={PC.m13Navy} strokeWidth="1.5" />
+              <Rect x={tx - 40} y={ty - 14} width="82" height="16" fill={PC.m13Fondo} stroke={PC.border} strokeWidth="0.8" rx="2" />
+              <Text x={tx + 1} y={ty - 4} textAnchor="middle" fontFamily="Helvetica-Bold" fontSize="6" fill={PC.m13Navy}>{ISH_ABOVE[i].label}</Text>
               {contentLines.map((line, li) => (
                 <Text key={li} x={tx - 40} y={ty + 6 + li * 9} fontFamily="Helvetica" fontSize="6" fill={PC.fieldValue}>{line}</Text>
               ))}
@@ -262,12 +215,12 @@ function IshikawaDiagram({ nc, ishikawa }: { nc: string; ishikawa: Record<string
           const contentLines = svgLineas(ishikawa[ISH_BELOW[i].key] ?? '', 16, 2)
           return (
             <G key={`l${i}`}>
-              <Line x1={bx} y1={ISH_MY} x2={tx} y2={ty - 18} stroke={PC.section} strokeWidth="1.5" />
+              <Line x1={bx} y1={ISH_MY} x2={tx} y2={ty - 18} stroke={PC.m13Navy} strokeWidth="1.5" />
               {contentLines.map((line, li) => (
                 <Text key={li} x={tx - 40} y={ty - 26 + li * 9} fontFamily="Helvetica" fontSize="6" fill={PC.fieldValue}>{line}</Text>
               ))}
-              <Rect x={tx - 40} y={ty - 2} width="82" height="16" fill={INFO_FILL} stroke={PC.section} strokeWidth="0.8" rx="2" />
-              <Text x={tx + 1} y={ty + 9} textAnchor="middle" fontFamily="Helvetica-Bold" fontSize="6" fill={INFO_TEXT}>{ISH_BELOW[i].label}</Text>
+              <Rect x={tx - 40} y={ty - 2} width="82" height="16" fill={PC.m13MentaSuave} stroke={PC.m13Navy} strokeWidth="0.8" rx="2" />
+              <Text x={tx + 1} y={ty + 9} textAnchor="middle" fontFamily="Helvetica-Bold" fontSize="6" fill={PC.m13Navy}>{ISH_BELOW[i].label}</Text>
             </G>
           )
         })}
@@ -296,59 +249,32 @@ export function AccionesCorrectivasPDF({
       subject="Plan de Acciones Correctivas"
       keywords="MADY, inocuidad, acciones correctivas, no conformidades"
     >
-      <Page
-        size="A4"
-        orientation="landscape"
-        style={{
-          fontFamily: 'Helvetica',
-          fontSize: 8,
-          color: PC.fieldValue,
-          paddingTop: 82,
-          paddingBottom: 55,
-          paddingLeft: 40,
-          paddingRight: 40,
-          backgroundColor: PC.white,
-        }}
+      <PaginaEstandar
+        trio={false}
+        titulo="PLAN DE ACCIONES CORRECTIVAS"
+        subtitulo={`Acciones correctivas  ·  ${terminoSitio}: ${ranchoNombre}`}
+        codigoFmt="M26"
+        folio={emision}
+        emision={emision}
+        detalleCompacto={`${terminoSitio}: ${ranchoNombre}  ·  Emision: ${emision}  ·  Fecha: ${fechaTitulo}`}
+        porRenglon={4}
+        camposDatos={[
+          { icono: 'calendario', etiqueta: 'Emision', valor: emision },
+          { icono: 'usuario', etiqueta: 'Organizacion', valor: fmt(orgNombre) },
+          { icono: 'ubicacion', etiqueta: `Instalacion / ${terminoSitio}`, valor: fmt(ranchoNombre) },
+          { icono: 'calendario', etiqueta: 'Fecha', valor: fechaTitulo },
+        ]}
       >
-        {/* Encabezado fijo */}
-        <View fixed style={{ position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: PC.white }}>
-          <TopBar />
-          <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 6, paddingBottom: 6, paddingLeft: 40, paddingRight: 40 }}>
-            <View style={{ flex: 6 }}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 11, color: PC.titleNavy }}>
-                PLAN DE ACCIONES CORRECTIVAS
-              </Text>
-              <Text style={{ fontSize: 7, color: PC.textSub, marginTop: 2 }}>
-                Acciones correctivas  ·  {terminoSitio}: {ranchoNombre}
-              </Text>
-            </View>
-            <View style={{ flex: 4, alignItems: 'flex-end' }}>
-              <Image src={LOGO_MADY_PDF} style={{ height: 36, width: 101 }} />
-            </View>
-          </View>
-          <View style={{ borderTopWidth: 1, borderTopColor: PC.border, flexDirection: 'row', gap: 20, paddingTop: 3, paddingBottom: 4, paddingLeft: 40, paddingRight: 40 }}>
-            <Text style={{ fontSize: 7, color: PC.textSub }}>Emision: {emision}</Text>
-            <Text style={{ fontSize: 7, color: PC.textSub }}>Fecha: {fechaTitulo}</Text>
-          </View>
-        </View>
-
-        <PdfFooter moduloCodigo="M26" />
-
-        {/* Datos generales */}
-        <InfoGrid orgNombre={orgNombre} ranchoNombre={ranchoNombre} fechaTitulo={fechaTitulo} terminoSitio={terminoSitio} />
-
         {/* Nota */}
-        <View style={{ padding: 8, borderRadius: 3, marginBottom: 14, borderWidth: 1, borderColor: WARN_BORDER, backgroundColor: WARN_FILL }}>
-          <Text style={{ fontSize: 7.5, color: WARN_TEXT, lineHeight: 1.4 }}>
+        <View wrap={false} style={{ padding: 8, borderRadius: 6, marginBottom: 14, backgroundColor: PC.m13Fondo }}>
+          <Text style={{ fontSize: 7.5, color: PC.textSub, lineHeight: 1.4 }}>
             Las no-conformidades deben atenderse en un maximo de 30 dias naturales a partir de la fecha de deteccion.
             Conserve evidencia documental del cierre de cada accion correctiva.
           </Text>
         </View>
 
         {/* Tabla resumen */}
-        <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.section, marginBottom: 6, textTransform: 'uppercase' }}>
-          ACCIONES CORRECTIVAS ({acciones.length})
-        </Text>
+        <TituloSeccion texto={`ACCIONES CORRECTIVAS (${acciones.length})`} />
         {acciones.length === 0 ? (
           <Text style={{ fontSize: 9, color: PC.textSub }}>Sin no-conformidades registradas.</Text>
         ) : (
@@ -370,7 +296,7 @@ export function AccionesCorrectivasPDF({
             </View>
           )
         })}
-      </Page>
+      </PaginaEstandar>
     </Document>
   )
 }

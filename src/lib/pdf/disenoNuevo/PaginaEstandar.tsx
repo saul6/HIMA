@@ -20,8 +20,15 @@ interface Props {
   emision: string
   /** Registro capturado sin conexión y aún sin subir: se agrega la leyenda al pie. */
   pendienteSync?: boolean
-  tituloDatos: string
+  /** Sin título, la franja de datos va sola bajo el encabezado. */
+  tituloDatos?: string
   camposDatos: CampoFranja[]
+  /** false = el formato no tiene folio ni fecha de emisión propios: la franja lleva solo `camposDatos`. */
+  trio?: boolean
+  /** Texto del encabezado compacto (páginas 2+) en lugar de "Folio: …". */
+  detalleCompacto?: string
+  /** Fila de encabezado de columnas que se repite en el encabezado compacto (p. ej. los días de una matriz). */
+  columnasCompactas?: ReactNode
   porRenglon?: number
   children?: ReactNode
 }
@@ -40,7 +47,7 @@ export function Seccion({ titulo, children }: { titulo: string; children?: React
 
 export function PaginaEstandar({
   orientacion = 'landscape', titulo, subtitulo, codigoFmt, folio, emision, pendienteSync,
-  tituloDatos, camposDatos, porRenglon = 4, children,
+  tituloDatos, camposDatos, trio = true, detalleCompacto, columnasCompactas, porRenglon = 4, children,
 }: Props) {
   return (
     <Page size="A4" orientation={orientacion} style={estiloPagina}>
@@ -50,20 +57,24 @@ export function PaginaEstandar({
       <View
         fixed
         style={{}}
-        render={({ subPageNumber }) => (subPageNumber > 1 ? <EncabezadoCompacto titulo={titulo} folio={folio} /> : <View />)}
+        render={({ subPageNumber }) => (subPageNumber > 1 ? <EncabezadoCompacto titulo={titulo} folio={detalleCompacto ? undefined : folio} detalle={detalleCompacto} columnas={columnasCompactas} /> : <View />)}
       />
 
       <Pie codigo={pendienteSync ? `${codigoFmt}  |  Pendiente de sincronizar` : codigoFmt} />
 
       <EncabezadoPrimeraPagina titulo={titulo} subtitulo={subtitulo} />
 
-      <TituloSeccion texto={tituloDatos} />
+      {tituloDatos ? <TituloSeccion texto={tituloDatos} /> : null}
       <FranjaDatos
         porRenglon={porRenglon}
         campos={[
-          { icono: 'codigo', etiqueta: 'Código', valor: codigoFmt },
-          { icono: 'folio', etiqueta: 'Folio', valor: folio },
-          { icono: 'calendario', etiqueta: 'Fecha', valor: emision },
+          ...(trio
+            ? [
+                { icono: 'codigo' as const, etiqueta: 'Formato', valor: codigoFmt },
+                { icono: 'folio' as const, etiqueta: 'Folio', valor: folio },
+                { icono: 'calendario' as const, etiqueta: 'Emisión', valor: emision },
+              ]
+            : []),
           ...camposDatos,
         ]}
       />

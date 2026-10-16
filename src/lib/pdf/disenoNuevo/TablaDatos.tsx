@@ -3,6 +3,7 @@
 // repite en cada página y cada fila se mantiene entera. Los valores negativos
 // ("No", "X", "NC"...) salen en rojo suave; solo cambia el color, no el texto.
 import { View, Text } from '@react-pdf/renderer'
+import type { ReactNode } from 'react'
 import { PC } from '@/lib/pdf/components/tokens'
 import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 import { estiloNegativo } from './negativo'
@@ -23,6 +24,7 @@ export type CeldaDato =
   | null
   | undefined
   | { texto: string | number; color?: string; negrita?: boolean }
+  | { nodo: ReactNode }
 
 interface Props {
   columnas: ColumnaDato[]
@@ -101,6 +103,13 @@ export function TablaDatos({
         filas.map((fila, r) => (
           <View key={r} wrap={false} style={{ flexDirection: 'row', borderBottomWidth: 0.5, borderBottomColor: PC.border }}>
             {fila.map((celda, i) => {
+              if (celda != null && typeof celda === 'object' && 'nodo' in celda) {
+                return (
+                  <View key={i} style={{ width: w[i], paddingVertical: 4, paddingHorizontal: PAD }}>
+                    {celda.nodo}
+                  </View>
+                )
+              }
               const obj = celda != null && typeof celda === 'object'
               const texto = obj ? celda.texto : celda
               const str = texto == null ? '' : String(texto)

@@ -1,16 +1,16 @@
 // PATRÓN INOCUIDAD — PDF M45 (plantilla homogénea M.A.D.Y)
 // Verificación y mantenimiento preventivo y correctivo — A4 landscape, matriz mensual extendida.
 
-import { Document, Page, View, Text, Image } from '@react-pdf/renderer'
-import { TopBar, PdfFooter } from '@/lib/pdf/components/PdfPage'
-import { PdfSectionBanner } from '@/lib/pdf/components/PdfSectionBanner'
-import { PdfFieldGrid, PdfFieldRow, PdfField } from '@/lib/pdf/components/PdfFieldGrid'
-import { PdfLegend } from '@/lib/pdf/components/PdfLegend'
-import { PdfSignatures } from '@/lib/pdf/components/PdfSignatures'
-import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
+import { Document, View, Text } from '@react-pdf/renderer'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
+import { Leyenda } from '@/lib/pdf/disenoNuevo/Leyenda'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
+import { estiloColumnaCompacta } from '@/lib/pdf/disenoNuevo/Encabezado'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { PC } from '@/lib/pdf/components/tokens'
 import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M45ItemPDFRow {
@@ -55,21 +55,17 @@ export interface MttoPreventivoConsolidadoPDFProps {
   hasta: string
 }
 
-const H_COLOR  = '#0D5A8F'
-const N_COLOR  = '#C02A2A'
-const ROW_ALT  = '#F5F9FE'
+const H_COLOR  = PC.m13Navy
+const N_COLOR  = PC.negativo
 
-const MARGIN   = 15
-const PAGE_W   = 841.89 - MARGIN * 2   // ~812
+// A4 horizontal con márgenes de 40 pt (761.89 pt útiles). Anchos de columna fijos y
+// la columna de cada día se calcula con lo que sobra.
+const PAGE_W   = 841.89 - 80
+const ITEM_COL = 150
+const FREC_COL = 46
+const ACT_COL  = 24
 
-// Column widths: 183 + 52 + 28*4 + 15*31 = 812
-const ITEM_COL = 183
-const FREC_COL = 52
-const ACT_COL  = 28
-const DAY_COL  = 15
-
-// Fixed compact header height: TopBar(8) + padding(5*2) + logo row(28) = ~46
-const HDR_H    = 46
+const diaColW = (nDias: number) => Math.floor((PAGE_W - ITEM_COL - FREC_COL - ACT_COL * 4) / Math.max(nDias, 1))
 
 function diasDelMes(anio: number, mes: number): number[] {
   const total = new Date(anio, mes, 0).getDate()
@@ -100,237 +96,159 @@ function valorColor(v: string | undefined): string {
   return PC.textSub
 }
 
-const colHdrStyle = {
-  borderWidth: 1,
-  borderColor: PC.border,
-  backgroundColor: PC.section,
-  paddingTop: 2,
-  paddingBottom: 2,
-  justifyContent: 'center',
-  alignItems: 'center',
-} as const
+const LINEA = 0.5
+const celda = { borderRightWidth: LINEA, borderRightColor: PC.border, borderBottomWidth: LINEA, borderBottomColor: PC.border } as const
+const fila = { flexDirection: 'row', borderLeftWidth: LINEA, borderLeftColor: PC.border } as const
+const ACT_HDR = ['Rev.\nGral', 'C.\nAceit', 'C.\nPzas', 'Rev.\nElec']
 
-const itemCellStyle = {
-  width: ITEM_COL,
-  borderWidth: 1,
-  borderColor: PC.border,
-  paddingTop: 2,
-  paddingBottom: 2,
-  paddingLeft: 3,
-} as const
-
-const frecCellStyle = {
-  width: FREC_COL,
-  borderWidth: 1,
-  borderColor: PC.border,
-  paddingTop: 2,
-  paddingBottom: 2,
-  alignItems: 'center',
-  justifyContent: 'center',
-} as const
-
-const dayCellStyle = {
-  width: DAY_COL,
-  borderWidth: 1,
-  borderColor: PC.border,
-  alignItems: 'center',
-  justifyContent: 'center',
-  paddingTop: 2,
-  paddingBottom: 2,
-} as const
-
-const actCellStyle = {
-  width: ACT_COL,
-  borderWidth: 1,
-  borderColor: PC.border,
-  alignItems: 'center',
-  justifyContent: 'center',
-  paddingTop: 2,
-  paddingBottom: 2,
-} as const
-
-const colHdrText = { fontSize: 5, fontFamily: 'Helvetica-Bold', color: PC.white, textAlign: 'center' } as const
-
-function MttoPreventivoPaginaContent({
+function MttoPreventivoPagina({
   instalacion, instalacionCodigo, anio, mes, mesLabel, observaciones,
   areas, resultados, acciones, codigoClave, terminoSitio = 'Instalación',
   firmaRealizo, firmaVerifico,
 }: M45PaginaProps) {
   const codigoFmt = codigoFormato('F-FRUS-MTT-03', codigoClave)
   const dias = diasDelMes(anio, mes)
+  const DAY_COL = diaColW(dias.length)
 
   return (
-    <>
-      {/* Compact fixed header — repeats on every sub-page */}
-      <View fixed style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
-        <TopBar />
-        <View style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: MARGIN,
-          paddingVertical: 5,
-          borderBottomWidth: 1,
-          borderBottomColor: PC.border,
-          backgroundColor: PC.white,
-        }}>
-          <Image src={LOGO_MADY_PDF} style={{ height: 28, width: 79, marginRight: 10 }} />
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 8.5, color: PC.titleNavy, textAlign: 'center' }}>
-              VERIFICACIÓN, MANTENIMIENTO PREVENTIVO Y CORRECTIVO
-            </Text>
-            <Text style={{ fontSize: 5.5, color: PC.textSub, marginTop: 1, textAlign: 'center' }}>
-              {`${codigoFmt}  |  ${instalacion}  |  ${mesLabel}`}
-            </Text>
-          </View>
-          <View style={{ backgroundColor: PC.folioBox, borderRadius: 4, padding: 5, alignItems: 'flex-end', marginLeft: 10 }}>
-            <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.titleNavy }}>{mesLabel}</Text>
-          </View>
-        </View>
-      </View>
+    <PaginaEstandar
+      trio={false}
+      titulo="VERIFICACIÓN, MANTENIMIENTO PREVENTIVO Y CORRECTIVO"
+      subtitulo={`${codigoFmt}  |  ${instalacion}  |  ${mesLabel}`}
+      codigoFmt={codigoFmt}
+      folio={mesLabel}
+      emision={mesLabel}
+      detalleCompacto={`${codigoFmt}  |  ${instalacion}  |  ${mesLabel}`}
+      columnasCompactas={
+        <>
+          <Text style={{ ...estiloColumnaCompacta, fontSize: 5.5, width: ITEM_COL, paddingLeft: 3 }}>Equipo / Elemento</Text>
+          <Text style={{ ...estiloColumnaCompacta, fontSize: 5.5, width: FREC_COL, textAlign: 'center' }}>Frecuencia</Text>
+          {dias.map((d) => (
+            <Text key={d} style={{ ...estiloColumnaCompacta, fontSize: 5.5, width: DAY_COL, textAlign: 'center' }}>{d}</Text>
+          ))}
+          {ACT_HDR.map((h) => (
+            <Text key={h} style={{ ...estiloColumnaCompacta, fontSize: 5, width: ACT_COL, textAlign: 'center' }}>{h}</Text>
+          ))}
+        </>
+      }
+      tituloDatos="1. DATOS DEL SITIO Y MES"
+      camposDatos={[
+        { icono: 'codigo', etiqueta: 'Formato', valor: codigoFmt },
+        { icono: 'ubicacion', etiqueta: terminoSitio, valor: instalacion },
+        { icono: 'codigo', etiqueta: 'Código', valor: instalacionCodigo || '—' },
+        { icono: 'calendario', etiqueta: 'Año', valor: String(anio) },
+        { icono: 'calendario', etiqueta: 'Mes', valor: mesLabel },
+      ]}
+      porRenglon={5}
+    >
+      <Leyenda
+        entradas={[
+          {
+            titulo: 'Valores de registro',
+            items: [
+              { codigo: 'H', label: 'Hecho' },
+              { codigo: 'N', label: 'No hecho' },
+              { codigo: '—', label: 'N/A' },
+              { codigo: 'X', label: 'Accion realizada' },
+            ],
+          },
+          {
+            titulo: 'Columnas de accion',
+            items: [
+              { codigo: 'Rev.Gral', label: 'Revision general' },
+              { codigo: 'C.Aceit', label: 'Cambio de aceites' },
+              { codigo: 'C.Pzas', label: 'Cambio de piezas' },
+              { codigo: 'Rev.Elec', label: 'Revision electrica' },
+            ],
+          },
+        ]}
+      />
 
-      <PdfFooter moduloCodigo="M45" />
-
-      {/* Section 1 — info grid */}
-      <PdfSectionBanner>1. Datos del sitio y mes</PdfSectionBanner>
-      <PdfFieldGrid>
-        <PdfFieldRow>
-          <PdfField label={terminoSitio} value={instalacion} />
-          <PdfField label="Código" value={instalacionCodigo || '—'} />
-          <PdfField label="Año" value={String(anio)} />
-          <PdfField label="Mes" value={mesLabel} />
-        </PdfFieldRow>
-      </PdfFieldGrid>
-
-      {/* Legend */}
-      <PdfLegend entradas={[
-        {
-          titulo: 'Valores de registro',
-          items: [
-            { codigo: 'H', label: 'Hecho' },
-            { codigo: 'N', label: 'No hecho' },
-            { codigo: '—', label: 'N/A' },
-            { codigo: 'X', label: 'Accion realizada' },
-          ],
-        },
-        {
-          titulo: 'Columnas de accion',
-          items: [
-            { codigo: 'Rev.Gral', label: 'Revision general' },
-            { codigo: 'C.Aceit', label: 'Cambio de aceites' },
-            { codigo: 'C.Pzas', label: 'Cambio de piezas' },
-            { codigo: 'Rev.Elec', label: 'Revision electrica' },
-          ],
-        },
-      ]} />
-
-      {/* Section 2 — matrix */}
-      <PdfSectionBanner>2. Actividades de verificación y mantenimiento</PdfSectionBanner>
-
-      {areas.map((areaData) => (
-        <View key={areaData.area}>
-          {/* Area header */}
-          <View style={{
-            flexDirection: 'row',
-            backgroundColor: PC.titleNavy,
-            paddingTop: 3,
-            paddingBottom: 3,
-            paddingLeft: 5,
-            marginTop: 5,
-          }}>
-            <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.white }}>
-              {areaData.area.toUpperCase()}
-            </Text>
-          </View>
-
-          {/* Column header row */}
-          <View style={{ flexDirection: 'row' }}>
-            <View style={[colHdrStyle, { width: ITEM_COL, paddingLeft: 3 }]}>
-              <Text style={colHdrText}>Equipo / Elemento</Text>
+      <Seccion titulo="2. ACTIVIDADES DE VERIFICACIÓN Y MANTENIMIENTO">
+        {areas.map((areaData) => (
+          <View key={areaData.area} style={{ marginBottom: 6 }}>
+            {/* Banda de área */}
+            <View
+              wrap={false}
+              minPresenceAhead={50}
+              style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: PC.m13MentaSuave, paddingVertical: 3, paddingRight: 4 }}
+            >
+              <View style={{ width: 2.5, alignSelf: 'stretch', backgroundColor: PC.m13Menta, marginRight: 4 }} />
+              <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.m13Navy }} hyphenationCallback={partirPalabraLarga}>
+                {areaData.area.toUpperCase()}
+              </Text>
             </View>
-            <View style={[colHdrStyle, { width: FREC_COL }]}>
-              <Text style={colHdrText}>Frecuencia</Text>
-            </View>
-            {dias.map((d) => (
-              <View key={d} style={[colHdrStyle, { width: DAY_COL }]}>
-                <Text style={colHdrText}>{d}</Text>
+
+            {/* Encabezado de columnas */}
+            <View wrap={false} style={{ ...fila, backgroundColor: PC.m13Fondo, borderTopWidth: LINEA, borderTopColor: PC.border }}>
+              <View style={{ ...celda, width: ITEM_COL, paddingVertical: 2, paddingLeft: 3, justifyContent: 'center' }}>
+                <Text style={{ fontSize: 5.5, fontFamily: 'Helvetica-Bold', color: PC.m13Navy }}>Equipo / Elemento</Text>
               </View>
-            ))}
-            <View style={[colHdrStyle, { width: ACT_COL }]}>
-              <Text style={colHdrText}>{'Rev.\nGral'}</Text>
+              <View style={{ ...celda, width: FREC_COL, paddingVertical: 2, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 5.5, fontFamily: 'Helvetica-Bold', color: PC.m13Navy }}>Frecuencia</Text>
+              </View>
+              {dias.map((d) => (
+                <View key={d} style={{ ...celda, width: DAY_COL, paddingVertical: 2, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ fontSize: 5.5, fontFamily: 'Helvetica-Bold', color: PC.m13Navy }}>{d}</Text>
+                </View>
+              ))}
+              {ACT_HDR.map((h) => (
+                <View key={h} style={{ ...celda, width: ACT_COL, paddingVertical: 2, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ fontSize: 5, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, textAlign: 'center' }}>{h}</Text>
+                </View>
+              ))}
             </View>
-            <View style={[colHdrStyle, { width: ACT_COL }]}>
-              <Text style={colHdrText}>{'C.\nAceit'}</Text>
-            </View>
-            <View style={[colHdrStyle, { width: ACT_COL }]}>
-              <Text style={colHdrText}>{'C.\nPzas'}</Text>
-            </View>
-            <View style={[colHdrStyle, { width: ACT_COL }]}>
-              <Text style={colHdrText}>{'Rev.\nElec'}</Text>
-            </View>
-          </View>
 
-          {/* Item rows */}
-          {areaData.items.map((item, idx) => {
-            const bg  = idx % 2 === 0 ? PC.white : ROW_ALT
-            const acc = acciones[item.id]
-            return (
-              <View key={item.id} style={{ flexDirection: 'row', backgroundColor: bg }}>
-                <View style={[itemCellStyle, { backgroundColor: bg }]}>
-                  <Text style={{ fontSize: 5.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.nombre}</Text>
-                </View>
-                <View style={[frecCellStyle, { backgroundColor: bg }]}>
-                  <Text style={{ fontSize: 5, color: PC.textSub }}>{frecLabel(item.frecuencia)}</Text>
-                </View>
-                {dias.map((d) => {
-                  const v   = resultados[item.id]?.[d]
-                  const sym = valorSym(v)
-                  const col = valorColor(v)
-                  return (
-                    <View key={d} style={[dayCellStyle, { backgroundColor: bg }]}>
-                      {sym ? (
-                        <Text style={{ fontSize: sym === '—' ? 6 : 5.5, fontFamily: 'Helvetica-Bold', color: col }}>
-                          {sym}
-                        </Text>
-                      ) : null}
+            {/* Filas de ítems */}
+            {areaData.items.map((item, idx) => {
+              const bg  = idx % 2 === 0 ? PC.white : PC.m13Fondo
+              const acc = acciones[item.id]
+              const marcas = [acc?.revision_general, acc?.cambio_aceites, acc?.cambio_piezas, acc?.revision_electrico]
+              return (
+                <View key={item.id} wrap={false} style={{ ...fila, backgroundColor: bg }}>
+                  <View style={{ ...celda, width: ITEM_COL, paddingVertical: 2, paddingLeft: 3, paddingRight: 2 }}>
+                    <Text style={{ fontSize: 5.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{item.nombre}</Text>
+                  </View>
+                  <View style={{ ...celda, width: FREC_COL, paddingVertical: 2, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 5, color: PC.textSub }}>{frecLabel(item.frecuencia)}</Text>
+                  </View>
+                  {dias.map((d) => {
+                    const v   = resultados[item.id]?.[d]
+                    const sym = valorSym(v)
+                    return (
+                      <View key={d} style={{ ...celda, width: DAY_COL, alignItems: 'center', justifyContent: 'center', paddingVertical: 2 }}>
+                        {sym ? (
+                          <Text style={{ fontSize: sym === '—' ? 6 : 5.5, fontFamily: 'Helvetica-Bold', color: valorColor(v) }}>{sym}</Text>
+                        ) : null}
+                      </View>
+                    )
+                  })}
+                  {marcas.map((m, k) => (
+                    <View key={k} style={{ ...celda, width: ACT_COL, alignItems: 'center', justifyContent: 'center', paddingVertical: 2 }}>
+                      {m ? <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: H_COLOR }}>X</Text> : null}
                     </View>
-                  )
-                })}
-                <View style={[actCellStyle, { backgroundColor: bg }]}>
-                  {acc?.revision_general   ? <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: H_COLOR }}>X</Text> : null}
+                  ))}
                 </View>
-                <View style={[actCellStyle, { backgroundColor: bg }]}>
-                  {acc?.cambio_aceites     ? <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: H_COLOR }}>X</Text> : null}
-                </View>
-                <View style={[actCellStyle, { backgroundColor: bg }]}>
-                  {acc?.cambio_piezas      ? <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: H_COLOR }}>X</Text> : null}
-                </View>
-                <View style={[actCellStyle, { backgroundColor: bg }]}>
-                  {acc?.revision_electrico ? <Text style={{ fontSize: 6, fontFamily: 'Helvetica-Bold', color: H_COLOR }}>X</Text> : null}
-                </View>
-              </View>
-            )
-          })}
-        </View>
-      ))}
+              )
+            })}
+          </View>
+        ))}
+      </Seccion>
 
-      {observaciones ? (
-        <View style={{ borderWidth: 1, borderColor: PC.border, padding: 4, marginTop: 8, marginBottom: 4 }}>
-          <Text style={{ fontSize: 8, color: PC.section, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>OBSERVACIONES</Text>
-          <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{observaciones}</Text>
-        </View>
-      ) : null}
+      {observaciones ? <FranjaDatos campos={[{ etiqueta: 'Observaciones', valor: observaciones }]} /> : null}
 
       <View wrap={false}>
-        <PdfSectionBanner>3. Firmas y responsables</PdfSectionBanner>
-        <PdfSignatures
-          signatures={[
-            { label: '', nombre: '', caption: 'Responsable del Area', firma: firmaRealizo ?? null },
-            { label: '', nombre: '', caption: 'Jefe de Mantenimiento', firma: firmaVerifico ?? null },
-            { label: '', nombre: '', caption: 'Gerente de Operaciones' },
-          ]}
-        />
+        <Seccion titulo="3. FIRMAS Y RESPONSABLES">
+          <PdfFirmas
+            signatures={[
+              { label: '', nombre: '', caption: 'Responsable del Area', firma: firmaRealizo ?? null },
+              { label: '', nombre: '', caption: 'Jefe de Mantenimiento', firma: firmaVerifico ?? null },
+              { label: '', nombre: '', caption: 'Gerente de Operaciones' },
+            ]}
+          />
+        </Seccion>
       </View>
-    </>
+    </PaginaEstandar>
   )
 }
 
@@ -344,21 +262,7 @@ export function MttoPreventivoPDF(props: M45PaginaProps) {
       subject={`Verificación y Mantenimiento Preventivo — ${props.instalacion}`}
       keywords="MADY, inocuidad, mantenimiento, preventivo, correctivo"
     >
-      <Page
-        size="A4"
-        orientation="landscape"
-        style={{
-          fontFamily: 'Helvetica',
-          fontSize: 7,
-          color: PC.fieldValue,
-          paddingTop: HDR_H + 4,
-          paddingBottom: 40,
-          paddingLeft: MARGIN,
-          paddingRight: MARGIN,
-        }}
-      >
-        <MttoPreventivoPaginaContent {...props} />
-      </Page>
+      <MttoPreventivoPagina {...props} />
     </Document>
   )
 }
@@ -376,22 +280,7 @@ export function MttoPreventivoConsolidadoPDF({
       keywords="MADY, inocuidad, mantenimiento, preventivo, correctivo, consolidado"
     >
       {paginas.map((p, i) => (
-        <Page
-          key={i}
-          size="A4"
-          orientation="landscape"
-          style={{
-            fontFamily: 'Helvetica',
-            fontSize: 7,
-            color: PC.fieldValue,
-            paddingTop: HDR_H + 4,
-            paddingBottom: 40,
-            paddingLeft: MARGIN,
-            paddingRight: MARGIN,
-          }}
-        >
-          <MttoPreventivoPaginaContent {...p} />
-        </Page>
+        <MttoPreventivoPagina key={i} {...p} />
       ))}
     </Document>
   )

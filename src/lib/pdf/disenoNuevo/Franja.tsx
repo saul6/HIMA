@@ -10,11 +10,13 @@ export interface CampoFranja {
   etiqueta: string
   valor: string
   icono?: IconoNombre
+  /** Color del valor (default navy); p. ej. PC.negativo para un total de no-conformidades. */
+  colorValor?: string
 }
 
 const SANGRIA_ICONO = 14  // ancho del icono (10) + separación (4)
 
-export function DatoFranja({ icono, etiqueta, valor, primero }: CampoFranja & { primero?: boolean }) {
+export function DatoFranja({ icono, etiqueta, valor, colorValor, primero }: CampoFranja & { primero?: boolean }) {
   return (
     <View
       style={{
@@ -31,7 +33,7 @@ export function DatoFranja({ icono, etiqueta, valor, primero }: CampoFranja & { 
           <Text style={{ fontSize: 7, color: PC.textSub, marginLeft: icono ? 4 : SANGRIA_ICONO }}>{etiqueta}</Text>
         </View>
       ) : null}
-      <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 9, color: PC.m13Navy }} hyphenationCallback={partirPalabraLarga}>
+      <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 9, color: colorValor ?? PC.m13Navy }} hyphenationCallback={partirPalabraLarga}>
         {valor}
       </Text>
     </View>
