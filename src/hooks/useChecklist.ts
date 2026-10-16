@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 
 export type ChkTipoItem = 'modulo' | 'formato' | 'documento'
 export type ChkEstadoRevision = 'al_dia' | 'actualizar' | 'corregir' | 'faltan_firmas' | 'sin_reportes' | 'otro'
-export type ChkFrecuencia = 'diaria' | 'semanal' | 'quincenal' | 'mensual' | 'por_evento' | 'no_aplica'
+export type ChkFrecuencia = 'diaria' | 'semanal' | 'quincenal' | 'mensual' | 'evento' | 'no_aplica'
 export type ChkTipoNota = 'faltan_registros' | 'no_se_lleva' | 'faltan_firmas' | 'por_vencer' | 'vencido'
 
 export interface ChkNota {
@@ -200,6 +200,6 @@ export const FRECUENCIAS: { value: ChkFrecuencia; label: string }[] = [
   { value: 'semanal', label: 'Cada semana' },
   { value: 'quincenal', label: 'Cada 15 días' },
   { value: 'mensual', label: 'Cada mes' },
-  { value: 'por_evento', label: 'Cuando ocurra' },
+  { value: 'evento', label: 'Cuando ocurra' },
   { value: 'no_aplica', label: 'No aplica' },
 ]
