@@ -1,4 +1,5 @@
-﻿import { useState, useEffect, useCallback, useMemo } from 'react'
+﻿import { crearIncidenciaDesdeOrigen } from '@/lib/m13Origen'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   ChevronLeft, Plus, FileDown, Loader2, Snowflake,
   TriangleAlert, X, ChevronDown, ChevronUp, Bug, WifiOff,
@@ -337,25 +338,14 @@ export function LimpiezaPreenfrio() {
       const mesStr = String(registroActivo.mes).padStart(2, '0')
       const fechaStr = `${registroActivo.anio}-${mesStr}-${diaStr}`
 
-      const { data: reporteData, error: eReporte } = await tbl('m13_reportes').insert({
-        rancho_id: registroActivo.rancho_id,
-        org_id: orgId,
+      const { incidencia_id: incidenciaId } = await crearIncidenciaDesdeOrigen({
+        ranchoId: registroActivo.rancho_id,
         fecha: fechaStr,
-        auditor_nombre: profile?.nombre_completo ?? '',
-      }).select('id').single()
-      if (eReporte) throw eReporte
-
-      const reporteId = (reporteData as any).id as string
-
-      const { data: incData, error: eInc } = await tbl('m13_incidencias').insert({
-        reporte_id: reporteId,
-        org_id: orgId,
+        origenModulo: 'M34',
+        origenRegistroId: registroActivo.id,
+        origenClave: `M34:${registroActivo.id}:${plagaPendingDia}:${plagaPendingItemId}`,
         descripcion: plagaDescripcion.trim(),
-        orden: 1,
-      }).select('id').single()
-      if (eInc) throw eInc
-
-      const incidenciaId = (incData as any).id as string
+      })
 
       const { error: eRes } = await tbl('m34_resultados').upsert(
         {

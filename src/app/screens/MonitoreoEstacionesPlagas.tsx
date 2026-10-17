@@ -2,6 +2,7 @@
 // Formato F-FRUS-CAL-19. Por evento. Sector Cuarto Frío.
 // Gestión de catálogo de estaciones por instalación + formulario de revisión.
 
+import { crearIncidenciaDesdeOrigen, camposOrigen, CONFLICTO_INCIDENCIA_ORIGEN } from '@/lib/m13Origen'
 import { useState, useEffect, useCallback } from 'react'
 import {
   Plus, Loader2, Files, Bug, FileDown, Power,
@@ -707,12 +708,14 @@ export function MonitoreoEstacionesPlagas() {
           hallazgosOff.forEach((est, i) => {
             const incId = crypto.randomUUID()
             incOff[est.id] = incId
-            ops.push(opInsert('m13_incidencias', {
+            ops.push(opUpsert('m13_incidencias', {
               id: incId,
+              ...camposOrigen('M21', revIdOff, `M21:${form.ranchoId}:${form.fecha}:${est.id}`),
+              org_id: profile.org_id,
               reporte_id: repIdOff,
               orden: i + 1,
               descripcion: estForm[est.id].hallazgoDescripcion.trim(),
-            }))
+            }, CONFLICTO_INCIDENCIA_ORIGEN))
           })
         }
         for (const e of estacionesActivas) {
@@ -773,34 +776,22 @@ export function MonitoreoEstacionesPlagas() {
       const incidenciaMap: Record<string, string> = {} // estacion_id → incidencia_id
 
       if (hallazgos.length > 0) {
-        const { data: reporte, error: rErr } = await (supabase as any)
-          .from('m13_reportes')
-          .insert({
-            org_id: profile.org_id,
-            rancho_id: form.ranchoId,
-            fecha: form.fecha,
-            auditor_nombre: form.inspectorNombre.trim(),
-          })
-          .select('id')
-          .single()
-        if (rErr) throw rErr
-        const reporteId = (reporte as any).id as string
+        let reporteId: string | null = null
 
         for (let i = 0; i < hallazgos.length; i++) {
           const est = hallazgos[i]
           const d = estForm[est.id]
-          const { data: inc, error: iErr } = await (supabase as any)
-            .from('m13_incidencias')
-            .insert({
-              org_id: profile.org_id,
-              reporte_id: reporteId,
-              orden: i + 1,
-              descripcion: d.hallazgoDescripcion.trim(),
-            })
-            .select('id')
-            .single()
-          if (iErr) throw iErr
-          incidenciaMap[est.id] = (inc as any).id as string
+          const r = await crearIncidenciaDesdeOrigen({
+            ranchoId: form.ranchoId,
+            fecha: form.fecha,
+            origenModulo: 'M21',
+            origenRegistroId: revisionId,
+            origenClave: `M21:${form.ranchoId}:${form.fecha}:${est.id}`,
+            descripcion: d.hallazgoDescripcion.trim(),
+            reporteId,
+          })
+          reporteId = r.reporte_id
+          incidenciaMap[est.id] = r.incidencia_id
         }
       }
 
@@ -886,12 +877,14 @@ export function MonitoreoEstacionesPlagas() {
             fecha: fechaHoy,
             auditor_nombre: profile.nombre_completo ?? '',
           }))
-          ops.push(opInsert('m13_incidencias', {
+          ops.push(opUpsert('m13_incidencias', {
             id: incOffId,
+            ...camposOrigen('M21', revIdOff, `M21:${ranchoId}:${fechaHoy}:${estacionId}`),
+            org_id: profile.org_id,
             reporte_id: repIdOff,
             orden: 1,
             descripcion: d.hallazgoDescripcion.trim(),
-          }))
+          }, CONFLICTO_INCIDENCIA_ORIGEN))
         }
         ops.push(opUpsert('m21_resultado', {
           revision_id: revIdOff,
@@ -955,54 +948,15 @@ export function MonitoreoEstacionesPlagas() {
       const tieneHallazgo = (d.tieneHallazgo || (esLuz && d.plaga_detectada.length > 0)) && d.hallazgoDescripcion.trim()
 
       if (tieneHallazgo) {
-        // Reusar el reporte de M13 de hoy para este rancho si existe
-        const { data: repRows } = await (supabase as any)
-          .from('m13_reportes')
-          .select('id')
-          .eq('rancho_id', ranchoId)
-          .eq('org_id', profile.org_id)
-          .eq('fecha', fechaHoy)
-          .order('created_at', { ascending: false })
-          .limit(1)
-        let reporteId: string
-        if (repRows && repRows.length > 0) {
-          reporteId = (repRows[0] as any).id as string
-        } else {
-          const { data: nuevoRep, error: repErr } = await (supabase as any)
-            .from('m13_reportes')
-            .insert({
-              org_id: profile.org_id,
-              rancho_id: ranchoId,
-              fecha: fechaHoy,
-              auditor_nombre: profile.nombre_completo ?? '',
-            })
-            .select('id')
-            .single()
-          if (repErr) throw repErr
-          reporteId = (nuevoRep as any).id as string
-        }
-
-        // Determinar siguiente orden en el reporte
-        const { data: incRows } = await (supabase as any)
-          .from('m13_incidencias')
-          .select('orden')
-          .eq('reporte_id', reporteId)
-          .order('orden', { ascending: false })
-          .limit(1)
-        const maxOrden: number = incRows?.[0]?.orden ?? 0
-
-        const { data: inc, error: iErr } = await (supabase as any)
-          .from('m13_incidencias')
-          .insert({
-            org_id: profile.org_id,
-            reporte_id: reporteId,
-            orden: maxOrden + 1,
-            descripcion: d.hallazgoDescripcion.trim(),
-          })
-          .select('id')
-          .single()
-        if (iErr) throw iErr
-        incidenciaId = (inc as any).id as string
+        const r = await crearIncidenciaDesdeOrigen({
+          ranchoId,
+          fecha: fechaHoy,
+          origenModulo: 'M21',
+          origenRegistroId: revisionId,
+          origenClave: `M21:${ranchoId}:${fechaHoy}:${estacionId}`,
+          descripcion: d.hallazgoDescripcion.trim(),
+        })
+        incidenciaId = r.incidencia_id
       }
 
       // 3. Upsert m21_resultado por (revision_id, estacion_id)

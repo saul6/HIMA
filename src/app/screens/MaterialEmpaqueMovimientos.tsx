@@ -1,3 +1,4 @@
+import { crearIncidenciaDesdeOrigen, camposOrigen, CONFLICTO_INCIDENCIA_ORIGEN } from '@/lib/m13Origen'
 import { useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { Plus, FileText, AlertTriangle } from 'lucide-react'
@@ -13,7 +14,7 @@ import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolid
 import { supabase } from '@/lib/supabase'
 import { useConexion } from '@/hooks/useConexion'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
-import { opInsert, opUpdate } from '@/lib/offline/construirOperaciones'
+import { opInsert, opUpdate, opUpsert } from '@/lib/offline/construirOperaciones'
 import { generarMaterialEmpaquePDF } from '@/lib/pdf/m42/generarMaterialEmpaquePDF'
 import { generarMaterialEmpaqueConsolidadoPDF } from '@/lib/pdf/m42/generarMaterialEmpaqueConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
@@ -207,13 +208,14 @@ export function MaterialEmpaqueMovimientos() {
                 fecha: form.fecha,
                 auditor_nombre: profile?.nombre_completo ?? null,
               }),
-              opInsert('m13_incidencias', {
+              opUpsert('m13_incidencias', {
                 id: incidenciaIdOff,
+                ...camposOrigen('M42', movIdOff, `M42:${movIdOff}`),
                 reporte_id: reporteIdOff,
                 org_id: orgId,
                 descripcion: `Presencia de plagas detectada en: ${partesOff.join(' y ')}`,
                 orden: 1,
-              }),
+              }, CONFLICTO_INCIDENCIA_ORIGEN),
               // Igual que con red: la incidencia se enlaza con un UPDATE posterior al movimiento
               opUpdate('m42_movimientos', movIdOff, { incidencia_id: incidenciaIdOff }),
             ] : []),
@@ -245,28 +247,21 @@ export function MaterialEmpaqueMovimientos() {
       const plagasTr = !form.tr_libre_plagas
       if (plagasMat || plagasTr) {
         try {
-          const { data: rep, error: eR } = await tbl('m13_reportes').insert({
-            org_id: orgId,
-            rancho_id: form.rancho_id,
-            fecha: form.fecha,
-            auditor_nombre: profile?.nombre_completo ?? null,
-          }).select('id').single()
-          if (eR) throw eR
-
           const partes: string[] = []
           if (plagasMat) partes.push('material de empaque')
           if (plagasTr) partes.push('transporte del material')
           const desc = `Presencia de plagas detectada en: ${partes.join(' y ')}`
 
-          const { data: inc, error: eI } = await tbl('m13_incidencias').insert({
-            reporte_id: rep.id,
-            org_id: orgId,
+          const inc = await crearIncidenciaDesdeOrigen({
+            ranchoId: form.rancho_id,
+            fecha: form.fecha,
+            origenModulo: 'M42',
+            origenRegistroId: movId,
+            origenClave: `M42:${movId}`,
             descripcion: desc,
-            orden: 1,
-          }).select('id').single()
-          if (eI) throw eI
+          })
 
-          await tbl('m42_movimientos').update({ incidencia_id: inc.id }).eq('id', movId)
+          await tbl('m42_movimientos').update({ incidencia_id: inc.incidencia_id }).eq('id', movId)
         } catch { /* incidencia es best-effort, el movimiento ya fue guardado */ }
       }
 

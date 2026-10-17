@@ -3,6 +3,7 @@
 // Diferencias: catálogo por instalación (m23_insumos), dos responsables (verificó/autorizó),
 // gestión de catálogo con plantilla estándar de 30 ítems.
 
+import { crearIncidenciaDesdeOrigen, camposOrigen, CONFLICTO_INCIDENCIA_ORIGEN } from '@/lib/m13Origen'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   ChevronLeft, Plus, FileDown, Loader2, ClipboardCheck,
@@ -493,7 +494,7 @@ export function VerificacionInsumos() {
         operaciones: [
           ...(reporteId ? [
             opInsert('m13_reportes', { id: reporteId, rancho_id: registroActivo.rancho_id, org_id: orgId!, fecha: dFecha, auditor_nombre: profile?.nombre_completo ?? null }),
-            ...incItems.map((ins, i) => opInsert('m13_incidencias', { id: incidenciaIds[ins.id], reporte_id: reporteId!, org_id: orgId!, descripcion: dIncidencias[ins.id].trim(), orden: i + 1 })),
+            ...incItems.map((ins, i) => opUpsert('m13_incidencias', { id: incidenciaIds[ins.id], ...camposOrigen('M23', registroActivo.id, `M23:${registroActivo.id}:${dFecha}:${ins.id}`), reporte_id: reporteId!, org_id: orgId!, descripcion: dIncidencias[ins.id].trim(), orden: i + 1 }, CONFLICTO_INCIDENCIA_ORIGEN)),
           ] : []),
           opCabecera('m23_dias_inspeccion', { id: diaId, registro_id: registroActivo.id, org_id: orgId!, fecha: dFecha }, ['registro_id', 'fecha']),
           ...insumosActivosFiltrados.map(ins => {
@@ -524,24 +525,19 @@ export function VerificacionInsumos() {
       let reporteId: string | null = null
 
       if (incItems.length > 0) {
-        const { data: reporteData, error: rErr } = await tbl('m13_reportes')
-          .insert({
-            rancho_id: registroActivo.rancho_id,
-            org_id: orgId,
-            fecha: dFecha,
-            auditor_nombre: profile?.nombre_completo ?? null,
-          })
-          .select('id').single()
-        if (rErr) throw rErr
-        reporteId = (reporteData as any).id as string
-
         for (let i = 0; i < incItems.length; i++) {
           const ins = incItems[i]
-          const { data: incData, error: iErr } = await tbl('m13_incidencias')
-            .insert({ reporte_id: reporteId, org_id: orgId, descripcion: dIncidencias[ins.id].trim(), orden: i + 1 })
-            .select('id').single()
-          if (iErr) throw iErr
-          incMap[ins.id] = (incData as any).id as string
+          const r = await crearIncidenciaDesdeOrigen({
+            ranchoId: registroActivo.rancho_id,
+            fecha: dFecha,
+            origenModulo: 'M23',
+            origenRegistroId: registroActivo.id,
+            origenClave: `M23:${registroActivo.id}:${dFecha}:${ins.id}`,
+            descripcion: dIncidencias[ins.id].trim(),
+            reporteId,
+          })
+          reporteId = r.reporte_id
+          incMap[ins.id] = r.incidencia_id
         }
       }
 

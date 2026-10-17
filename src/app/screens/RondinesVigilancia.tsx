@@ -1,3 +1,4 @@
+import { crearIncidenciaDesdeOrigen, camposOrigen, CONFLICTO_INCIDENCIA_ORIGEN } from '@/lib/m13Origen'
 import { useState, useMemo, useCallback } from 'react'
 import {
   Plus, FileDown, Loader2, TriangleAlert, Shield,
@@ -347,13 +348,14 @@ export function RondinesVigilancia() {
             }, ['rondin_id', 'numero'])),
             ...(reporteId ? [
               opInsert('m13_reportes', { id: reporteId, rancho_id: nRanchoId, org_id: orgId, fecha: nFecha, auditor_nombre: nVigilante.trim() }),
-              ...conDesc.map((c, i) => opInsert('m13_incidencias', {
+              ...conDesc.map((c, i) => opUpsert('m13_incidencias', {
                 id: incIds[`${c.itemId}|${c.ronda}`],
+                ...camposOrigen('M46', rondinId, `M46:${rondinId}:${c.ronda}:${c.itemId}`),
                 reporte_id: reporteId,
                 org_id: orgId,
                 descripcion: `[Ronda ${c.ronda}] ${c.item.area} - ${c.item.nombre}: ${c.desc}`,
                 orden: i + 1,
-              })),
+              }, CONFLICTO_INCIDENCIA_ORIGEN)),
             ] : []),
             ...activeFormItems.flatMap((item) => RONDAS.map((ronda) => opUpsert('m46_resultados', {
               rondin_id: rondinId,
@@ -409,31 +411,20 @@ export function RondinesVigilancia() {
 
       const incMap: Record<string, string> = {}
       if (conDescripcion.length > 0) {
-        const { data: repData, error: eRep } = await tbl('m13_reportes')
-          .insert({
-            org_id: orgId,
-            rancho_id: nRanchoId,
-            fecha: nFecha,
-            auditor_nombre: nVigilante.trim(),
-          })
-          .select('id')
-          .single()
-        if (eRep) throw eRep
-        const repId = (repData as any).id as string
-
+        let repId: string | null = null
         for (let i = 0; i < conDescripcion.length; i++) {
           const { itemId, ronda, item, desc } = conDescripcion[i]
-          const { data: incData, error: eInc } = await tbl('m13_incidencias')
-            .insert({
-              reporte_id: repId,
-              org_id: orgId,
-              descripcion: `[Ronda ${ronda}] ${item.area} - ${item.nombre}: ${desc}`,
-              orden: i + 1,
-            })
-            .select('id')
-            .single()
-          if (eInc) throw eInc
-          incMap[`${itemId}|${ronda}`] = (incData as any).id as string
+          const r = await crearIncidenciaDesdeOrigen({
+            ranchoId: nRanchoId,
+            fecha: nFecha,
+            origenModulo: 'M46',
+            origenRegistroId: rondinId,
+            origenClave: `M46:${rondinId}:${ronda}:${itemId}`,
+            descripcion: `[Ronda ${ronda}] ${item.area} - ${item.nombre}: ${desc}`,
+            reporteId: repId,
+          })
+          repId = r.reporte_id
+          incMap[`${itemId}|${ronda}`] = r.incidencia_id
         }
       }
 

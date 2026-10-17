@@ -6,6 +6,7 @@
 // ║  org_id SIEMPRE del contexto de auth, nunca del usuario             ║
 // ╚══════════════════════════════════════════════════════════════════════╝
 
+import { crearIncidenciaDesdeOrigen, camposOrigen, CONFLICTO_INCIDENCIA_ORIGEN } from '@/lib/m13Origen'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   ChevronLeft, FileDown, Loader2, ClipboardList,
@@ -571,7 +572,7 @@ export function InspeccionPreoperacionalCooler() {
         operaciones: [
           ...(reporteId ? [
             opInsert('m13_reportes', { id: reporteId, rancho_id: registroActivo.rancho_id, org_id: profile.org_id!, fecha: dFecha, auditor_nombre: profile.nombre_completo ?? null }),
-            ...incItems.map((item, i) => opInsert('m13_incidencias', { id: incidenciaIds[item.id], reporte_id: reporteId!, org_id: profile.org_id!, descripcion: dIncidencias[item.id].trim(), orden: i + 1 })),
+            ...incItems.map((item, i) => opUpsert('m13_incidencias', { id: incidenciaIds[item.id], ...camposOrigen('M19', registroActivo.id, `M19:${registroActivo.id}:${dFecha}:${item.id}`), reporte_id: reporteId!, org_id: profile.org_id!, descripcion: dIncidencias[item.id].trim(), orden: i + 1 }, CONFLICTO_INCIDENCIA_ORIGEN)),
           ] : []),
           opCabecera('m19_dias_inspeccion', { id: diaId, registro_id: registroActivo.id, org_id: profile.org_id!, fecha: dFecha }, ['registro_id', 'fecha']),
           ...items.map(item => {
@@ -602,31 +603,19 @@ export function InspeccionPreoperacionalCooler() {
       let reporteId: string | null = null
 
       if (incItems.length > 0) {
-        const { data: reporteData, error: rErr } = await tbl('m13_reportes')
-          .insert({
-            rancho_id: registroActivo.rancho_id,
-            org_id: profile.org_id,
-            fecha: dFecha,
-            auditor_nombre: profile.nombre_completo ?? null,
-          })
-          .select('id')
-          .single()
-        if (rErr) throw rErr
-        reporteId = (reporteData as any).id as string
-
         for (let i = 0; i < incItems.length; i++) {
           const item = incItems[i]
-          const { data: incData, error: iErr } = await tbl('m13_incidencias')
-            .insert({
-              reporte_id: reporteId,
-              org_id: profile.org_id,
-              descripcion: dIncidencias[item.id].trim(),
-              orden: i + 1,
-            })
-            .select('id')
-            .single()
-          if (iErr) throw iErr
-          incMap[item.id] = (incData as any).id as string
+          const r = await crearIncidenciaDesdeOrigen({
+            ranchoId: registroActivo.rancho_id,
+            fecha: dFecha,
+            origenModulo: 'M19',
+            origenRegistroId: registroActivo.id,
+            origenClave: `M19:${registroActivo.id}:${dFecha}:${item.id}`,
+            descripcion: dIncidencias[item.id].trim(),
+            reporteId,
+          })
+          reporteId = r.reporte_id
+          incMap[item.id] = r.incidencia_id
         }
       }
 

@@ -1,3 +1,4 @@
+import { crearIncidenciaDesdeOrigen, camposOrigen, CONFLICTO_INCIDENCIA_ORIGEN } from '@/lib/m13Origen'
 import { useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { Plus, FileText, AlertTriangle } from 'lucide-react'
@@ -197,13 +198,14 @@ export function TemperaturasConservador() {
                 const t = parseFloat(lecturas[hora].temp)
                 const minLabel = form.temp_min ? `${form.temp_min} – ` : ''
                 const maxLabel = form.temp_max ? `${form.temp_max} C` : ''
-                return opInsert('m13_incidencias', {
+                return opUpsert('m13_incidencias', {
                   id: incIdsOff[hora],
+                  ...camposOrigen('M41', regIdOff, `M41:${regIdOff}:${hora}`),
                   reporte_id: reporteIdOff,
                   org_id: orgId,
                   descripcion: `Temperatura fuera de rango a las ${String(hora).padStart(2, '0')}:00 hs: ${t} C (objetivo: ${minLabel}${maxLabel})`,
                   orden: hora,
-                })
+                }, CONFLICTO_INCIDENCIA_ORIGEN)
               }),
             ] : []),
             ...horasOff.map(h => opUpsert('m41_lecturas', {
@@ -261,22 +263,23 @@ export function TemperaturasConservador() {
 
       const incMap: Record<number, string> = {}
       if (nuevasOOR.length > 0) {
-        const { data: rep, error: eR } = await (supabase as any)
-          .from('m13_reportes')
-          .insert({ org_id: orgId, rancho_id: form.rancho_id, fecha: form.fecha, auditor_nombre: profile?.nombre_completo ?? null })
-          .select('id').single()
-        if (eR) throw eR
+        let reporteId: string | null = null
         for (const hora of nuevasOOR) {
           const t = parseFloat(lecturas[hora].temp)
           const minLabel = form.temp_min ? `${form.temp_min} – ` : ''
           const maxLabel = form.temp_max ? `${form.temp_max} C` : ''
           const desc = `Temperatura fuera de rango a las ${String(hora).padStart(2, '0')}:00 hs: ${t} C (objetivo: ${minLabel}${maxLabel})`
-          const { data: inc, error: eI } = await (supabase as any)
-            .from('m13_incidencias')
-            .insert({ reporte_id: rep.id, org_id: orgId, descripcion: desc, orden: hora })
-            .select('id').single()
-          if (eI) throw eI
-          incMap[hora] = inc.id
+          const r = await crearIncidenciaDesdeOrigen({
+            ranchoId: form.rancho_id,
+            fecha: form.fecha,
+            origenModulo: 'M41',
+            origenRegistroId: regId,
+            origenClave: `M41:${regId}:${hora}`,
+            descripcion: desc,
+            reporteId,
+          })
+          reporteId = r.reporte_id
+          incMap[hora] = r.incidencia_id
         }
       }
 

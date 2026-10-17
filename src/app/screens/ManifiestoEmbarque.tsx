@@ -1,4 +1,5 @@
-﻿import { useState, useMemo } from 'react'
+﻿import { crearIncidenciaDesdeOrigen, camposOrigen, CONFLICTO_INCIDENCIA_ORIGEN } from '@/lib/m13Origen'
+import { useState, useMemo } from 'react'
 import {
   Plus, FileDown, X, Loader2, Truck, Minus,
   Bug, TriangleAlert,
@@ -17,7 +18,7 @@ import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { supabase } from '@/lib/supabase'
 import { useConexion } from '@/hooks/useConexion'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
-import { opInsert, opUpdate } from '@/lib/offline/construirOperaciones'
+import { opInsert, opUpdate, opUpsert } from '@/lib/offline/construirOperaciones'
 import { generarManifiestoEmbarquePDF } from '@/lib/pdf/m38/generarManifiestoEmbarquePDF'
 import { generarManifiestoEmbarqueConsolidadoPDF } from '@/lib/pdf/m38/generarManifiestoEmbarqueConsolidadoPDF'
 import { Fab } from '@/app/components/Fab'
@@ -295,13 +296,14 @@ export function ManifiestoEmbarque() {
                 fecha: form.fecha,
                 auditor_nombre: profile?.nombre_completo ?? '',
               }),
-              opInsert('m13_incidencias', {
+              opUpsert('m13_incidencias', {
                 id: incidenciaIdOff,
+                ...camposOrigen('M38', manifiestoIdOff, `M38:${manifiestoIdOff}`),
                 reporte_id: reporteIdOff,
                 org_id: orgId,
                 descripcion: form.plaga_descripcion.trim(),
                 orden: 1,
-              }),
+              }, CONFLICTO_INCIDENCIA_ORIGEN),
             ] : []),
             opInsert('m38_manifiestos', {
               id: manifiestoIdOff,
@@ -315,33 +317,28 @@ export function ManifiestoEmbarque() {
         return
       }
 
+      // El id se genera aquí para poder usarlo como origen de la incidencia M13
+      const manifiestoId = crypto.randomUUID()
       let incidenciaId: string | null = null
       if (form.cond_presencia_plagas && form.plaga_descripcion.trim()) {
-        const { data: rep, error: eRep } = await tbl('m13_reportes').insert({
-          rancho_id: form.rancho_id,
-          org_id: orgId,
+        const r = await crearIncidenciaDesdeOrigen({
+          ranchoId: form.rancho_id,
           fecha: form.fecha,
-          auditor_nombre: profile?.nombre_completo ?? '',
-        }).select('id').single()
-        if (eRep) throw eRep
-
-        const { data: inc, error: eInc } = await tbl('m13_incidencias').insert({
-          reporte_id: (rep as any).id,
-          org_id: orgId,
+          origenModulo: 'M38',
+          origenRegistroId: manifiestoId,
+          origenClave: `M38:${manifiestoId}`,
           descripcion: form.plaga_descripcion.trim(),
-          orden: 1,
-        }).select('id').single()
-        if (eInc) throw eInc
-        incidenciaId = (inc as any).id
+        })
+        incidenciaId = r.incidencia_id
       }
 
-      const { data: man, error: eMan } = await tbl('m38_manifiestos').insert({
+      const { error: eMan } = await tbl('m38_manifiestos').insert({
+        id: manifiestoId,
         org_id: orgId,
         ...camposManifiesto(incidenciaId),
-      }).select('id').single()
+      })
       if (eMan) throw eMan
 
-      const manifiestoId = (man as any).id as string
 
       const rows = armarLineas(manifiestoId)
       if (rows.length > 0) {

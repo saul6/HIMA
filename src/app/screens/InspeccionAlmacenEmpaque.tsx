@@ -1,4 +1,5 @@
-﻿import { useState, useEffect, useCallback, useMemo } from 'react'
+﻿import { crearIncidenciaDesdeOrigen, camposOrigen, CONFLICTO_INCIDENCIA_ORIGEN } from '@/lib/m13Origen'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   ChevronLeft, FileDown, Loader2, AlertCircle, TriangleAlert, PackageOpen, X, WifiOff,
 } from 'lucide-react'
@@ -457,7 +458,7 @@ export function InspeccionAlmacenEmpaque() {
         operaciones: [
           ...(reporteId ? [
             opInsert('m13_reportes', { id: reporteId, org_id: profile.org_id!, rancho_id: registroActivo.rancho_id, fecha: dFecha, auditor_nombre: profile.nombre_completo ?? null }),
-            ...itemsNoCumple.map((p, i) => opInsert('m13_incidencias', { id: incidenciaIds[p.id], reporte_id: reporteId!, org_id: profile.org_id!, descripcion: dDescripciones[p.id].trim(), orden: i + 1 })),
+            ...itemsNoCumple.map((p, i) => opUpsert('m13_incidencias', { id: incidenciaIds[p.id], ...camposOrigen('M43', registroActivo.id, `M43:${registroActivo.id}:${diaNum}:${p.id}`), reporte_id: reporteId!, org_id: profile.org_id!, descripcion: dDescripciones[p.id].trim(), orden: i + 1 }, CONFLICTO_INCIDENCIA_ORIGEN)),
           ] : []),
           opCabecera('m43_dias', { id: diaId, registro_id: registroActivo.id, org_id: profile.org_id!, dia: diaNum, acciones_tomadas: dAcciones.trim() || null }, ['registro_id', 'dia']),
           ...puntos.map(p => opUpsert('m43_resultados', {
@@ -487,32 +488,21 @@ export function InspeccionAlmacenEmpaque() {
         (p) => (dValores[p.id] ?? 'cumple') === 'no_cumple' && dDescripciones[p.id]?.trim(),
       )
       if (itemsNoCumple.length > 0) {
-        const { data: repData, error: repErr } = await tbl
-          .from('m13_reportes')
-          .insert({
-            org_id:         profile.org_id,
-            rancho_id:      registroActivo.rancho_id,
-            fecha:          dFecha,
-            auditor_nombre: profile.nombre_completo ?? null,
-          })
-          .select('id')
-          .single()
-        if (repErr) throw repErr
-        const repId = repData.id as string
+        const diaNumInc = parseInt(dFecha.slice(8, 10))
+        let repId: string | null = null
         for (let i = 0; i < itemsNoCumple.length; i++) {
           const punto = itemsNoCumple[i]
-          const { data: incData, error: iErr } = await tbl
-            .from('m13_incidencias')
-            .insert({
-              reporte_id:  repId,
-              org_id:      profile.org_id,
-              descripcion: dDescripciones[punto.id].trim(),
-              orden:       i + 1,
-            })
-            .select('id')
-            .single()
-          if (iErr) throw iErr
-          incMap[punto.id] = incData.id as string
+          const r = await crearIncidenciaDesdeOrigen({
+            ranchoId: registroActivo.rancho_id,
+            fecha: dFecha,
+            origenModulo: 'M43',
+            origenRegistroId: registroActivo.id,
+            origenClave: `M43:${registroActivo.id}:${diaNumInc}:${punto.id}`,
+            descripcion: dDescripciones[punto.id].trim(),
+            reporteId: repId,
+          })
+          repId = r.reporte_id
+          incMap[punto.id] = r.incidencia_id
         }
       }
 

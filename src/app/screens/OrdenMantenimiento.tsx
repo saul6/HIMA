@@ -1,10 +1,11 @@
-﻿import { useState, useCallback, useMemo } from 'react'
+﻿import { crearIncidenciaDesdeOrigen, camposOrigen, CONFLICTO_INCIDENCIA_ORIGEN } from '@/lib/m13Origen'
+import { useState, useCallback, useMemo } from 'react'
 import { Wrench, Plus, FileText, Loader2, AlertTriangle, TriangleAlert, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useConexion } from '@/hooks/useConexion'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
-import { opInsert, opUpdate } from '@/lib/offline/construirOperaciones'
+import { opInsert, opUpdate, opUpsert } from '@/lib/offline/construirOperaciones'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -204,13 +205,14 @@ export function OrdenMantenimiento() {
                 fecha: form.fecha,
                 auditor_nombre: profile?.nombre_completo ?? null,
               }),
-              opInsert('m13_incidencias', {
+              opUpsert('m13_incidencias', {
                 id: incidenciaIdOff,
+                ...camposOrigen('M44', ordenIdOff, `M44:${ordenIdOff}`),
                 reporte_id: reporteIdOff,
                 org_id: orgId,
                 descripcion: 'Equipo de produccion reparado sin lavar y sanitizar despues del mantenimiento',
                 orden: 1,
-              }),
+              }, CONFLICTO_INCIDENCIA_ORIGEN),
               // Igual que con red: la incidencia se enlaza con un UPDATE posterior a la orden
               opUpdate('m44_ordenes', ordenIdOff, { incidencia_id: incidenciaIdOff }),
             ] : []),
@@ -240,23 +242,16 @@ export function OrdenMantenimiento() {
       // Regla de inocuidad: equipo de producción reparado sin sanitizar → M13
       if (form.equipo_produccion && !form.lavado_sanitizado) {
         try {
-          const { data: rep, error: eR } = await tbl('m13_reportes').insert({
-            org_id:         orgId,
-            rancho_id:      form.rancho_id,
-            fecha:          form.fecha,
-            auditor_nombre: profile?.nombre_completo ?? null,
-          }).select('id').single()
-          if (eR) throw eR
-
-          const { data: inc, error: eI } = await tbl('m13_incidencias').insert({
-            reporte_id:  rep.id,
-            org_id:      orgId,
+          const inc = await crearIncidenciaDesdeOrigen({
+            ranchoId: form.rancho_id,
+            fecha: form.fecha,
+            origenModulo: 'M44',
+            origenRegistroId: ordenId,
+            origenClave: `M44:${ordenId}`,
             descripcion: 'Equipo de produccion reparado sin lavar y sanitizar despues del mantenimiento',
-            orden:       1,
-          }).select('id').single()
-          if (eI) throw eI
+          })
 
-          await tbl('m44_ordenes').update({ incidencia_id: inc.id }).eq('id', ordenId)
+          await tbl('m44_ordenes').update({ incidencia_id: inc.incidencia_id }).eq('id', ordenId)
         } catch { /* best-effort — la orden ya fue guardada */ }
       }
 
