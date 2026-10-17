@@ -390,35 +390,3 @@ export async function registrarMovimiento(mov: {
   })
   if (error) throw error
 }
-
-export async function registrarSalidasAplicacion(
-  aplicacionId: string,
-  ranchoId: string,
-  productos: Array<{ productId: string; totalProduct: string }>,
-  registradoPor: string,
-  fecha: string,
-  orgId: string,
-): Promise<void> {
-  for (const p of productos) {
-    const cantidad = parseFloat(p.totalProduct)
-    if (!cantidad || cantidad <= 0) continue
-    try {
-      const saldoActual = await getSaldoActual(ranchoId, p.productId)
-      const balance = saldoActual - cantidad
-      const { error } = await supabase.from('inventario_movimientos').insert({
-        rancho_id: ranchoId,
-        producto_id: p.productId,
-        tipo: 'salida' as TipoMovimiento,
-        cantidad,
-        balance,
-        aplicacion_id: aplicacionId,
-        fecha,
-        registrado_por: registradoPor,
-        org_id: orgId,
-      })
-      if (error) console.warn(`[inv] insert error ${p.productId}:`, error.message)
-    } catch (err) {
-      console.warn(`[inv] salida fallida ${p.productId}:`, err)
-    }
-  }
-}

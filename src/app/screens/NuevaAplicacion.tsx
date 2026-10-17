@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useAuthContext } from "@/context/AuthContext";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useRanchos } from "@/hooks/useRanchos";
-import { crearAplicacion, insertarProductosAplicacion, registrarSalidasAplicacion } from "@/lib/queries";
+import { crearAplicacion, insertarProductosAplicacion } from "@/lib/queries";
 import { supabase } from "@/lib/supabase";
 import { generarAplicacionPDF } from "@/lib/pdf/generarPDF";
 import type {
@@ -424,6 +424,15 @@ export function NuevaAplicacion() {
       return;
     }
 
+    // Sin cantidad total el inventario no se descuenta
+    const sinCantidad = armarProductos().findIndex((pr) => !pr.total_producto || pr.total_producto <= 0)
+    if (sinCantidad >= 0) {
+      const p: any = formData.products[sinCantidad]
+      toast.error(`Falta la cantidad total de ${p.commercialName || 'un producto'}`);
+      setCurrentStep(2);
+      return;
+    }
+
     setSaving(true);
     try {
       if (!online) {
@@ -446,20 +455,9 @@ export function NuevaAplicacion() {
         await insertarProductosAplicacion(aplicacion.id, armarProductos(), profile!.org_id!);
       }
 
-      // ── Paso 3: registrar salidas de inventario (fire-and-forget) ────────
-      // total_producto recalculado con superficie final
-      if (formData.products.length > 0 && user) {
-        registrarSalidasAplicacion(
-          aplicacion.id,
-          formData.huerto,
-          salidasInventario(),
-          user.id,
-          formData.applicationDate,
-          profile!.org_id!,
-        ).catch((err) => console.warn('[inv] auto-salida:', err))
-      }
+      // La salida de inventario la registra la BD (trigger sobre aplicacion_productos).
 
-      // ── Paso 4: preparar props del PDF y pasar a firma ────────────────────
+      // ── Paso 3: preparar props del PDF y pasar a firma ────────────────────
       const ranchoSeleccionado = ranchos.find((r) => r.id === formData.huerto)
       const pdfProps = construirPdfProps(aplicacion, false)
 
