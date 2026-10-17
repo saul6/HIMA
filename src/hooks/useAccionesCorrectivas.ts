@@ -29,6 +29,11 @@ export interface CapaBandeja {
   realizo: string | null
   verifico: string | null
   estado: 'abierta' | 'cerrada'
+  /** Responsable asignado de la CAPA */
+  ownerUserId: string | null
+  /** Quien creó la CAPA / el hallazgo (la BD limita la edición a ellos y al admin) */
+  creadoPor: string | null
+  hallazgoCreadoPor: string | null
   fotos: AccionCorrectivaFoto[]
   /** Fotos de evidencia capturadas sin conexión que aún no se suben */
   fotosSinSubir?: number
@@ -111,7 +116,7 @@ export async function fetchBandeja(orgId: string): Promise<NcBandejaItem[]> {
 
   if (respuestaIds.length > 0) {
     const { data: hallazgos, error: hErr } = await tbl('aud_hallazgos')
-      .select('id, source_record_id, estado, detectado_en, descripcion, criterion_code, source_module_code')
+      .select('id, source_record_id, estado, detectado_en, descripcion, criterion_code, source_module_code, creado_por')
       .eq('origin_type', 'SELF_AUDIT')
       .eq('org_id', orgId)
       .in('source_record_id', respuestaIds)
@@ -124,7 +129,7 @@ export async function fetchBandeja(orgId: string): Promise<NcBandejaItem[]> {
     let capaList: any[] = [] // eslint-disable-line @typescript-eslint/no-explicit-any
     if (hallazgoIds.length > 0) {
       const { data: capas, error: cErr } = await tbl('aud_acciones_correctivas')
-        .select('id, hallazgo_id, causa_raiz, correccion_inmediata, accion_preventiva, comentario_accion, due_at')
+        .select('id, hallazgo_id, causa_raiz, correccion_inmediata, accion_preventiva, comentario_accion, due_at, owner_user_id, creado_por')
         .in('hallazgo_id', hallazgoIds)
         .eq('org_id', orgId)
       if (cErr) throw cErr
@@ -172,6 +177,9 @@ export async function fetchBandeja(orgId: string): Promise<NcBandejaItem[]> {
         realizo,
         verifico,
         estado: (h.estado as string) === 'CLOSED' ? 'cerrada' : 'abierta',
+        ownerUserId: capa.owner_user_id ?? null,
+        creadoPor: capa.creado_por ?? null,
+        hallazgoCreadoPor: h.creado_por ?? null,
         fotos: fotosMap.get(capa.id) ?? [],
       }
       capasMap.set(h.source_record_id as string, cb)
@@ -260,6 +268,8 @@ export function useAccionesCorrectivas(habilitado = true) {
     fecha_cumplimiento: string | null
     realizo: string | null
     verifico: string | null
+    /** false si el usuario no registró el hallazgo ni es admin: la BD no le deja editarlo */
+    actualizarHallazgo?: boolean
   }): Promise<{ hallazgoId: string; capaId: string }> {
     if (!profile?.org_id) throw new Error('Sin organización activa')
     const comentario = buildComentario(params.realizo, params.verifico)
@@ -296,11 +306,13 @@ export function useAccionesCorrectivas(habilitado = true) {
     }
 
     // Actualizar hallazgo existente
-    const { error: hErr } = await tbl('aud_hallazgos').update({
-      descripcion: params.no_conformidad ?? '',
-      detectado_en: params.fecha_deteccion || null,
-    }).eq('id', params.hallazgoId).eq('org_id', profile.org_id)
-    if (hErr) throw hErr
+    if (params.actualizarHallazgo !== false) {
+      const { error: hErr } = await tbl('aud_hallazgos').update({
+        descripcion: params.no_conformidad ?? '',
+        detectado_en: params.fecha_deteccion || null,
+      }).eq('id', params.hallazgoId).eq('org_id', profile.org_id)
+      if (hErr) throw hErr
+    }
 
     if (!params.capaId) {
       // Hallazgo sin CAPA — crear

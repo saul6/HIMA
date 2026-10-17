@@ -161,6 +161,7 @@ function GaleriaGuardadas({
 export function AccionesCorrectivas() {
   const navigate = useNavigate()
   const { profile } = useAuthContext()
+  const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
   const { items, loading, error, refetch, guardarCapa, cerrarCapa, agregarFoto, eliminarFotoDb } =
@@ -205,6 +206,14 @@ export function AccionesCorrectivas() {
     pendientes: items.filter((i) => i.estado === 'sin_capturar' || i.estado === 'abierta').length,
     cerradas: items.filter((i) => i.estado === 'cerrada').length,
   }
+
+  // Quien no es admin edita una CAPA existente solo si es su responsable o quien la creó
+  function puedeEditarCapa(item: NcBandejaItem | null): boolean {
+    const a = item?.accion
+    if (!a || esAdmin) return true
+    return a.ownerUserId === profile?.id || a.creadoPor === profile?.id
+  }
+  const soloLectura = !!selectedItem && !puedeEditarCapa(selectedItem)
 
   function abrirSheet(item: NcBandejaItem) {
     setSelectedItem(item)
@@ -288,6 +297,7 @@ export function AccionesCorrectivas() {
         fecha_cumplimiento: fFechaCumplimiento || null,
         realizo: fRealizo.trim() || null,
         verifico: fverifico.trim() || null,
+        actualizarHallazgo: esAdmin || !selectedItem.accion || selectedItem.accion.hallazgoCreadoPor === profile?.id,
       })
 
       for (const fp of fotosPendientes) {
@@ -298,7 +308,7 @@ export function AccionesCorrectivas() {
         await agregarFoto(capaId, path, fp.tipo, fp.leyenda.trim() || null)
       }
 
-      if (cerrar) {
+      if (cerrar && esAdmin) {
         await cerrarCapa(hallazgoId, capaId)
       }
 
@@ -306,7 +316,9 @@ export function AccionesCorrectivas() {
       cerrarSheet()
       toast.success(cerrar ? 'No conformidad cerrada' : 'Acción correctiva guardada')
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Error al guardar')
+      // Los errores de Supabase son objetos con message (no Error): así llegan los mensajes de la BD
+      const msg = (e as { message?: string } | null)?.message
+      toast.error(msg || 'Error al guardar')
     } finally {
       setGuardando(false)
     }
@@ -555,7 +567,14 @@ export function AccionesCorrectivas() {
             </h2>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <fieldset disabled={soloLectura} className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-w-0 border-0 m-0">
+          {soloLectura && (
+            <div className="rounded-xl p-3 bg-muted">
+              <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                Solo lectura: esta acción correctiva la edita su responsable asignado o el administrador.
+              </p>
+            </div>
+          )}
           {!online && (
             <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
               <p className="text-xs" style={{ color: 'var(--agro-warning-text)', fontWeight: 600 }}>
@@ -812,11 +831,12 @@ export function AccionesCorrectivas() {
               </p>
             </div>
           </div>
-        </div>
+        </fieldset>
 
         {/* Footer */}
+        {!soloLectura && (
         <div className="px-4 pb-4 pt-3 border-t border-border flex-shrink-0 space-y-2">
-          {online && selectedItem?.accion?.hallazgoId && selectedItem.accion.estado !== 'cerrada' && (
+          {esAdmin && online && selectedItem?.accion?.hallazgoId && selectedItem.accion.estado !== 'cerrada' && (
             <button
               onClick={() => handleGuardar(true)}
               disabled={guardando}
@@ -837,6 +857,7 @@ export function AccionesCorrectivas() {
             {online ? 'Guardar' : 'Guardar fotos sin conexión'}
           </button>
         </div>
+        )}
       </BottomSheet>
     </div>
   )

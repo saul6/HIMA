@@ -1531,7 +1531,7 @@ export function AuditorEjecucion() {
       setFormAccion({})
     } catch (e) {
       console.error('[AuditorEjecucion] guardarAccion', e)
-      toast.error('No se pudo guardar la acción. Reintenta.')
+      toast.error(/^Solo /.test((e as { message?: string })?.message ?? '') ? (e as { message: string }).message : 'No se pudo guardar la acción. Reintenta.')
     } finally {
       setGuardandoAccion(false)
     }
@@ -1902,7 +1902,7 @@ export function AuditorEjecucion() {
                 onEstadoChange={(id, estado) => {
                   actualizarEstadoHallazgo(id, estado).catch(e => {
                     console.error('[AuditorEjecucion] actualizarEstadoHallazgo', e)
-                    toast.error('No se pudo actualizar el estado. Reintenta.')
+                    toast.error(/^Solo /.test(e?.message ?? '') ? e.message : 'No se pudo actualizar el estado. Reintenta.')
                   })
                 }}
                 cargando={hallazgosHook.cargando}
