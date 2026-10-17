@@ -249,6 +249,7 @@ export function ChecklistDocumentos() {
             ranchoId={sitioId}
             codigoClave={codigoClave}
             puedeEditar={puedeEditar}
+            sinActividad={resumen?.sin_actividad ?? []}
             visitaAbierta={abierta ? { id: abierta.id, fecha: abierta.fecha } : null}
             hook={hook}
             onClose={() => setDetalleId(null)}
@@ -286,6 +287,7 @@ export function ChecklistDocumentos() {
                 ranchoId={sitioId}
                 diasIniciales={resumen?.config.dias_operacion ?? [1, 2, 3, 4, 5, 6, 7]}
                 resumenInicial={resumen?.config.resumen_semanal ?? false}
+                sinActividad={resumen?.sin_actividad ?? []}
                 hook={hook}
                 onClose={() => setAjustesAbierto(false)}
                 onGuardado={recargar}

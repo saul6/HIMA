@@ -9,9 +9,10 @@ import { Pildora } from './Pildora'
 import { NotasItem, codigoItem } from './ItemCard'
 import { ESTADO_REVISION_LABEL, TONO_ESTADO, fechaLarga, haceDias } from './constantes'
 import {
-  ESTADOS_REVISION, FRECUENCIAS,
-  type ChkEstadoRevision, type ChkFrecuencia, type ChkItem, type ChkRevisionHistorial, type useChecklist,
+  ESTADOS_REVISION, FRECUENCIAS, ORIGENES_FRECUENCIA,
+  type ChkEstadoRevision, type ChkFrecuencia, type ChkFrecuenciaOrigen, type ChkItem, type ChkSinActividad, type ChkRevisionHistorial, type useChecklist,
 } from '@/hooks/useChecklist'
+import { SinOperacion } from './SinOperacion'
 import { useColaboradoresChk, type ColaboradorChk } from './useColaboradores'
 
 type Hook = ReturnType<typeof useChecklist>
@@ -23,6 +24,7 @@ interface Props {
   ranchoId: string
   codigoClave: string
   puedeEditar: boolean
+  sinActividad: ChkSinActividad[]
   visitaAbierta: { id: string; fecha: string } | null
   hook: Hook
   onClose: () => void
@@ -38,7 +40,7 @@ export function ItemDetalleSheet(p: Props) {
 }
 
 function Contenido({
-  item, modoRevisar, ranchoId, codigoClave, puedeEditar, visitaAbierta, hook, onClose, onCambio,
+  item, modoRevisar, ranchoId, codigoClave, puedeEditar, sinActividad, visitaAbierta, hook, onClose, onCambio,
 }: Props & { item: ChkItem }) {
   const navigate = useNavigate()
   const { colaboradores } = useColaboradoresChk(puedeEditar)
@@ -53,7 +55,11 @@ function Contenido({
   const revisarRef = useRef<HTMLDivElement>(null)
 
   // Frecuencia
+  const origenInicial: ChkFrecuenciaOrigen =
+    item.frecuencia_origen && item.frecuencia_origen !== 'sugerida' ? item.frecuencia_origen : 'admin'
   const [frecuencia, setFrecuencia] = useState<ChkFrecuencia | null>(item.frecuencia)
+  const [origen, setOrigen] = useState<ChkFrecuenciaOrigen>(origenInicial)
+  const [fuente, setFuente] = useState(item.frecuencia_fuente ?? '')
   const [guardandoFrec, setGuardandoFrec] = useState(false)
 
   // Datos
@@ -96,14 +102,22 @@ function Contenido({
     onClose()
   }
 
-  async function cambiarFrecuencia(f: ChkFrecuencia) {
-    if (guardandoFrec || f === frecuencia) return
-    const previa = frecuencia
-    setFrecuencia(f)
+  const pideFuente = origen !== 'admin'
+  const frecuenciaCambio =
+    frecuencia !== item.frecuencia || origen !== origenInicial || (pideFuente && fuente.trim() !== (item.frecuencia_fuente ?? ''))
+
+  async function guardarFrecuencia() {
+    if (guardandoFrec || !frecuencia || !frecuenciaCambio) return
+    if (pideFuente && !fuente.trim()) { toast.warning('Escribe el documento y la revisión de donde sale'); return }
     setGuardandoFrec(true)
-    const res = await hook.itemGuardar(ranchoId, { frecuencia: f }, item.id)
+    const res = await hook.itemGuardar(ranchoId, {
+      frecuencia,
+      frecuencia_origen: origen,
+      frecuencia_fuente: pideFuente ? fuente.trim() : null,
+    }, item.id)
     setGuardandoFrec(false)
-    if (!res.ok) { setFrecuencia(previa); toast.error(res.mensaje ?? 'No se pudo guardar la frecuencia'); return }
+    if (!res.ok) { toast.error(res.mensaje ?? 'No se pudo guardar la frecuencia'); return }
+    toast.success('Frecuencia guardada')
     onCambio()
   }
 
@@ -206,7 +220,7 @@ function Contenido({
           <h3 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Frecuencia esperada</h3>
           <div className="flex flex-wrap gap-2">
             {FRECUENCIAS.map(f => (
-              <Pildora key={f.value} activa={frecuencia === f.value} onClick={() => cambiarFrecuencia(f.value)} disabled={guardandoFrec}>
+              <Pildora key={f.value} activa={frecuencia === f.value} onClick={() => setFrecuencia(f.value)} disabled={guardandoFrec}>
                 {f.label}
                 {item.frecuencia_sugerida === f.value && (
                   <span className="ml-1.5 text-[10px] opacity-80" style={{ fontWeight: 400 }}>Sugerida</span>
@@ -214,7 +228,39 @@ function Contenido({
               </Pildora>
             ))}
           </div>
+          <p className="text-xs text-muted-foreground pt-1">¿De dónde sale?</p>
+          <div className="flex flex-wrap gap-2">
+            {ORIGENES_FRECUENCIA.map(o => (
+              <Pildora key={o.value} activa={origen === o.value} onClick={() => setOrigen(o.value)} disabled={guardandoFrec}>
+                {o.label}
+              </Pildora>
+            ))}
+          </div>
+          {pideFuente && (
+            <Input
+              value={fuente}
+              maxLength={150}
+              placeholder="Documento y revisión (p. ej. POE-SAN-06 Rev. 02)"
+              onChange={e => setFuente(e.target.value)}
+            />
+          )}
+          {item.frecuencia_fijada_en && (
+            <p className="text-[11px] text-muted-foreground">Fijada el {fechaLarga(item.frecuencia_fijada_en)}</p>
+          )}
+          <button
+            type="button"
+            onClick={guardarFrecuencia}
+            disabled={!frecuenciaCambio || !frecuencia || guardandoFrec}
+            className="w-full h-10 rounded-lg border border-border text-sm transition-colors hover:bg-muted disabled:opacity-50"
+            style={{ fontWeight: 600 }}
+          >
+            {guardandoFrec ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Guardar frecuencia'}
+          </button>
         </section>
+      )}
+
+      {!esDoc && (
+        <SinOperacion ranchoId={ranchoId} itemId={item.id} periodos={sinActividad} puedeEditar={puedeEditar} hook={hook} onCambio={onCambio} />
       )}
 
       {puedeEditar && (

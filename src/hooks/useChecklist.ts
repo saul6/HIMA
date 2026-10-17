@@ -4,7 +4,17 @@ import { supabase } from '@/lib/supabase'
 export type ChkTipoItem = 'modulo' | 'formato' | 'documento'
 export type ChkEstadoRevision = 'al_dia' | 'actualizar' | 'corregir' | 'faltan_firmas' | 'sin_reportes' | 'otro'
 export type ChkFrecuencia = 'diaria' | 'semanal' | 'quincenal' | 'mensual' | 'evento' | 'no_aplica'
-export type ChkTipoNota = 'faltan_registros' | 'no_se_lleva' | 'faltan_firmas' | 'por_vencer' | 'vencido'
+export type ChkTipoNota =
+  | 'faltan_registros' | 'no_se_lleva' | 'faltan_firmas' | 'por_vencer' | 'vencido'
+  | 'faltan_items' | 'config_pendiente' | 'sin_actividad'
+export type ChkFrecuenciaOrigen = 'sugerida' | 'admin' | 'poe' | 'programa' | 'cliente' | 'norma'
+export type ChkFrecuenciaPunto = 'diario' | 'tercer_dia' | 'semanal' | 'quincenal' | 'mensual'
+
+export interface ChkFaltanDetalle {
+  item: string
+  frecuencia: ChkFrecuenciaPunto | string
+  faltan: number
+}
 
 export interface ChkNota {
   tipo: ChkTipoNota
@@ -12,6 +22,7 @@ export interface ChkNota {
   mes?: string
   faltan?: number
   rol?: string
+  detalle?: ChkFaltanDetalle[]
 }
 
 export interface ChkUltimaRevision {
@@ -34,6 +45,9 @@ export interface ChkItem {
   responsable_nombre: string | null
   frecuencia: ChkFrecuencia | null
   frecuencia_sugerida: ChkFrecuencia | null
+  frecuencia_origen: ChkFrecuenciaOrigen | null
+  frecuencia_fuente: string | null
+  frecuencia_fijada_en: string | null
   vence_el: string | null
   orden: number
   ultimo_registro: string | null
@@ -55,6 +69,18 @@ export interface ChkVisita {
   veces_reprogramada: number
 }
 
+export interface ChkSinActividad {
+  id: string
+  /** null = todo el sitio */
+  item_id: string | null
+  desde: string
+  hasta: string
+  motivo: string
+  creado_por: string | null
+  creado_en: string
+  vigente: boolean
+}
+
 export interface ChkResumen {
   hoy: string
   puede_editar: boolean
@@ -70,6 +96,7 @@ export interface ChkResumen {
   }
   items: ChkItem[]
   visitas: ChkVisita[]
+  sin_actividad?: ChkSinActividad[]
 }
 
 export interface ChkRevisionHistorial {
@@ -145,6 +172,19 @@ export function useChecklist() {
       p_event_id: p.eventId,
     })
 
+  const sinActividadRegistrar = (p: { rancho: string; desde: string; hasta: string; motivo: string; item?: string; eventId: string }) =>
+    llamar('chk_sin_actividad_registrar', {
+      p_rancho: p.rancho,
+      p_desde: p.desde,
+      p_hasta: p.hasta,
+      p_motivo: p.motivo.trim(),
+      p_item: p.item ?? null,
+      p_event_id: p.eventId,
+    })
+
+  const sinActividadAnular = (p: { id: string; motivo: string }) =>
+    llamar('chk_sin_actividad_anular', { p_id: p.id, p_motivo: p.motivo.trim() })
+
   const historial = async (itemId: string) => {
     const res = await llamar<ChkRevisionHistorial[]>('chk_historial', { p_item: itemId })
     return res.ok ? { ...res, data: (Array.isArray(res.data) ? res.data : []) as ChkRevisionHistorial[] } : res
@@ -181,7 +221,7 @@ export function useChecklist() {
 
   return {
     resumen, loading, error, cargar,
-    itemGuardar, configGuardar, revisar, historial,
+    itemGuardar, configGuardar, revisar, historial, sinActividadRegistrar, sinActividadAnular,
     visitaProgramar, visitaReprogramar, visitaCancelar, visitaTerminar, visitaEventos,
   }
 }
@@ -203,3 +243,19 @@ export const FRECUENCIAS: { value: ChkFrecuencia; label: string }[] = [
   { value: 'evento', label: 'Cuando ocurra' },
   { value: 'no_aplica', label: 'No aplica' },
 ]
+
+export const ORIGENES_FRECUENCIA: { value: ChkFrecuenciaOrigen; label: string }[] = [
+  { value: 'admin', label: 'Lo decidí yo' },
+  { value: 'poe', label: 'POE' },
+  { value: 'programa', label: 'Programa' },
+  { value: 'cliente', label: 'Cliente' },
+  { value: 'norma', label: 'Norma' },
+]
+
+export const FRECUENCIA_PUNTO_LABEL: Record<string, string> = {
+  diario: 'cada día',
+  tercer_dia: 'cada 3 días',
+  semanal: 'cada semana',
+  quincenal: 'cada 15 días',
+  mensual: 'cada mes',
+}

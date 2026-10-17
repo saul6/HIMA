@@ -5,13 +5,15 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { Switch } from '@/app/components/ui/switch'
 import { Pildora } from './Pildora'
 import { DIAS_SEMANA } from './constantes'
-import type { useChecklist } from '@/hooks/useChecklist'
+import { SinOperacion } from './SinOperacion'
+import type { ChkSinActividad, useChecklist } from '@/hooks/useChecklist'
 
 interface Props {
   open: boolean
   ranchoId: string
   diasIniciales: number[]
   resumenInicial: boolean
+  sinActividad: ChkSinActividad[]
   hook: ReturnType<typeof useChecklist>
   onClose: () => void
   onGuardado: () => void
@@ -25,7 +27,7 @@ export function AjustesSheet({ open, ...resto }: Props) {
   )
 }
 
-function Formulario({ ranchoId, diasIniciales, resumenInicial, hook, onClose, onGuardado }: Omit<Props, 'open'>) {
+function Formulario({ ranchoId, diasIniciales, resumenInicial, sinActividad, hook, onClose, onGuardado }: Omit<Props, 'open'>) {
   const [dias, setDias] = useState<number[]>(diasIniciales)
   const [resumen, setResumen] = useState(resumenInicial)
   const [guardando, setGuardando] = useState(false)
@@ -66,6 +68,7 @@ function Formulario({ ranchoId, diasIniciales, resumenInicial, hook, onClose, on
         </div>
         <Switch checked={resumen} onCheckedChange={setResumen} aria-label="Resumen semanal" />
       </section>
+      <SinOperacion ranchoId={ranchoId} itemId={null} periodos={sinActividad} puedeEditar hook={hook} onCambio={onGuardado} />
       <button
         type="button"
         onClick={guardar}

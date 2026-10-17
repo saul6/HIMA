@@ -1,4 +1,4 @@
-import { AlertTriangle, CalendarClock, FileX, PenLine, Clock, type LucideIcon } from 'lucide-react'
+import { AlertTriangle, CalendarClock, FileX, PenLine, Clock, ListChecks, Settings2, MoonStar, type LucideIcon } from 'lucide-react'
 import type { ChkEstadoRevision, ChkTipoNota } from '@/hooks/useChecklist'
 
 export interface TonoChip { fill: string; text: string }
@@ -9,6 +9,9 @@ export const TONO_NOTA: Record<ChkTipoNota, { icono: LucideIcon } & TonoChip> = 
   faltan_firmas: { icono: PenLine, fill: 'var(--agro-success-fill)', text: 'var(--agro-success-text)' },
   por_vencer: { icono: Clock, fill: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)' },
   vencido: { icono: CalendarClock, fill: 'var(--agro-danger-fill)', text: 'var(--agro-danger-text)' },
+  faltan_items: { icono: ListChecks, fill: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)' },
+  config_pendiente: { icono: Settings2, fill: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)' },
+  sin_actividad: { icono: MoonStar, fill: 'var(--muted)', text: 'var(--muted-foreground)' },
 }
 
 export const ESTADO_REVISION_LABEL: Record<ChkEstadoRevision, string> = {

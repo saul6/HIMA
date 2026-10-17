@@ -1,5 +1,7 @@
-import { ClipboardCheck } from 'lucide-react'
-import type { ChkItem } from '@/hooks/useChecklist'
+import { useState } from 'react'
+import { useNavigate } from 'react-router'
+import { ChevronDown, ClipboardCheck } from 'lucide-react'
+import { FRECUENCIAS, FRECUENCIA_PUNTO_LABEL, type ChkItem, type ChkNota } from '@/hooks/useChecklist'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { ESTADO_REVISION_LABEL, TONO_ESTADO, TONO_NOTA, haceDias } from './constantes'
 
@@ -7,21 +9,72 @@ export function codigoItem(item: ChkItem, codigoClave: string): string | null {
   return item.codigo_formato ? codigoFormato(item.codigo_formato, codigoClave) : null
 }
 
+function detalleFaltan(d: NonNullable<ChkNota['detalle']>[number]): string {
+  const frec = FRECUENCIA_PUNTO_LABEL[d.frecuencia] ?? d.frecuencia
+  return `${d.item} · ${frec} · ${d.faltan} ${d.faltan === 1 ? 'día' : 'días'}`
+}
+
+/** "Cada día · POE-SAN-06 Rev. 02" / "Cada día · sugerida" / "Cada día" */
+export function textoFrecuencia(item: ChkItem): string | null {
+  if (!item.frecuencia || item.tipo === 'documento') return null
+  const base = FRECUENCIAS.find(f => f.value === item.frecuencia)?.label
+  if (!base) return null
+  if (item.frecuencia_origen === 'sugerida') return `${base} · sugerida`
+  if (item.frecuencia_fuente && item.frecuencia_origen && item.frecuencia_origen !== 'admin') return `${base} · ${item.frecuencia_fuente}`
+  return base
+}
+
 export function NotasItem({ item }: { item: ChkItem }) {
+  const navigate = useNavigate()
+  const [abiertas, setAbiertas] = useState<Record<number, boolean>>({})
   if (!item.notas?.length) return null
   return (
     <ul className="space-y-1.5">
       {item.notas.map((n, i) => {
         const t = TONO_NOTA[n.tipo] ?? TONO_NOTA.faltan_registros
         const Icono = t.icono
+        const expandible = n.tipo === 'faltan_items' && !!n.detalle?.length
+        const abierta = !!abiertas[i]
+        const cuerpo = (
+          <>
+            <Icono className="w-3.5 h-3.5 mt-px flex-shrink-0" />
+            <span className="min-w-0 flex-1 text-left">{n.texto}</span>
+            {expandible && <ChevronDown className={`w-3.5 h-3.5 mt-px flex-shrink-0 transition-transform ${abierta ? 'rotate-180' : ''}`} />}
+          </>
+        )
         return (
           <li
             key={`${n.tipo}-${i}`}
-            className="flex items-start gap-2 rounded-lg px-2.5 py-1.5 text-xs"
+            className="rounded-lg px-2.5 py-1.5 text-xs"
             style={{ backgroundColor: t.fill, color: t.text }}
           >
-            <Icono className="w-3.5 h-3.5 mt-px flex-shrink-0" />
-            <span className="min-w-0">{n.texto}</span>
+            {expandible ? (
+              <button
+                type="button"
+                aria-expanded={abierta}
+                onClick={e => { e.stopPropagation(); setAbiertas(a => ({ ...a, [i]: !a[i] })) }}
+                className="w-full flex items-start gap-2"
+              >
+                {cuerpo}
+              </button>
+            ) : (
+              <div className="flex items-start gap-2">{cuerpo}</div>
+            )}
+            {expandible && abierta && (
+              <ul className="mt-1.5 ml-5 space-y-0.5">
+                {n.detalle!.map((d, j) => <li key={j}>{detalleFaltan(d)}</li>)}
+              </ul>
+            )}
+            {n.tipo === 'config_pendiente' && item.modulo_ruta && (
+              <button
+                type="button"
+                onClick={e => { e.stopPropagation(); navigate(item.modulo_ruta!) }}
+                className="mt-1 ml-5 underline"
+                style={{ fontWeight: 600 }}
+              >
+                Abrir formato
+              </button>
+            )}
           </li>
         )
       })}
@@ -56,6 +109,7 @@ export function ItemCard({ item, codigoClave, puedeEditar, onAbrir, onRevisar }:
           {codigo && <p className="text-[11px] text-muted-foreground">{codigo}</p>}
           <p className="text-sm text-foreground leading-snug" style={{ fontWeight: 600 }}>{item.nombre}</p>
           {responsable && <p className="text-xs text-muted-foreground mt-0.5">{responsable}</p>}
+          {textoFrecuencia(item) && <p className="text-xs text-muted-foreground mt-0.5">{textoFrecuencia(item)}</p>}
         </div>
         <div className="flex-shrink-0 text-right space-y-1">
           {rev && tono ? (
