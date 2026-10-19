@@ -1,8 +1,8 @@
 ﻿import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import {
-  ChevronLeft, RefreshCw, Loader2, TriangleAlert, X,
-  AlertTriangle, CheckCircle2, Filter, Users,
+  RefreshCw, Loader2, TriangleAlert, X,
+  AlertTriangle, CheckCircle2, Filter,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useActividadEquipo } from '@/hooks/useActividadEquipo'
@@ -10,6 +10,7 @@ import type { ActividadItem } from '@/hooks/useActividadEquipo'
 import { marcarCorreccion } from '@/lib/queries'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -200,29 +201,20 @@ export function ActividadEquipo() {
     <div className="min-h-full pb-safe-nav">
 
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4 flex items-center gap-3">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-1 text-muted-foreground"
-          aria-label="Volver"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <Users className="w-5 h-5 text-primary flex-shrink-0" />
-          <h1 className="text-foreground truncate" style={{ fontWeight: 600 }}>
-            Actividad del equipo
-          </h1>
-        </div>
-        <button
-          onClick={refetch}
-          className="p-2 text-muted-foreground hover:text-primary transition-colors"
-          aria-label="Actualizar"
-          disabled={loading}
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-        </button>
-      </header>
+      <EncabezadoPantalla
+        titulo="Actividad"
+        alRegresar={() => navigate(-1)}
+        acciones={
+          <button
+            onClick={refetch}
+            className="p-2 text-muted-foreground hover:text-primary transition-colors"
+            aria-label="Actualizar"
+            disabled={loading}
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        }
+      />
 
       <div className="p-4 space-y-4">
 

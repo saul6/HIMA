@@ -13,6 +13,7 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { SPRING_SUAVE } from '@/lib/motion'
 import { ordenarAlfabetico } from '@/lib/ordenAlfabetico'
 import { useContadorAnimado } from '@/hooks/useContadorAnimado'
+import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import {
   type ModuloKey,
   type RegistroHistorial,
@@ -1115,11 +1116,7 @@ export function BibliotecaHistorial() {
     <div className="min-h-full pb-safe-nav">
 
       {/* Header — mismo patrón que Inventario: arriba a la izquierda, a todo lo ancho, con línea inferior */}
-      <header className="bg-card border-b border-border px-4 py-4">
-        <h1 className="text-foreground" style={{ fontWeight: 600 }}>
-          Historial de Registros
-        </h1>
-      </header>
+      <EncabezadoPantalla titulo="Historial" />
 
       <div className="p-4 space-y-4">
 

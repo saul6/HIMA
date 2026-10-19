@@ -5,7 +5,7 @@ import { useAuditoriasPGFS } from '@/hooks/useAuditoriasPGFS'
 import type { AuditoriaListItem } from '@/hooks/useAuditoriasPGFS'
 import { LEYENDA_LEGAL_PGFS } from '@/lib/auditoriasPGFS'
 import { Fab } from '@/app/components/Fab'
-import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 
 const ROLES_PERMITIDOS = ['auditor', 'admin_org', 'super_admin']
 
@@ -69,7 +69,7 @@ export default function AuditoriasPrimusGFS() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background pb-24">
-      <ModuloHeader tituloFallback="Auditorías PrimusGFS" subtitulo="v3.2" onBack={() => navigate(-1)} />
+      <EncabezadoPantalla titulo="Auditorías" subtitulo="v3.2" alRegresar={() => navigate(-1)} />
 
       {/* Leyenda legal */}
       <div className="mx-4 mt-4 rounded-xl border border-border bg-card px-4 py-3 flex gap-3">

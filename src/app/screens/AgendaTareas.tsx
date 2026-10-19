@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import type { CSSProperties } from 'react'
 import { motion, AnimatePresence, useReducedMotion, LayoutGroup } from 'motion/react'
 import {
-  ChevronLeft, Plus, Loader2, AlertTriangle,
+  Plus, Loader2, AlertTriangle,
   Calendar, MapPin, FileText, ChevronDown, ChevronUp, ExternalLink,
   Clock, Camera, Trash2, CheckCircle2, RotateCcw, XCircle, Image, Lock, PenLine, Copy,
 } from 'lucide-react'
@@ -25,6 +25,7 @@ import { SPRING_SUAVE } from '@/lib/motion'
 import { useContadorAnimado } from '@/hooks/useContadorAnimado'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -1689,18 +1690,7 @@ export function AgendaTareas() {
   return (
     <div className="min-h-full pb-safe-nav">
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('/')}
-            className="p-1 md:hidden"
-            aria-label="Volver"
-          >
-            <ChevronLeft className="w-6 h-6 text-foreground" />
-          </button>
-          <h1 className="text-foreground" style={{ fontWeight: 600 }}>Agenda</h1>
-        </div>
-      </header>
+      <EncabezadoPantalla titulo="Agenda" alRegresar={() => navigate('/')} />
 
       <div className="p-4 space-y-4">
 

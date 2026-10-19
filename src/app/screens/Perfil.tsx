@@ -12,6 +12,7 @@ import { FirmaSvg } from '@/app/components/FirmaSvg'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { contarPendientes } from '@/lib/offline/outbox'
 import { isUpdateDisponible, UPDATE_DISPONIBLE_EVENT, ejecutarActualizacion } from '@/lib/offline/actualizacionSegura'
+import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 
 const ROL_LABEL: Record<string, string> = {
   super_admin: 'Super Admin',
@@ -160,11 +161,7 @@ export function Perfil() {
   return (
     <div className="min-h-full pb-safe-nav">
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4">
-        <h1 className="text-foreground" style={{ fontWeight: 600 }}>
-          Perfil y Configuración
-        </h1>
-      </header>
+      <EncabezadoPantalla titulo="Perfil" />
 
       <div className="p-4 space-y-4">
         {/* Tarjeta de usuario */}

@@ -20,6 +20,7 @@ import type {
   InternaResumen,
 } from '@/hooks/useMetricas'
 import { bandaCumplimiento, type BandaCumplimiento } from '@/lib/metricas/bandaCumplimiento'
+import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 
 // Mismo timing/curva que el resto de la app (ver NuevaAplicacion.tsx) — constante
 // local para no repetir el array de easing en cada transición de este archivo.
@@ -1414,13 +1415,7 @@ export function Metricas() {
 
   return (
     <div className="flex flex-col min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-      {/* Header móvil */}
-      <div className="flex items-center gap-3 px-4 py-4 md:hidden border-b border-border" style={{ backgroundColor: 'var(--card)' }}>
-        <BarChart3 className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--primary)' }} />
-        <h1 className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>
-          {esAdmin ? 'Métricas' : 'Mis métricas'}
-        </h1>
-      </div>
+      <EncabezadoPantalla titulo="Métricas" fijo={false} />
 
       {/* Filtros */}
       <Filtros

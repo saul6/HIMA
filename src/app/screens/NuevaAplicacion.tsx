@@ -1,5 +1,6 @@
 ﻿import { useState, useMemo, useEffect, useRef } from "react";
-import { ChevronLeft, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import { EncabezadoPantalla } from "@/app/components/EncabezadoPantalla";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -41,6 +42,7 @@ const r4 = (n: number) => parseFloat(n.toFixed(4));
 // Mismo timing/curva que el resto de la app (ver Layout.tsx) — constante
 // local para no repetir el array de easing en cada transición de este archivo.
 const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
+const PASOS_NOMBRE = ["Parcela y cultivo", "Productos", "Aplicación y agua", "Cierre"] as const
 const STEP_TRANSITION = { duration: 0.22, ease: EASE_OUT };
 
 export function NuevaAplicacion() {
@@ -480,16 +482,12 @@ export function NuevaAplicacion() {
   return (
     <div className="min-h-full pb-safe-nav">
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4 sticky top-0 z-20">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/")} className="p-1 md:hidden" aria-label="Volver">
-            <ChevronLeft className="w-6 h-6 text-foreground" />
-          </button>
-          <h1 className="text-foreground" style={{ fontWeight: 600 }}>Nueva Aplicación</h1>
-        </div>
-
-        {/* Indicador de paso */}
-        <div className="mt-4 flex justify-center">
+      <EncabezadoPantalla
+        titulo="Nueva Aplicación"
+        alRegresar={() => navigate("/")}
+        debajoCentrado
+        debajo={
+        <div className="flex flex-col items-center gap-2">
           <div className="relative inline-flex items-center gap-2">
             {/* Línea de fondo */}
             <div className="absolute left-[6px] right-[6px] top-1/2 -translate-y-1/2 h-0.5 rounded-full bg-muted-foreground/20" />
@@ -527,8 +525,14 @@ export function NuevaAplicacion() {
               );
             })}
           </div>
+        {currentStep <= 4 && (
+          <p className="text-xs text-muted-foreground">
+            Paso {currentStep} de 4 · {PASOS_NOMBRE[currentStep - 1]}
+          </p>
+        )}
         </div>
-      </header>
+        }
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Banner: alerta cuando la aplicación supera 7 días desde la recomendación */}

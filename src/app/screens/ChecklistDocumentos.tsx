@@ -5,7 +5,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useChecklist, type ChkItem, type ChkTipoItem } from '@/hooks/useChecklist'
-import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Fab } from '@/app/components/Fab'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { ItemCard } from '@/app/components/checklist/ItemCard'
@@ -119,8 +119,8 @@ export function ChecklistDocumentos() {
 
   return (
     <div className="min-h-full pb-safe-nav bg-background">
-      <ModuloHeader
-        tituloFallback="Checklist de documentos"
+      <EncabezadoPantalla
+        titulo="Checklist"
         acciones={puedeEditar && sitioId ? (
           <button
             type="button"

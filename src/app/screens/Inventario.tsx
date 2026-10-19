@@ -28,6 +28,7 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { Fab } from '@/app/components/Fab'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'
+import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 
 const LOW_STOCK = 5
 
@@ -490,12 +491,10 @@ export function Inventario() {
 
   return (
     <div className="min-h-full pb-safe-nav">
-      <header className="bg-card border-b border-border px-4 py-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-foreground" style={{ fontWeight: 600 }}>
-            Inventario de Plaguicidas
-          </h1>
-          {esCampo && (
+      <EncabezadoPantalla
+        titulo="Inventario"
+        acciones={
+          esCampo ? (
             <button
               onClick={() => setShowExportSheet(true)}
               className="flex items-center gap-1.5 px-3 h-8 rounded-full bg-card border border-border text-foreground hover:bg-muted transition-colors text-xs"
@@ -504,13 +503,12 @@ export function Inventario() {
               <FileText className="w-3.5 h-3.5" />
               REG-01
             </button>
-          )}
-        </div>
-
-        {/* Toggle vista — solo para roles con productor asignado */}
-        {!esOperario && (
+          ) : undefined
+        }
+        debajo={
+        !esOperario ? (
           <LayoutGroup id="inventario-vista">
-            <div className="flex gap-1 mt-3 bg-muted p-1 rounded-lg">
+            <div className="flex gap-1 bg-muted p-1 rounded-lg md:w-72">
               {(["rancho", "productor"] as Vista[]).map((v) => (
                 <button
                   key={v}
@@ -539,8 +537,9 @@ export function Inventario() {
               ))}
             </div>
           </LayoutGroup>
-        )}
-      </header>
+        ) : undefined
+        }
+      />
 
       <div className="p-4 space-y-4">
         {/* Buscador */}
