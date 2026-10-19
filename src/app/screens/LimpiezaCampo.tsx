@@ -507,7 +507,7 @@ export function LimpiezaCampo() {
                       {(lote.metadatos as any)?.rancho_nombre ?? '—'}
                     </span>
                     <div className="mt-2">
-                      <ChipOffline estado={lote.estado} />
+                      <ChipOffline lote={lote} />
                     </div>
                   </div>
                 </div>

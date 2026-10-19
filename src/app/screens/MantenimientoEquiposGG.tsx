@@ -320,7 +320,7 @@ export function MantenimientoEquiposGG() {
                       <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{lote.metadatos.rancho_nombre}</p>
                     )}
                   </div>
-                  <ChipOffline estado={lote.estado} />
+                  <ChipOffline lote={lote} />
                 </div>
               </div>
             ))}

@@ -221,7 +221,7 @@ export function Tensiometros() {
                     <p className="text-sm font-semibold leading-snug">{lote.metadatos?.rancho_nombre ?? lote.descripcion}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{lote.metadatos?.fecha ? formatFecha(lote.metadatos.fecha) : ''}</p>
                   </div>
-                  <ChipOffline estado={lote.estado} />
+                  <ChipOffline lote={lote} />
                 </div>
               </div>
             ))}

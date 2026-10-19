@@ -1,4 +1,4 @@
-import { createBrowserRouter, useRouteError, Navigate } from "react-router";
+import { createBrowserRouter, useRouteError, useNavigate, Navigate } from "react-router";
 
 function RedirCalendario() {
   return <Navigate to="/auditor/agenda?tab=calendario" replace />
@@ -34,13 +34,15 @@ function RootError() {
 
 function InocuidadError() {
   const err = useRouteError() as Error | null
+  const navigate = useNavigate()
+  if (err) console.error('[InocuidadError]', err)
   return (
     <div className="flex flex-col items-center justify-center min-h-full px-6 py-16 gap-4">
       <p className="text-sm text-center" style={{ color: 'var(--agro-danger-text)' }}>
-        {err?.message ?? 'Error inesperado en el módulo.'}
+        Algo falló al mostrar esta pantalla. Tus datos guardados sin conexión siguen en la cola.
       </p>
       <button
-        onClick={() => window.location.assign('/')}
+        onClick={() => navigate('/', { replace: true })}
         className="text-sm underline"
         style={{ color: 'var(--primary)' }}
       >

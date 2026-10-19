@@ -789,7 +789,7 @@ export function InspeccionPreoperacionalCooler() {
                   <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
                     {(lote.metadatos as any)?.rancho_nombre ?? '—'}
                   </span>
-                  <div className="mt-2"><ChipOffline estado={lote.estado} /></div>
+                  <div className="mt-2"><ChipOffline lote={lote} /></div>
                 </div>
               ))}
               {registros.map((reg) => (

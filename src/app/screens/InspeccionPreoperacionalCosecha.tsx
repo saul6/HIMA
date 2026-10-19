@@ -658,7 +658,7 @@ export function InspeccionPreoperacionalCosecha() {
               {lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').map((lote) => (
                 <div key={lote.id} className="bg-card border border-border rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <ChipOffline estado={lote.estado} />
+                    <ChipOffline lote={lote} />
                   </div>
                   <div className="text-sm text-foreground" style={{ fontWeight: 600 }}>
                     {(lote.metadatos as any)?.rancho_nombre ?? '—'}
@@ -770,7 +770,7 @@ export function InspeccionPreoperacionalCosecha() {
                         {formatFechaCorta((lote.metadatos as any)?.fecha ?? '')}
                       </span>
                     </div>
-                    <ChipOffline estado={lote.estado} />
+                    <ChipOffline lote={lote} />
                     <div className="text-xs text-muted-foreground mt-1">{(lote.metadatos as any)?.items_count ?? 0} ítems</div>
                   </div>
                 ))}

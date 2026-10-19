@@ -664,7 +664,7 @@ export function MantenimientoPreventivo() {
               {lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').map((lote) => (
                 <div key={lote.id} className="bg-card border border-border rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <ChipOffline estado={lote.estado} />
+                    <ChipOffline lote={lote} />
                   </div>
                   <div className="text-sm text-foreground" style={{ fontWeight: 600 }}>
                     {(lote.metadatos as any)?.rancho_nombre ?? '—'}
@@ -795,7 +795,7 @@ export function MantenimientoPreventivo() {
                         Día {(lote.metadatos as any)?.dia ?? '—'}
                       </span>
                     </div>
-                    <ChipOffline estado={lote.estado} />
+                    <ChipOffline lote={lote} />
                   </div>
                 ))}
                 {diasConData.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'dia' && (l.metadatos as any)?.registro_id === registroActivo?.id).length === 0 ? (

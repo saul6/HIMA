@@ -260,7 +260,7 @@ export function ControlHerramientas() {
                     <p className="text-sm font-semibold">{lote.metadatos?.herramienta ?? lote.descripcion}</p>
                     <p className="text-xs text-muted-foreground">{lote.metadatos?.rancho_nombre}</p>
                   </div>
-                  <ChipOffline estado={lote.estado} />
+                  <ChipOffline lote={lote} />
                 </div>
               </div>
             ))}

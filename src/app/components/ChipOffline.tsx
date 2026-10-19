@@ -2,11 +2,12 @@ import { WifiOff } from 'lucide-react'
 import type { LoteOutbox } from '@/lib/offline/tipos'
 
 interface Props {
-  lote: LoteOutbox
+  lote?: LoteOutbox
 }
 
 // Chip de estado para lotes pendientes/rechazados en la lista de cada módulo.
 export function ChipOffline({ lote }: Props) {
+  if (!lote) return null
   return (
     <span
       className="text-[10px] px-2 py-0.5 rounded flex-shrink-0 flex items-center gap-1"

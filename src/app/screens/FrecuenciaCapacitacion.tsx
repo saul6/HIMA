@@ -235,7 +235,7 @@ export function FrecuenciaCapacitacion() {
                       {lote.metadatos?.mes != null ? `${MESES[lote.metadatos.mes - 1]} ${lote.metadatos.anio}` : ''}
                     </p>
                   </div>
-                  <ChipOffline estado={lote.estado} />
+                  <ChipOffline lote={lote} />
                 </div>
               </div>
             ))}

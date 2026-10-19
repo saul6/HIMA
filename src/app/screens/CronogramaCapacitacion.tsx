@@ -206,7 +206,7 @@ export function CronogramaCapacitacion() {
                     <p className="text-sm font-semibold leading-snug">{lote.metadatos?.cargo ?? lote.descripcion}</p>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{lote.metadatos?.tematica ?? ''}</p>
                   </div>
-                  <ChipOffline estado={lote.estado} />
+                  <ChipOffline lote={lote} />
                 </div>
               </div>
             ))}

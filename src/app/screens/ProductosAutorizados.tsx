@@ -294,7 +294,7 @@ export function ProductosAutorizados() {
                     <p className="text-sm font-semibold">{lote.metadatos?.nombre_comercial ?? lote.descripcion}</p>
                     <p className="text-xs text-muted-foreground">{lote.metadatos?.cultivo}</p>
                   </div>
-                  <ChipOffline estado={lote.estado} />
+                  <ChipOffline lote={lote} />
                 </div>
               </div>
             ))}
