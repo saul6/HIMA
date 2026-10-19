@@ -322,42 +322,33 @@ Fuente de verdad: `src/styles/theme.css`, bloque `@theme inline`.
 
 ---
 
-## 9. PDFs — ESTÁNDAR HOMOGÉNEO
+## 9. PDFs — ESTÁNDAR HOMOGÉNEO (diseño nuevo)
 
-### Componentes compartidos (`src/lib/pdf/components/`)
+**Kit compartido:** `src/lib/pdf/disenoNuevo/` es el estándar de todos los PDF de módulos. Lo definió el PDF del M13 (el aprobado). No dupliques layout en cada PDF.
 
-Todos los módulos deben usar estos componentes. No duplicar lógica de layout en cada PDF.
-
-| Archivo | Exporta |
+| Archivo | Para qué |
 |---|---|
-| `tokens.ts` | `PC` — constantes de colores PDF (navyBar1, section, border, footerGray, etc.) |
-| `PdfPage.tsx` | `TopBar`, `PdfPageFrame`, `PdfFooter` |
-| `PdfHeader.tsx` | Encabezado estándar con logo isotipo embebido |
-| `PdfTable.tsx` | Tabla estándar |
-| `PdfSectionBanner.tsx` | Banda de sección con color |
-| `PdfMonthlyMatrix.tsx` | Matriz mensual tipo calendario (M9, M11, M19, M23, etc.) |
-| `PdfFieldGrid.tsx` | Grid de campos de datos generales |
-| `PdfChecklist.tsx` | Lista de verificación con marcas |
-| `PdfSignatures.tsx` | actualizado: acepta `firma?: FirmaParaPdf` por ítem; imprime imagen si vigente, aviso texto si desactualizada, en blanco si null |
-| `PdfLegend.tsx` | Leyenda de códigos al pie |
+| `PaginaEstandar.tsx` (`PaginaEstandar`, `Seccion`, `fechaEmisionHoy`) | Página A4 con marca de agua, encabezado compacto en páginas 2+, pie y franja de datos. Úsala por defecto. |
+| `PaginaMatrizMensual.tsx`, `MatrizMensual.tsx` | Matrices mensuales tipo calendario (formato oficial: no convertir en tabla). |
+| `PaginaBitacoraMensual.tsx` | Bitácoras de limpieza mensuales (M28–M37). |
+| `TablaDatos.tsx` | Tablas: encabezado repetido, filas que no se parten, bandas y encabezado agrupado. |
+| `Franja.tsx`, `Encabezado.tsx`, `TituloSeccion.tsx`, `Icono.tsx` | Franja de datos con iconos, encabezados, títulos e iconos vectoriales. |
+| `PdfFirmas.tsx` | Firmas (Realizó, Verificó/Responsable de Inocuidad, "Enterado (Encargado)", firma única). Opción `lineaCorta` (apagada; la usa M50). |
+| `Fotos.tsx`, `Checklist.tsx`, `Leyenda.tsx`, `SiNoTexto.tsx` | Evidencia fotográfica completa (una columna, "Foto n de N"), listas de verificación, leyenda de códigos, respuestas Si/No. |
+| `Pie.tsx`, `MarcaDeAgua.tsx`, `estilos.ts`, `negativo.ts` | Pie estándar, marca de agua (isotipo a color), estilo de página, color de negativos. |
 
-**Assets:**
-- `src/lib/pdf/assets/logoMadyPdf.ts` → `LOGO_MADY_PDF` (isotipo como base64)
+**Assets y tokens:** `src/lib/pdf/assets/logoMadyPdf.ts` (`LOGO_MADY_PDF`), `src/lib/pdf/components/tokens.ts` (`PC`, paleta PDF) y `components/texto.ts` (`partirPalabraLarga`). `components/PdfPage.tsx` (`TopBar`, `PdfFooter`) lo usa **solo** el motor de auditoría (M14–M18 y reporte del auditor): no lo uses en PDF nuevos. Los componentes viejos (`PdfHeader`, `PdfTable`, `PdfFieldGrid`, `PdfMonthlyMatrix`, `PdfSectionBanner`, `PdfSignatures`, `PdfChecklist`, `PdfLegend`) se eliminaron.
 
-**FirmaParaPdf** (`@/hooks/useFirmasRegistro`): tipo compartido `{ png, firmante, fecha, sello, estado }`. Helper `firmaDetalleAParaPdf(firma)` convierte `FirmaDetalle` (con imagen) al formato PDF.
+**FirmaParaPdf** (`@/hooks/useFirmasRegistro`): tipo compartido `{ png, firmante, fecha, sello, estado }`. Helper `firmaDetalleAParaPdf(firma)` convierte `FirmaDetalle` (con imagen) al formato PDF. Si hay firma digital vigente se imprime imagen, fecha y sello; si está desactualizada, un aviso; si no hay, la línea queda en blanco para firma a mano.
 
-### Pie de página estándar (PdfFooter)
-```
-[código del formato]          M.A.D.Y. | Gestión inteligente para la inocuidad          Página X de Y
-```
-
-### Restricciones técnicas
-- Fuente: Helvetica (built-in, sin carga externa)
-- **Sí se usan** acentos (á, é, í, ó, ú) y ñ — Helvetica los soporta correctamente
-- **No usar** símbolos Unicode especiales (✓, ✗, →) — usar texto ('Si', 'No', 'N/A', 'X', etc.)
-- `@react-pdf/renderer` para páginas individuales
-- `pdf-lib` solo para concatenar múltiples blobs en BibliotecaHistorial (`mergePDFBlobs`)
-- **Sin "DuoMind"** en ningún PDF
+### Reglas de los PDF
+- **Pie:** izquierda el código del formato (`codigoFormato(clave, codigoClave)`); centro **"M.A.D.Y. | Inocuidad Inteligente"** (lema oficial, igual en todos los PDF, incluidos M14–M18 y el auditor); derecha "Página X de Y".
+- **Franja de datos:** "Formato / Folio / Emisión". Si el folio repite la fecha o el periodo del registro, no se imprime dos veces: queda "Periodo" o "Fecha" una vez y **Emisión = fecha de generación** (`fechaEmisionHoy()`, basada en `hoyMX()`). Un formato sin folio propio usa `sinFolio`.
+- **Rojo solo en fallos:** el color `PC.negativo` se aplica **por campo o columna**, nunca por el texto. En `TablaDatos`, solo las columnas con `negativo: true`; en `SiNoTexto`, solo con `fallaSiNo`; el resto de "No" / "X" (selecciones, estados, preguntas donde "No" es lo bueno, como "Requirió incapacidad") se imprime normal. Nunca se cambia el texto, solo el color. No uses verde.
+- **Etiquetas fijas con acentos** ("Año", "Compañía", "Químico / Insumo", "Próxima cosecha", "Benéficos", "Realizó"...). Nunca se modifican los datos capturados.
+- **Márgenes** de 40 pt, fondo blanco, Helvetica (acentos y ñ sí), sin sombras ni degradados. **No** símbolos Unicode especiales (✓, ✗, →): usa 'Si', 'No', 'N/A', 'X'.
+- `@react-pdf/renderer` para páginas individuales; `pdf-lib` solo para concatenar blobs en BibliotecaHistorial (`mergePDFBlobs`). Sin "DuoMind" en ningún PDF.
+- **Código de formato:** hoy cada PDF imprime el que ya traía (varios son literales). Si cada organización tendrá su propio código por formato, lo decide Saúl y llegará con su tabla en BD.
 
 ### Patrón de archivos PDF por módulo
 ```
