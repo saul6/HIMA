@@ -25,9 +25,10 @@ const PATH_TITLES: Record<string, string> = {
   '/nueva-aplicacion': 'Nueva Aplicación',
   '/inventario': 'Inventario',
   '/historial': 'Historial',
-  '/equipo/actividad': 'Actividad del equipo',
+  '/equipo/actividad': 'Actividad',
   '/inocuidad/agenda': 'Agenda',
-  '/inocuidad/checklist': 'Checklist de documentos',
+  '/inocuidad/checklist': 'Checklist',
+  '/inocuidad/auditorias-primusgfs': 'Auditorías',
   '/perfil': 'Perfil',
   '/perfil/mi-organizacion': 'Mi organización',
   '/metricas': 'Métricas',
@@ -129,7 +130,8 @@ export function Layout() {
     ? modulos.find(m => m.ruta === location.pathname)
     : undefined;
   const categoriaLabel = moduloActual?.categoria ? CATEGORIA_MAP[moduloActual.categoria]?.label : undefined;
-  const topbarTitulo = categoriaLabel ?? pageTitle;
+  // Las pantallas del menú lateral llevan exactamente el nombre del menú
+  const topbarTitulo = PATH_TITLES[location.pathname] ?? categoriaLabel ?? pageTitle;
   const ThemeIcon = theme === 'dark' ? Moon : Sun;
   const themeLabel = theme === 'dark' ? 'Oscuro' : 'Claro';
 
