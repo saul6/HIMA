@@ -32,7 +32,8 @@ import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
-import { InputContador } from '@/app/components/InputContador'
+import { InputContador } from '@/app/components/InputContador'
+import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -423,6 +424,7 @@ export function ManifiestoEmbarque() {
 
       {/* Lista */}
       <div className="p-4 space-y-3">
+        <PendientesOffline modulo="M38" />
         {error && (
           <div className="flex items-start gap-2 rounded-xl p-3"
             style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>

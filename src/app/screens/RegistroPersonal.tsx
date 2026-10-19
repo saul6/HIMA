@@ -30,6 +30,7 @@ import { useFirmaContext } from '@/context/FirmaContext'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
+import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -503,6 +504,7 @@ export function RegistroPersonal() {
 
       {/* Lista */}
       <div className="px-4 pb-6 space-y-3">
+        <PendientesOffline modulo="M47" />
         {error && (
           <div className="flex items-start gap-2 rounded-xl p-3"
             style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>

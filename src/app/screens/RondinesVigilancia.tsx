@@ -40,7 +40,8 @@ import { useFirmaContext } from '@/context/FirmaContext'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { TextareaContador } from '@/app/components/TextareaContador'
-import { limiteTexto } from '@/lib/limitesTexto'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -643,6 +644,7 @@ export function RondinesVigilancia() {
           </div>
         )}
 
+        <PendientesOffline modulo="M46" />
         {loading ? (
           <ListaSkeleton />
         ) : rondines.length === 0 ? (

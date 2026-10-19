@@ -67,7 +67,7 @@ export async function leerConCache<T>(
   // Sin red: acepta caché aunque sea vieja, hasta maxEdadOffline
   const cached = await leerDesdeCache(true)
   if (cached) return cached
-  throw new Error('Sin conexión y sin datos en caché')
+  throw new Error('Abre este módulo una vez con internet para poder usarlo sin conexión')
 }
 
 export async function precargarCache(

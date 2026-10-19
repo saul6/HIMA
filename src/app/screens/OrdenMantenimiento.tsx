@@ -28,7 +28,8 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { TextareaContador } from '@/app/components/TextareaContador'
-import { limiteTexto } from '@/lib/limitesTexto'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -309,6 +310,7 @@ export function OrdenMantenimiento() {
 
       {/* Lista */}
       <div className="p-4 space-y-3">
+        <PendientesOffline modulo="M44" />
         {error && (
           <div
             className="flex items-start gap-2 rounded-xl p-3"

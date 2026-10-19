@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useCallback, useRef, type ReactNode } from 'react'
 import { useMisModulos, type ModuloVisible } from '@/hooks/useMisModulos'
 import { useTerminoSitio, resolverTerminos, type TerminosSitio } from '@/hooks/useTerminoSitio'
 import { useAuthContext } from '@/context/AuthContext'
@@ -11,6 +11,7 @@ import { fetchSaldosInventario } from '@/lib/offline/saldosInventario'
 import { fetchEstacionesOrg, fetchNfcActivo, CLAVE_ESTACIONES_ORG, CLAVE_NFC_ACTIVO } from '@/lib/offline/resolverNfcOffline'
 import { claveCacheEstaciones } from '@/hooks/useM21EstacionesRancho'
 import { fetchBandeja } from '@/hooks/useAccionesCorrectivas'
+import { precargarListasRecientes } from '@/lib/offline/precargaListas'
 
 interface ModulosContextValue {
   modulos: ModuloVisible[]
@@ -45,6 +46,9 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
       clearTermino()
     }
   }, [user?.id, authLoading, refetch, clear, refetchTermino, clearTermino])
+
+  const modulosRef = useRef(modulos)
+  modulosRef.current = modulos
 
   // Precarga en segundo plano todos los recursos necesarios para trabajar sin red
   const ejecutarPrecarga = useCallback(async () => {
@@ -429,6 +433,7 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
     await precargarM21(userId, orgId!)
     // Precarga de listas de trazabilidad M48 por sitio (LR, LPT, LC, FE)
     await precargarM48(userId, orgId!)
+    await precargarListasRecientes(userId, orgId!, new Set(modulosRef.current.filter((m) => m.desbloqueado).map((m) => m.codigo)))
   }, [userId, orgId])
 
   async function precargarDiasM9(userId: string, orgId: string) {

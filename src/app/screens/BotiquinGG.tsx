@@ -37,6 +37,7 @@ import { generarInventarioBotiquinGGPDF, generarInventarioBotiquinGGConsolidadoP
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
+import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -301,6 +302,7 @@ export function BotiquinGG() {
 
       {/* Lista */}
       <div className="p-4 space-y-3">
+        <PendientesOffline modulo="M73" />
         {error && (
           <div
             className="flex items-start gap-2 rounded-xl p-3"

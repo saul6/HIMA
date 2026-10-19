@@ -38,6 +38,7 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -905,6 +906,7 @@ export function RegistroFertilizacion() {
 
           {/* Lista */}
           <div className="p-4 space-y-3">
+            <PendientesOffline modulo="M8" />
             {mostrarSkeletonRegistros ? (
               <ListaSkeleton />
             ) : registros.length > 0 ? (

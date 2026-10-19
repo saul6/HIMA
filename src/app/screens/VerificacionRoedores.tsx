@@ -30,6 +30,7 @@ import {
 } from '@/lib/pdf/m70/generarVerificacionRoedoresPDF'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
+import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -280,6 +281,7 @@ export function VerificacionRoedores() {
 
       {/* Lista */}
       <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
+        <PendientesOffline modulo="M70" />
         {mostrarSkeleton ? (
           <ListaSkeleton />
         ) : loading && grupos.length === 0 ? (

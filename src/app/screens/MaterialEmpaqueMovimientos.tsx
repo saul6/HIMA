@@ -27,7 +27,8 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
-import { InputContador } from '@/app/components/InputContador'
+import { InputContador } from '@/app/components/InputContador'
+import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 const tbl = (name: string) => (supabase as any).from(name)
@@ -314,6 +315,7 @@ export function MaterialEmpaqueMovimientos() {
 
       {/* Lista */}
       <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 space-y-3">
+        <PendientesOffline modulo="M42" />
         {loading && <p className="text-center text-sm py-8" style={{ color: 'var(--muted-foreground)' }}>Cargando...</p>}
         {error && <p className="text-center text-sm py-8" style={{ color: 'var(--agro-danger-text)' }}>{error}</p>}
         {!loading && !error && movimientos.length === 0 && (

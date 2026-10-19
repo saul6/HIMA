@@ -644,7 +644,7 @@ export function MantenimientoPreventivo() {
             >
               <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
               <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>
-                Error al cargar registros. Verifica tu conexión.
+                {error.includes('Abre este módulo') ? error : 'Error al cargar registros. Verifica tu conexión.'}
               </p>
             </div>
           )}

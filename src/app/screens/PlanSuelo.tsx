@@ -29,6 +29,7 @@ import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -253,6 +254,7 @@ export function PlanSuelo() {
       </div>
 
       <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
+        <PendientesOffline modulo="M59" />
         {mostrarSkeleton ? (
           <ListaSkeleton />
         ) : loading && registros.length === 0 ? (

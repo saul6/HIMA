@@ -406,6 +406,14 @@ export function FirmasRegistro({
 
   const mostrarSkeletonFirmas = useMostrarCarga(loadingFirmas, !!firma)
 
+  if (!online && loadingFirmas && !firma) {
+    return (
+      <div className="border-t border-border mt-3 pt-3">
+        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Firmas: disponible con conexión</p>
+      </div>
+    )
+  }
+
   if (mostrarSkeletonFirmas) {
     return (
       <div className="border-t border-border mt-3 pt-3">
@@ -642,7 +650,9 @@ export function FirmasRegistro({
         inert={!mostrarHistorial ? '' : undefined}
       >
         <div className="mt-2 space-y-2">
-          {mostrarSkeletonHistorial ? (
+          {!online && cargandoHistorial ? (
+            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Disponible con conexión</p>
+          ) : mostrarSkeletonHistorial ? (
             <SkeletonFilas rows={2} />
           ) : historial.length === 0 ? (
             <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>

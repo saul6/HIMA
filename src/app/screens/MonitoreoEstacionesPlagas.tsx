@@ -47,7 +47,8 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro, type MapaFirmas } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { TextareaContador } from '@/app/components/TextareaContador'
-import { limiteTexto } from '@/lib/limitesTexto'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -1079,6 +1080,7 @@ export function MonitoreoEstacionesPlagas() {
       {/* Lista */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 pb-28 flex flex-col gap-3">
+          <PendientesOffline modulo="M21" />
           {mostrarSkeleton && (
             <ListaSkeleton />
           )}
@@ -1147,7 +1149,10 @@ export function MonitoreoEstacionesPlagas() {
             {/* Lista de estaciones */}
             {estRanchoId && (
               <>
-                {loadingEst && estaciones.length === 0 && (
+                {loadingEst && estaciones.length === 0 && !online && (
+                  <p className="text-sm text-muted-foreground text-center py-4">Disponible con conexión</p>
+                )}
+                {loadingEst && estaciones.length === 0 && online && (
                   <SkeletonFilas rows={2} />
                 )}
                 {!loadingEst && estaciones.length === 0 && (

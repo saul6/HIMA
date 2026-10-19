@@ -32,6 +32,7 @@ import { useFirmaContext } from '@/context/FirmaContext'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
+import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -286,11 +287,12 @@ export function EntradasSalidasPreFrio() {
 
       {/* Lista */}
       <div className="p-4 space-y-3">
+        <PendientesOffline modulo="M40" />
         {error && (
           <div className="flex items-start gap-2 rounded-xl p-3"
             style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
             <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
-            <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>Error al cargar registros.</p>
+            <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>{error.includes('Abre este módulo') ? error : 'Error al cargar registros.'}</p>
           </div>
         )}
 

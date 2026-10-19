@@ -26,7 +26,8 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { TextareaContador } from '@/app/components/TextareaContador'
-import { limiteTexto } from '@/lib/limitesTexto'
+import { limiteTexto } from '@/lib/limitesTexto'
+import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 const HORAS = Array.from({ length: 24 }, (_, i) => i + 1)
@@ -348,6 +349,7 @@ export function TemperaturasConservador() {
 
       {/* Lista */}
       <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 space-y-3">
+        <PendientesOffline modulo="M41" />
         {loading && (
           <p className="text-center text-sm py-8" style={{ color: 'var(--muted-foreground)' }}>Cargando...</p>
         )}

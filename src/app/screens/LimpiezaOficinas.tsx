@@ -587,7 +587,7 @@ export function LimpiezaOficinas() {
             <div className="flex items-start gap-2 rounded-xl p-3"
               style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
               <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
-              <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>Error al cargar registros.</p>
+              <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>{error.includes('Abre este módulo') ? error : 'Error al cargar registros.'}</p>
             </div>
           )}
           {loading ? (
