@@ -204,6 +204,7 @@ export function ActividadEquipo() {
       <EncabezadoPantalla
         titulo="Actividad"
         alRegresar={() => navigate(-1)}
+        accionesEscritorio="contenido"
         acciones={
           <button
             onClick={refetch}
@@ -220,15 +221,26 @@ export function ActividadEquipo() {
 
         {/* Barra de filtros */}
         <div>
-          <button
-            onClick={() => setFiltrosAbiertos((v) => !v)}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Filter className="w-4 h-4" />
-            <span style={{ fontWeight: hayFiltrosActivos ? 600 : 400 }}>
-              Filtros{hayFiltrosActivos ? ' (activos)' : ''}
-            </span>
-          </button>
+          <div className="flex items-center justify-between gap-3">
+            <button
+              onClick={() => setFiltrosAbiertos((v) => !v)}
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Filter className="w-4 h-4" />
+              <span style={{ fontWeight: hayFiltrosActivos ? 600 : 400 }}>
+                Filtros{hayFiltrosActivos ? ' (activos)' : ''}
+              </span>
+            </button>
+            {/* Escritorio: el botón de actualizar vive en esta fila (en celular está en el header) */}
+            <button
+              onClick={refetch}
+              className="hidden md:block p-2 -my-2 text-muted-foreground hover:text-primary transition-colors"
+              aria-label="Actualizar"
+              disabled={loading}
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
 
           {filtrosAbiertos && (
             <div className="mt-3 space-y-3 p-4 bg-card border border-border rounded-xl">
