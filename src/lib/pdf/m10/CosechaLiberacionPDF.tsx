@@ -81,7 +81,8 @@ function formatObservaciones(inicio: string | null, fin: string | null, obs: str
 }
 
 // Si en navy, No en rojo suave (el texto no cambia)
-const siNoCelda = (v: boolean) => ({ texto: siNo(v), color: v ? PC.m13Navy : PC.negativo, negrita: true })
+// "No" en rojo solo donde es un fallo (verificación semanal); un lote no liberado es un estado, no un fallo
+const siNoCelda = (v: boolean, fallaSiNo = false) => ({ texto: siNo(v), color: v || !fallaSiNo ? PC.m13Navy : PC.negativo, negrita: true })
 
 // ── CosechaLiberacionPagina ───────────────────────────────────────────────────
 
@@ -126,7 +127,7 @@ export function CosechaLiberacionPagina({
             lib.destino_final ?? '—',
             lib.fruta_proceso_kg != null ? lib.fruta_proceso_kg.toString() : '—',
             lib.encargado_nombre ?? '—',
-            siNoCelda(lib.verificacion_semanal),
+            siNoCelda(lib.verificacion_semanal, true),
             formatObservaciones(lib.hora_inicio_cosecha, lib.hora_fin_cosecha, lib.observaciones),
           ])}
         />

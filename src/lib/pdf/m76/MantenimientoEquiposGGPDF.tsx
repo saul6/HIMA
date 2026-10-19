@@ -90,7 +90,6 @@ export function MantenimientoEquiposGGPagina({ fila, orgNombre, firmaRealizo }: 
         <TablaDatos
           columnas={COLS_CHECK}
           anchoTotal={ANCHO_UTIL.portrait}
-          sinNegativos
           filas={CHECK_LABELS.map(({ key, label }) => {
             const val = (fila[key] as CheckVal | null) ?? 'si'
             return [label, marca(val === 'si'), marca(val === 'no'), marca(val === 'na')]

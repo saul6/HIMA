@@ -74,7 +74,6 @@ export function MonitoreoRoedoresPage({
         {/* La "X" marca que la trampa cumple el criterio; no es un valor negativo */}
         <TablaDatos
           columnas={columnas}
-          sinNegativos
           filas={matriz.map((row) => [
             `${row.criterio_numero}. ${row.criterio_descripcion}`,
             ...Array.from({ length: num_trampas }, (_, ti) => (row.trampas[ti] ? { texto: 'X', color: PC.m13Navy, negrita: true } : '')),

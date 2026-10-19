@@ -88,7 +88,6 @@ export function VerificacionRoedoresPagina({ rancho, orgNombre, filas, firmaReal
       <TablaDatos
         columnas={COLUMNAS}
         encabezadoSuperior={GRUPOS}
-        sinNegativos
         fuente={7}
         fuenteEnc={6.5}
         filas={filas.map((f) => [

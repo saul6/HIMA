@@ -133,7 +133,6 @@ export function MuestrasLaboratorioPagina({
           columnas={columnas}
           fuente={7}
           fuenteEnc={6.5}
-          sinNegativos
           encabezadoSuperior={[
             { texto: '', ancho: NUM_W + FECHA_W + HORA_W + DESC_W },
             { texto: 'm.o. Indicadores', ancho: indicadores.length * MICRO_W },

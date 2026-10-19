@@ -67,7 +67,6 @@ export function EmpleadosGGPagina({ rancho, orgNombre, empleados, firmaRealizo }
         <TablaDatos
           columnas={COLS}
           anchoTotal={ANCHO_UTIL.portrait}
-          sinNegativos
           vacio="Sin empleados registrados"
           filas={empleados.map((emp) => [
             { texto: emp.nombre, negrita: true },

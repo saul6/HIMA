@@ -106,7 +106,7 @@ export function OrdenMantenimientoPDF({
 
         <Seccion titulo="CONDICIONES DE ENTREGA">
           <SiNoTexto valor={equipo_produccion} texto={'¿Se reparó un equipo de producción?'} />
-          <SiNoTexto valor={lavado_sanitizado} texto={'¿El equipo fue lavado y sanitizado después de la reparacion?'} />
+          <SiNoTexto fallaSiNo valor={lavado_sanitizado} texto={'¿El equipo fue lavado y sanitizado después de la reparacion?'} />
         </Seccion>
 
         {observaciones ? (

@@ -121,7 +121,6 @@ export function MonitoreoPlaguasPagina({
         anchoTotal={ANCHO_UTIL.portrait}
         fuente={6.5}
         fuenteEnc={6}
-        sinNegativos
         filas={[...datos, ...pie]}
       />
 

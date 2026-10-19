@@ -162,7 +162,6 @@ export function RegistroPersonalPDF({
             encabezadoSuperior={grupos}
             fuente={6}
             fuenteEnc={5.5}
-            sinNegativos
             filas={trabajadores.map((w) => [
               String(w.numero),
               t(w.puesto),

@@ -41,7 +41,7 @@ function labelRespuesta(r: 'si' | 'no' | 'na'): string {
 const COLS: ColumnaDato[] = [
   { texto: 'No.', ancho: 28, align: 'center' },
   { texto: 'Criterio', ancho: 240 },
-  { texto: 'Respuesta', ancho: 45, align: 'center' },
+  { texto: 'Respuesta', ancho: 45, align: 'center', negativo: true },
   { texto: 'Comentario', ancho: 220 },
 ]
 

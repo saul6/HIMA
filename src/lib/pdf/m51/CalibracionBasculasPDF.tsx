@@ -49,7 +49,7 @@ const COLS: ColumnaDato[] = [
   { texto: 'Punto calibración', ancho: 110, align: 'left' },
   { texto: 'Peso medido (kg)', ancho: 70, align: 'center' },
   { texto: 'Desviación', ancho: 65, align: 'center' },
-  { texto: 'Dentro tolerancia', ancho: 70, align: 'center' },
+  { texto: 'Dentro tolerancia', ancho: 70, align: 'center', negativo: true },
   { texto: 'Realizó', ancho: 70, align: 'left' },
   { texto: 'Observaciones', ancho: 90, align: 'left' },
 ]

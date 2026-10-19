@@ -88,7 +88,6 @@ export function MipObservacionPDFPage({
           columnas={COLS}
           fuente={8}
           fuenteEnc={6}
-          sinNegativos
           filas={items.map((item) => [
             String(item.numero ?? '—'),
             item.texto,
