@@ -74,7 +74,7 @@ export function PdfFooter({ moduloCodigo, pendienteSync }: PdfFooterProps) {
         {pendienteSync ? `${moduloCodigo}  |  Pendiente de sincronizar` : moduloCodigo}
       </Text>
       <Text style={{ fontSize: 7, color: PC.footerGray }}>
-        M.A.D.Y. | Gestión inteligente para la inocuidad
+        M.A.D.Y. | Inocuidad Inteligente
       </Text>
       <Text
         style={{ fontSize: 7, color: PC.footerGray }}
