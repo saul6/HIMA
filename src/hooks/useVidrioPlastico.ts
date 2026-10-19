@@ -9,6 +9,7 @@ import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M7FilaMaterial {
   id: string
+  created_at?: string | null
   area: string
   material_equipo: string
   protegido: boolean
@@ -72,6 +73,7 @@ export function useVidrioPlastico() {
         }
         grouped.get(key)!.materiales.push({
           id: row.id,
+          created_at: row.created_at,
           area: row.area,
           material_equipo: row.material_equipo,
           protegido: row.protegido,

@@ -546,7 +546,7 @@ export function InspeccionVidrioPlastico() {
         observaciones: f.observaciones.trim() || null,
       })),
     }
-    await generarVidrioPlasticoPDF(pdfProps, rancho.nombre, inspFecha)
+    await generarVidrioPlasticoPDF(pdfProps, rancho.nombre, inspFecha, inspIds)
   }
 
   async function handleDescargarPDF(insp: M7Inspeccion) {
@@ -575,7 +575,7 @@ export function InspeccionVidrioPlastico() {
           observaciones: m.observaciones,
         })),
       }
-      await generarVidrioPlasticoPDF(pdfProps, insp.rancho_nombre, insp.fecha)
+      await generarVidrioPlasticoPDF(pdfProps, insp.rancho_nombre, insp.fecha, insp.materiales.map((m) => m.id))
     } catch {
       toast.error('No se pudo generar el PDF')
     } finally {

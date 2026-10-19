@@ -163,8 +163,10 @@ async function generarBlobM6(id: string, orgId: string): Promise<Blob> {
     .single()
   if (error) throw error
   const r = data as any
+  const firmasM6 = await obtenerFirmasDeFilasParaPdf('M6', [id])
   return pdf(
     <BotiquinPDF
+      {...firmasM6}
       folio={id.slice(0, 8).toUpperCase()}
       rancho={r.ranchos?.nombre ?? '—'}
       ranchoCodigo={r.ranchos?.codigo ?? '—'}
@@ -190,8 +192,10 @@ async function generarBlobM7(ranchoId: string, fecha: string, orgId: string): Pr
   if (error) throw error
   if (!data?.length) throw new Error('Sin datos M7')
   const r0 = data[0] as any
+  const firmasM7 = await obtenerFirmasDeFilasParaPdf('M7', (data as any[]).map((f) => f.id))
   return pdf(
     <VidrioPlasticoPDF
+      {...firmasM7}
       folio={(r0.id as string).slice(0, 8).toUpperCase()}
       rancho={r0.ranchos?.nombre ?? '—'}
       ranchoCodigo={r0.ranchos?.codigo ?? '—'}
@@ -219,8 +223,10 @@ async function generarBlobM8(ranchoId: string, fecha: string, orgId: string): Pr
   if (error) throw error
   if (!data?.length) throw new Error('Sin datos M8')
   const r0 = data[0] as any
+  const firmasM8 = await obtenerFirmasDeFilasParaPdf('M8', (data as any[]).map((f) => f.id))
   return pdf(
     <FertilizacionPDF
+      {...firmasM8}
       folio={(r0.id as string).slice(0, 8).toUpperCase()}
       rancho={r0.ranchos?.nombre ?? '—'}
       ranchoCodigo={r0.ranchos?.codigo ?? '—'}
@@ -256,8 +262,10 @@ async function generarBlobM10(ranchoId: string, fecha: string, orgId: string): P
   if (error) throw error
   if (!data?.length) throw new Error('Sin datos M10')
   const r0 = data[0] as any
+  const firmasM10 = await obtenerFirmasDeFilasParaPdf('M10', (data as any[]).map((f) => f.id))
   return pdf(
     <CosechaLiberacionPDF
+      {...firmasM10}
       rancho={r0.ranchos?.nombre ?? '—'}
       ranchoCodigo={r0.ranchos?.codigo ?? '—'}
       fecha={fecha}

@@ -8,6 +8,7 @@ import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M10FilaLiberacion {
   id: string
+  created_at?: string | null
   sector: string | null
   cantidad_bandejas: number | null
   lote_liberado: boolean
@@ -76,6 +77,7 @@ export function useM10CosechaLiberacion() {
         }
         grouped.get(key)!.liberaciones.push({
           id: row.id,
+          created_at: row.created_at,
           sector: row.sector,
           cantidad_bandejas: row.cantidad_bandejas,
           lote_liberado: row.lote_liberado,

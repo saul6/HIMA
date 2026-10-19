@@ -24,9 +24,8 @@ import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import {
   useFirmasRegistro,
-  obtenerFirmasParaPdf,
-  firmaDetalleAParaPdf,
-  type MapaFirmas,
+  idRepresentativoJornada,
+  firmasDeFilasParaTarjeta,
 } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
@@ -403,18 +402,14 @@ export function RegistroCosechaLiberacion() {
 
   async function handleDescargarPDF(registro: M10Registro) {
     const key = `${registro.rancho_id}|${registro.fecha}`
-    const priId = registro.liberaciones[0]?.id
+    const idsReg = registro.liberaciones.map((l) => l.id)
     // Si obligatoria y sin firma del creador, abrir paso de firma desde la card
-    if (obligatoria && priId && !firmas[priId]?.realizo) {
+    if (obligatoria && idsReg.length > 0 && !firmasDeFilasParaTarjeta(firmas, idsReg)?.realizo) {
       toast.info('Este registro necesita firma antes de generar el PDF')
       return
     }
     setGenerandoPDF(key)
     try {
-      const firmasConImagen = priId
-        ? await obtenerFirmasParaPdf('M10', [priId])
-        : {}
-      const firmasReg = priId ? firmasConImagen[priId] : undefined
       const pdfProps: CosechaLiberacionPaginaProps = {
         rancho: registro.rancho_nombre,
         ranchoCodigo: registro.rancho_codigo,
@@ -434,10 +429,8 @@ export function RegistroCosechaLiberacion() {
           hora_fin_cosecha: lib.hora_fin_cosecha,
           observaciones: lib.observaciones,
         })),
-        firmaRealizo: firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null,
-        firmaVerifico: firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null,
       }
-      await generarCosechaLiberacionPDF(pdfProps)
+      await generarCosechaLiberacionPDF(pdfProps, idsReg)
     } catch {
       toast.error('No se pudo generar el PDF')
     } finally {
@@ -532,8 +525,9 @@ export function RegistroCosechaLiberacion() {
             const key = `${reg.rancho_id}|${reg.fecha}`
             const lotesLiberados = reg.liberaciones.filter((l) => l.lote_liberado).length
             const totalBandejas  = reg.liberaciones.reduce((s, l) => s + (l.cantidad_bandejas ?? 0), 0)
-            const priId = reg.liberaciones[0]?.id
-            const firmaReg = priId ? firmas[priId] : undefined
+            const idsReg = reg.liberaciones.map((l) => l.id)
+            const priId = idRepresentativoJornada(reg.liberaciones)
+            const firmaReg = firmasDeFilasParaTarjeta(firmas, idsReg)
             const pendienteDeFirma = obligatoria && priId && !firmaReg?.realizo
             return (
               <div key={key} className="bg-card border border-border rounded-xl p-4"
@@ -739,16 +733,9 @@ export function RegistroCosechaLiberacion() {
                 ids={pendienteFirma.ids}
                 descripcion={`Cosecha y Liberación · ${formatFecha(pendienteFirma.fechaReg)} · ${pendienteFirma.ranchoNombre}`}
                 obligatoria={obligatoria}
-                onFirmadoYPDF={async (firmasMapa: MapaFirmas) => {
-                  const priId = pendienteFirma.ids[0]
-                  const firmasReg = priId ? firmasMapa[priId] : undefined
-                  const pdfPropsConFirma: CosechaLiberacionPaginaProps = {
-                    ...pendienteFirma.pdfProps,
-                    firmaRealizo: firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null,
-                    firmaVerifico: firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null,
-                  }
+                onFirmadoYPDF={async () => {
                   try {
-                    await generarCosechaLiberacionPDF(pdfPropsConFirma)
+                    await generarCosechaLiberacionPDF(pendienteFirma.pdfProps, pendienteFirma.ids)
                   } catch {
                     toast.warning('Registro firmado — el PDF no se pudo generar. Descárgalo desde el historial.')
                   }
@@ -759,7 +746,7 @@ export function RegistroCosechaLiberacion() {
                 }}
                 onDespues={!obligatoria ? async () => {
                   try {
-                    await generarCosechaLiberacionPDF(pendienteFirma.pdfProps)
+                    await generarCosechaLiberacionPDF(pendienteFirma.pdfProps, pendienteFirma.ids)
                   } catch {
                     toast.warning('Registro guardado — el PDF no se pudo generar. Descárgalo desde el historial.')
                   }

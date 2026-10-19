@@ -4,7 +4,7 @@
 import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { FertilizacionConsolidadoPDF, type FertilizacionPDFProps } from './FertilizacionPDF'
-import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
+import { obtenerFirmasParaPdf, firmasDeFilasParaPdf } from '@/hooks/useFirmasRegistro'
 
 export async function generarFertilizacionConsolidadoPDF(
   ranchoId: string,
@@ -29,9 +29,9 @@ export async function generarFertilizacionConsolidadoPDF(
   }
 
   // Agrupar por fecha para formar una página por jornada
-  // Primer ID de cada fecha = representativo para las firmas
+  // Se guardan todos los ids de cada fecha: la firma puede estar en cualquier fila
   const registrosMap = new Map<string, FertilizacionPDFProps>()
-  const primerosIds = new Map<string, string>() // fecha → primer row.id
+  const primerosIds = new Map<string, string[]>() // fecha → ids de todas sus filas
   for (const row of data as any[]) {
     const key = row.fecha
     if (!registrosMap.has(key)) {
@@ -44,8 +44,9 @@ export async function generarFertilizacionConsolidadoPDF(
         responsableNombre: '',
         fertilizantes: [],
       })
-      primerosIds.set(key, row.id)
+      primerosIds.set(key, [])
     }
+    primerosIds.get(key)!.push(row.id)
     registrosMap.get(key)!.fertilizantes.push({
       nombre_comercial: row.nombre_comercial,
       ingrediente_activo: row.ingrediente_activo,
@@ -58,19 +59,17 @@ export async function generarFertilizacionConsolidadoPDF(
   }
 
   // Obtener firmas para los IDs representativos de cada jornada
-  const idsRepresentativos = Array.from(primerosIds.values())
+  const idsRepresentativos = Array.from(primerosIds.values()).flat()
   const firmasMapa = idsRepresentativos.length > 0
     ? await obtenerFirmasParaPdf('M8', idsRepresentativos)
     : {}
 
   // Mapear firmas a cada jornada por su ID representativo
   const registros = Array.from(registrosMap.entries()).map(([fecha, reg]) => {
-    const priId = primerosIds.get(fecha)
-    const firmasReg = priId ? firmasMapa[priId] : undefined
+    const idsFilas = primerosIds.get(fecha) ?? []
     return {
       ...reg,
-      firmaRealizo: firmasReg?.realizo ? firmaDetalleAParaPdf(firmasReg.realizo) : null,
-      firmaVerifico: firmasReg?.verifico ? firmaDetalleAParaPdf(firmasReg.verifico) : null,
+      ...firmasDeFilasParaPdf(firmasMapa, idsFilas),
     }
   })
 

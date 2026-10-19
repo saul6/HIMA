@@ -6,7 +6,7 @@ import {
   CosechaLiberacionConsolidadoPDF,
   type CosechaLiberacionPaginaProps,
 } from './CosechaLiberacionPDF'
-import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
+import { obtenerFirmasParaPdf, firmasDeFilasParaPdf } from '@/hooks/useFirmasRegistro'
 
 function slugify(s: string): string {
   return s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
@@ -35,9 +35,9 @@ export async function generarCosechaLiberacionConsolidadoPDF(
   }
 
   // Agrupar por fecha para formar jornadas (una página por jornada)
-  // Primer ID de cada jornada = representativo para las firmas
+  // Se guardan todos los ids de cada jornada: la firma puede estar en cualquier fila
   const jornadasMap = new Map<string, CosechaLiberacionPaginaProps>()
-  const primerosIds = new Map<string, string>() // fecha → primer row.id
+  const primerosIds = new Map<string, string[]>() // fecha → ids de todas sus filas
   for (const row of data) {
     const key = row.fecha
     if (!jornadasMap.has(key)) {
@@ -47,8 +47,9 @@ export async function generarCosechaLiberacionConsolidadoPDF(
         fecha: row.fecha,
         liberaciones: [],
       })
-      primerosIds.set(key, row.id)
+      primerosIds.set(key, [])
     }
+    primerosIds.get(key)!.push(row.id)
     jornadasMap.get(key)!.liberaciones.push({
       sector: row.sector,
       cantidad_bandejas: row.cantidad_bandejas,
@@ -67,19 +68,17 @@ export async function generarCosechaLiberacionConsolidadoPDF(
   }
 
   // Obtener firmas para los IDs representativos de cada jornada
-  const idsRepresentativos = Array.from(primerosIds.values())
+  const idsRepresentativos = Array.from(primerosIds.values()).flat()
   const firmasMapa = idsRepresentativos.length > 0
     ? await obtenerFirmasParaPdf('M10', idsRepresentativos)
     : {}
 
   // Mapear firmas a cada jornada por su ID representativo
   const registros = Array.from(jornadasMap.entries()).map(([fecha, jornada]) => {
-    const priId = primerosIds.get(fecha)
-    const firmasJornada = priId ? firmasMapa[priId] : undefined
+    const idsFilas = primerosIds.get(fecha) ?? []
     return {
       ...jornada,
-      firmaRealizo: firmasJornada?.realizo ? firmaDetalleAParaPdf(firmasJornada.realizo) : null,
-      firmaVerifico: firmasJornada?.verifico ? firmaDetalleAParaPdf(firmasJornada.verifico) : null,
+      ...firmasDeFilasParaPdf(firmasMapa, idsFilas),
     }
   })
   const desdeSlug = desde.replaceAll('-', '')

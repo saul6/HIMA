@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { EntradasSalidasPreFrioPDF, type M40RegistroDataPDF, type M40LineaPDF } from './EntradasSalidasPreFrioPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasDeFilasParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -62,11 +63,13 @@ async function cargarDatos(id: string, orgId: string): Promise<M40RegistroDataPD
 
 export async function generarEntradasSalidasPreFrioPDF(id: string, orgId: string, codigoClave: string): Promise<void> {
   const d = await cargarDatos(id, orgId)
-  const blob = await pdf(<EntradasSalidasPreFrioPDF d={d} codigoClave={codigoClave} />).toBlob()
+  const firmas = await obtenerFirmasDeFilasParaPdf('M40', [id]).catch(() => ({}))
+  const blob = await pdf(<EntradasSalidasPreFrioPDF d={d} codigoClave={codigoClave} {...firmas} />).toBlob()
   descargar(blob, nombrePdf('Entradas_Salidas_Prefrio', d.fecha, d.instalacion))
 }
 
 export async function generarBlobEntradasSalidasPreFrio(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const d = await cargarDatos(id, orgId)
-  return pdf(<EntradasSalidasPreFrioPDF d={d} codigoClave={codigoClave} />).toBlob()
+  const firmas = await obtenerFirmasDeFilasParaPdf('M40', [id]).catch(() => ({}))
+  return pdf(<EntradasSalidasPreFrioPDF d={d} codigoClave={codigoClave} {...firmas} />).toBlob()
 }

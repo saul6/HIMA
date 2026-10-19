@@ -8,6 +8,7 @@ import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M8FilaFertilizante {
   id: string
+  created_at?: string | null
   nombre_comercial: string
   ingrediente_activo: string | null
   concentracion: string | null
@@ -67,6 +68,7 @@ export function useM8Fertilizacion() {
         }
         grouped.get(key)!.fertilizantes.push({
           id: row.id,
+          created_at: row.created_at,
           nombre_comercial: row.nombre_comercial,
           ingrediente_activo: row.ingrediente_activo,
           concentracion: row.concentracion,

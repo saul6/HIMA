@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { TemperaturaConservadorPDF, type M41RegistroDataPDF, type M41LecturaPDF } from './TemperaturaConservadorPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasDeFilasParaPdf } from '@/hooks/useFirmasRegistro'
 
 function descargar(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -47,11 +48,13 @@ async function cargarDatos(id: string, orgId: string): Promise<M41RegistroDataPD
 
 export async function generarTemperaturaConservadorPDF(id: string, orgId: string, codigoClave: string): Promise<void> {
   const d = await cargarDatos(id, orgId)
-  const blob = await pdf(<TemperaturaConservadorPDF d={d} codigoClave={codigoClave} />).toBlob()
+  const firmas = await obtenerFirmasDeFilasParaPdf('M41', [id]).catch(() => ({}))
+  const blob = await pdf(<TemperaturaConservadorPDF d={d} codigoClave={codigoClave} {...firmas} />).toBlob()
   descargar(blob, nombrePdf('Temperaturas_Conservador', d.fecha, d.instalacion))
 }
 
 export async function generarBlobTemperaturaConservador(id: string, orgId: string, codigoClave: string): Promise<Blob> {
   const d = await cargarDatos(id, orgId)
-  return pdf(<TemperaturaConservadorPDF d={d} codigoClave={codigoClave} />).toBlob()
+  const firmas = await obtenerFirmasDeFilasParaPdf('M41', [id]).catch(() => ({}))
+  return pdf(<TemperaturaConservadorPDF d={d} codigoClave={codigoClave} {...firmas} />).toBlob()
 }

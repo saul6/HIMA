@@ -3,13 +3,21 @@
 import { pdf } from '@react-pdf/renderer'
 import { CosechaLiberacionPDF, type CosechaLiberacionPaginaProps } from './CosechaLiberacionPDF'
 import { nombrePdf } from '@/lib/pdf/nombrePdf'
+import { obtenerFirmasDeFilasParaPdf } from '@/hooks/useFirmasRegistro'
 
 export async function generarCosechaLiberacionPDF(
   props: CosechaLiberacionPaginaProps,
+  ids: string[] = [],
 ): Promise<void> {
+  // Las firmas se consultan en la BD, en todas las filas del registro
+  let firmas = {}
+  if (ids.length > 0) {
+    try { firmas = await obtenerFirmasDeFilasParaPdf('M10', ids) } catch { /* PDF sin firma */ }
+  }
+
   const filename = nombrePdf('Cosecha_Liberacion', props.fecha, props.rancho)
 
-  const blob = await pdf(<CosechaLiberacionPDF {...props} />).toBlob()
+  const blob = await pdf(<CosechaLiberacionPDF {...props} {...firmas} />).toBlob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

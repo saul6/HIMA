@@ -33,7 +33,7 @@ import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
-import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { useFirmasRegistro, idRepresentativoJornada, firmasDeFilasParaTarjeta } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
@@ -364,7 +364,7 @@ export function RegistroFertilizacion() {
   const mostrarSkeletonSaldos = useMostrarCarga(saldosLoading, saldos.length > 0)
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
-  const todosIds = registros.map(r => r.fertilizantes[0]?.id).filter(Boolean) as string[]
+  const todosIds = registros.flatMap(r => r.fertilizantes.map(f => f.id))
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M8', todosIds)
   const { obligatoria, tengoFirma } = useFirmaContext()
   const { online } = useConexion()
@@ -384,7 +384,7 @@ export function RegistroFertilizacion() {
   const [guardando, setGuardando] = useState(false)
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null)
   const [sheetNuevoPaso, setSheetNuevoPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
-  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+  const [pendienteFirmaIds, setPendienteFirmaIds] = useState<string[]>([])
   const [pendientePdfProps, setPendientePdfProps] = useState<FertilizacionPDFProps | null>(null)
 
   // ── Estado consolidado ───────────────────────────────────────────────────
@@ -446,13 +446,13 @@ export function RegistroFertilizacion() {
     setErrFilas([{ nombre: false, superficie: false, dosis: false }])
     setErrRancho(false)
     setSheetNuevoPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
-    setPendienteFirmaId(null)
+    setPendienteFirmaIds([])
     setPendientePdfProps(null)
     setSheetNuevoAbierto(true)
   }
 
   function handleCerrarSheetNuevo() {
-    setSheetNuevoAbierto(false); setSheetNuevoPaso('form'); setPendienteFirmaId(null); setPendientePdfProps(null)
+    setSheetNuevoAbierto(false); setSheetNuevoPaso('form'); setPendienteFirmaIds([]); setPendientePdfProps(null)
   }
 
   function updateFila(idx: number, f: FilaFertilizante) {
@@ -663,7 +663,7 @@ export function RegistroFertilizacion() {
         setPendientePdfProps(pdfProps)
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setPendienteFirmaId((m8Data as any[])[0].id)
+      setPendienteFirmaIds((m8Data as any[]).map((r) => r.id))
       setSheetNuevoPaso('firma_decision')
     } catch (err: unknown) {
       const mensaje = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
@@ -701,7 +701,7 @@ export function RegistroFertilizacion() {
           cantidad_total: f.cantidad_total,
         })),
       }
-      await generarFertilizacionPDF(pdfProps, reg.rancho_nombre, reg.fecha)
+      await generarFertilizacionPDF(pdfProps, reg.rancho_nombre, reg.fecha, reg.fertilizantes.map((f) => f.id))
     } catch {
       toast.error('No se pudo generar el PDF')
     } finally {
@@ -973,7 +973,7 @@ export function RegistroFertilizacion() {
                       ))}
                     </div>
                     {reg.fertilizantes[0] && (
-                      <FirmasRegistro modulo="M8" registroId={reg.fertilizantes[0].id} firma={firmas[reg.fertilizantes[0].id]} loadingFirmas={loadingFirmas} fechaRegistro={reg.fecha} onFirmado={refetchFirmas} />
+                      <FirmasRegistro modulo="M8" registroId={idRepresentativoJornada(reg.fertilizantes) ?? reg.fertilizantes[0].id} firma={firmasDeFilasParaTarjeta(firmas, reg.fertilizantes.map((f) => f.id))} loadingFirmas={loadingFirmas} fechaRegistro={reg.fecha} onFirmado={refetchFirmas} />
                     )}
                   </div>
                 )
@@ -1068,10 +1068,10 @@ export function RegistroFertilizacion() {
               <FirmaGatePaso onFirmaGuardada={() => setSheetNuevoPaso('form')} />
             )}
 
-            {sheetNuevoPaso === 'firma_decision' && pendienteFirmaId && (
+            {sheetNuevoPaso === 'firma_decision' && pendienteFirmaIds.length > 0 && (
               <PasoFirmaRegistro
                 modulo="M8"
-                ids={[pendienteFirmaId]}
+                ids={pendienteFirmaIds}
                 descripcion={pendientePdfProps ? `Registro de Fertilización · ${pendientePdfProps.fecha} · ${pendientePdfProps.rancho}` : 'Registro de Fertilización'}
                 obligatoria={obligatoria}
                 onFirmadoYPDF={async () => {
@@ -1079,7 +1079,7 @@ export function RegistroFertilizacion() {
                   await refetchFirmas()
                   if (pendientePdfProps) {
                     try {
-                      await generarFertilizacionPDF(pendientePdfProps, pendientePdfProps.rancho, pendientePdfProps.fecha)
+                      await generarFertilizacionPDF(pendientePdfProps, pendientePdfProps.rancho, pendientePdfProps.fecha, pendienteFirmaIds)
                     } catch {
                       toast.warning('Registro guardado — el PDF no se pudo generar. Descárgalo desde el historial.')
                     }
