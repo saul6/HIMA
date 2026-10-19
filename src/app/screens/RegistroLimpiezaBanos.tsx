@@ -179,7 +179,7 @@ export function RegistroLimpiezaBanos() {
     setBanos([{ ...BANO_INICIAL }])
     setErrRancho(false)
     setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
-    setPendienteFirmaId(null)
+    setPendienteFirmaIds([])
     setPendientePdfProps(null)
     setSheetAbierto(true)
   }
@@ -187,7 +187,7 @@ export function RegistroLimpiezaBanos() {
   function handleCerrarSheet() {
     setSheetAbierto(false)
     setSheetPaso('form')
-    setPendienteFirmaId(null)
+    setPendienteFirmaIds([])
     setPendientePdfProps(null)
   }
 
