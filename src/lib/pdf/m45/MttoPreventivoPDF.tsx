@@ -10,7 +10,6 @@ import { estiloColumnaCompacta } from '@/lib/pdf/disenoNuevo/Encabezado'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
-import { PC } from '@/lib/pdf/components/tokens'
 import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 
 export interface M45ItemPDFRow {
