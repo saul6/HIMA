@@ -60,7 +60,7 @@ export function LimpiezaRecepcionPagina({
       diasData={diasData}
       conConcentraciones={true}
       observaciones={observaciones}
-      nota={"Nota: Concentracion cloro recomendada 100-200 ppm. Ajuste si la concentracion esta fuera del rango."}
+      nota={"Nota: Concentración cloro recomendada 100-200 ppm. Ajuste si la concentración está fuera del rango."}
       firmaRealizo={firmaRealizo}
       firmaVerifico={firmaVerifico}
     />

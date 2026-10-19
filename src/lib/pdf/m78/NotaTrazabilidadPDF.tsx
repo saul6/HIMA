@@ -86,7 +86,7 @@ export function NotaTrazabilidadPage({
         { icono: 'ubicacion', etiqueta: 'Rancho', valor: rancho },
         { etiqueta: 'Sector', valor: sector ?? '' },
         { etiqueta: 'Cultivo', valor: cultivo ?? '' },
-        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organizacion', valor: orgNombre }] : []),
+        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organización', valor: orgNombre }] : []),
       ]}
     >
       <Seccion titulo="PRESENTACION">
@@ -112,7 +112,7 @@ export function NotaTrazabilidadPage({
         />
       </Seccion>
 
-      <Seccion titulo="FIRMAS DE OPERACION">
+      <Seccion titulo="FIRMAS DE OPERACIÓN">
         <View wrap={false} style={{ flexDirection: 'row', marginBottom: 8 }}>
           {[
             { label: 'EMBARCO', nombre: embarco },
@@ -133,8 +133,8 @@ export function NotaTrazabilidadPage({
 
       <PdfFirmas
         signatures={[
-          { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
-          { label: '', nombre: '', caption: 'Verifico', firma: firmaVerifico ?? null },
+          { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Verificó', firma: firmaVerifico ?? null },
         ]}
       />
     </PaginaEstandar>
@@ -160,7 +160,7 @@ const COLS_CONSOLIDADO: ColumnaDato[] = [
   { texto: 'Peso Neto', ancho: 45, align: 'center' },
   { texto: 'Total', ancho: 55 },
   { texto: 'Chofer', ancho: 70 },
-  { texto: 'Recibio', ancho: 60 },
+  { texto: 'Recibió', ancho: 60 },
 ]
 
 export function NotaTrazabilidadConsolidadoPDF({
@@ -183,7 +183,7 @@ export function NotaTrazabilidadConsolidadoPDF({
         folio=""
         emision={fmtFecha(hasta)}
         etiquetaEmision="Fecha"
-        camposDatos={orgNombre ? [{ icono: 'usuario', etiqueta: 'Organizacion', valor: orgNombre }] : []}
+        camposDatos={orgNombre ? [{ icono: 'usuario', etiqueta: 'Organización', valor: orgNombre }] : []}
       >
         <TablaDatos
           columnas={COLS_CONSOLIDADO}

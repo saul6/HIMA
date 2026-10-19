@@ -55,7 +55,7 @@ export function LimpiezaAlmacenEmpaquePagina({
       observaciones={observaciones}
       formatoValor={(v, item) =>
         item.genera_incidencia
-          ? v === 'hecho' ? { texto: 'Dano', tono: 'mal' } : v === 'na' ? { texto: 'OK', tono: 'ok' } : { texto: '', tono: 'neutro' }
+          ? v === 'hecho' ? { texto: 'Daño', tono: 'mal' } : v === 'na' ? { texto: 'OK', tono: 'ok' } : { texto: '', tono: 'neutro' }
           : null
       }
       nota={"Nota: En caso de detectar dano en micas o faros del montacargas, registrar incidencia en M13 - Reporte de Incidencias."}

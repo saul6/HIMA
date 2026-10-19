@@ -78,7 +78,7 @@ export function LimpiezaCampoPagina({
         { icono: 'calendario', etiqueta: 'Mes y Año', valor: mesLabel },
         ...(realizoNombre ? [{ icono: 'usuario' as const, etiqueta: 'Realizó', valor: realizoNombre }] : []),
       ]}
-      notaAntes="Colocar (Si) si se realiza la accion indicada, (X) si no se realiza y N/A si no aplica."
+      notaAntes="Colocar (Si) si se realiza la acción indicada, (X) si no se realiza y N/A si no aplica."
       items={matrixItems}
       mesDate={mes}
       diasInspeccionados={inspeccionados}

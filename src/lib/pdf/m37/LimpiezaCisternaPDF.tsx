@@ -51,9 +51,9 @@ const COLS_DIA: ColumnaDato[] = [
   { texto: 'Dia', ancho: 20, align: 'center' },
   { texto: 'Cloro cisterna (1.5-3.0 ppm)', ancho: 65, align: 'center' },
   { texto: 'Ajuste cloro cisterna', ancho: 60, align: 'center' },
-  { texto: 'Cloro desinfeccion (100-200 ppm)', ancho: 65, align: 'center' },
-  { texto: 'Ajuste cloro desinfeccion', ancho: 60, align: 'center' },
-  { texto: 'Realizo', ancho: 95, align: 'center' },
+  { texto: 'Cloro desinfección (100-200 ppm)', ancho: 65, align: 'center' },
+  { texto: 'Ajuste cloro desinfección', ancho: 60, align: 'center' },
+  { texto: 'Realizó', ancho: 95, align: 'center' },
   { texto: 'Aprobo', ancho: 95, align: 'center' },
 ]
 
@@ -83,7 +83,7 @@ export function LimpiezaCisternaPagina({
       diasData={{}}
       conConcentraciones={false}
       registroDiario={{
-        titulo: 'REGISTRO DIARIO DE CLORACION Y PERSONAL',
+        titulo: 'REGISTRO DIARIO DE CLORACIÓN Y PERSONAL',
         columnas: COLS_DIA,
         filas: dias.map((dia) => {
           const d = diasData[dia]
@@ -104,7 +104,7 @@ export function LimpiezaCisternaPagina({
           : null
       }
       observaciones={observaciones}
-      nota="Nota: Cloro cisterna recomendado 1.5-3.0 ppm. Cloro desinfeccion de superficies recomendado 100-200 ppm. Ajuste si la concentracion esta fuera del rango. En caso de hallazgo de plaga se registra incidencia en M13."
+      nota="Nota: Cloro cisterna recomendado 1.5-3.0 ppm. Cloro desinfección de superficies recomendado 100-200 ppm. Ajuste si la concentración está fuera del rango. En caso de hallazgo de plaga se registra incidencia en M13."
       notaDespuesDeObs
       firmaRealizo={firmaRealizo}
       firmaVerifico={firmaVerifico}

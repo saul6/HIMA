@@ -56,11 +56,11 @@ const COLS: ColumnaDato[] = [
   { texto: 'Actividad', ancho: 150 },
   { texto: 'Costo luz', ancho: 50, align: 'center' },
   { texto: 'kWh', ancho: 45, align: 'center' },
-  { texto: 'Realizo', ancho: 90 },
+  { texto: 'Realizó', ancho: 90 },
   { texto: 'Observaciones', ancho: 220 },
 ]
 
-export function ConsumoEnergiaPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Instalacion', firmaRealizo, firmaVerifico }: Props) {
+export function ConsumoEnergiaPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Instalación', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtMes(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
 
   return (
@@ -75,7 +75,7 @@ export function ConsumoEnergiaPDF({ rancho, orgNombre, desde, hasta, registros, 
         tituloDatos="1. DATOS DEL SITIO"
         camposDatos={[
           { icono: 'ubicacion', etiqueta: terminoSitio, valor: rancho },
-          ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organizacion', valor: orgNombre }] : []),
+          ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organización', valor: orgNombre }] : []),
           { icono: 'calendario', etiqueta: 'Periodo', valor: periodo },
         ]}
       >
@@ -91,7 +91,7 @@ export function ConsumoEnergiaPDF({ rancho, orgNombre, desde, hasta, registros, 
 
         <PdfFirmas
           signatures={[
-            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
             { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
           ]}
         />

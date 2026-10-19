@@ -43,11 +43,11 @@ const COLS: ColumnaDato[] = [
   { texto: '45 cm', ancho: 45, align: 'center' },
   { texto: 'Otra (cm)', ancho: 45, align: 'center' },
   { texto: 'Lect. otra', ancho: 45, align: 'center' },
-  { texto: 'Realizo', ancho: 100 },
+  { texto: 'Realizó', ancho: 100 },
   { texto: 'Observaciones', ancho: 300 },
 ]
 
-export function TensiometrosPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Instalacion', firmaRealizo, firmaVerifico }: Props) {
+export function TensiometrosPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Instalación', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
 
   return (
@@ -62,7 +62,7 @@ export function TensiometrosPDF({ rancho, orgNombre, desde, hasta, registros, te
         tituloDatos="1. DATOS DEL SITIO"
         camposDatos={[
           { icono: 'ubicacion', etiqueta: terminoSitio, valor: rancho },
-          ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organizacion', valor: orgNombre }] : []),
+          ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organización', valor: orgNombre }] : []),
           { icono: 'calendario', etiqueta: 'Periodo', valor: periodo },
         ]}
       >
@@ -78,7 +78,7 @@ export function TensiometrosPDF({ rancho, orgNombre, desde, hasta, registros, te
 
         <PdfFirmas
           signatures={[
-            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
             { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
           ]}
         />

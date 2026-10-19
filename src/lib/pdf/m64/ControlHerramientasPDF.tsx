@@ -47,10 +47,12 @@ const COLS = (terminoSitio: string): ColumnaDato[] => [
   { texto: 'Entrega', ancho: 75 },
   { texto: 'Recibe', ancho: 75 },
   { texto: 'Devuelto', ancho: 40, align: 'center' },
-  { texto: 'F. devolucion', ancho: 55 },
+  { texto: 'F. devolución', ancho: 55 },
+  { texto: 'Realizó', ancho: 65 },
+  { texto: 'Observaciones', ancho: 80 },
 ]
 
-export function ControlHerramientasPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoSitio = 'Instalacion', firmaRealizo, firmaVerifico }: Props) {
+export function ControlHerramientasPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoSitio = 'Instalación', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
   const codigoFmt = codigoFormato('M64-CTRL-HERR', codigoClave)
 
@@ -63,9 +65,9 @@ export function ControlHerramientasPDF({ rows, orgNombre, desde, hasta, codigoCl
         folio={periodo}
         emision={periodo}
         etiquetaEmision="Periodo"
-        tituloDatos="1. INFORMACION GENERAL"
+        tituloDatos="1. INFORMACIÓN GENERAL"
         camposDatos={[
-          { icono: 'usuario', etiqueta: 'Organizacion', valor: orgNombre ?? '—' },
+          { icono: 'usuario', etiqueta: 'Organización', valor: orgNombre ?? '—' },
           { icono: 'calendario', etiqueta: 'Periodo', valor: periodo },
         ]}
       >
@@ -74,14 +76,14 @@ export function ControlHerramientasPDF({ rows, orgNombre, desde, hasta, codigoCl
             columnas={COLS(terminoSitio)}
             fuente={6.5}
             filas={rows.map((r) => [
-              fmtFecha(r.fecha), r.rancho, r.trabajador, r.herramienta, String(r.cantidad), r.entrega_nombre, r.recibe_nombre, r.devuelto ? 'Si' : 'No', r.fecha_devolucion ? fmtFecha(r.fecha_devolucion) : '—',
+              fmtFecha(r.fecha), r.rancho, r.trabajador, r.herramienta, String(r.cantidad), r.entrega_nombre, r.recibe_nombre, r.devuelto ? 'Si' : 'No', r.fecha_devolucion ? fmtFecha(r.fecha_devolucion) : '—', r.realizo ?? '—', r.observaciones ?? '',
             ])}
           />
         </Seccion>
 
         <PdfFirmas
           signatures={[
-            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
             { label: '', nombre: '', caption: 'Verifico: Responsable de Inocuidad', firma: firmaVerifico ?? null },
           ]}
         />

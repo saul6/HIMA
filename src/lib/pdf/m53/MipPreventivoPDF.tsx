@@ -42,7 +42,7 @@ const marca = (v: boolean) => (v ? { texto: 'X', color: PC.m13Navy, negrita: tru
 
 const COLS: ColumnaDato[] = [
   { texto: 'No.', ancho: 20, align: 'center' },
-  { texto: 'Tecnica preventiva', ancho: 300 },
+  { texto: 'Técnica preventiva', ancho: 300 },
   { texto: 'Maleza', ancho: 56, align: 'center' },
   { texto: 'Insectos e\nInvertebrados', ancho: 56, align: 'center' },
   { texto: 'Enfermedades y\nNematodos', ancho: 56, align: 'center' },
@@ -75,10 +75,10 @@ export function MipPreventivoPDFPage({
       camposDatos={[
         { icono: 'ubicacion', etiqueta: terminoSitio, valor: rancho },
         { etiqueta: 'Producto / Cultivo', valor: producto ?? '—' },
-        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organizacion', valor: orgNombre }] : []),
+        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organización', valor: orgNombre }] : []),
         { icono: 'calendario', etiqueta: 'Fecha', valor: fmtFecha(fecha) },
-        { etiqueta: 'Region', valor: region ?? '—' },
-        { icono: 'usuario', etiqueta: 'Realizo', valor: realizo ?? '—' },
+        { etiqueta: 'Región', valor: region ?? '—' },
+        { icono: 'usuario', etiqueta: 'Realizó', valor: realizo ?? '—' },
       ]}
     >
       {observaciones ? <FranjaDatos campos={[{ etiqueta: 'Observaciones', valor: observaciones }]} /> : null}

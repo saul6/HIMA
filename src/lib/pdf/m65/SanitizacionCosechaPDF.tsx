@@ -52,10 +52,10 @@ const COLS = (terminoSitio: string): ColumnaDato[] => [
   { texto: 'Producto sanitizante', ancho: 90 },
   { texto: 'PPM', ancho: 38, align: 'center' },
   { texto: 'Hora', ancho: 38, align: 'center' },
-  { texto: 'Realizo', ancho: 75 },
+  { texto: 'Realizó', ancho: 75 },
 ]
 
-export function SanitizacionCosechaPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoSitio = 'Instalacion', firmaRealizo, firmaVerifico }: Props) {
+export function SanitizacionCosechaPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoSitio = 'Instalación', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
   const codigoFmt = codigoFormato('M65-SAN-COS', codigoClave)
 
@@ -68,9 +68,9 @@ export function SanitizacionCosechaPDF({ rows, orgNombre, desde, hasta, codigoCl
         folio={periodo}
         emision={periodo}
         etiquetaEmision="Periodo"
-        tituloDatos="1. INFORMACION GENERAL"
+        tituloDatos="1. INFORMACIÓN GENERAL"
         camposDatos={[
-          { icono: 'usuario', etiqueta: 'Organizacion', valor: orgNombre ?? '—' },
+          { icono: 'usuario', etiqueta: 'Organización', valor: orgNombre ?? '—' },
           { icono: 'calendario', etiqueta: 'Periodo', valor: periodo },
         ]}
       >
@@ -105,7 +105,7 @@ export function SanitizacionCosechaPDF({ rows, orgNombre, desde, hasta, codigoCl
 
         <PdfFirmas
           signatures={[
-            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
             { label: '', nombre: '', caption: 'Verifico: Responsable de Inocuidad', firma: firmaVerifico ?? null },
           ]}
         />

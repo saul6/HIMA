@@ -76,7 +76,7 @@ function diasDelMes(anio: number, mes: number): number[] {
 function frecLabel(f: string | null): string {
   if (!f) return ''
   if (f === 'diario')     return 'Diario'
-  if (f === 'tercer_dia') return '3er dia'
+  if (f === 'tercer_dia') return '3er día'
   if (f === 'semanal')    return 'Semanal'
   if (f === 'quincenal')  return 'Quincenal'
   return f
@@ -148,16 +148,16 @@ function MttoPreventivoPagina({
               { codigo: 'H', label: 'Hecho' },
               { codigo: 'N', label: 'No hecho' },
               { codigo: '—', label: 'N/A' },
-              { codigo: 'X', label: 'Accion realizada' },
+              { codigo: 'X', label: 'Acción realizada' },
             ],
           },
           {
-            titulo: 'Columnas de accion',
+            titulo: 'Columnas de acción',
             items: [
-              { codigo: 'Rev.Gral', label: 'Revision general' },
+              { codigo: 'Rev.Gral', label: 'Revisión general' },
               { codigo: 'C.Aceit', label: 'Cambio de aceites' },
               { codigo: 'C.Pzas', label: 'Cambio de piezas' },
-              { codigo: 'Rev.Elec', label: 'Revision electrica' },
+              { codigo: 'Rev.Elec', label: 'Revisión eléctrica' },
             ],
           },
         ]}
@@ -240,7 +240,7 @@ function MttoPreventivoPagina({
         <Seccion titulo="3. FIRMAS Y RESPONSABLES">
           <PdfFirmas
             signatures={[
-              { label: '', nombre: '', caption: 'Responsable del Area', firma: firmaRealizo ?? null },
+              { label: '', nombre: '', caption: 'Responsable del Área', firma: firmaRealizo ?? null },
               { label: '', nombre: '', caption: 'Jefe de Mantenimiento', firma: firmaVerifico ?? null },
               { label: '', nombre: '', caption: 'Gerente de Operaciones' },
             ]}

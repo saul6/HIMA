@@ -1,6 +1,5 @@
 import { Document } from '@react-pdf/renderer'
 import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
-import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
@@ -59,6 +58,8 @@ const COLS: ColumnaDato[] = [
   { texto: 'Vol. ml', ancho: 58, align: 'center' },
   { texto: 'Gasto L', ancho: 52, align: 'center' },
   { texto: 'Resultado', ancho: 72, align: 'left' },
+  { texto: 'Realizó', ancho: 70, align: 'left' },
+  { texto: 'Observaciones', ancho: 90, align: 'left' },
 ]
 
 export function CalibracionBombasPDF({
@@ -74,10 +75,6 @@ export function CalibracionBombasPDF({
 }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
   const codigoFmt = codigoFormato('REG-07', codigoClave)
-  const notas = [
-    ...(registros[0]?.realizo ? [{ etiqueta: 'Realizó', valor: registros[0].realizo }] : []),
-    ...(registros[0]?.observaciones ? [{ etiqueta: 'Observaciones', valor: registros[0].observaciones }] : []),
-  ]
 
   return (
     <Document>
@@ -100,12 +97,10 @@ export function CalibracionBombasPDF({
             columnas={COLS}
             fuente={6.5}
             filas={registros.map((r) => [
-              fmtFecha(r.fecha), r.equipo, r.num_equipo, r.cultivo, r.parcela, fmtNum(r.distancia_m, 1), fmtNum(r.velocidad_kmh, 1), fmtNum(r.presion_bar, 2), fmtNum(r.volumen_recolectado_ml, 1), fmtNum(r.gasto_l, 2), r.resultado ?? '—',
+              fmtFecha(r.fecha), r.equipo, r.num_equipo, r.cultivo, r.parcela, fmtNum(r.distancia_m, 1), fmtNum(r.velocidad_kmh, 1), fmtNum(r.presion_bar, 2), fmtNum(r.volumen_recolectado_ml, 1), fmtNum(r.gasto_l, 2), r.resultado ?? '—', r.realizo || '—', r.observaciones ?? '',
             ])}
           />
         </Seccion>
-
-        {notas.length > 0 && <FranjaDatos campos={notas} porRenglon={notas.length} />}
 
         <PdfFirmas
           signatures={[

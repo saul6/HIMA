@@ -80,7 +80,8 @@ export function LimpiezaBanosPagina({
       titulo="LIMPIEZA Y DESINFECCIÓN DE BAÑOS"
       subtitulo={`Registro de limpieza | ${rancho}`}
       codigoFmt="M.A.D.Y-F-SC-SIG-041.14"
-      folio={formatFechaPDF(fecha)}
+      folio=""
+      sinFolio
       emision={emision}
       tituloDatos={`1. DATOS DEL ${terminoSitio} Y JORNADA`.toUpperCase()}
       camposDatos={[

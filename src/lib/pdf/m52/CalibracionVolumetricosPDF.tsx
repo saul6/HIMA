@@ -1,6 +1,5 @@
 import { Document } from '@react-pdf/renderer'
 import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
-import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
@@ -53,6 +52,8 @@ const COLS: ColumnaDato[] = [
   { texto: 'Lectura 2 (ml)', ancho: 62, align: 'center' },
   { texto: 'Lectura 3 (ml)', ancho: 62, align: 'center' },
   { texto: 'Desviación', ancho: 62, align: 'center' },
+  { texto: 'Realizó', ancho: 70, align: 'left' },
+  { texto: 'Observaciones', ancho: 90, align: 'left' },
 ]
 
 export function CalibracionVolumetricosPDF({
@@ -68,10 +69,6 @@ export function CalibracionVolumetricosPDF({
 }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
   const codigoFmt = codigoFormato('REG-06', codigoClave)
-  const notas = [
-    ...(registros[0]?.realizo ? [{ etiqueta: 'Realizó', valor: registros[0].realizo }] : []),
-    ...(registros[0]?.observaciones ? [{ etiqueta: 'Observaciones', valor: registros[0].observaciones }] : []),
-  ]
 
   return (
     <Document>
@@ -94,12 +91,10 @@ export function CalibracionVolumetricosPDF({
             columnas={COLS}
             fuente={7}
             filas={registros.map((r) => [
-              fmtFecha(r.fecha), r.uso_articulo, fmtNum(r.capacidad, 2), r.unidad, fmtNum(r.lectura1_ml, 1), fmtNum(r.lectura2_ml, 1), fmtNum(r.lectura3_ml, 1), fmtNum(r.desviacion, 2),
+              fmtFecha(r.fecha), r.uso_articulo, fmtNum(r.capacidad, 2), r.unidad, fmtNum(r.lectura1_ml, 1), fmtNum(r.lectura2_ml, 1), fmtNum(r.lectura3_ml, 1), fmtNum(r.desviacion, 2), r.realizo || '—', r.observaciones ?? '',
             ])}
           />
         </Seccion>
-
-        {notas.length > 0 && <FranjaDatos campos={notas} porRenglon={notas.length} />}
 
         <PdfFirmas
           signatures={[

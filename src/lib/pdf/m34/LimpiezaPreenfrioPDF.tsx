@@ -69,7 +69,7 @@ export function LimpiezaPreenfrioPagina({
           ? v === 'na' ? { texto: 'Sin plaga', tono: 'ok' } : v === 'hecho' ? { texto: 'Con plaga', tono: 'mal' } : { texto: '', tono: 'neutro' }
           : null
       }
-      nota={"Nota: Concentracion cloro recomendada 100-200 ppm. Ajuste si la concentracion esta fuera del rango. En caso de hallazgo de plaga se registra incidencia en M13."}
+      nota={"Nota: Concentración cloro recomendada 100-200 ppm. Ajuste si la concentración está fuera del rango. En caso de hallazgo de plaga se registra incidencia en M13."}
       notaDespuesDeObs
       firmaRealizo={firmaRealizo}
       firmaVerifico={firmaVerifico}

@@ -65,7 +65,7 @@ const GRUPOS = [
   { texto: 'Fecha', ancho: COL.fecha },
   { texto: '# Trampa', ancho: COL.trampa },
   ...BOOL_GROUPS.map((g) => ({ texto: g.label, ancho: COL.boolW * 2 })),
-  { texto: 'Verifico', ancho: COL.verifico },
+  { texto: 'Verificó', ancho: COL.verifico },
   { texto: 'Observaciones', ancho: COL.obs },
 ]
 
@@ -81,7 +81,7 @@ export function VerificacionRoedoresPagina({ rancho, orgNombre, filas, firmaReal
       etiquetaEmision="Fecha"
       tituloDatos="DATOS GENERALES"
       camposDatos={[
-        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Compania', valor: orgNombre }] : []),
+        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Compañía', valor: orgNombre }] : []),
         { icono: 'ubicacion', etiqueta: 'Rancho', valor: rancho },
       ]}
     >

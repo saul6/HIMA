@@ -108,7 +108,7 @@ export function MuestrasLaboratorioPagina({
     { texto: 'No.', ancho: NUM_W, align: 'center' },
     { texto: 'Fecha de muestreo', ancho: FECHA_W },
     { texto: 'Hora', ancho: HORA_W },
-    { texto: 'Descripcion de la muestra', ancho: DESC_W },
+    { texto: 'Descripción de la muestra', ancho: DESC_W },
     ...todos.map((m): ColumnaDato => ({ texto: LABEL_MAP[m.codigo] ?? m.label ?? m.codigo, ancho: MICRO_W, align: 'center' })),
     { texto: 'Laboratorio', ancho: LAB_W },
     { texto: 'Solicitante', ancho: SOL_W },
@@ -124,7 +124,7 @@ export function MuestrasLaboratorioPagina({
       tituloDatos="1. DATOS DEL SITIO"
       camposDatos={[
         { icono: 'ubicacion', etiqueta: terminoSitio, valor: instalacion },
-        { icono: 'codigo', etiqueta: 'Codigo', valor: instalacionCodigo || '—' },
+        { icono: 'codigo', etiqueta: 'Código', valor: instalacionCodigo || '—' },
         { icono: 'calendario', etiqueta: 'Periodo', valor: periodoLabel },
       ]}
     >
@@ -137,7 +137,7 @@ export function MuestrasLaboratorioPagina({
           encabezadoSuperior={[
             { texto: '', ancho: NUM_W + FECHA_W + HORA_W + DESC_W },
             { texto: 'm.o. Indicadores', ancho: indicadores.length * MICRO_W },
-            { texto: 'm.o. Patogenos', ancho: patogenos.length * MICRO_W },
+            { texto: 'm.o. Patógenos', ancho: patogenos.length * MICRO_W },
             { texto: '', ancho: LAB_W + SOL_W },
           ]}
           filas={muestras.map((m, i) => [

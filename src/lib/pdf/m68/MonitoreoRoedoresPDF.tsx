@@ -62,9 +62,9 @@ export function MonitoreoRoedoresPage({
       etiquetaEmision="Fecha"
       tituloDatos="1. DATOS GENERALES"
       camposDatos={[
-        { icono: 'ubicacion', etiqueta: 'Rancho/Instalacion', valor: rancho },
-        { icono: 'ubicacion', etiqueta: 'Ubicacion', valor: ubicacion },
-        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organizacion', valor: orgNombre }] : []),
+        { icono: 'ubicacion', etiqueta: 'Rancho/Instalación', valor: rancho },
+        { icono: 'ubicacion', etiqueta: 'Ubicación', valor: ubicacion },
+        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organización', valor: orgNombre }] : []),
         { icono: 'calendario', etiqueta: 'Fecha', valor: fmtFecha(fecha) },
         { etiqueta: 'No. de trampas', valor: String(num_trampas) },
         { icono: 'usuario', etiqueta: 'Responsable', valor: responsable ?? '—' },
@@ -83,14 +83,14 @@ export function MonitoreoRoedoresPage({
       </Seccion>
 
       {observaciones && (
-        <Seccion titulo="3. OBSERVACIONES Y/O ACCION CORRECTIVA">
+        <Seccion titulo="3. OBSERVACIONES Y/O ACCIÓN CORRECTIVA">
           <FranjaDatos campos={[{ etiqueta: '', valor: observaciones }]} />
         </Seccion>
       )}
 
       <PdfFirmas
         signatures={[
-          { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
           { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
         ]}
       />

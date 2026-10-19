@@ -36,7 +36,7 @@ export interface ResumenNoConformidadesPDFProps {
 // ── Constantes ────────────────────────────────────────────────────────────────
 
 const NOTE_DEFAULT =
-  'Las no-conformidades deben atenderse en un maximo de 30 dias naturales a partir de la fecha de auditoria.'
+  'Las no-conformidades deben atenderse en un máximo de 30 días naturales a partir de la fecha de auditoría.'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -52,8 +52,8 @@ function formatFechaPDF(iso: string): string {
 
 const COLS: ColumnaDato[] = [
   { texto: 'No.', ancho: 42, align: 'center' },
-  { texto: 'Modulo / Seccion / Pregunta', ancho: 236 },
-  { texto: 'Descripcion de la no-conformidad', ancho: 236 },
+  { texto: 'Módulo / Sección / Pregunta', ancho: 236 },
+  { texto: 'Descripción de la no-conformidad', ancho: 236 },
 ]
 
 // ── ResumenNoConformidadesPDF ─────────────────────────────────────────────────
@@ -89,21 +89,21 @@ export function ResumenNoConformidadesPDF({
         codigoFmt="M25"
         folio={emision}
         emision={emision}
-        detalleCompacto={`Emision: ${emision}  ·  Fecha de auditoria: ${fechaFormateada}  ·  Auditor: ${auditorNombre || '—'}${paPgfs ? `  ·  PA-PGFS: ${paPgfs}` : ''}`}
+        detalleCompacto={`Emisión: ${emision}  ·  Fecha de auditoría: ${fechaFormateada}  ·  Auditor: ${auditorNombre || '—'}${paPgfs ? `  ·  PA-PGFS: ${paPgfs}` : ''}`}
         camposDatos={[
-          { icono: 'calendario', etiqueta: 'Emision', valor: emision },
-          { icono: 'calendario', etiqueta: 'Fecha de auditoria', valor: fechaFormateada },
+          { icono: 'calendario', etiqueta: 'Emisión', valor: emision },
+          { icono: 'calendario', etiqueta: 'Fecha de auditoría', valor: fechaFormateada },
           { icono: 'usuario', etiqueta: 'Auditor', valor: auditorNombre || '—' },
           ...(paPgfs ? [{ icono: 'folio' as const, etiqueta: 'PA-PGFS', valor: paPgfs }] : []),
         ]}
       >
-        <Seccion titulo="1. INFORMACION GENERAL">
+        <Seccion titulo="1. INFORMACIÓN GENERAL">
           <FranjaDatos
             porRenglon={3}
             campos={[
-              { icono: 'usuario', etiqueta: 'Organizacion', valor: orgNombre },
-              { icono: 'ubicacion', etiqueta: `Operacion / ${terminoSitio}`, valor: ranchoNombre },
-              { icono: 'calendario', etiqueta: 'Fecha de auditoria', valor: fechaFormateada },
+              { icono: 'usuario', etiqueta: 'Organización', valor: orgNombre },
+              { icono: 'ubicacion', etiqueta: `Operación / ${terminoSitio}`, valor: ranchoNombre },
+              { icono: 'calendario', etiqueta: 'Fecha de auditoría', valor: fechaFormateada },
               { icono: 'usuario', etiqueta: 'Auditor', valor: auditorNombre || '—' },
               { icono: 'usuario', etiqueta: 'Cliente / representante', valor: clienteNombre || '—' },
               { etiqueta: 'Total de no-conformidades', valor: `${ncrs.length} NCR${ncrs.length !== 1 ? 's' : ''}`, colorValor: PC.negativo },

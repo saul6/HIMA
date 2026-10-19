@@ -55,7 +55,7 @@ function calcSaldo(movs: MovimientoPDF[]) {
 const COLS: ColumnaDato[] = [
   { texto: 'Fecha', ancho: 52, align: 'center' },
   { texto: 'Persona que solicita', ancho: 130 },
-  { texto: 'Area', ancho: 100 },
+  { texto: 'Área', ancho: 100 },
   { texto: 'Entrada', ancho: 52, align: 'center' },
   { texto: 'Salida', ancho: 52, align: 'center' },
   { texto: 'Total', ancho: 52, align: 'center' },
@@ -90,7 +90,7 @@ export function InventarioQuimicosPagina({
       camposDatos={[
         { icono: 'ubicacion', etiqueta: terminoSitio, valor: instalacion },
         { icono: 'calendario', etiqueta: 'Periodo', valor: periodo },
-        { etiqueta: 'Quimico / Insumo', valor: quimicoNombre },
+        { etiqueta: 'Químico / Insumo', valor: quimicoNombre },
         { etiqueta: 'Unidad', valor: unidad },
       ]}
     >

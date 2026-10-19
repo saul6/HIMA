@@ -1,6 +1,6 @@
 // PDF M77 — Identificación de empleados GlobalGAP, REG-ASIP-26 (diseño nuevo: lib/pdf/disenoNuevo).
 import { Document, Text, View } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
@@ -31,6 +31,7 @@ const COL = {
   telefono: 70,
   domicilio: 110,
   contacto: 100,
+  observaciones: 90,
   firma: 80,
 }
 
@@ -46,6 +47,7 @@ const COLS: ColumnaDato[] = [
   { texto: 'Teléfono', ancho: COL.telefono, align: 'center' },
   { texto: 'Domicilio', ancho: COL.domicilio },
   { texto: 'Contacto de emergencia', ancho: COL.contacto },
+  { texto: 'Observaciones', ancho: COL.observaciones },
   { texto: 'Firma', ancho: COL.firma },
 ]
 
@@ -56,9 +58,9 @@ export function EmpleadosGGPagina({ rancho, orgNombre, empleados, firmaRealizo }
       titulo="IDENTIFICACIÓN DE EMPLEADOS"
       subtitulo={`REG-ASIP-26 · GlobalGAP | ${rancho}`}
       codigoFmt="REG-ASIP-26"
-      folio={rancho}
-      emision=""
-      etiquetaEmision="Fecha"
+      folio=""
+      emision={fechaEmisionHoy()}
+      sinFolio
       camposDatos={orgNombre ? [{ icono: 'usuario', etiqueta: 'Empresa', valor: orgNombre }] : []}
     >
       <Seccion titulo={`LISTADO DE EMPLEADOS — ${rancho}`.toUpperCase()}>
@@ -73,6 +75,7 @@ export function EmpleadosGGPagina({ rancho, orgNombre, empleados, firmaRealizo }
             emp.telefono ?? '',
             emp.domicilio ?? '',
             emp.persona_contacto ?? '',
+            emp.observaciones ?? '',
             // Celda en blanco para la firma física de cada empleado
             { nodo: <View style={{ height: 20 }} /> },
           ])}

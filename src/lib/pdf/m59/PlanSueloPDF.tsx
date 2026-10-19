@@ -47,7 +47,7 @@ const COLS: ColumnaDato[] = [
 
 export function PlanSueloPage({
   rancho, orgNombre, fecha, realizo, observaciones, items,
-  terminoSitio = 'Instalacion',
+  terminoSitio = 'Instalación',
   firmaRealizo,
   firmaVerifico,
 }: PlanSueloPDFProps) {
@@ -55,7 +55,7 @@ export function PlanSueloPage({
     <PaginaEstandar
       orientacion="portrait"
       titulo="PLAN Y GESTIÓN DEL SUELO"
-      subtitulo={`Inspeccion de suelo | ${rancho}`}
+      subtitulo={`Inspección de suelo | ${rancho}`}
       codigoFmt="M59"
       folio={fmtFecha(fecha)}
       emision={fmtFecha(fecha)}
@@ -63,9 +63,9 @@ export function PlanSueloPage({
       tituloDatos="1. DATOS GENERALES"
       camposDatos={[
         { icono: 'ubicacion', etiqueta: terminoSitio, valor: rancho },
-        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organizacion', valor: orgNombre }] : []),
+        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organización', valor: orgNombre }] : []),
         { icono: 'calendario', etiqueta: 'Fecha', valor: fmtFecha(fecha) },
-        { icono: 'usuario', etiqueta: 'Realizo', valor: realizo ?? '—' },
+        { icono: 'usuario', etiqueta: 'Realizó', valor: realizo ?? '—' },
       ]}
     >
       {observaciones ? <FranjaDatos campos={[{ etiqueta: 'Observaciones', valor: observaciones }]} /> : null}
@@ -86,7 +86,7 @@ export function PlanSueloPage({
 
       <PdfFirmas
         signatures={[
-          { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
           { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
         ]}
       />

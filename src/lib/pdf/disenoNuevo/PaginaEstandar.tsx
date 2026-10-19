@@ -10,6 +10,13 @@ import { TituloSeccion } from './TituloSeccion'
 import { MarcaDeAgua } from './MarcaDeAgua'
 import { Pie } from './Pie'
 import { estiloPagina } from './estilos'
+import { hoyMX } from '@/lib/fecha'
+
+/** Fecha de generación del PDF (hoy en México) como dd/mm/aaaa. */
+export function fechaEmisionHoy(): string {
+  const [a, m, d] = hoyMX().split('-')
+  return `${d}/${m}/${a}`
+}
 
 interface Props {
   orientacion?: 'landscape' | 'portrait'
@@ -25,6 +32,8 @@ interface Props {
   camposDatos: CampoFranja[]
   /** false = el formato no tiene folio ni fecha de emisión propios: la franja lleva solo `camposDatos`. */
   trio?: boolean
+  /** true = sin "Folio" (el formato no tiene folio propio); queda Formato + fecha de emisión. */
+  sinFolio?: boolean
   /** Etiqueta del tercer dato de la franja (default "Emisión"); p. ej. "Fecha" o "Periodo". */
   etiquetaEmision?: string
   /** Texto del encabezado compacto (páginas 2+) en lugar de "Folio: …". */
@@ -49,7 +58,7 @@ export function Seccion({ titulo, children }: { titulo: string; children?: React
 
 export function PaginaEstandar({
   orientacion = 'landscape', titulo, subtitulo, codigoFmt, folio, emision, pendienteSync,
-  tituloDatos, camposDatos, trio = true, etiquetaEmision = 'Emisión', detalleCompacto, columnasCompactas, porRenglon = 4, children,
+  tituloDatos, camposDatos, trio = true, sinFolio, etiquetaEmision = 'Emisión', detalleCompacto, columnasCompactas, porRenglon = 4, children,
 }: Props) {
   return (
     <Page size="A4" orientation={orientacion} style={estiloPagina}>
@@ -70,13 +79,7 @@ export function PaginaEstandar({
       <FranjaDatos
         porRenglon={porRenglon}
         campos={[
-          ...(trio
-            ? [
-                { icono: 'codigo' as const, etiqueta: 'Formato', valor: codigoFmt },
-                { icono: 'folio' as const, etiqueta: 'Folio', valor: folio },
-                { icono: 'calendario' as const, etiqueta: etiquetaEmision, valor: emision },
-              ]
-            : []),
+          ...(trio ? camposTrio({ codigoFmt, folio, emision, etiquetaEmision, camposDatos, sinFolio }) : []),
           ...camposDatos,
         ]}
       />
@@ -84,4 +87,24 @@ export function PaginaEstandar({
       {children}
     </Page>
   )
+}
+
+/**
+ * Formato / Folio / Emisión. Si el folio repite el valor de la emisión (periodo o fecha del
+ * registro), no se imprime dos veces: queda el periodo/fecha una sola vez (y solo si no está ya
+ * en los campos de datos) y "Emisión" siempre es la fecha de generación del PDF.
+ */
+function camposTrio({ codigoFmt, folio, emision, etiquetaEmision, camposDatos, sinFolio }: {
+  codigoFmt: string; folio: string; emision: string; etiquetaEmision: string; camposDatos: CampoFranja[]; sinFolio?: boolean
+}): CampoFranja[] {
+  const formato: CampoFranja = { icono: 'codigo', etiqueta: 'Formato', valor: codigoFmt }
+  if (sinFolio) return [formato, { icono: 'calendario', etiqueta: 'Emisión', valor: emision || fechaEmisionHoy() }]
+  if (folio !== emision) {
+    return [formato, { icono: 'folio', etiqueta: 'Folio', valor: folio }, { icono: 'calendario', etiqueta: etiquetaEmision, valor: emision }]
+  }
+  const yaEnCampos = camposDatos.some((c) => c.valor === emision)
+  const periodo: CampoFranja[] = etiquetaEmision === 'Emisión' || yaEnCampos
+    ? []
+    : [{ icono: 'calendario', etiqueta: etiquetaEmision, valor: emision }]
+  return [formato, ...periodo, { icono: 'calendario', etiqueta: 'Emisión', valor: fechaEmisionHoy() }]
 }

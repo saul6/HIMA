@@ -47,7 +47,7 @@ function fmt(iso: string): string {
 const COLS: ColumnaDato[] = [
   { texto: 'N.', ancho: 20, align: 'center' },
   { texto: 'Fecha', ancho: 60 },
-  { texto: 'Area / Punto de aplicacion', ancho: 160 },
+  { texto: 'Área / Punto de aplicación', ancho: 160 },
   { texto: 'Litros agua', ancho: 44, align: 'center' },
   { texto: 'mL cloro', ancho: 44, align: 'center' },
   { texto: 'Responsable', ancho: 100 },
@@ -110,8 +110,8 @@ export function PreparacionCloroPagina({
         <Seccion titulo="3. FIRMAS Y RESPONSABLES">
           <PdfFirmas
             signatures={[
-              { label: 'Elaboro', nombre: '', caption: 'Firma', firma: firmaRealizo ?? null },
-              { label: '', nombre: '', caption: 'Verifico — Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
+              { label: 'Elaboró', nombre: '', caption: 'Firma', firma: firmaRealizo ?? null },
+              { label: '', nombre: '', caption: 'Verificó — Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
             ]}
           />
         </Seccion>

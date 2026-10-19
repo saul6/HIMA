@@ -20,7 +20,7 @@ interface Props {
 }
 
 const sinGuion = (word: string) => [word]
-const AVISO_DESACTUALIZADA = 'Firma digital desactualizada: el registro se modifico despues de firmarse'
+const AVISO_DESACTUALIZADA = 'Firma digital desactualizada: el registro se modificó después de firmarse'
 
 const linea = { borderTopWidth: 0.75, borderTopColor: PC.m13Navy, marginTop: 14, paddingTop: 4 } as const
 
@@ -34,7 +34,7 @@ export function PdfFirmas({ signatures: signaturesProp, enterado: enteradoProp }
     ? signaturesProp
     : signaturesProp
         .filter((s, i) => i === idxUnica || !s.firma?.unica)
-        .map((s, i) => (i === idxUnica ? { ...s, caption: 'Realizo y verifico - Firma' } : s))
+        .map((s, i) => (i === idxUnica ? { ...s, caption: 'Realizó y verifico - Firma' } : s))
 
   return (
     <View wrap={false} style={{ flexDirection: 'row', marginTop: 20 }}>

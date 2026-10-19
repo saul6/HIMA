@@ -127,7 +127,7 @@ export function ManifiestoEmbarquePDF({
         tituloDatos="DATOS DEL EMBARQUE"
         camposDatos={[
           { etiqueta: 'Empresa / Cliente', valor: t(d.empresa) },
-          { etiqueta: 'Linea transportista', valor: t(d.linea_transportista) },
+          { etiqueta: 'Línea transportista', valor: t(d.linea_transportista) },
           { icono: 'usuario', etiqueta: 'Nombre del chofer', valor: t(d.nombre_chofer) },
           { etiqueta: 'Placas del tractor', valor: t(d.placas_tractor) },
           { etiqueta: 'Caja (pies)', valor: t(d.caja_pies) },
@@ -201,7 +201,7 @@ export function ManifiestoEmbarquePDF({
                 <FilaCondicion label="Remontado" valor={bm(d.tar_remontado)} malo={bm(d.tar_remontado) === 'Malo'} />
                 <FilaCondicion label="Flejado" valor={bm(d.tar_flejado)} malo={bm(d.tar_flejado) === 'Malo'} />
                 <FilaCondicion label="Limpieza" valor={bm(d.tar_limpieza)} malo={bm(d.tar_limpieza) === 'Malo'} />
-                <FilaCondicion label="Condicion de la tarima" valor={bm(d.tar_condicion)} malo={bm(d.tar_condicion) === 'Malo'} />
+                <FilaCondicion label="Condición de la tarima" valor={bm(d.tar_condicion)} malo={bm(d.tar_condicion) === 'Malo'} />
                 <FilaCondicion label="Distribucion embarque" valor={bm(d.tar_distribucion)} malo={bm(d.tar_distribucion) === 'Malo'} />
               </View>
             </Seccion>

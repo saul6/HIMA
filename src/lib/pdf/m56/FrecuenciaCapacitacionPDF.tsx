@@ -1,5 +1,5 @@
 import { Document } from '@react-pdf/renderer'
-import { PaginaEstandar } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PC } from '@/lib/pdf/components/tokens'
 
@@ -30,7 +30,7 @@ function fechaHoy(): string {
 // Anchos relativos de columna (la tabla se escala al ancho útil de la hoja)
 const COLS: ColumnaDato[] = [
   { texto: 'Tema', ancho: 3 },
-  { texto: 'Ano', ancho: 1 },
+  { texto: 'Año', ancho: 1 },
   { texto: 'Mes', ancho: 1.5 },
   { texto: 'Capacitador', ancho: 2 },
   { texto: 'Realizado', ancho: 1, align: 'center' },
@@ -50,15 +50,17 @@ export function FrecuenciaCapacitacionPDF({ orgNombre, registros, anioFiltro }: 
         etiquetaEmision="Fecha"
         camposDatos={[]}
       >
-        <TablaDatos
-          columnas={COLS}
-          anchoTotal={ANCHO_UTIL.portrait}
-          fuente={7}
-          vacio="Sin registros"
-          filas={registros.map((row) => [
-            row.tema, String(row.anio), MESES[(row.mes - 1)] ?? String(row.mes), row.capacitador ?? '—', row.realizado ? { texto: 'Si', color: PC.m13Navy, negrita: true } : 'No', row.observaciones ?? '',
-          ])}
-        />
+        <Seccion titulo="REGISTRO DE FRECUENCIA DE CAPACITACIÓN">
+          <TablaDatos
+            columnas={COLS}
+            anchoTotal={ANCHO_UTIL.portrait}
+            fuente={7}
+            vacio="Sin registros"
+            filas={registros.map((row) => [
+              row.tema, String(row.anio), MESES[(row.mes - 1)] ?? String(row.mes), row.capacitador ?? '—', row.realizado ? { texto: 'Si', color: PC.m13Navy, negrita: true } : 'No', row.observaciones ?? '',
+            ])}
+          />
+        </Seccion>
       </PaginaEstandar>
     </Document>
   )

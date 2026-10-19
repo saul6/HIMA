@@ -65,7 +65,7 @@ export function MantenimientoEquiposGGPagina({ fila, orgNombre, firmaRealizo }: 
   return (
     <PaginaEstandar
       orientacion="portrait"
-      titulo="VERIFICACION Y MANTENIMIENTO DE EQUIPOS DE APLICACION"
+      titulo="VERIFICACIÓN Y MANTENIMIENTO DE EQUIPOS DE APLICACIÓN"
       subtitulo={`REG-09 · GlobalGAP | ${fila.rancho}`}
       codigoFmt="REG-09"
       folio={fila.fecha}
@@ -77,7 +77,7 @@ export function MantenimientoEquiposGGPagina({ fila, orgNombre, firmaRealizo }: 
         { icono: 'ubicacion', etiqueta: 'Rancho / instalacion', valor: fila.rancho },
         { icono: 'calendario', etiqueta: 'Fecha', valor: formatFecha(fila.fecha) },
         { etiqueta: 'Equipo', valor: fila.equipo ?? '—' },
-        { icono: 'usuario', etiqueta: 'Realizo', valor: fila.realizo ?? '—' },
+        { icono: 'usuario', etiqueta: 'Realizó', valor: fila.realizo ?? '—' },
       ]}
     >
       <Seccion titulo="TIPO DE ACTIVIDAD">
@@ -125,8 +125,8 @@ const COLS_CONSOLIDADO: ColumnaDato[] = [
   { texto: 'Pistola', ancho: 45, align: 'center' },
   { texto: 'Lanzas', ancho: 45, align: 'center' },
   { texto: 'Boq.', ancho: 45, align: 'center' },
-  { texto: 'Realizo', ancho: 88 },
-  { texto: 'Descripcion', ancho: 91 },
+  { texto: 'Realizó', ancho: 88 },
+  { texto: 'Descripción', ancho: 91 },
 ]
 
 const CHECK_COLS: (keyof MantenimientoEquiposGGFilaPDF)[] = ['fugas_tanque_bomba', 'mangueras', 'pistola', 'lanzas', 'boquillas']
@@ -143,7 +143,7 @@ export function MantenimientoEquiposGGConsolidadoPDF({ filas, orgNombre }: {
   return (
     <Document>
       <PaginaEstandar
-        titulo="VERIFICACION Y MANTENIMIENTO DE EQUIPOS — CONSOLIDADO"
+        titulo="VERIFICACIÓN Y MANTENIMIENTO DE EQUIPOS — CONSOLIDADO"
         subtitulo={orgNombre ? `GlobalGAP | ${orgNombre}` : 'GlobalGAP'}
         codigoFmt="REG-09"
         folio="Consolidado"

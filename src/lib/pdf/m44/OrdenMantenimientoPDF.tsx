@@ -39,9 +39,9 @@ export interface OrdenMantenimientoPDFProps {
 // ── Constantes ────────────────────────────────────────────────────────────────
 
 const PRIORIDAD_LABELS: Record<string, string> = {
-  inmediata:       'Atencion inmediata',
-  turno:           'Atencion durante el turno',
-  siguientes_dias: 'Atencion durante los siguientes dias',
+  inmediata:       'Atención inmediata',
+  turno:           'Atención durante el turno',
+  siguientes_dias: 'Atención durante los siguientes días',
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -105,8 +105,8 @@ export function OrdenMantenimientoPDF({
         </Seccion>
 
         <Seccion titulo="CONDICIONES DE ENTREGA">
-          <SiNoTexto valor={equipo_produccion} texto={'¿Se reparo un equipo de produccion?'} />
-          <SiNoTexto valor={lavado_sanitizado} texto={'¿El equipo fue lavado y sanitizado despues de la reparacion?'} />
+          <SiNoTexto valor={equipo_produccion} texto={'¿Se reparó un equipo de producción?'} />
+          <SiNoTexto valor={lavado_sanitizado} texto={'¿El equipo fue lavado y sanitizado después de la reparacion?'} />
         </Seccion>
 
         {observaciones ? (

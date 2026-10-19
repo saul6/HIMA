@@ -31,7 +31,7 @@ interface Props {
 const COLS: ColumnaDato[] = [
   { texto: 'Ingrediente activo', ancho: 100 },
   { texto: 'Nombre comercial', ancho: 95 },
-  { texto: 'Concentracion', ancho: 55 },
+  { texto: 'Concentración', ancho: 55 },
   { texto: 'Empresa', ancho: 80 },
   { texto: 'Dosis/ha', ancho: 50 },
   { texto: 'I.S.', ancho: 35, align: 'center' },
@@ -62,9 +62,9 @@ export function ProductosAutorizadosPDF({ orgNombre, productos, codigoClave, cul
         folio={fechaDisplay}
         emision={fechaDisplay}
         etiquetaEmision="Fecha"
-        tituloDatos="1. INFORMACION GENERAL"
+        tituloDatos="1. INFORMACIÓN GENERAL"
         camposDatos={[
-          { icono: 'usuario', etiqueta: 'Organizacion', valor: orgNombre },
+          { icono: 'usuario', etiqueta: 'Organización', valor: orgNombre },
           { etiqueta: 'Cultivo', valor: cultivoFiltro ?? 'Todos' },
           { icono: 'calendario', etiqueta: 'Fecha de emision', valor: fechaDisplay },
         ]}
@@ -90,7 +90,7 @@ export function ProductosAutorizadosPDF({ orgNombre, productos, codigoClave, cul
 
         <PdfFirmas
           signatures={[
-            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
             { label: '', nombre: '', caption: 'Verifico: Responsable de Inocuidad', firma: firmaVerifico ?? null },
           ]}
         />

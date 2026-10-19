@@ -79,7 +79,7 @@ export function RondinesVigilanciaPDF({
   const RONDAS = [1, 2, 3, 4]
 
   const columnas: ColumnaDato[] = [
-    { texto: 'Area / Punto de supervision', ancho: 220 },
+    { texto: 'Área / Punto de supervisión', ancho: 220 },
     ...RONDAS.map((n): ColumnaDato => ({ texto: `Ronda ${n}\n${horaMap[n] ?? '—'}`, ancho: 85, align: 'center' })),
   ]
 

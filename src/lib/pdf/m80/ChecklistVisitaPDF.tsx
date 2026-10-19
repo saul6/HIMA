@@ -9,8 +9,8 @@
 import { Document, Page, View, Text, Image, Svg, Path, Rect, Circle, StyleSheet } from '@react-pdf/renderer'
 import type { ReactNode } from 'react'
 import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
-import { ISOTIPO_MARCA_AGUA } from '@/lib/pdf/m13/isotipoMarcaAgua'
-import { PdfSignaturesM13 } from '@/lib/pdf/m13/PdfSignaturesM13'
+import { ISOTIPO_MARCA_AGUA } from '@/lib/pdf/disenoNuevo/isotipoMarcaAgua'
+import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 import { codigoFormato } from '@/lib/codigoFormato'
@@ -561,10 +561,10 @@ export function ChecklistVisitaPDF({
         {tablaDocs}
         {tablaSinRevisar}
 
-        <PdfSignaturesM13
+        <PdfFirmas
           signatures={[
-            { label: 'Realizó la visita', nombre: visita.revisor ?? '', caption: 'Realizo - Firma', firma: firmaRealizo ?? null },
-            { label: '', nombre: '', caption: 'Verifico - Firma', firma: firmaVerifico ?? null },
+            { label: 'Realizó la visita', nombre: visita.revisor ?? '', caption: 'Realizó - Firma', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Verificó - Firma', firma: firmaVerifico ?? null },
           ]}
           enterado={firmaEnterado ?? null}
         />

@@ -34,7 +34,6 @@ export interface MonitoreoPlaguasPDFProps {
 
 const COL_SECTOR = 65
 const COL_PLANTA = 40
-const COL_BENEFICOS = 55
 const COL_OBS = 70
 const COL_ORG_MIN = 38
 
@@ -53,7 +52,7 @@ export function MonitoreoPlaguasPagina({
   const todosOrg = [...plagas, ...enfermedades]
 
   // Reparte el ancho entre las columnas de organismos
-  const fixedW = COL_SECTOR + COL_PLANTA + COL_BENEFICOS + COL_OBS
+  const fixedW = COL_SECTOR + COL_PLANTA + COL_OBS
   const availableForOrg = 555 - fixedW
   const orgColW = todosOrg.length > 0
     ? Math.max(COL_ORG_MIN, Math.floor(availableForOrg / todosOrg.length))
@@ -70,32 +69,30 @@ export function MonitoreoPlaguasPagina({
     { texto: 'Sector', ancho: COL_SECTOR },
     { texto: '# Planta', ancho: COL_PLANTA, align: 'center' },
     ...todosOrg.map((o): ColumnaDato => ({ texto: o.nombre, ancho: orgColW, align: 'center' })),
-    { texto: 'Beneficos', ancho: COL_BENEFICOS },
     { texto: 'Observaciones', ancho: COL_OBS },
   ]
   const grupos = [
     { texto: '', ancho: COL_SECTOR + COL_PLANTA },
     ...(plagas.length > 0 ? [{ texto: 'Plagas', ancho: orgColW * plagas.length }] : []),
     ...(enfermedades.length > 0 ? [{ texto: 'Enfermedades', ancho: orgColW * enfermedades.length }] : []),
-    { texto: '', ancho: COL_BENEFICOS + COL_OBS },
+    { texto: '', ancho: COL_OBS },
   ]
 
   const datos = filas.map((f) => [
     f.sector,
     String(f.num_planta),
     ...todosOrg.map((o) => (f.conteos[o.id] ? String(f.conteos[o.id]) : '')),
-    beneficos ?? '',
     f.comentario ?? '',
   ])
   const pie = filas.length > 0
     ? [
-        [{ texto: 'Total', negrita: true }, { texto: String(totalPlantas), negrita: true }, ...todosOrg.map((o) => ({ texto: totales[o.id] ? String(totales[o.id]) : '', negrita: true })), '', ''],
+        [{ texto: 'Total', negrita: true }, { texto: String(totalPlantas), negrita: true }, ...todosOrg.map((o) => ({ texto: totales[o.id] ? String(totales[o.id]) : '', negrita: true })), ''],
         [{ texto: '% Incidencia', negrita: true }, '', ...todosOrg.map((o) => {
           const pct = totalPlantas > 0
             ? ((filas.filter(f => (f.conteos[o.id] ?? 0) > 0).length / totalPlantas) * 100).toFixed(1)
             : '0.0'
           return `${pct}%`
-        }), '', ''],
+        }), ''],
       ]
     : []
 
@@ -111,10 +108,11 @@ export function MonitoreoPlaguasPagina({
       tituloDatos="DATOS GENERALES"
       porRenglon={3}
       camposDatos={[
-        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Compania', valor: orgNombre }] : []),
+        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Compañía', valor: orgNombre }] : []),
         { icono: 'ubicacion', etiqueta: 'Rancho', valor: rancho },
         { icono: 'calendario', etiqueta: 'Fecha', valor: formatFecha(fecha) },
-        ...(etapa_fenologica ? [{ etiqueta: 'Etapa fenologica', valor: etapa_fenologica }] : []),
+        ...(etapa_fenologica ? [{ etiqueta: 'Etapa fenológica', valor: etapa_fenologica }] : []),
+        ...(beneficos ? [{ etiqueta: 'Benéficos', valor: beneficos }] : []),
       ]}
     >
       <TablaDatos
@@ -131,8 +129,8 @@ export function MonitoreoPlaguasPagina({
 
       <PdfFirmas
         signatures={[
-          { label: '', nombre: realizo ?? '', caption: 'Realizo', firma: firmaRealizo ?? null },
-          { label: '', nombre: '', caption: 'Verifico', firma: firmaVerifico ?? null },
+          { label: '', nombre: realizo ?? '', caption: 'Realizó', firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Verificó', firma: firmaVerifico ?? null },
         ]}
       />
     </PaginaEstandar>

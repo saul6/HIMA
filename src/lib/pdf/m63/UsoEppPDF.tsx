@@ -39,7 +39,7 @@ function fmtFecha(iso: string): string {
 }
 
 function okLabel(val: boolean): string {
-  return val ? 'Bueno' : 'Danado'
+  return val ? 'Bueno' : 'Dañado'
 }
 
 // Bueno normal; Danado en rojo suave (el texto no cambia)
@@ -56,10 +56,11 @@ const COLS = (terminoSitio: string): ColumnaDato[] => [
   { texto: 'Guantes', ancho: 40, align: 'center' },
   { texto: 'Lentes', ancho: 40, align: 'center' },
   { texto: 'Mascarilla', ancho: 42, align: 'center' },
-  { texto: 'Realizo', ancho: 80 },
+  { texto: 'Realizó', ancho: 70 },
+  { texto: 'Observaciones', ancho: 90 },
 ]
 
-export function UsoEppPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoSitio = 'Instalacion', firmaRealizo, firmaVerifico }: Props) {
+export function UsoEppPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoSitio = 'Instalación', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
   const codigoFmt = codigoFormato('M63-USO-EPP', codigoClave)
 
@@ -72,9 +73,9 @@ export function UsoEppPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoS
         folio={periodo}
         emision={periodo}
         etiquetaEmision="Periodo"
-        tituloDatos="1. INFORMACION GENERAL"
+        tituloDatos="1. INFORMACIÓN GENERAL"
         camposDatos={[
-          { icono: 'usuario', etiqueta: 'Organizacion', valor: orgNombre ?? '—' },
+          { icono: 'usuario', etiqueta: 'Organización', valor: orgNombre ?? '—' },
           { icono: 'calendario', etiqueta: 'Periodo', valor: periodo },
         ]}
       >
@@ -83,14 +84,14 @@ export function UsoEppPDF({ rows, orgNombre, desde, hasta, codigoClave, terminoS
             columnas={COLS(terminoSitio)}
             fuente={6.5}
             filas={rows.map((r) => [
-              fmtFecha(r.fecha), r.rancho, r.aplicador, r.momento === 'inicio' ? 'Inicio' : 'Fin', okCelda(r.botas_ok), okCelda(r.overol_ok), okCelda(r.guantes_ok), okCelda(r.lentes_ok), okCelda(r.mascarilla_ok), r.realizo ?? '—',
+              fmtFecha(r.fecha), r.rancho, r.aplicador, r.momento === 'inicio' ? 'Inicio' : 'Fin', okCelda(r.botas_ok), okCelda(r.overol_ok), okCelda(r.guantes_ok), okCelda(r.lentes_ok), okCelda(r.mascarilla_ok), r.realizo ?? '—', r.observaciones ?? '',
             ])}
           />
         </Seccion>
 
         <PdfFirmas
           signatures={[
-            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
             { label: '', nombre: '', caption: 'Verifico: Responsable de Inocuidad', firma: firmaVerifico ?? null },
           ]}
         />

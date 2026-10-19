@@ -79,12 +79,12 @@ const COLS_CONC: ColumnaDato[] = [
   { texto: 'Ajuste Cloro', ancho: 60, align: 'center' },
   { texto: 'Conc. Ac. Per. (ppm)', ancho: 65, align: 'center' },
   { texto: 'Ajuste Ac. Per.', ancho: 60, align: 'center' },
-  { texto: 'Realizo', ancho: 100, align: 'center' },
+  { texto: 'Realizó', ancho: 100, align: 'center' },
   { texto: 'Aprobo', ancho: 100, align: 'center' },
 ]
 const COLS_PERSONAL: ColumnaDato[] = [
   { texto: 'Dia', ancho: 30, align: 'center' },
-  { texto: 'Realizo', ancho: 250, align: 'center' },
+  { texto: 'Realizó', ancho: 250, align: 'center' },
   { texto: 'Aprobo', ancho: 250, align: 'center' },
 ]
 
@@ -202,7 +202,7 @@ export function PaginaBitacoraMensual({
         <Seccion titulo="3. FIRMAS Y RESPONSABLES">
           <PdfFirmas
             signatures={[
-              { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+              { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
               { label: '', nombre: '', caption: 'Aprobo', firma: firmaVerifico ?? null },
               { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
             ]}

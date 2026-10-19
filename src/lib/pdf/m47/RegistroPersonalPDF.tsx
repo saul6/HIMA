@@ -100,13 +100,13 @@ export function RegistroPersonalPDF({
     { texto: 'No.', ancho: COL_NO, align: 'center' },
     { texto: 'Puesto', ancho: COL_PUESTO },
     { texto: 'Nombre', ancho: COL_NOMBRE },
-    { texto: 'Direccion', ancho: COL_DIR },
+    { texto: 'Dirección', ancho: COL_DIR },
     { texto: 'Tel. Casa', ancho: COL_TCASA },
     { texto: 'Celular', ancho: COL_CEL },
     { texto: 'F. Nac. D/M/A', ancho: COL_FNAC, align: 'center' },
     { texto: 'Nombre', ancho: COL_EM_NOM },
     { texto: 'Parentesco', ancho: COL_EM_PAR },
-    { texto: 'Telefono', ancho: COL_EM_TEL },
+    { texto: 'Teléfono', ancho: COL_EM_TEL },
     ...documentos.map((_, i): ColumnaDato => ({ texto: `D${i + 1}`, ancho: COL_ITEM, align: 'center' })),
     ...capacitaciones.map((_, i): ColumnaDato => ({ texto: `C${i + 1}`, ancho: COL_ITEM, align: 'center' })),
     { texto: 'Observaciones', ancho: COL_OBS },
@@ -152,7 +152,7 @@ export function RegistroPersonalPDF({
         tituloDatos="1. DATOS DEL SITIO"
         camposDatos={[
           { icono: 'ubicacion', etiqueta: terminoSitio, valor: rancho },
-          { icono: 'usuario', etiqueta: 'Organizacion', valor: orgNombre },
+          { icono: 'usuario', etiqueta: 'Organización', valor: orgNombre },
           { icono: 'calendario', etiqueta: 'Fecha', valor: fmtFechaCorta(fechaPDF) },
         ]}
       >

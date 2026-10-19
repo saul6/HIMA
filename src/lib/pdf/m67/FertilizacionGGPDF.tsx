@@ -52,7 +52,7 @@ const COLS = (terminoSitio: string): ColumnaDato[] => [
   { texto: 'Unidades', ancho: 44 },
   { texto: 'Cant/ha', ancho: 56 },
   { texto: 'Maquinaria', ancho: 56 },
-  { texto: 'Metodo aplicacion', ancho: 71 },
+  { texto: 'Método aplicación', ancho: 71 },
   { texto: 'Operario', ancho: 56 },
   { texto: 'Observaciones', ancho: 61 },
 ]
@@ -72,12 +72,12 @@ export function FertilizacionGGPDF({ registros, rancho, orgNombre, desde, hasta,
         etiquetaEmision="Periodo"
         tituloDatos="1. DATOS DEL SITIO"
         camposDatos={[
-          { icono: 'usuario', etiqueta: 'Compania', valor: orgNombre ?? '—' },
+          { icono: 'usuario', etiqueta: 'Compañía', valor: orgNombre ?? '—' },
           { icono: 'ubicacion', etiqueta: terminoSitio, valor: rancho },
           { icono: 'calendario', etiqueta: 'Periodo', valor: periodo },
         ]}
       >
-        <Seccion titulo="2. REGISTROS DE APLICACION DE FERTILIZANTES">
+        <Seccion titulo="2. REGISTROS DE APLICACIÓN DE FERTILIZANTES">
           <TablaDatos
             columnas={COLS(terminoSitio)}
             fuente={6.5}
@@ -89,7 +89,7 @@ export function FertilizacionGGPDF({ registros, rancho, orgNombre, desde, hasta,
 
         <PdfFirmas
           signatures={[
-            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
             { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
           ]}
         />

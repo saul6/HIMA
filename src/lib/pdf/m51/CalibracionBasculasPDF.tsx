@@ -1,6 +1,5 @@
 import { Document } from '@react-pdf/renderer'
 import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
-import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
@@ -51,6 +50,8 @@ const COLS: ColumnaDato[] = [
   { texto: 'Peso medido (kg)', ancho: 70, align: 'center' },
   { texto: 'Desviación', ancho: 65, align: 'center' },
   { texto: 'Dentro tolerancia', ancho: 70, align: 'center' },
+  { texto: 'Realizó', ancho: 70, align: 'left' },
+  { texto: 'Observaciones', ancho: 90, align: 'left' },
 ]
 
 export function CalibracionBasculasPDF({
@@ -66,10 +67,6 @@ export function CalibracionBasculasPDF({
 }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
   const codigoFmt = codigoFormato('REG-05', codigoClave)
-  const notas = [
-    ...(registros[0]?.realizo ? [{ etiqueta: 'Realizó', valor: registros[0].realizo }] : []),
-    ...(registros[0]?.observaciones ? [{ etiqueta: 'Observaciones', valor: registros[0].observaciones }] : []),
-  ]
 
   return (
     <Document>
@@ -92,12 +89,10 @@ export function CalibracionBasculasPDF({
             columnas={COLS}
             fuente={7}
             filas={registros.map((r) => [
-              fmtFecha(r.fecha), r.uso_bascula, fmtNum(r.pesa_patron_kg, 3), r.punto_calibracion, fmtNum(r.peso_medido_kg, 3), fmtNum(r.desviacion, 3), r.dentro_tolerancia === true ? 'Si' : r.dentro_tolerancia === false ? 'No' : '—',
+              fmtFecha(r.fecha), r.uso_bascula, fmtNum(r.pesa_patron_kg, 3), r.punto_calibracion, fmtNum(r.peso_medido_kg, 3), fmtNum(r.desviacion, 3), r.dentro_tolerancia === true ? 'Si' : r.dentro_tolerancia === false ? 'No' : '—', r.realizo || '—', r.observaciones ?? '',
             ])}
           />
         </Seccion>
-
-        {notas.length > 0 && <FranjaDatos campos={notas} porRenglon={notas.length} />}
 
         <PdfFirmas
           signatures={[

@@ -46,7 +46,7 @@ const sn = (v: boolean) => v ? 'Si' : 'No'
 const nn = (v: number | null | undefined) => v != null ? String(v) : '—'
 
 const COLS: ColumnaDato[] = [
-  { texto: 'Descripcion del material', ancho: 180 },
+  { texto: 'Descripción del material', ancho: 180 },
   { texto: 'Entrada', ancho: 60, align: 'center' },
   { texto: 'Salida', ancho: 60, align: 'center' },
   { texto: 'Total', ancho: 60, align: 'center' },
@@ -61,7 +61,7 @@ function ChecklistBlock({ d, tipo }: { d: M42MovimientoPDF; tipo: 'mat' | 'tr' }
   const olores  = tipo === 'mat' ? d.mat_libre_olores : d.tr_libre_olores
   const plagas  = tipo === 'mat' ? d.mat_libre_plagas : d.tr_libre_plagas
   const otros   = tipo === 'mat' ? d.mat_otros      : d.tr_otros
-  const titulo  = tipo === 'mat' ? 'Condicion del material' : 'Condicion del transporte'
+  const titulo  = tipo === 'mat' ? 'Condición del material' : 'Condición del transporte'
 
   return (
     <View wrap={false} style={{ flex: 1, backgroundColor: PC.m13Fondo, borderRadius: 6, padding: 8 }}>

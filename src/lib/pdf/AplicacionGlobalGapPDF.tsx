@@ -24,7 +24,7 @@ const PRODUCT_COLS_GG: ColumnaDato[] = [
   { texto: 'No. RSCO/COFEPRIS', ancho: 90, align: 'left' },
   { texto: 'Dosis por 200 L', ancho: 70, align: 'center' },
   { texto: 'Cantidad total', ancho: 70, align: 'center' },
-  { texto: 'Int. Seguridad dias', ancho: 60, align: 'center' },
+  { texto: 'Int. Seguridad días', ancho: 60, align: 'center' },
   { texto: 'Reentrada hrs', ancho: 50, align: 'center' },
 ]
 
@@ -66,31 +66,31 @@ export function AplicacionGlobalGapPDF({
           { icono: 'usuario', etiqueta: 'Productor', valor: productorNombre },
           { icono: 'ubicacion', etiqueta: 'Rancho / Huerto', valor: val(rancho.nombre) },
           { etiqueta: 'Cultivo', valor: val(rancho.cultivo) },
-          { icono: 'codigo', etiqueta: 'Codigo de huerto', valor: val(rancho.codigo) },
+          { icono: 'codigo', etiqueta: 'Código de huerto', valor: val(rancho.codigo) },
           { etiqueta: 'Variedad', valor: val(ap.variedad) },
-          { etiqueta: 'Etapa fenologica', valor: formatFenologia(ap.fenologia ?? undefined) },
-          { icono: 'calendario', etiqueta: 'Fecha de aplicacion', valor: val(ap.fecha_aplicacion) },
-          { icono: 'calendario', etiqueta: 'Proxima cosecha', valor: val((ap as any).proxima_cosecha) },
+          { etiqueta: 'Etapa fenológica', valor: formatFenologia(ap.fenologia ?? undefined) },
+          { icono: 'calendario', etiqueta: 'Fecha de aplicación', valor: val(ap.fecha_aplicacion) },
+          { icono: 'calendario', etiqueta: 'Próxima cosecha', valor: val((ap as any).proxima_cosecha) },
           { etiqueta: 'Hora inicio', valor: val(ap.hora_inicio) },
           { etiqueta: 'Hora fin', valor: val(ap.hora_fin) },
         ]}
       >
-        <Seccion titulo="2. METODO DE APLICACION Y CONDICIONES">
+        <Seccion titulo="2. MÉTODO DE APLICACIÓN Y CONDICIONES">
           <FranjaDatos
             campos={[
-              { etiqueta: 'Metodo de aplicacion', valor: val((ap as any).metodo_aplicacion_gg) },
+              { etiqueta: 'Método de aplicación', valor: val((ap as any).metodo_aplicacion_gg) },
               { etiqueta: 'Equipo utilizado', valor: val(ap.equipo) },
               { etiqueta: 'Total agua usada (L)', valor: val(ap.total_agua_l) },
-              { etiqueta: 'Condicion climatica', valor: val(ap.condicion_meteorologica) },
+              { etiqueta: 'Condición climatica', valor: val(ap.condicion_meteorologica) },
               {
-                etiqueta: 'Cloracion',
+                etiqueta: 'Cloración',
                 valor: ap.cloracion ? `Si — ${valNum(ap.cloro_cantidad_l)} ml · pH ${val(ap.cloro_ph)}` : 'No',
               },
             ]}
           />
         </Seccion>
 
-        <Seccion titulo="3. EQUIPO DE PROTECCION PERSONAL (EPP) — GlobalG.A.P. REG-21">
+        <Seccion titulo="3. EQUIPO DE PROTECCIÓN PERSONAL (EPP) — GlobalG.A.P. REG-21">
           <Checklist
             items={[
               { label: 'Traje protector', checked: Boolean(ap.epp_traje) },
@@ -133,7 +133,7 @@ export function AplicacionGlobalGapPDF({
             <PdfFirmas
               signatures={[
                 { label: 'Nombre(s) del aplicador', nombre: val(ap.aplicadores), caption: 'Firma del aplicador' },
-                { label: 'Asesor tecnico', nombre: val(asesor?.nombre_completo), caption: 'Firma del asesor tecnico' },
+                { label: 'Asesor técnico', nombre: val(asesor?.nombre_completo), caption: 'Firma del asesor técnico' },
                 { label: 'Responsable de inocuidad', nombre: val(responsable?.nombre_completo), caption: 'Firma del responsable de inocuidad' },
               ]}
             />

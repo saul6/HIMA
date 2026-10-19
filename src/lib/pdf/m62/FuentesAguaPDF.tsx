@@ -41,14 +41,14 @@ function labelRespuesta(r: 'si' | 'no' | 'na'): string {
 // Anchos relativos de columna (la tabla se escala al ancho útil de la hoja)
 const COLS: ColumnaDato[] = [
   { texto: 'No.', ancho: 28, align: 'center' },
-  { texto: 'Criterio de inspeccion', ancho: 240 },
+  { texto: 'Criterio de inspección', ancho: 240 },
   { texto: 'Respuesta', ancho: 45, align: 'center' },
   { texto: 'Comentario', ancho: 220 },
 ]
 
 export function FuentesAguaPage({
   rancho, orgNombre, fecha, tipo_fuente, realizo, observaciones, items,
-  terminoSitio = 'Instalacion',
+  terminoSitio = 'Instalación',
   firmaRealizo,
   firmaVerifico,
 }: FuentesAguaPDFProps) {
@@ -56,7 +56,7 @@ export function FuentesAguaPage({
     <PaginaEstandar
       orientacion="portrait"
       titulo="INSPECCIÓN DE FUENTES DE AGUA"
-      subtitulo={`Inspeccion de fuente | ${rancho}`}
+      subtitulo={`Inspección de fuente | ${rancho}`}
       codigoFmt="M62"
       folio={fmtFecha(fecha)}
       emision={fmtFecha(fecha)}
@@ -64,15 +64,15 @@ export function FuentesAguaPage({
       tituloDatos="1. DATOS GENERALES"
       camposDatos={[
         { icono: 'ubicacion', etiqueta: terminoSitio, valor: rancho },
-        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organizacion', valor: orgNombre }] : []),
+        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organización', valor: orgNombre }] : []),
         { icono: 'calendario', etiqueta: 'Fecha', valor: fmtFecha(fecha) },
         { etiqueta: 'Tipo de fuente', valor: tipo_fuente ?? '—' },
-        { icono: 'usuario', etiqueta: 'Realizo', valor: realizo ?? '—' },
+        { icono: 'usuario', etiqueta: 'Realizó', valor: realizo ?? '—' },
       ]}
     >
       <FranjaDatos campos={[{ etiqueta: 'Observaciones', valor: observaciones ?? '—' }]} />
 
-      <Seccion titulo="2. CHECKLIST DE INSPECCION">
+      <Seccion titulo="2. CHECKLIST DE INSPECCIÓN">
         <TablaDatos
           columnas={COLS}
           anchoTotal={ANCHO_UTIL.portrait}
@@ -88,7 +88,7 @@ export function FuentesAguaPage({
 
       <PdfFirmas
         signatures={[
-          { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+          { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
           { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
         ]}
       />

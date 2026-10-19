@@ -86,12 +86,12 @@ export function RecepcionFrutaPDF({ d, codigoClave }: { d: M39RecepcionDataPDF; 
         detalleCompacto={`${codigoFmt}  |  ${d.instalacion}  |  ${fmtFecha(d.fecha)}`}
         camposDatos={[
           { icono: 'codigo', etiqueta: 'Formato', valor: codigoFmt },
-          { icono: 'ubicacion', etiqueta: 'Instalacion', valor: d.instalacion },
+          { icono: 'ubicacion', etiqueta: 'Instalación', valor: d.instalacion },
           ...(d.empresa ? [{ etiqueta: 'Empresa', valor: d.empresa }] : []),
           { icono: 'calendario', etiqueta: 'Fecha', valor: fmtFecha(d.fecha) },
         ]}
       >
-        <Seccion titulo="LINEAS DE RECEPCION">
+        <Seccion titulo="LÍNEAS DE RECEPCIÓN">
           <TablaDatos
             columnas={COLS}
             fuente={7.5}
@@ -111,7 +111,7 @@ export function RecepcionFrutaPDF({ d, codigoClave }: { d: M39RecepcionDataPDF; 
 
         {/* Bloques de totales */}
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-          <CajaTotales titulo="Inventario total recepcion del dia" filas={[['6 oz', t6], ['12 oz', t12], ['18 oz', t18]]} />
+          <CajaTotales titulo="Inventario total recepción del día" filas={[['6 oz', t6], ['12 oz', t12], ['18 oz', t18]]} />
           <CajaTotales titulo="Inventario total pase aduanal" filas={[['6 oz', a6], ['12 oz', a12], ['18 oz', a18]]} />
         </View>
 

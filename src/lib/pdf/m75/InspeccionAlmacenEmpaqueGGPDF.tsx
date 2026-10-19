@@ -35,7 +35,7 @@ export interface InspeccionAlmacenEmpaqueGGPaginaProps {
 // Acciones tomadas: día y texto (anchos relativos)
 const COLS_ACCIONES: ColumnaDato[] = [
   { texto: 'Dia', ancho: 40 },
-  { texto: 'Accion tomada', ancho: 700 },
+  { texto: 'Acción tomada', ancho: 700 },
 ]
 
 function diasDelMes(mesDate: string): number {
@@ -74,13 +74,13 @@ export function InspeccionAlmacenEmpaqueGGPagina({
 
   const matrixItems = items.map(it => ({
     id: it.id,
-    seccion_label: 'Inspección de Almacen de Empaque',
+    seccion_label: 'Inspección de Almacén de Empaque',
     item: `${it.numero}. ${it.texto}`,
   }))
 
   return (
     <PaginaMatrizMensual
-      titulo="INSPECCION DE ALMACEN DE MATERIAL DE EMPAQUE Y/O EMBALAJE"
+      titulo="INSPECCIÓN DE ALMACÉN DE MATERIAL DE EMPAQUE Y/O EMBALAJE"
       subtitulo={`REG-22 · GlobalG.A.P. v6 | ${rancho}`}
       codigoFmt="REG-22"
       folio={mesLabel}
@@ -88,7 +88,7 @@ export function InspeccionAlmacenEmpaqueGGPagina({
       etiquetaEmision="Fecha"
       itemColW={220}
       campos={[
-        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Compania', valor: orgNombre }] : []),
+        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Compañía', valor: orgNombre }] : []),
         { icono: 'ubicacion', etiqueta: 'Rancho', valor: rancho },
         ...(cultivo ? [{ etiqueta: 'Cultivo', valor: cultivo }] : []),
         { icono: 'calendario', etiqueta: 'Mes y Año', valor: mesLabel },
@@ -104,7 +104,7 @@ export function InspeccionAlmacenEmpaqueGGPagina({
         acciones.length > 0 ? (
           <Seccion titulo="ACCIONES TOMADAS">
             <Text style={{ fontSize: 6.5, color: PC.textSub, fontFamily: 'Helvetica-Oblique', marginBottom: 3 }}>
-              En caso de encontrar alguna incidencia inusual, especificar la ACCION CORRECTIVA tomada.
+              En caso de encontrar alguna incidencia inusual, especificar la ACCIÓN CORRECTIVA tomada.
             </Text>
             <TablaDatos
               columnas={COLS_ACCIONES}

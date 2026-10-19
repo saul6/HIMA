@@ -54,7 +54,7 @@ const COLS: ColumnaDato[] = [
   { texto: 'Cant.\nBandejas', ancho: 36, align: 'center' },
   { texto: 'Lote\nLib. S/N', ancho: 36, align: 'center' },
   { texto: 'No. Comprobante\no Vale Interno', ancho: 60 },
-  { texto: 'Codigo de\nTrazabilidad', ancho: 66 },
+  { texto: 'Código de\nTrazabilidad', ancho: 66 },
   { texto: 'Marca y\nEmbalaje', ancho: 54 },
   { texto: 'Destino\nFinal', ancho: 58 },
   { texto: 'Fruta\nProc. Kg', ancho: 40, align: 'center' },

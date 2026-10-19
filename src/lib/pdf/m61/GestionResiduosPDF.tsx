@@ -39,14 +39,14 @@ function fmtFecha(iso: string): string {
 const COLS: ColumnaDato[] = [
   { texto: 'Fecha', ancho: 70 },
   { texto: 'Fuente de residuo', ancho: 140 },
-  { texto: 'Descripcion', ancho: 190 },
+  { texto: 'Descripción', ancho: 190 },
   { texto: 'Clasificacion', ancho: 110 },
   { texto: 'Destino final', ancho: 140 },
   { texto: 'Cantidad', ancho: 70, align: 'center' },
-  { texto: 'Realizo', ancho: 82 },
+  { texto: 'Realizó', ancho: 82 },
 ]
 
-export function GestionResiduosPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Instalacion', firmaRealizo, firmaVerifico }: Props) {
+export function GestionResiduosPDF({ rancho, orgNombre, desde, hasta, registros, terminoSitio = 'Instalación', firmaRealizo, firmaVerifico }: Props) {
   const periodo = desde === hasta ? fmtFecha(desde) : `${fmtFecha(desde)} - ${fmtFecha(hasta)}`
 
   return (
@@ -61,7 +61,7 @@ export function GestionResiduosPDF({ rancho, orgNombre, desde, hasta, registros,
         tituloDatos="1. DATOS DEL SITIO"
         camposDatos={[
           { icono: 'ubicacion', etiqueta: terminoSitio, valor: rancho },
-          ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organizacion', valor: orgNombre }] : []),
+          ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organización', valor: orgNombre }] : []),
           { icono: 'calendario', etiqueta: 'Periodo', valor: periodo },
         ]}
       >
@@ -96,7 +96,7 @@ export function GestionResiduosPDF({ rancho, orgNombre, desde, hasta, registros,
 
         <PdfFirmas
           signatures={[
-            { label: '', nombre: '', caption: 'Realizo', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
             { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
           ]}
         />

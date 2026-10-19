@@ -79,26 +79,26 @@ const ISH_TIP_DY = 55
 
 const ISH_ABOVE = [
   { key: 'medio_ambiente', label: 'MEDIO AMBIENTE' },
-  { key: 'metodo',         label: 'METODO' },
+  { key: 'metodo',         label: 'MÉTODO' },
   { key: 'mano_de_obra',  label: 'MANO DE OBRA' },
 ]
 const ISH_BELOW = [
   { key: 'materiales',  label: 'MATERIALES' },
   { key: 'herramientas', label: 'HERRAMIENTAS' },
-  { key: 'medicion',    label: 'MEDICION' },
+  { key: 'medicion',    label: 'MEDICIÓN' },
 ]
 
 // ── Componentes internos ──────────────────────────────────────────────────────
 
 const COLS: ColumnaDato[] = [
-  { texto: 'Fecha deteccion', ancho: 80 },
+  { texto: 'Fecha detección', ancho: 80 },
   { texto: 'No conformidad', ancho: 180 },
   { texto: 'Causa', ancho: 160 },
-  { texto: 'Accion correctiva', ancho: 160 },
-  { texto: 'Accion preventiva', ancho: 160 },
+  { texto: 'Acción correctiva', ancho: 160 },
+  { texto: 'Acción preventiva', ancho: 160 },
   { texto: 'Fecha cumplimiento', ancho: 80 },
-  { texto: 'Realizo', ancho: 100 },
-  { texto: 'Verifico', ancho: 100 },
+  { texto: 'Realizó', ancho: 100 },
+  { texto: 'Verificó', ancho: 100 },
 ]
 
 function AccionesTabla({ acciones }: { acciones: AccionPDFFila[] }) {
@@ -147,7 +147,7 @@ function FichaNC({ accion }: { accion: AccionPDFFila }) {
         </View>
       </View>
       <View wrap={false}>
-        <SubtituloFicha texto="Accion correctiva." />
+        <SubtituloFicha texto="Acción correctiva." />
         <View style={{ padding: 8 }}>
           <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }} hyphenationCallback={partirPalabraLarga}>{fmt(accion.accion_correctiva)}</Text>
         </View>
@@ -256,12 +256,12 @@ export function AccionesCorrectivasPDF({
         codigoFmt="M26"
         folio={emision}
         emision={emision}
-        detalleCompacto={`${terminoSitio}: ${ranchoNombre}  ·  Emision: ${emision}  ·  Fecha: ${fechaTitulo}`}
+        detalleCompacto={`${terminoSitio}: ${ranchoNombre}  ·  Emisión: ${emision}  ·  Fecha: ${fechaTitulo}`}
         porRenglon={4}
         camposDatos={[
-          { icono: 'calendario', etiqueta: 'Emision', valor: emision },
-          { icono: 'usuario', etiqueta: 'Organizacion', valor: fmt(orgNombre) },
-          { icono: 'ubicacion', etiqueta: `Instalacion / ${terminoSitio}`, valor: fmt(ranchoNombre) },
+          { icono: 'calendario', etiqueta: 'Emisión', valor: emision },
+          { icono: 'usuario', etiqueta: 'Organización', valor: fmt(orgNombre) },
+          { icono: 'ubicacion', etiqueta: `Instalación / ${terminoSitio}`, valor: fmt(ranchoNombre) },
           { icono: 'calendario', etiqueta: 'Fecha', valor: fechaTitulo },
         ]}
       >
@@ -285,7 +285,7 @@ export function AccionesCorrectivasPDF({
         {acciones.map((a, i) => {
           const hasIsh = a.ishikawa && Object.values(a.ishikawa).some((v) => v?.trim())
           return (
-            <View key={i} break={i === 0}>
+            <View key={i}>
               <FichaNC accion={a} />
               {hasIsh && (
                 <IshikawaDiagram

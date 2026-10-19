@@ -60,7 +60,7 @@ export function InventarioBotiquinGGPagina({ rancho, orgNombre, fecha, botiquin_
         { icono: 'ubicacion', etiqueta: 'Rancho / instalacion', valor: rancho },
         { icono: 'calendario', etiqueta: 'Fecha', valor: formatFecha(fecha) },
         { etiqueta: 'N. Botiquin', valor: botiquin_num ?? '—' },
-        { icono: 'usuario', etiqueta: 'Realizo', valor: realizo ?? '—' },
+        { icono: 'usuario', etiqueta: 'Realizó', valor: realizo ?? '—' },
       ]}
     >
       <Seccion titulo="REGISTRO DE MATERIALES">
@@ -101,7 +101,7 @@ const COLS_RESUMEN: ColumnaDato[] = [
   { texto: 'Fecha', ancho: 65, align: 'center' },
   { texto: 'Rancho', ancho: 110 },
   { texto: 'N. Botiquin', ancho: 65, align: 'center' },
-  { texto: 'Realizo', ancho: 100 },
+  { texto: 'Realizó', ancho: 100 },
   { texto: '# Materiales', ancho: 55, align: 'center' },
   { texto: 'Observaciones', ancho: 160 },
 ]

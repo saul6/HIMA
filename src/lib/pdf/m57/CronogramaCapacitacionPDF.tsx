@@ -1,5 +1,5 @@
 import { Document } from '@react-pdf/renderer'
-import { PaginaEstandar } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PC } from '@/lib/pdf/components/tokens'
 
@@ -26,7 +26,7 @@ function fechaHoy(): string {
 // Anchos relativos de columna (la tabla se escala al ancho útil de la hoja)
 const COLS: ColumnaDato[] = [
   { texto: 'Cargo', ancho: 2 },
-  { texto: 'Tematica', ancho: 3 },
+  { texto: 'Temática', ancho: 3 },
   { texto: 'Periodicidad', ancho: 1.5 },
   { texto: 'Mes Programado', ancho: 1.5 },
   { texto: 'Observaciones', ancho: 2 },
@@ -45,15 +45,17 @@ export function CronogramaCapacitacionPDF({ orgNombre, registros }: CronogramaCa
         etiquetaEmision="Fecha"
         camposDatos={[]}
       >
-        <TablaDatos
-          columnas={COLS}
-          anchoTotal={ANCHO_UTIL.portrait}
-          fuente={7}
-          vacio="Sin registros"
-          filas={registros.map((row) => [
-            row.cargo, row.tematica, row.periodicidad, row.mes_programado, row.observaciones ?? '',
-          ])}
-        />
+        <Seccion titulo="REGISTRO DE CRONOGRAMA DE CAPACITACIONES">
+          <TablaDatos
+            columnas={COLS}
+            anchoTotal={ANCHO_UTIL.portrait}
+            fuente={7}
+            vacio="Sin registros"
+            filas={registros.map((row) => [
+              row.cargo, row.tematica, row.periodicidad, row.mes_programado, row.observaciones ?? '',
+            ])}
+          />
+        </Seccion>
       </PaginaEstandar>
     </Document>
   )

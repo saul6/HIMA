@@ -75,7 +75,7 @@ const GRUPOS = [
   { texto: 'Hora de monitoreo 1', ancho: tomaW },
   { texto: 'Hora de monitoreo 2', ancho: tomaW },
   { texto: 'Hora de monitoreo 3', ancho: tomaW },
-  { texto: 'Realizo', ancho: COL.realizo },
+  { texto: 'Realizó', ancho: COL.realizo },
   { texto: 'Observaciones', ancho: COL.obs },
 ]
 
@@ -93,7 +93,7 @@ export function GermicidaGGPagina({ rancho, orgNombre, filas, firmaRealizo, firm
       etiquetaEmision="Fecha"
       tituloDatos="DATOS GENERALES"
       camposDatos={[
-        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Compania', valor: orgNombre }] : []),
+        ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Compañía', valor: orgNombre }] : []),
         { icono: 'ubicacion', etiqueta: 'Rancho', valor: rancho },
         ...(producto ? [{ etiqueta: 'Producto', valor: producto }] : []),
       ]}

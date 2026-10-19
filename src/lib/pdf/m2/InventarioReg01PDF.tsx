@@ -62,7 +62,7 @@ export function InventarioReg01PDF({
         emision={emision}
         tituloDatos="DATOS GENERALES"
         camposDatos={[
-          { icono: 'usuario', etiqueta: 'Compania', valor: v(orgNombre) },
+          { icono: 'usuario', etiqueta: 'Compañía', valor: v(orgNombre) },
           { icono: 'ubicacion', etiqueta: 'Rancho / Huerto', valor: v(ranchoNombre) },
           { etiqueta: 'Cultivo', valor: v(cultivo) },
         ]}

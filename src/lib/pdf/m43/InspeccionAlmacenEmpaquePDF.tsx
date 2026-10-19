@@ -100,20 +100,20 @@ export function InspeccionAlmacenEmpaquePagina({
 
   const firmas = [
     { label: '', nombre: '', caption: realizadoPor ? `Realizado por: ${realizadoPor}` : 'Realizado por', firma: firmaRealizo ?? null },
-    { label: '', nombre: '', caption: verifica ? `Verifica: ${verifica}` : 'Verifica: Responsable del Almacen', firma: firmaVerifico ?? null },
+    { label: '', nombre: '', caption: verifica ? `Verifica: ${verifica}` : 'Verifica: Responsable del Almacén', firma: firmaVerifico ?? null },
     ...(autoriza ? [{ label: '', nombre: '', caption: `Autoriza: ${autoriza}` }] : []),
   ]
 
   return (
     <PaginaEstandar
       titulo="INSPECCIÓN DE ALMACÉN DE MATERIAL DE EMPAQUE"
-      subtitulo={`Inspeccion mensual | ${instalacion}`}
+      subtitulo={`Inspección mensual | ${instalacion}`}
       codigoFmt={codigoFmt}
       folio={mesLabel}
       emision={emision}
       columnasCompactas={
         <>
-          <Text style={{ ...estiloColumnaCompacta, fontSize: 6.5, width: PUNTO_COL, paddingLeft: 4 }}>Punto de inspeccion</Text>
+          <Text style={{ ...estiloColumnaCompacta, fontSize: 6.5, width: PUNTO_COL, paddingLeft: 4 }}>Punto de inspección</Text>
           {todosLosDias.map((d) => (
             <Text key={d} style={{ ...estiloColumnaCompacta, fontSize: 6.5, width: dW, textAlign: 'center' }}>{d}</Text>
           ))}
@@ -123,18 +123,18 @@ export function InspeccionAlmacenEmpaquePagina({
       porRenglon={5}
       camposDatos={[
         { icono: 'ubicacion', etiqueta: terminoSitio, valor: instalacion },
-        { icono: 'codigo', etiqueta: 'Codigo', valor: instalacionCodigo || '—' },
+        { icono: 'codigo', etiqueta: 'Código', valor: instalacionCodigo || '—' },
         { icono: 'calendario', etiqueta: 'Mes / Año', valor: mesLabel },
         { icono: 'usuario', etiqueta: 'Realizado por', valor: realizadoPor ?? '—' },
         { icono: 'usuario', etiqueta: 'Verifica', valor: verifica ?? '—' },
         ...(autoriza ? [{ icono: 'usuario' as const, etiqueta: 'Autoriza', valor: autoriza }] : []),
       ]}
     >
-      <Seccion titulo="2. PUNTOS DE INSPECCION">
+      <Seccion titulo="2. PUNTOS DE INSPECCIÓN">
         {/* Encabezado de la matriz */}
         <View wrap={false} style={{ ...fila, backgroundColor: PC.m13Fondo, borderTopWidth: LINEA, borderTopColor: PC.border }}>
           <View style={{ ...celda, width: PUNTO_COL, padding: 3, justifyContent: 'center' }}>
-            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.m13Navy }}>Punto de inspeccion</Text>
+            <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 6.5, color: PC.m13Navy }}>Punto de inspección</Text>
           </View>
           {todosLosDias.map((d) => (
             <View key={d} style={{ ...celda, width: dW, padding: 3, alignItems: 'center', justifyContent: 'center' }}>

@@ -16,11 +16,11 @@ import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export const ATENCIONES_OPCIONES = [
   'Ninguna',
-  'Curacion',
+  'Curación',
   'Primeros auxilios',
-  'Atencion de paramedicos',
-  'Atencion medica',
-  'Hospitalizacion',
+  'Atención de paramédicos',
+  'Atención médica',
+  'Hospitalización',
 ]
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
