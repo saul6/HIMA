@@ -19,6 +19,13 @@ export async function encolarLote(params: {
   operaciones: OperacionSync[]
   adjuntos?: Omit<AdjuntoOutbox, 'loteId'>[]
 }): Promise<LoteOutbox> {
+  if (import.meta.env.DEV) {
+    for (const op of params.operaciones) {
+      if ((op.tipo === 'insert' || op.tipo === 'upsert') && !(op.fila as Record<string, unknown>)?.id) {
+        console.error(`[offline] Operación ${op.tipo} sin fila.id en módulo ${params.modulo} (tabla ${op.tabla}). Usa opInsert/opCabecera/opUpsert.`)
+      }
+    }
+  }
   const id = crypto.randomUUID()
   const adjuntosIds: string[] = []
 

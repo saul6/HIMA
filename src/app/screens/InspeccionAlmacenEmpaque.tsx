@@ -352,8 +352,8 @@ export function InspeccionAlmacenEmpaque() {
         operaciones: [
           opCabecera('m43_registro_mensual', {
             id: localId, rancho_id: nRanchoId, org_id: profile.org_id,
-            anio, mes,
-          }, ['rancho_id', 'anio', 'mes']),
+            anio, mes, area: 'Almacén de material de empaque',
+          }, ['org_id', 'rancho_id', 'anio', 'mes', 'area']),
         ],
       })
       if (ok) handleCerrarSheetCrear()

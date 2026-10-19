@@ -33,6 +33,7 @@ import { WifiOff } from 'lucide-react'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 
 function formatFecha(iso: string): string {
   try {
@@ -130,7 +131,7 @@ export function CalibracionEquipos() {
         const ok = await guardarOffline({
           descripcion: `Calibración equipo · ${rancho?.nombre ?? ''} · ${form.fecha}`,
           metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
-          operaciones: [{ tabla: 'm50_calibracion_equipos', tipo: 'insert' as const, fila }],
+          operaciones: [opInsert('m50_calibracion_equipos', fila)],
         })
         if (ok) handleCerrarSheet()
         return

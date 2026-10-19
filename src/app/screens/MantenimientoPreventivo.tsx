@@ -354,7 +354,7 @@ export function MantenimientoPreventivo() {
             rancho_id: nRanchoId,
             anio: parseInt(yearStr),
             mes: parseInt(mesStr),
-          }, ['rancho_id', 'anio', 'mes']),
+          }, ['org_id', 'rancho_id', 'anio', 'mes']),
         ],
       })
       if (ok) handleCerrarSheetCrear()

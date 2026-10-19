@@ -29,6 +29,7 @@ import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -138,7 +139,7 @@ export function SanitizacionCosecha() {
       const ok = await guardarOffline({
         descripcion: `Sanitización · ${fila.sector} · ${formatFecha(fila.fecha)}`,
         metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha, sector: fila.sector },
-        operaciones: [{ tabla: 'm65_sanitizacion_cosecha', tipo: 'insert' as const, fila }],
+        operaciones: [opInsert('m65_sanitizacion_cosecha', fila)],
       })
       if (ok) handleCerrarSheet()
       return

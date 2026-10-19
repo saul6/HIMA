@@ -437,8 +437,8 @@ export function LimpiezaPreenfrio() {
         operaciones: [
           opCabecera('m34_registro_mensual', {
             id: localId, rancho_id: nRanchoId, org_id: orgId!,
-            anio: nAnio, mes: nMes,
-          }, ['rancho_id', 'anio', 'mes']),
+            anio: nAnio, mes: nMes, area: 'Cuartos de pre-enfrío y conservador',
+          }, ['org_id', 'rancho_id', 'anio', 'mes', 'area']),
         ],
       })
       if (ok) handleCerrarSheet()

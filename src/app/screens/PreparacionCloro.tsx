@@ -151,6 +151,7 @@ export function PreparacionCloro() {
           tabla: 'm27_preparaciones',
           tipo: 'insert' as const,
           fila: {
+            id: crypto.randomUUID(),
             rancho_id: ranchoId,
             fecha,
             area: area.trim(),

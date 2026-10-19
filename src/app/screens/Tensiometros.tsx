@@ -30,6 +30,7 @@ import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -133,7 +134,7 @@ export function Tensiometros() {
         const ok = await guardarOffline({
           descripcion: `Tensiómetros · ${rancho?.nombre ?? ''} · ${formatFecha(form.fecha)}`,
           metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
-          operaciones: [{ tabla: 'm58_tensiometros', tipo: 'insert' as const, fila }],
+          operaciones: [opInsert('m58_tensiometros', fila)],
         })
         if (ok) handleCerrarSheet()
         return

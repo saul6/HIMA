@@ -413,8 +413,8 @@ export function LimpiezaAlmacenEmpaque() {
         operaciones: [
           opCabecera('m35_registro_mensual', {
             id: localId, rancho_id: nRanchoId, org_id: orgId!,
-            anio: nAnio, mes: nMes,
-          }, ['rancho_id', 'anio', 'mes']),
+            anio: nAnio, mes: nMes, area: 'Almacén de material de empaque',
+          }, ['org_id', 'rancho_id', 'anio', 'mes', 'area']),
         ],
       })
       if (ok) handleCerrarSheet()

@@ -18,6 +18,7 @@ import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 
 const PERIODICIDADES = ['Mensual', 'Bimestral', 'Trimestral', 'Semestral', 'Anual']
 
@@ -97,7 +98,7 @@ export function CronogramaCapacitacion() {
           const ok = await guardarOffline({
             descripcion: `Cronograma · ${form.cargo.trim()} · ${form.tematica.trim()}`,
             metadatos: { cargo: form.cargo.trim(), tematica: form.tematica.trim() },
-            operaciones: [{ tabla: 'm57_cronograma_capacitacion', tipo: 'insert' as const, fila }],
+            operaciones: [opInsert('m57_cronograma_capacitacion', fila)],
           })
           if (ok) setSheetOpen(false)
           return

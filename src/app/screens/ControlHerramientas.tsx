@@ -29,6 +29,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -137,7 +138,7 @@ export function ControlHerramientas() {
       const ok = await guardarOffline({
         descripcion: `Herramienta · ${fila.herramienta} · ${fila.trabajador}`,
         metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha, herramienta: fila.herramienta },
-        operaciones: [{ tabla: 'm64_control_herramientas', tipo: 'insert' as const, fila }],
+        operaciones: [opInsert('m64_control_herramientas', fila)],
       })
       if (ok) handleCerrarSheet()
       return

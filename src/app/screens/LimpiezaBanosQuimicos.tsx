@@ -388,8 +388,8 @@ export function LimpiezaBanosQuimicos() {
         operaciones: [
           opCabecera('m28_registro_mensual', {
             id: localId, rancho_id: nRanchoId, org_id: orgId!,
-            anio: nAnio, mes: nMes,
-          }, ['rancho_id', 'anio', 'mes']),
+            anio: nAnio, mes: nMes, area: 'Baños y almacén de productos químicos',
+          }, ['org_id', 'rancho_id', 'anio', 'mes', 'area']),
         ],
       })
       if (ok) handleCerrarSheetNuevo()

@@ -37,6 +37,7 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -189,7 +190,7 @@ export function GermicidaGG() {
       const ok = await guardarOffline({
         descripcion: `Germicida · ${fila.producto ?? 'Sin producto'} · ${formatFecha(fila.fecha)}`,
         metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
-        operaciones: [{ tabla: 'm74_germicida', tipo: 'insert' as const, fila }],
+        operaciones: [opInsert('m74_germicida', fila)],
       })
       if (ok) handleCerrarSheet()
       return

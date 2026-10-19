@@ -335,7 +335,7 @@ export function LimpiezaPatiosAzoteas() {
           opCabecera('m32_registro_mensual', {
             id: localId, rancho_id: nRanchoId, org_id: orgId!,
             anio: nAnio, mes: nMes, area: 'Patios exteriores y azoteas',
-          }, ['rancho_id', 'anio', 'mes']),
+          }, ['org_id', 'rancho_id', 'anio', 'mes', 'area']),
         ],
       })
       if (ok) handleCerrarSheet()

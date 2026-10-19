@@ -33,6 +33,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -240,7 +241,7 @@ export function MantenimientoEquiposGG() {
       const ok = await guardarOffline({
         descripcion: `Mantenimiento · ${fila.equipo ?? 'Equipo'} · ${formatFecha(fila.fecha)}`,
         metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha, equipo: fila.equipo },
-        operaciones: [{ tabla: 'm76_mantenimiento_equipos', tipo: 'insert' as const, fila }],
+        operaciones: [opInsert('m76_mantenimiento_equipos', fila)],
       })
       if (ok) handleCerrarSheet()
       return

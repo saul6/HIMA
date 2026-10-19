@@ -21,6 +21,7 @@ import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 
 type FormState = {
   cultivo: string
@@ -130,7 +131,7 @@ export function ProductosAutorizados() {
           const ok = await guardarOffline({
             descripcion: `Producto · ${payload.nombre_comercial} · ${payload.cultivo}`,
             metadatos: { nombre_comercial: payload.nombre_comercial, cultivo: payload.cultivo },
-            operaciones: [{ tabla: 'm66_productos_autorizados', tipo: 'insert' as const, fila }],
+            operaciones: [opInsert('m66_productos_autorizados', fila)],
           })
           if (ok) setSheetOpen(false)
           setGuardando(false)

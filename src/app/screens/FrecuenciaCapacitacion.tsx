@@ -18,6 +18,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const ANIO_ACTUAL = new Date().getFullYear()
@@ -108,7 +109,7 @@ export function FrecuenciaCapacitacion() {
           const ok = await guardarOffline({
             descripcion: `Capacitación · ${form.tema.trim()} · ${MESES[form.mes - 1]} ${form.anio}`,
             metadatos: { tema: form.tema.trim(), anio: form.anio, mes: form.mes },
-            operaciones: [{ tabla: 'm56_frecuencia_capacitacion', tipo: 'insert' as const, fila }],
+            operaciones: [opInsert('m56_frecuencia_capacitacion', fila)],
           })
           if (ok) setSheetOpen(false)
           return

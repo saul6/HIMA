@@ -31,6 +31,7 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -132,7 +133,7 @@ export function GestionResiduos() {
         const ok = await guardarOffline({
           descripcion: `Residuo · ${rancho?.nombre ?? ''} · ${formatFecha(form.fecha)}`,
           metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
-          operaciones: [{ tabla: 'm61_gestion_residuos', tipo: 'insert' as const, fila }],
+          operaciones: [opInsert('m61_gestion_residuos', fila)],
         })
         if (ok) handleCerrarSheet()
         return

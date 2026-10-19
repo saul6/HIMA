@@ -32,6 +32,7 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { WifiOff } from 'lucide-react'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 
 function formatFecha(iso: string): string {
   try {
@@ -130,7 +131,7 @@ export function CalibracionBasculas() {
         const ok = await guardarOffline({
           descripcion: `Calibración báscula · ${rancho?.nombre ?? ''} · ${form.fecha}`,
           metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.fecha },
-          operaciones: [{ tabla: 'm51_calibracion_basculas', tipo: 'insert' as const, fila }],
+          operaciones: [opInsert('m51_calibracion_basculas', fila)],
         })
         if (ok) handleCerrarSheet()
         return

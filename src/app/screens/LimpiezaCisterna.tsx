@@ -452,8 +452,8 @@ export function LimpiezaCisterna() {
         operaciones: [
           opCabecera('m37_registro_mensual', {
             id: localId, rancho_id: nRanchoId, org_id: orgId!,
-            anio: nAnio, mes: nMes,
-          }, ['rancho_id', 'anio', 'mes']),
+            anio: nAnio, mes: nMes, area: 'Cisterna',
+          }, ['org_id', 'rancho_id', 'anio', 'mes', 'area']),
         ],
       })
       if (ok) handleCerrarSheetNuevo()

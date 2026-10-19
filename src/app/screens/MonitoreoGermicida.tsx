@@ -112,6 +112,7 @@ export function MonitoreoGermicida() {
           tabla: 'm36_monitoreos',
           tipo: 'insert' as const,
           fila: {
+            id: crypto.randomUUID(),
             rancho_id: form.rancho_id,
             fecha: form.fecha,
             tipo_germicida: form.tipo_germicida.trim(),

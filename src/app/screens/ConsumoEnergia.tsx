@@ -29,6 +29,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { opInsert } from '@/lib/offline/construirOperaciones'
 
 function mesActual(): string {
   const d = new Date()
@@ -134,7 +135,7 @@ export function ConsumoEnergia() {
         const ok = await guardarOffline({
           descripcion: `Consumo energía · ${rancho?.nombre ?? ''} · ${formatMes(form.mes)}`,
           metadatos: { rancho_id: form.rancho_id, rancho_nombre: rancho?.nombre, fecha: form.mes },
-          operaciones: [{ tabla: 'm60_consumo_energia', tipo: 'insert' as const, fila }],
+          operaciones: [opInsert('m60_consumo_energia', fila)],
         })
         if (ok) handleCerrarSheet()
         return
