@@ -19,7 +19,7 @@ export function VisitaCard({ visita, puedeEditar, onProgramar, onTerminar, onRep
 
   return (
     <div
-      className="rounded-xl border p-4 space-y-3"
+      className="rounded-xl border p-4 space-y-3 h-full"
       style={atrasada
         ? { backgroundColor: 'var(--agro-warning-fill)', borderColor: 'var(--agro-amber)' }
         : { backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}

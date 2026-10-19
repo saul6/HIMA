@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router'
 import { Settings } from 'lucide-react'
+import { motion, useReducedMotion } from 'motion/react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useChecklist, type ChkItem, type ChkTipoItem } from '@/hooks/useChecklist'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Fab } from '@/app/components/Fab'
-import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { FiltroPildoras } from '@/app/components/FiltroPildoras'
+import { ChecklistSkeleton } from '@/app/components/checklist/ChecklistSkeleton'
+import { ContadorPildora } from '@/app/components/checklist/ContadorPildora'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ItemCard } from '@/app/components/checklist/ItemCard'
 import { ItemDetalleSheet } from '@/app/components/checklist/ItemDetalleSheet'
 import { AgregarSheet } from '@/app/components/checklist/AgregarSheet'
@@ -15,7 +19,6 @@ import { AjustesSheet } from '@/app/components/checklist/AjustesSheet'
 import { VisitaCard } from '@/app/components/checklist/VisitaCard'
 import { VisitaAccionSheet, VisitasSheet, type ModoVisita } from '@/app/components/checklist/VisitaSheets'
 import { hoyMX } from '@/lib/fecha'
-import { cn } from '@/app/components/ui/utils'
 
 type FiltroChk = 'faltantes' | 'no_se_lleva' | 'firmas' | 'por_vencer'
 
@@ -63,6 +66,7 @@ export function ChecklistDocumentos() {
     return ranchos[0].id
   }, [ranchos, sitioParam])
 
+  const reducedMotion = useReducedMotion()
   const [filtro, setFiltro] = useState<FiltroChk | null>(null)
   const [detalleId, setDetalleId] = useState<string | null>(null)
   const [modoRevisar, setModoRevisar] = useState(false)
@@ -95,6 +99,8 @@ export function ChecklistDocumentos() {
   }
 
   const { resumen } = hook
+  const cargandoInicial = (hook.loading && !resumen) || loadingRanchos
+  const mostrarSkeleton = useMostrarCarga(cargandoInicial, !!resumen)
   const puedeEditar = rol === 'admin_org' && !!resumen?.puede_editar
   const items = resumen?.items ?? []
   const itemsFiltrados = filtro ? items.filter(i => coincide(i, filtro)) : items
@@ -133,18 +139,37 @@ export function ChecklistDocumentos() {
         ) : undefined}
       />
 
-      <div className="px-4 py-4 space-y-4 max-w-3xl mx-auto">
-        {ranchos.length > 1 && (
-          <label className="block space-y-1">
-            <span className="text-xs text-muted-foreground">{terminosSitio.singular}</span>
-            <select
-              value={sitioId ?? ''}
-              onChange={e => elegirSitio(e.target.value)}
-              className="w-full h-10 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
-            >
-              {ranchos.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
-            </select>
-          </label>
+      <div className="p-4 space-y-4">
+        {/* Primera fila: sitio a la izquierda, visita a la derecha (una debajo de otra en celular) */}
+        {(ranchos.length > 1 || resumen) && (
+          <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
+            {ranchos.length > 1 && (
+              <label className="block space-y-1 md:self-start">
+                <span className="text-xs text-muted-foreground">{terminosSitio.singular}</span>
+                <select
+                  value={sitioId ?? ''}
+                  onChange={e => elegirSitio(e.target.value)}
+                  className="w-full h-10 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
+                >
+                  {ranchos.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
+                </select>
+              </label>
+            )}
+            {resumen && (
+              <div className={ranchos.length > 1 ? undefined : 'md:col-span-2'}>
+                <VisitaCard
+                  visita={proxima}
+                  puedeEditar={puedeEditar}
+                  hayVisitas={visitas.length > 0}
+                  onProgramar={() => setModoVisita({ tipo: 'programar' })}
+                  onTerminar={() => proxima && setModoVisita({ tipo: 'terminar', visita: proxima })}
+                  onReprogramar={() => proxima && setModoVisita({ tipo: 'reprogramar', visita: proxima })}
+                  onCancelar={() => proxima && setModoVisita({ tipo: 'cancelar', visita: proxima })}
+                  onVerVisitas={() => setVisitasAbierto(true)}
+                />
+              </div>
+            )}
+          </div>
         )}
 
         {!loadingRanchos && ranchos.length === 0 && (
@@ -153,44 +178,22 @@ export function ChecklistDocumentos() {
           </p>
         )}
 
-        {resumen && (
-          <VisitaCard
-            visita={proxima}
-            puedeEditar={puedeEditar}
-            hayVisitas={visitas.length > 0}
-            onProgramar={() => setModoVisita({ tipo: 'programar' })}
-            onTerminar={() => proxima && setModoVisita({ tipo: 'terminar', visita: proxima })}
-            onReprogramar={() => proxima && setModoVisita({ tipo: 'reprogramar', visita: proxima })}
-            onCancelar={() => proxima && setModoVisita({ tipo: 'cancelar', visita: proxima })}
-            onVerVisitas={() => setVisitasAbierto(true)}
-          />
-        )}
-
         {c && (
           <div className="flex flex-wrap gap-2">
-            {pildoras.map(p => {
-              const activa = filtro === p.clave
-              return (
-                <button
-                  key={p.clave}
-                  type="button"
-                  onClick={() => setFiltro(activa ? null : p.clave)}
-                  aria-pressed={activa}
-                  className={cn(
-                    'h-8 px-3 rounded-full border text-xs transition-colors active:scale-[0.97]',
-                    activa ? 'border-transparent' : 'bg-card border-border text-foreground hover:bg-muted',
-                  )}
-                  style={activa ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 } : undefined}
-                >
-                  {p.label} · {p.n}
-                </button>
-              )
-            })}
+            <FiltroPildoras<string>
+              groupId="checklist-filtro"
+              value={filtro ?? ''}
+              onChange={v => setFiltro(filtro === v ? null : (v as FiltroChk))}
+              options={pildoras.map(p => ({
+                value: p.clave,
+                label: <>{p.label} · <ContadorPildora n={p.n} /></>,
+              }))}
+            />
             {c.visitas_atrasadas > 0 && (
               <button
                 type="button"
                 onClick={() => setVisitasAbierto(true)}
-                className="h-8 px-3 rounded-full border text-xs transition-colors active:scale-[0.97]"
+                className="h-9 px-4 rounded-full border text-sm transition-colors active:scale-[0.97]"
                 style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', borderColor: 'transparent', fontWeight: 600 }}
               >
                 Visitas atrasadas · {c.visitas_atrasadas}
@@ -199,8 +202,8 @@ export function ChecklistDocumentos() {
           </div>
         )}
 
-        {(hook.loading && !resumen) || loadingRanchos ? (
-          <ListaSkeleton rows={5} />
+        {cargandoInicial ? (
+          mostrarSkeleton ? <ChecklistSkeleton /> : null
         ) : hook.error ? (
           <div className="rounded-xl border border-border bg-card p-4 text-center space-y-2">
             <p className="text-sm text-muted-foreground">{hook.error}</p>
@@ -214,27 +217,42 @@ export function ChecklistDocumentos() {
               {filtro ? 'Nada coincide con este filtro.' : 'El checklist de este sitio está vacío.'}
             </p>
           ) : (
-            GRUPOS.map(g => {
-              const lista = itemsFiltrados.filter(i => i.tipo === g.tipo)
-              if (lista.length === 0) return null
-              return (
-                <section key={g.tipo} className="space-y-2">
-                  <h2 className="text-xs uppercase tracking-wide text-muted-foreground" style={{ fontWeight: 600 }}>{g.titulo}</h2>
-                  <div className="space-y-3">
-                    {lista.map(item => (
-                      <ItemCard
-                        key={item.id}
-                        item={item}
-                        codigoClave={codigoClave}
-                        puedeEditar={puedeEditar}
-                        onAbrir={() => { setModoRevisar(false); setDetalleId(item.id) }}
-                        onRevisar={() => { setModoRevisar(true); setDetalleId(item.id) }}
-                      />
-                    ))}
-                  </div>
-                </section>
-              )
-            })
+            // Al cambiar de sitio o de filtro la lista entra con un fade
+            <motion.div
+              key={`${sitioId}-${filtro ?? 'todos'}`}
+              initial={reducedMotion ? { opacity: 0 } : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.18 }}
+              className="space-y-4"
+            >
+              {GRUPOS.map(g => {
+                const lista = itemsFiltrados.filter(i => i.tipo === g.tipo)
+                if (lista.length === 0) return null
+                return (
+                  <section key={g.tipo} className="space-y-2">
+                    <h2 className="text-xs uppercase tracking-wide text-muted-foreground" style={{ fontWeight: 600 }}>{g.titulo}</h2>
+                    <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
+                      {lista.map((item, i) => (
+                        <motion.div
+                          key={item.id}
+                          initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: reducedMotion ? 0 : Math.min(i, 8) * 0.03 }}
+                        >
+                          <ItemCard
+                            item={item}
+                            codigoClave={codigoClave}
+                            puedeEditar={puedeEditar}
+                            onAbrir={() => { setModoRevisar(false); setDetalleId(item.id) }}
+                            onRevisar={() => { setModoRevisar(true); setDetalleId(item.id) }}
+                          />
+                        </motion.div>
+                      ))}
+                    </div>
+                  </section>
+                )
+              })}
+            </motion.div>
           )
         ) : null}
       </div>

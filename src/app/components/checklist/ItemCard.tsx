@@ -24,13 +24,20 @@ export function textoFrecuencia(item: ChkItem): string | null {
   return base
 }
 
-export function NotasItem({ item }: { item: ChkItem }) {
+const NOTAS_VISIBLES = 3
+
+/** `limite`: máximo de notas visibles (el resto, tras "Ver N más"). Sin límite se muestran todas. */
+export function NotasItem({ item, limite }: { item: ChkItem; limite?: number }) {
   const navigate = useNavigate()
   const [abiertas, setAbiertas] = useState<Record<number, boolean>>({})
+  const [verTodas, setVerTodas] = useState(false)
   if (!item.notas?.length) return null
+  const total = item.notas.length
+  const recortar = limite !== undefined && total > limite && !verTodas
+  const visibles = recortar ? item.notas.slice(0, limite) : item.notas
   return (
     <ul className="space-y-1.5">
-      {item.notas.map((n, i) => {
+      {visibles.map((n, i) => {
         const t = TONO_NOTA[n.tipo] ?? TONO_NOTA.faltan_registros
         const Icono = t.icono
         const expandible = n.tipo === 'faltan_items' && !!n.detalle?.length
@@ -78,6 +85,18 @@ export function NotasItem({ item }: { item: ChkItem }) {
           </li>
         )
       })}
+      {limite !== undefined && total > limite && (
+        <li>
+          <button
+            type="button"
+            onClick={e => { e.stopPropagation(); setVerTodas(v => !v) }}
+            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+            style={{ fontWeight: 600 }}
+          >
+            {verTodas ? 'Ver menos' : `Ver ${total - limite} más`}
+          </button>
+        </li>
+      )}
     </ul>
   )
 }
@@ -102,7 +121,7 @@ export function ItemCard({ item, codigoClave, puedeEditar, onAbrir, onRevisar }:
       tabIndex={0}
       onClick={onAbrir}
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onAbrir() } }}
-      className="bg-card rounded-xl border border-border p-4 space-y-2.5 cursor-pointer transition-colors hover:bg-muted/40 active:scale-[0.995]"
+      className="bg-card rounded-xl border border-border p-4 space-y-2.5 h-full cursor-pointer transition-colors hover:bg-muted/40 active:scale-[0.995]"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -128,7 +147,7 @@ export function ItemCard({ item, codigoClave, puedeEditar, onAbrir, onRevisar }:
         </div>
       </div>
 
-      <NotasItem item={item} />
+      <NotasItem item={item} limite={NOTAS_VISIBLES} />
 
       {puedeEditar && (
         <div className="flex justify-end">
