@@ -19,14 +19,14 @@ export function VisitaCard({ visita, puedeEditar, onProgramar, onTerminar, onRep
 
   return (
     <div
-      className="rounded-xl border p-4 space-y-3 h-full"
+      className="rounded-xl border p-4 h-full flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-x-4 md:gap-y-2"
       style={atrasada
         ? { backgroundColor: 'var(--agro-warning-fill)', borderColor: 'var(--agro-amber)' }
         : { backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
     >
       {visita ? (
         <>
-          <div style={atrasada ? { color: 'var(--agro-warning-text)' } : undefined}>
+          <div className="md:flex-1 md:min-w-0" style={atrasada ? { color: 'var(--agro-warning-text)' } : undefined}>
             <p className="text-xs" style={{ opacity: 0.8 }}>Próxima visita de revisión</p>
             <p className="text-sm" style={{ fontWeight: 600 }}>
               {atrasada ? `Atrasada desde el ${fechaLarga(visita.fecha)}` : fechaLarga(visita.fecha)}
@@ -59,7 +59,7 @@ export function VisitaCard({ visita, puedeEditar, onProgramar, onTerminar, onRep
           )}
         </>
       ) : (
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 md:flex-1 md:min-w-0">
           <div>
             <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin visita programada</p>
             <p className="text-xs text-muted-foreground">Agenda cuándo revisarás este sitio.</p>
@@ -78,7 +78,7 @@ export function VisitaCard({ visita, puedeEditar, onProgramar, onTerminar, onRep
         </div>
       )}
       {hayVisitas && (
-        <div className="flex justify-end">
+        <div className="flex justify-end md:ml-auto">
           <button type="button" onClick={onVerVisitas} className="text-xs" style={{ color: 'var(--primary)', fontWeight: 600 }}>
             Ver visitas
           </button>

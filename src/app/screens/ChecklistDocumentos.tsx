@@ -123,28 +123,31 @@ export function ChecklistDocumentos() {
     { clave: 'por_vencer', label: 'Documentos por vencer', n: c?.documentos_por_vencer ?? 0 },
   ]
 
+  const botonAjustes = (clases: string) => puedeEditar && sitioId ? (
+    <button
+      type="button"
+      onClick={() => setAjustesAbierto(true)}
+      className={`p-2 rounded-lg text-muted-foreground transition-colors hover:bg-muted active:scale-95 ${clases}`}
+      aria-label="Ajustes del sitio"
+    >
+      <Settings className="w-5 h-5" />
+    </button>
+  ) : undefined
+
   return (
     <div className="min-h-full pb-safe-nav bg-background">
       <EncabezadoPantalla
         titulo="Checklist"
-        acciones={puedeEditar && sitioId ? (
-          <button
-            type="button"
-            onClick={() => setAjustesAbierto(true)}
-            className="p-2 rounded-lg text-muted-foreground transition-colors hover:bg-muted active:scale-95"
-            aria-label="Ajustes del sitio"
-          >
-            <Settings className="w-5 h-5" />
-          </button>
-        ) : undefined}
+        accionesEscritorio="contenido"
+        acciones={botonAjustes('md:hidden')}
       />
 
       <div className="p-4 space-y-4">
-        {/* Primera fila: sitio a la izquierda, visita a la derecha (una debajo de otra en celular) */}
+        {/* Primera fila: sitio, visita y engrane. xl: los tres en una fila; md: sitio arriba, visita y engrane abajo; celular: apilados (engrane en el header) */}
         {(ranchos.length > 1 || resumen) && (
-          <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-end">
             {ranchos.length > 1 && (
-              <label className="block space-y-1 md:self-start">
+              <label className="block space-y-1 xl:w-72 xl:flex-shrink-0">
                 <span className="text-xs text-muted-foreground">{terminosSitio.singular}</span>
                 <select
                   value={sitioId ?? ''}
@@ -155,18 +158,23 @@ export function ChecklistDocumentos() {
                 </select>
               </label>
             )}
-            {resumen && (
-              <div className={ranchos.length > 1 ? undefined : 'md:col-span-2'}>
-                <VisitaCard
-                  visita={proxima}
-                  puedeEditar={puedeEditar}
-                  hayVisitas={visitas.length > 0}
-                  onProgramar={() => setModoVisita({ tipo: 'programar' })}
-                  onTerminar={() => proxima && setModoVisita({ tipo: 'terminar', visita: proxima })}
-                  onReprogramar={() => proxima && setModoVisita({ tipo: 'reprogramar', visita: proxima })}
-                  onCancelar={() => proxima && setModoVisita({ tipo: 'cancelar', visita: proxima })}
-                  onVerVisitas={() => setVisitasAbierto(true)}
-                />
+            {(resumen || (puedeEditar && sitioId)) && (
+              <div className="flex items-stretch gap-3 min-w-0 xl:flex-1">
+                {resumen && (
+                  <div className="flex-1 min-w-0">
+                    <VisitaCard
+                      visita={proxima}
+                      puedeEditar={puedeEditar}
+                      hayVisitas={visitas.length > 0}
+                      onProgramar={() => setModoVisita({ tipo: 'programar' })}
+                      onTerminar={() => proxima && setModoVisita({ tipo: 'terminar', visita: proxima })}
+                      onReprogramar={() => proxima && setModoVisita({ tipo: 'reprogramar', visita: proxima })}
+                      onCancelar={() => proxima && setModoVisita({ tipo: 'cancelar', visita: proxima })}
+                      onVerVisitas={() => setVisitasAbierto(true)}
+                    />
+                  </div>
+                )}
+                {botonAjustes('hidden md:flex self-stretch items-center px-3 rounded-xl border border-border bg-card')}
               </div>
             )}
           </div>
