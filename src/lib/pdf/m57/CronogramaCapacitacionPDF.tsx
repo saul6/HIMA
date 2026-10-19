@@ -1,7 +1,6 @@
 import { Document } from '@react-pdf/renderer'
 import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
-import { PC } from '@/lib/pdf/components/tokens'
 
 export interface M57RowPDF {
   cargo: string

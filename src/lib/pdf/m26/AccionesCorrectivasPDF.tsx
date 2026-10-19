@@ -4,7 +4,6 @@
 
 import { Document, View, Text, Svg, Line, Rect, Path, G } from '@react-pdf/renderer'
 import { PaginaEstandar } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
-import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { TituloSeccion } from '@/lib/pdf/disenoNuevo/TituloSeccion'
 import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { Fotos } from '@/lib/pdf/disenoNuevo/Fotos'

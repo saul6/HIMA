@@ -1,5 +1,5 @@
 import { Document, Text } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
@@ -15,6 +15,8 @@ export interface VerificacionRoedorFilaPDF {
   cambio: boolean
   verifico: string | null
   observaciones: string | null
+  /** Nombre del rancho (solo el consolidado lo usa para agrupar). */
+  rancho?: string
 }
 
 export interface VerificacionRoedoresPDFProps {
@@ -131,7 +133,7 @@ export function VerificacionRoedoresConsolidadoPDF({ filas, orgNombre }: {
 }) {
   const ranchoMap = new Map<string, { nombre: string; filas: VerificacionRoedorFilaPDF[] }>()
   for (const f of filas) {
-    const key = (f as any).rancho ?? '—'
+    const key = f.rancho ?? '—'
     if (!ranchoMap.has(key)) ranchoMap.set(key, { nombre: key, filas: [] })
     ranchoMap.get(key)!.filas.push(f)
   }

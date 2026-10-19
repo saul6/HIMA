@@ -23,11 +23,6 @@ export interface LimpiezaCampoPaginaProps {
   firmaVerifico?: FirmaParaPdf | null
 }
 
-function diasDelMes(mesDate: string): number {
-  const d = new Date(mesDate + 'T12:00:00')
-  return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
-}
-
 function diaToISO(mesDate: string, dia: number): string {
   const d = new Date(mesDate + 'T12:00:00')
   const y = d.getFullYear()

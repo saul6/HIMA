@@ -70,7 +70,7 @@ export function AplicacionGlobalGapPDF({
           { etiqueta: 'Variedad', valor: val(ap.variedad) },
           { etiqueta: 'Etapa fenológica', valor: formatFenologia(ap.fenologia ?? undefined) },
           { icono: 'calendario', etiqueta: 'Fecha de aplicación', valor: val(ap.fecha_aplicacion) },
-          { icono: 'calendario', etiqueta: 'Próxima cosecha', valor: val((ap as any).proxima_cosecha) },
+          { icono: 'calendario', etiqueta: 'Próxima cosecha', valor: val(ap.proxima_cosecha) },
           { etiqueta: 'Hora inicio', valor: val(ap.hora_inicio) },
           { etiqueta: 'Hora fin', valor: val(ap.hora_fin) },
         ]}
@@ -78,7 +78,7 @@ export function AplicacionGlobalGapPDF({
         <Seccion titulo="2. MÉTODO DE APLICACIÓN Y CONDICIONES">
           <FranjaDatos
             campos={[
-              { etiqueta: 'Método de aplicación', valor: val((ap as any).metodo_aplicacion_gg) },
+              { etiqueta: 'Método de aplicación', valor: val(ap.metodo_aplicacion_gg) },
               { etiqueta: 'Equipo utilizado', valor: val(ap.equipo) },
               { etiqueta: 'Total agua usada (L)', valor: val(ap.total_agua_l) },
               { etiqueta: 'Condición climatica', valor: val(ap.condicion_meteorologica) },

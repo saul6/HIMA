@@ -2,8 +2,6 @@ import { Document } from '@react-pdf/renderer'
 import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
-import { PC } from '@/lib/pdf/components/tokens'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface ConsumoEnergiaRow {
