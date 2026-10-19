@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CloudUpload, CheckCircle, AlertCircle, Clock, RotateCcw, Trash2, RefreshCw, Wifi, WifiOff } from 'lucide-react'
+import { CloudUpload, CheckCircle, AlertCircle, Clock, RotateCcw, Trash2, RefreshCw, Wifi, WifiOff, Eye, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router'
 import { useOutbox } from '@/hooks/useOutbox'
@@ -9,6 +9,7 @@ import { eliminarLote, actualizarLote } from '@/lib/offline/outbox'
 import { sincronizarLote } from '@/lib/offline/sync'
 import type { LoteOutbox } from '@/lib/offline/tipos'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { motivoLote } from '@/lib/offline/motivosRechazo'
 
 function formatFechaCaptura(iso: string): string {
   try {
@@ -68,10 +69,12 @@ function CardLote({
   lote,
   onReintentar,
   onDescartar,
+  onVer,
 }: {
   lote: LoteOutbox
   onReintentar?: (id: string) => void
   onDescartar?: (id: string) => void
+  onVer?: (lote: LoteOutbox) => void
 }) {
   const horas = horasTranscurridas(lote.capturadoEn)
   const advertencia48h = lote.estado === 'pendiente' && horas >= 48
@@ -93,9 +96,14 @@ function CardLote({
         <ChipEstado lote={lote} />
       </div>
 
-      {lote.error && (
+      {lote.estado === 'rechazado' && (
         <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>
-          {lote.error}
+          {motivoLote(lote)}
+        </p>
+      )}
+      {lote.estado === 'pendiente' && lote.error && (
+        <p className="text-xs text-muted-foreground">
+          Aún no se sube; se reintentará automáticamente.
         </p>
       )}
 
@@ -120,6 +128,16 @@ function CardLote({
             Reintentar
           </button>
         )}
+        {lote.estado === 'rechazado' && onVer && (
+          <button
+            onClick={() => onVer(lote)}
+            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border"
+            style={{ fontWeight: 600 }}
+          >
+            <Eye className="w-3 h-3" />
+            Ver lo que capturé
+          </button>
+        )}
         {lote.estado === 'rechazado' && onDescartar && (
           <button
             onClick={() => onDescartar(lote.id)}
@@ -135,6 +153,58 @@ function CardLote({
   )
 }
 
+const CLAVES_OCULTAS = new Set(['id', 'org_id', 'creado_por', 'rancho_id'])
+
+function etiqueta(clave: string): string {
+  const t = clave.replace(/_/g, ' ')
+  return t.charAt(0).toUpperCase() + t.slice(1)
+}
+
+function valorLegible(v: unknown): string {
+  if (v === null || v === undefined || v === '') return '—'
+  if (typeof v === 'boolean') return v ? 'Sí' : 'No'
+  if (typeof v === 'object') return JSON.stringify(v)
+  return String(v)
+}
+
+// Vista de solo lectura de lo capturado en un lote rechazado, para volver a capturarlo.
+function DetalleCapturado({ lote, onCerrar }: { lote: LoteOutbox; onCerrar: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }} onClick={onCerrar}>
+      <div
+        className="w-full max-w-[390px] bg-card overflow-y-auto"
+        style={{ maxHeight: '85dvh', borderTopLeftRadius: '0.625rem', borderTopRightRadius: '0.625rem' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+          <div className="min-w-0">
+            <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>{lote.descripcion}</p>
+            <p className="text-xs text-muted-foreground">Capturado: {formatFechaCaptura(lote.capturadoEn)}</p>
+          </div>
+          <button onClick={onCerrar} aria-label="Cerrar" className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="p-4 space-y-4">
+          {lote.operaciones.map((op, i) => (
+            <div key={i} className="space-y-1">
+              <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{etiqueta(op.tabla)}</p>
+              {Object.entries(op.fila)
+                .filter(([k]) => !CLAVES_OCULTAS.has(k) && !k.endsWith('_id'))
+                .map(([k, v]) => (
+                  <div key={k} className="flex justify-between gap-3 text-xs">
+                    <span className="text-muted-foreground">{etiqueta(k)}</span>
+                    <span className="text-foreground text-right break-words min-w-0">{valorLegible(v)}</span>
+                  </div>
+                ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function Sincronizacion() {
   const navigate = useNavigate()
   const { user } = useAuthContext()
@@ -142,6 +212,7 @@ export function Sincronizacion() {
   const { online } = useConexion()
   const [descartando, setDescartando] = useState<string | null>(null)
   const [reintentando, setReintentando] = useState<string | null>(null)
+  const [verLote, setVerLote] = useState<LoteOutbox | null>(null)
 
   async function handleReintentar(id: string) {
     if (!online) { toast.warning('Sin conexión — reintenta cuando tengas señal'); return }
@@ -250,6 +321,7 @@ export function Sincronizacion() {
                   key={l.id}
                   lote={l}
                   onDescartar={descartando ? undefined : handleDescartar}
+                  onVer={setVerLote}
                 />
               ))}
             </div>
@@ -273,6 +345,7 @@ export function Sincronizacion() {
           </section>
         )}
       </div>
+      {verLote && <DetalleCapturado lote={verLote} onCerrar={() => setVerLote(null)} />}
     </div>
   )
 }

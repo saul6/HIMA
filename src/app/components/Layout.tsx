@@ -18,6 +18,7 @@ import { AuditorBusqueda } from "@/app/screens/auditor/AuditorBusqueda";
 import { CATEGORIA_MAP } from "@/lib/categoriasModulos";
 import { useConexion } from "@/hooks/useConexion";
 import { useOutbox } from "@/hooks/useOutbox";
+import { AvisoVentana72h } from "@/app/components/AvisoVentana72h";
 
 const PATH_TITLES: Record<string, string> = {
   '/': 'Inicio',
@@ -367,6 +368,7 @@ export function Layout() {
 
         {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto">
+          <AvisoVentana72h />
           <motion.div
             key={claveTransicion}
             initial={reducedMotion ? false : { opacity: 0, y: 8 }}

@@ -1,5 +1,6 @@
 import { WifiOff } from 'lucide-react'
 import type { LoteOutbox } from '@/lib/offline/tipos'
+import { motivoLote } from '@/lib/offline/motivosRechazo'
 
 interface Props {
   lote?: LoteOutbox
@@ -10,6 +11,7 @@ export function ChipOffline({ lote }: Props) {
   if (!lote) return null
   return (
     <span
+      title={motivoLote(lote) ?? undefined}
       className="text-[10px] px-2 py-0.5 rounded flex-shrink-0 flex items-center gap-1"
       style={{
         backgroundColor: lote.estado === 'rechazado' ? 'var(--agro-danger-fill)' : 'var(--agro-warning-fill)',

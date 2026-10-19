@@ -3,56 +3,10 @@ import { obtenerLotes, obtenerLote, actualizarLote, eliminarLote, obtenerAdjunto
 import type { LoteOutbox, OperacionSync } from './tipos'
 import { setSincronizando } from './actualizacionSegura'
 import { mapeoGet, mapeoPut, mapeoLimpiar } from './db'
+import { mensajeRechazo, dependeDeRechazado, CODIGO_DEPENDE_RECHAZADO } from './motivosRechazo'
 
 export const SYNC_OK_EVENT = 'mady:lote-sincronizado'
 export const SYNC_RECHAZADO_EVENT = 'mady:lote-rechazado'
-
-// ── Mensajes de error legibles ───────────────────────────────────────────────
-
-function parsearLimiteMsg(mensaje: string, modulo: string): string {
-  const fechas = mensaje.match(/\d{2}\/\d{2}\/\d{4}/g)
-  const proxima = fechas ? fechas[fechas.length - 1] : null
-  if (modulo === 'M12') {
-    return proxima
-      ? `Ya existe una limpieza de baños esta semana. Próxima disponible: ${proxima}.`
-      : 'Solo se permite un registro de limpieza de baños por semana por sitio.'
-  }
-  if (modulo === 'M6' || modulo === 'M6_GG') {
-    return proxima
-      ? `Ya existe un registro de botiquín esta semana. Próxima disponible: ${proxima}.`
-      : 'Solo se permite un registro de botiquín por semana por sitio.'
-  }
-  if (modulo === 'M7') {
-    return proxima
-      ? `Ya existe una inspección de vidrio/plástico en los últimos 14 días. Próxima disponible: ${proxima}.`
-      : 'Solo se permite una inspección de vidrio/plástico cada dos semanas por sitio.'
-  }
-  return proxima ? `Próxima disponible: ${proxima}.` : 'Límite de frecuencia alcanzado.'
-}
-
-function mensajeDeError(codigo: string, mensajeBD: string, modulo: string): string | null {
-  switch (codigo) {
-    case 'FECHA_SOLO_HOY':
-    case 'SYNC_VENTANA_VENCIDA':
-      return 'Pasaron más de 72 horas sin conexión; este registro ya no se puede subir.'
-    case 'M12_LIMITE_SEMANAL':
-    case 'BOTIQUIN_LIMITE_SEMANAL':
-    case 'M7_LIMITE_QUINCENAL':
-      return parsearLimiteMsg(mensajeBD, modulo)
-    case 'FIRMA_REQUERIDA':
-      return 'Registra tu firma en tu perfil antes de subir este registro.'
-    case 'SYNC_TABLA_NO_PERMITIDA':
-      return 'Este tipo de registro no puede sincronizarse. Contacta a soporte.'
-    case 'SYNC_FECHA_FUTURA':
-      return null // Mantener pendiente — el usuario debe ajustar fecha del dispositivo
-    case '23505':
-      return 'El registro ya existe en el servidor (posible duplicado).'
-    case '42501':
-      return 'Sin permisos para subir este registro. Verifica tu cuenta.'
-    default:
-      return 'No se pudo subir este registro. Reintenta más tarde.'
-  }
-}
 
 // ── Remapeo de ids entre lotes ────────────────────────────────────────────────
 
@@ -152,7 +106,7 @@ export async function sincronizarLote(loteId: string): Promise<ResultadoSync | n
       // Rechazo de la BD (límite, candado, etc.)
       const codigo = resultado.codigo ?? 'UNKNOWN'
       const mensajeBD = resultado.mensaje ?? ''
-      const msg = mensajeDeError(codigo, mensajeBD, lote.modulo) ?? mensajeBD
+      const msg = mensajeRechazo(codigo, mensajeBD, lote.modulo) ?? mensajeBD
 
       if (codigo === 'SYNC_FECHA_FUTURA') {
         await actualizarLote(loteId, {
@@ -229,6 +183,15 @@ async function procesarCola(userId: string): Promise<void> {
 
     for (const lote of pendientes) {
       if (!navigator.onLine) break
+
+      // Si depende de un lote rechazado, no se intenta: se marca para que el usuario lo vuelva a capturar
+      const rechazadosAhora = (await obtenerLotes(userId)).filter(l => l.estado === 'rechazado')
+      if (dependeDeRechazado(lote, rechazadosAhora)) {
+        const msgDep = mensajeRechazo(CODIGO_DEPENDE_RECHAZADO, '', lote.modulo) ?? ''
+        await actualizarLote(lote.id, { estado: 'rechazado', error: msgDep, codigo: CODIGO_DEPENDE_RECHAZADO })
+        window.dispatchEvent(new CustomEvent(SYNC_RECHAZADO_EVENT, { detail: { loteId: lote.id, codigo: CODIGO_DEPENDE_RECHAZADO, error: msgDep } }))
+        continue
+      }
 
       // Aplicar mapeo acumulado: sustituir ids locales por ids reales en las operaciones
       const mapeoActual = await mapeoGet(userId).catch(() => ({}))
