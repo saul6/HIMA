@@ -3,7 +3,7 @@
 import { pdf } from '@react-pdf/renderer'
 import { supabase } from '@/lib/supabase'
 import { LimpiezaBanosConsolidadoPDF, type LimpiezaBanosPaginaProps } from './LimpiezaBanosPDF'
-import { obtenerFirmasParaPdf, firmaDetalleAParaPdf } from '@/hooks/useFirmasRegistro'
+import { obtenerFirmasParaPdf, firmasDeFilasParaPdf } from '@/hooks/useFirmasRegistro'
 
 function slugify(s: string): string {
   return s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
@@ -31,10 +31,10 @@ export async function generarLimpiezaBanosConsolidadoPDF(
     throw new Error('No hay registros en ese rango para el rancho seleccionado')
   }
 
-  // Agrupar por fecha para formar jornadas
-  // Primer ID de cada jornada = representativo para las firmas
+  // Agrupar por fecha para formar jornadas (igual que la lista de la pantalla).
+  // Se guardan TODOS los ids de cada jornada: la firma puede estar en cualquiera.
   const jornadasMap = new Map<string, LimpiezaBanosPaginaProps>()
-  const primerosIds = new Map<string, string>() // fecha → primer row.id
+  const idsPorJornada = new Map<string, string[]>() // fecha → ids de sus filas
   for (const row of data) {
     const key = row.fecha
     if (!jornadasMap.has(key)) {
@@ -44,8 +44,9 @@ export async function generarLimpiezaBanosConsolidadoPDF(
         fecha: row.fecha,
         banos: [],
       })
-      primerosIds.set(key, row.id)
+      idsPorJornada.set(key, [])
     }
+    idsPorJornada.get(key)!.push(row.id)
     jornadasMap.get(key)!.banos.push({
       bano_numero: row.bano_numero,
       limpieza: row.limpieza,
@@ -57,22 +58,14 @@ export async function generarLimpiezaBanosConsolidadoPDF(
     })
   }
 
-  // Obtener firmas para los IDs representativos de cada jornada
-  const idsRepresentativos = Array.from(primerosIds.values())
-  const firmasMapa = idsRepresentativos.length > 0
-    ? await obtenerFirmasParaPdf('M12', idsRepresentativos)
-    : {}
+  // Firmas de todas las filas de todas las jornadas
+  const todosIds = Array.from(idsPorJornada.values()).flat()
+  const firmasMapa = await obtenerFirmasParaPdf('M12', todosIds)
 
-  // Mapear firmas a cada jornada por su ID representativo
-  const jornadas = Array.from(jornadasMap.entries()).map(([fecha, jornada]) => {
-    const priId = primerosIds.get(fecha)
-    const firmasJornada = priId ? firmasMapa[priId] : undefined
-    return {
-      ...jornada,
-      firmaRealizo: firmasJornada?.realizo ? firmaDetalleAParaPdf(firmasJornada.realizo) : null,
-      firmaVerifico: firmasJornada?.verifico ? firmaDetalleAParaPdf(firmasJornada.verifico) : null,
-    }
-  })
+  const jornadas = Array.from(jornadasMap.entries()).map(([fecha, jornada]) => ({
+    ...jornada,
+    ...firmasDeFilasParaPdf(firmasMapa, idsPorJornada.get(fecha) ?? []),
+  }))
 
   const desdeSlug = desde.replaceAll('-', '')
   const hastaSlug = hasta.replaceAll('-', '')

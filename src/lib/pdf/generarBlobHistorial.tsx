@@ -15,7 +15,7 @@ import { PreoperacionalPDF } from './m11/PreoperacionalPDF'
 import { InspeccionPreoperacionalCoolerPDF } from './m19/InspeccionPreoperacionalCoolerPDF'
 import { LimpiezaBanosPDF } from './m12/LimpiezaBanosPDF'
 import { ReporteIncidenciasPDF } from './m13/ReporteIncidenciasPDF'
-import { obtenerFirmasParaPdf, firmasRegistroAParaPdf } from '@/hooks/useFirmasRegistro'
+import { obtenerFirmasParaPdf, firmasRegistroAParaPdf, obtenerFirmasDeFilasParaPdf } from '@/hooks/useFirmasRegistro'
 import { fotosADataUris } from './m13/incidenciasPdfImagenes'
 import { getAplicacionRicaById } from '@/lib/queries'
 import { construirDatosPagina as construirDatosPerimetral } from './m9/generarPerimetralPDF'
@@ -301,8 +301,10 @@ async function generarBlobM12(ranchoId: string, fecha: string, orgId: string): P
   if (error) throw error
   if (!data?.length) throw new Error('Sin datos M12')
   const r0 = data[0] as any
+  const firmasM12 = await obtenerFirmasDeFilasParaPdf('M12', (data as any[]).map((b) => b.id))
   return pdf(
     <LimpiezaBanosPDF
+      {...firmasM12}
       rancho={r0.ranchos?.nombre ?? '—'}
       ranchoCodigo={r0.ranchos?.codigo ?? '—'}
       fecha={fecha}

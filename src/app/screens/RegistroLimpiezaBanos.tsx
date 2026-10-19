@@ -24,7 +24,7 @@ import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
-import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
+import { useFirmasRegistro, idRepresentativoJornada, firmasDeFilasParaTarjeta } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useConexion } from '@/hooks/useConexion'
@@ -123,7 +123,7 @@ export function RegistroLimpiezaBanos() {
   const { terminosSitio } = useModulosContext()
   const orgNombre = useOrganizacion(profile?.org_id)
 
-  const todosIds = jornadas.map(j => j.banos[0]?.id).filter(Boolean) as string[]
+  const todosIds = jornadas.flatMap(j => j.banos.map(b => b.id))
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M12', todosIds)
   const { obligatoria, tengoFirma } = useFirmaContext()
   const { online } = useConexion()
@@ -166,7 +166,7 @@ export function RegistroLimpiezaBanos() {
   // PDF en lista
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
-  const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
+  const [pendienteFirmaIds, setPendienteFirmaIds] = useState<string[]>([])
   const [pendientePdfProps, setPendientePdfProps] = useState<LimpiezaBanosPaginaProps | null>(null)
 
   // useLimiteProactivo maneja la consulta al servidor y conflictos offline
@@ -304,7 +304,7 @@ export function RegistroLimpiezaBanos() {
         setPendientePdfProps(pdfProps)
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setPendienteFirmaId((insertedRows as any[])[0].id)
+      setPendienteFirmaIds((insertedRows as any[]).map((r) => r.id))
       setSheetPaso('firma_decision')
     } catch (err: unknown) {
       const mensaje = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
@@ -340,7 +340,7 @@ export function RegistroLimpiezaBanos() {
           succion: b.succion,
         })),
       }
-      await generarLimpiezaBanosPDF(pdfProps)
+      await generarLimpiezaBanosPDF(pdfProps, jornada.banos.map((b) => b.id))
     } catch {
       toast.error('No se pudo generar el PDF')
     } finally {
@@ -524,8 +524,8 @@ export function RegistroLimpiezaBanos() {
                 {jornada.banos[0] && (
                   <FirmasRegistro
                     modulo="M12"
-                    registroId={jornada.banos[0].id}
-                    firma={firmas[jornada.banos[0].id]}
+                    registroId={idRepresentativoJornada(jornada.banos) ?? jornada.banos[0].id}
+                    firma={firmasDeFilasParaTarjeta(firmas, jornada.banos.map(b => b.id))}
                     loadingFirmas={loadingFirmas}
                     fechaRegistro={jornada.fecha}
                     onFirmado={refetchFirmas}
@@ -628,10 +628,10 @@ export function RegistroLimpiezaBanos() {
             {sheetPaso === 'firma_gate' && (
               <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
             )}
-            {sheetPaso === 'firma_decision' && pendienteFirmaId && (
+            {sheetPaso === 'firma_decision' && pendienteFirmaIds.length > 0 && (
               <PasoFirmaRegistro
                 modulo="M12"
-                ids={[pendienteFirmaId]}
+                ids={pendienteFirmaIds}
                 descripcion={`Limpieza y Desinfección de Baños · ${fecha}`}
                 obligatoria={obligatoria}
                 onFirmadoYPDF={async () => {
@@ -639,7 +639,7 @@ export function RegistroLimpiezaBanos() {
                   await refetchFirmas()
                   if (pendientePdfProps) {
                     try {
-                      await generarLimpiezaBanosPDF(pendientePdfProps)
+                      await generarLimpiezaBanosPDF(pendientePdfProps, pendienteFirmaIds)
                     } catch {
                       toast.warning('Registro guardado — el PDF no se pudo generar. Descárgalo desde el historial.')
                     }

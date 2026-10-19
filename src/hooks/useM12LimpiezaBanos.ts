@@ -8,6 +8,7 @@ import { leerConCache } from '@/lib/offline/cacheLectura'
 
 export interface M12FilaBano {
   id: string
+  created_at?: string | null
   bano_numero: string
   limpieza: boolean
   desinfeccion: boolean
@@ -71,6 +72,7 @@ export function useM12LimpiezaBanos() {
         }
         grouped.get(key)!.banos.push({
           id: row.id,
+          created_at: row.created_at,
           bano_numero: row.bano_numero,
           limpieza: row.limpieza,
           desinfeccion: row.desinfeccion,

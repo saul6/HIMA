@@ -134,6 +134,67 @@ export function firmasRegistroAParaPdf(reg: FirmasDeRegistro | undefined | null)
   return { realizo, verifico, enterado }
 }
 
+// ── Registros de varias filas (jornadas) ─────────────────────────────────────
+
+// Fila representativa determinista: orden por (created_at, id), igual en todos los caminos.
+export function idRepresentativoJornada(filas: Array<{ id: string; created_at?: string | null }>): string | undefined {
+  if (filas.length === 0) return undefined
+  return [...filas].sort((a, b) =>
+    (a.created_at ?? '').localeCompare(b.created_at ?? '') || a.id.localeCompare(b.id),
+  )[0].id
+}
+
+function elegirFirma(mapa: MapaFirmas, ids: string[], rol: RolFirma): FirmaDetalle | null {
+  let mejor: FirmaDetalle | null = null
+  for (const id of ids) {
+    const f = mapa[id]?.[rol]
+    if (!f || !f.profile_id) continue
+    if (f.estado === 'vigente') return f
+    if (!mejor || (f.firmado_en ?? '') > (mejor.firmado_en ?? '')) mejor = f
+  }
+  return mejor
+}
+
+// Firmas Realizó/Verificó de un registro que vive en varias filas: toma la primera
+// vigente entre todas (si no hay, la más reciente, que el PDF pinta como desactualizada).
+export function firmasDeFilasParaPdf(mapa: MapaFirmas, ids: string[]): {
+  firmaRealizo: FirmaParaPdf | null
+  firmaVerifico: FirmaParaPdf | null
+} {
+  const realizo = elegirFirma(mapa, ids, 'realizo')
+  const verifico = elegirFirma(mapa, ids, 'verifico')
+  if (realizo && verifico && verifico.firma_unica && realizo.profile_id === verifico.profile_id) {
+    realizo.firma_unica = true
+  }
+  // El enterado puede estar en cualquier fila de la jornada
+  if (realizo && !realizo.enterado) {
+    for (const id of ids) {
+      const e = mapa[id]?.enterado ?? mapa[id]?.realizo?.enterado
+      if (e) { realizo.enterado = e; break }
+    }
+  }
+  return {
+    firmaRealizo: realizo ? firmaDetalleAParaPdf(realizo) : null,
+    firmaVerifico: verifico ? firmaDetalleAParaPdf(verifico) : null,
+  }
+}
+
+// Vista unificada de la jornada para la tarjeta (sin imagen): mismas reglas que el PDF.
+export function firmasDeFilasParaTarjeta(mapa: MapaFirmas, ids: string[]): FirmasDeRegistro | undefined {
+  const base = ids.map((id) => mapa[id]).find(Boolean)
+  if (!base) return undefined
+  return {
+    ...base,
+    realizo: elegirFirma(mapa, ids, 'realizo'),
+    verifico: elegirFirma(mapa, ids, 'verifico'),
+    enterado: ids.map((id) => mapa[id]?.enterado).find(Boolean) ?? base.enterado,
+  }
+}
+
+export async function obtenerFirmasDeFilasParaPdf(modulo: string, ids: string[]) {
+  return firmasDeFilasParaPdf(await obtenerFirmasParaPdf(modulo, ids), ids)
+}
+
 // ── Mensajes de error user-friendly ──────────────────────────────────────────
 
 const ERRORES_FIRMA_WARNING = [
