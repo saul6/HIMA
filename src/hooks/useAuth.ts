@@ -183,6 +183,8 @@ export function useAuth(): UseAuthReturn {
 
     const timeout = setTimeout(async () => {
       if (authResolved) return
+      // Sin red la sesión guardada puede tardar en restaurarse: no cerrarla ni mandar a /login
+      if (!navigator.onLine) return
       devLog('[auth] timeout de 5 s alcanzado — sesión posiblemente corrupta, limpiando')
       await supabase.auth.signOut()
       setState({ ...SIN_SESION, loading: false })
