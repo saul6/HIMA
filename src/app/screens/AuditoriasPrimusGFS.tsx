@@ -7,6 +7,8 @@ import { LEYENDA_LEGAL_PGFS } from '@/lib/auditoriasPGFS'
 import { Fab } from '@/app/components/Fab'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 
 const ROLES_PERMITIDOS = ['auditor', 'admin_org', 'super_admin']
 
@@ -63,6 +65,7 @@ export default function AuditoriasPrimusGFS() {
   const { profile } = useAuthContext()
   const navigate = useNavigate()
   const { auditorias, loading, error, refetch } = useAuditoriasPGFS()
+  const mostrarSkeleton = useMostrarCarga(loading, auditorias.length > 0)
 
   if (!ROLES_PERMITIDOS.includes(profile?.rol ?? '')) {
     return <Navigate to="/" replace />
@@ -82,9 +85,7 @@ export default function AuditoriasPrimusGFS() {
 
       <main className="flex-1 px-4 py-4 flex flex-col gap-3">
         {loading ? (
-          <p className="text-sm text-center py-12" style={{ color: 'var(--muted-foreground)' }}>
-            Cargando…
-          </p>
+          mostrarSkeleton ? <ListaSkeleton /> : null
         ) : error ? (
           <div className="flex flex-col items-center gap-2 py-12">
             <p className="text-sm text-center" style={{ color: 'var(--agro-danger-text)' }}>{error}</p>

@@ -7,6 +7,7 @@ import { useRanchosOrg } from '@/hooks/useRanchosOrg'
 import { hoyMX } from '@/lib/fecha'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { FormularioSkeleton } from '@/app/components/FormularioSkeleton'
 
 const ROLES_PERMITIDOS = ['auditor', 'admin_org', 'super_admin']
 
@@ -72,9 +73,7 @@ export function NuevaAuditoriaPGFS() {
 
       <main className="flex-1 px-4 py-6 flex flex-col gap-5 max-w-lg mx-auto w-full">
         {cargando ? (
-          <p className="text-sm text-center py-12" style={{ color: 'var(--muted-foreground)' }}>
-            Cargando catálogo…
-          </p>
+          <FormularioSkeleton />
         ) : (
           <>
             {/* Módulo */}

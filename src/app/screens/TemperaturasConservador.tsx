@@ -30,6 +30,8 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 const HORAS = Array.from({ length: 24 }, (_, i) => i + 1)
 
@@ -66,6 +68,7 @@ export function TemperaturasConservador() {
   const { ranchos } = useRanchos()
   const { ranchoInicial, tareaId } = useContextoTarea(ranchos)
   const { registros, loading, error, refetch } = useM41TemperaturaConservador()
+  const mostrarSkeleton = useMostrarCarga(loading, registros.length > 0)
   const { obligatoria, tengoFirma } = useFirmaContext()
   const { online } = useConexion()
   const { guardar: guardarOffline } = useGuardarOffline('M41')
@@ -351,9 +354,7 @@ export function TemperaturasConservador() {
       {/* Lista */}
       <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 space-y-3">
         <PendientesOffline modulo="M41" />
-        {loading && (
-          <p className="text-center text-sm py-8" style={{ color: 'var(--muted-foreground)' }}>Cargando...</p>
-        )}
+        {mostrarSkeleton && <ListaSkeleton />}
         {error && (
           <p className="text-center text-sm py-8" style={{ color: 'var(--agro-danger-text)' }}>{error}</p>
         )}

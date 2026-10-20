@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { hoyMX } from '@/lib/fecha'
 import { ModulosSelectorStep } from './ModulosSelectorStep'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { FormularioSkeleton } from '@/app/components/FormularioSkeleton'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -148,9 +149,7 @@ export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) 
 
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4 flex flex-col gap-5">
         {cargando ? (
-          <p className="text-sm text-center py-12" style={{ color: 'var(--muted-foreground)' }}>
-            Cargando catálogo…
-          </p>
+          <FormularioSkeleton />
         ) : (
           <>
         <div className="flex flex-col gap-1.5">

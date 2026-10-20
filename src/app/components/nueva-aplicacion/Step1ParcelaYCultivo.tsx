@@ -1,6 +1,8 @@
 import { FormField } from "../FormField";
 import { FormSelect } from "../FormSelect";
 import { useRanchos } from "@/hooks/useRanchos";
+import { useMostrarCarga } from "@/hooks/useMostrarCarga";
+import { Skeleton } from "@/app/components/ui/skeleton";
 
 interface Props {
   formData: any;
@@ -20,6 +22,7 @@ const phenologyOptions = [
 
 export function Step1ParcelaYCultivo({ formData, updateFormData, onNext, esCampo }: Props) {
   const { ranchos, loading: loadingRanchos } = useRanchos();
+  const mostrarSkeletonRanchos = useMostrarCarga(loadingRanchos, ranchos.length > 0);
 
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }));
 
@@ -49,12 +52,16 @@ export function Step1ParcelaYCultivo({ formData, updateFormData, onNext, esCampo
         onChange={() => {}}
       />
 
-      <FormSelect
-        label={loadingRanchos ? "Cargando ranchos..." : "Huerto / Rancho"}
-        value={formData.huerto}
-        onChange={handleHuertoChange}
-        options={ranchoOptions}
-      />
+      {mostrarSkeletonRanchos ? (
+        <Skeleton className="mt-3 h-16 w-full rounded-lg" aria-busy="true" aria-label="Cargando ranchos" />
+      ) : (
+        <FormSelect
+          label="Huerto / Rancho"
+          value={formData.huerto}
+          onChange={handleHuertoChange}
+          options={ranchoOptions}
+        />
+      )}
 
       <FormField
         label="Código de huerto"

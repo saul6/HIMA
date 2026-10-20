@@ -15,6 +15,7 @@ import {
 import { SinOperacion } from './SinOperacion'
 import { useColaboradoresChk, type ColaboradorChk } from './useColaboradores'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { SkeletonFilas } from '@/app/components/SkeletonFilas'
 
 type Hook = ReturnType<typeof useChecklist>
 
@@ -327,7 +328,7 @@ function Contenido({
       <section className="space-y-2 pb-4">
         <h3 className="text-sm text-foreground font-semibold">Historial</h3>
         {historial === null ? (
-          <p className="text-xs text-muted-foreground">Cargando…</p>
+          <SkeletonFilas rows={2} />
         ) : historial.length === 0 ? (
           <p className="text-xs text-muted-foreground">Aún no hay revisiones.</p>
         ) : (

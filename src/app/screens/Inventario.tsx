@@ -30,6 +30,7 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { Skeleton } from '@/app/components/ui/skeleton'
 
 const LOW_STOCK = 5
 
@@ -107,7 +108,11 @@ function HistorialInline({
   if (loading) {
     return (
       <div className="border-t border-border p-4 bg-muted">
-        <p className="text-xs text-muted-foreground">Cargando historial…</p>
+        <div className="space-y-2" aria-busy="true" aria-label="Cargando historial">
+          <Skeleton className="h-3 w-40" />
+          <Skeleton className="h-3 w-28" />
+          <Skeleton className="h-3 w-36" />
+        </div>
       </div>
     )
   }

@@ -14,6 +14,7 @@ import { useColaboradoresChk } from './useColaboradores'
 import type { ChkVisita, ChkVisitaEvento, useChecklist } from '@/hooks/useChecklist'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
+import { SkeletonFilas } from '@/app/components/SkeletonFilas'
 
 type Hook = ReturnType<typeof useChecklist>
 
@@ -358,7 +359,7 @@ function FilaVisita({ visita, abierta, onToggle, hook, pdf, firmas, loadingFirma
             </div>
           )}
           {eventos === null ? (
-            <p className="text-xs text-muted-foreground">Cargando…</p>
+            <SkeletonFilas rows={2} />
           ) : eventos.length === 0 ? (
             <p className="text-xs text-muted-foreground">Sin movimientos.</p>
           ) : (

@@ -16,6 +16,7 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { formatoPct } from '@/lib/formato'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -493,8 +494,8 @@ export function EjecucionJornada() {
 
   if (cargando) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader size={24} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+      <div className="min-h-screen bg-background px-4 py-6" aria-busy="true" aria-label="Cargando jornada">
+        <ListaSkeleton rows={4} />
       </div>
     )
   }
