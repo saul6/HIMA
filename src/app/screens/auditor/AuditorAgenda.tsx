@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { useNavigate, useSearchParams, Navigate } from 'react-router'
 import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from 'motion/react'
 import { useAuthContext } from '@/context/AuthContext'
-import { SPRING_SUAVE } from '@/lib/motion'
+import { SPRING_SUAVE, DUR, EASE_OUT } from '@/lib/motion'
 import { AuditorCampana } from './AuditorCampana'
 import { MisVisitas } from './MisVisitas'
 import { CalendarioConsolidado } from './CalendarioConsolidado'
@@ -93,10 +93,10 @@ export function AuditorAgenda() {
             custom={dirTabRef.current}
             variants={{
               enter: (d: number) => (reducedMotion ? { opacity: 1 } : { opacity: 0, x: d * 24 }),
-              center: { opacity: 1, x: 0, transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] } },
+              center: { opacity: 1, x: 0, transition: { duration: DUR.base, ease: EASE_OUT } },
               exit: (d: number) => (reducedMotion
                 ? { opacity: 1 }
-                : { opacity: 0, x: d * -12, transition: { duration: 0.12, ease: [0.22, 1, 0.36, 1] } }),
+                : { opacity: 0, x: d * -12, transition: { duration: 0.12, ease: EASE_OUT } }),
             }}
             initial="enter"
             animate="center"

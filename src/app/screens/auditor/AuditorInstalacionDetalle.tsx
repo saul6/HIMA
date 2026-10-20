@@ -16,6 +16,7 @@ import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { fechaCorta } from '@/lib/formato'
+import { DUR, EASE_OUT } from '@/lib/motion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -367,7 +368,7 @@ export function AuditorInstalacionDetalle() {
                       initial={reducedMotion ? false : { opacity: 0, y: 8 }}
                       animate={{
                         opacity: 1, y: 0,
-                        transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: Math.min(index, 7) * 0.03 },
+                        transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
                       }}
                       onClick={() => navigate(`/auditor/auditoria/${a.id}`, {
                         state: { instalacionId, instalacionNombre: instalacion?.nombre }

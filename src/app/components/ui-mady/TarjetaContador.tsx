@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useContadorAnimado } from '@/hooks/useContadorAnimado'
-import { SPRING_SUAVE } from '@/lib/motion'
+import { SPRING_SUAVE, DUR, EASE_OUT } from '@/lib/motion'
 import { cn } from '../ui/utils'
 
 /** Color de la tarjeta. `info`/`alerta` pintan caja completa (borde + fondo + texto);
@@ -32,7 +32,6 @@ interface TarjetaContadorProps {
 }
 
 const formatoEntero = (n: number) => String(Math.round(n))
-const EASE = [0.22, 1, 0.36, 1] as const
 
 const CAJA: Record<TonoContador, string> = {
   normal: 'border-border bg-card',
@@ -132,7 +131,7 @@ export function TarjetaContador({
     initial: reducedMotion ? (false as const) : { opacity: 0, y: 8 },
     animate: {
       opacity: 1, y: 0,
-      transition: { duration: 0.22, ease: EASE, delay: Math.min(indice, 7) * 0.03 },
+      transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(indice, 7) * 0.03 },
     },
   }
 

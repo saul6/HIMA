@@ -8,6 +8,7 @@ import { useCatalogoProductos } from "@/hooks/useCatalogoProductos";
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { fechaHora } from '@/lib/formato'
 import { Skeleton } from '@/app/components/ui/skeleton'
+import { DUR, EASE_OUT } from '@/lib/motion'
 
 interface Props {
   formData: any;
@@ -134,7 +135,7 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
                   initial={reducedMotion ? false : { opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={reducedMotion ? undefined : { opacity: 0, y: -8 }}
-                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ duration: DUR.base, ease: EASE_OUT }}
                   className="bg-card border border-border rounded-xl p-4"
                 >
                   <div className="flex items-start justify-between mb-2">

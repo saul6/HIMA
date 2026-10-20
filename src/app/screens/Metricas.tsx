@@ -9,7 +9,7 @@ import { useRanchos } from '@/hooks/useRanchos'
 import { useMetricas } from '@/hooks/useMetricas'
 import { useContadorAnimado } from '@/hooks/useContadorAnimado'
 import { hoyMX } from '@/lib/fecha'
-import { SPRING_SUAVE, SPRING_SUAVE_SIN_REBOTE } from '@/lib/motion'
+import { SPRING_SUAVE, SPRING_SUAVE_SIN_REBOTE, DUR, EASE_OUT } from '@/lib/motion'
 import type {
   MetProductividad,
   MetAgenda,
@@ -25,10 +25,8 @@ import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { formatoNumero, formatoPct } from '@/lib/formato'
 
-// Mismo timing/curva que el resto de la app (ver NuevaAplicacion.tsx) — constante
-// local para no repetir el array de easing en cada transición de este archivo.
-const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1]
-const TAB_TRANSITION = { duration: 0.22, ease: EASE_OUT }
+// Mismo timing/curva que el resto de la app (tokens de @/lib/motion).
+const TAB_TRANSITION = { duration: DUR.base, ease: EASE_OUT }
 
 // ── Helpers de fechas ────────────────────────────────────────────────────────
 
@@ -141,7 +139,7 @@ function EntradaEscalonada({
       style={style}
       initial={reducedMotion ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={reducedMotion ? { duration: 0 } : { duration: 0.22, ease: EASE_OUT, delay: Math.min(index * 0.04, 0.4) }}
+      transition={reducedMotion ? { duration: 0 } : { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index * 0.04, 0.4) }}
     >
       {children}
     </motion.div>
@@ -375,7 +373,7 @@ function TabProductividad({
                 layout
                 initial={animarEntrada ? { opacity: 0, y: 8 } : false}
                 animate={{ opacity: c.activo ? 1 : 0.6, y: 0 }}
-                transition={animarEntrada ? { duration: 0.22, ease: EASE_OUT, delay: delayFila } : { duration: 0 }}
+                transition={animarEntrada ? { duration: DUR.base, ease: EASE_OUT, delay: delayFila } : { duration: 0 }}
                 className="rounded-xl border border-border overflow-hidden"
                 style={{ backgroundColor: c.es_yo ? 'var(--agro-success-fill)' : 'var(--card)' }}
               >

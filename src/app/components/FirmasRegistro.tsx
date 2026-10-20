@@ -18,6 +18,7 @@ import { FirmaSvg } from '@/app/components/FirmaSvg'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { SkeletonFilas } from '@/app/components/SkeletonFilas'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { EASE_OUT } from '@/lib/motion'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -129,7 +130,7 @@ function FirmaEstadoChip({ firma, label }: { firma: FirmaDetalle | FirmaEnterado
       className="rounded-md -mx-1 px-1 -my-0.5 py-0.5"
       initial={false}
       animate={{ backgroundColor: resaltado ? 'var(--agro-success-fill)' : 'rgba(0,0,0,0)' }}
-      transition={{ duration: resaltado ? 0.15 : 0.6, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: resaltado ? 0.15 : 0.6, ease: EASE_OUT }}
     >
       <p className="text-caption mb-1 font-semibold" style={{ color: 'var(--muted-foreground)' }}>
         {label}

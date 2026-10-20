@@ -28,7 +28,7 @@ import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
-import { SPRING_SUAVE, SPRING_SUAVE_SIN_REBOTE } from '@/lib/motion'
+import { SPRING_SUAVE, SPRING_SUAVE_SIN_REBOTE, DUR, EASE_OUT } from '@/lib/motion'
 import { marcarCapturaEnCurso } from '@/lib/offline/actualizacionSegura'
 import { useConexion } from '@/hooks/useConexion'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
@@ -42,9 +42,8 @@ const r4 = (n: number) => parseFloat(n.toFixed(4));
 
 // Mismo timing/curva que el resto de la app (ver Layout.tsx) — constante
 // local para no repetir el array de easing en cada transición de este archivo.
-const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const PASOS_NOMBRE = ["Parcela y cultivo", "Productos", "Aplicación y agua", "Cierre"] as const
-const STEP_TRANSITION = { duration: 0.22, ease: EASE_OUT };
+const STEP_TRANSITION = { duration: DUR.base, ease: EASE_OUT };
 
 export function NuevaAplicacion() {
   const [currentStep, setCurrentStep] = useState(1);

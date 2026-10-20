@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { useNavigate } from 'react-router'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { SPRING_SUAVE } from '@/lib/motion'
+import { SPRING_SUAVE, DUR } from '@/lib/motion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -107,7 +107,7 @@ export function CampanaNotificaciones({ iconClassName = 'w-4 h-4' }: { iconClass
               style={{ transformOrigin: 'top right' }}
               initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1, transition: SPRING_SUAVE }}
-              exit={reducedMotion ? undefined : { opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
+              exit={reducedMotion ? undefined : { opacity: 0, scale: 0.9, transition: { duration: DUR.rapido } }}
             >
               <div className="px-4 py-3 border-b border-border flex-shrink-0">
                 <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
@@ -133,7 +133,7 @@ export function CampanaNotificaciones({ iconClassName = 'w-4 h-4' }: { iconClass
                       className="relative w-full text-left px-4 py-3 pl-6 border-b border-border transition-colors hover:bg-muted last:border-b-0"
                       style={{ backgroundColor: n.leida ? undefined : 'var(--accent)' }}
                       initial={reducedMotion ? false : { opacity: 0 }}
-                      animate={{ opacity: 1, transition: { duration: 0.15, delay: Math.min(i, 5) * 0.03 } }}
+                      animate={{ opacity: 1, transition: { duration: DUR.rapido, delay: Math.min(i, 5) * 0.03 } }}
                     >
                       {!n.leida && (
                         <span

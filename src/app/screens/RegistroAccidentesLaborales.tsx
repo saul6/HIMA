@@ -48,6 +48,7 @@ import { InputContador } from '@/app/components/InputContador'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { fechaCorta } from '@/lib/formato'
+import { DUR, EASE_OUT } from '@/lib/motion'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -865,7 +866,7 @@ export function RegistroAccidentesLaborales() {
                       initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={reducedMotion ? undefined : { opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{ duration: DUR.base, ease: EASE_OUT }}
                       className="relative w-20 h-20"
                     >
                       <FotoEvidencia

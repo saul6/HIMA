@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { animate } from 'motion'
+import { EASE_OUT } from '@/lib/motion'
 
 const DURACION_CONTADOR_S = 1.1
 
@@ -30,7 +31,7 @@ export function useContadorAnimado(
     const desde = anterior ?? 0
     const controls = animate(desde, value, {
       duration: DURACION_CONTADOR_S,
-      ease: [0.22, 1, 0.36, 1],
+      ease: EASE_OUT,
       onUpdate: (latest) => {
         node.textContent = format(latest)
       },

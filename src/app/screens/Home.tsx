@@ -31,6 +31,7 @@ import { ordenarAlfabetico } from '@/lib/ordenAlfabetico'
 import { useConexion } from '@/hooks/useConexion'
 import { MODULOS_OFFLINE, type CodigoOffline } from '@/lib/offline/modulosOffline'
 import { formatoPct } from '@/lib/formato'
+import { DUR, EASE_OUT } from '@/lib/motion'
 
 const MAX_PINNED = 4
 // Foco visible por teclado — nunca `ring-*` (usa box-shadow, prohibido).
@@ -402,7 +403,7 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
                                 vaAFijar
                                   ? { scale: [1, 1.25, 1], rotate: [0, -20, 0] }
                                   : { scale: [1, 1.25, 1], rotate: [0, 20, 0] },
-                                { type: 'tween', duration: 0.22, ease: [0.22, 1, 0.36, 1] },
+                                { type: 'tween', duration: DUR.base, ease: EASE_OUT },
                               )
                             }
                           }
@@ -685,7 +686,7 @@ export function Home() {
                 initial={reducedMotion ? false : { rotate: -90, opacity: 0 }}
                 animate={{ rotate: 0, opacity: 1 }}
                 exit={reducedMotion ? undefined : { rotate: 90, opacity: 0 }}
-                transition={reducedMotion ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                transition={reducedMotion ? { duration: 0 } : { duration: DUR.base, ease: EASE_OUT }}
               >
                 <ThemeIcon className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
               </motion.span>
@@ -1010,8 +1011,8 @@ export function Home() {
                         exit={reducedMotion ? undefined : { opacity: 0, scale: 0.96 }}
                         transition={
                           esCascadaInicial
-                            ? { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: Math.min(index, 7) * 0.035 }
-                            : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }
+                            ? { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.035 }
+                            : { duration: DUR.base, ease: EASE_OUT }
                         }
                       >
                         {bloqueado ? (

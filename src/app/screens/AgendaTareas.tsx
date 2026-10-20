@@ -21,7 +21,7 @@ import type { TareaListada, TareaDetalle, PrioridadTarea, EstadoTarea, AcuseDeta
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { subirEvidencia, getSignedUrlsEvidencia } from '@/lib/storage/agendaStorage'
 import { Portal } from '@/app/components/Portal'
-import { SPRING_SUAVE } from '@/lib/motion'
+import { SPRING_SUAVE, DUR, EASE_OUT } from '@/lib/motion'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
@@ -219,7 +219,7 @@ function FotoMiniaturas({
             initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={reducedMotion ? undefined : { opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: DUR.base, ease: EASE_OUT }}
             className="relative w-16 h-16 rounded-lg overflow-hidden border border-border"
           >
             <FotoEvidencia src={f.preview} alt="" className="w-full h-full object-cover" />
@@ -1677,10 +1677,10 @@ export function AgendaTareas() {
                 custom={dirTabRef.current}
                 variants={{
                   enter: (d: number) => (reducedMotion ? { opacity: 1 } : { opacity: 0, x: d * 24 }),
-                  center: { opacity: 1, x: 0, transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] } },
+                  center: { opacity: 1, x: 0, transition: { duration: DUR.base, ease: EASE_OUT } },
                   exit: (d: number) => (reducedMotion
                     ? { opacity: 1 }
-                    : { opacity: 0, x: d * -12, transition: { duration: 0.12, ease: [0.22, 1, 0.36, 1] } }),
+                    : { opacity: 0, x: d * -12, transition: { duration: 0.12, ease: EASE_OUT } }),
                 }}
                 initial="enter"
                 animate="center"
@@ -1690,7 +1690,7 @@ export function AgendaTareas() {
                 {tareasTab.length === 0 ? (
                   <motion.p
                     initial={reducedMotion ? false : { opacity: 0 }}
-                    animate={{ opacity: 1, transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] } }}
+                    animate={{ opacity: 1, transition: { duration: DUR.base, ease: EASE_OUT } }}
                     className="text-sm text-center py-8"
                     style={{ color: 'var(--muted-foreground)' }}
                   >
@@ -1703,7 +1703,7 @@ export function AgendaTareas() {
                       initial={reducedMotion ? false : { opacity: 0, y: 8 }}
                       animate={{
                         opacity: 1, y: 0,
-                        transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: Math.min(index, 7) * 0.03 },
+                        transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
                       }}
                     >
                       <TareaCard tarea={t} esAdmin={esAdmin} onClick={() => abrirDetalle(t.id)} />
@@ -1759,8 +1759,8 @@ export function AgendaTareas() {
                   <motion.p
                     key="vacio"
                     initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0, transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] } }}
-                    exit={reducedMotion ? undefined : { opacity: 0, transition: { duration: 0.15 } }}
+                    animate={{ opacity: 1, y: 0, transition: { duration: DUR.base, ease: EASE_OUT } }}
+                    exit={reducedMotion ? undefined : { opacity: 0, transition: { duration: DUR.rapido } }}
                     className="text-sm text-center py-10"
                     style={{ color: 'var(--muted-foreground)' }}
                   >
@@ -1773,9 +1773,9 @@ export function AgendaTareas() {
                       initial={reducedMotion ? false : { opacity: 0, y: 8 }}
                       animate={{
                         opacity: 1, y: 0,
-                        transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: Math.min(index, 7) * 0.035 },
+                        transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.035 },
                       }}
-                      exit={reducedMotion ? undefined : { opacity: 0, transition: { duration: 0.15, ease: [0.22, 1, 0.36, 1] } }}
+                      exit={reducedMotion ? undefined : { opacity: 0, transition: { duration: DUR.rapido, ease: EASE_OUT } }}
                     >
                       <TareaCard tarea={t} esAdmin={false} onClick={() => abrirDetalle(t.id)} />
                     </motion.div>

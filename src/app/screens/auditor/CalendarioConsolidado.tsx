@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import { supabase } from '@/lib/supabase'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { useCalendario, type EventoCalendario } from '@/hooks/useCalendario'
+import { DUR, EASE_OUT } from '@/lib/motion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -62,7 +63,7 @@ function EventoItem({
       initial={reducedMotion ? false : { opacity: 0, y: 8 }}
       animate={{
         opacity: 1, y: 0,
-        transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: Math.min(index, 7) * 0.03 },
+        transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
       }}
       onClick={onNavegar ?? undefined}
       disabled={!interactivo}

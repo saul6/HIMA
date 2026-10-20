@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
+import { DUR, EASE_OUT } from '@/lib/motion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -75,7 +76,7 @@ function EventoCard({
       initial={reducedMotion ? false : { opacity: 0, y: 8 }}
       animate={{
         opacity: 1, y: 0,
-        transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: Math.min(index, 7) * 0.03 },
+        transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
       }}
       className="rounded-xl border border-border p-4 flex flex-col gap-2 transition-colors hover:bg-muted"
       style={{ backgroundColor: 'var(--card)', transitionDuration: 'var(--motion-fast)' }}

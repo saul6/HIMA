@@ -20,6 +20,7 @@ import { VisitaCard } from '@/app/components/checklist/VisitaCard'
 import { VisitaAccionSheet, VisitasSheet, type ModoVisita } from '@/app/components/checklist/VisitaSheets'
 import { hoyMX } from '@/lib/fecha'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
+import { DUR, EASE_OUT } from '@/lib/motion'
 
 type FiltroChk = 'faltantes' | 'no_se_lleva' | 'firmas' | 'por_vencer'
 
@@ -246,7 +247,7 @@ export function ChecklistDocumentos() {
                           key={item.id}
                           initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: reducedMotion ? 0 : Math.min(i, 8) * 0.03 }}
+                          transition={{ duration: DUR.base, ease: EASE_OUT, delay: reducedMotion ? 0 : Math.min(i, 8) * 0.03 }}
                         >
                           <ItemCard
                             item={item}

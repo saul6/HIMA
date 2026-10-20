@@ -3,6 +3,7 @@ import { ChevronLeft } from 'lucide-react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { useLocation, useNavigate } from 'react-router'
 import { useModulosContext } from '@/context/ModulosContext'
+import { DUR, EASE_OUT } from '@/lib/motion'
 
 interface ModuloHeaderProps {
   /** Título a mostrar si la ruta actual no coincide con ningún módulo en catálogo (carga o cuenta sin el módulo). */
@@ -45,7 +46,7 @@ export function ModuloHeader({ tituloFallback, forzarTitulo, subtitulo, onBack, 
               initial={reducedMotion ? false : { opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={reducedMotion ? undefined : { opacity: 0, y: -4 }}
-              transition={reducedMotion ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              transition={reducedMotion ? { duration: 0 } : { duration: DUR.base, ease: EASE_OUT }}
               className="text-foreground truncate"
               style={{ fontWeight: 600 }}
             >

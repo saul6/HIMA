@@ -10,6 +10,7 @@ import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
+import { DUR, EASE_OUT } from '@/lib/motion'
 
 // Entrada escalonada (primeros 8) compartida por las listas de esta pantalla.
 function entrada(index: number, reducedMotion: boolean | null) {
@@ -17,7 +18,7 @@ function entrada(index: number, reducedMotion: boolean | null) {
     initial: reducedMotion ? (false as const) : { opacity: 0, y: 8 },
     animate: {
       opacity: 1, y: 0,
-      transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] as const, delay: Math.min(index, 7) * 0.03 },
+      transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
     },
   }
 }

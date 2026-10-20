@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { hoyMX } from '@/lib/fecha'
 import { ModulosSelectorStep } from './ModulosSelectorStep'
 import { BottomSheet } from '@/app/components/BottomSheet'
-import { SPRING_SUAVE } from '@/lib/motion'
+import { SPRING_SUAVE, DUR, EASE_OUT } from '@/lib/motion'
 import { Boton } from '@/app/components/ui-mady/Boton'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,8 +21,7 @@ interface Props {
   onCreated: () => void
 }
 
-const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1]
-const STEP_TRANSITION = { duration: 0.22, ease: EASE_OUT }
+const STEP_TRANSITION = { duration: DUR.base, ease: EASE_OUT }
 
 const inputSt: React.CSSProperties = {
   width: '100%', height: '2.5rem',

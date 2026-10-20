@@ -19,6 +19,7 @@ import { Fab } from '@/app/components/Fab'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
+import { DUR, EASE_OUT } from '@/lib/motion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -98,15 +99,13 @@ function esVencida(item: WorkQueueItem, hoy: string): boolean {
   return item.priority === 1 || (!!item.due_at && item.due_at < hoy)
 }
 
-const EASE = [0.22, 1, 0.36, 1] as const
-
 // Entrada escalonada compartida (solo los primeros 8; el resto aparece sin retraso).
 function entrada(index: number, reducedMotion: boolean | null) {
   return {
     initial: reducedMotion ? (false as const) : { opacity: 0, y: 8 },
     animate: {
       opacity: 1, y: 0,
-      transition: { duration: 0.22, ease: EASE, delay: Math.min(index, 7) * 0.03 },
+      transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
     },
   }
 }

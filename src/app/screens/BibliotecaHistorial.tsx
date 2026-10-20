@@ -10,7 +10,7 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { Portal } from '@/app/components/Portal'
 import { BottomSheet } from '@/app/components/BottomSheet'
-import { SPRING_SUAVE } from '@/lib/motion'
+import { SPRING_SUAVE, DUR, EASE_OUT } from '@/lib/motion'
 import { ordenarAlfabetico } from '@/lib/ordenAlfabetico'
 import { useContadorAnimado } from '@/hooks/useContadorAnimado'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
@@ -1271,7 +1271,7 @@ export function BibliotecaHistorial() {
             <motion.div
               key="cargando"
               exit={reducedMotion ? undefined : { opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: DUR.rapido }}
               className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border"
             >
               {[0, 1, 2, 3, 4].map(i => (
@@ -1293,7 +1293,7 @@ export function BibliotecaHistorial() {
             <motion.div
               key="error"
               exit={reducedMotion ? undefined : { opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: DUR.rapido }}
               className="py-8 text-center text-sm"
               style={{ color: 'var(--destructive)' }}
             >
@@ -1303,7 +1303,7 @@ export function BibliotecaHistorial() {
             <motion.div
               key="sin-modulos"
               exit={reducedMotion ? undefined : { opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: DUR.rapido }}
               className="py-14 text-center space-y-2"
               style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
             >
@@ -1316,7 +1316,7 @@ export function BibliotecaHistorial() {
             <motion.div
               key="sin-resultados"
               exit={reducedMotion ? undefined : { opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: DUR.rapido }}
               className="py-14 text-center space-y-2"
               style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
             >
@@ -1332,7 +1332,7 @@ export function BibliotecaHistorial() {
             <motion.div
               key="lista"
               exit={reducedMotion ? undefined : { opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: DUR.rapido }}
               className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border"
             >
               <AnimatePresence initial={false}>
@@ -1351,8 +1351,8 @@ export function BibliotecaHistorial() {
                         reducedMotion
                           ? { duration: 0 }
                           : escalonado
-                            ? { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: Math.min(index, 7) * 0.03 }
-                            : { duration: 0.15, ease: [0.22, 1, 0.36, 1] }
+                            ? { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 }
+                            : { duration: DUR.rapido, ease: EASE_OUT }
                       }
                       className="flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors"
                       style={{ transitionDuration: 'var(--motion-fast)' }}
@@ -1517,7 +1517,7 @@ export function BibliotecaHistorial() {
                     initial={reducedMotion ? false : { opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={reducedMotion ? undefined : { opacity: 0 }}
-                    transition={{ duration: 0.15 }}
+                    transition={{ duration: DUR.rapido }}
                   >
                     <button
                       type="button"

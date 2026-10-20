@@ -19,6 +19,7 @@ import { CATEGORIA_MAP } from "@/lib/categoriasModulos";
 import { useConexion } from "@/hooks/useConexion";
 import { useOutbox } from "@/hooks/useOutbox";
 import { AvisoVentana72h } from "@/app/components/AvisoVentana72h";
+import { DUR, EASE_OUT } from '@/lib/motion'
 
 const PATH_TITLES: Record<string, string> = {
   '/': 'Inicio',
@@ -217,7 +218,7 @@ export function Layout() {
                     layoutId="sidebarActiveIndicator"
                     className="absolute inset-0 rounded-lg"
                     style={{ backgroundColor: 'var(--accent)' }}
-                    transition={reducedMotion ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                    transition={reducedMotion ? { duration: 0 } : { duration: DUR.base, ease: EASE_OUT }}
                   />
                 )}
                 <Icon
@@ -298,7 +299,7 @@ export function Layout() {
                 initial={reducedMotion ? false : { opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={reducedMotion ? undefined : { opacity: 0, y: -4 }}
-                transition={reducedMotion ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                transition={reducedMotion ? { duration: 0 } : { duration: DUR.base, ease: EASE_OUT }}
                 className="text-sm"
                 style={{ color: 'var(--foreground)', fontWeight: 600 }}
               >
@@ -390,7 +391,7 @@ export function Layout() {
             key={claveTransicion}
             initial={reducedMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: DUR.base, ease: EASE_OUT }}
             className="w-full max-w-[390px] mx-auto md:max-w-none"
           >
             <div className={faseContenido === 'oculto' ? 'intro-contenido-oculto' : faseContenido === 'entra' ? 'intro-contenido-entra' : undefined}>

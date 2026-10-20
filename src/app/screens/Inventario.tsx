@@ -31,6 +31,7 @@ import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { Skeleton } from '@/app/components/ui/skeleton'
+import { DUR, EASE_OUT } from '@/lib/motion'
 
 const LOW_STOCK = 5
 
@@ -593,10 +594,10 @@ export function Inventario() {
             custom={dirVistaRef.current}
             variants={{
               enter: (d: number) => (reducedMotion ? { opacity: 1 } : { opacity: 0, x: d * 24 }),
-              center: { opacity: 1, x: 0, transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] } },
+              center: { opacity: 1, x: 0, transition: { duration: DUR.base, ease: EASE_OUT } },
               exit: (d: number) => (reducedMotion
                 ? { opacity: 1 }
-                : { opacity: 0, x: d * -12, transition: { duration: 0.12, ease: [0.22, 1, 0.36, 1] } }),
+                : { opacity: 0, x: d * -12, transition: { duration: 0.12, ease: EASE_OUT } }),
             }}
             initial="enter"
             animate="center"
