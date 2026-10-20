@@ -499,7 +499,7 @@ export function RegistroCosechaLiberacion() {
             <div key={lote.id} className="bg-card border border-border rounded-xl p-4 opacity-80">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                  <span className="text-sm text-foreground font-semibold">
                     {meta?.rancho_nombre ?? '—'}
                   </span>
                   <p className="text-xs text-muted-foreground mt-0.5">{meta?.fecha ?? '—'}</p>
@@ -535,19 +535,18 @@ export function RegistroCosechaLiberacion() {
                       {orgNombre && (
                         <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
                       )}
-                      <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                      <span className="text-sm text-foreground font-semibold">
                         {reg.rancho_nombre}
                       </span>
                       <span
-                        className="text-caption px-2 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0"
-                        style={{ fontWeight: 600 }}
+                        className="text-caption px-2 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0 font-semibold"
                       >
                         {reg.liberaciones.length} {reg.liberaciones.length === 1 ? 'liberación' : 'liberaciones'}
                       </span>
                       {pendienteDeFirma && (
                         <span
-                          className="text-caption px-2 py-0.5 rounded flex-shrink-0 flex items-center gap-1"
-                          style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', fontWeight: 600 }}
+                          className="text-caption px-2 py-0.5 rounded flex-shrink-0 flex items-center gap-1 font-semibold"
+                          style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
                         >
                           <PenLine className="w-3 h-3" />
                           Pendiente de firma
@@ -592,7 +591,7 @@ export function RegistroCosechaLiberacion() {
                 <div className="mt-3 pt-3 border-t border-border space-y-1">
                   {reg.liberaciones.map((lib) => (
                     <div key={lib.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="text-foreground flex-shrink-0" style={{ fontWeight: 600 }}>
+                      <span className="text-foreground flex-shrink-0 font-semibold">
                         {lib.sector || '—'}
                       </span>
                       <span className="text-border">·</span>
@@ -637,7 +636,7 @@ export function RegistroCosechaLiberacion() {
       {/* ── Bottom Sheet — Exportar consolidado ─────────────────────────────── */}
       <BottomSheet open={sheetConsAbierto} onClose={() => setSheetConsAbierto(false)}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-base text-foreground font-semibold">
                 Exportar consolidado
               </h2>
               <button aria-label="Cerrar" onClick={() => setSheetConsAbierto(false)} className="p-1">
@@ -647,7 +646,7 @@ export function RegistroCosechaLiberacion() {
 
             <div className="overflow-y-auto p-4 space-y-4">
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
@@ -666,7 +665,7 @@ export function RegistroCosechaLiberacion() {
               </div>
 
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   DESDE *
                 </label>
                 <input
@@ -680,7 +679,7 @@ export function RegistroCosechaLiberacion() {
               </div>
 
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   HASTA *
                 </label>
                 <input
@@ -699,8 +698,7 @@ export function RegistroCosechaLiberacion() {
               <button
                 onClick={handleGenerarConsolidado}
                 disabled={generandoCons}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-                style={{ fontWeight: 600 }}
+                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
               >
                 {generandoCons && <Loader2 className="w-4 h-4 animate-spin" />}
                 Generar PDF consolidado
@@ -711,7 +709,7 @@ export function RegistroCosechaLiberacion() {
       {/* ── Bottom Sheet — Formulario / firma_gate / firma_decision ─────────── */}
       <BottomSheet open={sheetAbierto} onClose={() => setSheetAbierto(false)} height="85%">
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-base text-foreground font-semibold">
                 {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nueva liberación de cosecha'}
               </h2>
               <button aria-label="Cerrar" onClick={() => setSheetAbierto(false)} className="p-1">
@@ -759,7 +757,7 @@ export function RegistroCosechaLiberacion() {
 
               {/* Rancho */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
@@ -779,7 +777,7 @@ export function RegistroCosechaLiberacion() {
 
               {/* Fecha */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   FECHA *
                 </label>
                 <input
@@ -830,7 +828,7 @@ export function RegistroCosechaLiberacion() {
               {/* Lista de liberaciones */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     LIBERACIONES
                   </label>
                   <span className="text-xs text-muted-foreground">
@@ -844,7 +842,7 @@ export function RegistroCosechaLiberacion() {
 
                       {/* Encabezado de fila */}
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                        <span className="text-sm text-foreground font-semibold">
                           Liberación {idx + 1}
                         </span>
                         {liberaciones.length > 1 && (
@@ -1000,7 +998,7 @@ export function RegistroCosechaLiberacion() {
 
                       {/* Horario de cosecha */}
                       <div>
-                        <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                        <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                           HORARIO DE COSECHA
                         </label>
                         <div className="grid grid-cols-2 gap-3">
@@ -1064,8 +1062,7 @@ export function RegistroCosechaLiberacion() {
               <button
                 onClick={handleGuardar}
                 disabled={guardando}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-                style={{ fontWeight: 600 }}
+                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
               >
                 {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                 {!guardando && !online && <WifiOff className="w-4 h-4" />}

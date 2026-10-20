@@ -538,7 +538,7 @@ export function TemperaturasConservador() {
                       </div>
                       {/* Inputs de temperatura */}
                       <div className="flex items-center">
-                        <div style={{ width: 48, flexShrink: 0, fontSize: 11, fontWeight: 600, color: 'var(--muted-foreground)' }}>
+                        <div style={{ width: 48, flexShrink: 0, fontSize: 11, color: 'var(--muted-foreground)' }} className="font-semibold">
                           °C
                         </div>
                         {HORAS.map(h => {

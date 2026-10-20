@@ -308,15 +308,15 @@ export function TrazabilidadGG() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start gap-2 mb-1 flex-wrap">
                       <span
-                        className="text-xs px-2 py-0.5 rounded"
-                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+                        className="text-xs px-2 py-0.5 rounded font-semibold"
+                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                       >
                         {formatFecha(reg.fecha)}
                       </span>
                       {reg.folio && (
                         <span
-                          className="text-xs px-2 py-0.5 rounded font-mono"
-                          style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', fontWeight: 600 }}
+                          className="text-xs px-2 py-0.5 rounded font-mono font-semibold"
+                          style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
                         >
                           {reg.folio}
                         </span>
@@ -330,7 +330,7 @@ export function TrazabilidadGG() {
                         </span>
                       )}
                     </div>
-                    <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</span>
+                    <span className="text-sm text-foreground font-semibold">{reg.rancho_nombre}</span>
                     {reg.cultivo && (
                       <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
                         Cultivo: {reg.cultivo}
@@ -338,7 +338,7 @@ export function TrazabilidadGG() {
                     )}
                     {reg.peso_neto !== null && (
                       <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                        Peso neto: <span style={{ fontWeight: 600, color: 'var(--foreground)' }}>{reg.peso_neto} Ton</span>
+                        Peso neto: <span style={{ color: 'var(--foreground)' }} className="font-semibold">{reg.peso_neto} Ton</span>
                       </div>
                     )}
                     {reg.chofer && (
@@ -385,7 +385,7 @@ export function TrazabilidadGG() {
       {/* Sheet */}
       <BottomSheet open={sheetNuevo} onClose={handleCerrarSheet} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+          <h2 className="text-base text-foreground font-semibold">
             {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nueva nota de trazabilidad'}
           </h2>
           <button aria-label="Cerrar" onClick={handleCerrarSheet}>
@@ -415,7 +415,7 @@ export function TrazabilidadGG() {
         {sheetPaso === 'form' && (<><div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
           {/* Rancho */}
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
               {termino.toUpperCase()} *
             </label>
             <select
@@ -433,13 +433,13 @@ export function TrazabilidadGG() {
           {/* Folio, fecha, productor */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>FOLIO</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>FOLIO</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'folio')} type="text" value={form.folio} onChange={setF('folio')} placeholder="Ej: NT-001"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>FECHA</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>FECHA</label>
               <input type="date" value={form.fecha} onChange={setF('fecha')}
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
@@ -448,13 +448,13 @@ export function TrazabilidadGG() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>PRODUCTOR</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>PRODUCTOR</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'productor')} type="text" value={form.productor} onChange={setF('productor')} placeholder="Nombre"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HORA SALIDA</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>HORA SALIDA</label>
               <input type="time" value={form.hora_salida} onChange={setF('hora_salida')}
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
@@ -464,13 +464,13 @@ export function TrazabilidadGG() {
           {/* Num camion, zona, sector, cultivo */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>N° CAMIÓN</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>N° CAMIÓN</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'num_camion')} type="text" value={form.num_camion} onChange={setF('num_camion')} placeholder="Placas o número"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>ZONA</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>ZONA</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'zona')} type="text" value={form.zona} onChange={setF('zona')} placeholder="Zona"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
@@ -479,13 +479,13 @@ export function TrazabilidadGG() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>SECTOR</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>SECTOR</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'sector')} type="text" value={form.sector} onChange={setF('sector')} placeholder="Sector"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>CULTIVO</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>CULTIVO</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'cultivo')} type="text" value={form.cultivo} onChange={setF('cultivo')} placeholder="Ej: Zarzamora"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
@@ -494,16 +494,15 @@ export function TrazabilidadGG() {
 
           {/* Presentación */}
           <div className="space-y-2">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>PRESENTACIÓN</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>PRESENTACIÓN</label>
             <div className="flex gap-2 flex-wrap">
               {(['Caja', 'Tote', 'Granel', 'Otro'] as Presentacion[]).map((p) => (
                 <button
                   key={p}
                   type="button"
                   onClick={() => setForm((f) => ({ ...f, presentacion: p }))}
-                  className="h-9 px-3 rounded-xl text-xs transition-colors"
+                  className="h-9 px-3 rounded-xl text-xs transition-colors font-semibold"
                   style={{
-                    fontWeight: 600,
                     backgroundColor: form.presentacion === p ? 'var(--primary)' : 'var(--muted)',
                     color: form.presentacion === p ? '#fff' : 'var(--muted-foreground)',
                   }}
@@ -522,19 +521,19 @@ export function TrazabilidadGG() {
           {/* Pesos y total */}
           <div className="grid grid-cols-3 gap-2">
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>PESO BRUTO (Ton)</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>PESO BRUTO (Ton)</label>
               <input type="number" min="0" step="0.001" value={form.peso_bruto} onChange={setF('peso_bruto')} placeholder="0.000"
                 className="w-full h-11 px-2 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>PESO NETO (Ton)</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>PESO NETO (Ton)</label>
               <input type="number" min="0" step="0.001" value={form.peso_neto} onChange={setF('peso_neto')} placeholder="0.000"
                 className="w-full h-11 px-2 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>TOTAL PRODUCTO</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>TOTAL PRODUCTO</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'total_producto')} type="text" value={form.total_producto} onChange={setF('total_producto')} placeholder="Ej: 500 cajas"
                 className="w-full h-11 px-2 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
@@ -544,19 +543,19 @@ export function TrazabilidadGG() {
           {/* Embarco, chofer, recibió */}
           <div className="grid grid-cols-3 gap-2">
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>EMBARCÓ</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>EMBARCÓ</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'embarco')} type="text" value={form.embarco} onChange={setF('embarco')} placeholder="Nombre"
                 className="w-full h-11 px-2 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>CHOFER</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>CHOFER</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'chofer')} type="text" value={form.chofer} onChange={setF('chofer')} placeholder="Nombre"
                 className="w-full h-11 px-2 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>RECIBIÓ</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>RECIBIÓ</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'recibio')} type="text" value={form.recibio} onChange={setF('recibio')} placeholder="Nombre"
                 className="w-full h-11 px-2 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
@@ -565,7 +564,7 @@ export function TrazabilidadGG() {
 
           {/* Observaciones */}
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>OBSERVACIONES</label>
             <TextareaContador limite={limiteTexto('m78_nota_trazabilidad', 'observaciones')} value={form.observaciones} onChange={setF('observaciones')} rows={2}
               placeholder="Observaciones adicionales…"
               className="w-full rounded-xl border px-3 py-2 text-sm resize-none"
@@ -584,14 +583,14 @@ export function TrazabilidadGG() {
       {/* Sheet — Exportar consolidado */}
       <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}>
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+          <h2 className="text-base text-foreground font-semibold">Exportar consolidado</h2>
           <button aria-label="Cerrar" onClick={() => setConsolidadoOpen(false)}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4 space-y-4">
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
               {termino.toUpperCase()} (opcional)
             </label>
             <select
@@ -606,14 +605,14 @@ export function TrazabilidadGG() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DESDE</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>DESDE</label>
               <input type="date" value={consolidadoForm.desde}
                 onChange={(e) => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>HASTA</label>
               <input type="date" value={consolidadoForm.hasta}
                 onChange={(e) => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"

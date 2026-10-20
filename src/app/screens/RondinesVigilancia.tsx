@@ -91,29 +91,29 @@ function RondinCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <span
-              className="text-xs px-2 py-0.5 rounded"
-              style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+              className="text-xs px-2 py-0.5 rounded font-semibold"
+              style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
             >
               {fmtFecha(rondin.fecha)}
             </span>
             {rondin.turno && (
               <span
-                className="text-xs px-2 py-0.5 rounded"
-                style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', fontWeight: 600 }}
+                className="text-xs px-2 py-0.5 rounded font-semibold"
+                style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
               >
                 {rondin.turno}
               </span>
             )}
             {rondin.num_novedades > 0 && (
               <span
-                className="text-xs px-2 py-0.5 rounded"
-                style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', fontWeight: 600 }}
+                className="text-xs px-2 py-0.5 rounded font-semibold"
+                style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
               >
                 {rondin.num_novedades} novedad{rondin.num_novedades > 1 ? 'es' : ''}
               </span>
             )}
           </div>
-          <p className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+          <p className="text-sm text-foreground truncate font-semibold">
             {rondin.rancho_nombre}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">Vigilante: {rondin.vigilante}</p>
@@ -155,9 +155,8 @@ function ItemChecklist({
       >
         <p className="flex-1 text-xs text-foreground">{item.nombre}</p>
         <span
-          className="text-xs px-2 py-1 rounded-lg flex-shrink-0"
+          className="text-xs px-2 py-1 rounded-lg flex-shrink-0 font-semibold"
           style={{
-            fontWeight: 600,
             backgroundColor: esNovedad ? 'var(--agro-danger-fill)' : 'var(--agro-success-fill)',
             color: esNovedad ? 'var(--agro-danger-text)' : 'var(--agro-success-text)',
           }}
@@ -652,8 +651,8 @@ export function RondinesVigilancia() {
               <div key={r.id}>
                 {obligatoria && !firmas[r.id]?.realizo && (
                   <div className="mb-1">
-                    <span className="text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>
+                    <span className="text-xs px-2 py-0.5 rounded font-semibold"
+                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
                       Pendiente de firma
                     </span>
                   </div>
@@ -717,7 +716,7 @@ export function RondinesVigilancia() {
                 </TituloSeccion>
 
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     {termino} *
                   </label>
                   <select
@@ -740,7 +739,7 @@ export function RondinesVigilancia() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Fecha</label>
+                    <label className="text-xs text-muted-foreground font-semibold">Fecha</label>
                     <input
                       type="date"
                       value={nFecha}
@@ -751,7 +750,7 @@ export function RondinesVigilancia() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Turno</label>
+                    <label className="text-xs text-muted-foreground font-semibold">Turno</label>
                     <input maxLength={limiteTexto('m46_rondines', 'turno')}
                       type="text"
                       value={nTurno}
@@ -764,7 +763,7 @@ export function RondinesVigilancia() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Vigilante *</label>
+                    <label className="text-xs text-muted-foreground font-semibold">Vigilante *</label>
                     <input maxLength={limiteTexto('m46_rondines', 'vigilante')}
                       type="text"
                       value={nVigilante}
@@ -778,7 +777,7 @@ export function RondinesVigilancia() {
                     )}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Jefe de Seguridad</label>
+                    <label className="text-xs text-muted-foreground font-semibold">Jefe de Seguridad</label>
                     <input
                       type="text"
                       value={nJefe}
@@ -835,7 +834,7 @@ export function RondinesVigilancia() {
 
                 {/* Hora de la ronda activa */}
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     Hora — Ronda {nRondaActiva}
                   </label>
                   <input
@@ -864,7 +863,7 @@ export function RondinesVigilancia() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                      <p className="text-xs text-muted-foreground font-semibold">
                         Puntos de supervisión — Ronda {nRondaActiva}
                       </p>
                       {areaGroups.map(({ area, items: aItems }) => (
@@ -906,7 +905,7 @@ export function RondinesVigilancia() {
 
               {/* Observaciones */}
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                <label className="text-xs text-muted-foreground font-semibold">
                   Observaciones generales
                 </label>
                 <TextareaContador limite={limiteTexto('m46_rondines', 'observaciones')}
@@ -950,7 +949,7 @@ export function RondinesVigilancia() {
             </div>
             <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-4 pt-4">
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{termino}</label>
+                <label className="text-xs text-muted-foreground font-semibold">{termino}</label>
                 <select
                   value={confRanchoId}
                   onChange={(e) => setConfRanchoId(e.target.value)}
@@ -992,11 +991,10 @@ export function RondinesVigilancia() {
                                   type="button"
                                   onClick={() => handleToggleActivo(item)}
                                   disabled={confToggling === item.id}
-                                  className="flex-shrink-0 w-16 h-6 rounded-full text-xs transition-colors disabled:opacity-60"
+                                  className="flex-shrink-0 w-16 h-6 rounded-full text-xs transition-colors disabled:opacity-60 font-semibold"
                                   style={{
                                     backgroundColor: item.activo ? 'var(--primary)' : 'var(--switch-background)',
                                     color: item.activo ? '#fff' : 'var(--muted-foreground)',
-                                    fontWeight: 600,
                                   }}
                                 >
                                   {confToggling === item.id ? '…' : item.activo ? 'Activo' : 'Inactivo'}
@@ -1011,7 +1009,7 @@ export function RondinesVigilancia() {
 
                   {/* Formulario agregar */}
                   <div className="bg-card border border-border rounded-xl p-3 space-y-3">
-                    <p className="text-xs text-foreground" style={{ fontWeight: 600 }}>Agregar punto personalizado</p>
+                    <p className="text-xs text-foreground font-semibold">Agregar punto personalizado</p>
                     <div className="space-y-1">
                       <label className="text-xs text-muted-foreground">Área</label>
                       <input maxLength={limiteTexto('m46_items', 'area')}
@@ -1049,7 +1047,7 @@ export function RondinesVigilancia() {
             </div>
             <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-4 pt-4">
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{termino} *</label>
+                <label className="text-xs text-muted-foreground font-semibold">{termino} *</label>
                 <select
                   value={cRanchoId}
                   onChange={(e) => { setCRanchoId(e.target.value); setCErrRancho(false) }}
@@ -1063,7 +1061,7 @@ export function RondinesVigilancia() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Desde</label>
+                  <label className="text-xs text-muted-foreground font-semibold">Desde</label>
                   <input
                     type="date"
                     value={cDesde}
@@ -1072,7 +1070,7 @@ export function RondinesVigilancia() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Hasta</label>
+                  <label className="text-xs text-muted-foreground font-semibold">Hasta</label>
                   <input
                     type="date"
                     value={cHasta}

@@ -610,9 +610,8 @@ export function TrazabilidadProducto() {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors font-semibold"
             style={{
-              fontWeight: 600,
               background: tab === t.key ? 'var(--primary)' : 'var(--muted)',
               color: tab === t.key ? '#fff' : 'var(--muted-foreground)',
             }}
@@ -641,13 +640,13 @@ export function TrazabilidadProducto() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-sm font-mono" style={{ fontWeight: 700, color: 'var(--primary)' }}>{lr.codigo}</p>
-                {lr.sin_subir && <span className="text-caption px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>Código al sincronizar</span>}
-                    <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>{lr.proveedor_nombre}</p>
+                {lr.sin_subir && <span className="text-caption px-2 py-0.5 rounded-full mt-1 inline-block font-semibold" style={{ background: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>Código al sincronizar</span>}
+                    <p className="text-sm text-foreground font-semibold">{lr.proveedor_nombre}</p>
                     <p className="text-xs text-muted-foreground">{fmtFecha(lr.fecha)}{lr.hora ? ` · ${lr.hora}` : ''}{lr.proveedor_origen ? ` · ${lr.proveedor_origen}` : ''}</p>
                     {lr.cantidad && <p className="text-xs text-muted-foreground">{lr.cantidad} {lr.unidad ?? ''}</p>}
                   </div>
                   {lr.resultado && (
-                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ color: chipResultado(lr.resultado) ?? undefined, background: 'var(--muted)', fontWeight: 600 }}>
+                    <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ color: chipResultado(lr.resultado) ?? undefined, background: 'var(--muted)' }}>
                       {lr.resultado}
                     </span>
                   )}
@@ -682,7 +681,7 @@ export function TrazabilidadProducto() {
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="min-w-0">
                       <p className="text-sm font-mono" style={{ fontWeight: 700, color: 'var(--primary)' }}>{lpt.codigo}</p>
-                {lpt.sin_subir && <span className="text-caption px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>Código al sincronizar</span>}
+                {lpt.sin_subir && <span className="text-caption px-2 py-0.5 rounded-full mt-1 inline-block font-semibold" style={{ background: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>Código al sincronizar</span>}
                       <p className="text-sm text-foreground">{lpt.presentacion ?? '—'}</p>
                       <p className="text-xs text-muted-foreground">
                         {fmtFecha(lpt.fecha_empaque)} · Turno {lpt.turno}
@@ -750,7 +749,7 @@ export function TrazabilidadProducto() {
             ) : lotesLC.length > 0 ? lotesLC.map(lc => (
               <div key={lc.id} className="bg-card border border-border rounded-xl p-4">
                 <p className="text-sm font-mono" style={{ fontWeight: 700, color: 'var(--primary)' }}>{lc.codigo}</p>
-                {lc.sin_subir && <span className="text-caption px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>Código al sincronizar</span>}
+                {lc.sin_subir && <span className="text-caption px-2 py-0.5 rounded-full mt-1 inline-block font-semibold" style={{ background: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>Código al sincronizar</span>}
                 <p className="text-xs text-muted-foreground">{fmtFecha(lc.fecha)}{lc.motivo ? ` · ${lc.motivo}` : ''}</p>
                 <div className="mt-2 space-y-1">
                   {lc.lotes_recepcion.map(lr => (
@@ -778,8 +777,8 @@ export function TrazabilidadProducto() {
             ) : feFolios.length > 0 ? feFolios.map(fe => (
               <div key={fe.id} className="bg-card border border-border rounded-xl p-4">
                 <p className="text-sm font-mono" style={{ fontWeight: 700, color: 'var(--primary)' }}>{fe.codigo}</p>
-                {fe.sin_subir && <span className="text-caption px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>Código al sincronizar</span>}
-                <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>{fe.cliente ?? '—'}</p>
+                {fe.sin_subir && <span className="text-caption px-2 py-0.5 rounded-full mt-1 inline-block font-semibold" style={{ background: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>Código al sincronizar</span>}
+                <p className="text-sm text-foreground font-semibold">{fe.cliente ?? '—'}</p>
                 <p className="text-xs text-muted-foreground">{fmtFecha(fe.fecha)}{fe.transporte_placas ? ` · ${fe.transporte_placas}` : ''}</p>
                 {fe.lotes_producto.length > 0 && (
                   <div className="mt-2 space-y-1">
@@ -937,8 +936,8 @@ export function TrazabilidadProducto() {
             <div className="flex gap-2">
               {(['lr', 'lc'] as const).map(tipo => (
                 <button key={tipo} onClick={() => setFormLPT(f => ({ ...f, origen_tipo: tipo }))}
-                  className="flex-1 h-9 rounded-lg text-sm transition-colors"
-                  style={{ fontWeight: 600, background: formLPT.origen_tipo === tipo ? 'var(--primary)' : 'var(--muted)', color: formLPT.origen_tipo === tipo ? '#fff' : 'var(--muted-foreground)' }}>
+                  className="flex-1 h-9 rounded-lg text-sm transition-colors font-semibold"
+                  style={{ background: formLPT.origen_tipo === tipo ? 'var(--primary)' : 'var(--muted)', color: formLPT.origen_tipo === tipo ? '#fff' : 'var(--muted-foreground)' }}>
                   {tipo === 'lr' ? 'Lote de Recepcion (LR)' : 'Lote Compuesto (LC)'}
                 </button>
               ))}
@@ -1200,7 +1199,7 @@ export function TrazabilidadProducto() {
       {sheetEtiqueta && (
         <BottomSheet title={`Etiqueta ${sheetEtiqueta.lpt.codigo}`} onClose={() => setSheetEtiqueta(null)}>
           <div className="rounded-xl p-3 mb-2" style={{ background: 'var(--agro-success-fill)' }}>
-            <p className="text-xs" style={{ color: 'var(--agro-success-text)', fontWeight: 600 }}>
+            <p className="text-xs font-semibold" style={{ color: 'var(--agro-success-text)' }}>
               {sheetEtiqueta.lpt.presentacion ?? '—'} · Turno {sheetEtiqueta.lpt.turno} · {fmtFecha(sheetEtiqueta.lpt.fecha_empaque)}
             </p>
             {sheetEtiqueta.lpt.lr_codigo && <p className="text-xs mt-0.5" style={{ color: 'var(--agro-success-text)' }}>LR: {sheetEtiqueta.lpt.lr_codigo}</p>}
@@ -1233,7 +1232,7 @@ const inputCls = 'w-full h-10 px-3 rounded-lg bg-input-background border border-
 function FormField({ label, hint, children, className }: { label: string; hint?: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={className}>
-      <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>{label}</label>
+      <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">{label}</label>
       {hint && <p className="text-xs text-muted-foreground mb-1">{hint}</p>}
       {children}
     </div>
@@ -1244,8 +1243,8 @@ function SaveBtn({ loading, onClick, label, secondary, icon }: { loading: boolea
   return (
     <button
       onClick={onClick} disabled={loading}
-      className="w-full h-12 rounded-3xl text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
-      style={{ fontWeight: 600, background: secondary ? 'var(--muted)' : 'var(--primary)', color: secondary ? 'var(--primary)' : '#fff' }}
+      className="w-full h-12 rounded-3xl text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors font-semibold"
+      style={{ background: secondary ? 'var(--muted)' : 'var(--primary)', color: secondary ? 'var(--primary)' : '#fff' }}
     >
       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
       {label}
@@ -1371,7 +1370,7 @@ function TrazChip({ label, code, sub }: { label: string; code: string; sub?: str
     <div className="flex items-start gap-2">
       <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'var(--primary)', color: '#fff', fontWeight: 700, flexShrink: 0 }}>{label}</span>
       <div className="min-w-0">
-        <span className="text-xs font-mono" style={{ fontWeight: 600, color: 'var(--primary)' }}>{code}</span>
+        <span className="text-xs font-mono font-semibold" style={{ color: 'var(--primary)' }}>{code}</span>
         {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
       </div>
     </div>

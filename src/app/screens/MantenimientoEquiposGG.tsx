@@ -120,9 +120,8 @@ function CheckSelector({ label, valor, onChange }: { label: string; valor: Check
             key={v}
             type="button"
             onClick={() => onChange(v)}
-            className="h-7 px-2.5 rounded text-xs transition-colors"
+            className="h-7 px-2.5 rounded text-xs transition-colors font-semibold"
             style={{
-              fontWeight: 600,
               backgroundColor: valor === v
                 ? v === 'si' ? 'var(--primary)' : v === 'no' ? 'var(--agro-red)' : 'var(--switch-background)'
                 : 'var(--muted)',
@@ -318,7 +317,7 @@ export function MantenimientoEquiposGG() {
                 style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="text-sm" style={{ fontWeight: 600 }}>{lote.descripcion}</p>
+                    <p className="text-sm font-semibold">{lote.descripcion}</p>
                     {lote.metadatos?.rancho_nombre && (
                       <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{lote.metadatos.rancho_nombre}</p>
                     )}
@@ -347,14 +346,14 @@ export function MantenimientoEquiposGG() {
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
-                        className="text-xs px-2 py-0.5 rounded"
-                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+                        className="text-xs px-2 py-0.5 rounded font-semibold"
+                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                       >
                         {formatFecha(reg.fecha)}
                       </span>
                       <span
-                        className="text-xs px-2 py-0.5 rounded"
-                        style={{ backgroundColor: cols.fill, color: cols.text, fontWeight: 600 }}
+                        className="text-xs px-2 py-0.5 rounded font-semibold"
+                        style={{ backgroundColor: cols.fill, color: cols.text }}
                       >
                         {TIPO_LABELS[tipo]}
                       </span>
@@ -371,7 +370,7 @@ export function MantenimientoEquiposGG() {
                         : <FileDown className="w-4 h-4" />}
                     </button>
                   </div>
-                  <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</span>
+                  <span className="text-sm text-foreground font-semibold">{reg.rancho_nombre}</span>
                   {reg.equipo && (
                     <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
                       Equipo: {reg.equipo}
@@ -384,8 +383,8 @@ export function MantenimientoEquiposGG() {
                   )}
                   {!loadingFirmas && !firmas[reg.id]?.realizo && (
                     <span
-                      className="inline-block mt-1 text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}
+                      className="inline-block mt-1 text-xs px-2 py-0.5 rounded font-semibold"
+                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
                     >
                       Pendiente de firma
                     </span>
@@ -411,7 +410,7 @@ export function MantenimientoEquiposGG() {
       {/* Sheet */}
       <BottomSheet open={sheetNuevo} onClose={handleCerrarSheet} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+          <h2 className="text-base text-foreground font-semibold">
             {sheetPaso === 'firma_decision' ? 'Registro guardado' : 'Nuevo registro de equipos'}
           </h2>
           <button aria-label="Cerrar" onClick={handleCerrarSheet}>
@@ -444,7 +443,7 @@ export function MantenimientoEquiposGG() {
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
           {/* Rancho */}
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
               {termino.toUpperCase()} *
             </label>
             <select
@@ -462,13 +461,13 @@ export function MantenimientoEquiposGG() {
           {/* Fecha y equipo */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>FECHA</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>FECHA</label>
               <input type="date" value={form.fecha} onChange={(e) => setF('fecha', e.target.value)}
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>EQUIPO</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>EQUIPO</label>
               <input maxLength={limiteTexto('m76_mantenimiento_equipos', 'equipo')} type="text" value={form.equipo} onChange={(e) => setF('equipo', e.target.value)} placeholder="Ej: Bomba A1"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
@@ -477,7 +476,7 @@ export function MantenimientoEquiposGG() {
 
           {/* Realizó */}
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>REALIZÓ</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>REALIZÓ</label>
             <input maxLength={limiteTexto('m76_mantenimiento_equipos', 'realizo')} type="text" value={form.realizo} onChange={(e) => setF('realizo', e.target.value)} placeholder="Nombre del responsable"
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
               style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
@@ -485,7 +484,7 @@ export function MantenimientoEquiposGG() {
 
           {/* Tipo de actividad */}
           <div className="space-y-2">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>TIPO DE ACTIVIDAD</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>TIPO DE ACTIVIDAD</label>
             <div className="flex gap-2">
               {(['verificacion', 'preventivo', 'correctivo'] as TipoActividad[]).map((t) => {
                 const cols = TIPO_COLORS[t]
@@ -495,9 +494,8 @@ export function MantenimientoEquiposGG() {
                     key={t}
                     type="button"
                     onClick={() => setF('tipo_actividad', t)}
-                    className="flex-1 h-9 rounded-xl text-xs transition-colors"
+                    className="flex-1 h-9 rounded-xl text-xs transition-colors font-semibold"
                     style={{
-                      fontWeight: 600,
                       backgroundColor: activo ? cols.fill : 'var(--muted)',
                       color: activo ? cols.text : 'var(--muted-foreground)',
                       border: activo ? `1px solid ${cols.text}` : '1px solid var(--border)',
@@ -512,7 +510,7 @@ export function MantenimientoEquiposGG() {
 
           {/* Checks de estado */}
           <div className="space-y-2">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>ESTADO DE COMPONENTES</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>ESTADO DE COMPONENTES</label>
             {CHECKS.map(({ key, label }) => (
               <CheckSelector
                 key={key}
@@ -525,7 +523,7 @@ export function MantenimientoEquiposGG() {
 
           {/* Descripción del trabajo */}
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
               DESCRIPCIÓN DEL TRABAJO
             </label>
             <TextareaContador limite={limiteTexto('m76_mantenimiento_equipos', 'descripcion_trabajo')}
@@ -540,7 +538,7 @@ export function MantenimientoEquiposGG() {
 
           {/* Observaciones */}
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>OBSERVACIONES</label>
             <TextareaContador limite={limiteTexto('m76_mantenimiento_equipos', 'observaciones')} value={form.observaciones} onChange={(e) => setF('observaciones', e.target.value)} rows={2}
               placeholder="Observaciones adicionales…"
               className="w-full rounded-xl border px-3 py-2 text-sm resize-none"
@@ -559,14 +557,14 @@ export function MantenimientoEquiposGG() {
       {/* Consolidado sheet */}
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="60%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+          <h2 className="text-base text-foreground font-semibold">Exportar consolidado</h2>
           <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>{termino.toUpperCase()} (opcional)</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>{termino.toUpperCase()} (opcional)</label>
             <select
               value={consolidadoForm.ranchoId}
               onChange={(e) => setConsolidadoForm((f) => ({ ...f, ranchoId: e.target.value }))}
@@ -579,13 +577,13 @@ export function MantenimientoEquiposGG() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DESDE</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>DESDE</label>
               <input type="date" value={consolidadoForm.desde} onChange={(e) => setConsolidadoForm((f) => ({ ...f, desde: e.target.value }))}
                 className="w-full h-11 px-3 rounded-xl border text-sm"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>HASTA</label>
               <input type="date" value={consolidadoForm.hasta} onChange={(e) => setConsolidadoForm((f) => ({ ...f, hasta: e.target.value }))}
                 className="w-full h-11 px-3 rounded-xl border text-sm"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />

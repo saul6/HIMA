@@ -453,8 +453,8 @@ export function AlmacenEmpaqueGG() {
         acciones={vista === 'lista' ? (
           <button
             onClick={() => setSheetConsolidado(true)}
-            className="flex items-center gap-1.5 h-8 px-3 rounded-lg border text-xs text-foreground"
-            style={{ borderColor: 'var(--border)', fontWeight: 600 }}
+            className="flex items-center gap-1.5 h-8 px-3 rounded-lg border text-xs text-foreground font-semibold"
+            style={{ borderColor: 'var(--border)' }}
           >
             <FileDown className="w-3.5 h-3.5" />
             Exportar
@@ -491,13 +491,13 @@ export function AlmacenEmpaqueGG() {
                   <div className="p-4">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <span
-                        className="text-xs px-2 py-0.5 rounded"
-                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+                        className="text-xs px-2 py-0.5 rounded font-semibold"
+                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                       >
                         {formatMesLabel((lote.metadatos as any)?.mes ?? '')}
                       </span>
                     </div>
-                    <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    <span className="text-sm text-foreground font-semibold">
                       {(lote.metadatos as any)?.rancho_nombre ?? '—'}
                     </span>
                     <div className="mt-2">
@@ -520,8 +520,8 @@ export function AlmacenEmpaqueGG() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <span
-                            className="text-xs px-2 py-0.5 rounded"
-                            style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+                            className="text-xs px-2 py-0.5 rounded font-semibold"
+                            style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                           >
                             {formatMesLabel(reg.mes)}
                           </span>
@@ -534,7 +534,7 @@ export function AlmacenEmpaqueGG() {
                             </span>
                           )}
                         </div>
-                        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                        <span className="text-sm text-foreground font-semibold">
                           {reg.rancho_nombre}
                         </span>
                         {reg.realizo && (
@@ -603,17 +603,17 @@ export function AlmacenEmpaqueGG() {
             className="border rounded-xl p-4 space-y-3"
             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
           >
-            <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Datos del encabezado</h2>
+            <h2 className="text-sm text-foreground font-semibold">Datos del encabezado</h2>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>Cultivo</label>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>Cultivo</label>
                 <input maxLength={limiteTexto('m75_registro', 'cultivo')} type="text" value={dCultivo} onChange={(e) => setDCultivo(e.target.value)}
                   placeholder="Cultivo"
                   className="w-full h-9 px-3 rounded-lg border text-sm"
                   style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
               </div>
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>Realizó</label>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>Realizó</label>
                 <input maxLength={limiteTexto('m75_registro', 'realizo')} type="text" value={dRealizo} onChange={(e) => setDRealizo(e.target.value)}
                   placeholder="Responsable"
                   className="w-full h-9 px-3 rounded-lg border text-sm"
@@ -621,7 +621,7 @@ export function AlmacenEmpaqueGG() {
               </div>
             </div>
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>Observaciones</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>Observaciones</label>
               <TextareaContador limite={limiteTexto('m75_registro', 'observaciones')} value={dObservaciones} onChange={(e) => setDObservaciones(e.target.value)} rows={2}
                 placeholder="Observaciones generales del mes…"
                 className="w-full rounded-lg border px-3 py-2 text-sm resize-none"
@@ -635,7 +635,7 @@ export function AlmacenEmpaqueGG() {
             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
           >
             <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
-              <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Matriz de inspección</h2>
+              <h2 className="text-sm text-foreground font-semibold">Matriz de inspección</h2>
               <LeyendaMatriz />
             </div>
 
@@ -662,9 +662,8 @@ export function AlmacenEmpaqueGG() {
                           backgroundColor: 'var(--background)',
                           borderBottom: '1px solid var(--border)',
                           borderRight: '1px solid var(--border)',
-                          padding: '0 6px', fontSize: 10, fontWeight: 600,
-                          color: 'var(--muted-foreground)', textAlign: 'left',
-                        }}
+                          padding: '0 6px', fontSize: 10,
+                          color: 'var(--muted-foreground)', textAlign: 'left' }} className="font-semibold"
                       >
                         Ítem
                       </th>
@@ -675,9 +674,8 @@ export function AlmacenEmpaqueGG() {
                             width: CELL_W, minWidth: CELL_W, height: CELL_H,
                             backgroundColor: 'var(--background)',
                             borderBottom: '1px solid var(--border)',
-                            fontSize: 9, fontWeight: 600,
-                            color: 'var(--muted-foreground)', textAlign: 'center',
-                          }}
+                            fontSize: 9,
+                            color: 'var(--muted-foreground)', textAlign: 'center' }} className="font-semibold"
                         >
                           {d}
                         </th>
@@ -730,7 +728,7 @@ export function AlmacenEmpaqueGG() {
             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
           >
             <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
-              <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Acción tomada por día</h2>
+              <h2 className="text-sm text-foreground font-semibold">Acción tomada por día</h2>
               <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
                 Registra la acción correctiva para cada día que lo requiera
               </p>
@@ -746,8 +744,8 @@ export function AlmacenEmpaqueGG() {
                     }}
                   >
                     <div
-                      className="text-center text-xs mb-1"
-                      style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}
+                      className="text-center text-xs mb-1 font-semibold"
+                      style={{ color: 'var(--muted-foreground)' }}
                     >
                       Día {dia}
                     </div>
@@ -814,7 +812,7 @@ export function AlmacenEmpaqueGG() {
         if (pendienteDetalle) { const d = pendienteDetalle; setPendienteDetalle(null); abrirDetalle(d) }
       }} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+          <h2 className="text-base text-foreground font-semibold">
             {sheetNuevoPaso === 'firma_decision' ? 'Firmar registro' : sheetNuevoPaso === 'firma_gate' ? 'Firma requerida' : 'Nuevo registro mensual'}
           </h2>
           <button aria-label="Cerrar" onClick={() => {
@@ -859,7 +857,7 @@ export function AlmacenEmpaqueGG() {
             <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
               {/* Rancho */}
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                   {termino.toUpperCase()} *
                 </label>
                 <select
@@ -876,7 +874,7 @@ export function AlmacenEmpaqueGG() {
 
               {/* Mes */}
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>MES DE REGISTRO *</label>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>MES DE REGISTRO *</label>
                 <input type="month" value={nMes} onChange={(e) => setNMes(e.target.value)}
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                   style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
@@ -884,7 +882,7 @@ export function AlmacenEmpaqueGG() {
 
               {/* Cultivo */}
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>CULTIVO</label>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>CULTIVO</label>
                 <input maxLength={limiteTexto('m75_registro', 'cultivo')} type="text" value={nCultivo} onChange={(e) => setNCultivo(e.target.value)} placeholder="Ej: Zarzamora"
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                   style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
@@ -892,7 +890,7 @@ export function AlmacenEmpaqueGG() {
 
               {/* Realizó */}
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>REALIZÓ</label>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>REALIZÓ</label>
                 <input maxLength={limiteTexto('m75_registro', 'realizo')} type="text" value={nRealizo} onChange={(e) => setNRealizo(e.target.value)} placeholder="Nombre del responsable"
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                   style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
@@ -900,7 +898,7 @@ export function AlmacenEmpaqueGG() {
 
               {/* Observaciones */}
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>OBSERVACIONES</label>
                 <TextareaContador limite={limiteTexto('m75_registro', 'observaciones')} value={nObservaciones} onChange={(e) => setNObservaciones(e.target.value)} rows={2}
                   placeholder="Observaciones generales…"
                   className="w-full rounded-xl border px-3 py-2 text-sm resize-none"
@@ -932,14 +930,14 @@ export function AlmacenEmpaqueGG() {
       {/* Sheet consolidado */}
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+          <h2 className="text-base text-foreground font-semibold">Exportar consolidado</h2>
           <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
               {termino.toUpperCase()} (opcional)
             </label>
             <select
@@ -953,7 +951,7 @@ export function AlmacenEmpaqueGG() {
             </select>
           </div>
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DESDE (mes)</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>DESDE (mes)</label>
             <input
               type="month"
               value={consolidadoForm.desde.slice(0, 7)}
@@ -963,7 +961,7 @@ export function AlmacenEmpaqueGG() {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA (mes)</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>HASTA (mes)</label>
             <input
               type="month"
               value={consolidadoForm.hasta.slice(0, 7)}

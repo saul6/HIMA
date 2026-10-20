@@ -309,12 +309,12 @@ export function EntradasSalidasPreFrio() {
             <div key={r.id} className="bg-card border border-border rounded-xl p-4">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                  <p className="text-sm text-foreground truncate font-semibold">
                     {r.rancho_nombre}
                   </p>
                   <p className="text-xs text-muted-foreground">{formatFecha(r.fecha)}</p>
                   {r.empresa && (
-                    <p className="text-xs mt-0.5" style={{ fontWeight: 600 }}>{r.empresa}</p>
+                    <p className="text-xs mt-0.5 font-semibold">{r.empresa}</p>
                   )}
                   {obligatoria && !firmas[r.id]?.realizo && (
                     <Etiqueta tono="error" className="mt-1">
@@ -352,7 +352,7 @@ export function EntradasSalidasPreFrio() {
       {/* ═══ SHEET: FORMULARIO ══════════════════════════════════════════════════ */}
       <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) handleCerrarSheet() }} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nuevo registro</h2>
+          <h2 className="text-base text-foreground font-semibold">Nuevo registro</h2>
           <button aria-label="Cerrar" type="button" onClick={() => { if (!guardando) handleCerrarSheet() }}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -384,7 +384,7 @@ export function EntradasSalidasPreFrio() {
             </TituloSeccion>
 
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+              <label className="text-xs text-muted-foreground font-semibold">
                 {terminosSitio.singular} *
               </label>
               <select
@@ -399,7 +399,7 @@ export function EntradasSalidasPreFrio() {
 
             <div className="flex gap-3">
               <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Fecha *</label>
+                <label className="text-xs text-muted-foreground font-semibold">Fecha *</label>
                 <input
                   type="date"
                   className={fieldCls}
@@ -410,7 +410,7 @@ export function EntradasSalidasPreFrio() {
                 />
               </div>
               <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Empresa</label>
+                <label className="text-xs text-muted-foreground font-semibold">Empresa</label>
                 <input maxLength={limiteTexto('m40_registros', 'empresa')}
                   type="text"
                   className={fieldCls}
@@ -431,8 +431,8 @@ export function EntradasSalidasPreFrio() {
               <button
                 type="button"
                 onClick={() => setLineas(prev => [...prev, nuevaLinea()])}
-                className="flex items-center gap-1 text-xs"
-                style={{ color: 'var(--primary)', fontWeight: 600 }}
+                className="flex items-center gap-1 text-xs font-semibold"
+                style={{ color: 'var(--primary)' }}
               >
                 <Plus className="w-3.5 h-3.5" />
                 Agregar
@@ -443,7 +443,7 @@ export function EntradasSalidasPreFrio() {
               {lineas.map((l, idx) => (
                 <div key={l._key} className="bg-card border border-border rounded-xl p-3 space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                    <span className="text-xs text-muted-foreground font-semibold">
                       Línea {idx + 1}
                     </span>
                     {lineas.length > 1 && (
@@ -506,7 +506,7 @@ export function EntradasSalidasPreFrio() {
                   <div className="rounded-lg border border-border overflow-hidden">
                     <div className="px-3 py-1.5"
                       style={{ backgroundColor: 'var(--muted)' }}>
-                      <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Entrada</p>
+                      <p className="text-xs text-muted-foreground font-semibold">Entrada</p>
                     </div>
                     <div className="grid grid-cols-2 gap-2 p-2">
                       <div className="space-y-1">
@@ -529,7 +529,7 @@ export function EntradasSalidasPreFrio() {
                   <div className="rounded-lg border border-border overflow-hidden">
                     <div className="px-3 py-1.5"
                       style={{ backgroundColor: 'var(--muted)' }}>
-                      <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Salida</p>
+                      <p className="text-xs text-muted-foreground font-semibold">Salida</p>
                     </div>
                     <div className="grid grid-cols-2 gap-2 p-2">
                       <div className="space-y-1">
@@ -592,14 +592,14 @@ export function EntradasSalidasPreFrio() {
       {/* ═══ SHEET: CONSOLIDADO ═════════════════════════════════════════════════ */}
       <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+          <h2 className="text-base text-foreground font-semibold">Exportar consolidado</h2>
           <button aria-label="Cerrar" type="button" onClick={() => setConsolidadoOpen(false)}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
         <div className="overflow-y-auto px-4 pb-8 space-y-4" style={{ flex: 1 }}>
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground font-semibold">
               {terminosSitio.singular}{' '}
               <span style={{ fontWeight: 400 }}>(opcional)</span>
             </label>
@@ -614,13 +614,13 @@ export function EntradasSalidasPreFrio() {
           </div>
           <div className="flex gap-3">
             <div className="flex-1 space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Desde</label>
+              <label className="text-xs text-muted-foreground font-semibold">Desde</label>
               <input type="date" className={fieldCls}
                 value={consolidadoForm.desde}
                 onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))} />
             </div>
             <div className="flex-1 space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Hasta</label>
+              <label className="text-xs text-muted-foreground font-semibold">Hasta</label>
               <input type="date" className={fieldCls}
                 value={consolidadoForm.hasta}
                 onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))} />

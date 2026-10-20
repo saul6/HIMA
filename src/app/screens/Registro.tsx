@@ -112,7 +112,7 @@ export function Registro() {
               className="p-4 rounded-xl space-y-2 text-left"
               style={{ background: 'var(--auth-success-fill)', color: 'var(--auth-success-text)' }}
             >
-              <p style={{ fontWeight: 600 }}>Correo de confirmación enviado</p>
+              <p className="font-semibold">Correo de confirmación enviado</p>
               <p className="text-sm">
                 Enviamos un enlace a <strong>{email}</strong>. Haz clic en el enlace y después inicia sesión para completar tu registro.
               </p>

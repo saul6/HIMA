@@ -534,14 +534,14 @@ export function VerificacionRoedores() {
       {/* Sheet — consolidado */}
       <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+          <h2 className="text-base text-foreground font-semibold">Exportar consolidado</h2>
           <button aria-label="Cerrar" onClick={() => setConsolidadoOpen(false)}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
               {terminosSitio.singular.toUpperCase()} (opcional)
             </label>
             <select
@@ -555,14 +555,14 @@ export function VerificacionRoedores() {
             </select>
           </div>
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DESDE</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>DESDE</label>
             <input type="date" value={consolidadoForm.desde}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
               style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
           </div>
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>HASTA</label>
             <input type="date" value={consolidadoForm.hasta}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"

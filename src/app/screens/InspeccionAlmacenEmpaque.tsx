@@ -87,24 +87,24 @@ function DiaCard({ dia, anio, mes, onClick }: { dia: M43DiaSummary; anio: number
           <div className="flex flex-wrap gap-1.5 mb-1">
             {dia.num_cumple > 0 && (
               <span
-                className="text-xs px-1.5 py-0.5 rounded"
-                style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+                className="text-xs px-1.5 py-0.5 rounded font-semibold"
+                style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
               >
                 C: {dia.num_cumple}
               </span>
             )}
             {dia.num_no_cumple > 0 && (
               <span
-                className="text-xs px-1.5 py-0.5 rounded"
-                style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', fontWeight: 600 }}
+                className="text-xs px-1.5 py-0.5 rounded font-semibold"
+                style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
               >
                 NC: {dia.num_no_cumple}
               </span>
             )}
             {dia.num_na > 0 && (
               <span
-                className="text-xs px-1.5 py-0.5 rounded"
-                style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', fontWeight: 600 }}
+                className="text-xs px-1.5 py-0.5 rounded font-semibold"
+                style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
               >
                 N/A: {dia.num_na}
               </span>
@@ -116,8 +116,8 @@ function DiaCard({ dia, anio, mes, onClick }: { dia: M43DiaSummary; anio: number
         </div>
         {dia.num_incidencias > 0 && (
           <span
-            className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
-            style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', fontWeight: 600 }}
+            className="text-xs px-2 py-0.5 rounded-full flex-shrink-0 font-semibold"
+            style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
           >
             {dia.num_incidencias} M13
           </span>
@@ -144,9 +144,8 @@ function TogglePunto({
       <button onClick={onToggle} className="w-full flex items-center gap-3 p-3 text-left">
         <p className="flex-1 text-xs text-foreground">{punto.orden}. {punto.texto}</p>
         <span
-          className="text-xs px-2 py-1 rounded-lg flex-shrink-0"
+          className="text-xs px-2 py-1 rounded-lg flex-shrink-0 font-semibold"
           style={{
-            fontWeight: 600,
             backgroundColor: valor === 'cumple'
               ? 'var(--agro-success-fill)'
               : valor === 'no_cumple'
@@ -652,12 +651,12 @@ export function InspeccionAlmacenEmpaque() {
               {lotesOffline.map((lote) => (
                 <div key={lote.id} className="bg-card rounded-xl border border-border p-4">
                   <div className="mb-1">
-                    <span className="text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>
+                    <span className="text-xs px-2 py-0.5 rounded font-semibold"
+                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
                       {formatMesLabel((lote.metadatos as any)?.anio ?? 0, (lote.metadatos as any)?.mes ?? 0)}
                     </span>
                   </div>
-                  <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                  <span className="text-sm text-foreground font-semibold">
                     {(lote.metadatos as any)?.rancho_nombre ?? '—'}
                   </span>
                   <div className="mt-2"><ChipOffline lote={lote} /></div>
@@ -673,11 +672,10 @@ export function InspeccionAlmacenEmpaque() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <span
-                          className="text-xs px-2 py-0.5 rounded"
+                          className="text-xs px-2 py-0.5 rounded font-semibold"
                           style={{
                             backgroundColor: 'var(--agro-success-fill)',
                             color: 'var(--agro-success-text)',
-                            fontWeight: 600,
                           }}
                         >
                           {formatMesLabel(reg.anio, reg.mes)}
@@ -686,7 +684,7 @@ export function InspeccionAlmacenEmpaque() {
                           {reg.dias.length} día{reg.dias.length !== 1 ? 's' : ''}
                         </span>
                       </div>
-                      <span className="text-sm text-foreground truncate block" style={{ fontWeight: 600 }}>
+                      <span className="text-sm text-foreground truncate block font-semibold">
                         {reg.rancho_nombre}
                       </span>
                       {reg.realizado_por && (
@@ -749,7 +747,7 @@ export function InspeccionAlmacenEmpaque() {
 
           {/* Encabezado editable */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-            <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Encabezado del mes</h2>
+            <h2 className="text-sm text-foreground font-semibold">Encabezado del mes</h2>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">Realizado por</label>
@@ -799,7 +797,7 @@ export function InspeccionAlmacenEmpaque() {
 
           {/* Días de inspección */}
           <div>
-            <h2 className="text-sm text-foreground mb-3" style={{ fontWeight: 600 }}>
+            <h2 className="text-sm text-foreground mb-3 font-semibold">
               Días de inspección
             </h2>
             {loadingDias ? (
@@ -808,7 +806,7 @@ export function InspeccionAlmacenEmpaque() {
               </div>
             ) : dias.length === 0 ? (
               <div className="bg-card border border-border rounded-xl p-6 text-center">
-                <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin días aún</p>
+                <p className="text-sm text-foreground font-semibold">Sin días aún</p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Registra el primer día con el botón +
                 </p>

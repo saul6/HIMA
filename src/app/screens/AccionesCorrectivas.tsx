@@ -68,8 +68,8 @@ function ChipEstado({ estado }: { estado: 'sin_capturar' | 'abierta' | 'cerrada'
   if (estado === 'cerrada') {
     return (
       <span
-        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs"
-        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
       >
         Cerrada
       </span>
@@ -78,8 +78,8 @@ function ChipEstado({ estado }: { estado: 'sin_capturar' | 'abierta' | 'cerrada'
   if (estado === 'abierta') {
     return (
       <span
-        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs"
-        style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}
+        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+        style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
       >
         Abierta
       </span>
@@ -87,8 +87,8 @@ function ChipEstado({ estado }: { estado: 'sin_capturar' | 'abierta' | 'cerrada'
   }
   return (
     <span
-      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-muted"
-      style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}
+      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-muted font-semibold"
+      style={{ color: 'var(--muted-foreground)' }}
     >
       Sin capturar
     </span>
@@ -140,7 +140,7 @@ function GaleriaGuardadas({
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+            <p className="text-xs text-muted-foreground font-semibold">
               {f.tipo === 'no_conformidad' ? 'No conformidad' : 'Evidencia de corrección'}
             </p>
             {f.leyenda && <p className="text-xs text-foreground truncate">{f.leyenda}</p>}
@@ -476,13 +476,12 @@ export function AccionesCorrectivas() {
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <ChipEstado estado={item.estado} />
                       <span
-                        className="text-xs rounded px-1.5 py-0.5 bg-muted text-muted-foreground flex-shrink-0"
-                        style={{ fontWeight: 600 }}
+                        className="text-xs rounded px-1.5 py-0.5 bg-muted text-muted-foreground flex-shrink-0 font-semibold"
                       >
                         {item.modulo_label}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mb-1" style={{ fontWeight: 600 }}>
+                    <p className="text-xs text-muted-foreground mb-1 font-semibold">
                       {item.codigo_pregunta}
                     </p>
                     <p className="text-sm text-foreground leading-snug line-clamp-2 mb-2">
@@ -498,7 +497,7 @@ export function AccionesCorrectivas() {
                     return (
                       <div className="mt-2 pt-2 border-t border-border flex items-center justify-between gap-2">
                         <p className="text-xs text-muted-foreground min-w-0">
-                          <span style={{ fontWeight: 600 }}>Responsable · Fecha límite:</span>{' '}
+                          <span className="font-semibold">Responsable · Fecha límite:</span>{' '}
                           {est?.owner_user_id
                             ? `${est.owner_nombre ?? 'Colaborador'}${fecha ? ` · ${formatFechaLimite(fecha)}` : ''}`
                             : 'Sin asignar'}
@@ -506,8 +505,7 @@ export function AccionesCorrectivas() {
                         {asig.puedeAsignar && item.estado !== 'cerrada' && (
                           <button
                             onClick={() => abrirAsignar(item)}
-                            className="h-8 px-3 rounded-lg text-xs text-primary border border-primary hover:bg-primary/5 transition-colors flex-shrink-0"
-                            style={{ fontWeight: 600 }}
+                            className="h-8 px-3 rounded-lg text-xs text-primary border border-primary hover:bg-primary/5 transition-colors flex-shrink-0 font-semibold"
                           >
                             {est?.owner_user_id ? 'Editar asignación' : 'Asignar'}
                           </button>
@@ -518,7 +516,7 @@ export function AccionesCorrectivas() {
                   {item.accion && (
                     <div className="mt-2 pt-2 border-t border-border flex items-center justify-between gap-2">
                       {item.accion.fotosSinSubir ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
                           {item.accion.fotosSinSubir} foto{item.accion.fotosSinSubir !== 1 ? 's' : ''} sin subir
                         </span>
                       ) : <span />}
@@ -555,10 +553,10 @@ export function AccionesCorrectivas() {
       <BottomSheet open={sheetAbierto} onClose={cerrarSheet} height="95%">
         <div className="flex items-start justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
           <div className="flex-1 min-w-0 pr-2">
-            <p className="text-xs text-muted-foreground mb-0.5" style={{ fontWeight: 600 }}>
+            <p className="text-xs text-muted-foreground mb-0.5 font-semibold">
               {selectedItem?.modulo_label} · {selectedItem?.codigo_pregunta}
             </p>
-            <h2 className="text-sm text-foreground leading-snug line-clamp-2" style={{ fontWeight: 600 }}>
+            <h2 className="text-sm text-foreground leading-snug line-clamp-2 font-semibold">
               {selectedItem?.texto_pregunta}
             </h2>
           </div>
@@ -566,14 +564,14 @@ export function AccionesCorrectivas() {
         <fieldset disabled={soloLectura} className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-w-0 border-0 m-0">
           {soloLectura && (
             <div className="rounded-xl p-3 bg-muted">
-              <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+              <p className="text-xs text-muted-foreground font-semibold">
                 Solo lectura: esta acción correctiva la edita su responsable asignado o el administrador.
               </p>
             </div>
           )}
           {!online && (
             <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
-              <p className="text-xs" style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}>
+              <p className="text-xs font-semibold" style={{ color: 'var(--agro-info-text)' }}>
                 {selectedItem?.accion?.id
                   ? 'Sin conexión: solo se guardan las fotos de evidencia. Cambiar el texto, el estado o cerrar la NC requiere internet.'
                   : 'Necesitas conexión para capturar esta acción correctiva.'}
@@ -583,16 +581,16 @@ export function AccionesCorrectivas() {
           {/* Contexto (no editable) */}
           <div className="rounded-xl p-3 bg-muted space-y-1">
             <p className="text-xs text-muted-foreground">
-              <span style={{ fontWeight: 600 }}>{terminosSitio.singular}:</span>{' '}
+              <span className="font-semibold">{terminosSitio.singular}:</span>{' '}
               {selectedItem?.rancho_nombre}
             </p>
             <p className="text-xs text-muted-foreground">
-              <span style={{ fontWeight: 600 }}>Fecha de auditoría:</span>{' '}
+              <span className="font-semibold">Fecha de auditoría:</span>{' '}
               {formatFecha(selectedItem?.fecha_auditoria)}
             </p>
             {selectedItem?.comentario_respuesta && (
               <p className="text-xs text-muted-foreground">
-                <span style={{ fontWeight: 600 }}>Comentario auditor:</span>{' '}
+                <span className="font-semibold">Comentario auditor:</span>{' '}
                 {selectedItem.comentario_respuesta}
               </p>
             )}
@@ -600,7 +598,7 @@ export function AccionesCorrectivas() {
 
           {/* Fecha detección */}
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground font-semibold">
               FECHA DE DETECCIÓN
             </label>
             <input
@@ -613,7 +611,7 @@ export function AccionesCorrectivas() {
 
           {/* No conformidad */}
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground font-semibold">
               NO CONFORMIDAD (incumplimiento observado)
             </label>
             <textarea
@@ -627,7 +625,7 @@ export function AccionesCorrectivas() {
 
           {/* Causa */}
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground font-semibold">
               CAUSA (¿por qué ocurrió?)
             </label>
             <textarea
@@ -641,7 +639,7 @@ export function AccionesCorrectivas() {
 
           {/* Acción correctiva */}
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground font-semibold">
               ACCIÓN CORRECTIVA (¿cómo se corrigió?)
             </label>
             <textarea
@@ -655,7 +653,7 @@ export function AccionesCorrectivas() {
 
           {/* Acción preventiva */}
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground font-semibold">
               ACCIÓN PREVENTIVA (¿cómo evitar que se repita?)
             </label>
             <textarea
@@ -669,7 +667,7 @@ export function AccionesCorrectivas() {
 
           {/* Fecha cumplimiento */}
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground font-semibold">
               FECHA DE CUMPLIMIENTO
             </label>
             <input
@@ -683,7 +681,7 @@ export function AccionesCorrectivas() {
           {/* Realizó / Verificó */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+              <label className="text-xs text-muted-foreground font-semibold">
                 REALIZÓ
               </label>
               <input
@@ -695,7 +693,7 @@ export function AccionesCorrectivas() {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+              <label className="text-xs text-muted-foreground font-semibold">
                 VERIFICÓ
               </label>
               <input
@@ -710,7 +708,7 @@ export function AccionesCorrectivas() {
 
           {/* Evidencia fotográfica */}
           <div className="space-y-3">
-            <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+            <p className="text-xs text-muted-foreground font-semibold">
               EVIDENCIA FOTOGRÁFICA (opcional)
             </p>
 
@@ -729,7 +727,7 @@ export function AccionesCorrectivas() {
                       className="w-14 h-14 object-cover rounded-lg flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                      <p className="text-xs text-muted-foreground font-semibold">
                         {fp.tipo === 'no_conformidad' ? 'No conformidad' : 'Evidencia de corrección'}
                       </p>
                       {fp.leyenda && <p className="text-xs truncate">{fp.leyenda}</p>}
@@ -753,7 +751,7 @@ export function AccionesCorrectivas() {
             {/* Controles agregar foto */}
             <div className="rounded-xl border border-border p-3 space-y-3">
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                <label className="text-xs text-muted-foreground font-semibold">
                   TIPO DE FOTO
                 </label>
                 <div className="flex gap-2">
@@ -766,12 +764,11 @@ export function AccionesCorrectivas() {
                     <button
                       key={val}
                       onClick={() => setTipoFotoNueva(val)}
-                      className="flex-1 h-9 rounded-lg text-xs"
+                      className="flex-1 h-9 rounded-lg text-xs font-semibold"
                       style={{
                         backgroundColor:
                           tipoFotoNueva === val ? 'var(--primary)' : 'var(--muted)',
                         color: tipoFotoNueva === val ? '#fff' : 'var(--muted-foreground)',
-                        fontWeight: 600,
                       }}
                     >
                       {lbl}
@@ -780,7 +777,7 @@ export function AccionesCorrectivas() {
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                <label className="text-xs text-muted-foreground font-semibold">
                   LEYENDA (opcional)
                 </label>
                 <input
@@ -836,8 +833,8 @@ export function AccionesCorrectivas() {
             <button
               onClick={() => handleGuardar(true)}
               disabled={guardando}
-              className="w-full h-11 rounded-3xl text-sm disabled:opacity-60 flex items-center justify-center gap-2 border-2"
-              style={{ borderColor: 'var(--agro-success-text)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+              className="w-full h-11 rounded-3xl text-sm disabled:opacity-60 flex items-center justify-center gap-2 border-2 font-semibold"
+              style={{ borderColor: 'var(--agro-success-text)', color: 'var(--agro-success-text)' }}
             >
               {guardando ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
               Guardar y cerrar NC
@@ -846,8 +843,8 @@ export function AccionesCorrectivas() {
           <button
             onClick={() => handleGuardar(false)}
             disabled={guardando}
-            className="w-full h-12 rounded-3xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+            className="w-full h-12 rounded-3xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2 font-semibold"
+            style={{ backgroundColor: 'var(--primary)' }}
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
             {online ? 'Guardar' : 'Guardar fotos sin conexión'}

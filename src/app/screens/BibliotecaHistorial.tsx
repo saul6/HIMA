@@ -1255,8 +1255,7 @@ export function BibliotecaHistorial() {
           <button
             onClick={handleExportarPaquete}
             disabled={generandoPaquete || !!descargandoPDF}
-            className="w-full min-h-10 py-2 px-3 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary text-sm hover:bg-primary/5 active:scale-[0.98] transition-[background-color,transform] duration-150 ease-out disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-            style={{ fontWeight: 600 }}
+            className="w-full min-h-10 py-2 px-3 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary text-sm hover:bg-primary/5 active:scale-[0.98] transition-[background-color,transform] duration-150 ease-out disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary font-semibold"
           >
             {generandoPaquete ? <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" /> : <Package className="w-4 h-4 flex-shrink-0" />}
             <span className="text-center leading-snug">
@@ -1372,8 +1371,8 @@ export function BibliotecaHistorial() {
                           </span>
                         </div>
                         <p
-                          className="text-body truncate"
-                          style={{ fontWeight: 600, overflowWrap: 'anywhere' }}
+                          className="text-body truncate font-semibold"
+                          style={{ overflowWrap: 'anywhere' }}
                           title={reg.rancho_nombre}
                         >
                           {reg.rancho_nombre}
@@ -1418,7 +1417,7 @@ export function BibliotecaHistorial() {
           <div className="bg-card rounded-2xl p-6 mx-4 w-full max-w-xs text-center space-y-4">
             <Loader2 className="w-8 h-8 animate-spin mx-auto" style={{ color: 'var(--primary)' }} />
             <div>
-              <p className="text-seccion" style={{ fontWeight: 600 }}>Generando paquete PDF</p>
+              <p className="text-seccion font-semibold">Generando paquete PDF</p>
               <p className="text-small mt-1" style={{ color: 'var(--muted-foreground)' }}>
                 {progresoActual} de {progresoTotal} registros
               </p>
@@ -1442,7 +1441,7 @@ export function BibliotecaHistorial() {
 
         <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
           <div className="flex items-center gap-2 min-w-0">
-            <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Módulos</h2>
+            <h2 className="text-base text-foreground font-semibold">Módulos</h2>
             <motion.span
               key={filtroModulos.size}
               initial={reducedMotion ? false : { scale: 0.7 }}
@@ -1458,16 +1457,16 @@ export function BibliotecaHistorial() {
             <button
               type="button"
               onClick={seleccionarTodosModulos}
-              className="text-xs"
-              style={{ color: 'var(--primary)', fontWeight: 600, opacity: todosSeleccionados ? 0.4 : 1 }}
+              className="text-xs font-semibold"
+              style={{ color: 'var(--primary)', opacity: todosSeleccionados ? 0.4 : 1 }}
             >
               Seleccionar todos
             </button>
             <button
               type="button"
               onClick={limpiarModulos}
-              className="text-xs"
-              style={{ color: 'var(--primary)', fontWeight: 600, opacity: filtroModulos.size === 0 ? 0.4 : 1 }}
+              className="text-xs font-semibold"
+              style={{ color: 'var(--primary)', opacity: filtroModulos.size === 0 ? 0.4 : 1 }}
             >
               Limpiar
             </button>

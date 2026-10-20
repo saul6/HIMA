@@ -410,7 +410,7 @@ function TabProductividad({
                                 <span style={{ color: 'var(--foreground)' }}>
                                   {mod ? mod.nombre : codigo}
                                 </span>
-                                <span className="tabular-nums" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+                                <span className="tabular-nums font-semibold" style={{ color: 'var(--primary)' }}>
                                   {(n as number).toLocaleString('es-MX')}
                                 </span>
                               </div>
@@ -1060,7 +1060,7 @@ function TabCampo({ datos }: { datos: MetCampo }) {
                 <EntradaEscalonada key={i} index={i} reducedMotion={reducedMotion} className="space-y-1">
                   <div className="flex items-center justify-between text-sm">
                     <span className="truncate" style={{ color: 'var(--foreground)' }}>{p.producto}</span>
-                    <span className="tabular-nums flex-shrink-0 ml-2 text-xs" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+                    <span className="tabular-nums flex-shrink-0 ml-2 text-xs font-semibold" style={{ color: 'var(--primary)' }}>
                       <AnimatedNumber value={p.aplicaciones} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />
                     </span>
                   </div>

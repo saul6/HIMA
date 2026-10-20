@@ -410,11 +410,11 @@ export function RegistroLimpiezaBanos() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    <span className="text-sm text-foreground font-semibold">
                       {meta?.rancho_nombre ?? '—'}
                     </span>
                     {meta?.banos_count && (
-                      <span className="text-caption px-2 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0" style={{ fontWeight: 600 }}>
+                      <span className="text-caption px-2 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0 font-semibold">
                         {meta.banos_count} {meta.banos_count === 1 ? 'baño' : 'baños'}
                       </span>
                     )}
@@ -446,12 +446,11 @@ export function RegistroLimpiezaBanos() {
                       {orgNombre && (
                         <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
                       )}
-                      <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                      <span className="text-sm text-foreground font-semibold">
                         {jornada.rancho_nombre}
                       </span>
                       <span
-                        className="text-caption px-2 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0"
-                        style={{ fontWeight: 600 }}
+                        className="text-caption px-2 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0 font-semibold"
                       >
                         {jornada.banos.length} {jornada.banos.length === 1 ? 'baño' : 'baños'}
                       </span>
@@ -499,8 +498,7 @@ export function RegistroLimpiezaBanos() {
                   {jornada.banos.map((b) => (
                     <div key={b.id} className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span
-                        className="w-16 text-foreground flex-shrink-0"
-                        style={{ fontWeight: 600 }}
+                        className="w-16 text-foreground flex-shrink-0 font-semibold"
                       >
                         Baño {b.bano_numero}
                       </span>
@@ -538,7 +536,7 @@ export function RegistroLimpiezaBanos() {
       {/* ── Bottom Sheet — Exportar consolidado ─────────────────────────────── */}
       <BottomSheet open={sheetConsAbierto} onClose={() => setSheetConsAbierto(false)}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-base text-foreground font-semibold">
                 Exportar consolidado
               </h2>
               <button aria-label="Cerrar" onClick={() => setSheetConsAbierto(false)} className="p-1">
@@ -548,7 +546,7 @@ export function RegistroLimpiezaBanos() {
 
             <div className="overflow-y-auto p-4 space-y-4">
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
@@ -567,7 +565,7 @@ export function RegistroLimpiezaBanos() {
               </div>
 
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   DESDE *
                 </label>
                 <input
@@ -581,7 +579,7 @@ export function RegistroLimpiezaBanos() {
               </div>
 
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   HASTA *
                 </label>
                 <input
@@ -600,8 +598,7 @@ export function RegistroLimpiezaBanos() {
               <button
                 onClick={handleGenerarConsolidado}
                 disabled={generandoCons}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-                style={{ fontWeight: 600 }}
+                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
               >
                 {generandoCons && <Loader2 className="w-4 h-4 animate-spin" />}
                 Generar PDF consolidado
@@ -612,7 +609,7 @@ export function RegistroLimpiezaBanos() {
       {/* ── Bottom Sheet — Formulario ────────────────────────────────────────── */}
       <BottomSheet open={sheetAbierto} onClose={handleCerrarSheet} height="85%">
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-base text-foreground font-semibold">
                 {sheetPaso === 'firma_decision' ? 'Firmar registro' : sheetPaso === 'firma_gate' ? 'Firma requerida' : 'Nueva limpieza de baños'}
               </h2>
               <button type="button" aria-label="Cerrar" onClick={handleCerrarSheet} className="p-3 -m-2">
@@ -650,7 +647,7 @@ export function RegistroLimpiezaBanos() {
 
               {/* Rancho */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
@@ -670,7 +667,7 @@ export function RegistroLimpiezaBanos() {
 
               {/* Fecha */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   FECHA *
                 </label>
                 <input
@@ -696,7 +693,7 @@ export function RegistroLimpiezaBanos() {
               {/* Lista de baños */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     BAÑOS
                   </label>
                   <span className="text-xs text-muted-foreground">{banos.length} baño(s)</span>
@@ -706,7 +703,7 @@ export function RegistroLimpiezaBanos() {
                   {banos.map((bano, idx) => (
                     <div key={idx} className="bg-muted rounded-xl p-3 space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                        <span className="text-sm text-foreground font-semibold">
                           Baño {idx + 1}
                         </span>
                         {banos.length > 1 && (
@@ -836,8 +833,7 @@ export function RegistroLimpiezaBanos() {
               <button
                 onClick={handleGuardar}
                 disabled={guardando || !!limiteInfo || hayLoteOfflineConflicto}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-                style={{ fontWeight: 600 }}
+                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
               >
                 {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                 {!online && !guardando && <WifiOff className="w-4 h-4" />}

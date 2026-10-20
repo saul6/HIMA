@@ -169,7 +169,7 @@ export function Perfil() {
         <div className="bg-card border border-border rounded-xl p-6">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-xl" style={{ fontWeight: 600 }}>{iniciales}</span>
+              <span className="text-white text-xl font-semibold">{iniciales}</span>
             </div>
 
             <div className="flex-1 min-w-0">
@@ -198,7 +198,7 @@ export function Perfil() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <h2 className="text-foreground truncate" style={{ fontWeight: 600 }}>{nombre}</h2>
+                  <h2 className="text-foreground truncate font-semibold">{nombre}</h2>
                   <button aria-label="Editar"
                     onClick={() => {
                       setNuevoNombre(profile?.nombre_completo ?? '')
@@ -228,7 +228,7 @@ export function Perfil() {
               <Building2 className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-foreground text-sm" style={{ fontWeight: 600 }}>
+              <p className="text-foreground text-sm font-semibold">
                 Mi organización
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -248,7 +248,7 @@ export function Perfil() {
                   <PenLine className="w-4 h-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Mi firma</p>
+                  <p className="text-sm text-foreground font-semibold">Mi firma</p>
                   <p className="text-xs text-muted-foreground">Para firma digital de registros</p>
                 </div>
               </div>
@@ -330,7 +330,7 @@ export function Perfil() {
         {/* Info de la app */}
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="text-center">
-            <div className="text-sm mb-1" style={{ fontWeight: 600 }}><MadyLogo theme={resolvedTheme} className="h-80 mx-auto" /></div>
+            <div className="text-sm mb-1 font-semibold"><MadyLogo theme={resolvedTheme} className="h-80 mx-auto" /></div>
             <div className="text-xs text-muted-foreground mb-1">
               Versión {__APP_VERSION__} · {fechaBuild}
             </div>
@@ -363,8 +363,7 @@ export function Perfil() {
         {/* Cerrar sesión */}
         <button
           onClick={handleCerrarSesion}
-          className="w-full h-14 bg-card border border-agro-red text-agro-red rounded-xl flex items-center justify-center gap-2 hover:bg-agro-danger-fill transition-colors"
-          style={{ fontWeight: 600 }}
+          className="w-full h-14 bg-card border border-agro-red text-agro-red rounded-xl flex items-center justify-center gap-2 hover:bg-agro-danger-fill transition-colors font-semibold"
         >
           <LogOut className="w-5 h-5" />
           Cerrar sesión

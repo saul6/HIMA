@@ -525,13 +525,13 @@ export function VerificacionCosecha() {
                   <div className="p-4">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <span
-                        className="text-xs px-2 py-0.5 rounded"
-                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+                        className="text-xs px-2 py-0.5 rounded font-semibold"
+                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                       >
                         {formatMesLabel((lote.metadatos as any)?.mes ?? '')}
                       </span>
                     </div>
-                    <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    <span className="text-sm text-foreground font-semibold">
                       {(lote.metadatos as any)?.rancho_nombre ?? '—'}
                     </span>
                     <div className="mt-2">
@@ -554,11 +554,10 @@ export function VerificacionCosecha() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <span
-                            className="text-xs px-2 py-0.5 rounded"
+                            className="text-xs px-2 py-0.5 rounded font-semibold"
                             style={{
                               backgroundColor: 'var(--agro-success-fill)',
                               color: 'var(--agro-success-text)',
-                              fontWeight: 600,
                             }}
                           >
                             {formatMesLabel(reg.mes)}
@@ -575,7 +574,7 @@ export function VerificacionCosecha() {
                             </span>
                           )}
                         </div>
-                        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                        <span className="text-sm text-foreground font-semibold">
                           {reg.rancho_nombre}
                         </span>
                         {reg.realizo && (
@@ -644,13 +643,13 @@ export function VerificacionCosecha() {
             className="border rounded-xl p-4 space-y-3"
             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
           >
-            <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+            <h2 className="text-sm text-foreground font-semibold">
               Datos del encabezado
             </h2>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                   Código
                 </label>
                 <input
@@ -666,7 +665,7 @@ export function VerificacionCosecha() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                   Cultivo
                 </label>
                 <input maxLength={limiteTexto('m69_registro', 'cultivo')}
@@ -684,7 +683,7 @@ export function VerificacionCosecha() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                 ¿Quién realizó?
               </label>
               <input maxLength={limiteTexto('m69_registro', 'realizo')}
@@ -701,7 +700,7 @@ export function VerificacionCosecha() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                 Observaciones
               </label>
               <TextareaContador limite={limiteTexto('m69_registro', 'observaciones')}
@@ -724,7 +723,7 @@ export function VerificacionCosecha() {
             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
           >
             <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
-              <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-sm text-foreground font-semibold">
                 Matriz de verificación
               </h2>
               <LeyendaMatriz />
@@ -771,10 +770,9 @@ export function VerificacionCosecha() {
                           borderRight: '1px solid var(--border)',
                           padding: '0 6px',
                           fontSize: 10,
-                          fontWeight: 600,
                           color: 'var(--muted-foreground)',
                           textAlign: 'left',
-                        }}
+                        }} className="font-semibold"
                       >
                         Ítem
                       </th>
@@ -791,10 +789,9 @@ export function VerificacionCosecha() {
                             backgroundColor: 'var(--background)',
                             borderBottom: '1px solid var(--border)',
                             fontSize: 9,
-                            fontWeight: 600,
                             color: 'var(--muted-foreground)',
                             textAlign: 'center',
-                          }}
+                          }} className="font-semibold"
                         >
                           {d}
                         </th>
@@ -932,7 +929,7 @@ export function VerificacionCosecha() {
       }} height="85%">
         <div className="pt-4 px-4 pb-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+            <h2 className="text-base text-foreground font-semibold">
               {sheetNuevoPaso === 'firma_decision' ? 'Firmar registro' : sheetNuevoPaso === 'firma_gate' ? 'Firma requerida' : 'Nuevo registro mensual'}
             </h2>
             <button aria-label="Cerrar" onClick={() => {
@@ -976,7 +973,7 @@ export function VerificacionCosecha() {
             <div className="space-y-4">
               {/* Rancho */}
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                   {termino} *
                 </label>
                 <select
@@ -1000,7 +997,7 @@ export function VerificacionCosecha() {
 
               {/* Mes */}
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                   Mes de registro *
                 </label>
                 <input
@@ -1014,7 +1011,7 @@ export function VerificacionCosecha() {
 
               {/* Código */}
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                   Código
                 </label>
                 <input
@@ -1029,7 +1026,7 @@ export function VerificacionCosecha() {
 
               {/* Cultivo */}
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                   Cultivo
                 </label>
                 <input maxLength={limiteTexto('m69_registro', 'cultivo')}
@@ -1044,7 +1041,7 @@ export function VerificacionCosecha() {
 
               {/* Realizó */}
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                   ¿Quién realizó?
                 </label>
                 <input maxLength={limiteTexto('m69_registro', 'realizo')}
@@ -1059,7 +1056,7 @@ export function VerificacionCosecha() {
 
               {/* Observaciones */}
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                   Observaciones
                 </label>
                 <TextareaContador limite={limiteTexto('m69_registro', 'observaciones')}
@@ -1108,7 +1105,7 @@ export function VerificacionCosecha() {
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="55%">
         <div className="px-4 pb-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+            <h2 className="text-base text-foreground font-semibold">
               Exportar consolidado
             </h2>
             <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}>
@@ -1118,7 +1115,7 @@ export function VerificacionCosecha() {
 
           <div className="space-y-4">
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                 {termino}
               </label>
               <select
@@ -1136,7 +1133,7 @@ export function VerificacionCosecha() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                   Desde
                 </label>
                 <input
@@ -1148,7 +1145,7 @@ export function VerificacionCosecha() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                   Hasta
                 </label>
                 <input

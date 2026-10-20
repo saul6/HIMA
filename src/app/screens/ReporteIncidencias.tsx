@@ -216,7 +216,7 @@ function IncidenciaForm({
   return (
     <div className="border border-border rounded-xl p-4 space-y-3 bg-card">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+        <span className="text-xs text-muted-foreground font-semibold">
           INCIDENCIA {index + 1}
         </span>
         <button
@@ -921,7 +921,7 @@ export function ReporteIncidencias() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                    <span className="text-sm text-foreground truncate font-semibold">
                       {meta?.rancho_nombre ?? '—'}
                     </span>
                     {meta?.incidencias_count && (
@@ -983,12 +983,11 @@ export function ReporteIncidencias() {
                         {orgNombre && (
                           <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
                         )}
-                        <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                        <span className="text-sm text-foreground truncate font-semibold">
                           {r.rancho_nombre}
                         </span>
                         <span
-                          className="text-caption px-2 py-0.5 rounded flex-shrink-0 bg-muted text-muted-foreground"
-                          style={{ fontWeight: 600 }}
+                          className="text-caption px-2 py-0.5 rounded flex-shrink-0 bg-muted text-muted-foreground font-semibold"
                         >
                           {r.incidencias.length} incidencia{r.incidencias.length !== 1 ? 's' : ''}
                         </span>
@@ -1039,7 +1038,7 @@ export function ReporteIncidencias() {
                     <div className="mt-3 space-y-3 border-t border-border pt-3">
                       {r.incidencias.map((inc, idx) => (
                         <div key={inc.id}>
-                          <p className="text-xs text-muted-foreground mb-1" style={{ fontWeight: 600 }}>
+                          <p className="text-xs text-muted-foreground mb-1 font-semibold">
                             Incidencia {idx + 1}
                           </p>
                           <p className="text-sm text-foreground">{inc.descripcion}</p>
@@ -1062,7 +1061,7 @@ export function ReporteIncidencias() {
       {/* Bottom Sheet — consolidado */}
       <BottomSheet open={sheetConsolidadoAbierto} onClose={() => !generandoConsolidado && setSheetConsolidadoAbierto(false)}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-base text-foreground font-semibold">
                 Exportar consolidado
               </h2>
               <button aria-label="Cerrar"
@@ -1076,7 +1075,7 @@ export function ReporteIncidencias() {
             <div className="overflow-y-auto p-4 space-y-4">
               {/* Rancho (opcional) */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   {terminosSitio.singular.toUpperCase()} (opcional — vacío = todos)
                 </label>
                 <select
@@ -1095,7 +1094,7 @@ export function ReporteIncidencias() {
 
               {/* Desde */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   DESDE *
                 </label>
                 <input
@@ -1110,7 +1109,7 @@ export function ReporteIncidencias() {
 
               {/* Hasta */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   HASTA *
                 </label>
                 <input
@@ -1135,8 +1134,7 @@ export function ReporteIncidencias() {
               <button
                 onClick={handleGenerarConsolidado}
                 disabled={generandoConsolidado}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-                style={{ fontWeight: 600 }}
+                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
               >
                 {generandoConsolidado && <Loader2 className="w-4 h-4 animate-spin" />}
                 {generandoConsolidado ? 'Generando...' : 'Generar PDF consolidado'}
@@ -1157,7 +1155,7 @@ export function ReporteIncidencias() {
             onClick={(e) => e.stopPropagation()}
           >
             <div>
-              <h3 className="text-base text-foreground mb-1" style={{ fontWeight: 600 }}>
+              <h3 className="text-base text-foreground mb-1 font-semibold">
                 Tienes un borrador guardado
               </h3>
               <p className="text-sm text-muted-foreground">
@@ -1167,8 +1165,7 @@ export function ReporteIncidencias() {
             <div className="flex flex-col gap-2">
               <button
                 onClick={handleContinuarBorrador}
-                className="w-full h-12 bg-primary text-white rounded-xl text-sm hover:bg-agro-blue transition-colors"
-                style={{ fontWeight: 600 }}
+                className="w-full h-12 bg-primary text-white rounded-xl text-sm hover:bg-agro-blue transition-colors font-semibold"
               >
                 Continuar borrador
               </button>
@@ -1190,7 +1187,7 @@ export function ReporteIncidencias() {
             {/* Header sheet */}
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <div className="flex flex-col">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                <h2 className="text-base text-foreground font-semibold">
                   {sheetPaso === 'firma_decision' ? 'Firmar reporte' : sheetPaso === 'firma_gate' ? 'Registra tu firma' : 'Nuevo reporte'}
                 </h2>
                 {sheetPaso === 'form' && estadoBorrador === 'guardado' && (
@@ -1230,7 +1227,7 @@ export function ReporteIncidencias() {
 
               {/* Sitio */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
@@ -1250,7 +1247,7 @@ export function ReporteIncidencias() {
 
               {/* Fecha */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   FECHA DEL RECORRIDO *
                 </label>
                 <input
@@ -1265,7 +1262,7 @@ export function ReporteIncidencias() {
 
               {/* Auditor */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   AUDITOR / QUIEN REALIZÓ EL RECORRIDO
                 </label>
                 <input maxLength={limiteTexto('m13_reportes', 'auditor_nombre')}
@@ -1281,10 +1278,10 @@ export function ReporteIncidencias() {
               <div>
                 {/* Header con contador de fotos */}
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     INCIDENCIAS *
                   </label>
-                  <span className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <span className="text-xs text-muted-foreground font-semibold">
                     {totalFotos} foto{totalFotos !== 1 ? 's' : ''} (máx. {MAX_FOTOS_INCIDENCIA} por incidencia)
                   </span>
                 </div>
@@ -1304,8 +1301,7 @@ export function ReporteIncidencias() {
                 <button
                   type="button"
                   onClick={agregarIncidencia}
-                  className="mt-3 w-full h-10 flex items-center justify-center gap-2 rounded-xl border border-dashed border-primary text-primary text-sm hover:bg-primary/5 transition-colors"
-                  style={{ fontWeight: 600 }}
+                  className="mt-3 w-full h-10 flex items-center justify-center gap-2 rounded-xl border border-dashed border-primary text-primary text-sm hover:bg-primary/5 transition-colors font-semibold"
                 >
                   <Plus className="w-4 h-4" />
                   Agregar incidencia
@@ -1324,7 +1320,7 @@ export function ReporteIncidencias() {
                         ? `Subiendo fotos...`
                         : 'Finalizando...'}
                     </span>
-                    <span style={{ fontWeight: 600 }}>
+                    <span className="font-semibold">
                       {progreso.procesadas} / {progreso.total}
                       {progreso.fallidas > 0 && (
                         <span style={{ color: 'var(--agro-info-text)' }}>
@@ -1345,8 +1341,7 @@ export function ReporteIncidencias() {
                 <button
                   onClick={handleGuardar}
                   disabled={guardando}
-                  className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-                  style={{ fontWeight: 600 }}
+                  className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
                 >
                   {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                   {!guardando && !online && <WifiOff className="w-4 h-4" />}

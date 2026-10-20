@@ -710,12 +710,12 @@ export function LimpiezaPreenfrio() {
               {lotesOffline.map((lote) => (
                 <div key={lote.id} className="bg-card rounded-xl border border-border p-4">
                   <div className="mb-1">
-                    <span className="text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>
+                    <span className="text-xs px-2 py-0.5 rounded font-semibold"
+                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
                       {formatMesLabel((lote.metadatos as any)?.anio ?? 0, (lote.metadatos as any)?.mes ?? 0)}
                     </span>
                   </div>
-                  <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                  <span className="text-sm text-foreground font-semibold">
                     {(lote.metadatos as any)?.rancho_nombre ?? '—'}
                   </span>
                   <div className="mt-2"><ChipOffline lote={lote} /></div>
@@ -730,12 +730,12 @@ export function LimpiezaPreenfrio() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <div className="mb-1">
-                          <span className="text-xs px-2 py-0.5 rounded"
-                            style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}>
+                          <span className="text-xs px-2 py-0.5 rounded font-semibold"
+                            style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}>
                             {formatMesLabel(reg.anio, reg.mes)}
                           </span>
                         </div>
-                        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</span>
+                        <span className="text-sm text-foreground font-semibold">{reg.rancho_nombre}</span>
                         {obligatoria && !firmas[reg.id]?.realizo && (
                           <Etiqueta tono="error" className="mt-1">
                             Pendiente de firma
@@ -792,7 +792,7 @@ export function LimpiezaPreenfrio() {
             <>
               {/* Selector de día */}
               <div className="bg-card border border-border rounded-xl p-3">
-                <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>Selecciona el día</p>
+                <p className="text-xs text-muted-foreground mb-2 font-semibold">Selecciona el día</p>
                 <div className="overflow-x-auto pb-1" style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
                   <div className="flex gap-1.5" style={{ minWidth: 'max-content' }}>
                     {days.map((d) => {
@@ -827,7 +827,7 @@ export function LimpiezaPreenfrio() {
               {/* Actividades del día seleccionado */}
               {activeItems.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm text-foreground px-1" style={{ fontWeight: 600 }}>
+                  <p className="text-sm text-foreground px-1 font-semibold">
                     Actividades · Día {diaSeleccionado}
                   </p>
                   {activeItems.map((item) => {
@@ -848,14 +848,14 @@ export function LimpiezaPreenfrio() {
                             <Bug className="w-3.5 h-3.5 flex-shrink-0 mt-0.5"
                               style={{ color: v === 'hecho' ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }} />
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs text-foreground leading-tight" style={{ fontWeight: 600 }}>
+                              <p className="text-xs text-foreground leading-tight font-semibold">
                                 {item.nombre}
                               </p>
                               <p className="text-xs text-muted-foreground mt-0.5">
                                 {frecuenciaLabel(item.frecuencia)}
                               </p>
                               {tieneIncidencia && (
-                                <p className="text-xs mt-1" style={{ color: 'var(--agro-danger-text)', fontWeight: 600 }}>
+                                <p className="text-xs mt-1 font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
                                   Incidencia M13 registrada
                                 </p>
                               )}
@@ -908,7 +908,7 @@ export function LimpiezaPreenfrio() {
                       <div key={item.id} className="bg-card border border-border rounded-xl p-3">
                         <div className="flex items-start gap-2 mb-2.5">
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs text-foreground leading-tight" style={{ fontWeight: 600 }}>
+                            <p className="text-xs text-foreground leading-tight font-semibold">
                               {item.nombre}
                             </p>
                             <p className="text-xs text-muted-foreground mt-0.5">
@@ -956,12 +956,12 @@ export function LimpiezaPreenfrio() {
 
               {/* Desinfección del día */}
               <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-                <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                <p className="text-sm text-foreground font-semibold">
                   Desinfección · Día {diaSeleccionado}
                 </p>
                 <div className="flex gap-3">
                   <div className="flex-1 space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Conc. Cloro (ppm)</label>
+                    <label className="text-xs text-muted-foreground font-semibold">Conc. Cloro (ppm)</label>
                     <input
                       type="number"
                       value={diaConcCloro}
@@ -971,7 +971,7 @@ export function LimpiezaPreenfrio() {
                     />
                   </div>
                   <div className="flex-1 space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Ajuste Cloro</label>
+                    <label className="text-xs text-muted-foreground font-semibold">Ajuste Cloro</label>
                     <input
                       type="number"
                       value={diaAjCloro}
@@ -983,7 +983,7 @@ export function LimpiezaPreenfrio() {
                 </div>
                 <div className="flex gap-3">
                   <div className="flex-1 space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Conc. Ác. Peracético (ppm)</label>
+                    <label className="text-xs text-muted-foreground font-semibold">Conc. Ác. Peracético (ppm)</label>
                     <input
                       type="number"
                       value={diaConcAcido}
@@ -993,7 +993,7 @@ export function LimpiezaPreenfrio() {
                     />
                   </div>
                   <div className="flex-1 space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Ajuste Ác. Peracético</label>
+                    <label className="text-xs text-muted-foreground font-semibold">Ajuste Ác. Peracético</label>
                     <input
                       type="number"
                       value={diaAjAcido}
@@ -1005,7 +1005,7 @@ export function LimpiezaPreenfrio() {
                 </div>
                 <div className="flex gap-3">
                   <div className="flex-1 space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Realizó</label>
+                    <label className="text-xs text-muted-foreground font-semibold">Realizó</label>
                     <input maxLength={limiteTexto('m34_dias', 'realizo')}
                       type="text"
                       value={diaRealizo}
@@ -1015,7 +1015,7 @@ export function LimpiezaPreenfrio() {
                     />
                   </div>
                   <div className="flex-1 space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Aprobó</label>
+                    <label className="text-xs text-muted-foreground font-semibold">Aprobó</label>
                     <input maxLength={limiteTexto('m34_dias', 'aprobo')}
                       type="text"
                       value={diaAprobo}
@@ -1038,7 +1038,7 @@ export function LimpiezaPreenfrio() {
                     onClick={() => setMostrarResumen((v) => !v)}
                     className="w-full flex items-center justify-between px-4 py-3"
                   >
-                    <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>Resumen mensual</span>
+                    <span className="text-sm text-foreground font-semibold">Resumen mensual</span>
                     {mostrarResumen
                       ? <ChevronUp className="w-4 h-4 text-muted-foreground" />
                       : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
@@ -1050,27 +1050,25 @@ export function LimpiezaPreenfrio() {
                           <p className="flex-1 text-xs text-foreground truncate">{item.nombre}</p>
                           <div className="flex items-center gap-1.5 flex-shrink-0">
                             {hecho > 0 && (
-                              <span className="text-xs px-1.5 py-0.5 rounded"
+                              <span className="text-xs px-1.5 py-0.5 rounded font-semibold"
                                 style={{
                                   backgroundColor: item.es_inspeccion_plaga ? 'var(--agro-danger-fill)' : 'var(--agro-success-fill)',
                                   color: item.es_inspeccion_plaga ? 'var(--agro-danger-text)' : 'var(--agro-success-text)',
-                                  fontWeight: 600,
                                 }}>
                                 {item.es_inspeccion_plaga ? `${hecho} plaga` : `${hecho} ✓`}
                               </span>
                             )}
                             {noHecho > 0 && (
-                              <span className="text-xs px-1.5 py-0.5 rounded"
-                                style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', fontWeight: 600 }}>
+                              <span className="text-xs px-1.5 py-0.5 rounded font-semibold"
+                                style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
                                 {noHecho} ✗
                               </span>
                             )}
                             {na > 0 && (
-                              <span className="text-xs px-1.5 py-0.5 rounded"
+                              <span className="text-xs px-1.5 py-0.5 rounded font-semibold"
                                 style={{
                                   backgroundColor: item.es_inspeccion_plaga ? 'var(--agro-success-fill)' : 'var(--muted)',
                                   color: item.es_inspeccion_plaga ? 'var(--agro-success-text)' : 'var(--muted-foreground)',
-                                  fontWeight: 600,
                                 }}>
                                 {item.es_inspeccion_plaga ? `${na} sin plaga` : `${na} N/A`}
                               </span>
@@ -1088,7 +1086,7 @@ export function LimpiezaPreenfrio() {
 
               {/* Observaciones del mes */}
               <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-                <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Observaciones del mes</h2>
+                <h2 className="text-sm text-foreground font-semibold">Observaciones del mes</h2>
                 <TextareaContador limite={limiteTexto('m34_registro_mensual', 'observaciones')}
                   value={obsLocal}
                   onChange={(e) => setObsLocal(e.target.value)}
@@ -1121,7 +1119,7 @@ export function LimpiezaPreenfrio() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Bug className="w-4 h-4" style={{ color: 'var(--agro-danger-text)' }} />
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Hallazgo de plaga</h2>
+              <h2 className="text-base text-foreground font-semibold">Hallazgo de plaga</h2>
             </div>
             <button aria-label="Cerrar" type="button" onClick={() => { if (!plagaSaving) setPlagaSheet(false) }}>
               <X className="w-5 h-5 text-muted-foreground" />
@@ -1136,7 +1134,7 @@ export function LimpiezaPreenfrio() {
               </p>
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+              <label className="text-xs text-muted-foreground font-semibold">
                 Descripción del hallazgo *
               </label>
               <TextareaContador limite={limiteTexto('m13_incidencias', 'descripcion')}
@@ -1152,8 +1150,8 @@ export function LimpiezaPreenfrio() {
               type="button"
               onClick={handleConfirmarPlaga}
               disabled={plagaSaving || !plagaDescripcion.trim()}
-              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-              style={{ backgroundColor: 'var(--agro-red)', fontWeight: 600 }}
+              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2 font-semibold"
+              style={{ backgroundColor: 'var(--agro-red)' }}
             >
               {plagaSaving ? <><Loader2 className="w-4 h-4 animate-spin" />Registrando…</> : 'Registrar hallazgo'}
             </button>
@@ -1193,7 +1191,7 @@ export function LimpiezaPreenfrio() {
           <div className="px-4 pb-4 pt-4">
             <div className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{termino} *</label>
+                <label className="text-xs text-muted-foreground font-semibold">{termino} *</label>
                 <select
                   value={nRanchoId}
                   onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
@@ -1207,7 +1205,7 @@ export function LimpiezaPreenfrio() {
               </div>
               <div className="flex gap-3">
                 <div className="flex-1 space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Año *</label>
+                  <label className="text-xs text-muted-foreground font-semibold">Año *</label>
                   <select
                     value={nAnio}
                     onChange={(e) => setNAnio(Number(e.target.value))}
@@ -1217,7 +1215,7 @@ export function LimpiezaPreenfrio() {
                   </select>
                 </div>
                 <div className="flex-1 space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Mes *</label>
+                  <label className="text-xs text-muted-foreground font-semibold">Mes *</label>
                   <select
                     value={nMes}
                     onChange={(e) => setNMes(Number(e.target.value))}
@@ -1239,12 +1237,12 @@ export function LimpiezaPreenfrio() {
       <BottomSheet open={sheetConfigurar} onClose={() => setSheetConfigurar(false)} height="85%">
         <div className="pt-4 px-4 pb-4 overflow-y-auto h-full">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Configurar ítems</h2>
+            <h2 className="text-base text-foreground font-semibold">Configurar ítems</h2>
             <button aria-label="Cerrar" type="button" onClick={() => setSheetConfigurar(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
           </div>
           <div className="space-y-4">
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{termino}</label>
+              <label className="text-xs text-muted-foreground font-semibold">{termino}</label>
               <select
                 value={catRanchoId}
                 onChange={(e) => setCatRanchoId(e.target.value)}
@@ -1279,11 +1277,10 @@ export function LimpiezaPreenfrio() {
                           type="button"
                           onClick={() => handleToggleActivo(item)}
                           disabled={catToggling === item.id}
-                          className="flex-shrink-0 w-16 h-6 rounded-full text-xs transition-colors disabled:opacity-60"
+                          className="flex-shrink-0 w-16 h-6 rounded-full text-xs transition-colors disabled:opacity-60 font-semibold"
                           style={{
                             backgroundColor: item.activo ? 'var(--primary)' : 'var(--switch-background)',
                             color: item.activo ? '#fff' : 'var(--muted-foreground)',
-                            fontWeight: 600,
                           }}
                         >
                           {catToggling === item.id ? '…' : item.activo ? 'Activo' : 'Inactivo'}
@@ -1298,7 +1295,7 @@ export function LimpiezaPreenfrio() {
                 )}
 
                 <div className="bg-card border border-border rounded-xl p-3 space-y-3">
-                  <p className="text-xs text-foreground" style={{ fontWeight: 600 }}>Agregar ítem personalizado</p>
+                  <p className="text-xs text-foreground font-semibold">Agregar ítem personalizado</p>
                   <div className="space-y-1">
                     <label className="text-xs text-muted-foreground">Nombre de actividad</label>
                     <input maxLength={limiteTexto('m34_items', 'nombre')}

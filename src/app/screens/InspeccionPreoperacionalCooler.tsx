@@ -157,8 +157,8 @@ function ToggleItemM19({
         <button
           type="button"
           onClick={() => onChange(siguienteValor(valor))}
-          className="flex-shrink-0 w-16 h-7 rounded-full text-xs transition-colors"
-          style={{ fontWeight: 600, backgroundColor: bgColor, color: textColor }}
+          className="flex-shrink-0 w-16 h-7 rounded-full text-xs transition-colors font-semibold"
+          style={{ backgroundColor: bgColor, color: textColor }}
         >
           {displayLabel}
         </button>
@@ -205,38 +205,35 @@ function DiaCardM19({ dia }: { dia: M19DiaConResultados }) {
     <div className="bg-card border border-border rounded-xl p-4">
       <div className="flex items-center gap-2 mb-2">
         <CalendarDays className="w-4 h-4 text-primary flex-shrink-0" />
-        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+        <span className="text-sm text-foreground font-semibold">
           {formatFechaCorta(dia.fecha)}
         </span>
       </div>
       <div className="flex gap-2 flex-wrap">
         <span
-          className="text-xs px-2 py-0.5 rounded"
+          className="text-xs px-2 py-0.5 rounded font-semibold"
           style={{
             backgroundColor: 'var(--agro-success-fill)',
             color: 'var(--agro-success-text)',
-            fontWeight: 600,
           }}
         >
           {numSI} Si
         </span>
         <span
-          className="text-xs px-2 py-0.5 rounded"
+          className="text-xs px-2 py-0.5 rounded font-semibold"
           style={{
             backgroundColor: numNO > 0 ? 'var(--agro-danger-fill)' : 'var(--muted)',
             color: numNO > 0 ? 'var(--agro-danger-text)' : 'var(--muted-foreground)',
-            fontWeight: 600,
           }}
         >
           {numNO} No
         </span>
         {numNA > 0 && (
           <span
-            className="text-xs px-2 py-0.5 rounded"
+            className="text-xs px-2 py-0.5 rounded font-semibold"
             style={{
               backgroundColor: 'var(--muted)',
               color: 'var(--muted-foreground)',
-              fontWeight: 600,
             }}
           >
             {numNA} N/A
@@ -244,11 +241,10 @@ function DiaCardM19({ dia }: { dia: M19DiaConResultados }) {
         )}
         {numInc > 0 && (
           <span
-            className="text-xs px-2 py-0.5 rounded"
+            className="text-xs px-2 py-0.5 rounded font-semibold"
             style={{
               backgroundColor: 'var(--agro-danger-fill)',
               color: 'var(--agro-danger-text)',
-              fontWeight: 600,
             }}
           >
             {numInc} incidencia{numInc !== 1 ? 's' : ''} M13
@@ -772,12 +768,12 @@ export function InspeccionPreoperacionalCooler() {
               {lotesOffline.map((lote) => (
                 <div key={lote.id} className="bg-card rounded-xl border border-border p-4">
                   <div className="mb-1">
-                    <span className="text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>
+                    <span className="text-xs px-2 py-0.5 rounded font-semibold"
+                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
                       {formatMesLabel((lote.metadatos as any)?.mes + '-01')}
                     </span>
                   </div>
-                  <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                  <span className="text-sm text-foreground font-semibold">
                     {(lote.metadatos as any)?.rancho_nombre ?? '—'}
                   </span>
                   <div className="mt-2"><ChipOffline lote={lote} /></div>
@@ -793,11 +789,10 @@ export function InspeccionPreoperacionalCooler() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <span
-                          className="text-xs px-2 py-0.5 rounded"
+                          className="text-xs px-2 py-0.5 rounded font-semibold"
                           style={{
                             backgroundColor: 'var(--agro-success-fill)',
                             color: 'var(--agro-success-text)',
-                            fontWeight: 600,
                           }}
                         >
                           {formatMesLabel(reg.mes)}
@@ -807,7 +802,7 @@ export function InspeccionPreoperacionalCooler() {
                         {orgNombre && (
                           <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
                         )}
-                        <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                        <span className="text-sm text-foreground truncate font-semibold">
                           {reg.rancho_nombre}
                         </span>
                       </div>
@@ -872,7 +867,7 @@ export function InspeccionPreoperacionalCooler() {
           )}
 
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-            <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+            <h2 className="text-sm text-foreground font-semibold">
               Observaciones del mes
             </h2>
             <TextareaContador limite={limiteTexto('m19_registro_mensual', 'observaciones')}
@@ -888,7 +883,7 @@ export function InspeccionPreoperacionalCooler() {
           </div>
 
           <div>
-            <h2 className="text-sm text-foreground mb-3" style={{ fontWeight: 600 }}>
+            <h2 className="text-sm text-foreground mb-3 font-semibold">
               Días de inspección
             </h2>
             {loadingDias ? (
@@ -931,7 +926,7 @@ export function InspeccionPreoperacionalCooler() {
       <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
             <div className="pt-4 px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                <h2 className="text-base text-foreground font-semibold">
                   Nuevo registro mensual
                 </h2>
                 <button aria-label="Cerrar" onClick={() => setSheetNuevo(false)}>
@@ -942,7 +937,7 @@ export function InspeccionPreoperacionalCooler() {
               <div className="space-y-4">
                 {/* Instalación */}
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     {termino} *
                   </label>
                   <select
@@ -963,7 +958,7 @@ export function InspeccionPreoperacionalCooler() {
 
                 {/* Mes */}
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     Mes de registro *
                   </label>
                   <input
@@ -976,7 +971,7 @@ export function InspeccionPreoperacionalCooler() {
 
                 {/* Realizó */}
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     Realizó la inspección
                   </label>
                   <input
@@ -1012,7 +1007,7 @@ export function InspeccionPreoperacionalCooler() {
 
             <div className="pt-4 px-4 pb-2 flex-shrink-0">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                <h2 className="text-base text-foreground font-semibold">
                   {sheetDiaPaso === 'firma_decision' ? 'Firmar registro' : sheetDiaPaso === 'firma_gate' ? 'Firma requerida' : 'Agregar día de inspección'}
                 </h2>
                 <button aria-label="Cerrar" onClick={handleCerrarSheetDia}>
@@ -1041,14 +1036,14 @@ export function InspeccionPreoperacionalCooler() {
                 <div className="px-4 pb-2 flex-shrink-0">
                   {/* Leyenda de estados */}
                   <div className="flex gap-2 mb-3 flex-wrap">
-                    <span className="text-xs px-2 py-0.5 rounded text-white" style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}>Si = cumple</span>
-                    <span className="text-xs px-2 py-0.5 rounded text-white" style={{ backgroundColor: 'var(--agro-red)', fontWeight: 600 }}>No = no cumple</span>
-                    <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--switch-background)', color: 'var(--muted-foreground)', fontWeight: 600 }}>N/A = no laboró</span>
+                    <span className="text-xs px-2 py-0.5 rounded text-white font-semibold" style={{ backgroundColor: 'var(--primary)' }}>Si = cumple</span>
+                    <span className="text-xs px-2 py-0.5 rounded text-white font-semibold" style={{ backgroundColor: 'var(--agro-red)' }}>No = no cumple</span>
+                    <span className="text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: 'var(--switch-background)', color: 'var(--muted-foreground)' }}>N/A = no laboró</span>
                   </div>
 
                   {/* Fecha */}
                   <div className="space-y-1 mb-4">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                    <label className="text-xs text-muted-foreground font-semibold">
                       Fecha de inspección *
                     </label>
                     <input
@@ -1092,8 +1087,8 @@ export function InspeccionPreoperacionalCooler() {
                     {seccionesAgrupadas.map((sec) => (
                       <div key={sec.label} className="mb-4">
                         <div
-                          className="text-xs px-3 py-2 rounded-lg mb-1"
-                          style={{ backgroundColor: 'var(--primary)', color: '#fff', fontWeight: 600 }}
+                          className="text-xs px-3 py-2 rounded-lg mb-1 font-semibold"
+                          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
                         >
                           {sec.label}
                         </div>
@@ -1134,7 +1129,7 @@ export function InspeccionPreoperacionalCooler() {
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="55%">
             <div className="pt-4 px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                <h2 className="text-base text-foreground font-semibold">
                   Exportar consolidado
                 </h2>
                 <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}>
@@ -1145,7 +1140,7 @@ export function InspeccionPreoperacionalCooler() {
               <div className="space-y-4">
                 {/* Instalación */}
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     {termino} *
                   </label>
                   <select
@@ -1166,7 +1161,7 @@ export function InspeccionPreoperacionalCooler() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Desde</label>
+                    <label className="text-xs text-muted-foreground font-semibold">Desde</label>
                     <input
                       type="month"
                       value={cDesde}
@@ -1175,7 +1170,7 @@ export function InspeccionPreoperacionalCooler() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Hasta</label>
+                    <label className="text-xs text-muted-foreground font-semibold">Hasta</label>
                     <input
                       type="month"
                       value={cHasta}

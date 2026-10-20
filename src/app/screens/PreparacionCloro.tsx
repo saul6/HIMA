@@ -298,8 +298,7 @@ export function PreparacionCloro() {
       <div className="px-4 pt-3">
         <button
           onClick={() => setRefTablaAbierta((p) => !p)}
-          className="w-full flex items-center justify-between px-4 py-3 bg-muted rounded-xl text-sm text-foreground"
-          style={{ fontWeight: 600 }}
+          className="w-full flex items-center justify-between px-4 py-3 bg-muted rounded-xl text-sm text-foreground font-semibold"
         >
           <span>Tabla de referencia (200 ppm)</span>
           {refTablaAbierta
@@ -309,8 +308,8 @@ export function PreparacionCloro() {
         {refTablaAbierta && (
           <div className="mt-1 rounded-xl border border-border overflow-hidden">
             <div className="grid grid-cols-2 px-4 py-2 bg-primary">
-              <span className="text-xs text-white" style={{ fontWeight: 600 }}>Litros de agua</span>
-              <span className="text-xs text-white" style={{ fontWeight: 600 }}>mL de cloro</span>
+              <span className="text-xs text-white font-semibold">Litros de agua</span>
+              <span className="text-xs text-white font-semibold">mL de cloro</span>
             </div>
             <div className="max-h-64 overflow-y-auto divide-y divide-border">
               {tablaReferencia.map(({ litros, ml }, i) => (
@@ -319,7 +318,7 @@ export function PreparacionCloro() {
                   className={`grid grid-cols-2 px-4 py-1.5 ${i % 2 === 0 ? 'bg-card' : 'bg-muted/40'}`}
                 >
                   <span className="text-sm text-foreground">{litros} L</span>
-                  <span className="text-sm text-primary" style={{ fontWeight: 600 }}>{ml} mL</span>
+                  <span className="text-sm text-primary font-semibold">{ml} mL</span>
                 </div>
               ))}
             </div>
@@ -342,7 +341,7 @@ export function PreparacionCloro() {
             <div key={lote.id} className="bg-card border border-border rounded-xl p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                  <p className="text-sm text-foreground font-semibold">
                     {lote.descripcion}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
@@ -363,7 +362,7 @@ export function PreparacionCloro() {
                         {orgNombre} ·
                       </span>
                     )}
-                    <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    <span className="text-sm text-foreground font-semibold">
                       {prep.rancho_nombre}
                     </span>
                   </div>
@@ -385,9 +384,8 @@ export function PreparacionCloro() {
               {/* Chips */}
               <div className="flex flex-wrap gap-2 mt-2">
                 <span
-                  className="text-caption px-2.5 py-1 rounded-lg"
+                  className="text-caption px-2.5 py-1 rounded-lg font-semibold"
                   style={{
-                    fontWeight: 600,
                     backgroundColor: 'var(--agro-success-fill)',
                     color: 'var(--agro-success-text)',
                   }}
@@ -395,8 +393,7 @@ export function PreparacionCloro() {
                   {prep.litros_agua} L agua
                 </span>
                 <span
-                  className="text-caption px-2.5 py-1 rounded-lg bg-primary text-white"
-                  style={{ fontWeight: 600 }}
+                  className="text-caption px-2.5 py-1 rounded-lg bg-primary text-white font-semibold"
                 >
                   {prep.ml_cloro} mL cloro
                 </span>
@@ -438,7 +435,7 @@ export function PreparacionCloro() {
       {/* ── Bottom Sheet — Consolidado ───────────────────────────────────────── */}
       <BottomSheet open={sheetConsAbierto} onClose={() => setSheetConsAbierto(false)}>
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+          <h2 className="text-base text-foreground font-semibold">
             Exportar consolidado
           </h2>
           <button aria-label="Cerrar" onClick={() => setSheetConsAbierto(false)} className="p-1">
@@ -447,7 +444,7 @@ export function PreparacionCloro() {
         </div>
         <div className="overflow-y-auto p-4 space-y-4">
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
               {terminosSitio.singular.toUpperCase()} *
             </label>
             <select
@@ -469,7 +466,7 @@ export function PreparacionCloro() {
             )}
           </div>
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
               DESDE *
             </label>
             <input
@@ -482,7 +479,7 @@ export function PreparacionCloro() {
             />
           </div>
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
               HASTA *
             </label>
             <input
@@ -504,8 +501,7 @@ export function PreparacionCloro() {
           <button
             onClick={handleGenerarConsolidado}
             disabled={generandoCons}
-            className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-            style={{ fontWeight: 600 }}
+            className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
           >
             {generandoCons && <Loader2 className="w-4 h-4 animate-spin" />}
             Generar PDF consolidado
@@ -532,7 +528,7 @@ export function PreparacionCloro() {
         )}
         {sheetPaso === 'form' && (<>
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+          <h2 className="text-base text-foreground font-semibold">
             Nueva preparación de cloro
           </h2>
           <button type="button" aria-label="Cerrar" onClick={handleCerrarSheet} className="p-3 -m-2">
@@ -544,7 +540,7 @@ export function PreparacionCloro() {
 
           {/* Rancho */}
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
               {terminosSitio.singular.toUpperCase()} *
             </label>
             <select
@@ -568,7 +564,7 @@ export function PreparacionCloro() {
 
           {/* Fecha */}
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
               FECHA *
             </label>
             <input
@@ -583,7 +579,7 @@ export function PreparacionCloro() {
 
           {/* Área */}
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
               ÁREA / PUNTO DE APLICACIÓN *
             </label>
             <input maxLength={limiteTexto('m27_preparaciones', 'area')}
@@ -604,7 +600,7 @@ export function PreparacionCloro() {
 
           {/* Litros de agua */}
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
               LITROS DE AGUA *
             </label>
             <input
@@ -636,9 +632,8 @@ export function PreparacionCloro() {
           >
             <div>
               <p
-                className="text-xs"
+                className="text-xs font-semibold"
                 style={{
-                  fontWeight: 600,
                   color: mlCloroCalc !== null ? 'var(--agro-success-text)' : 'var(--muted-foreground)',
                 }}
               >
@@ -661,7 +656,7 @@ export function PreparacionCloro() {
 
           {/* Responsable */}
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
               RESPONSABLE
             </label>
             <input maxLength={limiteTexto('m27_preparaciones', 'responsable')}
@@ -675,7 +670,7 @@ export function PreparacionCloro() {
 
           {/* Observaciones */}
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
               OBSERVACIONES
             </label>
             <TextareaContador limite={limiteTexto('m27_preparaciones', 'observaciones')}
@@ -693,8 +688,7 @@ export function PreparacionCloro() {
           <button
             onClick={handleGuardar}
             disabled={guardando}
-            className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-            style={{ fontWeight: 600 }}
+            className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
           >
             {guardando
               ? <Loader2 className="w-4 h-4 animate-spin" />

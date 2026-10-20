@@ -136,8 +136,8 @@ function ToggleInsumo({
         <button
           type="button"
           onClick={() => onChange(siguienteValor(valor))}
-          className="flex-shrink-0 w-16 h-7 rounded-full text-xs transition-colors"
-          style={{ fontWeight: 600, backgroundColor: bgColor, color: textColor }}
+          className="flex-shrink-0 w-16 h-7 rounded-full text-xs transition-colors font-semibold"
+          style={{ backgroundColor: bgColor, color: textColor }}
         >
           {displayLabel}
         </button>
@@ -183,24 +183,24 @@ function DiaCardM23({ dia }: { dia: M23DiaConResultados }) {
     <div className="bg-card border border-border rounded-xl p-4">
       <div className="flex items-center gap-2 mb-2">
         <CalendarDays className="w-4 h-4 text-primary flex-shrink-0" />
-        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+        <span className="text-sm text-foreground font-semibold">
           {formatFechaCorta(dia.fecha)}
         </span>
       </div>
       <div className="flex gap-2 flex-wrap">
-        <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}>
+        <span className="text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}>
           {numSI} Si
         </span>
-        <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: numNO > 0 ? 'var(--agro-danger-fill)' : 'var(--muted)', color: numNO > 0 ? 'var(--agro-danger-text)' : 'var(--muted-foreground)', fontWeight: 600 }}>
+        <span className="text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: numNO > 0 ? 'var(--agro-danger-fill)' : 'var(--muted)', color: numNO > 0 ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }}>
           {numNO} No
         </span>
         {numNA > 0 && (
-          <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', fontWeight: 600 }}>
+          <span className="text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
             {numNA} N/A
           </span>
         )}
         {numInc > 0 && (
-          <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', fontWeight: 600 }}>
+          <span className="text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
             {numInc} incidencia{numInc !== 1 ? 's' : ''} M13
           </span>
         )}
@@ -786,12 +786,12 @@ export function VerificacionInsumos() {
               {lotesOffline.map((lote) => (
                 <div key={lote.id} className="bg-card rounded-xl border border-border p-4">
                   <div className="mb-1">
-                    <span className="text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>
+                    <span className="text-xs px-2 py-0.5 rounded font-semibold"
+                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
                       {formatMesLabel((lote.metadatos as any)?.mes + '-01')}
                     </span>
                   </div>
-                  <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                  <span className="text-sm text-foreground font-semibold">
                     {(lote.metadatos as any)?.rancho_nombre ?? '—'}
                   </span>
                   <div className="mt-2"><ChipOffline lote={lote} /></div>
@@ -806,7 +806,7 @@ export function VerificacionInsumos() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}>
+                        <span className="text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}>
                           {formatMesLabel(reg.mes)}
                         </span>
                       </div>
@@ -814,7 +814,7 @@ export function VerificacionInsumos() {
                         {orgNombre && (
                           <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
                         )}
-                        <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</span>
+                        <span className="text-sm text-foreground truncate font-semibold">{reg.rancho_nombre}</span>
                       </div>
                       {reg.verifico_nombre && (
                         <div className="text-xs text-muted-foreground mt-0.5">Verificó: {reg.verifico_nombre}</div>
@@ -865,7 +865,7 @@ export function VerificacionInsumos() {
           )}
 
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-            <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Observaciones del mes</h2>
+            <h2 className="text-sm text-foreground font-semibold">Observaciones del mes</h2>
             <TextareaContador limite={limiteTexto('m23_registro_mensual', 'observaciones')}
               value={obsLocal}
               onChange={(e) => setObsLocal(e.target.value)}
@@ -879,7 +879,7 @@ export function VerificacionInsumos() {
           </div>
 
           <div>
-            <h2 className="text-sm text-foreground mb-3" style={{ fontWeight: 600 }}>Días de verificación</h2>
+            <h2 className="text-sm text-foreground mb-3 font-semibold">Días de verificación</h2>
             {loadingDias ? (
               <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 text-primary animate-spin" /></div>
             ) : dias.length === 0 ? (
@@ -913,13 +913,13 @@ export function VerificacionInsumos() {
       <BottomSheet open={sheetNuevo} onClose={() => setSheetNuevo(false)} height="85%">
             <div className="pt-4 px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nuevo registro mensual</h2>
+                <h2 className="text-base text-foreground font-semibold">Nuevo registro mensual</h2>
                 <button aria-label="Cerrar" onClick={() => setSheetNuevo(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
               </div>
               <div className="space-y-4">
 
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{termino} *</label>
+                  <label className="text-xs text-muted-foreground font-semibold">{termino} *</label>
                   <select
                     value={nRanchoId}
                     onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
@@ -932,18 +932,18 @@ export function VerificacionInsumos() {
                   {nErrRancho && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>}
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Mes *</label>
+                  <label className="text-xs text-muted-foreground font-semibold">Mes *</label>
                   <input type="month" value={nMes} onChange={(e) => setNMes(e.target.value)}
                     className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Verificó (Jefe del Cooler)</label>
+                  <label className="text-xs text-muted-foreground font-semibold">Verificó (Jefe del Cooler)</label>
                   <input maxLength={limiteTexto('m23_registro_mensual', 'verifico_nombre')} type="text" value={nVerificoNombre} onChange={(e) => setNVerificoNombre(e.target.value)}
                     placeholder="Nombre completo"
                     className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Autorizó (Gerente)</label>
+                  <label className="text-xs text-muted-foreground font-semibold">Autorizó (Gerente)</label>
                   <input maxLength={limiteTexto('m23_registro_mensual', 'autorizo_nombre')} type="text" value={nAutorizoNombre} onChange={(e) => setNAutorizoNombre(e.target.value)}
                     placeholder="Nombre completo"
                     className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm" />
@@ -965,7 +965,7 @@ export function VerificacionInsumos() {
       <BottomSheet open={sheetDia && !!registroActivo} onClose={() => !dGuardando && handleCerrarSheetDia()} height="85%">
             <div className="pt-4 px-4 pb-2 flex-shrink-0">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                <h2 className="text-base text-foreground font-semibold">
                   {sheetDiaPaso === 'firma_decision' ? 'Firmar registro' : sheetDiaPaso === 'firma_gate' ? 'Firma requerida' : 'Agregar día de verificación'}
                 </h2>
                 <button aria-label="Cerrar" onClick={handleCerrarSheetDia}><X className="w-5 h-5 text-muted-foreground" /></button>
@@ -991,12 +991,12 @@ export function VerificacionInsumos() {
               <>
                 <div className="px-4 pb-2 flex-shrink-0">
                   <div className="flex gap-2 mb-3 flex-wrap">
-                    <span className="text-xs px-2 py-0.5 rounded text-white" style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}>Si = disponible</span>
-                    <span className="text-xs px-2 py-0.5 rounded text-white" style={{ backgroundColor: 'var(--agro-red)', fontWeight: 600 }}>No = falta</span>
-                    <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--switch-background)', color: 'var(--muted-foreground)', fontWeight: 600 }}>N/A</span>
+                    <span className="text-xs px-2 py-0.5 rounded text-white font-semibold" style={{ backgroundColor: 'var(--primary)' }}>Si = disponible</span>
+                    <span className="text-xs px-2 py-0.5 rounded text-white font-semibold" style={{ backgroundColor: 'var(--agro-red)' }}>No = falta</span>
+                    <span className="text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: 'var(--switch-background)', color: 'var(--muted-foreground)' }}>N/A</span>
                   </div>
                   <div className="space-y-1 mb-4">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Fecha *</label>
+                    <label className="text-xs text-muted-foreground font-semibold">Fecha *</label>
                     <input
                       type="date"
                       value={dFecha}
@@ -1026,7 +1026,7 @@ export function VerificacionInsumos() {
                     ) : (
                       gruposActivos.map((grupo) => (
                         <div key={grupo.area} className="mb-4">
-                          <div className="text-xs px-3 py-2 rounded-lg mb-1" style={{ backgroundColor: 'var(--primary)', color: '#fff', fontWeight: 600 }}>
+                          <div className="text-xs px-3 py-2 rounded-lg mb-1 font-semibold" style={{ backgroundColor: 'var(--primary)', color: '#fff' }}>
                             {grupo.area}
                           </div>
                           <div className="bg-card border border-border rounded-xl px-3">
@@ -1065,7 +1065,7 @@ export function VerificacionInsumos() {
       <BottomSheet open={sheetCatalogo} onClose={() => setSheetCatalogo(false)} height="92%">
             <div className="pt-4 px-4 pb-3 flex-shrink-0 border-b border-border">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Catálogo de insumos</h2>
+                <h2 className="text-base text-foreground font-semibold">Catálogo de insumos</h2>
                 <button aria-label="Cerrar" onClick={() => setSheetCatalogo(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
               </div>
               <select
@@ -1082,8 +1082,8 @@ export function VerificacionInsumos() {
                   <button
                     onClick={handleCargarPlantilla}
                     disabled={catCargandoPlantilla}
-                    className="w-full h-9 rounded-lg border-2 text-xs mb-2 flex items-center justify-center gap-1.5 disabled:opacity-50"
-                    style={{ borderColor: 'var(--primary)', color: 'var(--primary)', fontWeight: 600 }}
+                    className="w-full h-9 rounded-lg border-2 text-xs mb-2 flex items-center justify-center gap-1.5 disabled:opacity-50 font-semibold"
+                    style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
                   >
                     {catCargandoPlantilla ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                     Cargar plantilla estándar (30 ítems)
@@ -1123,7 +1123,7 @@ export function VerificacionInsumos() {
               ) : (
                 insumosGestionGrupos.map((grupo) => (
                   <div key={grupo.area} className="mb-4">
-                    <div className="text-xs px-3 py-1.5 rounded-lg mb-1" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                    <div className="text-xs px-3 py-1.5 rounded-lg mb-1 font-semibold" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
                       {grupo.area}
                     </div>
                     <div className="bg-card border border-border rounded-xl divide-y divide-border">
@@ -1135,11 +1135,10 @@ export function VerificacionInsumos() {
                           <button
                             onClick={() => handleToggleActivo(ins)}
                             disabled={catToggling === ins.id}
-                            className="ml-2 text-xs px-2 py-1 rounded-lg border"
+                            className="ml-2 text-xs px-2 py-1 rounded-lg border font-semibold"
                             style={{
                               borderColor: ins.activo ? 'var(--primary)' : 'var(--border)',
                               color: ins.activo ? 'var(--primary)' : 'var(--muted-foreground)',
-                              fontWeight: 600,
                             }}
                           >
                             {catToggling === ins.id
@@ -1160,12 +1159,12 @@ export function VerificacionInsumos() {
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="55%">
             <div className="pt-4 px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+                <h2 className="text-base text-foreground font-semibold">Exportar consolidado</h2>
                 <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
               </div>
               <div className="space-y-4">
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{termino} *</label>
+                  <label className="text-xs text-muted-foreground font-semibold">{termino} *</label>
                   <select
                     value={cRanchoId}
                     onChange={(e) => { setCRanchoId(e.target.value); setCErrRancho(false) }}
@@ -1179,12 +1178,12 @@ export function VerificacionInsumos() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Desde</label>
+                    <label className="text-xs text-muted-foreground font-semibold">Desde</label>
                     <input type="month" value={cDesde} onChange={(e) => setCDesde(e.target.value)}
                       className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Hasta</label>
+                    <label className="text-xs text-muted-foreground font-semibold">Hasta</label>
                     <input type="month" value={cHasta} onChange={(e) => setCHasta(e.target.value)}
                       className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm" />
                   </div>

@@ -520,7 +520,7 @@ export function RegistroPersonal() {
         ) : listaTrabajadores.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <Users className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+            <p className="text-sm text-foreground font-semibold">
               {busqueda ? 'Sin resultados' : 'Sin trabajadores aún'}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
@@ -535,7 +535,7 @@ export function RegistroPersonal() {
               <div key={t.id} className="bg-card border border-border rounded-xl p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                    <p className="text-sm text-foreground truncate font-semibold">
                       {t.nombre}
                     </p>
                     {t.puesto && (
@@ -549,11 +549,10 @@ export function RegistroPersonal() {
                         <span className="text-xs text-muted-foreground">{t.celular}</span>
                       )}
                       {docsTotal > 0 && (
-                        <span className="text-xs px-2 py-0.5 rounded-full"
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
                           style={{
                             backgroundColor: docsOk === docsTotal ? 'var(--agro-success-fill)' : 'var(--agro-info-fill)',
                             color: docsOk === docsTotal ? 'var(--agro-success-text)' : 'var(--agro-info-text)',
-                            fontWeight: 600,
                           }}>
                           {docsOk}/{docsTotal} documentos
                         </span>
@@ -579,7 +578,7 @@ export function RegistroPersonal() {
       {/* ═══ SHEET: FORMULARIO ══════════════════════════════════════════════════ */}
       <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) handleCerrarSheet() }} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+          <h2 className="text-base text-foreground font-semibold">
             {editingId ? 'Editar trabajador' : 'Nuevo trabajador'}
           </h2>
           <button aria-label="Cerrar" type="button" onClick={() => { if (!guardando) handleCerrarSheet() }}>
@@ -627,7 +626,7 @@ export function RegistroPersonal() {
 
             {!editingId && (
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                <label className="text-xs text-muted-foreground font-semibold">
                   {terminosSitio.singular} *
                 </label>
                 <select
@@ -646,7 +645,7 @@ export function RegistroPersonal() {
 
             {editingId && (
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                <label className="text-xs text-muted-foreground font-semibold">
                   {terminosSitio.singular}
                 </label>
                 <p className="text-sm text-muted-foreground px-3 py-2 rounded-[0.625rem] border border-border-control bg-input-background">
@@ -657,7 +656,7 @@ export function RegistroPersonal() {
 
             <div className="flex gap-3">
               <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                <label className="text-xs text-muted-foreground font-semibold">
                   Fecha de alta
                 </label>
                 <input
@@ -671,7 +670,7 @@ export function RegistroPersonal() {
                 />
               </div>
               <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Puesto</label>
+                <label className="text-xs text-muted-foreground font-semibold">Puesto</label>
                 <input maxLength={limiteTexto('m47_trabajadores', 'puesto')}
                   type="text"
                   className={fieldCls}
@@ -690,7 +689,7 @@ export function RegistroPersonal() {
             </TituloSeccion>
 
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Nombre completo *</label>
+              <label className="text-xs text-muted-foreground font-semibold">Nombre completo *</label>
               <input maxLength={limiteTexto('m47_items', 'nombre')}
                 type="text"
                 className={fieldCls}
@@ -701,7 +700,7 @@ export function RegistroPersonal() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Dirección</label>
+              <label className="text-xs text-muted-foreground font-semibold">Dirección</label>
               <InputContador limite={limiteTexto('m47_trabajadores', 'direccion')}
                 type="text"
                 className={fieldCls}
@@ -713,7 +712,7 @@ export function RegistroPersonal() {
 
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Tel. casa</label>
+                <label className="text-xs text-muted-foreground font-semibold">Tel. casa</label>
                 <input maxLength={limiteTexto('m47_trabajadores', 'telefono_casa')}
                   type="tel"
                   className={fieldCls}
@@ -723,7 +722,7 @@ export function RegistroPersonal() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Celular</label>
+                <label className="text-xs text-muted-foreground font-semibold">Celular</label>
                 <input maxLength={limiteTexto('m47_trabajadores', 'celular')}
                   type="tel"
                   className={fieldCls}
@@ -735,7 +734,7 @@ export function RegistroPersonal() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Fecha de nacimiento</label>
+              <label className="text-xs text-muted-foreground font-semibold">Fecha de nacimiento</label>
               <input
                 type="date"
                 className={fieldCls}
@@ -751,18 +750,18 @@ export function RegistroPersonal() {
               Contacto de emergencia
             </TituloSeccion>
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Nombre</label>
+              <label className="text-xs text-muted-foreground font-semibold">Nombre</label>
               <input maxLength={limiteTexto('m47_trabajadores', 'emergencia_nombre')} type="text" className={fieldCls} placeholder="Nombre de contacto"
                 value={form.emergencia_nombre} onChange={e => setF('emergencia_nombre', e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Parentesco</label>
+                <label className="text-xs text-muted-foreground font-semibold">Parentesco</label>
                 <input maxLength={limiteTexto('m47_trabajadores', 'emergencia_parentesco')} type="text" className={fieldCls} placeholder="Ej: Esposo/a"
                   value={form.emergencia_parentesco} onChange={e => setF('emergencia_parentesco', e.target.value)} />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Teléfono</label>
+                <label className="text-xs text-muted-foreground font-semibold">Teléfono</label>
                 <input maxLength={limiteTexto('m47_trabajadores', 'emergencia_telefono')} type="tel" className={fieldCls} placeholder="Teléfono"
                   value={form.emergencia_telefono} onChange={e => setF('emergencia_telefono', e.target.value)} />
               </div>
@@ -846,7 +845,7 @@ export function RegistroPersonal() {
       {/* ═══ SHEET: CONFIGURAR ══════════════════════════════════════════════════ */}
       <BottomSheet open={configurarOpen} onClose={() => setConfigurarOpen(false)} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Configurar catálogo</h2>
+          <h2 className="text-base text-foreground font-semibold">Configurar catálogo</h2>
           <button aria-label="Cerrar" type="button" onClick={() => setConfigurarOpen(false)}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -854,7 +853,7 @@ export function RegistroPersonal() {
 
         <div className="overflow-y-auto px-4 pb-8 space-y-5" style={{ flex: 1 }}>
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground font-semibold">
               {terminosSitio.singular} *
             </label>
             <select
@@ -874,8 +873,8 @@ export function RegistroPersonal() {
                 type="button"
                 onClick={sembrarPlantilla}
                 disabled={sembrando}
-                className="w-full h-10 rounded-[0.625rem] border border-border text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-                style={{ fontWeight: 600, color: 'var(--primary)' }}
+                className="w-full h-10 rounded-[0.625rem] border border-border text-sm flex items-center justify-center gap-2 disabled:opacity-50 font-semibold"
+                style={{ color: 'var(--primary)' }}
               >
                 {sembrando && <Loader2 className="w-4 h-4 animate-spin" />}
                 {sembrando ? 'Sembrando…' : 'Sembrar plantilla estándar (12 ítems)'}
@@ -904,11 +903,10 @@ export function RegistroPersonal() {
                             <button
                               type="button"
                               onClick={() => toggleItemActivo(item.id, item.activo)}
-                              className="text-xs px-2 py-1 rounded-lg border border-border"
+                              className="text-xs px-2 py-1 rounded-lg border border-border font-semibold"
                               style={{
                                 backgroundColor: item.activo ? 'var(--agro-success-fill)' : 'var(--muted)',
                                 color: item.activo ? 'var(--agro-success-text)' : 'var(--muted-foreground)',
-                                fontWeight: 600,
                               }}
                             >
                               {item.activo ? 'Activo' : 'Inactivo'}
@@ -936,11 +934,10 @@ export function RegistroPersonal() {
                             <button
                               type="button"
                               onClick={() => toggleItemActivo(item.id, item.activo)}
-                              className="text-xs px-2 py-1 rounded-lg border border-border"
+                              className="text-xs px-2 py-1 rounded-lg border border-border font-semibold"
                               style={{
                                 backgroundColor: item.activo ? 'var(--agro-success-fill)' : 'var(--muted)',
                                 color: item.activo ? 'var(--agro-success-text)' : 'var(--muted-foreground)',
-                                fontWeight: 600,
                               }}
                             >
                               {item.activo ? 'Activo' : 'Inactivo'}
@@ -998,7 +995,7 @@ export function RegistroPersonal() {
       {/* ═══ SHEET: PDF ═════════════════════════════════════════════════════════ */}
       <BottomSheet open={pdfSheetOpen} onClose={() => setPdfSheetOpen(false)} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Descargar PDF</h2>
+          <h2 className="text-base text-foreground font-semibold">Descargar PDF</h2>
           <button aria-label="Cerrar" type="button" onClick={() => setPdfSheetOpen(false)}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -1008,7 +1005,7 @@ export function RegistroPersonal() {
             El PDF incluye todos los trabajadores activos de la instalación seleccionada con su documentación y capacitaciones.
           </p>
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground font-semibold">
               {terminosSitio.singular} *
             </label>
             <select

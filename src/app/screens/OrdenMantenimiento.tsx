@@ -76,9 +76,8 @@ function SiNoToggle({
       <button
         type="button"
         onClick={() => onChange(!value)}
-        className="px-3 py-1 rounded-full text-xs min-w-[40px]"
+        className="px-3 py-1 rounded-full text-xs min-w-[40px] font-semibold"
         style={{
-          fontWeight: 600,
           backgroundColor: value ? 'var(--agro-success-fill)' : 'var(--agro-danger-fill)',
           color:           value ? 'var(--agro-success-text)' : 'var(--agro-danger-text)',
         }}
@@ -353,7 +352,7 @@ export function OrdenMantenimiento() {
                       <span className="text-xs text-muted-foreground">#{o.folio}</span>
                     )}
                   </div>
-                  <p className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                  <p className="text-sm text-foreground truncate font-semibold">
                     {o.rancho_nombre}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">{fmtFecha(o.fecha)}</p>
@@ -365,7 +364,7 @@ export function OrdenMantenimiento() {
                   {o.equipo_produccion && !o.lavado_sanitizado && (
                     <div className="flex items-center gap-1 mt-1.5">
                       <AlertTriangle className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
-                      <span className="text-xs" style={{ color: 'var(--agro-danger-text)', fontWeight: 600 }}>
+                      <span className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
                         Sin sanitizar — incidencia M13 generada
                       </span>
                     </div>

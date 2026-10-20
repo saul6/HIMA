@@ -123,8 +123,7 @@ export function DetalleAplicacion() {
         <p className="text-muted-foreground text-sm">Aplicación no encontrada</p>
         <button
           onClick={() => navigate("/historial")}
-          className="px-4 h-10 bg-primary text-primary-foreground rounded-xl text-sm"
-          style={{ fontWeight: 600 }}
+          className="px-4 h-10 bg-primary text-primary-foreground rounded-xl text-sm font-semibold"
         >
           Volver al historial
         </button>
@@ -139,7 +138,7 @@ export function DetalleAplicacion() {
       {/* Header */}
       <header className="sticky top-0 bg-card border-b border-border px-4 py-4 z-20">
         <div className="flex items-center justify-between gap-3 mb-3">
-          <h1 className="text-foreground flex-1 min-w-0 truncate" style={{ fontWeight: 600 }}>
+          <h1 className="text-foreground flex-1 min-w-0 truncate font-semibold">
             Detalle de Aplicación
           </h1>
           <button aria-label="Cerrar" onClick={() => navigate("/historial")} className="p-3 -m-2 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted active:scale-95">
@@ -182,7 +181,7 @@ export function DetalleAplicacion() {
           ) : (
             app.aplicacion_productos.map((p, index) => (
               <div key={p.id} className="mb-4 pb-4 border-b border-border last:border-0">
-                <div className="text-sm mb-3" style={{ fontWeight: 600 }}>
+                <div className="text-sm mb-3 font-semibold">
                   {p.catalogo_productos.nombre_comercial}
                 </div>
                 <div className="space-y-3">
@@ -269,8 +268,7 @@ export function DetalleAplicacion() {
             <button
               onClick={handleExportExcel}
               disabled={exportandoExcel}
-              className="flex-1 md:flex-none md:min-w-[160px] h-11 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary hover:bg-primary/5 transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              style={{ fontWeight: 600 }}
+              className="flex-1 md:flex-none md:min-w-[160px] h-11 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary hover:bg-primary/5 transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring font-semibold"
             >
               {exportandoExcel
                 ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -281,8 +279,7 @@ export function DetalleAplicacion() {
             <button
               onClick={handleGenerarPDF}
               disabled={exportandoPDF}
-              className="flex-1 md:flex-none md:min-w-[160px] h-11 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              style={{ fontWeight: 600 }}
+              className="flex-1 md:flex-none md:min-w-[160px] h-11 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring font-semibold"
             >
               {exportandoPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
               PDF
@@ -300,9 +297,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <div>
       <div className="bg-accent -mx-4 px-4 py-2 mb-4">
         <h3
-          className="text-body"
+          className="text-body font-semibold"
           style={{
-            fontWeight: 600,
             color: resolvedTheme === "dark" ? "var(--ring)" : "var(--accent-foreground)",
           }}
         >
@@ -318,7 +314,7 @@ function DataRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-start">
       <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-sm text-right max-w-[55%] text-foreground" style={{ fontWeight: 600 }}>
+      <span className="text-sm text-right max-w-[55%] text-foreground font-semibold">
         {value}
       </span>
     </div>

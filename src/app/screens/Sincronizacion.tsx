@@ -31,8 +31,8 @@ function ChipEstado({ lote }: { lote: LoteOutbox }) {
   if (lote.estado === 'pendiente') {
     return (
       <span
-        className="text-caption px-2 py-0.5 rounded"
-        style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}
+        className="text-caption px-2 py-0.5 rounded font-semibold"
+        style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
       >
         Pendiente de subir
       </span>
@@ -41,8 +41,8 @@ function ChipEstado({ lote }: { lote: LoteOutbox }) {
   if (lote.estado === 'rechazado') {
     return (
       <span
-        className="text-caption px-2 py-0.5 rounded"
-        style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', fontWeight: 600 }}
+        className="text-caption px-2 py-0.5 rounded font-semibold"
+        style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
       >
         No se pudo subir
       </span>
@@ -51,8 +51,8 @@ function ChipEstado({ lote }: { lote: LoteOutbox }) {
   if (lote.tarde) {
     return (
       <span
-        className="text-caption px-2 py-0.5 rounded"
-        style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}
+        className="text-caption px-2 py-0.5 rounded font-semibold"
+        style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
       >
         Sincronizado tarde
       </span>
@@ -60,8 +60,8 @@ function ChipEstado({ lote }: { lote: LoteOutbox }) {
   }
   return (
     <span
-      className="text-caption px-2 py-0.5 rounded"
-      style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+      className="text-caption px-2 py-0.5 rounded font-semibold"
+      style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
     >
       Subido
     </span>
@@ -104,8 +104,7 @@ function CardLote({
           {lote.estado === 'rechazado' && onVer && (
             <button
               onClick={() => onVer(lote)}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border"
-              style={{ fontWeight: 600 }}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border font-semibold"
             >
               <Eye className="w-3 h-3" />
               Ver lo que capturé
@@ -114,8 +113,8 @@ function CardLote({
           {lote.estado === 'rechazado' && onDescartar && (
             <button
               onClick={() => onDescartar(lote.id)}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-agro-danger-text"
-              style={{ color: 'var(--agro-danger-text)', fontWeight: 600 }}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-agro-danger-text font-semibold"
+              style={{ color: 'var(--agro-danger-text)' }}
             >
               <Trash2 className="w-3 h-3" />
               Descartar
@@ -173,7 +172,7 @@ function DetalleCapturado({ lote, onCerrar }: { lote: LoteOutbox; onCerrar: () =
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <div className="min-w-0">
-            <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>{lote.descripcion}</p>
+            <p className="text-sm text-foreground font-semibold">{lote.descripcion}</p>
             <p className="text-xs text-muted-foreground">Capturado: {formatFechaCaptura(lote.capturadoEn)}</p>
           </div>
           <button onClick={onCerrar} aria-label="Cerrar" className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted">
@@ -183,7 +182,7 @@ function DetalleCapturado({ lote, onCerrar }: { lote: LoteOutbox; onCerrar: () =
         <div className="p-4 space-y-4">
           {lote.operaciones.map((op, i) => (
             <div key={i} className="space-y-1">
-              <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{etiqueta(op.tabla)}</p>
+              <p className="text-xs text-muted-foreground font-semibold">{etiqueta(op.tabla)}</p>
               {Object.entries(op.fila)
                 .filter(([k]) => !CLAVES_OCULTAS.has(k) && !k.endsWith('_id'))
                 .map(([k, v]) => (
@@ -262,7 +261,7 @@ export function Sincronizacion() {
           {online
             ? <Wifi className="w-4 h-4 flex-shrink-0" />
             : <WifiOff className="w-4 h-4 flex-shrink-0" />}
-          <span style={{ fontWeight: 600 }}>
+          <span className="font-semibold">
             {online ? 'Conectado' : 'Sin conexión'}
           </span>
           {online && totalPendientes > 0 && (
@@ -282,7 +281,7 @@ export function Sincronizacion() {
           <section>
             <div className="flex items-center gap-2 mb-3">
               <Clock className="w-4 h-4 text-muted-foreground" />
-              <h2 className="text-sm text-muted-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-sm text-muted-foreground font-semibold">
                 Pendientes de subir ({pendientes.length})
               </h2>
             </div>
@@ -303,7 +302,7 @@ export function Sincronizacion() {
           <section>
             <div className="flex items-center gap-2 mb-3">
               <AlertCircle className="w-4 h-4" style={{ color: 'var(--agro-danger-text)' }} />
-              <h2 className="text-sm" style={{ color: 'var(--agro-danger-text)', fontWeight: 600 }}>
+              <h2 className="text-sm font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
                 No se pudieron subir ({rechazados.length})
               </h2>
             </div>
@@ -325,7 +324,7 @@ export function Sincronizacion() {
           <section>
             <div className="flex items-center gap-2 mb-3">
               <CheckCircle className="w-4 h-4" style={{ color: 'var(--agro-success-text)' }} />
-              <h2 className="text-sm text-muted-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-sm text-muted-foreground font-semibold">
                 Subidos (últimos 7 días)
               </h2>
             </div>

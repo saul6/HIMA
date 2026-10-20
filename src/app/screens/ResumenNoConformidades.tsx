@@ -289,7 +289,7 @@ export function ResumenNoConformidades() {
             <div key={v.id} className="bg-card border border-border rounded-xl p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                  <p className="text-sm text-foreground truncate font-semibold">
                     {v.rancho_nombre}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
@@ -310,8 +310,7 @@ export function ResumenNoConformidades() {
                   {/* Ver detalles */}
                   <button
                     onClick={() => abrirDetalle(v)}
-                    className="h-8 px-3 rounded-lg text-xs text-primary border border-primary hover:bg-primary/5 transition-colors flex-shrink-0"
-                    style={{ fontWeight: 600 }}
+                    className="h-8 px-3 rounded-lg text-xs text-primary border border-primary hover:bg-primary/5 transition-colors flex-shrink-0 font-semibold"
                   >
                     Ver detalles
                   </button>
@@ -334,7 +333,7 @@ export function ResumenNoConformidades() {
 
         {/* Header sheet */}
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+          <h2 className="text-base text-foreground font-semibold">
             {editandoVisita ? 'Editar visita' : 'Nueva visita'}
           </h2>
           <button aria-label="Cerrar"
@@ -350,7 +349,7 @@ export function ResumenNoConformidades() {
 
           {/* Instalación / Rancho */}
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
               {terminosSitio.singular.toUpperCase()} *
             </label>
             <select
@@ -376,7 +375,7 @@ export function ResumenNoConformidades() {
 
           {/* Fecha */}
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
               FECHA *
             </label>
             <input
@@ -391,7 +390,7 @@ export function ResumenNoConformidades() {
 
           {/* Auditor */}
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
               AUDITOR
             </label>
             <input
@@ -405,7 +404,7 @@ export function ResumenNoConformidades() {
 
           {/* Cliente / Representante */}
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
               CLIENTE / REPRESENTANTE
             </label>
             <input
@@ -419,7 +418,7 @@ export function ResumenNoConformidades() {
 
           {/* PA-PGFS */}
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
               PA-PGFS (FOLIO)
             </label>
             <input
@@ -433,7 +432,7 @@ export function ResumenNoConformidades() {
 
           {/* Observaciones */}
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
               OBSERVACIONES
             </label>
             <textarea
@@ -452,8 +451,7 @@ export function ResumenNoConformidades() {
           <button
             onClick={handleGuardar}
             disabled={guardando}
-            className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-            style={{ fontWeight: 600 }}
+            className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
             {guardando ? 'Guardando...' : 'Guardar'}
@@ -471,7 +469,7 @@ export function ResumenNoConformidades() {
         {/* Header detalle */}
         <div className="flex items-start justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
           <div className="flex-1 min-w-0 pr-3">
-            <h2 className="text-base text-foreground truncate" style={{ fontWeight: 600 }}>
+            <h2 className="text-base text-foreground truncate font-semibold">
               {visitaDetalle?.rancho_nombre ?? ''}
             </h2>
             {visitaDetalle && (
@@ -494,7 +492,7 @@ export function ResumenNoConformidades() {
           {/* Información de la visita */}
           {visitaDetalle && (
             <section>
-              <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+              <p className="text-xs text-muted-foreground mb-2 font-semibold">
                 INFORMACIÓN DE LA VISITA
               </p>
               <div className="rounded-xl p-4 space-y-2" style={{ backgroundColor: 'var(--muted)' }}>
@@ -524,7 +522,7 @@ export function ResumenNoConformidades() {
 
           {/* Auditorías vinculadas */}
           <section>
-            <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+            <p className="text-xs text-muted-foreground mb-2 font-semibold">
               AUDITORÍAS VINCULADAS
             </p>
 
@@ -540,8 +538,7 @@ export function ResumenNoConformidades() {
                     {auditoriasVinculadas.map((item) => (
                       <div
                         key={item.id}
-                        className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full border border-border text-xs"
-                        style={{ fontWeight: 600 }}
+                        className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full border border-border text-xs font-semibold"
                       >
                         <span className="text-foreground">{item.modulo_label}</span>
                         <span
@@ -575,8 +572,7 @@ export function ResumenNoConformidades() {
                 {!buscandoDisponibles && (
                   <button
                     onClick={handleBuscarDisponibles}
-                    className="mt-2 flex items-center gap-2 text-xs text-primary hover:opacity-70 transition-opacity"
-                    style={{ fontWeight: 600 }}
+                    className="mt-2 flex items-center gap-2 text-xs text-primary hover:opacity-70 transition-opacity font-semibold"
                   >
                     <Link2 className="w-3.5 h-3.5" />
                     Buscar auditorías disponibles
@@ -586,7 +582,7 @@ export function ResumenNoConformidades() {
                 {/* Disponibles para vincular */}
                 {buscandoDisponibles && (
                   <div className="mt-3">
-                    <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+                    <p className="text-xs text-muted-foreground mb-2 font-semibold">
                       DISPONIBLES PARA VINCULAR
                     </p>
                     {loadingDisponibles ? (
@@ -603,8 +599,8 @@ export function ResumenNoConformidades() {
                           <button
                             key={item.id}
                             onClick={() => handleVincular(item)}
-                            className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full border border-primary text-xs hover:bg-primary/5 transition-colors"
-                            style={{ fontWeight: 600, color: 'var(--primary)' }}
+                            className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full border border-primary text-xs hover:bg-primary/5 transition-colors font-semibold"
+                            style={{ color: 'var(--primary)' }}
                           >
                             {item.modulo_label}
                             <span
@@ -629,7 +625,7 @@ export function ResumenNoConformidades() {
 
           {/* No-Conformidades */}
           <section>
-            <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+            <p className="text-xs text-muted-foreground mb-2 font-semibold">
               NO-CONFORMIDADES
             </p>
 
@@ -649,38 +645,32 @@ export function ResumenNoConformidades() {
                   <thead>
                     <tr style={{ backgroundColor: 'var(--muted)' }}>
                       <th
-                        className="text-left px-3 py-2 text-muted-foreground border-b border-border whitespace-nowrap"
-                        style={{ fontWeight: 600 }}
+                        className="text-left px-3 py-2 text-muted-foreground border-b border-border whitespace-nowrap font-semibold"
                       >
                         No. NCR
                       </th>
                       <th
-                        className="text-left px-3 py-2 text-muted-foreground border-b border-border whitespace-nowrap"
-                        style={{ fontWeight: 600 }}
+                        className="text-left px-3 py-2 text-muted-foreground border-b border-border whitespace-nowrap font-semibold"
                       >
                         Módulo
                       </th>
                       <th
-                        className="text-left px-3 py-2 text-muted-foreground border-b border-border whitespace-nowrap"
-                        style={{ fontWeight: 600 }}
+                        className="text-left px-3 py-2 text-muted-foreground border-b border-border whitespace-nowrap font-semibold"
                       >
                         Código
                       </th>
                       <th
-                        className="text-left px-3 py-2 text-muted-foreground border-b border-border"
-                        style={{ fontWeight: 600 }}
+                        className="text-left px-3 py-2 text-muted-foreground border-b border-border font-semibold"
                       >
                         Pregunta
                       </th>
                       <th
-                        className="text-left px-3 py-2 text-muted-foreground border-b border-border"
-                        style={{ fontWeight: 600 }}
+                        className="text-left px-3 py-2 text-muted-foreground border-b border-border font-semibold"
                       >
                         Comentario
                       </th>
                       <th
-                        className="text-left px-3 py-2 text-muted-foreground border-b border-border whitespace-nowrap"
-                        style={{ fontWeight: 600 }}
+                        className="text-left px-3 py-2 text-muted-foreground border-b border-border whitespace-nowrap font-semibold"
                       >
                         Responsable · Fecha límite
                       </th>
@@ -693,7 +683,7 @@ export function ResumenNoConformidades() {
                         className="border-b border-border last:border-0"
                         style={{ backgroundColor: idx % 2 === 0 ? 'var(--card)' : 'var(--muted)' }}
                       >
-                        <td className="px-3 py-2 text-foreground whitespace-nowrap" style={{ fontWeight: 600 }}>
+                        <td className="px-3 py-2 text-foreground whitespace-nowrap font-semibold">
                           {ncr.ncr}
                         </td>
                         <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
@@ -725,8 +715,7 @@ export function ResumenNoConformidades() {
                                   <button
                                     type="button"
                                     onClick={() => abrirAsignar(origen)}
-                                    className="h-8 px-3 rounded-lg text-xs text-primary border border-primary hover:bg-primary/5 transition-colors"
-                                    style={{ fontWeight: 600 }}
+                                    className="h-8 px-3 rounded-lg text-xs text-primary border border-primary hover:bg-primary/5 transition-colors font-semibold"
                                   >
                                     {est?.owner_user_id ? 'Editar asignación' : 'Asignar'}
                                   </button>
@@ -750,8 +739,7 @@ export function ResumenNoConformidades() {
           <button
             onClick={handleDescargarPDF}
             disabled={generandoPDF}
-            className="w-full h-12 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-            style={{ fontWeight: 600 }}
+            className="w-full h-12 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
           >
             {generandoPDF
               ? <Loader2 className="w-4 h-4 animate-spin" />

@@ -142,7 +142,7 @@ function FertilizanteCombobox({
               onMouseDown={() => { onSelect(f); setOpen(false) }}
               className="w-full text-left px-3 py-2.5 hover:bg-muted transition-colors border-b border-border last:border-0"
             >
-              <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+              <p className="text-sm text-foreground font-semibold">
                 {f.nombre_comercial}
               </p>
               {f.ingrediente_activo && (
@@ -202,7 +202,7 @@ function FilaFertilizanteForm({
     <div className="border border-border rounded-xl p-3 space-y-3 bg-card">
       {/* Encabezado fila */}
       <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+        <span className="text-xs text-muted-foreground font-semibold">
           Fertilizante
         </span>
         {puedeEliminar && (
@@ -332,7 +332,7 @@ function FilaFertilizanteForm({
         className="rounded-lg px-3 py-2.5 flex items-center justify-between"
         style={{ backgroundColor: 'var(--agro-success-fill)' }}
       >
-        <span className="text-xs" style={{ color: 'var(--agro-success-text)', fontWeight: 600 }}>
+        <span className="text-xs font-semibold" style={{ color: 'var(--agro-success-text)' }}>
           Cantidad total ({fila.unidad})
         </span>
         <input
@@ -342,8 +342,8 @@ function FilaFertilizanteForm({
           value={cantidadMostrada}
           onChange={(e) => onChange({ ...fila, cantidad: e.target.value })}
           placeholder={cantidadCalc || '0.00'}
-          className="w-24 text-right bg-transparent border-b border-current text-sm"
-          style={{ color: 'var(--agro-success-text)', fontWeight: 600 }}
+          className="w-24 text-right bg-transparent border-b border-current text-sm font-semibold"
+          style={{ color: 'var(--agro-success-text)' }}
         />
       </div>
     </div>
@@ -922,26 +922,24 @@ export function RegistroFertilizacion() {
                           {orgNombre && (
                             <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
                           )}
-                          <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                          <span className="text-sm text-foreground truncate font-semibold">
                             {reg.rancho_nombre}
                           </span>
                           <span
-                            className="text-caption px-2 py-0.5 rounded flex-shrink-0"
+                            className="text-caption px-2 py-0.5 rounded flex-shrink-0 font-semibold"
                             style={{
                               backgroundColor: 'var(--muted)',
                               color: 'var(--muted-foreground)',
-                              fontWeight: 600,
                             }}
                           >
                             {reg.fertilizantes.length} fertilizante{reg.fertilizantes.length !== 1 ? 's' : ''}
                           </span>
                           {reg.sector && (
                             <span
-                              className="text-caption px-2 py-0.5 rounded flex-shrink-0"
+                              className="text-caption px-2 py-0.5 rounded flex-shrink-0 font-semibold"
                               style={{
                                 backgroundColor: 'var(--agro-success-fill)',
                                 color: 'var(--agro-success-text)',
-                                fontWeight: 600,
                               }}
                             >
                               {reg.sector}
@@ -1002,7 +1000,7 @@ export function RegistroFertilizacion() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                    <p className="text-sm text-foreground truncate font-semibold">
                       {s.nombre_comercial}
                     </p>
                     {s.ingrediente_activo && (
@@ -1048,7 +1046,7 @@ export function RegistroFertilizacion() {
       {/* ── Sheet: Nuevo registro ─────────────────────────────────────────────── */}
       <BottomSheet open={sheetNuevoAbierto} onClose={() => !guardando && handleCerrarSheetNuevo()} height="85%">
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-base text-foreground font-semibold">
                 {sheetNuevoPaso === 'firma_decision' ? 'Firmar registro' : sheetNuevoPaso === 'firma_gate' ? 'Firma requerida' : 'Nuevo registro'}
               </h2>
               <button aria-label="Cerrar" onClick={() => !guardando && handleCerrarSheetNuevo()} className="p-1">
@@ -1088,8 +1086,7 @@ export function RegistroFertilizacion() {
                   {/* Rancho */}
                   <div>
                     <label
-                      className="text-xs text-muted-foreground mb-1 block"
-                      style={{ fontWeight: 600 }}
+                      className="text-xs text-muted-foreground mb-1 block font-semibold"
                     >
                       {terminosSitio.singular} *
                     </label>
@@ -1112,7 +1109,7 @@ export function RegistroFertilizacion() {
                   {/* Fecha + Sector */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
+                      <label className="text-xs text-muted-foreground mb-1 block font-semibold">
                         Fecha *
                       </label>
                       <input
@@ -1125,7 +1122,7 @@ export function RegistroFertilizacion() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
+                      <label className="text-xs text-muted-foreground mb-1 block font-semibold">
                         Sector
                       </label>
                       <input maxLength={limiteTexto('m8_fertilizacion', 'sector')}
@@ -1141,7 +1138,7 @@ export function RegistroFertilizacion() {
                   {/* Filas de fertilizantes */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                      <p className="text-xs text-muted-foreground font-semibold">
                         Fertilizantes ({filas.length})
                       </p>
                     </div>
@@ -1181,7 +1178,7 @@ export function RegistroFertilizacion() {
       {/* ── Sheet: Exportar consolidado ───────────────────────────────────────── */}
       <BottomSheet open={sheetConsolidadoAbierto} onClose={() => !generandoConsolidado && setSheetConsolidadoAbierto(false)} height="85%">
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+              <h2 className="text-base text-foreground font-semibold">Exportar consolidado</h2>
               <button aria-label="Cerrar"
                 onClick={() => !generandoConsolidado && setSheetConsolidadoAbierto(false)}
                 className="p-1"
@@ -1192,7 +1189,7 @@ export function RegistroFertilizacion() {
 
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
+                <label className="text-xs text-muted-foreground mb-1 block font-semibold">
                   {terminosSitio.singular} *
                 </label>
                 <select
@@ -1213,7 +1210,7 @@ export function RegistroFertilizacion() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground mb-1 block font-semibold">
                     Desde *
                   </label>
                   <input
@@ -1225,7 +1222,7 @@ export function RegistroFertilizacion() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground mb-1 block font-semibold">
                     Hasta *
                   </label>
                   <input
@@ -1256,7 +1253,7 @@ export function RegistroFertilizacion() {
       {/* ── Sheet: Movimiento manual de inventario ───────────────────────────── */}
       <BottomSheet open={sheetMovAbierto} onClose={() => !guardandoMov && setSheetMovAbierto(false)} height="85%">
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-base text-foreground font-semibold">
                 Movimiento de inventario
               </h2>
               <button aria-label="Cerrar" onClick={() => !guardandoMov && setSheetMovAbierto(false)} className="p-1">
@@ -1267,7 +1264,7 @@ export function RegistroFertilizacion() {
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
               {/* Rancho */}
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
+                <label className="text-xs text-muted-foreground mb-1 block font-semibold">
                   {terminosSitio.singular} *
                 </label>
                 <select
@@ -1293,7 +1290,7 @@ export function RegistroFertilizacion() {
 
               {/* Fertilizante */}
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
+                <label className="text-xs text-muted-foreground mb-1 block font-semibold">
                   Fertilizante *
                 </label>
                 <FertilizanteCombobox
@@ -1360,7 +1357,7 @@ export function RegistroFertilizacion() {
 
               {/* Tipo movimiento */}
               <div>
-                <label className="text-xs text-muted-foreground mb-2 block" style={{ fontWeight: 600 }}>
+                <label className="text-xs text-muted-foreground mb-2 block font-semibold">
                   Tipo de movimiento
                 </label>
                 <div className="flex gap-2">
@@ -1384,7 +1381,7 @@ export function RegistroFertilizacion() {
 
               {/* Cantidad */}
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
+                <label className="text-xs text-muted-foreground mb-1 block font-semibold">
                   Cantidad ({movUnidad}) *
                 </label>
                 <input
@@ -1412,7 +1409,7 @@ export function RegistroFertilizacion() {
 
               {/* Fecha */}
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
+                <label className="text-xs text-muted-foreground mb-1 block font-semibold">
                   Fecha
                 </label>
                 <input
@@ -1425,7 +1422,7 @@ export function RegistroFertilizacion() {
 
               {/* Referencia */}
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block" style={{ fontWeight: 600 }}>
+                <label className="text-xs text-muted-foreground mb-1 block font-semibold">
                   Referencia (opcional)
                 </label>
                 <input

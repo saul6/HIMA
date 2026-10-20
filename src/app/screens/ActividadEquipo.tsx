@@ -56,18 +56,16 @@ function CardActividad({
       etiquetas={
         <>
           <span
-            className="text-caption px-2 py-0.5 rounded bg-muted text-muted-foreground flex-shrink-0"
-            style={{ fontWeight: 600 }}
+            className="text-caption px-2 py-0.5 rounded bg-muted text-muted-foreground flex-shrink-0 font-semibold"
           >
             {item.moduloLabel}
           </span>
           {item.requiere_correccion && (
             <span
-              className="text-caption px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0"
+              className="text-caption px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0 font-semibold"
               style={{
                 backgroundColor: 'var(--agro-menta)',
                 color: '#fff',
-                fontWeight: 600,
               }}
             >
               <AlertTriangle className="w-3 h-3" />
@@ -228,7 +226,7 @@ export function ActividadEquipo() {
             <div className="mt-3 space-y-3 p-4 bg-card border border-border rounded-xl">
               {/* Empleado */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   EMPLEADO
                 </label>
                 <select
@@ -245,7 +243,7 @@ export function ActividadEquipo() {
 
               {/* Módulo */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   MÓDULO
                 </label>
                 <select
@@ -297,7 +295,7 @@ export function ActividadEquipo() {
             style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}
           >
             <AlertTriangle className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
-            <p className="text-sm" style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}>
+            <p className="text-sm font-semibold" style={{ color: 'var(--agro-info-text)' }}>
               {countCorreccion} {countCorreccion === 1 ? 'registro requiere' : 'registros requieren'} corrección
             </p>
           </div>
@@ -319,7 +317,7 @@ export function ActividadEquipo() {
         ) : itemsFiltrados.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-8 text-center">
             <CheckCircle2 className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground" style={{ fontWeight: 600 }}>
+            <p className="text-sm text-muted-foreground font-semibold">
               Sin registros
             </p>
             <p className="text-xs text-muted-foreground mt-1">
@@ -347,7 +345,7 @@ export function ActividadEquipo() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <div className="flex-1 min-w-0">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                <h2 className="text-base text-foreground font-semibold">
                   {itemSeleccionado.requiere_correccion ? 'Gestionar corrección' : 'Marcar para corrección'}
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5 truncate">
@@ -362,7 +360,7 @@ export function ActividadEquipo() {
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {/* Capturado por */}
               <div className="text-sm text-muted-foreground">
-                Registrado por: <span style={{ fontWeight: 600, color: 'var(--foreground)' }}>{itemSeleccionado.creado_por_nombre}</span>
+                Registrado por: <span style={{ color: 'var(--foreground)' }} className="font-semibold">{itemSeleccionado.creado_por_nombre}</span>
                 <span className="ml-2">· {formatFecha(itemSeleccionado.fecha)}</span>
               </div>
 
@@ -378,7 +376,7 @@ export function ActividadEquipo() {
 
               {/* Textarea comentario */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   {itemSeleccionado.requiere_correccion ? 'ACTUALIZAR COMENTARIO' : 'QUÉ DEBE CORREGIRSE *'}
                 </label>
                 <textarea
@@ -398,8 +396,7 @@ export function ActividadEquipo() {
                   <button
                     onClick={() => handleMarcar(true)}
                     disabled={marcando}
-                    className="w-full h-12 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-                    style={{ fontWeight: 600 }}
+                    className="w-full h-12 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
                   >
                     {marcando ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                     Actualizar comentario
@@ -407,11 +404,10 @@ export function ActividadEquipo() {
                   <button
                     onClick={() => handleMarcar(false)}
                     disabled={marcando}
-                    className="w-full h-12 rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 transition-colors border"
+                    className="w-full h-12 rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 transition-colors border font-semibold"
                     style={{
                       borderColor: 'var(--border)',
                       color: 'var(--muted-foreground)',
-                      fontWeight: 600,
                     }}
                   >
                     Desmarcar corrección
@@ -421,11 +417,10 @@ export function ActividadEquipo() {
                 <button
                   onClick={() => handleMarcar(true)}
                   disabled={marcando}
-                  className="w-full h-12 rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+                  className="w-full h-12 rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 transition-colors font-semibold"
                   style={{
                     backgroundColor: 'var(--agro-menta)',
                     color: '#fff',
-                    fontWeight: 600,
                   }}
                 >
                   {marcando ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}

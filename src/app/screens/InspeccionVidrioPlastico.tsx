@@ -183,7 +183,7 @@ function MaterialRowInspeccion({
 }) {
   return (
     <div className="border border-border rounded-xl p-3 space-y-2 bg-card">
-      <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+      <p className="text-sm text-foreground font-semibold">
         {fila.material}
       </p>
 
@@ -745,7 +745,7 @@ export function InspeccionVidrioPlastico() {
             <div key={lote.id} className="bg-card border border-border rounded-xl p-4 opacity-80">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                  <span className="text-sm text-foreground font-semibold">
                     {meta?.rancho_nombre ?? '—'}
                   </span>
                   <p className="text-xs text-muted-foreground mt-0.5">{meta?.fecha ?? '—'}</p>
@@ -774,12 +774,11 @@ export function InspeccionVidrioPlastico() {
                       {orgNombre && (
                         <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
                       )}
-                      <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                      <span className="text-sm text-foreground truncate font-semibold">
                         {insp.rancho_nombre}
                       </span>
                       <span
-                        className="text-caption px-2 py-0.5 rounded bg-muted text-muted-foreground flex-shrink-0"
-                        style={{ fontWeight: 600 }}
+                        className="text-caption px-2 py-0.5 rounded bg-muted text-muted-foreground flex-shrink-0 font-semibold"
                       >
                         {insp.materiales.length} materiales
                       </span>
@@ -803,11 +802,10 @@ export function InspeccionVidrioPlastico() {
                   {(Object.entries(estadoResumen) as [Estado, number][]).map(([estado, count]) => (
                     <span
                       key={estado}
-                      className="text-caption px-2 py-0.5 rounded"
+                      className="text-caption px-2 py-0.5 rounded font-semibold"
                       style={{
                         backgroundColor: ESTADO_CHIP[estado].bg,
                         color: ESTADO_CHIP[estado].text,
-                        fontWeight: 600,
                       }}
                     >
                       {estado}: {count}
@@ -842,7 +840,7 @@ export function InspeccionVidrioPlastico() {
       {/* ── Sheet: configurar materiales ───────────────────────────────────── */}
       <BottomSheet open={sheetConfigAbierto} onClose={() => setSheetConfigAbierto(false)} height="85%">
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Configurar materiales</h2>
+              <h2 className="text-base text-foreground font-semibold">Configurar materiales</h2>
               <button aria-label="Cerrar" onClick={() => setSheetConfigAbierto(false)} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
@@ -851,7 +849,7 @@ export function InspeccionVidrioPlastico() {
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {/* Rancho */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   {terminosSitio.singular.toUpperCase()}
                 </label>
                 <select
@@ -886,8 +884,7 @@ export function InspeccionVidrioPlastico() {
                           type="button"
                           onClick={handleCargarSetEstandar}
                           disabled={guardandoNuevo}
-                          className="mt-3 h-9 px-4 rounded-xl text-sm border border-primary text-primary hover:bg-primary/5 transition-colors disabled:opacity-50 flex items-center gap-2 mx-auto"
-                          style={{ fontWeight: 600 }}
+                          className="mt-3 h-9 px-4 rounded-xl text-sm border border-primary text-primary hover:bg-primary/5 transition-colors disabled:opacity-50 flex items-center gap-2 mx-auto font-semibold"
                         >
                           {guardandoNuevo && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                           Cargar set estándar
@@ -896,14 +893,14 @@ export function InspeccionVidrioPlastico() {
                     </div>
                   ) : (
                     <div>
-                      <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+                      <p className="text-xs text-muted-foreground mb-2 font-semibold">
                         MATERIALES ({configMateriales.length})
                       </p>
                       {[...new Set(configMateriales.map((m) => m.area))].map((area) => (
                         <div key={area} className="mb-3">
                           <p
-                            className="text-muted-foreground px-1 pb-1"
-                            style={{ fontWeight: 600, fontSize: 10, textTransform: 'uppercase' }}
+                            className="text-muted-foreground px-1 pb-1 font-semibold"
+                            style={{ fontSize: 10, textTransform: 'uppercase' }}
                           >
                             {area}
                           </p>
@@ -932,7 +929,7 @@ export function InspeccionVidrioPlastico() {
 
                   {/* Agregar nuevo material */}
                   <div className="border-t border-border pt-4">
-                    <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+                    <p className="text-xs text-muted-foreground mb-2 font-semibold">
                       AGREGAR NUEVO MATERIAL
                     </p>
                     <div className="space-y-2">
@@ -970,8 +967,7 @@ export function InspeccionVidrioPlastico() {
                         type="button"
                         onClick={handleAgregarMaterial}
                         disabled={guardandoNuevo}
-                        className="w-full h-10 bg-primary text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors text-sm"
-                        style={{ fontWeight: 600 }}
+                        className="w-full h-10 bg-primary text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors text-sm font-semibold"
                       >
                         {guardandoNuevo ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -990,7 +986,7 @@ export function InspeccionVidrioPlastico() {
       {/* ── Sheet: exportar consolidado ────────────────────────────────────── */}
       <BottomSheet open={sheetConsolidadoAbierto} onClose={() => setSheetConsolidadoAbierto(false)}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+              <h2 className="text-base text-foreground font-semibold">Exportar consolidado</h2>
               <button aria-label="Cerrar" onClick={() => setSheetConsolidadoAbierto(false)} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
@@ -998,7 +994,7 @@ export function InspeccionVidrioPlastico() {
 
             <div className="overflow-y-auto p-4 space-y-4">
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
@@ -1017,7 +1013,7 @@ export function InspeccionVidrioPlastico() {
               </div>
 
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   DESDE *
                 </label>
                 <input
@@ -1031,7 +1027,7 @@ export function InspeccionVidrioPlastico() {
               </div>
 
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   HASTA *
                 </label>
                 <input
@@ -1050,8 +1046,7 @@ export function InspeccionVidrioPlastico() {
               <button
                 onClick={handleGenerarConsolidado}
                 disabled={generandoConsolidado}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-                style={{ fontWeight: 600 }}
+                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
               >
                 {generandoConsolidado && <Loader2 className="w-4 h-4 animate-spin" />}
                 Generar PDF consolidado
@@ -1062,7 +1057,7 @@ export function InspeccionVidrioPlastico() {
       {/* ── Sheet: nueva inspección ────────────────────────────────────────── */}
       <BottomSheet open={sheetInspeccionAbierto} onClose={handleCerrarSheetInspeccion} height="85%">
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-base text-foreground font-semibold">
                 {sheetInspeccionPaso === 'firma_gate' ? 'Registra tu firma' : sheetInspeccionPaso === 'firma_decision' ? 'Firmar registro' : 'Nueva inspección'}
               </h2>
               <button type="button" aria-label="Cerrar" onClick={handleCerrarSheetInspeccion} className="p-3 -m-2">
@@ -1099,7 +1094,7 @@ export function InspeccionVidrioPlastico() {
 
               {/* Rancho */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
@@ -1119,7 +1114,7 @@ export function InspeccionVidrioPlastico() {
 
               {/* Fecha */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   FECHA DE INSPECCIÓN *
                 </label>
                 <input
@@ -1143,7 +1138,7 @@ export function InspeccionVidrioPlastico() {
                   <>
                     Ya existe una inspección para {terminosSitio.genero === 'f' ? 'esta' : 'este'} {terminosSitio.singular.toLowerCase()} en los últimos 14 días.{' '}
                     Próxima disponible:{' '}
-                    <span style={{ fontWeight: 600 }}>{limiteInfo.proxima}</span>
+                    <span className="font-semibold">{limiteInfo.proxima}</span>
                   </>
                 )}
               />
@@ -1161,7 +1156,7 @@ export function InspeccionVidrioPlastico() {
                       style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid #F5A623' }}
                     >
                       <AlertTriangle className="w-8 h-8 mx-auto mb-2" style={{ color: 'var(--agro-info-text)' }} />
-                      <p className="text-sm" style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--agro-info-text)' }}>
                         Sin materiales configurados
                       </p>
                       <p className="text-xs mt-1" style={{ color: 'var(--agro-info-text)' }}>
@@ -1173,22 +1168,22 @@ export function InspeccionVidrioPlastico() {
                           setSheetInspeccionAbierto(false)
                           setTimeout(() => abrirSheetConfig(ranchoId), 200)
                         }}
-                        className="mt-3 h-9 px-4 rounded-xl text-sm text-white hover:bg-agro-blue transition-colors"
-                        style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
+                        className="mt-3 h-9 px-4 rounded-xl text-sm text-white hover:bg-agro-blue transition-colors font-semibold"
+                        style={{ backgroundColor: 'var(--primary)' }}
                       >
                         Configurar materiales
                       </button>
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                      <p className="text-xs text-muted-foreground font-semibold">
                         MATERIALES A INSPECCIONAR ({filasInspeccion.length})
                       </p>
                       {Object.entries(materialesGrouped).map(([area, filas]) => (
                         <div key={area}>
                           <p
-                            className="text-muted-foreground mb-1.5 px-1"
-                            style={{ fontWeight: 600, fontSize: 10, textTransform: 'uppercase' }}
+                            className="text-muted-foreground mb-1.5 px-1 font-semibold"
+                            style={{ fontSize: 10, textTransform: 'uppercase' }}
                           >
                             {area}
                           </p>
@@ -1210,7 +1205,7 @@ export function InspeccionVidrioPlastico() {
 
               {/* Registrado por */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   REGISTRADO POR
                 </label>
                 <div className="h-11 px-3 rounded-lg bg-muted border border-border flex items-center">
@@ -1225,8 +1220,7 @@ export function InspeccionVidrioPlastico() {
               <button
                 onClick={handleGuardar}
                 disabled={guardando || !!limiteInfo || hayLoteOfflineConflicto || filasInspeccion.length === 0 || cargandoMateriales}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-                style={{ fontWeight: 600 }}
+                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
               >
                 {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                 {!guardando && !online && <WifiOff className="w-4 h-4" />}

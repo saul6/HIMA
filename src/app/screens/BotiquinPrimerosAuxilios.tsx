@@ -559,7 +559,7 @@ export function BotiquinPrimerosAuxilios() {
             <div key={lote.id} className="bg-card border border-border rounded-xl p-4 opacity-80">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                  <span className="text-sm text-foreground font-semibold">
                     {meta?.rancho_nombre ?? '—'}
                   </span>
                   <p className="text-xs text-muted-foreground mt-0.5">{meta?.fecha ? formatFecha(meta.fecha) : '—'}</p>
@@ -605,8 +605,7 @@ export function BotiquinPrimerosAuxilios() {
                         <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
                       )}
                       <span
-                        className="text-sm text-foreground truncate"
-                        style={{ fontWeight: 600 }}
+                        className="text-sm text-foreground truncate font-semibold"
                       >
                         {r.rancho_nombre}
                       </span>
@@ -687,7 +686,7 @@ export function BotiquinPrimerosAuxilios() {
       {/* Bottom Sheet — exportar consolidado */}
       <BottomSheet open={sheetConsolidadoAbierto} onClose={() => setSheetConsolidadoAbierto(false)}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-base text-foreground font-semibold">
                 Exportar consolidado
               </h2>
               <button aria-label="Cerrar" onClick={() => setSheetConsolidadoAbierto(false)} className="p-1">
@@ -698,7 +697,7 @@ export function BotiquinPrimerosAuxilios() {
             <div className="overflow-y-auto p-4 space-y-4">
               {/* Sitio */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
@@ -718,7 +717,7 @@ export function BotiquinPrimerosAuxilios() {
 
               {/* Desde */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   DESDE *
                 </label>
                 <input
@@ -733,7 +732,7 @@ export function BotiquinPrimerosAuxilios() {
 
               {/* Hasta */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   HASTA *
                 </label>
                 <input
@@ -752,8 +751,7 @@ export function BotiquinPrimerosAuxilios() {
               <button
                 onClick={handleGenerarConsolidado}
                 disabled={generandoConsolidado}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-                style={{ fontWeight: 600 }}
+                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
               >
                 {generandoConsolidado && <Loader2 className="w-4 h-4 animate-spin" />}
                 Generar PDF consolidado
@@ -766,7 +764,7 @@ export function BotiquinPrimerosAuxilios() {
 
             {/* Header sheet */}
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-base text-foreground font-semibold">
                 {sheetPaso === 'form' ? 'Nueva verificación' : 'Firmar registro'}
               </h2>
               <button aria-label="Cerrar"
@@ -785,8 +783,7 @@ export function BotiquinPrimerosAuxilios() {
                   {/* Sitio */}
                   <div>
                     <label
-                      className="block text-xs text-muted-foreground mb-1.5"
-                      style={{ fontWeight: 600 }}
+                      className="block text-xs text-muted-foreground mb-1.5 font-semibold"
                     >
                       {terminosSitio.singular.toUpperCase()} *
                     </label>
@@ -817,8 +814,7 @@ export function BotiquinPrimerosAuxilios() {
                   {/* Fecha */}
                   <div>
                     <label
-                      className="block text-xs text-muted-foreground mb-1.5"
-                      style={{ fontWeight: 600 }}
+                      className="block text-xs text-muted-foreground mb-1.5 font-semibold"
                     >
                       FECHA DE VERIFICACIÓN *
                     </label>
@@ -843,7 +839,7 @@ export function BotiquinPrimerosAuxilios() {
                       <>
                         Ya existe un registro para este {terminosSitio.singular.toLowerCase()} en los últimos 7 días.{' '}
                         Próximo registro disponible:{' '}
-                        <span style={{ fontWeight: 600 }}>{limiteInfo.proxima}</span>
+                        <span className="font-semibold">{limiteInfo.proxima}</span>
                       </>
                     )}
                   />
@@ -851,8 +847,7 @@ export function BotiquinPrimerosAuxilios() {
                   {/* Artículos */}
                   <div>
                     <label
-                      className="block text-xs text-muted-foreground mb-2"
-                      style={{ fontWeight: 600 }}
+                      className="block text-xs text-muted-foreground mb-2 font-semibold"
                     >
                       ARTÍCULOS EN BOTIQUÍN
                     </label>
@@ -874,8 +869,7 @@ export function BotiquinPrimerosAuxilios() {
                   {/* Responsable (read-only) */}
                   <div>
                     <label
-                      className="block text-xs text-muted-foreground mb-1.5"
-                      style={{ fontWeight: 600 }}
+                      className="block text-xs text-muted-foreground mb-1.5 font-semibold"
                     >
                       RESPONSABLE
                     </label>
@@ -893,8 +887,7 @@ export function BotiquinPrimerosAuxilios() {
                   <button
                     onClick={handleGuardar}
                     disabled={guardando || !!limiteInfo || hayLoteOfflineConflicto}
-                    className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-                    style={{ fontWeight: 600 }}
+                    className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
                   >
                     {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                     {!guardando && !online && <WifiOff className="w-4 h-4" />}
@@ -907,7 +900,7 @@ export function BotiquinPrimerosAuxilios() {
                 {/* Paso firma_decision */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   <div className="space-y-1">
-                    <p className="text-base" style={{ color: 'var(--foreground)', fontWeight: 600 }}>
+                    <p className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>
                       {profile?.rol === 'admin_org' ? '¿Firmar como Realizó y verificó?' : '¿Firmar como Realizó?'}
                     </p>
                     <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
@@ -947,7 +940,7 @@ export function BotiquinPrimerosAuxilios() {
                   ) : (
                     /* No tiene firma → FirmaPad */
                     <div className="space-y-2">
-                      <p className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                      <p className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                         Primero registra tu firma para poder firmar registros
                       </p>
                       <FirmaPad

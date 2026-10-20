@@ -725,8 +725,8 @@ function DetalleSheet({
           return (
             <button
               onClick={() => { onClose(); navigate(`${tarea.modulo_ruta}?${params}`) }}
-              className="w-full h-9 rounded-lg text-sm flex items-center justify-center gap-2 border border-border transition-colors hover:bg-muted"
-              style={{ color: 'var(--primary)', fontWeight: 600 }}
+              className="w-full h-9 rounded-lg text-sm flex items-center justify-center gap-2 border border-border transition-colors hover:bg-muted font-semibold"
+              style={{ color: 'var(--primary)' }}
             >
               <ExternalLink className="w-4 h-4" />
               Ir a {tarea.modulo_nombre ?? 'el formato'}{labelRancho}

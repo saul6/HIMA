@@ -249,8 +249,7 @@ export function Login() {
                   setModoRecup(true); setRecupEmail(''); setRecupError(null)
                   setRecupEnviado(false); setRecupCaptchaToken(null)
                 }}
-                className="text-sm underline"
-                style={{ fontWeight: 600 }}
+                className="text-sm underline font-semibold"
               >
                 Solicitar un enlace nuevo
               </button>
@@ -266,7 +265,7 @@ export function Login() {
                     className="p-4 rounded-xl text-sm space-y-1"
                     style={{ background: 'var(--auth-success-fill)', color: 'var(--auth-success-text)' }}
                   >
-                    <p style={{ fontWeight: 600 }}>Correo enviado</p>
+                    <p className="font-semibold">Correo enviado</p>
                     <p>
                       Revisa tu bandeja de entrada en <strong>{recupEmail}</strong> y sigue el enlace para crear una nueva contraseña. Te enviamos un enlace a tu correo. Revisa también la carpeta de spam.
                     </p>
@@ -274,8 +273,8 @@ export function Login() {
                   <button
                     type="button"
                     onClick={() => { setModoRecup(false); setRecupEnviado(false); setRecupEmail('') }}
-                    className="w-full text-sm"
-                    style={{ color: 'var(--auth-link-color)', fontWeight: 600 }}
+                    className="w-full text-sm font-semibold"
+                    style={{ color: 'var(--auth-link-color)' }}
                   >
                     ← Volver a iniciar sesión
                   </button>

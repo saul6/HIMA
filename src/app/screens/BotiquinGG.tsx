@@ -334,21 +334,21 @@ export function BotiquinGG() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <span
-                          className="text-xs px-2 py-0.5 rounded"
-                          style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+                          className="text-xs px-2 py-0.5 rounded font-semibold"
+                          style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                         >
                           {formatFecha(reg.fecha)}
                         </span>
                         {reg.total_materiales > 0 && (
                           <span
-                            className="text-xs px-2 py-0.5 rounded"
-                            style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', fontWeight: 600 }}
+                            className="text-xs px-2 py-0.5 rounded font-semibold"
+                            style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                           >
                             {reg.total_materiales} material{reg.total_materiales !== 1 ? 'es' : ''}
                           </span>
                         )}
                       </div>
-                      <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                      <span className="text-sm text-foreground font-semibold">
                         {reg.rancho_nombre}
                       </span>
                       {reg.botiquin_num && (
@@ -407,7 +407,7 @@ export function BotiquinGG() {
       {/* Sheet nuevo registro */}
       <BottomSheet open={sheetNuevo} onClose={handleCerrarSheet} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+          <h2 className="text-base text-foreground font-semibold">
             {sheetPaso === 'firma_decision' ? 'Firmar registro' : sheetPaso === 'firma_gate' ? 'Firma requerida' : 'Nuevo registro de botiquín'}
           </h2>
           <button aria-label="Cerrar" onClick={handleCerrarSheet}>
@@ -439,7 +439,7 @@ export function BotiquinGG() {
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
           {/* Rancho */}
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
               {termino.toUpperCase()} *
             </label>
             <select
@@ -461,7 +461,7 @@ export function BotiquinGG() {
 
           {/* Fecha */}
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>FECHA</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>FECHA</label>
             <input
               type="date"
               value={nFecha}
@@ -474,7 +474,7 @@ export function BotiquinGG() {
           {/* Botiquín num y quién realizó */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>N° BOTIQUÍN</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>N° BOTIQUÍN</label>
               <input maxLength={limiteTexto('m73_registro', 'botiquin_num')}
                 type="text"
                 value={nBotiquinNum}
@@ -485,7 +485,7 @@ export function BotiquinGG() {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>REALIZÓ</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>REALIZÓ</label>
               <input maxLength={limiteTexto('m73_registro', 'realizo')}
                 type="text"
                 value={nRealizo}
@@ -499,7 +499,7 @@ export function BotiquinGG() {
 
           {/* Tabla de materiales */}
           <div>
-            <label className="text-xs mb-2 block" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+            <label className="text-xs mb-2 block font-semibold" style={{ color: 'var(--muted-foreground)' }}>
               MATERIALES
             </label>
             {loadingCatalogo ? (
@@ -513,12 +513,11 @@ export function BotiquinGG() {
               >
                 {/* Encabezado tabla */}
                 <div
-                  className="grid text-xs px-3 py-2"
+                  className="grid text-xs px-3 py-2 font-semibold"
                   style={{
                     gridTemplateColumns: '2fr 1fr 1fr 1fr 1.5fr',
                     backgroundColor: 'var(--muted)',
                     color: 'var(--muted-foreground)',
-                    fontWeight: 600,
                     gap: '0.5rem',
                   }}
                 >
@@ -616,8 +615,8 @@ export function BotiquinGG() {
                   <button
                     type="button"
                     onClick={agregarFilaExtra}
-                    className="flex items-center gap-1.5 text-xs"
-                    style={{ color: 'var(--primary)', fontWeight: 600 }}
+                    className="flex items-center gap-1.5 text-xs font-semibold"
+                    style={{ color: 'var(--primary)' }}
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Agregar otro material
@@ -629,7 +628,7 @@ export function BotiquinGG() {
 
           {/* Observaciones */}
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>OBSERVACIONES</label>
             <TextareaContador limite={limiteTexto('m73_registro', 'observaciones')}
               value={nObservaciones}
               onChange={(e) => setNObservaciones(e.target.value)}
@@ -660,14 +659,14 @@ export function BotiquinGG() {
       {/* Consolidado sheet */}
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="60%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+          <h2 className="text-base text-foreground font-semibold">Exportar consolidado</h2>
           <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>{termino.toUpperCase()} (opcional)</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>{termino.toUpperCase()} (opcional)</label>
             <select
               value={consolidadoForm.ranchoId}
               onChange={(e) => setConsolidadoForm((f) => ({ ...f, ranchoId: e.target.value }))}
@@ -680,13 +679,13 @@ export function BotiquinGG() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DESDE</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>DESDE</label>
               <input type="date" value={consolidadoForm.desde} onChange={(e) => setConsolidadoForm((f) => ({ ...f, desde: e.target.value }))}
                 className="w-full h-11 px-3 rounded-xl border text-sm"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>HASTA</label>
               <input type="date" value={consolidadoForm.hasta} onChange={(e) => setConsolidadoForm((f) => ({ ...f, hasta: e.target.value }))}
                 className="w-full h-11 px-3 rounded-xl border text-sm"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />

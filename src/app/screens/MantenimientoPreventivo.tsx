@@ -114,24 +114,24 @@ function DiaCard({
         <div className="flex flex-wrap gap-1.5 flex-1">
           {h > 0 && (
             <span
-              className="text-xs px-1.5 py-0.5 rounded"
-              style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+              className="text-xs px-1.5 py-0.5 rounded font-semibold"
+              style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
             >
               H: {h}
             </span>
           )}
           {n > 0 && (
             <span
-              className="text-xs px-1.5 py-0.5 rounded"
-              style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', fontWeight: 600 }}
+              className="text-xs px-1.5 py-0.5 rounded font-semibold"
+              style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
             >
               N: {n}
             </span>
           )}
           {na > 0 && (
             <span
-              className="text-xs px-1.5 py-0.5 rounded"
-              style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', fontWeight: 600 }}
+              className="text-xs px-1.5 py-0.5 rounded font-semibold"
+              style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
             >
               N/A: {na}
             </span>
@@ -152,12 +152,11 @@ function AccionToggle({
       className="flex flex-col items-center gap-0.5 flex-shrink-0"
     >
       <span
-        className="rounded text-xs flex items-center justify-center"
+        className="rounded text-xs flex items-center justify-center font-semibold"
         style={{
-          width: 36, height: 24, fontWeight: 600,
+          width: 36, height: 24,
           backgroundColor: value ? 'var(--agro-success-fill)' : 'var(--muted)',
-          color: value ? 'var(--agro-success-text)' : 'var(--muted-foreground)',
-        }}
+          color: value ? 'var(--agro-success-text)' : 'var(--muted-foreground)' }}
       >
         {value ? 'Si' : 'No'}
       </span>
@@ -658,7 +657,7 @@ export function MantenimientoPreventivo() {
                   <div className="flex items-center gap-2 mb-2">
                     <ChipOffline lote={lote} />
                   </div>
-                  <div className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                  <div className="text-sm text-foreground font-semibold">
                     {(lote.metadatos as any)?.rancho_nombre ?? '—'}
                   </div>
                   <div className="text-xs text-muted-foreground mt-0.5">
@@ -676,13 +675,13 @@ export function MantenimientoPreventivo() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <span
-                            className="text-xs px-2 py-0.5 rounded"
-                            style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+                            className="text-xs px-2 py-0.5 rounded font-semibold"
+                            style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                           >
                             {mesLabel(reg.anio, reg.mes)}
                           </span>
                         </div>
-                        <span className="text-sm text-foreground truncate block" style={{ fontWeight: 600 }}>
+                        <span className="text-sm text-foreground truncate block font-semibold">
                           {reg.rancho_nombre}
                         </span>
                         <span className="text-xs text-muted-foreground">{reg.rancho_codigo}</span>
@@ -732,7 +731,7 @@ export function MantenimientoPreventivo() {
 
           {/* Observaciones */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-            <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Observaciones del mes</h2>
+            <h2 className="text-sm text-foreground font-semibold">Observaciones del mes</h2>
             <TextareaContador limite={limiteTexto('m45_registro_mensual', 'observaciones')}
               value={obsLocal}
               onChange={(e) => setObsLocal(e.target.value)}
@@ -750,12 +749,12 @@ export function MantenimientoPreventivo() {
             onClick={abrirSheetAcciones}
             className="w-full flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3"
           >
-            <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>Acciones del mes</span>
+            <span className="text-sm text-foreground font-semibold">Acciones del mes</span>
             <div className="flex items-center gap-2">
               {itemsConAccion > 0 && (
                 <span
-                  className="text-xs px-2 py-0.5 rounded"
-                  style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+                  className="text-xs px-2 py-0.5 rounded font-semibold"
+                  style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                 >
                   {itemsConAccion} con acción
                 </span>
@@ -766,7 +765,7 @@ export function MantenimientoPreventivo() {
 
           {/* Días registrados */}
           <div>
-            <h2 className="text-sm text-foreground mb-3" style={{ fontWeight: 600 }}>
+            <h2 className="text-sm text-foreground mb-3 font-semibold">
               Días registrados
             </h2>
             {loadingDetalle ? (
@@ -778,7 +777,7 @@ export function MantenimientoPreventivo() {
                 {lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'dia' && (l.metadatos as any)?.registro_id === registroActivo?.id).map((lote) => (
                   <div key={lote.id} className="bg-card border border-border rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                      <span className="text-sm text-foreground font-semibold">
                         Día {(lote.metadatos as any)?.dia ?? '—'}
                       </span>
                     </div>
@@ -787,7 +786,7 @@ export function MantenimientoPreventivo() {
                 ))}
                 {diasConData.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'dia' && (l.metadatos as any)?.registro_id === registroActivo?.id).length === 0 ? (
                   <div className="bg-card border border-border rounded-xl p-6 text-center">
-                    <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin días aún</p>
+                    <p className="text-sm text-foreground font-semibold">Sin días aún</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Registra el primer día con el botón +
                     </p>
@@ -935,8 +934,8 @@ export function MantenimientoPreventivo() {
                   <div key={area} className="border border-border rounded-xl overflow-hidden">
                     <button
                       onClick={() => toggleAreaDia(area)}
-                      className="w-full flex items-center justify-between px-3 py-2.5 text-xs"
-                      style={{ backgroundColor: 'var(--muted)', fontWeight: 600 }}
+                      className="w-full flex items-center justify-between px-3 py-2.5 text-xs font-semibold"
+                      style={{ backgroundColor: 'var(--muted)' }}
                     >
                       <span className="text-foreground">{area}</span>
                       <ChevronLeft
@@ -963,9 +962,8 @@ export function MantenimientoPreventivo() {
                                 </span>
                               )}
                               <span
-                                className="text-xs px-2 py-0.5 rounded flex-shrink-0"
+                                className="text-xs px-2 py-0.5 rounded flex-shrink-0 font-semibold"
                                 style={{
-                                  fontWeight: 600,
                                   backgroundColor: v === 'hecho'
                                     ? 'var(--agro-success-fill)'
                                     : v === 'no_hecho'
@@ -1019,8 +1017,8 @@ export function MantenimientoPreventivo() {
                   <div key={area} className="border border-border rounded-xl overflow-hidden">
                     <button
                       onClick={() => toggleAreaAcc(area)}
-                      className="w-full flex items-center justify-between px-3 py-2.5 text-xs"
-                      style={{ backgroundColor: 'var(--muted)', fontWeight: 600 }}
+                      className="w-full flex items-center justify-between px-3 py-2.5 text-xs font-semibold"
+                      style={{ backgroundColor: 'var(--muted)' }}
                     >
                       <span className="text-foreground">{area}</span>
                       <ChevronLeft

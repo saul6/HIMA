@@ -543,7 +543,7 @@ export function NuevaAplicacion() {
           <p className="text-sm text-agro-info-text">
             La fecha de aplicación supera por más de 7 días la recomendación del asesor.
             Verifica con{" "}
-            <span style={{ fontWeight: 600 }}>{formData.technicalAdvisor}</span> antes de continuar.
+            <span className="font-semibold">{formData.technicalAdvisor}</span> antes de continuar.
           </p>
         </div>
       )}
@@ -625,7 +625,7 @@ export function NuevaAplicacion() {
       {currentStep === 5 && aplicacionGuardada?.pendiente && (
         <div className="p-4 space-y-4">
           <div className="rounded-xl p-4 bg-agro-info-fill">
-            <p className="text-sm text-agro-info-text" style={{ fontWeight: 600 }}>
+            <p className="text-sm text-agro-info-text font-semibold">
               Aplicación guardada sin conexión
             </p>
             <p className="text-sm text-agro-info-text mt-1">
@@ -639,8 +639,7 @@ export function NuevaAplicacion() {
                   toast.warning("No se pudo generar el PDF")
                 }
               }}
-              className="w-full py-3 rounded-xl border border-border bg-card text-foreground"
-              style={{ fontWeight: 600 }}
+              className="w-full py-3 rounded-xl border border-border bg-card text-foreground font-semibold"
             >
               Descargar PDF (pendiente de sincronizar)
             </button>

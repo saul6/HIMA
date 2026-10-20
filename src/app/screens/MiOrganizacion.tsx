@@ -328,7 +328,7 @@ export function MiOrganizacion() {
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-foreground flex-1 min-w-0 truncate" style={{ fontWeight: 600 }}>
+        <h1 className="text-foreground flex-1 min-w-0 truncate font-semibold">
           Mi organización
         </h1>
       </header>
@@ -347,10 +347,10 @@ export function MiOrganizacion() {
             {/* Nombre de la organización */}
             {organizacion && (
               <div className="bg-card border border-border rounded-xl p-4">
-                <p className="text-xs text-muted-foreground mb-1" style={{ fontWeight: 600 }}>
+                <p className="text-xs text-muted-foreground mb-1 font-semibold">
                   ORGANIZACIÓN
                 </p>
-                <p className="text-foreground" style={{ fontWeight: 600 }}>
+                <p className="text-foreground font-semibold">
                   {organizacion.nombre}
                 </p>
               </div>
@@ -359,12 +359,12 @@ export function MiOrganizacion() {
             {/* Configuración del equipo — solo admin */}
             {esAdmin && organizacion && (
               <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-                <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                <p className="text-xs text-muted-foreground font-semibold">
                   GESTIÓN DEL EQUIPO
                 </p>
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    <p className="text-sm text-foreground font-semibold">
                       Editar registros de empleados
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -389,7 +389,7 @@ export function MiOrganizacion() {
               <div className="bg-card border border-border rounded-xl p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <p className="text-xs text-muted-foreground font-semibold">
                     ASIGNACIÓN DE {sPlural.toUpperCase()} A OPERARIOS
                   </p>
                 </div>
@@ -404,20 +404,19 @@ export function MiOrganizacion() {
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <span className="text-xs text-primary" style={{ fontWeight: 600 }}>
+                            <span className="text-xs text-primary font-semibold">
                               {(emp.nombre_completo ?? '').split(' ').slice(0, 2).map((p) => p[0] ?? '').join('').toUpperCase()}
                             </span>
                           </div>
-                          <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                          <span className="text-sm text-foreground truncate font-semibold">
                             {emp.nombre_completo ?? 'Sin nombre'}
                           </span>
                         </div>
                         <span
-                          className="text-xs flex-shrink-0 px-2 py-0.5 rounded-full"
+                          className="text-xs flex-shrink-0 px-2 py-0.5 rounded-full font-semibold"
                           style={{
                             background: count > 0 ? 'var(--primary)' : 'var(--muted-foreground)',
                             color: '#fff',
-                            fontWeight: 600,
                           }}
                         >
                           {count} {count === 1 ? sTerminoL : sPluralL}
@@ -432,7 +431,7 @@ export function MiOrganizacion() {
             {/* Lista de ranchos */}
             <div>
               <div className="flex items-center justify-between mb-2 px-1">
-                <p className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                <p className="text-xs text-muted-foreground font-semibold">
                   {sPlural.toUpperCase()} ({ranchos.length}{limiteActual !== null ? ` de ${limiteActual}` : ''})
                 </p>
                 {esIlimitado ? (
@@ -459,8 +458,8 @@ export function MiOrganizacion() {
                   />
                   <div className="flex-1 min-w-0">
                     <p
-                      className="text-sm"
-                      style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}
+                      className="text-sm font-semibold"
+                      style={{ color: 'var(--agro-info-text)' }}
                     >
                       Cuenta pendiente de activación
                     </p>
@@ -482,8 +481,8 @@ export function MiOrganizacion() {
                   />
                   <div className="flex-1 min-w-0">
                     <p
-                      className="text-sm"
-                      style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}
+                      className="text-sm font-semibold"
+                      style={{ color: 'var(--agro-info-text)' }}
                     >
                       Has alcanzado el límite de tu plan ({limiteActual} {sPluralL}).
                     </p>
@@ -511,8 +510,7 @@ export function MiOrganizacion() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 mb-0.5">
                           <span
-                            className="text-foreground text-sm truncate"
-                            style={{ fontWeight: 600 }}
+                            className="text-foreground text-sm truncate font-semibold"
                           >
                             {r.nombre}
                           </span>
@@ -565,7 +563,7 @@ export function MiOrganizacion() {
       <BottomSheet open={sheetAbierto} onClose={cerrarSheet}>
 
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-base text-foreground font-semibold">
                 {ranchoEditando ? `Editar ${sTerminoL}` : `Nuevo ${sTerminoL}`}
               </h2>
               <button type="button" aria-label="Cerrar" onClick={cerrarSheet} className="p-3 -m-2">
@@ -575,7 +573,7 @@ export function MiOrganizacion() {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   NOMBRE {sGenero === 'f' ? 'DE LA' : 'DEL'} {sTermino.toUpperCase()} *
                 </label>
                 <input
@@ -593,7 +591,7 @@ export function MiOrganizacion() {
 
               {!ranchoEditando && (
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                  <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                     CÓDIGO *
                   </label>
                   <input
@@ -611,7 +609,7 @@ export function MiOrganizacion() {
               )}
 
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   CULTIVO *
                 </label>
                 <select
@@ -648,7 +646,7 @@ export function MiOrganizacion() {
               </div>
 
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   SUPERFICIE (ha) *
                 </label>
                 <input
@@ -672,8 +670,7 @@ export function MiOrganizacion() {
               <button
                 onClick={handleGuardar}
                 disabled={guardando}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-                style={{ fontWeight: 600 }}
+                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
               >
                 {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                 {ranchoEditando ? 'Guardar cambios' : `Crear ${sTerminoL}`}
@@ -686,7 +683,7 @@ export function MiOrganizacion() {
 
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <div className="min-w-0 flex-1">
-                <h2 className="text-base text-foreground truncate" style={{ fontWeight: 600 }}>
+                <h2 className="text-base text-foreground truncate font-semibold">
                   {empleadoSeleccionado?.nombre_completo ?? 'Sin nombre'}
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">

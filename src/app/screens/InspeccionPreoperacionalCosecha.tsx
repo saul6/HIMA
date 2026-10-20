@@ -110,9 +110,8 @@ function ToggleItem({
         <button
           type="button"
           onClick={() => onChange(!valor)}
-          className="flex-shrink-0 w-16 h-7 rounded-full text-xs transition-colors"
+          className="flex-shrink-0 w-16 h-7 rounded-full text-xs transition-colors font-semibold"
           style={{
-            fontWeight: 600,
             backgroundColor: valor ? 'var(--primary)' : 'var(--switch-background)',
             color: valor ? '#fff' : 'var(--muted-foreground)',
           }}
@@ -144,27 +143,25 @@ function DiaCard({ dia }: { dia: M11DiaConResultados }) {
     <div className="bg-card border border-border rounded-xl p-4">
       <div className="flex items-center gap-2 mb-2">
         <CalendarDays className="w-4 h-4 text-primary flex-shrink-0" />
-        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+        <span className="text-sm text-foreground font-semibold">
           {formatFechaCorta(dia.fecha)}
         </span>
       </div>
       <div className="flex gap-2 flex-wrap">
         <span
-          className="text-xs px-2 py-0.5 rounded"
+          className="text-xs px-2 py-0.5 rounded font-semibold"
           style={{
             backgroundColor: 'var(--agro-success-fill)',
             color: 'var(--agro-success-text)',
-            fontWeight: 600,
           }}
         >
           {numSI} Sí
         </span>
         <span
-          className="text-xs px-2 py-0.5 rounded"
+          className="text-xs px-2 py-0.5 rounded font-semibold"
           style={{
             backgroundColor: numNO > 0 ? 'var(--agro-danger-fill)' : 'var(--muted)',
             color: numNO > 0 ? 'var(--agro-danger-text)' : 'var(--muted-foreground)',
-            fontWeight: 600,
           }}
         >
           {numNO} No
@@ -651,7 +648,7 @@ export function InspeccionPreoperacionalCosecha() {
                   <div className="flex items-center gap-2 mb-2">
                     <ChipOffline lote={lote} />
                   </div>
-                  <div className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                  <div className="text-sm text-foreground font-semibold">
                     {(lote.metadatos as any)?.rancho_nombre ?? '—'}
                   </div>
                   <div className="text-xs text-muted-foreground mt-0.5">
@@ -669,17 +666,16 @@ export function InspeccionPreoperacionalCosecha() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <span
-                          className="text-xs px-2 py-0.5 rounded"
+                          className="text-xs px-2 py-0.5 rounded font-semibold"
                           style={{
                             backgroundColor: 'var(--agro-success-fill)',
                             color: 'var(--agro-success-text)',
-                            fontWeight: 600,
                           }}
                         >
                           {formatMesLabel(reg.mes)}
                         </span>
                       </div>
-                      <div className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                      <div className="text-sm text-foreground truncate font-semibold">
                         {reg.rancho_nombre}
                       </div>
                       {reg.realizado_por_nombre && (
@@ -721,7 +717,7 @@ export function InspeccionPreoperacionalCosecha() {
 
           {/* Observaciones */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-            <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+            <h2 className="text-sm text-foreground font-semibold">
               Observaciones del mes
             </h2>
             <TextareaContador limite={limiteTexto('m11_registro_mensual', 'observaciones')}
@@ -738,7 +734,7 @@ export function InspeccionPreoperacionalCosecha() {
 
           {/* Días de inspección */}
           <div>
-            <h2 className="text-sm text-foreground mb-3" style={{ fontWeight: 600 }}>
+            <h2 className="text-sm text-foreground mb-3 font-semibold">
               Días de inspección
             </h2>
 
@@ -752,7 +748,7 @@ export function InspeccionPreoperacionalCosecha() {
                   <div key={lote.id} className="bg-card border border-border rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-1">
                       <CalendarDays className="w-4 h-4 text-primary flex-shrink-0" />
-                      <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                      <span className="text-sm text-foreground font-semibold">
                         {formatFechaCorta((lote.metadatos as any)?.fecha ?? '')}
                       </span>
                     </div>
@@ -793,7 +789,7 @@ export function InspeccionPreoperacionalCosecha() {
 
             <div className="pt-4 px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                <h2 className="text-base text-foreground font-semibold">
                   Nuevo registro mensual
                 </h2>
                 <button aria-label="Cerrar" onClick={() => setSheetNuevo(false)}>
@@ -804,7 +800,7 @@ export function InspeccionPreoperacionalCosecha() {
               <div className="space-y-4">
                 {/* Rancho */}
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     {terminosSitio.singular} *
                   </label>
                   <select
@@ -825,7 +821,7 @@ export function InspeccionPreoperacionalCosecha() {
 
                 {/* Mes */}
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     Mes de registro *
                   </label>
                   <input
@@ -838,7 +834,7 @@ export function InspeccionPreoperacionalCosecha() {
 
                 {/* Realizó */}
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     Realizó la inspección
                   </label>
                   <input
@@ -875,7 +871,7 @@ export function InspeccionPreoperacionalCosecha() {
 
             <div className="pt-4 px-4 pb-2 flex-shrink-0">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                <h2 className="text-base text-foreground font-semibold">
                   {sheetDiaPaso === 'firma_decision' ? 'Firmar registro' : sheetDiaPaso === 'firma_gate' ? 'Firma requerida' : 'Agregar día de inspección'}
                 </h2>
                 <button aria-label="Cerrar" onClick={handleCerrarSheetDia}>
@@ -904,7 +900,7 @@ export function InspeccionPreoperacionalCosecha() {
                 <div className="px-4 pb-2 flex-shrink-0">
                   {/* Fecha */}
                   <div className="space-y-1 mb-4">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                    <label className="text-xs text-muted-foreground font-semibold">
                       Fecha de inspección *
                     </label>
                     <input
@@ -945,11 +941,10 @@ export function InspeccionPreoperacionalCosecha() {
                     {seccionesAgrupadas.map((sec) => (
                       <div key={sec.label} className="mb-4">
                         <div
-                          className="text-xs px-3 py-2 rounded-lg mb-1"
+                          className="text-xs px-3 py-2 rounded-lg mb-1 font-semibold"
                           style={{
                             backgroundColor: 'var(--primary)',
                             color: '#fff',
-                            fontWeight: 600,
                           }}
                         >
                           {sec.label}
@@ -991,7 +986,7 @@ export function InspeccionPreoperacionalCosecha() {
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="55%">
             <div className="pt-4 px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                <h2 className="text-base text-foreground font-semibold">
                   Exportar consolidado
                 </h2>
                 <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}>
@@ -1002,7 +997,7 @@ export function InspeccionPreoperacionalCosecha() {
               <div className="space-y-4">
                 {/* Rancho */}
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     {terminosSitio.singular} *
                   </label>
                   <select
@@ -1024,7 +1019,7 @@ export function InspeccionPreoperacionalCosecha() {
                 {/* Rango de meses */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                    <label className="text-xs text-muted-foreground font-semibold">
                       Desde
                     </label>
                     <input
@@ -1035,7 +1030,7 @@ export function InspeccionPreoperacionalCosecha() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                    <label className="text-xs text-muted-foreground font-semibold">
                       Hasta
                     </label>
                     <input

@@ -447,19 +447,19 @@ export function ManifiestoEmbarque() {
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                    <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    <span className="text-sm text-foreground font-semibold">
                       {m.rancho_nombre}
                     </span>
                     {m.folio && (
-                      <span className="text-xs px-1.5 py-0.5 rounded"
-                        style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', fontWeight: 600 }}>
+                      <span className="text-xs px-1.5 py-0.5 rounded font-semibold"
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
                         #{m.folio}
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">{formatFecha(m.fecha)}</p>
                   {m.empresa && (
-                    <p className="text-xs mt-0.5" style={{ fontWeight: 600 }}>{m.empresa}</p>
+                    <p className="text-xs mt-0.5 font-semibold">{m.empresa}</p>
                   )}
                   {m.nombre_chofer && (
                     <p className="text-xs text-muted-foreground mt-0.5">Chofer: {m.nombre_chofer}</p>
@@ -467,7 +467,7 @@ export function ManifiestoEmbarque() {
                   {m.incidencia_id && (
                     <div className="flex items-center gap-1 mt-1">
                       <Bug className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
-                      <span className="text-xs" style={{ color: 'var(--agro-danger-text)', fontWeight: 600 }}>
+                      <span className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
                         Plaga registrada → M13
                       </span>
                     </div>
@@ -508,7 +508,7 @@ export function ManifiestoEmbarque() {
       {/* ═══ SHEET: FORMULARIO ══════════════════════════════════════════════════ */}
       <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) handleCerrarSheet() }} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nuevo manifiesto</h2>
+          <h2 className="text-base text-foreground font-semibold">Nuevo manifiesto</h2>
           <button aria-label="Cerrar" type="button" onClick={() => { if (!guardando) handleCerrarSheet() }}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -540,7 +540,7 @@ export function ManifiestoEmbarque() {
             </TituloSeccion>
 
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+              <label className="text-xs text-muted-foreground font-semibold">
                 {terminosSitio.singular} *
               </label>
               <select
@@ -555,7 +555,7 @@ export function ManifiestoEmbarque() {
 
             <div className="flex gap-3">
               <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Fecha *</label>
+                <label className="text-xs text-muted-foreground font-semibold">Fecha *</label>
                 <input
                   type="date"
                   className={fieldCls}
@@ -566,7 +566,7 @@ export function ManifiestoEmbarque() {
                 />
               </div>
               <div className="flex-1 space-y-1">
-                <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Folio</label>
+                <label className="text-xs text-muted-foreground font-semibold">Folio</label>
                 <input maxLength={limiteTexto('m38_manifiestos', 'folio')}
                   type="text"
                   className={fieldCls}
@@ -578,19 +578,19 @@ export function ManifiestoEmbarque() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Empresa / Cliente</label>
+              <label className="text-xs text-muted-foreground font-semibold">Empresa / Cliente</label>
               <input maxLength={limiteTexto('m38_manifiestos', 'empresa')} type="text" className={fieldCls} placeholder="Nombre del cliente"
                 value={form.empresa} onChange={e => setF('empresa', e.target.value)} />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Línea transportista</label>
+              <label className="text-xs text-muted-foreground font-semibold">Línea transportista</label>
               <input maxLength={limiteTexto('m38_manifiestos', 'linea_transportista')} type="text" className={fieldCls} placeholder="Nombre de la línea"
                 value={form.linea_transportista} onChange={e => setF('linea_transportista', e.target.value)} />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Nombre del chofer</label>
+              <label className="text-xs text-muted-foreground font-semibold">Nombre del chofer</label>
               <input maxLength={limiteTexto('m38_manifiestos', 'nombre_chofer')} type="text" className={fieldCls} placeholder="Nombre completo"
                 value={form.nombre_chofer} onChange={e => setF('nombre_chofer', e.target.value)} />
             </div>
@@ -605,7 +605,7 @@ export function ManifiestoEmbarque() {
                 { label: 'No. chismógrafo',     key: 'num_chismografo' as const, ph: 'No. chismo.' },
               ] as const).map(({ label, key, ph }) => (
                 <div key={key} className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{label}</label>
+                  <label className="text-xs text-muted-foreground font-semibold">{label}</label>
                   <input type="text" className={fieldCls} placeholder={ph}
                     value={form[key]} onChange={e => setF(key, e.target.value)} />
                 </div>
@@ -621,9 +621,9 @@ export function ManifiestoEmbarque() {
             <div className="bg-card border border-border rounded-xl overflow-hidden">
               <div className="grid grid-cols-3 border-b border-border"
                 style={{ backgroundColor: 'var(--muted)' }}>
-                <div className="px-3 py-2 text-xs text-muted-foreground" style={{ fontWeight: 600 }} />
-                <div className="px-3 py-2 text-xs text-muted-foreground text-center" style={{ fontWeight: 600 }}>Hora</div>
-                <div className="px-3 py-2 text-xs text-muted-foreground text-center" style={{ fontWeight: 600 }}>Temp (°C)</div>
+                <div className="px-3 py-2 text-xs text-muted-foreground font-semibold" />
+                <div className="px-3 py-2 text-xs text-muted-foreground text-center font-semibold">Hora</div>
+                <div className="px-3 py-2 text-xs text-muted-foreground text-center font-semibold">Temp (°C)</div>
               </div>
               {([
                 { label: 'Llegada', horaKey: 'llegada_hora' as const, tempKey: 'llegada_temp' as const },
@@ -631,7 +631,7 @@ export function ManifiestoEmbarque() {
                 { label: 'Salida',  horaKey: 'salida_hora'  as const, tempKey: 'salida_temp'  as const },
               ] as const).map((row, i) => (
                 <div key={i} className="grid grid-cols-3 divide-x divide-border border-t border-border">
-                  <div className="px-3 py-2 flex items-center text-xs text-foreground" style={{ fontWeight: 600 }}>
+                  <div className="px-3 py-2 flex items-center text-xs text-foreground font-semibold">
                     {row.label}
                   </div>
                   <div className="p-1.5">
@@ -667,8 +667,8 @@ export function ManifiestoEmbarque() {
               <button
                 type="button"
                 onClick={() => setLineas(prev => [...prev, nuevaLinea()])}
-                className="flex items-center gap-1 text-xs"
-                style={{ color: 'var(--primary)', fontWeight: 600 }}
+                className="flex items-center gap-1 text-xs font-semibold"
+                style={{ color: 'var(--primary)' }}
               >
                 <Plus className="w-3.5 h-3.5" />
                 Agregar
@@ -679,7 +679,7 @@ export function ManifiestoEmbarque() {
               {lineas.map((l, idx) => (
                 <div key={l._key} className="bg-card border border-border rounded-xl p-3 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                    <span className="text-xs text-muted-foreground font-semibold">
                       Línea {idx + 1}
                     </span>
                     {lineas.length > 1 && (
@@ -776,7 +776,7 @@ export function ManifiestoEmbarque() {
                 { label: 'Presencia de plagas',        key: 'cond_presencia_plagas' as const },
               ] as const).map(({ label, key }) => (
                 <div key={key} className="px-3 py-2.5 space-y-1.5">
-                  <p className="text-xs text-foreground" style={{ fontWeight: 600 }}>{label}</p>
+                  <p className="text-xs text-foreground font-semibold">{label}</p>
                   <ToggleSiNo value={form[key]} onChange={v => setF(key, v)} />
                 </div>
               ))}
@@ -792,7 +792,7 @@ export function ManifiestoEmbarque() {
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     Descripción del hallazgo de plaga *
                   </label>
                   <TextareaContador limite={limiteTexto('m13_incidencias', 'descripcion')}
@@ -821,7 +821,7 @@ export function ManifiestoEmbarque() {
                 { label: 'Distribución del embarque', key: 'tar_distribucion' as const },
               ] as const).map(({ label, key }) => (
                 <div key={key} className="px-3 py-2.5 space-y-1.5">
-                  <p className="text-xs text-foreground" style={{ fontWeight: 600 }}>{label}</p>
+                  <p className="text-xs text-foreground font-semibold">{label}</p>
                   <ToggleBuenMalo value={form[key]} onChange={v => setF(key, v)} />
                 </div>
               ))}
@@ -855,14 +855,14 @@ export function ManifiestoEmbarque() {
       {/* ═══ SHEET: CONSOLIDADO ═════════════════════════════════════════════════ */}
       <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+          <h2 className="text-base text-foreground font-semibold">Exportar consolidado</h2>
           <button aria-label="Cerrar" type="button" onClick={() => setConsolidadoOpen(false)}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
         <div className="overflow-y-auto px-4 pb-8 space-y-4" style={{ flex: 1 }}>
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground font-semibold">
               {terminosSitio.singular}{' '}
               <span style={{ fontWeight: 400 }}>(opcional)</span>
             </label>
@@ -877,13 +877,13 @@ export function ManifiestoEmbarque() {
           </div>
           <div className="flex gap-3">
             <div className="flex-1 space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Desde</label>
+              <label className="text-xs text-muted-foreground font-semibold">Desde</label>
               <input type="date" className={fieldCls}
                 value={consolidadoForm.desde}
                 onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))} />
             </div>
             <div className="flex-1 space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Hasta</label>
+              <label className="text-xs text-muted-foreground font-semibold">Hasta</label>
               <input type="date" className={fieldCls}
                 value={consolidadoForm.hasta}
                 onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))} />

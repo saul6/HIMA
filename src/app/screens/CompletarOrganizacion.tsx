@@ -54,9 +54,9 @@ export function CompletarOrganizacion() {
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
           <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center">
-            <span className="text-white text-xl" style={{ fontWeight: 600 }}>HF</span>
+            <span className="text-white text-xl font-semibold">HF</span>
           </div>
-          <h1 className="text-xl text-foreground" style={{ fontWeight: 600 }}>Un paso más</h1>
+          <h1 className="text-xl text-foreground font-semibold">Un paso más</h1>
           <p className="text-sm text-muted-foreground text-center">
             Nombra tu organización para empezar a usar M.A.D.Y.
           </p>
@@ -64,7 +64,7 @@ export function CompletarOrganizacion() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground block" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground block font-semibold">
               Nombre de tu organización
             </label>
             <input
@@ -92,8 +92,7 @@ export function CompletarOrganizacion() {
           <button
             type="submit"
             disabled={submitting || !nombreOrg.trim()}
-            className="w-full h-14 bg-primary text-white rounded-3xl hover:bg-agro-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ fontWeight: 600 }}
+            className="w-full h-14 bg-primary text-white rounded-3xl hover:bg-agro-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
           >
             {submitting ? 'Creando organización…' : 'Continuar'}
           </button>

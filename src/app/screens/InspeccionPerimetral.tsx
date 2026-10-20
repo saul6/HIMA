@@ -110,9 +110,8 @@ function ToggleItem({
       <button
         type="button"
         onClick={() => onChange(!valor)}
-        className="flex-shrink-0 w-16 h-7 rounded-full text-xs transition-colors"
+        className="flex-shrink-0 w-16 h-7 rounded-full text-xs transition-colors font-semibold"
         style={{
-          fontWeight: 600,
           backgroundColor: valor ? 'var(--primary)' : 'var(--switch-background)',
           color: valor ? '#fff' : 'var(--muted-foreground)',
         }}
@@ -139,27 +138,25 @@ function DiaCard({
     <div className="bg-card border border-border rounded-xl p-4">
       <div className="flex items-center gap-2 mb-2">
         <CalendarDays className="w-4 h-4 text-primary flex-shrink-0" />
-        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+        <span className="text-sm text-foreground font-semibold">
           {formatFechaCorta(dia.fecha)}
         </span>
       </div>
       <div className="flex gap-2">
         <span
-          className="text-xs px-2 py-0.5 rounded"
+          className="text-xs px-2 py-0.5 rounded font-semibold"
           style={{
             backgroundColor: 'var(--agro-success-fill)',
             color: 'var(--agro-success-text)',
-            fontWeight: 600,
           }}
         >
           {numSi} Sí
         </span>
         <span
-          className="text-xs px-2 py-0.5 rounded"
+          className="text-xs px-2 py-0.5 rounded font-semibold"
           style={{
             backgroundColor: numNo > 0 ? 'var(--agro-danger-fill)' : 'var(--muted)',
             color: numNo > 0 ? 'var(--agro-danger-text)' : 'var(--muted-foreground)',
-            fontWeight: 600,
           }}
         >
           {numNo} No
@@ -662,11 +659,11 @@ export function InspeccionPerimetral() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>
+                      <span className="text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
                         {meta?.mes ? formatMesLabel(meta.mes) : '—'}
                       </span>
                     </div>
-                    <div className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>{meta?.rancho_nombre ?? '—'}</div>
+                    <div className="text-sm text-foreground truncate font-semibold">{meta?.rancho_nombre ?? '—'}</div>
                   </div>
                   <ChipOffline lote={lote} />
                 </div>
@@ -690,11 +687,10 @@ export function InspeccionPerimetral() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <span
-                          className="text-xs px-2 py-0.5 rounded"
+                          className="text-xs px-2 py-0.5 rounded font-semibold"
                           style={{
                             backgroundColor: 'var(--agro-success-fill)',
                             color: 'var(--agro-success-text)',
-                            fontWeight: 600,
                           }}
                         >
                           {formatMesLabel(reg.mes)}
@@ -712,7 +708,7 @@ export function InspeccionPerimetral() {
                           </span>
                         )}
                       </div>
-                      <div className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                      <div className="text-sm text-foreground truncate font-semibold">
                         {reg.rancho_nombre}
                       </div>
                       {reg.responsable_nombre && (
@@ -781,11 +777,11 @@ export function InspeccionPerimetral() {
 
           {/* Observaciones y Otro */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-            <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+            <h2 className="text-sm text-foreground font-semibold">
               Notas del registro
             </h2>
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+              <label className="text-xs text-muted-foreground font-semibold">
                 Observaciones
               </label>
               <TextareaContador limite={limiteTexto('m9_registro_mensual', 'observaciones')}
@@ -797,7 +793,7 @@ export function InspeccionPerimetral() {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+              <label className="text-xs text-muted-foreground font-semibold">
                 Otro
               </label>
               <TextareaContador limite={limiteTexto('m9_registro_mensual', 'otro')}
@@ -815,7 +811,7 @@ export function InspeccionPerimetral() {
 
           {/* Días de inspección */}
           <div>
-            <h2 className="text-sm text-foreground mb-3" style={{ fontWeight: 600 }}>
+            <h2 className="text-sm text-foreground mb-3 font-semibold">
               Días de inspección
             </h2>
 
@@ -827,7 +823,7 @@ export function InspeccionPerimetral() {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <CalendarDays className="w-4 h-4 text-primary flex-shrink-0" />
-                      <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                      <span className="text-sm text-foreground font-semibold">
                         {meta?.fecha ? formatFechaCorta(meta.fecha) : '—'}
                       </span>
                       {meta?.items_count && (
@@ -883,7 +879,7 @@ export function InspeccionPerimetral() {
 
             <div className="pt-4 px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                <h2 className="text-base text-foreground font-semibold">
                   Nuevo registro mensual
                 </h2>
                 <button aria-label="Cerrar" onClick={() => setSheetNuevo(false)}>
@@ -894,7 +890,7 @@ export function InspeccionPerimetral() {
               <div className="space-y-4">
                 {/* Rancho */}
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     {terminosSitio.singular} *
                   </label>
                   <select
@@ -915,7 +911,7 @@ export function InspeccionPerimetral() {
 
                 {/* Mes */}
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     Mes de registro *
                   </label>
                   <input
@@ -929,7 +925,7 @@ export function InspeccionPerimetral() {
                 {/* Almacén toggle */}
                 <div className="flex items-center justify-between rounded-xl border border-border bg-card p-4">
                   <div>
-                    <div className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    <div className="text-sm text-foreground font-semibold">
                       ¿{terminosSitio.genero === 'f' ? 'La' : 'El'} {terminosSitio.singular.toLowerCase()} tiene almacén?
                     </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
@@ -939,9 +935,8 @@ export function InspeccionPerimetral() {
                   <button
                     type="button"
                     onClick={() => setNAlmacen((v) => !v)}
-                    className="w-16 h-7 rounded-full text-xs transition-colors flex-shrink-0"
+                    className="w-16 h-7 rounded-full text-xs transition-colors flex-shrink-0 font-semibold"
                     style={{
-                      fontWeight: 600,
                       backgroundColor: nAlmacen ? 'var(--primary)' : 'var(--switch-background)',
                       color: nAlmacen ? '#fff' : 'var(--muted-foreground)',
                     }}
@@ -975,7 +970,7 @@ export function InspeccionPerimetral() {
 
             <div className="pt-4 px-4 pb-2 flex-shrink-0">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                <h2 className="text-base text-foreground font-semibold">
                   {sheetDiaPaso === 'firma_decision' ? 'Firmar registro' : sheetDiaPaso === 'firma_gate' ? 'Firma requerida' : 'Agregar día de inspección'}
                 </h2>
                 <button aria-label="Cerrar" onClick={handleCerrarSheetDia}>
@@ -1004,7 +999,7 @@ export function InspeccionPerimetral() {
                 <div className="px-4 pb-2 flex-shrink-0">
                   {/* Fecha */}
                   <div className="space-y-1 mb-4">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                    <label className="text-xs text-muted-foreground font-semibold">
                       Fecha de inspección *
                     </label>
                     <input
@@ -1048,11 +1043,10 @@ export function InspeccionPerimetral() {
                     {seccionesAgrupadas.map((sec) => (
                       <div key={sec.label} className="mb-4">
                         <div
-                          className="text-xs px-3 py-2 rounded-lg mb-1"
+                          className="text-xs px-3 py-2 rounded-lg mb-1 font-semibold"
                           style={{
                             backgroundColor: 'var(--primary)',
                             color: '#fff',
-                            fontWeight: 600,
                           }}
                         >
                           {sec.label}
@@ -1092,7 +1086,7 @@ export function InspeccionPerimetral() {
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="55%">
             <div className="pt-4 px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+                <h2 className="text-base text-foreground font-semibold">
                   Exportar consolidado
                 </h2>
                 <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}>
@@ -1103,7 +1097,7 @@ export function InspeccionPerimetral() {
               <div className="space-y-4">
                 {/* Rancho */}
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <label className="text-xs text-muted-foreground font-semibold">
                     {terminosSitio.singular} *
                   </label>
                   <select
@@ -1125,7 +1119,7 @@ export function InspeccionPerimetral() {
                 {/* Rango de meses */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                    <label className="text-xs text-muted-foreground font-semibold">
                       Desde
                     </label>
                     <input
@@ -1136,7 +1130,7 @@ export function InspeccionPerimetral() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+                    <label className="text-xs text-muted-foreground font-semibold">
                       Hasta
                     </label>
                     <input

@@ -126,7 +126,7 @@ function MetricCard({
           <div className="h-7 rounded w-12" style={{ backgroundColor: 'var(--muted)' }} />
         </div>
       ) : (
-        <div className="text-3xl tracking-tight mb-1 flex items-end gap-1.5" style={{ fontWeight: 600 }}>
+        <div className="text-3xl tracking-tight mb-1 flex items-end gap-1.5 font-semibold">
           {icon}
           {numericValue !== undefined && format
             ? <AnimatedNumber value={numericValue} format={format} reducedMotion={!!reducedMotion} />
@@ -156,8 +156,8 @@ function HallazgosCard({
         </div>
       ) : (
         <div
-          className="text-3xl tracking-tight mb-1 flex items-end gap-1.5"
-          style={{ fontWeight: 600, color: alerta ? 'var(--agro-info-text)' : 'var(--foreground)' }}
+          className="text-3xl tracking-tight mb-1 flex items-end gap-1.5 font-semibold"
+          style={{ color: alerta ? 'var(--agro-info-text)' : 'var(--foreground)' }}
         >
           <ShieldAlert
             className="w-4 h-4 mb-1 flex-shrink-0"
@@ -300,17 +300,15 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <span
               id="cat-popup-title"
-              className="text-sm text-foreground truncate"
-              style={{ fontWeight: 600 }}
+              className="text-sm text-foreground truncate font-semibold"
             >
               {grupo.label}
             </span>
             <span
-              className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
+              className="text-xs px-2 py-0.5 rounded-full flex-shrink-0 font-semibold"
               style={{
                 backgroundColor: 'var(--agro-success-fill)',
                 color: 'var(--agro-success-text)',
-                fontWeight: 600,
               }}
             >
               {grupo.modulos.length}
@@ -357,7 +355,7 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
                     >
                       <ModIcon className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
                     </div>
-                    <span className="flex-1 text-sm text-muted-foreground" style={{ fontWeight: 600 }}>
+                    <span className="flex-1 text-sm text-muted-foreground font-semibold">
                       {modulo.nombre}
                     </span>
                     <Lock className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
@@ -374,16 +372,15 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
                     >
                       <ModIcon className="w-4 h-4" style={{ color: 'var(--primary)' }} />
                     </div>
-                    <span className="flex-1 text-sm text-foreground" style={{ fontWeight: 600 }}>
+                    <span className="flex-1 text-sm text-foreground font-semibold">
                       {modulo.nombre}
                     </span>
                     {!online && !MODULOS_OFFLINE.includes(modulo.codigo as CodigoOffline) && (
                       <span
-                        className="text-caption px-1.5 py-0.5 rounded flex-shrink-0"
+                        className="text-caption px-1.5 py-0.5 rounded flex-shrink-0 font-semibold"
                         style={{
                           backgroundColor: 'var(--muted)',
                           color: 'var(--muted-foreground)',
-                          fontWeight: 600,
                         }}
                       >
                         Sin red
@@ -459,7 +456,7 @@ function UpsellModal({ modulo, onClose }: { modulo: ModuloVisible | null; onClos
             </div>
           </div>
           <div className="space-y-1">
-            <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>{modulo.nombre}</p>
+            <p className="text-sm text-foreground font-semibold">{modulo.nombre}</p>
             <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
               Este módulo no está incluido en tu plan actual. Contáctanos para activarlo.
             </p>
@@ -662,7 +659,7 @@ export function Home() {
             />
           </Link>
           <div className="text-right min-w-0 flex-1">
-            <div className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+            <div className="text-sm text-foreground truncate font-semibold">
               {loading ? '…' : `Hola, ${profile?.nombre_completo?.split(' ')[0] ?? '—'}`}
             </div>
             <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground min-w-0">
@@ -706,7 +703,7 @@ export function Home() {
           >
             <Clock3 className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
             <div>
-              <p className="text-sm" style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}>
+              <p className="text-sm font-semibold" style={{ color: 'var(--agro-info-text)' }}>
                 Tu cuenta está pendiente de activación
               </p>
               <p className="text-xs mt-0.5" style={{ color: 'var(--agro-info-text)' }}>
@@ -851,7 +848,7 @@ export function Home() {
               style={{ backgroundColor: 'var(--agro-info-fill)' }}
             >
               <AlertTriangle className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
-              <span className="text-sm flex-1" style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}>
+              <span className="text-sm flex-1 font-semibold" style={{ color: 'var(--agro-info-text)' }}>
                 {countCorrecciones}{' '}
                 {countCorrecciones === 1 ? 'registro requiere' : 'registros requieren'} tu corrección
               </span>
@@ -968,7 +965,7 @@ export function Home() {
             {/* Accesos rápidos */}
             <section>
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                <h2 className="text-sm text-foreground font-semibold">
                   Accesos rápidos
                 </h2>
                 {modulosFijados.length > 0 && (
@@ -1029,8 +1026,7 @@ export function Home() {
                               <Icon className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
                             </div>
                             <span
-                              className="text-xs text-center text-muted-foreground line-clamp-2 leading-snug"
-                              style={{ fontWeight: 600 }}
+                              className="text-xs text-center text-muted-foreground line-clamp-2 leading-snug font-semibold"
                             >
                               {modulo.nombre}
                             </span>
@@ -1048,8 +1044,7 @@ export function Home() {
                               <Icon className="w-5 h-5" style={{ color: 'var(--agro-success-text)' }} />
                             </div>
                             <span
-                              className="text-xs text-center text-foreground line-clamp-2 leading-snug"
-                              style={{ fontWeight: 600 }}
+                              className="text-xs text-center text-foreground line-clamp-2 leading-snug font-semibold"
                             >
                               {modulo.nombre}
                             </span>
@@ -1084,7 +1079,7 @@ export function Home() {
                   <Users className="w-4 h-4" style={{ color: 'var(--primary)' }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+                  <p className="text-sm text-foreground font-semibold">
                     Actividad del equipo
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
@@ -1097,7 +1092,7 @@ export function Home() {
 
             {/* Actividad reciente */}
             <section>
-              <h2 className="mb-2 text-sm text-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="mb-2 text-sm text-foreground font-semibold">
                 Actividad reciente
               </h2>
 
@@ -1118,7 +1113,7 @@ export function Home() {
                   className="bg-card border border-border rounded-xl p-5 text-center"
                   style={reducedMotion ? undefined : { animation: 'slideUpFade var(--motion-base) var(--ease-out) both' }}
                 >
-                  <p className="text-sm text-muted-foreground" style={{ fontWeight: 600 }}>
+                  <p className="text-sm text-muted-foreground font-semibold">
                     Sin actividad aún
                   </p>
                   {tieneAplicaciones ? (
@@ -1183,7 +1178,7 @@ export function Home() {
                           <FileCheck className="w-3.5 h-3.5" style={{ color: 'var(--primary)' }} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs text-foreground truncate" style={{ fontWeight: 600 }}>
+                          <p className="text-xs text-foreground truncate font-semibold">
                             {productosTexto}
                           </p>
                           <p className="text-xs text-muted-foreground">{formatFechaCorta(app.fecha)}</p>
@@ -1262,7 +1257,7 @@ export function Home() {
                     </p>
                   </div>
                 )}
-                <h2 className="mb-2 text-sm text-foreground" style={{ fontWeight: 600 }}>
+                <h2 className="mb-2 text-sm text-foreground font-semibold">
                   Inocuidad y BPAs
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -1286,17 +1281,15 @@ export function Home() {
                           <GrupoIcon className="w-[18px] h-[18px]" style={{ color: 'var(--agro-success-text)' }} />
                         </div>
                         <span
-                          className="text-xs text-center text-foreground line-clamp-2 leading-snug w-full"
-                          style={{ fontWeight: 600 }}
+                          className="text-xs text-center text-foreground line-clamp-2 leading-snug w-full font-semibold"
                         >
                           {grupo.label}
                         </span>
                         <span
-                          className="text-xs px-2 py-0.5 rounded-full"
+                          className="text-xs px-2 py-0.5 rounded-full font-semibold"
                           style={{
                             backgroundColor: 'var(--agro-success-fill)',
                             color: 'var(--agro-success-text)',
-                            fontWeight: 600,
                           }}
                         >
                           {grupo.modulos.length}

@@ -120,7 +120,7 @@ function HistorialInline({
   }
   return (
     <div className="border-t border-border p-4 bg-muted space-y-2">
-      <h4 className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+      <h4 className="text-xs text-muted-foreground mb-2 font-semibold">
         HISTORIAL DE MOVIMIENTOS
       </h4>
       {movimientos.map((m) => (
@@ -226,7 +226,7 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
     <BottomSheet open onClose={onClose} height="85%">
 
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+          <h2 className="text-base text-foreground font-semibold">
             Registrar movimiento
           </h2>
           <button type="button" aria-label="Cerrar" onClick={onClose} className="p-3 -m-2">
@@ -237,7 +237,7 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Tipo */}
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground mb-2 block font-semibold">
               Tipo de movimiento
             </label>
             <div className="flex gap-2">
@@ -260,7 +260,7 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
 
           {/* Producto */}
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground mb-2 block font-semibold">
               Producto
             </label>
             <ProductoCombobox
@@ -312,8 +312,7 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full h-14 bg-primary text-white rounded-xl disabled:opacity-50 hover:bg-agro-blue transition-colors"
-            style={{ fontWeight: 600 }}
+            className="w-full h-14 bg-primary text-white rounded-xl disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
           >
             {saving ? "Guardando…" : "Guardar movimiento"}
           </button>
@@ -362,7 +361,7 @@ function ExportarReg01Sheet({ onClose, ranchoOptions, ranchos, orgId }: ExportSh
   return (
     <BottomSheet open onClose={onClose}>
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+          <h2 className="text-base text-foreground font-semibold">
             Exportar REG-01
           </h2>
           <button type="button" aria-label="Cerrar" onClick={onClose} className="p-3 -m-2">
@@ -393,8 +392,7 @@ function ExportarReg01Sheet({ onClose, ranchoOptions, ranchos, orgId }: ExportSh
           <button
             onClick={handleGenerar}
             disabled={generando}
-            className="w-full h-14 bg-primary text-white rounded-xl disabled:opacity-50 hover:bg-agro-blue transition-colors"
-            style={{ fontWeight: 600 }}
+            className="w-full h-14 bg-primary text-white rounded-xl disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
           >
             {generando ? "Generando…" : "Generar PDF"}
           </button>
@@ -498,8 +496,7 @@ export function Inventario() {
           esCampo ? (
             <button
               onClick={() => setShowExportSheet(true)}
-              className="flex items-center gap-1.5 px-3 h-8 rounded-full bg-card border border-border text-foreground hover:bg-muted transition-colors text-xs"
-              style={{ fontWeight: 600 }}
+              className="flex items-center gap-1.5 px-3 h-8 rounded-full bg-card border border-border text-foreground hover:bg-muted transition-colors text-xs font-semibold"
             >
               <FileText className="w-3.5 h-3.5" />
               REG-01
@@ -621,7 +618,7 @@ export function Inventario() {
                     <div className="p-4">
                       <div className="flex items-start justify-between mb-1">
                         <div className="flex-1 min-w-0 pr-2">
-                          <div className="text-sm truncate" style={{ fontWeight: 600 }}>
+                          <div className="text-sm truncate font-semibold">
                             {item.nombre_comercial}
                           </div>
                           <div className="text-xs text-muted-foreground truncate">
@@ -641,8 +638,7 @@ export function Inventario() {
                       <button
                         onClick={() => toggleHistorial(key, item.producto_id, item.rancho_id)}
                         aria-expanded={expanded}
-                        className="mt-2 flex items-center gap-1 text-sm text-primary"
-                        style={{ fontWeight: 600 }}
+                        className="mt-2 flex items-center gap-1 text-sm text-primary font-semibold"
                       >
                         <ChevronDown className={`accordion-arrow w-4 h-4 ${expanded ? 'is-open' : ''}`} />
                         {expanded ? 'Ocultar historial' : 'Ver historial'}
@@ -675,7 +671,7 @@ export function Inventario() {
                     <div className="p-4">
                       <div className="flex items-start justify-between mb-1">
                         <div className="flex-1 min-w-0 pr-2">
-                          <div className="text-sm truncate" style={{ fontWeight: 600 }}>
+                          <div className="text-sm truncate font-semibold">
                             {item.nombre_comercial}
                           </div>
                           <div className="text-xs text-muted-foreground truncate">
@@ -692,8 +688,7 @@ export function Inventario() {
                       <button
                         onClick={() => toggleHistorial(key, item.producto_id)}
                         aria-expanded={expanded}
-                        className="mt-2 flex items-center gap-1 text-sm text-primary"
-                        style={{ fontWeight: 600 }}
+                        className="mt-2 flex items-center gap-1 text-sm text-primary font-semibold"
                       >
                         <ChevronDown className={`accordion-arrow w-4 h-4 ${expanded ? 'is-open' : ''}`} />
                         {expanded ? 'Ocultar historial' : 'Ver historial'}

@@ -255,7 +255,7 @@ export function EmpleadosGG() {
                 style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="text-sm" style={{ fontWeight: 600 }}>{lote.metadatos?.nombre ?? lote.descripcion}</p>
+                    <p className="text-sm font-semibold">{lote.metadatos?.nombre ?? lote.descripcion}</p>
                     {lote.metadatos?.rancho_nombre && (
                       <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{lote.metadatos.rancho_nombre}</p>
                     )}
@@ -283,7 +283,7 @@ export function EmpleadosGG() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>{reg.nombre}</span>
+                      <span className="text-sm text-foreground font-semibold">{reg.nombre}</span>
                       <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
                         {reg.rancho_nombre}
                       </div>
@@ -354,7 +354,7 @@ export function EmpleadosGG() {
       {/* Sheet */}
       <BottomSheet open={sheetNuevo} onClose={handleCerrarSheet} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+          <h2 className="text-base text-foreground font-semibold">
             {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Registrar empleado'}
           </h2>
           <button aria-label="Cerrar" onClick={handleCerrarSheet}>
@@ -397,7 +397,7 @@ export function EmpleadosGG() {
 
           {/* Rancho */}
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
               {termino.toUpperCase()} *
             </label>
             <select
@@ -414,7 +414,7 @@ export function EmpleadosGG() {
 
           {/* Nombre */}
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>NOMBRE COMPLETO *</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>NOMBRE COMPLETO *</label>
             <input maxLength={limiteTexto('m77_empleados', 'nombre')}
               type="text"
               value={form.nombre}
@@ -429,13 +429,13 @@ export function EmpleadosGG() {
           {/* Fecha ingreso y teléfono */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>FECHA INGRESO</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>FECHA INGRESO</label>
               <input type="date" value={form.fecha_ingreso} onChange={setF('fecha_ingreso')}
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>TELÉFONO</label>
+              <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>TELÉFONO</label>
               <input maxLength={limiteTexto('m77_empleados', 'telefono')} type="tel" value={form.telefono} onChange={setF('telefono')} placeholder="10 dígitos"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
@@ -444,7 +444,7 @@ export function EmpleadosGG() {
 
           {/* Domicilio */}
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DOMICILIO</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>DOMICILIO</label>
             <TextareaContador limite={limiteTexto('m77_empleados', 'domicilio')} value={form.domicilio} onChange={setF('domicilio')} rows={2} placeholder="Dirección del empleado"
               className="w-full rounded-xl border px-3 py-2 text-sm resize-none"
               style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
@@ -452,7 +452,7 @@ export function EmpleadosGG() {
 
           {/* Persona de contacto */}
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>PERSONA DE CONTACTO EN CASO DE EMERGENCIA</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>PERSONA DE CONTACTO EN CASO DE EMERGENCIA</label>
             <input maxLength={limiteTexto('m77_empleados', 'persona_contacto')} type="text" value={form.persona_contacto} onChange={setF('persona_contacto')} placeholder="Nombre y teléfono"
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
               style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
@@ -460,7 +460,7 @@ export function EmpleadosGG() {
 
           {/* Observaciones */}
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>OBSERVACIONES</label>
             <TextareaContador limite={limiteTexto('m77_empleados', 'observaciones')} value={form.observaciones} onChange={setF('observaciones')} rows={2} placeholder="Observaciones adicionales…"
               className="w-full rounded-xl border px-3 py-2 text-sm resize-none"
               style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
@@ -478,14 +478,14 @@ export function EmpleadosGG() {
       {/* Consolidado sheet */}
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="50%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar directorio</h2>
+          <h2 className="text-base text-foreground font-semibold">Exportar directorio</h2>
           <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 pt-4">
           <div className="space-y-1">
-            <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>{termino.toUpperCase()} (opcional)</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>{termino.toUpperCase()} (opcional)</label>
             <select
               value={consolidadoRanchoId}
               onChange={(e) => setConsolidadoRanchoId(e.target.value)}

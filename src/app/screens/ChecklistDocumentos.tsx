@@ -202,8 +202,8 @@ export function ChecklistDocumentos() {
               <button
                 type="button"
                 onClick={() => setVisitasAbierto(true)}
-                className="h-9 px-4 rounded-full border text-sm transition-colors active:scale-[0.97]"
-                style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', borderColor: 'transparent', fontWeight: 600 }}
+                className="h-9 px-4 rounded-full border text-sm transition-colors active:scale-[0.97] font-semibold"
+                style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', borderColor: 'transparent' }}
               >
                 Visitas atrasadas · {c.visitas_atrasadas}
               </button>
@@ -216,7 +216,7 @@ export function ChecklistDocumentos() {
         ) : hook.error ? (
           <div className="rounded-xl border border-border bg-card p-4 text-center space-y-2">
             <p className="text-sm text-muted-foreground">{hook.error}</p>
-            <button type="button" onClick={recargar} className="text-sm" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+            <button type="button" onClick={recargar} className="text-sm font-semibold" style={{ color: 'var(--primary)' }}>
               Reintentar
             </button>
           </div>
