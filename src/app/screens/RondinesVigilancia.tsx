@@ -117,15 +117,9 @@ function RondinCard({
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">Vigilante: {rondin.vigilante}</p>
         </div>
-        <button
-          onClick={onPDF}
-          disabled={generando}
-          className="flex-shrink-0 flex items-center gap-1 h-8 px-2.5 rounded-lg border border-border text-xs text-foreground disabled:opacity-50"
-          style={{ fontWeight: 600 }}
-          aria-label="Descargar PDF"
-        >
+        <Boton variante="secundario" tamano="sm" onClick={onPDF} disabled={generando} aria-label="Descargar PDF" className="flex-shrink-0">
           {generando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
-        </button>
+        </Boton>
       </div>
     </div>
   )
@@ -968,18 +962,12 @@ export function RondinesVigilancia() {
 
               {confRanchoId && (
                 <>
-                  <button
-                    type="button"
-                    onClick={handleCargarPlantilla}
-                    disabled={confCargandoPlantilla}
-                    className="w-full h-9 rounded-xl border border-border text-xs flex items-center justify-center gap-1.5 disabled:opacity-60"
-                    style={{ fontWeight: 600 }}
-                  >
+                  <Boton variante="secundario" tamano="sm" type="button" onClick={handleCargarPlantilla} disabled={confCargandoPlantilla} className="w-full">
                     {confCargandoPlantilla
                       ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       : <Plus className="w-3.5 h-3.5" />}
                     Cargar 11 puntos estándar
-                  </button>
+                  </Boton>
 
                   {loadingConf ? (
                     <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 text-primary animate-spin" /></div>

@@ -361,13 +361,9 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
           </Boton>
         ) : (
           <div className="flex gap-2">
-            <button
-              onClick={() => { setDireccion(-1); setPaso(1) }}
-              className="h-11 px-4 rounded-xl text-sm font-semibold border border-border"
-              style={{ color: 'var(--foreground)' }}
-            >
+            <Boton variante="secundario" onClick={() => { setDireccion(-1); setPaso(1) }}>
               Atrás
-            </button>
+            </Boton>
             <Boton onClick={handleCrear} disabled={guardando || cargandoModulos} className="flex-1">
               {guardando ? 'Creando…' : 'Crear auditoría'}
             </Boton>

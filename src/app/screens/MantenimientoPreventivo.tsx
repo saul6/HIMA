@@ -612,19 +612,14 @@ export function MantenimientoPreventivo() {
         onBack={vista === 'detalle' ? volverALista : undefined}
         acciones={
           vista === 'detalle' && registroActivo ? (
-            <button
-              onClick={() => handlePDFIndividual(registroActivo.id)}
-              disabled={!!generandoPDF}
-              className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border text-xs text-foreground disabled:opacity-50"
-              style={{ fontWeight: 600 }}
-            >
+            <Boton variante="secundario" tamano="sm" onClick={() => handlePDFIndividual(registroActivo.id)} disabled={!!generandoPDF}>
               {generandoPDF ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
                 <FileDown className="w-3.5 h-3.5" />
               )}
               PDF mes
-            </button>
+            </Boton>
           ) : undefined
         }
       />

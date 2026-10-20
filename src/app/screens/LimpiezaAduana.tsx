@@ -602,15 +602,10 @@ export function LimpiezaAduana() {
           ) : vista === 'detalle' && registroActivo ? (
             <>
               <BotonConfigurar onClick={abrirConfigurar} />
-              <button
-                onClick={handlePDFIndividual}
-                disabled={generandoPDF}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border text-xs text-foreground disabled:opacity-50"
-                style={{ fontWeight: 600 }}
-              >
+              <Boton variante="secundario" tamano="sm" onClick={handlePDFIndividual} disabled={generandoPDF}>
                 {generandoPDF ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
                 PDF
-              </button>
+              </Boton>
             </>
           ) : undefined
         }
@@ -1068,16 +1063,10 @@ export function LimpiezaAduana() {
 
             {catRanchoId && (
               <>
-                <button
-                  type="button"
-                  onClick={handleCargarPlantilla}
-                  disabled={catCargandoPlantilla}
-                  className="w-full h-9 rounded-xl border border-border text-xs text-foreground flex items-center justify-center gap-1.5 disabled:opacity-60"
-                  style={{ fontWeight: 600 }}
-                >
+                <Boton variante="secundario" tamano="sm" type="button" onClick={handleCargarPlantilla} disabled={catCargandoPlantilla} className="w-full">
                   {catCargandoPlantilla ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
                   Sembrar 9 ítems estándar
-                </button>
+                </Boton>
 
                 {mostrarSkeletonGestion ? (
                   <SkeletonFilas rows={2} />

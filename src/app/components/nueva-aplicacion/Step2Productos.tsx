@@ -5,6 +5,7 @@ import { FormField } from "../FormField";
 import { FormSelect } from "../FormSelect";
 import { ProductoCombobox } from "./ProductoCombobox";
 import { useCatalogoProductos } from "@/hooks/useCatalogoProductos";
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 interface Props {
   formData: any;
@@ -280,16 +281,12 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
           </div>
 
           <div className="flex gap-2">
-            <button
-              onClick={() => {
+            <Boton variante="secundario" onClick={() => {
                 setCurrentProduct({ ...emptyProduct });
                 setIsAddingProduct(false);
-              }}
-              className="flex-1 h-12 border border-border text-foreground rounded-xl"
-              style={{ fontWeight: 600 }}
-            >
+              }} className="flex-1">
               Cancelar
-            </button>
+            </Boton>
             <button
               onClick={addProduct}
               disabled={!currentProduct.productId}
