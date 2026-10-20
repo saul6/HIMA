@@ -32,6 +32,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -595,19 +596,14 @@ export function OrdenMantenimiento() {
                 </div>
               </div>
 
-              <button
-                onClick={guardar}
-                disabled={cargando}
-                className="w-full h-12 rounded-xl text-sm text-white disabled:opacity-60"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
+              <Boton onClick={guardar} disabled={cargando} className="w-full">
                 {cargando ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Guardando…
                   </span>
                 ) : online ? 'Guardar orden' : 'Guardar sin conexión'}
-              </button>
+              </Boton>
             </div>}
       </BottomSheet>
     </div>

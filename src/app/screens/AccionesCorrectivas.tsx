@@ -37,6 +37,7 @@ import { useAsignacionHallazgos } from '@/hooks/useAsignacionHallazgos'
 import { AsignarHallazgoSheet } from '@/app/components/hallazgos/AsignarHallazgoSheet'
 import { esModuloAsignable, formatFechaLimite } from '@/lib/hallazgos/asignacion'
 import type { AccionCorrectivaFoto } from '@/types/database.types'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -405,19 +406,14 @@ export function AccionesCorrectivas() {
         tituloFallback="Plan de Acciones Correctivas"
         onBack={() => navigate(-1)}
         acciones={
-          <button
-            onClick={handleExportarPDF}
-            disabled={generandoPDF}
-            className="flex items-center gap-1.5 h-9 px-3 rounded-xl text-sm disabled:opacity-50"
-            style={{ backgroundColor: 'var(--primary)', color: '#fff', fontWeight: 600 }}
-          >
+          <Boton tamano="sm" onClick={handleExportarPDF} disabled={generandoPDF}>
             {generandoPDF ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <FileDown className="w-4 h-4" />
             )}
             PDF
-          </button>
+          </Boton>
         }
       />
 

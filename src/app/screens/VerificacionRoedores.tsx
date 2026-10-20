@@ -31,6 +31,7 @@ import {
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -521,16 +522,11 @@ export function VerificacionRoedores() {
         </div>
 
         <div className="px-4 pb-6 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
-          <button
-            onClick={guardar}
-            disabled={guardando}
-            className="w-full h-11 rounded-[0.625rem] text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-            style={{ backgroundColor: 'var(--primary)' }}
-          >
+          <Boton onClick={guardar} disabled={guardando} className="w-full">
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
             {!guardando && !online && <WifiOff className="w-4 h-4" />}
             {online ? 'Guardar' : 'Guardar sin conexión'}
-          </button>
+          </Boton>
         </div>
         </>)}
       </BottomSheet>
@@ -574,17 +570,12 @@ export function VerificacionRoedores() {
           </div>
         </div>
         <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
-          <button
-            onClick={exportarConsolidado}
-            disabled={exportandoConsolidado}
-            className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-          >
+          <Boton onClick={exportarConsolidado} disabled={exportandoConsolidado} className="w-full">
             {exportandoConsolidado
               ? <><Loader2 className="w-4 h-4 animate-spin" /> Generando PDF…</>
               : <><FileDown className="w-4 h-4" /> Descargar PDF consolidado</>
             }
-          </button>
+          </Boton>
         </div>
       </BottomSheet>
     </div>

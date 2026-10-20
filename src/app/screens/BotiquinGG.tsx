@@ -39,6 +39,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -642,12 +643,7 @@ export function BotiquinGG() {
 
         {/* Botón guardar */}
         <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
-          <button
-            onClick={handleGuardar}
-            disabled={nGuardando || !nRanchoId}
-            className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
-            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-          >
+          <Boton onClick={handleGuardar} disabled={nGuardando || !nRanchoId} className="w-full">
             {nGuardando ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
             ) : online ? (
@@ -655,7 +651,7 @@ export function BotiquinGG() {
             ) : (
               <><WifiOff className="w-4 h-4" /> Guardar sin conexión</>
             )}
-          </button>
+          </Boton>
         </div>
           </>
         )}
@@ -696,14 +692,9 @@ export function BotiquinGG() {
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
-          <button
-            onClick={exportarConsolidado}
-            disabled={exportandoConsolidado || !consolidadoForm.desde || !consolidadoForm.hasta}
-            className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-          >
+          <Boton onClick={exportarConsolidado} disabled={exportandoConsolidado || !consolidadoForm.desde || !consolidadoForm.hasta} className="w-full">
             {exportandoConsolidado ? <><Loader2 className="w-4 h-4 animate-spin" /> Generando…</> : 'Descargar PDF consolidado'}
-          </button>
+          </Boton>
         </div>
       </BottomSheet>
     </div>

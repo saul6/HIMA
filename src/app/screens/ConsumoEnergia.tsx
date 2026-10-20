@@ -32,6 +32,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { opInsert } from '@/lib/offline/construirOperaciones'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 function mesActual(): string {
   const d = new Date()
@@ -463,15 +464,10 @@ export function ConsumoEnergia() {
 
         </div>
         <div className="px-4 pb-6 pt-3 border-t border-border">
-          <button
-            onClick={guardar}
-            disabled={guardando}
-            className="w-full h-11 rounded-[0.625rem] text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-            style={{ backgroundColor: 'var(--primary)' }}
-          >
+          <Boton onClick={guardar} disabled={guardando} className="w-full">
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
             {!online ? 'Guardar sin conexión' : 'Guardar'}
-          </button>
+          </Boton>
         </div>
         </>)}
       </BottomSheet>
@@ -517,15 +513,10 @@ export function ConsumoEnergia() {
           </div>
         </div>
         <div className="px-4 pb-6 pt-3 border-t border-border">
-          <button
-            onClick={exportarConsolidado}
-            disabled={exportando}
-            className="w-full h-11 rounded-[0.625rem] text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-            style={{ backgroundColor: 'var(--primary)' }}
-          >
+          <Boton onClick={exportarConsolidado} disabled={exportando} className="w-full">
             {exportando ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
             Exportar PDF
-          </button>
+          </Boton>
         </div>
       </BottomSheet>
     </div>

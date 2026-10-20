@@ -40,6 +40,7 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -796,14 +797,9 @@ export function InspeccionAlmacenEmpaque() {
                 className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
               />
             </div>
-            <button
-              onClick={handleActualizarEncabezado}
-              disabled={savingMeta}
-              className="h-9 px-4 rounded-xl text-sm text-white disabled:opacity-60"
-              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-            >
+            <Boton tamano="sm" onClick={handleActualizarEncabezado} disabled={savingMeta}>
               {savingMeta ? 'Guardando…' : 'Guardar encabezado'}
-            </button>
+            </Boton>
           </div>
 
           {/* Días de inspección */}
@@ -935,14 +931,9 @@ export function InspeccionAlmacenEmpaque() {
                   className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 />
               </div>
-              <button
-                onClick={handleCrearRegistro}
-                disabled={creando}
-                className="w-full h-12 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-1.5"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
+              <Boton onClick={handleCrearRegistro} disabled={creando} className="w-full">
                 {creando ? 'Creando…' : !online ? <><WifiOff className="w-4 h-4" /> Crear sin conexión</> : 'Crear registro'}
-              </button>
+              </Boton>
             </div>
             </>)}
       </BottomSheet>
@@ -1020,14 +1011,9 @@ export function InspeccionAlmacenEmpaque() {
                 </div>
               )}
 
-              <button
-                onClick={handleGuardarDia}
-                disabled={dGuardando || puntos.length === 0}
-                className="w-full h-12 rounded-xl text-sm text-white disabled:opacity-60"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
+              <Boton onClick={handleGuardarDia} disabled={dGuardando || puntos.length === 0} className="w-full">
                 {dGuardando ? 'Guardando…' : 'Guardar día'}
-              </button>
+              </Boton>
             </div>
       </BottomSheet>
 
@@ -1083,19 +1069,14 @@ export function InspeccionAlmacenEmpaque() {
                   className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
-              <button
-                onClick={handleConsolidado}
-                disabled={cGenerando}
-                className="w-full h-12 rounded-xl text-sm text-white disabled:opacity-60"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
+              <Boton onClick={handleConsolidado} disabled={cGenerando} className="w-full">
                 {cGenerando ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Generando PDF…
                   </span>
                 ) : 'Generar PDF consolidado'}
-              </button>
+              </Boton>
             </div>
       </BottomSheet>
 

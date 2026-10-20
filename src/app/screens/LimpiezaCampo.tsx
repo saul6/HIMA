@@ -45,6 +45,7 @@ import {
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -807,18 +808,13 @@ export function LimpiezaCampo() {
             className="sticky bottom-0 py-3 -mx-4 px-4"
             style={{ backgroundColor: 'var(--background)', borderTop: '1px solid var(--border)' }}
           >
-            <button
-              onClick={handleGuardarDetalle}
-              disabled={guardando || loadingCeldas || loadingItems}
-              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
-              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-            >
+            <Boton onClick={handleGuardarDetalle} disabled={guardando || loadingCeldas || loadingItems} className="w-full">
               {guardando ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
               ) : (
                 'Guardar registro'
               )}
-            </button>
+            </Boton>
           </div>
         </div>
       )}
@@ -968,12 +964,7 @@ export function LimpiezaCampo() {
               </div>
             )}
 
-            <button
-              onClick={handleCrearRegistro}
-              disabled={nGuardando || nYaExiste || !nRanchoId}
-              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
-              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-            >
+            <Boton onClick={handleCrearRegistro} disabled={nGuardando || nYaExiste || !nRanchoId} className="w-full">
               {nGuardando ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Creando…</>
               ) : !online ? (
@@ -981,7 +972,7 @@ export function LimpiezaCampo() {
               ) : (
                 'Crear registro'
               )}
-            </button>
+            </Boton>
           </div>
         </div>
         )}
@@ -1044,8 +1035,7 @@ export function LimpiezaCampo() {
               </div>
             </div>
 
-            <button
-              onClick={async () => {
+            <Boton onClick={async () => {
                 if (!profile?.org_id) return
                 setExportandoConsolidado(true)
                 try {
@@ -1063,13 +1053,9 @@ export function LimpiezaCampo() {
                 } finally {
                   setExportandoConsolidado(false)
                 }
-              }}
-              disabled={exportandoConsolidado}
-              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
-              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-            >
+              }} disabled={exportandoConsolidado} className="w-full">
               {exportandoConsolidado ? <><Loader2 className="w-4 h-4 animate-spin" /> Exportando…</> : <><FileDown className="w-4 h-4" /> Descargar PDF</>}
-            </button>
+            </Boton>
           </div>
         </div>
       </BottomSheet>

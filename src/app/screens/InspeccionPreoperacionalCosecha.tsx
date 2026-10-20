@@ -41,6 +41,7 @@ import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -735,14 +736,9 @@ export function InspeccionPreoperacionalCosecha() {
               placeholder="Observaciones generales del mes…"
               className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
             />
-            <button
-              onClick={handleGuardarObs}
-              disabled={savingObs}
-              className="h-9 px-4 rounded-xl text-sm text-white disabled:opacity-60 transition-colors"
-              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-            >
+            <Boton tamano="sm" onClick={handleGuardarObs} disabled={savingObs}>
               {savingObs ? 'Guardando…' : 'Guardar observaciones'}
-            </button>
+            </Boton>
           </div>
 
           {/* Días de inspección */}
@@ -872,14 +868,9 @@ export function InspeccionPreoperacionalCosecha() {
                   </div>
                 )}
 
-                <button
-                  onClick={handleCrearRegistro}
-                  disabled={nGuardando || nYaExiste || !nRanchoId}
-                  className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 transition-colors"
-                  style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-                >
+                <Boton onClick={handleCrearRegistro} disabled={nGuardando || nYaExiste || !nRanchoId} className="w-full">
                   {nGuardando ? 'Creando…' : 'Crear registro'}
-                </button>
+                </Boton>
             </div>
           </div>
       </BottomSheet>
@@ -987,12 +978,7 @@ export function InspeccionPreoperacionalCosecha() {
 
                 {/* Botón guardar */}
                 <div className="px-4 py-4 border-t border-border flex-shrink-0">
-                  <button
-                    onClick={handleGuardarDia}
-                    disabled={dGuardando || dYaExiste || !dFecha || loadingItems}
-                    className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
-                    style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-                  >
+                  <Boton onClick={handleGuardarDia} disabled={dGuardando || dYaExiste || !dFecha || loadingItems} className="w-full">
                     {dGuardando ? (
                       <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
                     ) : !online ? (
@@ -1000,7 +986,7 @@ export function InspeccionPreoperacionalCosecha() {
                     ) : (
                       `Guardar ${items.length} ítems`
                     )}
-                  </button>
+                  </Boton>
                 </div>
               </>
             )}
@@ -1066,18 +1052,13 @@ export function InspeccionPreoperacionalCosecha() {
                   </div>
                 </div>
 
-                <button
-                  onClick={handleConsolidado}
-                  disabled={cGenerando || !cRanchoId}
-                  className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
-                  style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-                >
+                <Boton onClick={handleConsolidado} disabled={cGenerando || !cRanchoId} className="w-full">
                   {cGenerando ? (
                     <><Loader2 className="w-4 h-4 animate-spin" /> Generando PDF…</>
                   ) : (
                     <><FileDown className="w-4 h-4" /> Descargar PDF</>
                   )}
-                </button>
+                </Boton>
               </div>
             </div>
       </BottomSheet>

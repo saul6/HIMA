@@ -31,6 +31,7 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -833,16 +834,10 @@ export function RegistroPersonal() {
         </div>
 
         <div className="px-4 pb-6 pt-3 border-t border-border">
-          <button
-            type="button"
-            onClick={guardar}
-            disabled={guardando}
-            className="w-full h-11 rounded-[0.625rem] text-sm text-white disabled:opacity-50 flex items-center justify-center gap-2"
-            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-          >
+          <Boton type="button" onClick={guardar} disabled={guardando} className="w-full">
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
             {guardando ? 'Guardando…' : !online ? 'Guardar sin conexión' : editingId ? 'Guardar cambios' : 'Registrar trabajador'}
-          </button>
+          </Boton>
         </div>
         </>)}
       </BottomSheet>
@@ -987,15 +982,9 @@ export function RegistroPersonal() {
                         onChange={e => setNuevoItemNombre(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') agregarItem() }}
                       />
-                      <button
-                        type="button"
-                        onClick={agregarItem}
-                        disabled={agregandoItem || !nuevoItemNombre.trim()}
-                        className="h-10 px-4 rounded-[0.625rem] text-sm text-white disabled:opacity-40 flex items-center gap-1"
-                        style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-                      >
+                      <Boton type="button" onClick={agregarItem} disabled={agregandoItem || !nuevoItemNombre.trim()}>
                         {agregandoItem ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                      </button>
+                      </Boton>
                     </div>
                   </div>
                 </>
@@ -1032,16 +1021,10 @@ export function RegistroPersonal() {
           </div>
         </div>
         <div className="px-4 pb-6 pt-3 border-t border-border">
-          <button
-            type="button"
-            onClick={exportarPDF}
-            disabled={exportando || !pdfRanchoId}
-            className="w-full h-11 rounded-[0.625rem] text-sm text-white disabled:opacity-50 flex items-center justify-center gap-2"
-            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-          >
+          <Boton type="button" onClick={exportarPDF} disabled={exportando || !pdfRanchoId} className="w-full">
             {exportando ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
             {exportando ? 'Generando…' : 'Descargar PDF'}
-          </button>
+          </Boton>
         </div>
       </BottomSheet>
     </div>

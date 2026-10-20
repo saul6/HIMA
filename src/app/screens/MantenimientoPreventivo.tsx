@@ -38,6 +38,7 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -744,14 +745,9 @@ export function MantenimientoPreventivo() {
               placeholder="Observaciones generales…"
               className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
             />
-            <button
-              onClick={handleActualizarObs}
-              disabled={savingMeta}
-              className="h-9 px-4 rounded-xl text-sm text-white disabled:opacity-60"
-              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-            >
+            <Boton tamano="sm" onClick={handleActualizarObs} disabled={savingMeta}>
               {savingMeta ? 'Guardando…' : 'Guardar observaciones'}
-            </button>
+            </Boton>
           </div>
 
           {/* Acciones del mes */}
@@ -897,14 +893,9 @@ export function MantenimientoPreventivo() {
                   className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
-              <button
-                onClick={handleCrearRegistro}
-                disabled={creando}
-                className="w-full h-12 rounded-xl text-sm text-white disabled:opacity-60"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
+              <Boton onClick={handleCrearRegistro} disabled={creando} className="w-full">
                 {creando ? 'Creando…' : 'Crear registro'}
-              </button>
+              </Boton>
             </div>
             )}
       </BottomSheet>
@@ -1003,12 +994,7 @@ export function MantenimientoPreventivo() {
                 )
               })}
 
-              <button
-                onClick={handleGuardarDia}
-                disabled={dGuardando || items.length === 0}
-                className="w-full h-12 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
+              <Boton onClick={handleGuardarDia} disabled={dGuardando || items.length === 0} className="w-full">
                 {dGuardando ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
                 ) : !online ? (
@@ -1016,7 +1002,7 @@ export function MantenimientoPreventivo() {
                 ) : (
                   'Guardar día'
                 )}
-              </button>
+              </Boton>
             </div>
             )}
       </BottomSheet>
@@ -1072,19 +1058,14 @@ export function MantenimientoPreventivo() {
                 )
               })}
 
-              <button
-                onClick={handleGuardarAcciones}
-                disabled={savingAcciones}
-                className="w-full h-12 rounded-xl text-sm text-white disabled:opacity-60"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
+              <Boton onClick={handleGuardarAcciones} disabled={savingAcciones} className="w-full">
                 {savingAcciones ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Guardando…
                   </span>
                 ) : 'Guardar acciones'}
-              </button>
+              </Boton>
             </div>
       </BottomSheet>
 
@@ -1131,19 +1112,14 @@ export function MantenimientoPreventivo() {
                   className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
-              <button
-                onClick={handleConsolidado}
-                disabled={cGenerando}
-                className="w-full h-12 rounded-xl text-sm text-white disabled:opacity-60"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
+              <Boton onClick={handleConsolidado} disabled={cGenerando} className="w-full">
                 {cGenerando ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Generando PDF…
                   </span>
                 ) : 'Generar PDF consolidado'}
-              </button>
+              </Boton>
             </div>
       </BottomSheet>
 

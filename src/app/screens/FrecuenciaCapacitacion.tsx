@@ -19,6 +19,7 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { opInsert } from '@/lib/offline/construirOperaciones'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const ANIO_ACTUAL = new Date().getFullYear()
@@ -395,15 +396,10 @@ export function FrecuenciaCapacitacion() {
           )}
         </div>
         <div className="px-4 pb-6 pt-3 border-t border-border">
-          <button
-            onClick={guardar}
-            disabled={guardando}
-            className="w-full h-11 rounded-[0.625rem] text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-            style={{ backgroundColor: 'var(--primary)' }}
-          >
+          <Boton onClick={guardar} disabled={guardando} className="w-full">
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
             {!online && editId === null ? 'Guardar sin conexión' : 'Guardar'}
-          </button>
+          </Boton>
         </div>
       </BottomSheet>
     </div>

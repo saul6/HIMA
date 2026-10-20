@@ -35,6 +35,7 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { opInsert } from '@/lib/offline/construirOperaciones'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -547,14 +548,9 @@ export function MantenimientoEquiposGG() {
           </div>
 
           <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
-            <button
-              onClick={handleGuardar}
-              disabled={guardando || !form.rancho_id}
-              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-              style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-            >
+            <Boton onClick={handleGuardar} disabled={guardando || !form.rancho_id} className="w-full">
               {!online ? 'Guardar sin conexión' : guardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</> : 'Guardar registro'}
-            </button>
+            </Boton>
           </div>
         </div>
         )}
@@ -595,14 +591,9 @@ export function MantenimientoEquiposGG() {
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
-          <button
-            onClick={exportarConsolidado}
-            disabled={exportandoConsolidado || !consolidadoForm.desde || !consolidadoForm.hasta}
-            className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-          >
+          <Boton onClick={exportarConsolidado} disabled={exportandoConsolidado || !consolidadoForm.desde || !consolidadoForm.hasta} className="w-full">
             {exportandoConsolidado ? <><Loader2 className="w-4 h-4 animate-spin" /> Generando…</> : 'Descargar PDF consolidado'}
-          </button>
+          </Boton>
         </div>
       </BottomSheet>
     </div>

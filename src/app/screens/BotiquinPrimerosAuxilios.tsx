@@ -45,6 +45,7 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { BannerLimiteOffline } from '@/app/components/BannerLimiteOffline'
 import { WifiOff } from 'lucide-react'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -953,16 +954,11 @@ export function BotiquinPrimerosAuxilios() {
                         ref={firmaPadDecisionRef}
                         onChange={(info) => setFirmaPadDecisionInfo(info)}
                       />
-                      <button
-                        onClick={handleGuardarFirmaDecision}
-                        disabled={guardandoFirmaDecision || firmaPadDecisionInfo.puntos < 15}
-                        className="w-full h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition-colors"
-                        style={{ backgroundColor: 'var(--primary)', color: 'white' }}
-                      >
+                      <Boton onClick={handleGuardarFirmaDecision} disabled={guardandoFirmaDecision || firmaPadDecisionInfo.puntos < 15} className="w-full">
                         {guardandoFirmaDecision ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : 'Guardar mi firma'}
-                      </button>
+                      </Boton>
                     </div>
                   )}
                 </div>

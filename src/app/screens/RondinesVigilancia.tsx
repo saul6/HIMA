@@ -43,6 +43,7 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -937,17 +938,11 @@ export function RondinesVigilancia() {
                 </div>
               )}
 
-              <button
-                type="button"
-                onClick={handleGuardar}
-                disabled={nGuardando}
-                className="w-full h-12 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
+              <Boton type="button" onClick={handleGuardar} disabled={nGuardando} className="w-full">
                 {nGuardando ? (
                   <><Loader2 className="w-4 h-4 animate-spin" />Guardando…</>
                 ) : online ? 'Guardar rondín' : 'Guardar sin conexión'}
-              </button>
+              </Boton>
             </div>
             )}
       </BottomSheet>
@@ -1048,15 +1043,9 @@ export function RondinesVigilancia() {
                         className="w-full h-10 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                       />
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleAgregarItem}
-                      disabled={confAgregando}
-                      className="w-full h-9 rounded-xl text-sm text-white disabled:opacity-60"
-                      style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-                    >
+                    <Boton tamano="sm" type="button" onClick={handleAgregarItem} disabled={confAgregando} className="w-full">
                       {confAgregando ? 'Agregando…' : 'Agregar'}
-                    </button>
+                    </Boton>
                   </div>
                 </>
               )}
@@ -1103,17 +1092,11 @@ export function RondinesVigilancia() {
                   />
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={handleConsolidado}
-                disabled={cGenerando}
-                className="w-full h-12 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
+              <Boton type="button" onClick={handleConsolidado} disabled={cGenerando} className="w-full">
                 {cGenerando
                   ? <><Loader2 className="w-4 h-4 animate-spin" />Generando…</>
                   : 'Descargar PDF'}
-              </button>
+              </Boton>
             </div>
       </BottomSheet>
 

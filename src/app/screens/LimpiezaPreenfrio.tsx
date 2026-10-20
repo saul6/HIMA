@@ -46,6 +46,7 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -1029,15 +1030,9 @@ export function LimpiezaPreenfrio() {
                     />
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleGuardarDia}
-                  disabled={diaSaving}
-                  className="w-full h-10 rounded-xl text-sm text-white disabled:opacity-60"
-                  style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-                >
+                <Boton type="button" onClick={handleGuardarDia} disabled={diaSaving} className="w-full">
                   {diaSaving ? 'Guardando…' : `Guardar día ${diaSeleccionado}`}
-                </button>
+                </Boton>
               </div>
 
               {/* Resumen mensual */}
@@ -1106,14 +1101,9 @@ export function LimpiezaPreenfrio() {
                   placeholder="Observaciones generales…"
                   className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
                 />
-                <button
-                  onClick={handleGuardarObs}
-                  disabled={savingObs}
-                  className="h-9 px-4 rounded-xl text-sm text-white disabled:opacity-60"
-                  style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-                >
+                <Boton tamano="sm" onClick={handleGuardarObs} disabled={savingObs}>
                   {savingObs ? 'Guardando…' : 'Guardar observaciones'}
-                </button>
+                </Boton>
               </div>
             </>
           )}
@@ -1242,15 +1232,9 @@ export function LimpiezaPreenfrio() {
                   </select>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={handleCrearRegistro}
-                disabled={nGuardando}
-                className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-1.5"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
+              <Boton type="button" onClick={handleCrearRegistro} disabled={nGuardando} className="w-full">
                 {nGuardando ? 'Guardando…' : !online ? <><WifiOff className="w-4 h-4" /> Crear sin conexión</> : 'Crear registro'}
-              </button>
+              </Boton>
             </div>
           </div>
         )}
@@ -1348,15 +1332,9 @@ export function LimpiezaPreenfrio() {
                       ))}
                     </select>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleAgregarItem}
-                    disabled={catAgregando}
-                    className="w-full h-9 rounded-xl text-sm text-white disabled:opacity-60"
-                    style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-                  >
+                  <Boton tamano="sm" type="button" onClick={handleAgregarItem} disabled={catAgregando} className="w-full">
                     {catAgregando ? 'Agregando…' : 'Agregar'}
-                  </button>
+                  </Boton>
                 </div>
               </>
             )}

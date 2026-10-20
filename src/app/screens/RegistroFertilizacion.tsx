@@ -40,6 +40,7 @@ import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -1168,15 +1169,10 @@ export function RegistroFertilizacion() {
                 </div>
 
                 <div className="px-4 py-4 border-t border-border flex-shrink-0">
-                  <button
-                    onClick={handleGuardar}
-                    disabled={guardando}
-                    className="w-full h-11 rounded-xl text-white text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-colors"
-                    style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-                  >
+                  <Boton onClick={handleGuardar} disabled={guardando} className="w-full">
                     {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                     {guardando ? 'Guardando...' : online ? 'Guardar y generar PDF' : 'Guardar sin conexión'}
-                  </button>
+                  </Boton>
                 </div>
               </>
             )}
@@ -1247,18 +1243,13 @@ export function RegistroFertilizacion() {
             </div>
 
             <div className="px-4 py-4 border-t border-border flex-shrink-0">
-              <button
-                onClick={handleGenerarConsolidado}
-                disabled={generandoConsolidado}
-                className="w-full h-11 rounded-xl text-white text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-colors"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
+              <Boton onClick={handleGenerarConsolidado} disabled={generandoConsolidado} className="w-full">
                 {generandoConsolidado
                   ? <Loader2 className="w-4 h-4 animate-spin" />
                   : <FileDown className="w-4 h-4" />
                 }
                 {generandoConsolidado ? 'Generando...' : 'Generar PDF consolidado'}
-              </button>
+              </Boton>
             </div>
       </BottomSheet>
 
@@ -1448,15 +1439,10 @@ export function RegistroFertilizacion() {
             </div>
 
             <div className="px-4 py-4 border-t border-border flex-shrink-0">
-              <button
-                onClick={handleGuardarMovimiento}
-                disabled={guardandoMov}
-                className="w-full h-11 rounded-xl text-white text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-colors"
-                style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-              >
+              <Boton onClick={handleGuardarMovimiento} disabled={guardandoMov} className="w-full">
                 {guardandoMov && <Loader2 className="w-4 h-4 animate-spin" />}
                 {guardandoMov ? 'Guardando...' : 'Registrar movimiento'}
-              </button>
+              </Boton>
             </div>
       </BottomSheet>
 

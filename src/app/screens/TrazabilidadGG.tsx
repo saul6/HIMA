@@ -39,6 +39,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -573,14 +574,9 @@ export function TrazabilidadGG() {
         </div>
 
         <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
-          <button
-            onClick={handleGuardar}
-            disabled={guardando || !form.rancho_id}
-            className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-          >
+          <Boton onClick={handleGuardar} disabled={guardando || !form.rancho_id} className="w-full">
             {guardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</> : online ? 'Guardar nota' : <><WifiOff className="w-4 h-4" /> Guardar sin conexión</>}
-          </button>
+          </Boton>
         </div>
         </>)}
       </BottomSheet>
@@ -624,14 +620,9 @@ export function TrazabilidadGG() {
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
-          <button
-            onClick={exportarConsolidado}
-            disabled={exportando}
-            className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-          >
+          <Boton onClick={exportarConsolidado} disabled={exportando} className="w-full">
             {exportando ? <><Loader2 className="w-4 h-4 animate-spin" /> Exportando…</> : 'Exportar PDF'}
-          </button>
+          </Boton>
         </div>
       </BottomSheet>
     </div>
