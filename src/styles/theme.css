@@ -552,17 +552,20 @@
   background-color: var(--scrollbar-thumb-hover);
 }
 
-/* Microinteracción de presión — global. `.no-press` excluye elementos que ya
-   animan su propio transform (FAB, menú del isotipo, dots del carrusel de
-   login) para no pisar su animación existente. */
-button:not(:disabled):active:not(.no-press),
-[role="button"]:active:not(.no-press) {
-  transform: scale(0.97);
-  transition: transform var(--motion-fast) var(--ease-out);
+/* Microinteracción de presión — global: todo se hunde igual (scale .98, 100 ms).
+   Excluidos: .no-press (FAB, celdas de matrices y casillas que se tocan muchas
+   veces seguidas), elementos .fixed/.sticky y los que ya animan su propio
+   transform con motion (transform inline). Las escalas locales se borraron para
+   que no se hundan doble. translate/scale de Tailwind v4 son propiedades
+   aparte, no se multiplican con este transform. */
+button:not(:disabled):active:not(.no-press):not(.fixed):not(.sticky):not([style*='transform']),
+[role='button']:active:not(.no-press):not(.fixed):not(.sticky):not([style*='transform']) {
+  transform: scale(0.98);
+  transition: transform 100ms var(--ease-out);
 }
 @media (prefers-reduced-motion: reduce) {
-  button:not(:disabled):active:not(.no-press),
-  [role="button"]:active:not(.no-press) {
+  button:not(:disabled):active:not(.no-press):not(.fixed):not(.sticky):not([style*='transform']),
+  [role='button']:active:not(.no-press):not(.fixed):not(.sticky):not([style*='transform']) {
     transform: none;
   }
 }

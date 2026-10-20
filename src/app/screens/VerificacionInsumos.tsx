@@ -137,7 +137,7 @@ function ToggleInsumo({
         <button
           type="button"
           onClick={() => onChange(siguienteValor(valor))}
-          className="flex-shrink-0 w-16 h-7 rounded-full text-xs transition-colors font-semibold"
+          className="no-press flex-shrink-0 w-16 h-7 rounded-full text-xs transition-colors font-semibold"
           style={{ backgroundColor: bgColor, color: textColor }}
         >
           {displayLabel}

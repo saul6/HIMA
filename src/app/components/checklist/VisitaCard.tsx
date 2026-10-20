@@ -16,7 +16,7 @@ interface Props {
 
 export function VisitaCard({ visita, puedeEditar, onProgramar, onTerminar, onReprogramar, onCancelar, onVerVisitas, hayVisitas }: Props) {
   const atrasada = !!visita?.atrasada
-  const boton = 'h-9 px-3 rounded-lg text-xs border transition-colors active:scale-[0.97]'
+  const boton = 'h-9 px-3 rounded-lg text-xs border transition-colors'
 
   return (
     <FilaRegistro

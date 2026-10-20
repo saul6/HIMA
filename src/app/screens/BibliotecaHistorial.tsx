@@ -1254,7 +1254,7 @@ export function BibliotecaHistorial() {
           <button
             onClick={handleExportarPaquete}
             disabled={generandoPaquete || !!descargandoPDF}
-            className="w-full min-h-10 py-2 px-3 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary text-sm hover:bg-primary/5 active:scale-[0.98] transition-[background-color,transform] duration-150 ease-out disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary font-semibold"
+            className="w-full min-h-10 py-2 px-3 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary text-sm hover:bg-primary/5 transition-[background-color,transform] duration-150 ease-out disabled:opacity-50 disabled: focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary font-semibold"
           >
             {generandoPaquete ? <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" /> : <Package className="w-4 h-4 flex-shrink-0" />}
             <span className="text-center leading-snug">

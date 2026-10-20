@@ -18,7 +18,7 @@ export function Pildora({ activa, onClick, children, disabled, className }: Pild
       disabled={disabled}
       aria-pressed={activa}
       className={cn(
-        'h-9 px-3 rounded-full border text-sm transition-colors active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none',
+        'h-9 px-3 rounded-full border text-sm transition-colors disabled:opacity-50 disabled:pointer-events-none',
         activa ? 'border-transparent' : 'bg-card border-border text-foreground hover:bg-muted',
         className,
       )}

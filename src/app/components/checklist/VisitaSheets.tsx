@@ -68,7 +68,7 @@ function BotonPdf({ visitaId, previa, generando, onClick }: { visitaId: string; 
       type="button"
       onClick={onClick}
       disabled={!!generando}
-      className="h-8 px-3 rounded-lg border border-border bg-card text-xs text-foreground inline-flex items-center gap-1.5 transition-colors hover:bg-muted active:scale-[0.97] disabled:opacity-50 font-semibold"
+      className="h-8 px-3 rounded-lg border border-border bg-card text-xs text-foreground inline-flex items-center gap-1.5 transition-colors hover:bg-muted disabled:opacity-50 font-semibold"
     >
       {ocupado ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
       {previa ? 'Vista previa' : 'PDF'}
@@ -135,7 +135,7 @@ function PasoFirmasVisita({ visita, codigoClave, terminoSitio, onCerrar }: Opcio
           type="button"
           onClick={onCerrar}
           disabled={!!generando}
-          className="h-11 px-5 rounded-lg border border-border bg-card text-sm text-foreground transition-colors hover:bg-muted active:scale-[0.99] font-semibold"
+          className="h-11 px-5 rounded-lg border border-border bg-card text-sm text-foreground transition-colors hover:bg-muted font-semibold"
         >
           Después
         </button>
@@ -243,7 +243,7 @@ function FormularioAccion({ modo, ranchoId, hook, onClose, onGuardado, onTermina
         type="button"
         onClick={guardar}
         disabled={guardando}
-        className="w-full h-11 rounded-lg text-sm transition active:scale-[0.99] disabled:opacity-50"
+        className="w-full h-11 rounded-lg text-sm transition disabled:opacity-50"
         style={
           modo.tipo === 'cancelar'
             ? { backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', fontWeight: 600 }

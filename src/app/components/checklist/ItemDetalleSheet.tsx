@@ -175,7 +175,7 @@ function Contenido({
         <button
           type="button"
           onClick={() => navigate(item.modulo_ruta!)}
-          className="w-full h-10 rounded-lg border border-border text-sm inline-flex items-center justify-center gap-2 transition-colors hover:bg-muted active:scale-[0.99] font-semibold"
+          className="w-full h-10 rounded-lg border border-border text-sm inline-flex items-center justify-center gap-2 transition-colors hover:bg-muted font-semibold"
           style={{ color: 'var(--primary)' }}
         >
           <ExternalLink className="w-4 h-4" />

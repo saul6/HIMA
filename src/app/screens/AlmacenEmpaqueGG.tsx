@@ -108,7 +108,7 @@ function CeldaMatriz({ valor, onClick }: { valor: ValorCelda; onClick: () => voi
 
   return (
     <button
-      type="button"
+      className="no-press" type="button"
       onClick={onClick}
       style={{
         width: CELL_W, height: CELL_H, flexShrink: 0,

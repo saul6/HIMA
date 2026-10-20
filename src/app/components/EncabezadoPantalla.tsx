@@ -84,7 +84,7 @@ export function EncabezadoPantalla({
         <button
           type="button"
           onClick={regresar}
-          className="p-3 -m-2 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted active:scale-95"
+          className="p-3 -m-2 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted"
           aria-label="Volver"
         >
           <ChevronLeft className="w-5 h-5" />

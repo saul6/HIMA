@@ -78,7 +78,7 @@ export function DetalleAplicacion() {
         <header className="sticky top-0 bg-card border-b border-border px-4 py-4 z-20">
           <div className="flex items-center justify-between gap-3 mb-3">
             <Skeleton className="h-5 w-40" />
-            <button aria-label="Cerrar" onClick={() => navigate("/historial")} className="p-3 -m-2 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted active:scale-95">
+            <button aria-label="Cerrar" onClick={() => navigate("/historial")} className="p-3 -m-2 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted">
               <X className="w-6 h-6 text-foreground" />
             </button>
           </div>
@@ -141,7 +141,7 @@ export function DetalleAplicacion() {
           <h1 className="text-foreground flex-1 min-w-0 truncate font-semibold">
             Detalle de Aplicación
           </h1>
-          <button aria-label="Cerrar" onClick={() => navigate("/historial")} className="p-3 -m-2 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted active:scale-95">
+          <button aria-label="Cerrar" onClick={() => navigate("/historial")} className="p-3 -m-2 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted">
             <X className="w-6 h-6 text-foreground" />
           </button>
         </div>

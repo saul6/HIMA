@@ -66,7 +66,7 @@ function CeldaCheck({ valor, onToggle }: { valor: boolean; onToggle: () => void 
     <button
       type="button"
       onClick={onToggle}
-      className="w-9 h-9 rounded-md border flex items-center justify-center shrink-0 transition-colors"
+      className="no-press w-9 h-9 rounded-md border flex items-center justify-center shrink-0 transition-colors"
       style={{
         borderColor: valor ? 'var(--primary)' : 'var(--agro-red)',
         backgroundColor: valor ? 'var(--primary)' : 'var(--agro-danger-fill)',

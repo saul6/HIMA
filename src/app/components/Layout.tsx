@@ -404,11 +404,11 @@ export function Layout() {
       {/* ── Mobile FAB isotipo ───────────────────────────────────────────── */}
       <button
         onClick={() => setMenuAbierto(true)}
-        className="md:hidden fixed bottom-safe-fab left-4 w-14 h-14 rounded-full flex items-center justify-center z-40 bg-card border border-border active:scale-95 transition-transform no-press"
+        className="md:hidden fixed bottom-safe-fab left-4 w-14 h-14 rounded-full flex items-center justify-center z-40 bg-card border border-border group no-press"
         style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
         aria-label="Abrir menú"
       >
-        <img src="/images/app/MADYIsotipo.png" alt="" aria-hidden="true" className="w-7 h-7 object-contain" />
+        <img src="/images/app/MADYIsotipo.png" alt="" aria-hidden="true" className="w-7 h-7 object-contain " />
       </button>
 
       {/* ── Mobile Menu Sheet ─────────────────────────────────────────────── */}
@@ -433,7 +433,7 @@ export function Layout() {
             to="/perfil"
             aria-label="Ir a mi perfil"
             onClick={() => setMenuAbierto(false)}
-            className="flex items-center gap-3 px-4 py-3 transition-[background-color,transform] duration-150 hover:bg-muted active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+            className="flex items-center gap-3 px-4 py-3 transition-[background-color,transform] duration-150 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
             style={{ backgroundColor: isActive('/perfil') ? 'var(--accent)' : undefined }}
           >
             <div

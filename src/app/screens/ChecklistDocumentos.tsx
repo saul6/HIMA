@@ -129,7 +129,7 @@ export function ChecklistDocumentos() {
     <button
       type="button"
       onClick={() => setAjustesAbierto(true)}
-      className={`p-2 rounded-lg text-muted-foreground transition-colors hover:bg-muted active:scale-95 ${clases}`}
+      className={`p-2 rounded-lg text-muted-foreground transition-colors hover:bg-muted ${clases}`}
       aria-label="Ajustes del sitio"
     >
       <Settings className="w-5 h-5" />
@@ -203,7 +203,7 @@ export function ChecklistDocumentos() {
               <button
                 type="button"
                 onClick={() => setVisitasAbierto(true)}
-                className="h-9 px-4 rounded-full border text-sm transition-colors active:scale-[0.97] font-semibold"
+                className="h-9 px-4 rounded-full border text-sm transition-colors font-semibold"
                 style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', borderColor: 'transparent' }}
               >
                 Visitas atrasadas · {c.visitas_atrasadas}

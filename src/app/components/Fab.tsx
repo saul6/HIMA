@@ -29,16 +29,13 @@ interface FabProps {
 const BUTTON_CLASS = [
   'fixed z-10 bottom-safe-fab right-4 md:right-6 md:bottom-6',
   'w-14 h-14 bg-primary rounded-full flex items-center justify-center',
-  // `transition` (no el sufijo -colors/-transform) cubre color Y transform
-  // en una sola declaración — dos utilidades transition-* por separado se
-  // pisarían entre sí (cada una fija su propio transition-property).
-  'shadow-lg transition hover:bg-agro-blue motion-safe:active:scale-95 no-press',
+  'group shadow-lg transition-colors hover:bg-agro-blue no-press',
   'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
   'disabled:bg-muted-foreground disabled:hover:bg-muted-foreground',
 ].join(' ')
 
 export function Fab({ onClick, to, 'aria-label': ariaLabel, icon: Icon = Plus, disabled }: FabProps) {
-  const iconEl = <Icon className="w-6 h-6" style={{ color: 'var(--primary-foreground)' }} />
+  const iconEl = <Icon className="w-6 h-6 " style={{ color: 'var(--primary-foreground)' }} />
 
   if (to) {
     return (

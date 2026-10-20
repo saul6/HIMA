@@ -127,7 +127,7 @@ function TareaCard({
     <button
       onClick={onClick}
       style={style}
-      className="w-full text-left rounded-xl border border-border bg-card p-4 flex flex-col gap-2 transition-colors hover:border-primary/30 active:scale-[0.99]"
+      className="w-full text-left rounded-xl border border-border bg-card p-4 flex flex-col gap-2 transition-colors hover:border-primary/30"
     >
       {tarea.regresada && (
         <div
@@ -1793,11 +1793,11 @@ export function AgendaTareas() {
         <Portal>
         <button
           onClick={() => { setSheetNueva(true); hook.cargarColaboradores() }}
-          className="fixed bottom-safe-fab right-4 w-14 h-14 rounded-full flex items-center justify-center z-40 transition-transform active:scale-95"
+          className="fixed bottom-safe-fab right-4 w-14 h-14 rounded-full flex items-center justify-center z-40 group no-press"
           style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
           aria-label="Nueva tarea"
         >
-          <Plus className="w-6 h-6" />
+          <Plus className="w-6 h-6 transition-transform duration-100 ease-[var(--ease-out)] motion-safe:group-active:scale-90" />
         </button>
         </Portal>
       )}

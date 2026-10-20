@@ -120,7 +120,7 @@ export function ItemCard({ item, codigoClave, puedeEditar, onAbrir, onRevisar }:
       tabIndex={0}
       onClick={onAbrir}
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onAbrir() } }}
-      className="bg-card rounded-xl border border-border p-4 space-y-2.5 h-full cursor-pointer transition-colors hover:bg-muted/40 active:scale-[0.995]"
+      className="bg-card rounded-xl border border-border p-4 space-y-2.5 h-full cursor-pointer transition-colors hover:bg-muted/40"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -153,7 +153,7 @@ export function ItemCard({ item, codigoClave, puedeEditar, onAbrir, onRevisar }:
           <button
             type="button"
             onClick={e => { e.stopPropagation(); onRevisar() }}
-            className="h-8 px-3 rounded-lg text-xs border border-border inline-flex items-center gap-1.5 transition-colors hover:bg-muted active:scale-[0.97] font-semibold"
+            className="h-8 px-3 rounded-lg text-xs border border-border inline-flex items-center gap-1.5 transition-colors hover:bg-muted font-semibold"
             style={{ color: 'var(--primary)' }}
           >
             <ClipboardCheck className="w-3.5 h-3.5" />

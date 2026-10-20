@@ -324,7 +324,7 @@ export function MiOrganizacion() {
       <header className="bg-card border-b border-border px-4 py-4 sticky top-0 z-20 flex items-center gap-3">
         <button aria-label="Volver"
           onClick={() => navigate('/perfil')}
-          className="p-3 -m-2 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted active:scale-95"
+          className="p-3 -m-2 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
