@@ -17,8 +17,7 @@ import { AuditorCampana } from './AuditorCampana'
 import { AuditorBusqueda } from './AuditorBusqueda'
 import { Fab } from '@/app/components/Fab'
 import { Skeleton } from '@/app/components/ui/skeleton'
-import { useContadorAnimado } from '@/hooks/useContadorAnimado'
-import { SPRING_SUAVE } from '@/lib/motion'
+import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -109,64 +108,6 @@ function entrada(index: number, reducedMotion: boolean | null) {
       transition: { duration: 0.22, ease: EASE, delay: Math.min(index, 7) * 0.03 },
     },
   }
-}
-
-// Tarjeta de resumen / filtro — mismo estilo que las tarjetas de la Agenda del
-// operario: contador animado y resaltado deslizante. Solo "Vencidas" va en rojo.
-function TarjetaResumen({
-  index, active, label, count, rojo, onClick, reducedMotion,
-}: {
-  index: number
-  active: boolean
-  label: string
-  count: number
-  rojo?: boolean
-  onClick: () => void
-  reducedMotion: boolean | null
-}) {
-  const spanRef = useContadorAnimado(count, (n) => String(Math.round(n)), !!reducedMotion)
-  return (
-    <motion.div {...entrada(index, reducedMotion)}>
-      <button
-        type="button"
-        aria-pressed={active}
-        onClick={onClick}
-        className={[
-          'relative w-full rounded-xl p-3 md:p-4 border flex flex-col items-start text-left transition-colors',
-          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-          active ? 'border-transparent' : 'border-border bg-card hover:bg-muted',
-        ].join(' ')}
-        style={{ transitionDuration: 'var(--motion-fast)' }}
-      >
-        {active && (
-          <motion.span
-            layoutId="auditor-resumen-activa"
-            className="absolute inset-0 rounded-xl"
-            style={{ backgroundColor: 'var(--accent)', zIndex: 0 }}
-            transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
-          />
-        )}
-        <span
-          ref={spanRef}
-          className="relative z-10 text-2xl tracking-tight tabular-nums"
-          style={{
-            fontWeight: 600,
-            color: rojo ? 'var(--agro-danger-text)' : active ? 'var(--accent-foreground)' : 'var(--foreground)',
-          }}
-        >
-          {count}
-        </span>
-        <span
-          className="relative z-10 text-xs mt-0.5 leading-tight"
-          style={{
-            color: rojo && !active ? 'var(--agro-danger-text)' : active ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
-          }}
-        >
-          {label}
-        </span>
-      </button>
-    </motion.div>
-  )
 }
 
 function WorkQueueCard({
@@ -386,29 +327,34 @@ export function AuditorHome() {
           <section>
             <LayoutGroup id="auditor-resumen">
               <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-                <TarjetaResumen
-                  index={0} rojo reducedMotion={reducedMotion}
-                  active={filtro === '__vencidas__'} label="Vencidas" count={resumen.vencidas}
+                <TarjetaContador
+                  indice={0} variante="seleccionable" valorPrimero resaltadoId="auditor-resumen-activa" tono="alertaTexto"
+                  className="p-3 md:p-4"
+                  activo={filtro === '__vencidas__'} etiqueta="Vencidas" valor={resumen.vencidas}
                   onClick={() => setFiltro(f => f === '__vencidas__' ? null : '__vencidas__')}
                 />
-                <TarjetaResumen
-                  index={1} reducedMotion={reducedMotion}
-                  active={filtro === 'VALIDAR_PARA_AZZULE'} label="Por validar" count={resumen.por_validar}
+                <TarjetaContador
+                  indice={1} variante="seleccionable" valorPrimero resaltadoId="auditor-resumen-activa"
+                  className="p-3 md:p-4"
+                  activo={filtro === 'VALIDAR_PARA_AZZULE'} etiqueta="Por validar" valor={resumen.por_validar}
                   onClick={() => setFiltro(f => f === 'VALIDAR_PARA_AZZULE' ? null : 'VALIDAR_PARA_AZZULE')}
                 />
-                <TarjetaResumen
-                  index={2} reducedMotion={reducedMotion}
-                  active={filtro === 'ABRIR_MODO_AZZULE'} label="Listas Azzule" count={resumen.listas_azzule}
+                <TarjetaContador
+                  indice={2} variante="seleccionable" valorPrimero resaltadoId="auditor-resumen-activa"
+                  className="p-3 md:p-4"
+                  activo={filtro === 'ABRIR_MODO_AZZULE'} etiqueta="Listas Azzule" valor={resumen.listas_azzule}
                   onClick={() => setFiltro(f => f === 'ABRIR_MODO_AZZULE' ? null : 'ABRIR_MODO_AZZULE')}
                 />
-                <TarjetaResumen
-                  index={3} reducedMotion={reducedMotion}
-                  active={filtro === 'VERIFICAR_ESTADO_AZZULE'} label="Seguimiento" count={resumen.seguimiento_azzule}
+                <TarjetaContador
+                  indice={3} variante="seleccionable" valorPrimero resaltadoId="auditor-resumen-activa"
+                  className="p-3 md:p-4"
+                  activo={filtro === 'VERIFICAR_ESTADO_AZZULE'} etiqueta="Seguimiento" valor={resumen.seguimiento_azzule}
                   onClick={() => setFiltro(f => f === 'VERIFICAR_ESTADO_AZZULE' ? null : 'VERIFICAR_ESTADO_AZZULE')}
                 />
-                <TarjetaResumen
-                  index={4} reducedMotion={reducedMotion}
-                  active={!filtro} label="Total" count={resumen.total_pendiente}
+                <TarjetaContador
+                  indice={4} variante="seleccionable" valorPrimero resaltadoId="auditor-resumen-activa"
+                  className="p-3 md:p-4"
+                  activo={!filtro} etiqueta="Total" valor={resumen.total_pendiente}
                   onClick={() => setFiltro(null)}
                 />
               </div>

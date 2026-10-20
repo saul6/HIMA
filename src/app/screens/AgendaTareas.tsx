@@ -22,7 +22,7 @@ import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { subirEvidencia, getSignedUrlsEvidencia } from '@/lib/storage/agendaStorage'
 import { Portal } from '@/app/components/Portal'
 import { SPRING_SUAVE } from '@/lib/motion'
-import { useContadorAnimado } from '@/hooks/useContadorAnimado'
+import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
@@ -191,102 +191,6 @@ function TareaCard({
         )}
       </div>
     </button>
-  )
-}
-
-// ── TarjetaFiltroAgenda ──────────────────────────────────────────────────────
-
-// Tarjeta de resumen/filtro de la Agenda del colaborador — mismo resaltado
-// deslizante (layoutId + SPRING_SUAVE) que el ítem activo del sidebar /
-// FiltroPildoras. `resaltar` es exclusivo de la tarjeta "Por firmar" con
-// conteo > 0 (punto menta + número en --primary) para no perder la señal de
-// firma pendiente al quitar el aviso y las etiquetas de arriba.
-function TarjetaFiltroAgenda({
-  active, label, count, resaltar, onClick, reducedMotion,
-}: {
-  active: boolean
-  label: string
-  count: number
-  resaltar?: boolean
-  onClick: () => void
-  reducedMotion: boolean
-}) {
-  const spanRef = useContadorAnimado(count, (n) => String(Math.round(n)), reducedMotion)
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={[
-        'relative rounded-xl p-4 border flex flex-col items-start text-left transition-colors',
-        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-        active ? 'border-transparent' : 'border-border bg-card hover:bg-muted',
-      ].join(' ')}
-      style={{ transitionDuration: 'var(--motion-fast)' }}
-    >
-      {active && (
-        <motion.span
-          layoutId="agenda-filtro-activa"
-          className="absolute inset-0 rounded-xl"
-          style={{ backgroundColor: 'var(--accent)', zIndex: 0 }}
-          transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
-        />
-      )}
-      <span
-        ref={spanRef}
-        className="relative z-10 text-2xl tracking-tight tabular-nums"
-        style={{
-          fontWeight: 600,
-          color: resaltar ? 'var(--primary)' : active ? 'var(--accent-foreground)' : 'var(--foreground)',
-        }}
-      >
-        {count}
-      </span>
-      <span
-        className="relative z-10 text-xs mt-0.5 flex items-center gap-1.5"
-        style={{ color: active ? 'var(--accent-foreground)' : 'var(--muted-foreground)' }}
-      >
-        {resaltar && (
-          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--secondary)' }} />
-        )}
-        {label}
-      </span>
-    </button>
-  )
-}
-
-// ── TarjetaResumenAdmin ──────────────────────────────────────────────────────
-
-// Tarjeta de resumen de la Agenda del administrador: contador animado y
-// entrada escalonada. Los colores de estado los decide quien la usa.
-function TarjetaResumenAdmin({
-  index, valor, label, borde, fondo, colorNumero, colorEtiqueta, reducedMotion,
-}: {
-  index: number
-  valor: number
-  label: string
-  borde: string
-  fondo: string
-  colorNumero: string
-  colorEtiqueta: string
-  reducedMotion: boolean
-}) {
-  const spanRef = useContadorAnimado(valor, (n) => String(Math.round(n)), reducedMotion)
-  return (
-    <motion.div
-      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-      animate={{
-        opacity: 1, y: 0,
-        transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: index * 0.035 },
-      }}
-      className="rounded-xl p-4 border flex flex-col items-start text-left"
-      style={{ borderColor: borde, backgroundColor: fondo }}
-    >
-      <span ref={spanRef} className="text-2xl tracking-tight tabular-nums" style={{ fontWeight: 600, color: colorNumero }}>
-        {valor}
-      </span>
-      <span className="text-xs mt-0.5 leading-tight" style={{ color: colorEtiqueta }}>{label}</span>
-    </motion.div>
   )
 }
 
@@ -1685,35 +1589,25 @@ export function AgendaTareas() {
             {/* Resumen */}
             {resumen && (
               <div className="grid grid-cols-3 gap-3">
-                <TarjetaResumenAdmin
-                  index={0}
+                <TarjetaContador
+                  indice={0}
+                  valorPrimero
                   valor={resumen.por_verificar ?? 0}
-                  label="Por verificar"
-                  borde={resumen.por_verificar ? 'var(--agro-menta)' : 'var(--border)'}
-                  fondo={resumen.por_verificar ? 'var(--agro-info-fill)' : 'var(--card)'}
-                  colorNumero={resumen.por_verificar ? 'var(--agro-info-text)' : 'var(--foreground)'}
-                  colorEtiqueta={resumen.por_verificar ? 'var(--agro-info-text)' : 'var(--muted-foreground)'}
-                  reducedMotion={!!reducedMotion}
+                  etiqueta="Por verificar"
+                  tono={resumen.por_verificar ? 'info' : 'normal'}
                 />
-                <TarjetaResumenAdmin
-                  index={1}
+                <TarjetaContador
+                  indice={1}
+                  valorPrimero
                   valor={resumen.abiertas_org ?? 0}
-                  label="Abiertas"
-                  borde="var(--border)"
-                  fondo="var(--card)"
-                  colorNumero="var(--foreground)"
-                  colorEtiqueta="var(--muted-foreground)"
-                  reducedMotion={!!reducedMotion}
+                  etiqueta="Abiertas"
                 />
-                <TarjetaResumenAdmin
-                  index={2}
+                <TarjetaContador
+                  indice={2}
+                  valorPrimero
                   valor={resumen.vencidas_org ?? 0}
-                  label="Vencidas"
-                  borde={resumen.vencidas_org ? 'var(--agro-red)' : 'var(--border)'}
-                  fondo={resumen.vencidas_org ? 'var(--agro-danger-fill)' : 'var(--card)'}
-                  colorNumero={resumen.vencidas_org ? 'var(--agro-danger-text)' : 'var(--foreground)'}
-                  colorEtiqueta={resumen.vencidas_org ? 'var(--agro-danger-text)' : 'var(--muted-foreground)'}
-                  reducedMotion={!!reducedMotion}
+                  etiqueta="Vencidas"
+                  tono={resumen.vencidas_org ? 'alerta' : 'normal'}
                 />
               </div>
             )}
@@ -1844,14 +1738,16 @@ export function AgendaTareas() {
             <LayoutGroup>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {filtrosAgenda.map(f => (
-                  <TarjetaFiltroAgenda
+                  <TarjetaContador
                     key={f.key}
-                    active={filtroActivo === f.key}
-                    label={f.label}
-                    count={f.lista.length}
-                    resaltar={f.key === 'por_firmar' && f.lista.length > 0}
+                    variante="seleccionable"
+                    valorPrimero
+                    resaltadoId="agenda-filtro-activa"
+                    activo={filtroActivo === f.key}
+                    etiqueta={f.label}
+                    valor={f.lista.length}
+                    tono={f.key === 'por_firmar' && f.lista.length > 0 ? 'destacado' : 'normal'}
                     onClick={() => setFiltroActivo(f.key)}
-                    reducedMotion={!!reducedMotion}
                   />
                 ))}
               </div>

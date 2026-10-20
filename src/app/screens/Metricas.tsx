@@ -22,6 +22,7 @@ import type {
 } from '@/hooks/useMetricas'
 import { bandaCumplimiento, type BandaCumplimiento } from '@/lib/metricas/bandaCumplimiento'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
+import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 
 // Mismo timing/curva que el resto de la app (ver NuevaAplicacion.tsx) — constante
 // local para no repetir el array de easing en cada transición de este archivo.
@@ -149,15 +150,7 @@ function EntradaEscalonada({
 // ── Tarjeta resumen ───────────────────────────────────────────────────────────
 
 function TarjetaResumen({ label, valor, sub }: { label: string; valor: React.ReactNode; sub?: string }) {
-  return (
-    <div className="rounded-xl p-4 border border-border bg-card flex flex-col gap-1">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-2xl tabular-nums" style={{ color: 'var(--foreground)', fontWeight: 700 }}>
-        {valor}
-      </p>
-      {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
-    </div>
-  )
+  return <TarjetaContador etiqueta={label} valor={valor} sub={sub} />
 }
 
 // ── Pestaña Productividad ─────────────────────────────────────────────────────
