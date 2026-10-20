@@ -35,6 +35,7 @@ import { InputContador } from '@/app/components/InputContador'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -678,9 +679,9 @@ export function RecepcionFruta() {
 
           {/* ── Encabezado ── */}
           <section className="space-y-3">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+            <TituloSeccion>
               Datos de la recepción
-            </p>
+            </TituloSeccion>
 
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
@@ -737,9 +738,9 @@ export function RecepcionFruta() {
           {/* ── Líneas de recepción ── */}
           <section className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+              <TituloSeccion className="mb-0">
                 Líneas de recepción
-              </p>
+              </TituloSeccion>
               <button
                 type="button"
                 onClick={() => setLineas(prev => [...prev, nuevaLinea()])}
@@ -987,9 +988,9 @@ export function RecepcionFruta() {
 
           {/* ── Observaciones ── */}
           <section className="space-y-2">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+            <TituloSeccion>
               Observaciones
-            </p>
+            </TituloSeccion>
             <TextareaContador limite={limiteTexto('m39_recepciones', 'observaciones')}
               value={form.observaciones}
               onChange={e => setF('observaciones', e.target.value)}

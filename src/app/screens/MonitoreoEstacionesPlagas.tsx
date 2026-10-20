@@ -50,6 +50,7 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -1159,9 +1160,9 @@ export function MonitoreoEstacionesPlagas() {
                 )}
                 {estaciones.length > 0 && TIPOS_ORDEN.filter(t => estaciones.some(e => e.tipo_trampa === t)).map(tipo => (
                   <div key={tipo} className="flex flex-col gap-2">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    <TituloSeccion as="p" variante="subtitulo" className="mb-0">
                       {TIPO_TRAMPA_LABELS[tipo]}
-                    </p>
+                    </TituloSeccion>
                     {estaciones.filter(e => e.tipo_trampa === tipo).map(est => (
                       <EstacionCatalogoRow
                         key={est.id}

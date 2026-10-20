@@ -37,6 +37,7 @@ import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -534,9 +535,9 @@ export function ManifiestoEmbarque() {
 
           {/* ── Sección: datos del embarque ── */}
           <section className="space-y-3">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+            <TituloSeccion>
               Datos del embarque
-            </p>
+            </TituloSeccion>
 
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
@@ -614,9 +615,9 @@ export function ManifiestoEmbarque() {
 
           {/* ── Sección: temperatura del camión ── */}
           <section className="space-y-2">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+            <TituloSeccion>
               Temperatura del camión
-            </p>
+            </TituloSeccion>
             <div className="bg-card border border-border rounded-xl overflow-hidden">
               <div className="grid grid-cols-3 border-b border-border"
                 style={{ backgroundColor: 'var(--muted)' }}>
@@ -660,9 +661,9 @@ export function ManifiestoEmbarque() {
           {/* ── Sección: tarimas ── */}
           <section className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+              <TituloSeccion className="mb-0">
                 Tarimas embarcadas
-              </p>
+              </TituloSeccion>
               <button
                 type="button"
                 onClick={() => setLineas(prev => [...prev, nuevaLinea()])}
@@ -765,9 +766,9 @@ export function ManifiestoEmbarque() {
 
           {/* ── Sección: condiciones del transporte ── */}
           <section className="space-y-3">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+            <TituloSeccion>
               Condiciones del transporte
-            </p>
+            </TituloSeccion>
             <div className="bg-card border border-border rounded-xl divide-y divide-border">
               {([
                 { label: 'En buen estado',             key: 'cond_buen_estado'      as const },
@@ -808,9 +809,9 @@ export function ManifiestoEmbarque() {
 
           {/* ── Sección: condiciones de las tarimas ── */}
           <section className="space-y-3">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+            <TituloSeccion>
               Condiciones de las tarimas
-            </p>
+            </TituloSeccion>
             <div className="bg-card border border-border rounded-xl divide-y divide-border">
               {([
                 { label: 'Remontado',                 key: 'tar_remontado'    as const },
@@ -829,9 +830,9 @@ export function ManifiestoEmbarque() {
 
           {/* ── Sección: observaciones ── */}
           <section className="space-y-2">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+            <TituloSeccion>
               Observaciones
-            </p>
+            </TituloSeccion>
             <TextareaContador limite={limiteTexto('m38_manifiestos', 'observaciones')}
               value={form.observaciones}
               onChange={e => setF('observaciones', e.target.value)}

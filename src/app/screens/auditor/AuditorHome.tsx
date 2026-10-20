@@ -18,6 +18,7 @@ import { AuditorBusqueda } from './AuditorBusqueda'
 import { Fab } from '@/app/components/Fab'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -365,12 +366,7 @@ export function AuditorHome() {
         {/* ── Visitas de hoy ─────────────────────────────────────────── */}
         {resumen && resumen.visitas_hoy.length > 0 && (
           <section>
-            <p
-              className="text-[11px] font-semibold uppercase tracking-wide mb-2.5"
-              style={{ color: 'var(--muted-foreground)' }}
-            >
-              Visitas de hoy
-            </p>
+            <TituloSeccion as="p">Visitas de hoy</TituloSeccion>
             <div className="flex flex-col gap-2">
               {resumen.visitas_hoy.map(v => (
                 <button
@@ -400,12 +396,7 @@ export function AuditorHome() {
         {/* ── Jornadas abiertas + Auditar por bloque ─────────────────── */}
         <section>
           <div className="flex items-center justify-between mb-2.5">
-            <p
-              className="text-[11px] font-semibold uppercase tracking-wide"
-              style={{ color: 'var(--muted-foreground)' }}
-            >
-              Captura por bloque
-            </p>
+            <TituloSeccion as="p" className="mb-0">Captura por bloque</TituloSeccion>
             <button
               onClick={() => navigate('/auditor/jornada/nueva')}
               className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-colors hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
@@ -458,12 +449,9 @@ export function AuditorHome() {
         {/* ── Cola de trabajo ────────────────────────────────────────── */}
         <section>
           <div className="flex items-center justify-between mb-2.5">
-            <p
-              className="text-[11px] font-semibold uppercase tracking-wide"
-              style={{ color: 'var(--muted-foreground)' }}
-            >
+            <TituloSeccion as="p" className="mb-0">
               {filtro ? (FILTRO_LABELS[filtro] ?? 'Filtrado') : 'Cola de trabajo'}
-            </p>
+            </TituloSeccion>
             {filtro && (
               <button
                 onClick={() => setFiltro(null)}
@@ -516,13 +504,14 @@ export function AuditorHome() {
             <div className="flex flex-col gap-4">
               {itemsVencidos.length > 0 && (
                 <div className="flex flex-col gap-2">
-                  <p
-                    className="text-[10px] font-semibold uppercase tracking-wide flex items-center gap-1"
-                    style={{ color: 'var(--agro-danger-text)' }}
+                  <TituloSeccion
+                    as="p"
+                    variante="subtitulo"
+                    className="mb-0 flex items-center gap-1 text-agro-danger-text"
                   >
                     <AlertCircle size={10} />
                     Vencidas · {itemsVencidos.length}
-                  </p>
+                  </TituloSeccion>
                   {itemsVencidos.map((item, index) => (
                     <WorkQueueCard
                       key={`${item.entity_type}-${item.entity_id}`}
@@ -540,12 +529,9 @@ export function AuditorHome() {
               {itemsResto.length > 0 && (
                 <div className="flex flex-col gap-2">
                   {itemsVencidos.length > 0 && (
-                    <p
-                      className="text-[10px] font-semibold uppercase tracking-wide"
-                      style={{ color: 'var(--muted-foreground)' }}
-                    >
+                    <TituloSeccion as="p" variante="subtitulo" className="mb-0">
                       Pendientes · {itemsResto.length}
-                    </p>
+                    </TituloSeccion>
                   )}
                   {itemsResto.map((item, index) => (
                     <WorkQueueCard
@@ -567,12 +553,7 @@ export function AuditorHome() {
         {/* ── Organizaciones asignadas ───────────────────────────────── */}
         {!loadingOrgs && orgs.length > 0 && (
           <section>
-            <p
-              className="text-[11px] font-semibold uppercase tracking-wide mb-2.5"
-              style={{ color: 'var(--muted-foreground)' }}
-            >
-              Organizaciones
-            </p>
+            <TituloSeccion as="p">Organizaciones</TituloSeccion>
             <div className="flex flex-col gap-2">
               {orgs.map(org => (
                 <button

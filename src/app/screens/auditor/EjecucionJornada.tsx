@@ -14,6 +14,7 @@ import { CapturaPreguntaAuditoria } from './CapturaPreguntaAuditoria'
 import type { CapturaPreguntaRef } from './CapturaPreguntaAuditoria'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -616,9 +617,7 @@ export function EjecucionJornada() {
 
           {/* Selector de operación (mobile: scroll horizontal; desktop: lista vertical) */}
           <div className="px-4 pt-3 pb-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--muted-foreground)' }}>
-              Operaciones
-            </p>
+            <TituloSeccion as="p" className="mb-2">Operaciones</TituloSeccion>
             <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none lg:flex-col lg:overflow-visible lg:pb-0">
               {detalle.operaciones.map(op => (
                 <OperacionChip

@@ -7,6 +7,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -168,12 +169,7 @@ export function MisVisitas() {
   return (
     <div className="flex flex-col gap-6">
       <section>
-        <p
-          className="text-[11px] font-semibold uppercase tracking-wide mb-2.5"
-          style={{ color: 'var(--muted-foreground)' }}
-        >
-          Próximos eventos
-        </p>
+        <TituloSeccion as="p">Próximos eventos</TituloSeccion>
         {pendientes.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border p-6 flex flex-col items-center gap-2">
             <Calendar size={28} style={{ color: 'var(--muted-foreground)', opacity: 0.35 }} />
@@ -200,12 +196,7 @@ export function MisVisitas() {
 
       {hechos.length > 0 && (
         <section>
-          <p
-            className="text-[11px] font-semibold uppercase tracking-wide mb-2.5"
-            style={{ color: 'var(--muted-foreground)' }}
-          >
-            Completados
-          </p>
+          <TituloSeccion as="p">Completados</TituloSeccion>
           <div className="flex flex-col gap-2">
             {hechos.map((ev, index) => (
               <EventoCard

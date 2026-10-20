@@ -14,6 +14,7 @@ import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { traducirErrorBd } from '@/lib/erroresBd'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -352,9 +353,7 @@ export function AuditorInstalacionDetalle() {
 
           {/* Auditorías */}
           <section>
-            <p className="text-[11px] font-semibold uppercase tracking-wide mb-2.5" style={{ color: 'var(--muted-foreground)' }}>
-              Auditorías ({auditorias.length})
-            </p>
+            <TituloSeccion as="p">Auditorías ({auditorias.length})</TituloSeccion>
             {auditorias.length === 0 ? (
               <EstadoVacio icono={ClipboardCheck} titulo="Sin auditorías registradas" ayuda="Usa el botón + para crear la primera" />
             ) : (

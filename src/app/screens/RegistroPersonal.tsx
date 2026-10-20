@@ -32,6 +32,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -620,9 +621,9 @@ export function RegistroPersonal() {
 
           {/* ── Datos de alta ── */}
           <section className="space-y-3">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+            <TituloSeccion>
               Datos de alta
-            </p>
+            </TituloSeccion>
 
             {!editingId && (
               <div className="space-y-1">
@@ -684,9 +685,9 @@ export function RegistroPersonal() {
 
           {/* ── Datos personales ── */}
           <section className="space-y-3">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+            <TituloSeccion>
               Datos personales
-            </p>
+            </TituloSeccion>
 
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Nombre completo *</label>
@@ -746,9 +747,9 @@ export function RegistroPersonal() {
 
           {/* ── Contacto de emergencia ── */}
           <section className="space-y-3">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+            <TituloSeccion>
               Contacto de emergencia
-            </p>
+            </TituloSeccion>
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Nombre</label>
               <input maxLength={limiteTexto('m47_trabajadores', 'emergencia_nombre')} type="text" className={fieldCls} placeholder="Nombre de contacto"
@@ -771,9 +772,9 @@ export function RegistroPersonal() {
           {/* ── Documentación ── */}
           {form.rancho_id && (
             <section className="space-y-3">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+              <TituloSeccion>
                 Documentación personal
-              </p>
+              </TituloSeccion>
               {formItemsLoading ? (
                 <div className="flex justify-center py-4">
                   <Loader2 className="w-5 h-5 text-primary animate-spin" />
@@ -801,9 +802,9 @@ export function RegistroPersonal() {
           {/* ── Capacitaciones ── */}
           {form.rancho_id && !formItemsLoading && formCaps.length > 0 && (
             <section className="space-y-3">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+              <TituloSeccion>
                 Capacitaciones
-              </p>
+              </TituloSeccion>
               <div className="space-y-1">
                 {formCaps.map(item => (
                   <div key={item.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
@@ -820,9 +821,9 @@ export function RegistroPersonal() {
 
           {/* ── Observaciones ── */}
           <section className="space-y-2">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+            <TituloSeccion>
               Observaciones
-            </p>
+            </TituloSeccion>
             <TextareaContador limite={limiteTexto('m47_trabajadores', 'observaciones')}
               value={form.observaciones}
               onChange={e => setF('observaciones', e.target.value)}

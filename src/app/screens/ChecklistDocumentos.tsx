@@ -19,6 +19,7 @@ import { AjustesSheet } from '@/app/components/checklist/AjustesSheet'
 import { VisitaCard } from '@/app/components/checklist/VisitaCard'
 import { VisitaAccionSheet, VisitasSheet, type ModoVisita } from '@/app/components/checklist/VisitaSheets'
 import { hoyMX } from '@/lib/fecha'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 
 type FiltroChk = 'faltantes' | 'no_se_lleva' | 'firmas' | 'por_vencer'
 
@@ -238,7 +239,7 @@ export function ChecklistDocumentos() {
                 if (lista.length === 0) return null
                 return (
                   <section key={g.tipo} className="space-y-2">
-                    <h2 className="text-xs uppercase tracking-wide text-muted-foreground" style={{ fontWeight: 600 }}>{g.titulo}</h2>
+                    <TituloSeccion as="h2" className="mb-0">{g.titulo}</TituloSeccion>
                     <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
                       {lista.map((item, i) => (
                         <motion.div

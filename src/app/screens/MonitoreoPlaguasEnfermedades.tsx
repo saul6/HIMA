@@ -35,6 +35,7 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -386,9 +387,7 @@ export function MonitoreoPlaguasEnfermedades() {
 
           {/* ── Sección 1: Encabezado ── */}
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--muted-foreground)' }}>
-              Datos generales
-            </p>
+            <TituloSeccion as="p" className="mb-3">Datos generales</TituloSeccion>
             <div className="space-y-4">
 
               {/* Rancho */}
@@ -483,9 +482,7 @@ export function MonitoreoPlaguasEnfermedades() {
           {/* ── Sección 2: Tabla de plantas ── */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
-                Plantas monitoreadas
-              </p>
+              <TituloSeccion as="p" className="mb-0">Plantas monitoreadas</TituloSeccion>
               <button
                 type="button"
                 onClick={agregarFila}

@@ -9,6 +9,7 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 
 // Entrada escalonada (primeros 8) compartida por las listas de esta pantalla.
 function entrada(index: number, reducedMotion: boolean | null) {
@@ -126,9 +127,7 @@ export function AuditorOrgDetalle() {
         <main className="flex-1 px-4 py-4 flex flex-col gap-6">
           {/* Instalaciones */}
           <section>
-            <p className="text-[11px] font-semibold uppercase tracking-wide mb-2.5" style={{ color: 'var(--muted-foreground)' }}>
-              Instalaciones ({ranchos.length})
-            </p>
+            <TituloSeccion as="p">Instalaciones ({ranchos.length})</TituloSeccion>
             {ranchos.length === 0 ? (
               <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Sin instalaciones registradas.</p>
             ) : (
@@ -156,9 +155,7 @@ export function AuditorOrgDetalle() {
 
           {/* Auditorías */}
           <section>
-            <p className="text-[11px] font-semibold uppercase tracking-wide mb-2.5" style={{ color: 'var(--muted-foreground)' }}>
-              Auditorías ({auditorias.length})
-            </p>
+            <TituloSeccion as="p">Auditorías ({auditorias.length})</TituloSeccion>
             {auditorias.length === 0 ? (
               <EstadoVacio icono={ClipboardCheck} titulo="Sin auditorías registradas" ayuda="Usa el botón + para crear la primera" />
             ) : (

@@ -44,6 +44,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -711,9 +712,9 @@ export function RondinesVigilancia() {
 
               {/* Encabezado */}
               <div className="space-y-3">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+                <TituloSeccion>
                   Datos del rondín
-                </p>
+                </TituloSeccion>
 
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
@@ -791,9 +792,9 @@ export function RondinesVigilancia() {
 
               {/* Rondas */}
               <div className="space-y-3">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide" style={{ fontWeight: 700 }}>
+                <TituloSeccion>
                   Rondas
-                </p>
+                </TituloSeccion>
 
                 {/* Selector de ronda activa */}
                 <div className="flex gap-1.5">

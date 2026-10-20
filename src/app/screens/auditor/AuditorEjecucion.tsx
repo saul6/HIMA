@@ -23,6 +23,7 @@ import { CapturaPreguntaAuditoria } from './CapturaPreguntaAuditoria'
 import type { CapturaPreguntaRef, AjusteInfo } from './CapturaPreguntaAuditoria'
 import { traducirErrorBd } from '@/lib/erroresBd'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -765,9 +766,9 @@ function PanelScoring({
           {/* Escenario de trabajo (no normativo) cuando hay ajustes manuales */}
           {calculo && (calculo.ajustes_manuales ?? 0) > 0 && calculo.escenario_trabajo && (
             <div className="rounded-lg px-3 py-2 flex flex-col gap-0.5" style={{ backgroundColor: 'var(--muted)', border: '1px dashed var(--border)' }}>
-              <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
+              <TituloSeccion as="p" variante="subtitulo" className="mb-0">
                 Escenario de trabajo · no normativo
-              </p>
+              </TituloSeccion>
               <p className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>
                 {calculo.escenario_trabajo.resultado}%
               </p>
@@ -780,9 +781,9 @@ function PanelScoring({
           {/* Fallas automáticas detalle */}
           {calculo && fallaActiva && (calculo.fallas?.length ?? 0) > 0 && (
             <div className="flex flex-col gap-1">
-              <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--agro-danger-text)' }}>
+              <TituloSeccion as="p" variante="subtitulo" className="mb-0 text-agro-danger-text">
                 Numerales con falla
-              </p>
+              </TituloSeccion>
               {calculo.fallas!.map(f => (
                 <div key={f.question_id} className="flex items-center gap-2">
                   <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
@@ -797,9 +798,9 @@ function PanelScoring({
           {/* Desglose por módulo (IN_PROGRESS o INTERNAL_COMPLETE) */}
           {calculo && (estado === 'IN_PROGRESS' || estado === 'INTERNAL_COMPLETE') && calculo.por_modulo.length > 0 && (
             <div className="flex flex-col gap-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
+              <TituloSeccion as="p" variante="subtitulo" className="mb-0">
                 Por módulo
-              </p>
+              </TituloSeccion>
               {calculo.por_modulo.map(m => (
                 <div key={m.modulo} className="rounded-lg px-3 py-2 flex flex-col gap-0.5" style={{ backgroundColor: 'var(--muted)' }}>
                   <div className="flex items-center justify-between gap-2">
@@ -2556,9 +2557,9 @@ export function AuditorEjecucion() {
           <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
             {/* Incidencias vinculadas */}
             <div className="flex flex-col gap-2">
-              <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
+              <TituloSeccion as="p" variante="subtitulo" className="mb-0">
                 Vinculadas ({incVinculadas.length})
-              </p>
+              </TituloSeccion>
               {cargandoIncVinc ? (
                 <div className="flex items-center gap-2 py-2">
                   <Loader size={13} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
@@ -2624,9 +2625,9 @@ export function AuditorEjecucion() {
 
             {/* Buscador de incidencias */}
             <div className="flex flex-col gap-3 rounded-xl p-3" style={{ backgroundColor: 'var(--muted)' }}>
-              <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
+              <TituloSeccion as="p" variante="subtitulo" className="mb-0">
                 Buscar incidencia existente
-              </p>
+              </TituloSeccion>
 
               <div className="flex gap-2">
                 <div className="flex flex-col gap-1 flex-1">
