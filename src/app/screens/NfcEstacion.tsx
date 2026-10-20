@@ -9,6 +9,7 @@ import { Loader2, Bug, AlertTriangle, ShieldX, PowerOff, WifiOff } from 'lucide-
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { resolverNfcOffline } from '@/lib/offline/resolverNfcOffline'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -154,13 +155,9 @@ export function NfcEstacion() {
           </p>
         </div>
         <div className="flex flex-col gap-3 w-full max-w-xs">
-          <button
-            onClick={() => setReintentar(n => n + 1)}
-            className="w-full h-12 rounded-2xl text-sm font-semibold text-white transition-colors"
-            style={{ backgroundColor: 'var(--primary)' }}
-          >
+          <Boton onClick={() => setReintentar(n => n + 1)} className="w-full">
             Reintentar
-          </button>
+          </Boton>
           <button
             onClick={() => navigate('/')}
             className="w-full h-12 rounded-2xl border text-sm transition-colors"
@@ -200,21 +197,13 @@ export function NfcEstacion() {
 
       <div className="flex flex-col gap-3 w-full max-w-xs">
         {info.esUpsell ? (
-          <button
-            onClick={() => navigate('/')}
-            className="w-full h-12 rounded-2xl text-sm font-semibold text-white transition-colors"
-            style={{ backgroundColor: 'var(--primary)' }}
-          >
+          <Boton onClick={() => navigate('/')} className="w-full">
             Ir al inicio
-          </button>
+          </Boton>
         ) : (
-          <button
-            onClick={() => navigate('/inocuidad/monitoreo-plagas')}
-            className="w-full h-12 rounded-2xl text-sm font-semibold text-white transition-colors"
-            style={{ backgroundColor: 'var(--primary)' }}
-          >
+          <Boton onClick={() => navigate('/inocuidad/monitoreo-plagas')} className="w-full">
             Ir a Monitoreo de Plagas
-          </button>
+          </Boton>
         )}
         <button
           onClick={() => navigate('/')}

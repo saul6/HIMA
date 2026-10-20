@@ -11,6 +11,7 @@ import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { traducirErrorBd } from '@/lib/erroresBd'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 const ROLES_PERMITIDOS = ['auditor', 'admin_org', 'super_admin']
 
@@ -497,14 +498,9 @@ export function CapturaAuditoriaPGFS() {
               </span>
             )}
             {!cerrada && !cargando && (
-              <button
-                onClick={handleCompletar}
-                disabled={cerrando}
-                className="text-xs font-semibold px-3 py-1.5 rounded-lg flex-shrink-0 disabled:opacity-50"
-                style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-              >
+              <Boton tamano="sm" onClick={handleCompletar} disabled={cerrando} className="flex-shrink-0">
                 {cerrando ? 'Cerrando…' : 'Completar'}
-              </button>
+              </Boton>
             )}
           </>
         }
@@ -577,14 +573,9 @@ export function CapturaAuditoriaPGFS() {
         )}
 
         {!cerrada && !cargando && preguntas.length > 0 && (
-          <button
-            onClick={handleCompletar}
-            disabled={cerrando}
-            className="w-full h-11 rounded-xl text-sm font-semibold mt-2 disabled:opacity-50"
-            style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-          >
+          <Boton onClick={handleCompletar} disabled={cerrando} className="w-full mt-2">
             {cerrando ? 'Cerrando…' : 'Completar auditoría'}
-          </button>
+          </Boton>
         )}
 
         {cerrada && (

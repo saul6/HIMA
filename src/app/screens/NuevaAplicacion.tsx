@@ -35,6 +35,7 @@ import { useGuardarOffline } from '@/hooks/useGuardarOffline'
 import { opInsert } from '@/lib/offline/construirOperaciones'
 import { leerSaldosInventarioCache, deltaPendienteInventario } from '@/lib/offline/saldosInventario'
 import type { Aplicacion } from '@/types/database.types'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // Redondea a máximo 4 decimales (evita notación científica y floats infinitos en BD y PDF)
 const r4 = (n: number) => parseFloat(n.toFixed(4));
@@ -644,13 +645,9 @@ export function NuevaAplicacion() {
               Descargar PDF (pendiente de sincronizar)
             </button>
           )}
-          <button
-            onClick={() => navigate("/")}
-            className="w-full py-3 rounded-xl text-white"
-            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-          >
+          <Boton onClick={() => navigate("/")} className="w-full">
             Volver al inicio
-          </button>
+          </Boton>
         </div>
       )}
 

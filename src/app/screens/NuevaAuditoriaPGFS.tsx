@@ -6,6 +6,7 @@ import { useAuditoriasPGFS } from '@/hooks/useAuditoriasPGFS'
 import { useRanchosOrg } from '@/hooks/useRanchosOrg'
 import { hoyMX } from '@/lib/fecha'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 const ROLES_PERMITIDOS = ['auditor', 'admin_org', 'super_admin']
 
@@ -145,14 +146,9 @@ export function NuevaAuditoriaPGFS() {
             </div>
 
             {/* Botón crear */}
-            <button
-              onClick={handleCrear}
-              disabled={guardando}
-              className="w-full h-11 rounded-xl text-sm font-semibold mt-2 disabled:opacity-50"
-              style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-            >
+            <Boton onClick={handleCrear} disabled={guardando} className="w-full mt-2">
               {guardando ? 'Creando…' : 'Crear auditoría'}
-            </button>
+            </Boton>
           </>
         )}
       </main>

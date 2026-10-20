@@ -11,6 +11,7 @@ import type { LoteOutbox } from '@/lib/offline/tipos'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { motivoLote } from '@/lib/offline/motivosRechazo'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 function formatFechaCaptura(iso: string): string {
   try {
@@ -120,14 +121,10 @@ function CardLote({
 
       <div className="flex gap-2 pt-1">
         {lote.estado === 'pendiente' && onReintentar && (
-          <button
-            onClick={() => onReintentar(lote.id)}
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg"
-            style={{ backgroundColor: 'var(--primary)', color: '#fff', fontWeight: 600 }}
-          >
+          <Boton tamano="sm" onClick={() => onReintentar(lote.id)}>
             <RefreshCw className="w-3 h-3" />
             Reintentar
-          </button>
+          </Boton>
         )}
         {lote.estado === 'rechazado' && onVer && (
           <button

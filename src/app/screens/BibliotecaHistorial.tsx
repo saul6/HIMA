@@ -20,6 +20,7 @@ import {
   generarBlobParaRef,
   mergePDFBlobs,
 } from '@/lib/pdf/generarBlobHistorial'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Metadatos de módulo ───────────────────────────────────────────────────────
 
@@ -1565,14 +1566,9 @@ export function BibliotecaHistorial() {
           <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
             {filtroModulos.size} de {modulosDisponibles.length} módulos
           </p>
-          <button
-            type="button"
-            onClick={cerrarModulosSheet}
-            className="h-9 px-5 rounded-lg text-sm"
-            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
-          >
+          <Boton tamano="sm" type="button" onClick={cerrarModulosSheet}>
             Listo
-          </button>
+          </Boton>
         </div>
       </BottomSheet>
     </div>

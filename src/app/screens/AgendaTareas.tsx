@@ -26,6 +26,7 @@ import { useContadorAnimado } from '@/hooks/useContadorAnimado'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -724,17 +725,12 @@ function DetalleSheet({
               ref={firmaRef}
               onChange={({ puntos }) => setFirmaPuntos(puntos)}
             />
-            <button
-              onClick={handleFirmarAcuse}
-              disabled={firmando || firmaPuntos < 15}
-              className="w-full h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition-colors"
-              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-            >
+            <Boton onClick={handleFirmarAcuse} disabled={firmando || firmaPuntos < 15} className="w-full">
               {firmando
                 ? <Loader2 className="w-4 h-4 animate-spin" />
                 : <><PenLine className="w-4 h-4" /> Firmar de enterado</>
               }
-            </button>
+            </Boton>
           </div>
         </div>
       ) : (
@@ -895,27 +891,19 @@ function DetalleSheet({
                   {guardando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Clock className="w-4 h-4" />}
                   Iniciar
                 </button>
-                <button
-                  onClick={() => setAccion('reportar')}
-                  className="flex-1 h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
-                  style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-                >
+                <Boton onClick={() => setAccion('reportar')} className="flex-1">
                   <CheckCircle2 className="w-4 h-4" />
                   Reportar
-                </button>
+                </Boton>
               </div>
             )}
 
             {/* Colaborador + en_progreso → Reportar */}
             {!esAdmin && tarea.estado === 'en_progreso' && accion !== 'reportar' && (
-              <button
-                onClick={() => setAccion('reportar')}
-                className="w-full h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
-                style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-              >
+              <Boton onClick={() => setAccion('reportar')} className="w-full">
                 <CheckCircle2 className="w-4 h-4" />
                 Reportar como realizada
-              </button>
+              </Boton>
             )}
 
             {/* Formulario reportar */}
@@ -968,14 +956,9 @@ function DetalleSheet({
                   >
                     Cancelar
                   </button>
-                  <button
-                    onClick={handleReportar}
-                    disabled={guardando || (!reportarNota.trim() && fotosLocales.length === 0)}
-                    className="flex-1 h-10 rounded-lg text-sm font-semibold transition-colors disabled:opacity-40"
-                    style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-                  >
+                  <Boton onClick={handleReportar} disabled={guardando || (!reportarNota.trim() && fotosLocales.length === 0)} className="flex-1">
                     {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Confirmar'}
-                  </button>
+                  </Boton>
                 </div>
               </div>
             )}
@@ -991,14 +974,10 @@ function DetalleSheet({
                   <RotateCcw className="w-4 h-4" />
                   Regresar
                 </button>
-                <button
-                  onClick={() => setAccion('aprobar')}
-                  className="flex-1 h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors"
-                  style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-                >
+                <Boton onClick={() => setAccion('aprobar')} className="flex-1">
                   <CheckCircle2 className="w-4 h-4" />
                   Aprobar
-                </button>
+                </Boton>
               </div>
             )}
 
@@ -1019,14 +998,9 @@ function DetalleSheet({
                   <button onClick={() => { setAccion(null); setAprobarNota('') }} className="flex-1 h-10 rounded-lg text-sm border border-border hover:bg-muted" style={{ color: 'var(--foreground)' }}>
                     Cancelar
                   </button>
-                  <button
-                    onClick={handleAprobar}
-                    disabled={guardando}
-                    className="flex-1 h-10 rounded-lg text-sm font-semibold disabled:opacity-40"
-                    style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-                  >
+                  <Boton onClick={handleAprobar} disabled={guardando} className="flex-1">
                     {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Confirmar'}
-                  </button>
+                  </Boton>
                 </div>
               </div>
             )}
@@ -1542,14 +1516,9 @@ function EditarForm({
         >
           Cancelar
         </button>
-        <button
-          onClick={onSave}
-          disabled={guardando || !form.titulo.trim()}
-          className="flex-1 h-10 rounded-lg text-sm font-semibold disabled:opacity-40 transition-colors"
-          style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-        >
+        <Boton onClick={onSave} disabled={guardando || !form.titulo.trim()} className="flex-1">
           {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Guardar'}
-        </button>
+        </Boton>
       </div>
     </div>
   )

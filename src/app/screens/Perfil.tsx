@@ -13,6 +13,7 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 import { contarPendientes } from '@/lib/offline/outbox'
 import { isUpdateDisponible, UPDATE_DISPONIBLE_EVENT, ejecutarActualizacion } from '@/lib/offline/actualizacionSegura'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 const ROL_LABEL: Record<string, string> = {
   super_admin: 'Super Admin',
@@ -315,16 +316,11 @@ export function Perfil() {
                       Cancelar
                     </button>
                   )}
-                  <button
-                    onClick={handleGuardarFirma}
-                    disabled={guardandoFirma || firmaInfo.puntos < 15}
-                    className="flex-1 h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition-colors"
-                    style={{ backgroundColor: 'var(--primary)', color: 'white' }}
-                  >
+                  <Boton onClick={handleGuardarFirma} disabled={guardandoFirma || firmaInfo.puntos < 15} className="flex-1">
                     {guardandoFirma ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : 'Guardar firma'}
-                  </button>
+                  </Boton>
                 </div>
               </div>
             )}
@@ -343,13 +339,9 @@ export function Perfil() {
                 <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
                   Actualización pendiente
                 </span>
-                <button
-                  onClick={ejecutarActualizacion}
-                  className="text-xs px-2.5 py-1 rounded-lg"
-                  style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
-                >
+                <Boton tamano="sm" onClick={ejecutarActualizacion}>
                   Actualizar ahora
-                </button>
+                </Boton>
               </div>
             )}
             <div className="text-xs text-muted-foreground">
