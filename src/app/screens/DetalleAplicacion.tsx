@@ -1,3 +1,4 @@
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { X, CheckCircle, Loader2, FileDown, FileText } from "lucide-react";
@@ -146,10 +147,9 @@ export function DetalleAplicacion() {
           </button>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs px-3 py-1 bg-agro-success-fill text-agro-success-text rounded-full flex items-center gap-1">
-            <CheckCircle className="w-3 h-3" />
+          <Etiqueta tono="menta" icono={<CheckCircle className="w-3 h-3" />}>
             {a.status === "completado" ? "Completado" : "Borrador"}
-          </span>
+          </Etiqueta>
           <span className="text-sm text-muted-foreground">
             {a.fecha_aplicacion}
             {a.hora_inicio ? ` · ${a.hora_inicio}` : ""}

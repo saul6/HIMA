@@ -33,6 +33,7 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -413,9 +414,9 @@ export function PreparacionCloro() {
                 </div>
               )}
               {obligatoria && !firmas[prep.id]?.realizo && (
-                <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-2 inline-block">
+                <Etiqueta tono="error" className="mt-2">
                   Pendiente de firma
-                </span>
+                </Etiqueta>
               )}
               <FirmasRegistro
                 modulo="M27"

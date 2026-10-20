@@ -4,6 +4,7 @@ import { ChevronDown, ClipboardCheck } from 'lucide-react'
 import { FRECUENCIAS, FRECUENCIA_PUNTO_LABEL, type ChkItem, type ChkNota } from '@/hooks/useChecklist'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { ESTADO_REVISION_LABEL, TONO_ESTADO, TONO_NOTA, haceDias } from './constantes'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 
 export function codigoItem(item: ChkItem, codigoClave: string): string | null {
   return item.codigo_formato ? codigoFormato(item.codigo_formato, codigoClave) : null
@@ -139,9 +140,9 @@ export function ItemCard({ item, codigoClave, puedeEditar, onAbrir, onRevisar }:
               {ESTADO_REVISION_LABEL[rev.estado]}
             </span>
           ) : (
-            <span className="inline-block rounded-full px-2 py-0.5 text-[11px] bg-muted text-muted-foreground" style={{ fontWeight: 600 }}>
+            <Etiqueta tono="neutral">
               Sin revisar
-            </span>
+            </Etiqueta>
           )}
           {rev && <p className="text-[11px] text-muted-foreground">{haceDias(item.dias_sin_revisar)}</p>}
         </div>

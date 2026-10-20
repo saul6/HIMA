@@ -37,6 +37,7 @@ import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { SkeletonFilas } from '@/app/components/SkeletonFilas'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -307,14 +308,14 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                     <p className="text-xs font-medium truncate">{m.persona_solicita}</p>
                     <p className="text-xs truncate" style={{ color: 'var(--muted-foreground)' }}>{m.area}</p>
                     {m.sin_subir && (
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-agro-info-fill text-agro-info-text mt-0.5 inline-block">
+                      <Etiqueta tono="sky" className="mt-0.5">
                         Sin subir
-                      </span>
+                      </Etiqueta>
                     )}
                     {!m.sin_subir && obligatoria && !firmas[m.id]?.realizo && (
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-0.5 inline-block">
+                      <Etiqueta tono="error" className="mt-0.5">
                         Pendiente de firma
-                      </span>
+                      </Etiqueta>
                     )}
                   </div>
                   <span

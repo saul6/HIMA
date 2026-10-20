@@ -1,5 +1,6 @@
 import type { AuditoriaPregunta, RespuestaAuditoria } from '@/types/database.types'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 
 const LABELS: Record<RespuestaAuditoria, string> = {
   cumple: 'Cumple',
@@ -36,13 +37,13 @@ export function PreguntaItem({
         <div className="flex items-center gap-2 mb-1">
           <span className="text-[10px] text-muted-foreground shrink-0">{pregunta.codigo}</span>
           {pregunta.puntos > 0 ? (
-            <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+            <Etiqueta tono="neutral">
               {pregunta.puntos} pts
-            </span>
+            </Etiqueta>
           ) : (
-            <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+            <Etiqueta tono="neutral">
               Info
-            </span>
+            </Etiqueta>
           )}
         </div>
         <p className="text-sm text-foreground leading-snug">{pregunta.texto}</p>

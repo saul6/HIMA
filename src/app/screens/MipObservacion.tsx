@@ -31,6 +31,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -322,7 +323,7 @@ export function MipObservacion() {
                 <p className="text-xs text-muted-foreground">{formatFecha(r.fecha)}</p>
                 {r.producto && <p className="text-sm mt-1 text-muted-foreground">{r.producto}</p>}
                 {obligatoria && !firmas[r.id]?.realizo && (
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text">Pendiente de firma</span>
+                  <Etiqueta tono="error">Pendiente de firma</Etiqueta>
                 )}
               </div>
               <button

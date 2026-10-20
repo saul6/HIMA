@@ -31,6 +31,7 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -369,9 +370,9 @@ export function OrdenMantenimiento() {
                     </div>
                   )}
                   {obligatoria && !firmas[o.id]?.realizo && (
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                    <Etiqueta tono="error" className="mt-1">
                       Pendiente de firma
-                    </span>
+                    </Etiqueta>
                   )}
                 </div>
                 <button

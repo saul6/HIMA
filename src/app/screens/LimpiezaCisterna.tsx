@@ -45,6 +45,7 @@ import { leerConCache } from '@/lib/offline/cacheLectura'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -740,9 +741,9 @@ export function LimpiezaCisterna() {
                         </div>
                         <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>{reg.rancho_nombre}</span>
                         {obligatoria && !firmas[reg.id]?.realizo && (
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                          <Etiqueta tono="error" className="mt-1">
                             Pendiente de firma
-                          </span>
+                          </Etiqueta>
                         )}
                       </div>
                       <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />

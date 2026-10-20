@@ -46,6 +46,7 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto, MAX_FOTOS } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -247,9 +248,9 @@ function AccidenteCard({
           </span>
         )}
         {obligatoria && !firmas[acc.id]?.realizo && (
-          <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text">
+          <Etiqueta tono="error">
             Pendiente de firma
-          </span>
+          </Etiqueta>
         )}
       </div>
       <FirmasRegistro

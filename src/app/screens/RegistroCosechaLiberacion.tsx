@@ -40,6 +40,7 @@ import { leerConCache } from '@/lib/offline/cacheLectura'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -581,9 +582,9 @@ export function RegistroCosechaLiberacion() {
                     {lotesLiberados}/{reg.liberaciones.length} lotes liberados
                   </span>
                   {totalBandejas > 0 && (
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                    <Etiqueta tono="neutral">
                       {totalBandejas} bandejas
-                    </span>
+                    </Etiqueta>
                   )}
                 </div>
 

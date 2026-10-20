@@ -48,6 +48,7 @@ import { leerConCache } from '@/lib/offline/cacheLectura'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -813,9 +814,9 @@ export function InspeccionVidrioPlastico() {
                     </span>
                   ))}
                   {obligatoria && insp.materiales.some(m => !firmas[m.id]?.realizo) && (
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text" style={{ fontWeight: 600 }}>
+                    <Etiqueta tono="error">
                       Pendiente de firma
-                    </span>
+                    </Etiqueta>
                   )}
                 </div>
                 {insp.materiales.map(m => (

@@ -26,6 +26,7 @@ import {
 import type { Organizacion, Rancho } from '@/types/database.types'
 import { Fab } from '@/app/components/Fab'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 
 const CULTIVOS = ['Zarzamora', 'Frambuesa', 'Fresa', 'Mora azul', 'Coco']
 const CULTIVO_OTRO = '__otro__'
@@ -515,9 +516,9 @@ export function MiOrganizacion() {
                           >
                             {r.nombre}
                           </span>
-                          <span className="text-[11px] bg-muted text-muted-foreground rounded px-1.5 py-0.5 flex-shrink-0 font-mono">
+                          <Etiqueta tono="neutral">
                             {r.codigo}
-                          </span>
+                          </Etiqueta>
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {r.cultivo}

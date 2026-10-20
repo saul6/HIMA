@@ -43,6 +43,7 @@ import { Portal } from '@/app/components/Portal'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto, MAX_FOTOS } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -924,14 +925,14 @@ export function ReporteIncidencias() {
                       {meta?.rancho_nombre ?? '—'}
                     </span>
                     {meta?.incidencias_count && (
-                      <span className="text-[11px] px-2 py-0.5 rounded bg-muted text-muted-foreground" style={{ fontWeight: 600 }}>
+                      <Etiqueta tono="neutral">
                         {meta.incidencias_count} incidencia{meta.incidencias_count !== 1 ? 's' : ''}
-                      </span>
+                      </Etiqueta>
                     )}
                     {meta?.fotos_count && (
-                      <span className="text-[11px] px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                      <Etiqueta tono="neutral">
                         {meta.fotos_count} foto{meta.fotos_count !== 1 ? 's' : ''}
-                      </span>
+                      </Etiqueta>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">{meta?.fecha ? formatFecha(meta.fecha) : '—'}</p>
@@ -991,9 +992,9 @@ export function ReporteIncidencias() {
                         >
                           {r.incidencias.length} incidencia{r.incidencias.length !== 1 ? 's' : ''}
                         </span>
-                        <span className="text-[11px] px-2 py-0.5 rounded flex-shrink-0 bg-muted text-muted-foreground">
+                        <Etiqueta tono="neutral">
                           {totalFotosReporte} foto{totalFotosReporte !== 1 ? 's' : ''}
-                        </span>
+                        </Etiqueta>
                       </div>
                       <p className="text-xs text-muted-foreground">{formatFecha(r.fecha)}</p>
                       {r.auditor_nombre && (

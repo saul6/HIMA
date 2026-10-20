@@ -21,6 +21,7 @@ import { ResumenPuntaje } from './ResumenPuntaje'
 import { generarAuditoriaPDF, generarAuditoriaConsolidadoPDF } from '@/lib/pdf/auditoria/generarAuditoriaPDF'
 import type { RespuestaAuditoria, EstadoAuditoria } from '@/types/database.types'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -359,9 +360,9 @@ export function AuditoriaScreen({
                     </span>
                     {chipEstado(a.estado)}
                     {a.sin_subir && (
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-agro-info-fill text-agro-info-text" style={{ fontWeight: 600 }}>
+                      <Etiqueta tono="sky">
                         Sin subir
-                      </span>
+                      </Etiqueta>
                     )}
                     {scoreChip(a.porcentaje, a.puntos_posibles)}
                   </div>

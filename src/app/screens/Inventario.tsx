@@ -29,6 +29,7 @@ import { Fab } from '@/app/components/Fab'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 
 const LOW_STOCK = 5
 
@@ -53,44 +54,44 @@ function StatusBadge({ saldo, unidad }: { saldo: number; unidad: string | null }
   const u = unidad ?? ""
   if (Number(saldo) <= 0) {
     return (
-      <span className="text-xs px-2 py-1 rounded bg-agro-danger-fill text-agro-danger-text" style={{ fontWeight: 600 }}>
+      <Etiqueta tono="error">
         Agotado
-      </span>
+      </Etiqueta>
     )
   }
   if (Number(saldo) < LOW_STOCK) {
     return (
-      <span className="text-xs px-2 py-1 rounded bg-agro-info-fill text-agro-info-text" style={{ fontWeight: 600 }}>
+      <Etiqueta tono="sky">
         Bajo · {label} {u}
-      </span>
+      </Etiqueta>
     )
   }
   return (
-    <span className="text-xs px-2 py-1 rounded bg-agro-success-fill text-agro-success-text" style={{ fontWeight: 600 }}>
+    <Etiqueta tono="menta">
       Disponible · {label} {u}
-    </span>
+    </Etiqueta>
   )
 }
 
 function TipoBadge({ tipo }: { tipo: TipoMovimiento }) {
   if (tipo === "entrada") {
     return (
-      <span className="text-xs px-2 py-0.5 rounded bg-agro-success-fill text-agro-success-text">
+      <Etiqueta tono="menta">
         Entrada
-      </span>
+      </Etiqueta>
     )
   }
   if (tipo === "salida") {
     return (
-      <span className="text-xs px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text">
+      <Etiqueta tono="error">
         Salida
-      </span>
+      </Etiqueta>
     )
   }
   return (
-    <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
+    <Etiqueta tono="neutral">
       Ajuste
-    </span>
+    </Etiqueta>
   )
 }
 

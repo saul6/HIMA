@@ -31,6 +31,7 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -277,9 +278,9 @@ export function MonitoreoGermicida() {
                   </p>
                 )}
                 {obligatoria && !firmas[m.id]?.realizo && (
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-agro-danger-fill text-agro-danger-text mt-1 inline-block">
+                  <Etiqueta tono="error" className="mt-1">
                     Pendiente de firma
-                  </span>
+                  </Etiqueta>
                 )}
               </div>
               <button
