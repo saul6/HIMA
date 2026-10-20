@@ -537,9 +537,9 @@ export function NuevaAplicacion() {
 
       {/* Banner: alerta cuando la aplicación supera 7 días desde la recomendación */}
       {alertaFechaVencida && (
-        <div className="mx-4 mt-3 mb-1 p-3 rounded-xl flex items-start gap-2 bg-agro-warning-fill">
-          <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-agro-warning-text" />
-          <p className="text-sm text-agro-warning-text">
+        <div className="mx-4 mt-3 mb-1 p-3 rounded-xl flex items-start gap-2 bg-agro-info-fill">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-agro-info-text" />
+          <p className="text-sm text-agro-info-text">
             La fecha de aplicación supera por más de 7 días la recomendación del asesor.
             Verifica con{" "}
             <span style={{ fontWeight: 600 }}>{formData.technicalAdvisor}</span> antes de continuar.
@@ -623,11 +623,11 @@ export function NuevaAplicacion() {
 
       {currentStep === 5 && aplicacionGuardada?.pendiente && (
         <div className="p-4 space-y-4">
-          <div className="rounded-xl p-4 bg-agro-warning-fill">
-            <p className="text-sm text-agro-warning-text" style={{ fontWeight: 600 }}>
+          <div className="rounded-xl p-4 bg-agro-info-fill">
+            <p className="text-sm text-agro-info-text" style={{ fontWeight: 600 }}>
               Aplicación guardada sin conexión
             </p>
-            <p className="text-sm text-agro-warning-text mt-1">
+            <p className="text-sm text-agro-info-text mt-1">
               Se subirá al recuperar señal. Podrás firmarla desde el historial cuando se sincronice.
             </p>
           </div>

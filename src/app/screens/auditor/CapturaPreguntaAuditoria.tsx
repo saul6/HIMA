@@ -59,8 +59,8 @@ interface Props {
 
 const RESP_OPTIONS: { value: AudRespuesta; label: string; activeStyle: { bg: string; color: string } }[] = [
   { value: 'cumplimiento_total', label: 'CT',  activeStyle: { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' } },
-  { value: 'deficiencia_menor',  label: 'D−',  activeStyle: { bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' } },
-  { value: 'deficiencia_mayor',  label: 'D+',  activeStyle: { bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' } },
+  { value: 'deficiencia_menor',  label: 'D−',  activeStyle: { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' } },
+  { value: 'deficiencia_mayor',  label: 'D+',  activeStyle: { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' } },
   { value: 'no_conformidad',     label: 'NC',  activeStyle: { bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  } },
   { value: 'na',                 label: 'N/A', activeStyle: { bg: 'var(--muted)',             color: 'var(--muted-foreground)'  } },
 ]
@@ -810,7 +810,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               <span
                 className="text-[10px] font-semibold flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
                 title={reincidencia.mensaje}
-                style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+                style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
               >
                 Reincidente
               </span>
@@ -967,16 +967,16 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           {esRevisionPendiente && (
             <div
               className="rounded-lg px-3 py-2 flex flex-col gap-2"
-              style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}
+              style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}
             >
               <div className="flex items-start gap-2">
-                <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+                <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
                 <div className="flex flex-col gap-1 flex-1">
-                  <p className="text-[11px] font-semibold" style={{ color: 'var(--agro-warning-text)' }}>
+                  <p className="text-[11px] font-semibold" style={{ color: 'var(--agro-info-text)' }}>
                     Reactivada tras retirar una regla
                     {respuesta && respuesta !== 'na' && ` — respuesta anterior: ${RESP_TOOLTIPS[respuesta]}`}
                   </p>
-                  <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>
+                  <p className="text-[10px]" style={{ color: 'var(--agro-info-text)' }}>
                     Confirma o cambia la respuesta para que vuelva a contar.
                   </p>
                 </div>
@@ -990,7 +990,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   }}
                   disabled={confirmandoRevision}
                   className="self-start h-7 px-3 rounded-lg text-[10px] font-semibold flex items-center gap-1 disabled:opacity-50"
-                  style={{ backgroundColor: 'var(--agro-warning-text)', color: '#fff' }}
+                  style={{ backgroundColor: 'var(--agro-info-text)', color: '#fff' }}
                 >
                   {confirmandoRevision
                     ? <><Loader size={10} className="animate-spin" /> Confirmando…</>
@@ -1132,13 +1132,13 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     {reglaConflictos && reglaConflictos.length > 0 && (
                       <div
                         className="flex flex-col gap-1 rounded-lg px-3 py-2"
-                        style={{ backgroundColor: 'var(--agro-warning-fill)' }}
+                        style={{ backgroundColor: 'var(--agro-info-fill)' }}
                       >
-                        <p className="text-[11px] font-semibold" style={{ color: 'var(--agro-warning-text)' }}>
+                        <p className="text-[11px] font-semibold" style={{ color: 'var(--agro-info-text)' }}>
                           Conflictos encontrados — revisar antes de continuar:
                         </p>
                         {reglaConflictos.map((c, i) => (
-                          <p key={i} className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>
+                          <p key={i} className="text-[10px]" style={{ color: 'var(--agro-info-text)' }}>
                             {c.question_id}: {c.tipo === 'respuesta' ? `respuesta capturada: ${c.valor}` : `hallazgo abierto: ${c.valor}`}
                           </p>
                         ))}
@@ -1196,7 +1196,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                             finally { setAplicandoReglaId(null) }
                           }}
                           className="flex-shrink-0 h-8 px-3 rounded-lg text-[11px] font-semibold flex items-center gap-1 disabled:opacity-50"
-                          style={{ backgroundColor: 'var(--agro-warning-text)', color: '#fff' }}
+                          style={{ backgroundColor: 'var(--agro-info-text)', color: '#fff' }}
                         >
                           Confirmar de todos modos
                         </button>
@@ -1244,7 +1244,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                           </p>
                         )}
                         {retiroResultado.revision_pendiente.length > 0 && (
-                          <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>
+                          <p className="text-[10px]" style={{ color: 'var(--agro-info-text)' }}>
                             Pendientes de revisión: {retiroResultado.revision_pendiente.join(', ')}
                           </p>
                         )}
@@ -1325,8 +1325,8 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           {!pregunta.es_cualitativa && hasValidMax && matrizMax && matrizClase && matrizObtenido != null && (() => {
             const esTotal = matrizClase === 'TOTAL'
             const esNC    = matrizClase === 'NON_COMPLIANCE'
-            const bg      = esTotal ? 'var(--agro-success-fill)' : esNC ? 'var(--agro-danger-fill)' : 'var(--agro-warning-fill)'
-            const color   = esTotal ? 'var(--agro-success-text)' : esNC ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)'
+            const bg      = esTotal ? 'var(--agro-success-fill)' : esNC ? 'var(--agro-danger-fill)' : 'var(--agro-info-fill)'
+            const color   = esTotal ? 'var(--agro-success-text)' : esNC ? 'var(--agro-danger-text)' : 'var(--agro-info-text)'
             const desc    = matrizDescuento ?? 0
             return (
               <div className="rounded-lg px-3 py-2 flex items-center gap-2" style={{ backgroundColor: bg }}>
@@ -1344,8 +1344,8 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
             <div
               className="rounded-lg px-3 py-2 flex flex-col gap-1.5"
               style={{
-                backgroundColor: ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-fill)' : 'var(--agro-warning-fill)',
-                border: `1px solid ${ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-text)' : 'var(--agro-amber)'}`,
+                backgroundColor: ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-fill)' : 'var(--agro-info-fill)',
+                border: `1px solid ${ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-text)' : 'var(--agro-menta)'}`,
               }}
             >
               <div className="flex items-center justify-between gap-2">
@@ -1353,13 +1353,13 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   <Pencil
                     size={11}
                     style={{
-                      color: ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-text)' : 'var(--agro-warning-text)',
+                      color: ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-text)' : 'var(--agro-info-text)',
                       flexShrink: 0,
                     }}
                   />
                   <span
                     className="text-[11px] font-semibold"
-                    style={{ color: ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-text)' : 'var(--agro-warning-text)' }}
+                    style={{ color: ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-text)' : 'var(--agro-info-text)' }}
                   >
                     Ajuste manual: {ajuste.puntos_manual}/{matrizMax}
                   </span>
@@ -1367,7 +1367,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     className="text-[10px] px-1.5 py-0.5 rounded"
                     style={{
                       backgroundColor: 'rgba(0,0,0,0.07)',
-                      color: ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-text)' : 'var(--agro-warning-text)',
+                      color: ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-text)' : 'var(--agro-info-text)',
                     }}
                   >
                     {ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'coincide'
@@ -1380,7 +1380,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     onClick={handleQuitarAjuste}
                     disabled={quitandoAjuste}
                     className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded disabled:opacity-50"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.07)', color: 'var(--agro-warning-text)' }}
+                    style={{ backgroundColor: 'rgba(0,0,0,0.07)', color: 'var(--agro-info-text)' }}
                   >
                     {quitandoAjuste ? <Loader size={10} className="animate-spin" /> : <X size={10} />}
                     Quitar
@@ -1388,15 +1388,15 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 )}
               </div>
               {ajuste.ajuste_motivo && (
-                <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>
+                <p className="text-[10px]" style={{ color: 'var(--agro-info-text)' }}>
                   Motivo: {ajuste.ajuste_motivo}
                 </p>
               )}
               {ajusteWarning?.tipo === 'OTHER_CATEGORY' && ajusteWarning.clasificacion_sugerida && (
                 <div className="flex items-start gap-2 pt-0.5">
-                  <AlertCircle size={12} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+                  <AlertCircle size={12} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
                   <div className="flex flex-col gap-1 flex-1">
-                    <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>{ajusteWarning.mensaje}</p>
+                    <p className="text-[10px]" style={{ color: 'var(--agro-info-text)' }}>{ajusteWarning.mensaje}</p>
                     {!cerrada && (
                       <button
                         onClick={() => {
@@ -1422,16 +1422,16 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 </div>
               )}
               {ajusteWarning?.tipo === 'OFF_MATRIX' && (
-                <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>{ajusteWarning.mensaje}</p>
+                <p className="text-[10px]" style={{ color: 'var(--agro-info-text)' }}>{ajusteWarning.mensaje}</p>
               )}
             </div>
           )}
 
           {/* Aviso OTHER_CATEGORY cuando el chip de ajuste aún no aparece */}
           {!pregunta.es_cualitativa && ajuste?.puntos_manual == null && ajusteWarning && (
-            <div className="rounded-lg px-3 py-2 flex items-start gap-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
-              <AlertCircle size={12} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-              <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>{ajusteWarning.mensaje}</p>
+            <div className="rounded-lg px-3 py-2 flex items-start gap-2" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
+              <AlertCircle size={12} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+              <p className="text-[10px]" style={{ color: 'var(--agro-info-text)' }}>{ajusteWarning.mensaje}</p>
             </div>
           )}
 
@@ -1552,10 +1552,10 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           {!pregunta.es_cualitativa && reincidencia?.reincidente && (
             <div
               className="flex items-start gap-2 rounded-lg px-3 py-2"
-              style={{ backgroundColor: 'var(--agro-warning-fill)' }}
+              style={{ backgroundColor: 'var(--agro-info-fill)' }}
             >
-              <History size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-              <p className="text-[11px]" style={{ color: 'var(--agro-warning-text)' }}>
+              <History size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+              <p className="text-[11px]" style={{ color: 'var(--agro-info-text)' }}>
                 {reincidencia.mensaje}
               </p>
             </div>
@@ -1565,10 +1565,10 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           {!pregunta.es_cualitativa && falla && (
             <div
               className="flex items-start gap-2 rounded-lg px-3 py-2"
-              style={{ backgroundColor: 'var(--agro-warning-fill)' }}
+              style={{ backgroundColor: 'var(--agro-info-fill)' }}
             >
-              <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-              <p className="text-[11px] font-medium" style={{ color: 'var(--agro-warning-text)' }}>
+              <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+              <p className="text-[11px] font-medium" style={{ color: 'var(--agro-info-text)' }}>
                 Control de falla automática — revisar con el auditor certificado.
               </p>
             </div>
@@ -1688,12 +1688,12 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                       />
                       <div
                         className="rounded-lg px-3 py-2 flex flex-col gap-1.5"
-                        style={{ backgroundColor: 'var(--agro-warning-fill)' }}
+                        style={{ backgroundColor: 'var(--agro-info-fill)' }}
                       >
-                        <p className="text-[10px] font-semibold" style={{ color: 'var(--agro-warning-text)' }}>
+                        <p className="text-[10px] font-semibold" style={{ color: 'var(--agro-info-text)' }}>
                           El dato cambió en {h.origen_question_id ?? 'otra pregunta'}
                         </p>
-                        <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>
+                        <p className="text-[10px]" style={{ color: 'var(--agro-info-text)' }}>
                           Anterior: {h.valor ?? '—'} · Nuevo: {h.propuesto ?? '—'}
                         </p>
                         {!cerrada && (
@@ -1737,12 +1737,12 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                       />
                       <div
                         className="rounded-lg px-3 py-2 flex flex-col gap-1.5"
-                        style={{ backgroundColor: 'var(--agro-warning-fill)' }}
+                        style={{ backgroundColor: 'var(--agro-info-fill)' }}
                       >
-                        <p className="text-[10px] font-semibold" style={{ color: 'var(--agro-warning-text)' }}>
+                        <p className="text-[10px] font-semibold" style={{ color: 'var(--agro-info-text)' }}>
                           Datos distintos en preguntas equivalentes
                         </p>
-                        <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>
+                        <p className="text-[10px]" style={{ color: 'var(--agro-info-text)' }}>
                           Este: {h.valor ?? '—'} · En {h.origen_question_id ?? 'otra pregunta'}: {h.propuesto ?? '—'}
                         </p>
                         {!cerrada && (
@@ -1797,10 +1797,10 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           {respuesta === 'no_conformidad' && !observacion && (
             <div
               className="flex items-start gap-2 rounded-lg px-3 py-2"
-              style={{ backgroundColor: 'var(--agro-warning-fill)' }}
+              style={{ backgroundColor: 'var(--agro-info-fill)' }}
             >
-              <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-              <p className="text-[11px] font-medium" style={{ color: 'var(--agro-warning-text)' }}>
+              <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+              <p className="text-[11px] font-medium" style={{ color: 'var(--agro-info-text)' }}>
                 Una no conformidad requiere observación del auditor.
               </p>
             </div>

@@ -266,10 +266,10 @@ export function GermicidaGG() {
         {/* Info box PPM */}
         <div
           className="flex items-start gap-2 rounded-xl p-3"
-          style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}
+          style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}
         >
-          <FlaskConical className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-          <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+          <FlaskConical className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+          <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
             <span style={{ fontWeight: 600 }}>Rangos de referencia:</span>{' '}
             Lavado de manos: 1.5–3.0 ppm · Herramientas/cubetas: 100–200 ppm
           </p>
@@ -364,7 +364,7 @@ export function GermicidaGG() {
                 </div>
                 {obligatoria && !firmas[reg.id]?.realizo && (
                   <span className="text-xs px-2 py-0.5 rounded font-medium mt-2 inline-block"
-                    style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
+                    style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
                     Pendiente de firma
                   </span>
                 )}
@@ -421,10 +421,10 @@ export function GermicidaGG() {
           {/* Info */}
           <div
             className="flex items-start gap-2 rounded-xl p-3"
-            style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}
+            style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}
           >
-            <FlaskConical className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-            <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+            <FlaskConical className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+            <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
               Lavado de manos: 1.5–3.0 ppm · Herramientas/cubetas: 100–200 ppm
             </p>
           </div>

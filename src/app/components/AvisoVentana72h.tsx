@@ -23,7 +23,7 @@ export function AvisoVentana72h() {
     <Link
       to="/sincronizacion"
       className="flex items-start gap-2 px-4 py-3"
-      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
     >
       <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" />
       <p className="text-xs" style={{ fontWeight: 600 }}>

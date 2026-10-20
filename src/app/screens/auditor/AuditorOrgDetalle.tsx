@@ -28,7 +28,7 @@ const ESTADO_LABELS: Record<string, string> = {
 }
 
 const ESTADO_STYLE: Record<string, { bg: string; color: string }> = {
-  en_proceso:  { bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
+  en_proceso:  { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
   preliminar:  { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
   completada:  { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
   cerrada:     { bg: 'var(--muted)',              color: 'var(--muted-foreground)'  },

@@ -574,7 +574,7 @@ export function EvidenciaPanel({
                         style={isHigh
                           ? { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
                           : isMed
-                          ? { backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }
+                          ? { backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }
                           : { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }
                         }
                       >
@@ -612,7 +612,7 @@ export function EvidenciaPanel({
                     const relStyle = isHigh
                       ? { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
                       : isMed
-                      ? { backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }
+                      ? { backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }
                       : { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }
                     return (
                       <div

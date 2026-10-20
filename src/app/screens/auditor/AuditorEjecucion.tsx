@@ -140,13 +140,13 @@ type Severidad = 'BLOCKER' | 'REQUIRED' | 'WARNING' | 'INFO'
 const SEV_ORDER: Severidad[] = ['BLOCKER', 'REQUIRED', 'WARNING', 'INFO']
 const SEV_CONFIG: Record<Severidad, { label: string; bg: string; color: string }> = {
   BLOCKER:  { label: 'Bloqueante', bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  },
-  REQUIRED: { label: 'Requerido',  bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
-  WARNING:  { label: 'Aviso',      bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
+  REQUIRED: { label: 'Requerido',  bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
+  WARNING:  { label: 'Aviso',      bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
   INFO:     { label: 'Info',       bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
 }
 
 const CLASIFICACION_CONFIG: Record<AudHallazgoClasificacion, { label: string; bg: string; color: string }> = {
-  menor:       { label: 'Menor',       bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
+  menor:       { label: 'Menor',       bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
   mayor:       { label: 'Mayor',       bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  },
   critico:     { label: 'Crítico',     bg: 'var(--agro-red)',          color: '#fff'                     },
   observacion: { label: 'Observación', bg: 'var(--muted)',             color: 'var(--muted-foreground)'  },
@@ -154,9 +154,9 @@ const CLASIFICACION_CONFIG: Record<AudHallazgoClasificacion, { label: string; bg
 
 const HALL_ESTADO_CONFIG: Record<AudHallazgoEstado, { label: string; bg: string; color: string }> = {
   OPEN:                   { label: 'Abierto',        bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  },
-  PLAN_ACCEPTED:          { label: 'Plan aceptado',  bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
+  PLAN_ACCEPTED:          { label: 'Plan aceptado',  bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
   IMPLEMENTED:            { label: 'Implementado',   bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
-  EFFECTIVENESS_PENDING:  { label: 'Eficacia pend.', bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
+  EFFECTIVENESS_PENDING:  { label: 'Eficacia pend.', bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
   CLOSED:                 { label: 'Cerrado',        bg: 'var(--muted)',             color: 'var(--muted-foreground)'  },
   REOPENED:               { label: 'Reabierto',      bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  },
 }
@@ -199,7 +199,7 @@ const ESTADO_LABELS: Record<string, string> = {
   cerrada:     'Cerrada',
 }
 const ESTADO_STYLE: Record<string, { bg: string; color: string }> = {
-  en_proceso:  { bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
+  en_proceso:  { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
   preliminar:  { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
   completada:  { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
   cerrada:     { bg: 'var(--muted)',              color: 'var(--muted-foreground)'  },
@@ -247,7 +247,7 @@ function PanelM9({
   const estadoConfig = {
     TOTAL_COMPLIANCE_REACHED:     { label: 'Total alcanzado', bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', icon: <CheckCircle size={12} /> },
     TOTAL_COMPLIANCE_NOT_REACHED: { label: 'No alcanzado',   bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)',  icon: <AlertCircle size={12} /> },
-    PENDING_REVIEW:               { label: 'Pendiente',      bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', icon: <AlertCircle size={12} /> },
+    PENDING_REVIEW:               { label: 'Pendiente',      bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', icon: <AlertCircle size={12} /> },
   }
 
   const cfg = estadoConfig[calculo.estado as keyof typeof estadoConfig] ?? estadoConfig.PENDING_REVIEW
@@ -352,7 +352,7 @@ function PanelValidacion({
             <ShieldCheck
               size={15}
               className="flex-shrink-0"
-              style={{ color: tieneBlockers ? 'var(--agro-danger-text)' : issues.length === 0 ? 'var(--agro-success-text)' : 'var(--agro-warning-text)' }}
+              style={{ color: tieneBlockers ? 'var(--agro-danger-text)' : issues.length === 0 ? 'var(--agro-success-text)' : 'var(--agro-info-text)' }}
             />
           )}
           <span
@@ -627,7 +627,7 @@ function PanelScoring({
             </span>
           )}
           {scoringEstado === 'error' && calculo && (
-            <span className="text-[10px] flex-shrink-0" style={{ color: 'var(--agro-warning-text)' }}>
+            <span className="text-[10px] flex-shrink-0" style={{ color: 'var(--agro-info-text)' }}>
               Cálculo anterior (no actualizado)
             </span>
           )}
@@ -725,9 +725,9 @@ function PanelScoring({
                     </div>
                   )}
                   {(calculo.conteo.revision_pendiente ?? 0) > 0 && (
-                    <div className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
-                      <p className="text-[10px]" style={{ color: 'var(--agro-warning-text)' }}>Revisión pendiente</p>
-                      <p className="text-sm font-bold" style={{ color: 'var(--agro-warning-text)' }}>{calculo.conteo.revision_pendiente}</p>
+                    <div className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
+                      <p className="text-[10px]" style={{ color: 'var(--agro-info-text)' }}>Revisión pendiente</p>
+                      <p className="text-sm font-bold" style={{ color: 'var(--agro-info-text)' }}>{calculo.conteo.revision_pendiente}</p>
                     </div>
                   )}
                 </div>
@@ -745,11 +745,11 @@ function PanelScoring({
 
           {calculo && estado === 'REQUIRES_VALIDATION' && (
             <>
-              <div className="rounded-lg px-3 py-2 flex flex-col gap-1" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}>
-                <p className="text-[11px] font-bold" style={{ color: 'var(--agro-warning-text)' }}>
+              <div className="rounded-lg px-3 py-2 flex flex-col gap-1" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
+                <p className="text-[11px] font-bold" style={{ color: 'var(--agro-info-text)' }}>
                   Revisión de puntuación requerida
                 </p>
-                <p className="text-[11px]" style={{ color: 'var(--agro-warning-text)' }}>
+                <p className="text-[11px]" style={{ color: 'var(--agro-info-text)' }}>
                   Resultado normativo: {calculo.resultado_bruto}%
                   {(calculo.ajustes_en_conflicto ?? 0) > 0 && (
                     <span className="font-semibold"> · {calculo.ajustes_en_conflicto} ajuste{calculo.ajustes_en_conflicto !== 1 ? 's' : ''} en conflicto</span>
@@ -857,9 +857,9 @@ function PanelScoring({
           )}
           {scoringEstado === 'error' && calculo && (
             <div className="flex flex-col gap-2 pt-3">
-              <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
-                <AlertCircle size={13} style={{ color: 'var(--agro-warning-text)' }} />
-                <p className="text-[11px]" style={{ color: 'var(--agro-warning-text)' }}>
+              <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
+                <AlertCircle size={13} style={{ color: 'var(--agro-info-text)' }} />
+                <p className="text-[11px]" style={{ color: 'var(--agro-info-text)' }}>
                   Mostrando cálculo anterior — no refleja los últimos cambios.
                 </p>
               </div>
@@ -1828,16 +1828,16 @@ export function AuditorEjecucion() {
               </div>
             )}
             {obsCargaEstado === 'error' && (
-              <div className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}>
-                <AlertCircle size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+              <div className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
+                <AlertCircle size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
                 <div className="flex-1">
-                  <p className="text-xs font-semibold" style={{ color: 'var(--agro-warning-text)' }}>No se pudieron cargar las observaciones guardadas</p>
-                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--agro-warning-text)' }}>Es posible que algunas observaciones no se muestren.</p>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--agro-info-text)' }}>No se pudieron cargar las observaciones guardadas</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--agro-info-text)' }}>Es posible que algunas observaciones no se muestren.</p>
                 </div>
                 <button
                   onClick={refetch}
                   className="text-[11px] font-semibold px-2 py-1 rounded flex-shrink-0"
-                  style={{ backgroundColor: 'rgba(0,0,0,0.1)', color: 'var(--agro-warning-text)' }}
+                  style={{ backgroundColor: 'rgba(0,0,0,0.1)', color: 'var(--agro-info-text)' }}
                 >
                   Reintentar
                 </button>
@@ -1919,7 +1919,7 @@ export function AuditorEjecucion() {
                   className="w-full flex items-center justify-between px-4 py-3 text-left"
                 >
                   <div className="flex items-center gap-2">
-                    <History size={15} className="flex-shrink-0" style={{ color: 'var(--agro-warning-text)' }} />
+                    <History size={15} className="flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
                     <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
                       Antecedentes ({historialCriterios.length} criterio{historialCriterios.length !== 1 ? 's' : ''} con NC)
                     </span>
@@ -2332,7 +2332,7 @@ export function AuditorEjecucion() {
                         const cfg = sev === 'BLOCKER'
                           ? { bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)',  label: 'Bloqueante' }
                           : sev === 'WARNING'
-                          ? { bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', label: 'Aviso' }
+                          ? { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', label: 'Aviso' }
                           : { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', label: 'Info' }
                         return (
                           <div key={sev} className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>

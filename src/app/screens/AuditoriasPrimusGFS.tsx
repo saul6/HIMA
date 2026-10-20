@@ -16,7 +16,7 @@ const ESTADO_LABELS: Record<string, string> = {
 }
 
 const ESTADO_STYLE: Record<string, { bg: string; color: string }> = {
-  en_proceso: { bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
+  en_proceso: { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
   completada:  { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
   cerrada:     { bg: 'var(--muted)',              color: 'var(--muted-foreground)'   },
 }
@@ -73,7 +73,7 @@ export default function AuditoriasPrimusGFS() {
 
       {/* Leyenda legal */}
       <div className="mx-4 mt-4 rounded-xl border border-border bg-card px-4 py-3 flex gap-3">
-        <AlertCircle size={16} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+        <AlertCircle size={16} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
         <p className="text-[11px] leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>
           {LEYENDA_LEGAL_PGFS}
         </p>

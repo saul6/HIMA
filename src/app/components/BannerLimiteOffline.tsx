@@ -34,7 +34,7 @@ export function BannerLimiteOffline({
   return (
     <div
       className="flex items-start gap-2 px-3 py-3 rounded-lg"
-      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
     >
       <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
       <p className="text-xs" style={{ fontWeight: 600 }}>{mensaje}</p>

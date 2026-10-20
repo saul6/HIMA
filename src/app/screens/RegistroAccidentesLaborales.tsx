@@ -204,7 +204,7 @@ function AccidenteCard({
               {acc.atencion_recibida.map((a) => (
                 <span
                   key={a}
-                  className="text-xs bg-[var(--agro-warning-fill)] text-[var(--agro-warning-text)] px-2 py-0.5 rounded-full"
+                  className="text-xs bg-[var(--agro-info-fill)] text-[var(--agro-info-text)] px-2 py-0.5 rounded-full"
                 >
                   {a}
                 </span>
@@ -236,12 +236,12 @@ function AccidenteCard({
           </span>
         )}
         {acc.requirio_limpieza && (
-          <span className="bg-[var(--agro-warning-fill)] text-[var(--agro-warning-text)] px-2 py-0.5 rounded-full">
+          <span className="bg-[var(--agro-info-fill)] text-[var(--agro-info-text)] px-2 py-0.5 rounded-full">
             Limpieza requerida
           </span>
         )}
         {acc.producto_involucrado && (
-          <span className="bg-[var(--agro-warning-fill)] text-[var(--agro-warning-text)] px-2 py-0.5 rounded-full">
+          <span className="bg-[var(--agro-info-fill)] text-[var(--agro-info-text)] px-2 py-0.5 rounded-full">
             Producto involucrado
           </span>
         )}

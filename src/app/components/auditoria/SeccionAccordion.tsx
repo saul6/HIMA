@@ -7,7 +7,7 @@ import type { AuditoriaSeccion, AuditoriaPregunta, RespuestaAuditoria } from '@/
 function scoreClass(porcentaje: number, posibles: number): string {
   if (posibles === 0) return 'bg-muted text-muted-foreground'
   if (porcentaje >= 85) return 'bg-agro-success-fill text-agro-success-text'
-  if (porcentaje >= 70) return 'bg-agro-warning-fill text-agro-warning-text'
+  if (porcentaje >= 70) return 'bg-agro-info-fill text-agro-info-text'
   return 'bg-agro-danger-fill text-agro-danger-text'
 }
 

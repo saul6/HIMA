@@ -9,7 +9,7 @@ interface Props {
 export function ModulosSelectorStep({ modulos, seleccionados, onToggle }: Props) {
   if (modulos.length === 0) {
     return (
-      <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+      <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
         No se encontraron módulos en el catálogo.
       </p>
     )

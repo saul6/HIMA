@@ -580,7 +580,7 @@ export function RegistroCosechaLiberacion() {
                     className={`text-[10px] px-2 py-0.5 rounded ${
                       lotesLiberados === reg.liberaciones.length
                         ? 'bg-agro-success-fill text-agro-success-text'
-                        : 'bg-agro-warning-fill text-agro-warning-text'
+                        : 'bg-agro-info-fill text-agro-info-text'
                     }`}
                   >
                     {lotesLiberados}/{reg.liberaciones.length} lotes liberados
@@ -807,8 +807,8 @@ export function RegistroCosechaLiberacion() {
                 <div
                   className="rounded-lg px-3 py-3"
                   style={{
-                    backgroundColor: 'var(--agro-warning-fill)',
-                    color: 'var(--agro-warning-text)',
+                    backgroundColor: 'var(--agro-info-fill)',
+                    color: 'var(--agro-info-text)',
                   }}
                 >
                   <div className="flex items-center gap-2 mb-2">

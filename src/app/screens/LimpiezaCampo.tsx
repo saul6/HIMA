@@ -967,15 +967,15 @@ export function LimpiezaCampo() {
               <div
                 className="flex items-start gap-2 rounded-xl p-3"
                 style={{
-                  backgroundColor: 'var(--agro-warning-fill)',
-                  border: '1px solid var(--agro-amber)',
+                  backgroundColor: 'var(--agro-info-fill)',
+                  border: '1px solid var(--agro-menta)',
                 }}
               >
                 <TriangleAlert
                   className="w-4 h-4 flex-shrink-0 mt-0.5"
-                  style={{ color: 'var(--agro-warning-text)' }}
+                  style={{ color: 'var(--agro-info-text)' }}
                 />
-                <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
                   Ya existe un registro para este mes y {termino.toLowerCase()}.
                 </p>
               </div>

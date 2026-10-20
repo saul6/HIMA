@@ -483,7 +483,7 @@ export function RegistroLimpiezaBanos() {
                     className={`text-[10px] px-2 py-0.5 rounded ${
                       todosLimpieza
                         ? 'bg-agro-success-fill text-agro-success-text'
-                        : 'bg-agro-warning-fill text-agro-warning-text'
+                        : 'bg-agro-info-fill text-agro-info-text'
                     }`}
                   >
                     {todosLimpieza ? 'Limpieza completa' : 'Limpieza parcial'}
@@ -492,7 +492,7 @@ export function RegistroLimpiezaBanos() {
                     className={`text-[10px] px-2 py-0.5 rounded ${
                       todosDesinfeccion
                         ? 'bg-agro-success-fill text-agro-success-text'
-                        : 'bg-agro-warning-fill text-agro-warning-text'
+                        : 'bg-agro-info-fill text-agro-info-text'
                     }`}
                   >
                     {todosDesinfeccion ? 'Desinfección completa' : 'Desinfección parcial'}

@@ -30,12 +30,12 @@ type SaveStatusLocal = 'idle' | 'saving' | 'saved' | 'error'
 
 // Estado de respuesta para los puntos del navigator
 function colorDestino(resp: string | null, herencia: boolean): string {
-  if (herencia) return 'var(--agro-amber)'
+  if (herencia) return 'var(--agro-menta)'
   if (!resp) return 'var(--border)'
   if (resp === 'cumplimiento_total' || resp === 'excede_cumplimiento') return 'var(--agro-success-text)'
   if (resp === 'na') return 'var(--muted-foreground)'
   if (resp === 'no_conformidad') return 'var(--agro-danger-text)'
-  return 'var(--agro-warning-text)'
+  return 'var(--agro-info-text)'
 }
 
 // ── Sub-componentes ───────────────────────────────────────────────────────────
@@ -78,7 +78,7 @@ function OperacionChip({ op, activa, onClick }: {
           {op.conteo.resueltas ?? 0}/{op.conteo.total}
         </span>
         {op.herencia_pendiente > 0 && (
-          <span className="text-[9px] font-bold" style={{ color: activa ? 'rgba(255,255,255,.9)' : 'var(--agro-amber)' }}>
+          <span className="text-[9px] font-bold" style={{ color: activa ? 'rgba(255,255,255,.9)' : 'var(--agro-menta)' }}>
             {op.herencia_pendiente}H
           </span>
         )}
@@ -223,9 +223,9 @@ function PendientesPanel({
                   key={`h-${p.question_id}`}
                   onClick={() => { onClose(); onResolver(op.auditoria_id, p.question_id) }}
                   className="w-full text-left rounded-xl border px-3 py-2 flex items-center gap-2 active:opacity-70"
-                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--agro-amber)' }}
+                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--agro-menta)' }}
                 >
-                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--agro-amber)' }} />
+                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--agro-menta)' }} />
                   <div className="flex-1 min-w-0">
                     <span className="text-[10px] font-mono mr-1" style={{ color: 'var(--muted-foreground)' }}>{p.question_id}</span>
                     <span className="text-[11px]" style={{ color: 'var(--foreground)' }}>Dato por confirmar</span>
@@ -235,14 +235,14 @@ function PendientesPanel({
 
               {op.issues_abiertos > 0 && (
                 <div className="rounded-xl px-3 py-2 flex items-center justify-between"
-                  style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-warning-text)' }}>
-                  <p className="text-[11px]" style={{ color: 'var(--agro-warning-text)' }}>
+                  style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-info-text)' }}>
+                  <p className="text-[11px]" style={{ color: 'var(--agro-info-text)' }}>
                     {op.issues_abiertos} {op.issues_abiertos === 1 ? 'issue de revisión abierto' : 'issues de revisión abiertos'}
                   </p>
                   <button
                     onClick={() => onAbrir(op.auditoria_id)}
                     className="text-[10px] font-semibold underline"
-                    style={{ color: 'var(--agro-warning-text)' }}
+                    style={{ color: 'var(--agro-info-text)' }}
                   >
                     Resolver
                   </button>
@@ -549,8 +549,8 @@ export function EjecucionJornada() {
             onClick={() => setPanelPendientes(true)}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex-shrink-0"
             style={{
-              backgroundColor: totalPendientes > 0 ? 'var(--agro-warning-fill)' : 'var(--muted)',
-              color: totalPendientes > 0 ? 'var(--agro-warning-text)' : 'var(--muted-foreground)',
+              backgroundColor: totalPendientes > 0 ? 'var(--agro-info-fill)' : 'var(--muted)',
+              color: totalPendientes > 0 ? 'var(--agro-info-text)' : 'var(--muted-foreground)',
             }}
           >
             <ClipboardList size={12} />
@@ -587,9 +587,9 @@ export function EjecucionJornada() {
 
         {/* Sin conexión */}
         {sinConexion && (
-          <div className="flex items-center gap-2 px-4 py-2 border-t" style={{ backgroundColor: 'var(--agro-warning-fill)', borderColor: 'var(--agro-warning-text)' }}>
-            <WifiOff size={13} style={{ color: 'var(--agro-warning-text)' }} />
-            <p className="text-[11px] font-medium" style={{ color: 'var(--agro-warning-text)' }}>
+          <div className="flex items-center gap-2 px-4 py-2 border-t" style={{ backgroundColor: 'var(--agro-info-fill)', borderColor: 'var(--agro-info-text)' }}>
+            <WifiOff size={13} style={{ color: 'var(--agro-info-text)' }} />
+            <p className="text-[11px] font-medium" style={{ color: 'var(--agro-info-text)' }}>
               Sin conexión: los cambios no guardados se perderán si cierras la página.
             </p>
           </div>
@@ -790,8 +790,8 @@ export function EjecucionJornada() {
             {auditoriaActiva && (
               confirmRetirar === auditoriaActiva ? (
                 <div className="rounded-xl border px-4 py-3 flex flex-col gap-2"
-                  style={{ backgroundColor: 'var(--agro-warning-fill)', borderColor: 'var(--agro-warning-text)' }}>
-                  <p className="text-xs font-medium" style={{ color: 'var(--agro-warning-text)' }}>
+                  style={{ backgroundColor: 'var(--agro-info-fill)', borderColor: 'var(--agro-info-text)' }}>
+                  <p className="text-xs font-medium" style={{ color: 'var(--agro-info-text)' }}>
                     ¿Quitar "{operacionActiva?.operacion}"? La auditoría no se modifica.
                   </p>
                   <div className="flex gap-2">
@@ -799,7 +799,7 @@ export function EjecucionJornada() {
                       onClick={() => handleRetirar(auditoriaActiva)}
                       disabled={retirando}
                       className="flex-1 h-8 rounded-lg text-xs font-semibold flex items-center justify-center"
-                      style={{ backgroundColor: 'var(--agro-warning-text)', color: '#fff' }}
+                      style={{ backgroundColor: 'var(--agro-info-text)', color: '#fff' }}
                     >
                       {retirando ? <Loader size={12} className="animate-spin" /> : 'Confirmar'}
                     </button>

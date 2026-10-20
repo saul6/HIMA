@@ -231,7 +231,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
             stockNegativo
               ? { backgroundColor: 'var(--agro-danger-fill)', borderColor: 'var(--agro-red)' }
               : stockBajo
-                ? { backgroundColor: 'var(--agro-warning-fill)', borderColor: 'var(--agro-amber)' }
+                ? { backgroundColor: 'var(--agro-info-fill)', borderColor: 'var(--agro-menta)' }
                 : { backgroundColor: 'var(--agro-success-fill)', borderColor: 'var(--border)' }
           }
         >
@@ -240,7 +240,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
             className="text-3xl font-semibold leading-none"
             style={{
               color: stockNegativo ? 'var(--agro-danger-text)'
-                : stockBajo ? 'var(--agro-warning-text)'
+                : stockBajo ? 'var(--agro-info-text)'
                   : 'var(--agro-success-text)',
             }}
           >
@@ -258,7 +258,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
           )}
           {(stockBajo || stockNegativo) && (
             <div className="flex items-center gap-1.5 mt-2"
-              style={{ color: stockNegativo ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)' }}>
+              style={{ color: stockNegativo ? 'var(--agro-danger-text)' : 'var(--agro-info-text)' }}>
               <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="text-xs font-medium">
                 {stockNegativo ? 'Saldo negativo — revisar entradas' : 'Stock bajo'}
@@ -307,7 +307,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                     <p className="text-xs font-medium truncate">{m.persona_solicita}</p>
                     <p className="text-xs truncate" style={{ color: 'var(--muted-foreground)' }}>{m.area}</p>
                     {m.sin_subir && (
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-agro-warning-fill text-agro-warning-text mt-0.5 inline-block">
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-agro-info-fill text-agro-info-text mt-0.5 inline-block">
                         Sin subir
                       </span>
                     )}
@@ -688,7 +688,7 @@ export function ControlInventarioQuimicos() {
                   className="w-full text-left bg-card border rounded-xl p-4 transition-colors hover:border-primary"
                   style={{
                     borderColor: stockNeg ? 'var(--agro-red)'
-                      : stockBajo ? 'var(--agro-amber)' : 'var(--border)',
+                      : stockBajo ? 'var(--agro-menta)' : 'var(--border)',
                   }}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -705,7 +705,7 @@ export function ControlInventarioQuimicos() {
                         className="text-2xl font-semibold leading-none"
                         style={{
                           color: stockNeg ? 'var(--agro-danger-text)'
-                            : stockBajo ? 'var(--agro-warning-text)' : undefined,
+                            : stockBajo ? 'var(--agro-info-text)' : undefined,
                         }}
                       >
                         {s.saldo}
@@ -716,7 +716,7 @@ export function ControlInventarioQuimicos() {
                   {(stockBajo || stockNeg) && (
                     <div
                       className="flex items-center gap-1.5 mt-2"
-                      style={{ color: stockNeg ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)' }}
+                      style={{ color: stockNeg ? 'var(--agro-danger-text)' : 'var(--agro-info-text)' }}
                     >
                       <AlertTriangle className="w-3 h-3 flex-shrink-0" />
                       <span className="text-xs">

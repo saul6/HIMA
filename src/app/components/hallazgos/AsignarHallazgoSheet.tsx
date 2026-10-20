@@ -111,8 +111,8 @@ export function AsignarHallazgoSheet({
           <p className="text-sm text-foreground">{item?.comentario_respuesta || item?.texto_pregunta}</p>
 
           {!online && (
-            <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
-              <p className="text-xs" style={{ color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+            <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
+              <p className="text-xs" style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}>
                 Necesitas conexión para asignar un hallazgo.
               </p>
             </div>

@@ -311,7 +311,7 @@ export function EmpleadosGG() {
                       )}
                       {obligatoria && !firmas[reg.id]?.realizo && (
                         <span className="text-xs px-2 py-0.5 rounded font-medium mt-1 inline-block"
-                          style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
+                          style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
                           Pendiente de firma
                         </span>
                       )}
@@ -394,10 +394,10 @@ export function EmpleadosGG() {
           {/* Aviso firma */}
           <div
             className="flex items-start gap-2 rounded-xl p-3"
-            style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}
+            style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}
           >
-            <Users className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-            <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+            <Users className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+            <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
               Firma física, no digital. El empleado debe firmar el documento impreso.
             </p>
           </div>

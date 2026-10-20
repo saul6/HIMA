@@ -61,8 +61,8 @@ function chipResultado(r: string | null) {
   const map: Record<string, string> = {
     aceptado: 'var(--agro-success-text)',
     rechazado: 'var(--agro-danger-text)',
-    retenido: 'var(--agro-warning-text)',
-    condicionado: 'var(--agro-warning-text)',
+    retenido: 'var(--agro-info-text)',
+    condicionado: 'var(--agro-info-text)',
   }
   return map[r] ?? 'var(--muted-foreground)'
 }
@@ -641,7 +641,7 @@ export function TrazabilidadProducto() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-sm font-mono" style={{ fontWeight: 700, color: 'var(--primary)' }}>{lr.codigo}</p>
-                {lr.sin_subir && <span className="text-[10px] px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>Código al sincronizar</span>}
+                {lr.sin_subir && <span className="text-[10px] px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>Código al sincronizar</span>}
                     <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>{lr.proveedor_nombre}</p>
                     <p className="text-xs text-muted-foreground">{fmtFecha(lr.fecha)}{lr.hora ? ` · ${lr.hora}` : ''}{lr.proveedor_origen ? ` · ${lr.proveedor_origen}` : ''}</p>
                     {lr.cantidad && <p className="text-xs text-muted-foreground">{lr.cantidad} {lr.unidad ?? ''}</p>}
@@ -682,7 +682,7 @@ export function TrazabilidadProducto() {
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="min-w-0">
                       <p className="text-sm font-mono" style={{ fontWeight: 700, color: 'var(--primary)' }}>{lpt.codigo}</p>
-                {lpt.sin_subir && <span className="text-[10px] px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>Código al sincronizar</span>}
+                {lpt.sin_subir && <span className="text-[10px] px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>Código al sincronizar</span>}
                       <p className="text-sm text-foreground">{lpt.presentacion ?? '—'}</p>
                       <p className="text-xs text-muted-foreground">
                         {fmtFecha(lpt.fecha_empaque)} · Turno {lpt.turno}
@@ -722,7 +722,7 @@ export function TrazabilidadProducto() {
                     </div>
                   </div>
                   {deseq && (
-                    <div className="rounded-lg px-3 py-1.5 text-xs" style={{ background: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
+                    <div className="rounded-lg px-3 py-1.5 text-xs" style={{ background: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
                       Balance: ingresado {ing} ≠ suma {suma.toFixed(2)} — diferencia no justificada, investigar
                     </div>
                   )}
@@ -750,7 +750,7 @@ export function TrazabilidadProducto() {
             ) : lotesLC.length > 0 ? lotesLC.map(lc => (
               <div key={lc.id} className="bg-card border border-border rounded-xl p-4">
                 <p className="text-sm font-mono" style={{ fontWeight: 700, color: 'var(--primary)' }}>{lc.codigo}</p>
-                {lc.sin_subir && <span className="text-[10px] px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>Código al sincronizar</span>}
+                {lc.sin_subir && <span className="text-[10px] px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>Código al sincronizar</span>}
                 <p className="text-xs text-muted-foreground">{fmtFecha(lc.fecha)}{lc.motivo ? ` · ${lc.motivo}` : ''}</p>
                 <div className="mt-2 space-y-1">
                   {lc.lotes_recepcion.map(lr => (
@@ -778,7 +778,7 @@ export function TrazabilidadProducto() {
             ) : feFolios.length > 0 ? feFolios.map(fe => (
               <div key={fe.id} className="bg-card border border-border rounded-xl p-4">
                 <p className="text-sm font-mono" style={{ fontWeight: 700, color: 'var(--primary)' }}>{fe.codigo}</p>
-                {fe.sin_subir && <span className="text-[10px] px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>Código al sincronizar</span>}
+                {fe.sin_subir && <span className="text-[10px] px-2 py-0.5 rounded-full mt-1 inline-block" style={{ background: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>Código al sincronizar</span>}
                 <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>{fe.cliente ?? '—'}</p>
                 <p className="text-xs text-muted-foreground">{fmtFecha(fe.fecha)}{fe.transporte_placas ? ` · ${fe.transporte_placas}` : ''}</p>
                 {fe.lotes_producto.length > 0 && (
@@ -988,7 +988,7 @@ export function TrazabilidadProducto() {
               </FormField>
             </div>
             {ingresada > 0 && (
-              <div className="rounded-lg px-3 py-1.5 text-xs" style={{ background: desequilibrio ? 'var(--agro-warning-fill)' : 'var(--agro-success-fill)', color: desequilibrio ? 'var(--agro-warning-text)' : 'var(--agro-success-text)' }}>
+              <div className="rounded-lg px-3 py-1.5 text-xs" style={{ background: desequilibrio ? 'var(--agro-info-fill)' : 'var(--agro-success-fill)', color: desequilibrio ? 'var(--agro-info-text)' : 'var(--agro-success-text)' }}>
                 {desequilibrio
                   ? `Diferencia: ${Math.abs(balanceSuma - ingresada).toFixed(2)} — toda diferencia no justificada debe investigarse (POE)`
                   : 'Balance correcto'}

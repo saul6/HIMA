@@ -58,7 +58,7 @@ type Estado = (typeof ESTADO_OPTIONS)[number]
 
 const ESTADO_CHIP: Record<Estado, { bg: string; text: string }> = {
   'Bueno':       { bg: 'var(--agro-success-fill)', text: 'var(--agro-success-text)' },
-  'Deteriorado': { bg: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)' },
+  'Deteriorado': { bg: 'var(--agro-info-fill)', text: 'var(--agro-info-text)' },
   'Reemplazo':   { bg: 'var(--agro-danger-fill)',  text: 'var(--agro-danger-text)'  },
 }
 
@@ -1160,13 +1160,13 @@ export function InspeccionVidrioPlastico() {
                   ) : filasInspeccion.length === 0 ? (
                     <div
                       className="rounded-xl p-4 text-center"
-                      style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid #F5A623' }}
+                      style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid #F5A623' }}
                     >
-                      <AlertTriangle className="w-8 h-8 mx-auto mb-2" style={{ color: 'var(--agro-warning-text)' }} />
-                      <p className="text-sm" style={{ color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                      <AlertTriangle className="w-8 h-8 mx-auto mb-2" style={{ color: 'var(--agro-info-text)' }} />
+                      <p className="text-sm" style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}>
                         Sin materiales configurados
                       </p>
-                      <p className="text-xs mt-1" style={{ color: 'var(--agro-warning-text)' }}>
+                      <p className="text-xs mt-1" style={{ color: 'var(--agro-info-text)' }}>
                         Configura el catálogo de materiales de {terminosSitio.genero === 'f' ? 'esta' : 'este'} {terminosSitio.singular.toLowerCase()} antes de inspeccionar.
                       </p>
                       <button

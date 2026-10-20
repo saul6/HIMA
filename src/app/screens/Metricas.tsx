@@ -76,7 +76,7 @@ function ChipPct({ pct }: { pct: number }) {
   let color = 'var(--agro-success-text)'
   let bg = 'var(--agro-success-fill)'
   if (pct < 70) { color = 'var(--agro-danger-text)'; bg = 'var(--agro-danger-fill)' }
-  else if (pct < 90) { color = 'var(--agro-warning-text)'; bg = 'var(--agro-warning-fill)' }
+  else if (pct < 90) { color = 'var(--agro-info-text)'; bg = 'var(--agro-info-fill)' }
   return (
     <span className="text-xs px-1.5 py-0.5 rounded-md tabular-nums" style={{ color, backgroundColor: bg }}>
       {pct.toFixed(0)}%
@@ -289,7 +289,7 @@ function TabProductividad({
             let posColor = 'var(--muted-foreground)'
             if (esPodio) {
               if (c.posicion === 1) { posBg = 'var(--primary)'; posColor = '#fff' }
-              else if (c.posicion === 2) { posBg = 'var(--agro-warning-fill)'; posColor = 'var(--agro-warning-text)' }
+              else if (c.posicion === 2) { posBg = 'var(--agro-info-fill)'; posColor = 'var(--agro-info-text)' }
               else { posBg = 'var(--muted)'; posColor = 'var(--foreground)' }
             }
 
@@ -365,7 +365,7 @@ function TabProductividad({
                               : 'Sin correcciones'}
                           </span>
                           {(c.sin_firma ?? 0) > 0 && (
-                            <span style={{ color: 'var(--agro-warning-text)' }}>
+                            <span style={{ color: 'var(--agro-info-text)' }}>
                               {c.sin_firma} sin firma
                             </span>
                           )}
@@ -621,7 +621,7 @@ function formatFechaAuditoria(fecha: string): string {
 function estilosBanda(banda: BandaCumplimiento): { color: string; bg: string } {
   switch (banda) {
     case 'aprobatoria':  return { color: 'var(--agro-success-text)', bg: 'var(--agro-success-fill)' }
-    case 'parcial':      return { color: 'var(--agro-warning-text)', bg: 'var(--agro-warning-fill)' }
+    case 'parcial':      return { color: 'var(--agro-info-text)', bg: 'var(--agro-info-fill)' }
     case 'reprobatoria': return { color: 'var(--agro-danger-text)',  bg: 'var(--agro-danger-fill)' }
     case 'sin_puntaje':  return { color: 'var(--muted-foreground)',   bg: 'var(--muted)' }
   }
@@ -870,7 +870,7 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
                   </p>
                 )}
                 {a.nc_abiertas > 0 && (
-                  <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                  <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
                     {a.nc_abiertas} NC{a.nc_abiertas > 1 ? 's' : ''} abiertas
                   </p>
                 )}
@@ -991,7 +991,7 @@ function TabConstancia({ datos }: { datos: MetConstancia }) {
               </div>
               {huecos.length > 0 && (
                 <div className="px-3 pb-3 border-t border-border pt-2" style={{ backgroundColor: 'var(--muted)' }}>
-                  <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                  <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
                     Sin registro: {huecos.map(formatFechaCorta).join(', ')}
                   </p>
                 </div>

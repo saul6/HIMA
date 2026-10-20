@@ -530,7 +530,7 @@ export function MonitoreoPlaguasEnfermedades() {
                       <div
                         key={o.id}
                         className="w-16 shrink-0 text-xs font-semibold px-1 py-1.5 rounded-t-[0.625rem] text-center leading-tight"
-                        style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+                        style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
                       >
                         {o.nombre}
                       </div>

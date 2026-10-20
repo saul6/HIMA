@@ -107,10 +107,10 @@ function ToggleTipo({ value, onChange }: { value: Tipo; onChange: (v: Tipo) => v
             flex: 1, height: 30, borderRadius: 8, cursor: 'pointer',
             border: value === v ? 'none' : '1px solid var(--border)',
             backgroundColor: value === v
-              ? v === 'organico' ? 'var(--agro-success-fill)' : 'var(--agro-warning-fill)'
+              ? v === 'organico' ? 'var(--agro-success-fill)' : 'var(--agro-info-fill)'
               : 'var(--card)',
             color: value === v
-              ? v === 'organico' ? 'var(--agro-success-text)' : 'var(--agro-warning-text)'
+              ? v === 'organico' ? 'var(--agro-success-text)' : 'var(--agro-info-text)'
               : 'var(--muted-foreground)',
             fontSize: 12, fontWeight: value === v ? 700 : 400,
           }}
@@ -586,7 +586,7 @@ export function RecepcionFruta() {
                     <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                       {r.sin_subir && (
                         <span className="text-xs px-2 py-0.5 rounded-full"
-                          style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                          style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>
                           {r.codigos_provisionales && r.codigos_provisionales.length > 0
                             ? `Código al sincronizar · ${r.codigos_provisionales.join(', ')}`
                             : 'Sin subir'}
@@ -594,7 +594,7 @@ export function RecepcionFruta() {
                       )}
                       {pendienteFirma && (
                         <span className="text-xs px-2 py-0.5 rounded-full"
-                          style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                          style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>
                           Pendiente de firma
                         </span>
                       )}
@@ -951,15 +951,15 @@ export function RecepcionFruta() {
 
                 {(totalesCF.a6 + totalesCF.a12 + totalesCF.a18) > 0 && (
                   <div className="rounded-xl p-3 space-y-1.5"
-                    style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
-                    <p className="text-xs" style={{ fontWeight: 700, color: 'var(--agro-warning-text)' }}>
+                    style={{ backgroundColor: 'var(--agro-info-fill)' }}>
+                    <p className="text-xs" style={{ fontWeight: 700, color: 'var(--agro-info-text)' }}>
                       Total pase aduanal
                     </p>
                     <div className="flex gap-4">
                       {([['6 oz', totalesCF.a6], ['12 oz', totalesCF.a12], ['18 oz', totalesCF.a18]] as const).map(([lbl, val]) => (
                         <div key={lbl} className="flex items-center gap-1">
-                          <span className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>{lbl}:</span>
-                          <span className="text-xs" style={{ color: 'var(--agro-warning-text)', fontWeight: 700 }}>{val}</span>
+                          <span className="text-xs" style={{ color: 'var(--agro-info-text)' }}>{lbl}:</span>
+                          <span className="text-xs" style={{ color: 'var(--agro-info-text)', fontWeight: 700 }}>{val}</span>
                         </div>
                       ))}
                     </div>

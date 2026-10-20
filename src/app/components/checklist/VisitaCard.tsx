@@ -21,12 +21,12 @@ export function VisitaCard({ visita, puedeEditar, onProgramar, onTerminar, onRep
     <div
       className="rounded-xl border p-4 h-full flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-x-4 md:gap-y-2"
       style={atrasada
-        ? { backgroundColor: 'var(--agro-warning-fill)', borderColor: 'var(--agro-amber)' }
+        ? { backgroundColor: 'var(--agro-info-fill)', borderColor: 'var(--agro-menta)' }
         : { backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
     >
       {visita ? (
         <>
-          <div className="md:flex-1 md:min-w-0" style={atrasada ? { color: 'var(--agro-warning-text)' } : undefined}>
+          <div className="md:flex-1 md:min-w-0" style={atrasada ? { color: 'var(--agro-info-text)' } : undefined}>
             <p className="text-xs" style={{ opacity: 0.8 }}>Próxima visita de revisión</p>
             <p className="text-sm" style={{ fontWeight: 600 }}>
               {atrasada ? `Atrasada desde el ${fechaLarga(visita.fecha)}` : fechaLarga(visita.fecha)}

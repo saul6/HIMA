@@ -549,8 +549,8 @@ export function RegistroPersonal() {
                       {docsTotal > 0 && (
                         <span className="text-xs px-2 py-0.5 rounded-full"
                           style={{
-                            backgroundColor: docsOk === docsTotal ? 'var(--agro-success-fill)' : 'var(--agro-warning-fill)',
-                            color: docsOk === docsTotal ? 'var(--agro-success-text)' : 'var(--agro-warning-text)',
+                            backgroundColor: docsOk === docsTotal ? 'var(--agro-success-fill)' : 'var(--agro-info-fill)',
+                            color: docsOk === docsTotal ? 'var(--agro-success-text)' : 'var(--agro-info-text)',
                             fontWeight: 600,
                           }}>
                           {docsOk}/{docsTotal} documentos

@@ -279,7 +279,7 @@ export function CalibracionBombas() {
                   {obligatoria && !firmas[m.id]?.realizo && (
                     <span
                       className="text-xs px-2 py-0.5 rounded font-medium"
-                      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
                     >
                       Pendiente de firma
                     </span>

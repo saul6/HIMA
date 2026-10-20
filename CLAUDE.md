@@ -291,32 +291,38 @@ Sin co-autoría de IA en el mensaje. Sin `Co-Authored-By`. En español.
 Fuente de verdad: `src/styles/theme.css`, bloque `@theme inline`.
 
 ```css
---primary:              #2B7AB5   /* Azul — botones, toggles activos, FAB */
---agro-blue:            #1E88C7   /* Azul secundario (hover) */
+/* Modo claro */
+--primary:              #173251   /* Navy — botones, toggles activos, FAB */
+--secondary:            #2AAD95   /* Menta — acento, NUNCA primario */
+--ring:                 #81BEE5   /* Foco */
+--agro-blue:            #81BEE5   /* Sky — acento secundario */
 --background:           #F8F9FA
 --card:                 #FFFFFF
---muted:                #ececf0   /* Fondos de sección header */
---muted-foreground:     #717182   /* Texto secundario / disabled */
---input-background:     #f3f3f5
---switch-background:    #cbced4   /* Toggle inactivo */
---border:               rgba(0,0,0,0.1)
+--border:               rgba(9,13,21,0.18)  /* tarjetas y separadores */
+--border-control:       #8496AB   /* inputs, selects, textareas, fechas (3:1 sobre blanco) */
 --radius:               0.625rem
 
-/* Semánticos */
---agro-success-fill:    #E3F2FD
---agro-success-text:    #0D5A8F
---agro-warning-fill:    #FAEEDA
---agro-warning-text:    #854F0B
---agro-danger-fill:     #FAECE7
---agro-danger-text:     #993C1D
---agro-red:             #C02A2A
---agro-amber:           #F5A623
+/* Modo oscuro (.dark) */
+--primary:              #81BEE5   /* Sky */
+--border-control:       rgba(255,255,255,0.15)
+
+/* Semánticos (claro / oscuro) */
+--agro-menta:           #2AAD95   /* Menta: confirmaciones, éxito, acento */
+--agro-success-fill:    #E6F7F4 / #0F2318
+--agro-success-text:    #1B7262 / #5DCAA5
+--agro-info-fill:       #EBF5FB / #0F1E2E   /* avisos informativos (navy/sky) */
+--agro-info-text:       #173251 / #81BEE5
+--agro-danger-fill:     #FAECE7 / #2D1515
+--agro-danger-text:     #993C1D / #E54D4D
+--agro-red:             #C02A2A / #E54D4D
 ```
+
+Los tokens de aviso informativo y de menta se renombraron para decir lo que son (mismos valores).
 
 **Tipografía:** Inter / Nunito Sans, weight 400/600.
 **NO usar verde como color primario.**
 
-**Logo M.A.D.Y:** M y A en `#2B7AB5`; D y Y en blanco sobre fondo oscuro / `#0D5A8F` sobre fondo claro. Componente: `src/app/components/MadyLogo.tsx` con variante light/dark.
+**Logo M.A.D.Y:** M y A en `#2B7AB5` (logo de marca); D y Y en blanco sobre fondo oscuro / `#0D5A8F` sobre fondo claro. Componente: `src/app/components/MadyLogo.tsx` con variante light/dark.
 
 **Favicon:** `public/favicon.ico` es el isotipo M.A.D.Y (no el genérico de Vite). **No revertirlo.**
 

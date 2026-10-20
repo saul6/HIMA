@@ -22,8 +22,8 @@ const RESP_OPTIONS: {
   activeStyle: { bg: string; color: string }
 }[] = [
   { value: 'cumplimiento_total', label: 'CT',  activeStyle: { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' } },
-  { value: 'deficiencia_menor',  label: 'D−',  activeStyle: { bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' } },
-  { value: 'deficiencia_mayor',  label: 'D+',  activeStyle: { bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' } },
+  { value: 'deficiencia_menor',  label: 'D−',  activeStyle: { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' } },
+  { value: 'deficiencia_mayor',  label: 'D+',  activeStyle: { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' } },
   { value: 'no_conformidad',     label: 'NC',  activeStyle: { bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  } },
   { value: 'na',                 label: 'N/A', activeStyle: { bg: 'var(--muted)',              color: 'var(--muted-foreground)'  } },
 ]
@@ -220,9 +220,9 @@ function PreguntaCard({
 
       {/* Alerta falla automática */}
       {falla && (
-        <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
-          <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-          <p className="text-[11px] font-medium" style={{ color: 'var(--agro-warning-text)' }}>
+        <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
+          <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+          <p className="text-[11px] font-medium" style={{ color: 'var(--agro-info-text)' }}>
             Alerta interna: esta pregunta activa un control de falla automática. Revisar con el auditor certificado.
           </p>
         </div>
@@ -230,14 +230,14 @@ function PreguntaCard({
 
       {/* Alerta incompleta */}
       {incompleta && !cerrada && (
-        <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
-          <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+        <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
+          <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
           <div className="flex flex-col gap-0.5">
-            <p className="text-[11px] font-semibold" style={{ color: 'var(--agro-warning-text)' }}>
+            <p className="text-[11px] font-semibold" style={{ color: 'var(--agro-info-text)' }}>
               Incompleta — registra la observación para validar esta respuesta
             </p>
             {pregunta.info_minima && (
-              <p className="text-[11px] whitespace-pre-wrap" style={{ color: 'var(--agro-warning-text)' }}>
+              <p className="text-[11px] whitespace-pre-wrap" style={{ color: 'var(--agro-info-text)' }}>
                 {pregunta.info_minima}
               </p>
             )}
@@ -323,7 +323,7 @@ const ESTADO_LABELS: Record<string, string> = {
   cerrada: 'Cerrada',
 }
 const ESTADO_STYLE: Record<string, { bg: string; color: string }> = {
-  en_proceso: { bg: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' },
+  en_proceso: { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
   completada:  { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
   cerrada:     { bg: 'var(--muted)',              color: 'var(--muted-foreground)'  },
 }
@@ -512,7 +512,7 @@ export function CapturaAuditoriaPGFS() {
 
       {/* Leyenda legal */}
       <div className="mx-4 mt-3 rounded-xl border border-border bg-card px-4 py-3 flex gap-3">
-        <AlertCircle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+        <AlertCircle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
         <p className="text-[11px] leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>
           {LEYENDA_LEGAL_PGFS}
         </p>

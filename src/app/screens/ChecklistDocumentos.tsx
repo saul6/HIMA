@@ -202,7 +202,7 @@ export function ChecklistDocumentos() {
                 type="button"
                 onClick={() => setVisitasAbierto(true)}
                 className="h-9 px-4 rounded-full border text-sm transition-colors active:scale-[0.97]"
-                style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', borderColor: 'transparent', fontWeight: 600 }}
+                style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', borderColor: 'transparent', fontWeight: 600 }}
               >
                 Visitas atrasadas · {c.visitas_atrasadas}
               </button>

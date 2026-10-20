@@ -450,20 +450,20 @@ export function MiOrganizacion() {
               {esPendiente && (
                 <div
                   className="mb-3 rounded-xl px-4 py-3 flex items-start gap-3"
-                  style={{ background: 'var(--agro-warning-fill)' }}
+                  style={{ background: 'var(--agro-info-fill)' }}
                 >
                   <AlertTriangle
                     className="w-4 h-4 mt-0.5 flex-shrink-0"
-                    style={{ color: 'var(--agro-warning-text)' }}
+                    style={{ color: 'var(--agro-info-text)' }}
                   />
                   <div className="flex-1 min-w-0">
                     <p
                       className="text-sm"
-                      style={{ color: 'var(--agro-warning-text)', fontWeight: 600 }}
+                      style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}
                     >
                       Cuenta pendiente de activación
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--agro-warning-text)' }}>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--agro-info-text)' }}>
                       Si ya realizaste tu pago, en breve activaremos tu plan.
                     </p>
                   </div>
@@ -473,20 +473,20 @@ export function MiOrganizacion() {
               {enLimite && !esPendiente && (
                 <div
                   className="mb-3 rounded-xl px-4 py-3 flex items-start gap-3"
-                  style={{ background: 'var(--agro-warning-fill)' }}
+                  style={{ background: 'var(--agro-info-fill)' }}
                 >
                   <AlertTriangle
                     className="w-4 h-4 mt-0.5 flex-shrink-0"
-                    style={{ color: 'var(--agro-warning-text)' }}
+                    style={{ color: 'var(--agro-info-text)' }}
                   />
                   <div className="flex-1 min-w-0">
                     <p
                       className="text-sm"
-                      style={{ color: 'var(--agro-warning-text)', fontWeight: 600 }}
+                      style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}
                     >
                       Has alcanzado el límite de tu plan ({limiteActual} {sPluralL}).
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--agro-warning-text)' }}>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--agro-info-text)' }}>
                       Para agregar más, solicita un plan personalizado.
                     </p>
                   </div>

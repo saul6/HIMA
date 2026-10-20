@@ -184,8 +184,8 @@ export function NfcEstacion() {
       <div
         className="w-16 h-16 rounded-2xl flex items-center justify-center"
         style={{
-          backgroundColor: info.esUpsell ? 'var(--agro-warning-fill)' : 'var(--agro-danger-fill)',
-          color: info.esUpsell ? 'var(--agro-warning-text)' : 'var(--agro-danger-text)',
+          backgroundColor: info.esUpsell ? 'var(--agro-info-fill)' : 'var(--agro-danger-fill)',
+          color: info.esUpsell ? 'var(--agro-info-text)' : 'var(--agro-danger-text)',
         }}
       >
         <Icono className="w-8 h-8" />

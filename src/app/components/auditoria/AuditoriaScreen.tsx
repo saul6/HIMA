@@ -46,7 +46,7 @@ function chipEstado(estado: EstadoAuditoria) {
   return (
     <span
       className="text-[11px] px-2 py-0.5 rounded shrink-0"
-      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}
+      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}
     >
       Borrador
     </span>
@@ -59,7 +59,7 @@ function scoreChip(porcentaje: number, posibles: number) {
     porcentaje >= 85
       ? 'bg-agro-success-fill text-agro-success-text'
       : porcentaje >= 70
-      ? 'bg-agro-warning-fill text-agro-warning-text'
+      ? 'bg-agro-info-fill text-agro-info-text'
       : 'bg-agro-danger-fill text-agro-danger-text'
   return (
     <span className={`text-[11px] px-2 py-0.5 rounded shrink-0 ${cls}`} style={{ fontWeight: 600 }}>
@@ -338,14 +338,14 @@ export function AuditoriaScreen({
               key={a.id}
               className="bg-card rounded-xl p-4 border"
               style={{
-                borderColor: a.requiere_correccion ? 'var(--agro-amber)' : 'var(--border)',
-                backgroundColor: a.requiere_correccion ? 'var(--agro-warning-fill)' : undefined,
+                borderColor: a.requiere_correccion ? 'var(--agro-menta)' : 'var(--border)',
+                backgroundColor: a.requiere_correccion ? 'var(--agro-info-fill)' : undefined,
               }}
             >
               {a.requiere_correccion && a.comentario_correccion && (
                 <div
                   className="flex items-start gap-2 mb-3 text-xs rounded-lg px-3 py-2"
-                  style={{ backgroundColor: 'rgba(0,0,0,0.05)', color: 'var(--agro-warning-text)' }}
+                  style={{ backgroundColor: 'rgba(0,0,0,0.05)', color: 'var(--agro-info-text)' }}
                 >
                   <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5" />
                   {a.comentario_correccion}
@@ -359,7 +359,7 @@ export function AuditoriaScreen({
                     </span>
                     {chipEstado(a.estado)}
                     {a.sin_subir && (
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-agro-warning-fill text-agro-warning-text" style={{ fontWeight: 600 }}>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-agro-info-fill text-agro-info-text" style={{ fontWeight: 600 }}>
                         Sin subir
                       </span>
                     )}

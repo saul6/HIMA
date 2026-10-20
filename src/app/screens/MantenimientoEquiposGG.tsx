@@ -101,7 +101,7 @@ const TIPO_LABELS: Record<TipoActividad, string> = {
 
 const TIPO_COLORS: Record<TipoActividad, { fill: string; text: string }> = {
   verificacion: { fill: 'var(--agro-success-fill)', text: 'var(--agro-success-text)' },
-  preventivo: { fill: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)' },
+  preventivo: { fill: 'var(--agro-info-fill)', text: 'var(--agro-info-text)' },
   correctivo: { fill: 'var(--agro-danger-fill)', text: 'var(--agro-danger-text)' },
 }
 
@@ -392,7 +392,7 @@ export function MantenimientoEquiposGG() {
                   {!loadingFirmas && !firmas[reg.id]?.realizo && (
                     <span
                       className="inline-block mt-1 text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}
+                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}
                     >
                       Pendiente de firma
                     </span>

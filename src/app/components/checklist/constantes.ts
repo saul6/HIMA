@@ -4,13 +4,13 @@ import type { ChkEstadoRevision, ChkTipoNota } from '@/hooks/useChecklist'
 export interface TonoChip { fill: string; text: string }
 
 export const TONO_NOTA: Record<ChkTipoNota, { icono: LucideIcon } & TonoChip> = {
-  faltan_registros: { icono: AlertTriangle, fill: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)' },
-  no_se_lleva: { icono: FileX, fill: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)' },
+  faltan_registros: { icono: AlertTriangle, fill: 'var(--agro-info-fill)', text: 'var(--agro-info-text)' },
+  no_se_lleva: { icono: FileX, fill: 'var(--agro-info-fill)', text: 'var(--agro-info-text)' },
   faltan_firmas: { icono: PenLine, fill: 'var(--agro-success-fill)', text: 'var(--agro-success-text)' },
-  por_vencer: { icono: Clock, fill: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)' },
+  por_vencer: { icono: Clock, fill: 'var(--agro-info-fill)', text: 'var(--agro-info-text)' },
   vencido: { icono: CalendarClock, fill: 'var(--agro-danger-fill)', text: 'var(--agro-danger-text)' },
-  faltan_items: { icono: ListChecks, fill: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)' },
-  config_pendiente: { icono: Settings2, fill: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)' },
+  faltan_items: { icono: ListChecks, fill: 'var(--agro-info-fill)', text: 'var(--agro-info-text)' },
+  config_pendiente: { icono: Settings2, fill: 'var(--agro-info-fill)', text: 'var(--agro-info-text)' },
   sin_actividad: { icono: MoonStar, fill: 'var(--muted)', text: 'var(--muted-foreground)' },
 }
 
@@ -25,9 +25,9 @@ export const ESTADO_REVISION_LABEL: Record<ChkEstadoRevision, string> = {
 
 export const TONO_ESTADO: Record<ChkEstadoRevision, TonoChip> = {
   al_dia: { fill: 'var(--agro-success-fill)', text: 'var(--agro-success-text)' },
-  actualizar: { fill: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)' },
+  actualizar: { fill: 'var(--agro-info-fill)', text: 'var(--agro-info-text)' },
   corregir: { fill: 'var(--agro-danger-fill)', text: 'var(--agro-danger-text)' },
-  faltan_firmas: { fill: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)' },
+  faltan_firmas: { fill: 'var(--agro-info-fill)', text: 'var(--agro-info-text)' },
   sin_reportes: { fill: 'var(--muted)', text: 'var(--muted-foreground)' },
   otro: { fill: 'var(--muted)', text: 'var(--foreground)' },
 }

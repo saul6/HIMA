@@ -48,13 +48,13 @@ const PRIORIDAD_LABELS: Record<PrioridadM44, string> = {
 
 const PRIORIDAD_COLORES: Record<PrioridadM44, string> = {
   inmediata:       'var(--agro-danger-text)',
-  turno:           'var(--agro-warning-text)',
+  turno:           'var(--agro-info-text)',
   siguientes_dias: 'var(--muted-foreground)',
 }
 
 const PRIORIDAD_FONDOS: Record<PrioridadM44, string> = {
   inmediata:       'var(--agro-danger-fill)',
-  turno:           'var(--agro-warning-fill)',
+  turno:           'var(--agro-info-fill)',
   siguientes_dias: 'var(--muted)',
 }
 

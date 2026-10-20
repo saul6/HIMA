@@ -29,7 +29,7 @@ function ChipEstado({ lote }: { lote: LoteOutbox }) {
     return (
       <span
         className="text-[10px] px-2 py-0.5 rounded"
-        style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}
+        style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}
       >
         Pendiente de subir
       </span>
@@ -49,7 +49,7 @@ function ChipEstado({ lote }: { lote: LoteOutbox }) {
     return (
       <span
         className="text-[10px] px-2 py-0.5 rounded"
-        style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}
+        style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}
       >
         Sincronizado tarde
       </span>
@@ -108,7 +108,7 @@ function CardLote({
       )}
 
       {advertencia48h && (
-        <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+        <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
           Conéctate pronto: después de 72 h ya no se podrá subir.
         </p>
       )}

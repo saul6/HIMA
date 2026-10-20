@@ -40,13 +40,13 @@
   --agro-primary: #173251;        /* Azul Oscuro */
   --agro-red: #C02A2A;            /* Rojo Alerta */
   --agro-blue: #81BEE5;           /* Azul Cielo */
-  --agro-amber: #2AAD95;          /* Verde Menta / Éxito */
+  --agro-menta: #2AAD95;          /* Verde Menta / Éxito */
   --agro-background: #F8FAFC;
   --agro-surface: #FFFFFF;
   --agro-success-fill: #E6F7F4;
   --agro-success-text: #1B7262;
-  --agro-warning-fill: #EBF5FB;
-  --agro-warning-text: #173251;
+  --agro-info-fill: #EBF5FB;
+  --agro-info-text: #173251;
   --agro-danger-fill: #FAECE7;
   --agro-danger-text: #993C1D;
   
@@ -240,8 +240,8 @@
   --agro-surface: #121824;
   --agro-success-fill: #0F2318;
   --agro-success-text: #5DCAA5;
-  --agro-warning-fill: #0F1E2E;
-  --agro-warning-text: #81BEE5;
+  --agro-info-fill: #0F1E2E;
+  --agro-info-text: #81BEE5;
   --agro-danger-fill: #2D1515;
   --agro-danger-text: #E54D4D;
 
@@ -281,13 +281,13 @@
   --color-agro-primary: var(--agro-primary);
   --color-agro-red: var(--agro-red);
   --color-agro-blue: var(--agro-blue);
-  --color-agro-amber: var(--agro-amber);
+  --color-agro-menta: var(--agro-menta);
   --color-agro-background: var(--agro-background);
   --color-agro-surface: var(--agro-surface);
   --color-agro-success-fill: var(--agro-success-fill);
   --color-agro-success-text: var(--agro-success-text);
-  --color-agro-warning-fill: var(--agro-warning-fill);
-  --color-agro-warning-text: var(--agro-warning-text);
+  --color-agro-info-fill: var(--agro-info-fill);
+  --color-agro-info-text: var(--agro-info-text);
   --color-agro-danger-fill: var(--agro-danger-fill);
   --color-agro-danger-text: var(--agro-danger-text);
   

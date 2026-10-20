@@ -52,8 +52,8 @@ function CardActividad({
     <div
       className="bg-card rounded-xl p-4 border"
       style={{
-        borderColor: item.requiere_correccion ? 'var(--agro-amber)' : 'var(--border)',
-        backgroundColor: item.requiere_correccion ? 'var(--agro-warning-fill)' : undefined,
+        borderColor: item.requiere_correccion ? 'var(--agro-menta)' : 'var(--border)',
+        backgroundColor: item.requiere_correccion ? 'var(--agro-info-fill)' : undefined,
       }}
     >
       <div className="flex items-start justify-between gap-3">
@@ -70,7 +70,7 @@ function CardActividad({
               <span
                 className="text-[10px] px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0"
                 style={{
-                  backgroundColor: 'var(--agro-amber)',
+                  backgroundColor: 'var(--agro-menta)',
                   color: '#fff',
                   fontWeight: 600,
                 }}
@@ -100,7 +100,7 @@ function CardActividad({
               className="text-xs mt-2 p-2 rounded-lg"
               style={{
                 backgroundColor: 'rgba(0,0,0,0.05)',
-                color: 'var(--agro-warning-text)',
+                color: 'var(--agro-info-text)',
               }}
             >
               "{item.comentario_correccion}"
@@ -113,8 +113,8 @@ function CardActividad({
           onClick={() => onMarcar(item)}
           className="flex-shrink-0 text-xs px-3 py-1.5 rounded-lg border transition-colors"
           style={{
-            borderColor: item.requiere_correccion ? 'var(--agro-amber)' : 'var(--border)',
-            color: item.requiere_correccion ? 'var(--agro-warning-text)' : 'var(--muted-foreground)',
+            borderColor: item.requiere_correccion ? 'var(--agro-menta)' : 'var(--border)',
+            color: item.requiere_correccion ? 'var(--agro-info-text)' : 'var(--muted-foreground)',
           }}
         >
           {item.requiere_correccion ? 'Desmarcar' : 'Marcar'}
@@ -312,10 +312,10 @@ export function ActividadEquipo() {
         {!loading && !error && countCorreccion > 0 && (
           <div
             className="flex items-center gap-3 rounded-xl px-4 py-3"
-            style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}
+            style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}
           >
-            <AlertTriangle className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--agro-warning-text)' }} />
-            <p className="text-sm" style={{ color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
+            <p className="text-sm" style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}>
               {countCorreccion} {countCorreccion === 1 ? 'registro requiere' : 'registros requieren'} corrección
             </p>
           </div>
@@ -388,7 +388,7 @@ export function ActividadEquipo() {
               {itemSeleccionado.requiere_correccion && itemSeleccionado.marcado_en && (
                 <div
                   className="text-xs rounded-lg px-3 py-2"
-                  style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+                  style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
                 >
                   Marcado el {formatTimestamp(itemSeleccionado.marcado_en)}
                 </div>
@@ -441,7 +441,7 @@ export function ActividadEquipo() {
                   disabled={marcando}
                   className="w-full h-12 rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
                   style={{
-                    backgroundColor: 'var(--agro-amber)',
+                    backgroundColor: 'var(--agro-menta)',
                     color: '#fff',
                     fontWeight: 600,
                   }}

@@ -80,7 +80,7 @@ const PAD_X = 40
 const ANCHO = 842 - PAD_X * 2   // A4 horizontal
 
 // Estados: texto con color suave. Tonos de la paleta oficial (theme.css):
-//   verde-azul = --agro-success-text, ámbar = --agro-warning-text, rojo = --agro-danger-text.
+//   verde-azul = --agro-success-text, ámbar = propio del PDF, rojo = --agro-danger-text.
 const C_OK = '#0D5A8F'
 const C_AMBAR = '#854F0B'
 const C_ROJO = '#993C1D'
@@ -88,7 +88,7 @@ const C_NEUTRO = PC.textSub
 
 const ESTADOS: { clave: EstadoRev; label: string; color: string; fondo: string }[] = [
   { clave: 'al_dia', label: 'Al día', color: C_OK, fondo: '#E3F2FD' },            // --agro-success-fill
-  { clave: 'actualizar', label: 'Actualizar', color: C_AMBAR, fondo: '#FAEEDA' }, // --agro-warning-fill
+  { clave: 'actualizar', label: 'Actualizar', color: C_AMBAR, fondo: '#FAEEDA' }, // ámbar propio del PDF
   { clave: 'corregir', label: 'Corregir', color: C_ROJO, fondo: '#FAECE7' },      // --agro-danger-fill
   { clave: 'faltan_firmas', label: 'Faltan firmas', color: C_AMBAR, fondo: '#FAEEDA' },
   { clave: 'sin_reportes', label: 'Sin reportes', color: C_NEUTRO, fondo: PC.m13Fondo },

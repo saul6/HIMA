@@ -109,7 +109,7 @@ export function NuevaAuditoriaPGFS() {
                 ))}
               </select>
               {ranchos.length === 0 && (
-                <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
                   No hay instalaciones registradas en esta organización.
                 </p>
               )}

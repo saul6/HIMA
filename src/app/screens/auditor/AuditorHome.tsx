@@ -85,7 +85,7 @@ function accionChipStyle(code: string): React.CSSProperties {
       return { backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }
     case 'CREAR_ACCION_CORRECTIVA':
     case 'COMPLETAR_AC':
-      return { backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }
+      return { backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }
     case 'VALIDAR_PARA_AZZULE':
     case 'ABRIR_MODO_AZZULE':
       return { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }

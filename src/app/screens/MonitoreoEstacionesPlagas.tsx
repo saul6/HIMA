@@ -192,7 +192,7 @@ function RevisionCard({
         <p className="text-xs text-muted-foreground italic line-clamp-2">{rev.observaciones}</p>
       )}
       {rev.sin_subir ? (
-        <span className="self-start text-xs bg-[var(--agro-warning-fill)] text-[var(--agro-warning-text)] px-2 py-0.5 rounded-full">
+        <span className="self-start text-xs bg-[var(--agro-info-fill)] text-[var(--agro-info-text)] px-2 py-0.5 rounded-full">
           Sin subir — podrás firmar y descargar el PDF al sincronizar
         </span>
       ) : (
@@ -1309,9 +1309,9 @@ export function MonitoreoEstacionesPlagas() {
                   </div>
                 )}
                 {!loadingEstForm && estacionesActivas.length === 0 && (
-                  <div className="rounded-xl border border-[var(--agro-warning-fill)] bg-[var(--agro-warning-fill)] p-4">
-                    <p className="text-sm text-[var(--agro-warning-text)] font-semibold">Sin estaciones configuradas</p>
-                    <p className="text-xs text-[var(--agro-warning-text)] mt-1">
+                  <div className="rounded-xl border border-[var(--agro-info-fill)] bg-[var(--agro-info-fill)] p-4">
+                    <p className="text-sm text-[var(--agro-info-text)] font-semibold">Sin estaciones configuradas</p>
+                    <p className="text-xs text-[var(--agro-info-text)] mt-1">
                       Cierra este formulario y usa el ícono de ajustes para agregar estaciones a esta instalación.
                     </p>
                   </div>

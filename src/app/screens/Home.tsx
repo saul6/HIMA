@@ -152,23 +152,23 @@ function HallazgosCard({
     <>
       {loading ? (
         <div className="animate-pulse mb-1">
-          <div className="h-7 rounded w-8" style={{ backgroundColor: alerta ? 'var(--agro-amber)' : 'var(--muted)', opacity: 0.4 }} />
+          <div className="h-7 rounded w-8" style={{ backgroundColor: alerta ? 'var(--agro-menta)' : 'var(--muted)', opacity: 0.4 }} />
         </div>
       ) : (
         <div
           className="text-3xl tracking-tight mb-1 flex items-end gap-1.5"
-          style={{ fontWeight: 600, color: alerta ? 'var(--agro-warning-text)' : 'var(--foreground)' }}
+          style={{ fontWeight: 600, color: alerta ? 'var(--agro-info-text)' : 'var(--foreground)' }}
         >
           <ShieldAlert
             className="w-4 h-4 mb-1 flex-shrink-0"
-            style={{ color: alerta ? 'var(--agro-warning-text)' : 'var(--muted-foreground)' }}
+            style={{ color: alerta ? 'var(--agro-info-text)' : 'var(--muted-foreground)' }}
           />
           <AnimatedNumber value={value} format={(n) => String(Math.round(n))} reducedMotion={!!reducedMotion} />
         </div>
       )}
       <div
         className="text-xs"
-        style={{ color: alerta ? 'var(--agro-warning-text)' : 'var(--muted-foreground)' }}
+        style={{ color: alerta ? 'var(--agro-info-text)' : 'var(--muted-foreground)' }}
       >
         Hallazgos por corregir
       </div>
@@ -181,8 +181,8 @@ function HallazgosCard({
         to="/inocuidad/acciones-correctivas"
         className={`block rounded-xl p-4 border ${FOCUS_RING}`}
         style={{
-          backgroundColor: 'var(--agro-warning-fill)',
-          borderColor: 'var(--agro-amber)',
+          backgroundColor: 'var(--agro-info-fill)',
+          borderColor: 'var(--agro-menta)',
         }}
       >
         {inner}
@@ -702,19 +702,19 @@ export function Home() {
         {!loading && orgPlan === 'pendiente' && (
           <div
             className="flex items-start gap-3 rounded-xl p-4 border"
-            style={{ backgroundColor: 'var(--agro-warning-fill)', borderColor: 'var(--agro-amber)' }}
+            style={{ backgroundColor: 'var(--agro-info-fill)', borderColor: 'var(--agro-menta)' }}
           >
-            <Clock3 className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
+            <Clock3 className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
             <div>
-              <p className="text-sm" style={{ color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+              <p className="text-sm" style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}>
                 Tu cuenta está pendiente de activación
               </p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--agro-warning-text)' }}>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--agro-info-text)' }}>
                 Si ya realizaste tu pago, en breve activaremos tu plan.{' '}
                 <a
                   href="mailto:ventas@mady.com.mx"
                   className="underline"
-                  style={{ color: 'var(--agro-warning-text)' }}
+                  style={{ color: 'var(--agro-info-text)' }}
                 >
                   ¿Dudas?
                 </a>
@@ -844,14 +844,14 @@ export function Home() {
         {!loading && countCorrecciones > 0 && (
           <div
             className="rounded-xl overflow-hidden border"
-            style={{ borderColor: 'var(--agro-amber)' }}
+            style={{ borderColor: 'var(--agro-menta)' }}
           >
             <div
               className="px-4 py-3 flex items-center gap-2"
-              style={{ backgroundColor: 'var(--agro-warning-fill)' }}
+              style={{ backgroundColor: 'var(--agro-info-fill)' }}
             >
-              <AlertTriangle className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--agro-warning-text)' }} />
-              <span className="text-sm flex-1" style={{ color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+              <AlertTriangle className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
+              <span className="text-sm flex-1" style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}>
                 {countCorrecciones}{' '}
                 {countCorrecciones === 1 ? 'registro requiere' : 'registros requieren'} tu corrección
               </span>
@@ -862,7 +862,7 @@ export function Home() {
                   <p className="text-xs text-muted-foreground mb-0.5">
                     {item.moduloLabel} · {item.rancho_nombre}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                  <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
                     {item.comentario_correccion ?? 'Revisa este registro'}
                   </p>
                 </div>
@@ -1227,10 +1227,10 @@ export function Home() {
               !online ? (
                 <div
                   className="flex items-start gap-2 rounded-xl p-3 border"
-                  style={{ backgroundColor: 'var(--agro-warning-fill)', borderColor: 'var(--agro-amber)' }}
+                  style={{ backgroundColor: 'var(--agro-info-fill)', borderColor: 'var(--agro-menta)' }}
                 >
-                  <WifiOff className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-                  <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                  <WifiOff className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+                  <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
                     Abre la app con internet al menos una vez para usarla sin conexión.
                   </p>
                 </div>

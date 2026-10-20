@@ -114,8 +114,8 @@ function FirmaEstadoChip({ firma, label }: { firma: FirmaDetalle | FirmaEnterado
           {label}
         </p>
         <div className="flex items-start gap-1">
-          <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-          <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+          <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+          <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
             Firma desactualizada: se editó el registro
           </p>
         </div>
@@ -669,12 +669,12 @@ export function FirmasRegistro({
                   {h.estado === 'vigente' ? (
                     <CheckCircle2 className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-success-text)' }} />
                   ) : (
-                    <AlertTriangle className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-warning-text)' }} />
+                    <AlertTriangle className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
                   )}
                   <span
                     className="text-xs"
                     style={{
-                      color: h.estado === 'vigente' ? 'var(--agro-success-text)' : 'var(--agro-warning-text)',
+                      color: h.estado === 'vigente' ? 'var(--agro-success-text)' : 'var(--agro-info-text)',
                       fontWeight: 600,
                     }}
                   >

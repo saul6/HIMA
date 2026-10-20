@@ -60,7 +60,7 @@ function StatusBadge({ saldo, unidad }: { saldo: number; unidad: string | null }
   }
   if (Number(saldo) < LOW_STOCK) {
     return (
-      <span className="text-xs px-2 py-1 rounded bg-agro-warning-fill text-agro-warning-text" style={{ fontWeight: 600 }}>
+      <span className="text-xs px-2 py-1 rounded bg-agro-info-fill text-agro-info-text" style={{ fontWeight: 600 }}>
         Bajo · {label} {u}
       </span>
     )

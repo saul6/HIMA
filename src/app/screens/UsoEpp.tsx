@@ -286,8 +286,8 @@ export function UsoEpp() {
                     <span
                       className="text-xs px-2 py-0.5 rounded font-medium"
                       style={{
-                        backgroundColor: allOk ? 'var(--agro-success-fill)' : 'var(--agro-warning-fill)',
-                        color: allOk ? 'var(--agro-success-text)' : 'var(--agro-warning-text)',
+                        backgroundColor: allOk ? 'var(--agro-success-fill)' : 'var(--agro-info-fill)',
+                        color: allOk ? 'var(--agro-success-text)' : 'var(--agro-info-text)',
                       }}
                     >
                       EPP: {okCount}/5 ok
@@ -411,14 +411,14 @@ export function UsoEpp() {
                   <div key={campo} className="flex items-center justify-between rounded-[0.625rem] border border-border bg-card px-4 py-3">
                     <span className="text-sm font-medium">{label}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium" style={{ color: val ? 'var(--agro-success-text)' : 'var(--agro-warning-text)' }}>
+                      <span className="text-xs font-medium" style={{ color: val ? 'var(--agro-success-text)' : 'var(--agro-info-text)' }}>
                         {val ? 'Buen estado' : 'Danado'}
                       </span>
                       <button
                         type="button"
                         onClick={() => setForm(f => ({ ...f, [campo]: !val }))}
                         className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-                        style={{ backgroundColor: val ? 'var(--primary)' : 'var(--agro-amber)' }}
+                        style={{ backgroundColor: val ? 'var(--primary)' : 'var(--agro-menta)' }}
                       >
                         <span
                           className="inline-block h-4 w-4 rounded-full bg-white transition-transform"

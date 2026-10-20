@@ -67,8 +67,8 @@ function FilaOperacion({
           <span
             className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium"
             style={{
-              backgroundColor: fila.estado === 'en_proceso' ? 'var(--agro-warning-fill)' : 'var(--muted)',
-              color: fila.estado === 'en_proceso' ? 'var(--agro-warning-text)' : 'var(--muted-foreground)',
+              backgroundColor: fila.estado === 'en_proceso' ? 'var(--agro-info-fill)' : 'var(--muted)',
+              color: fila.estado === 'en_proceso' ? 'var(--agro-info-text)' : 'var(--muted-foreground)',
             }}
           >
             {fila.estado === 'en_proceso' ? 'En proceso' : fila.estado}
@@ -81,7 +81,7 @@ function FilaOperacion({
           )}
           {fila.en_jornada_abierta && (
             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]"
-              style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}>
+              style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
               Ya en jornada abierta
             </span>
           )}

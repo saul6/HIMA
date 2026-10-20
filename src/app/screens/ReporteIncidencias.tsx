@@ -962,15 +962,15 @@ export function ReporteIncidencias() {
                 key={r.id}
                 className="bg-card rounded-xl border overflow-hidden"
                 style={{
-                  borderColor: r.requiere_correccion ? 'var(--agro-amber)' : 'var(--border)',
-                  backgroundColor: r.requiere_correccion ? 'var(--agro-warning-fill)' : undefined,
+                  borderColor: r.requiere_correccion ? 'var(--agro-menta)' : 'var(--border)',
+                  backgroundColor: r.requiere_correccion ? 'var(--agro-info-fill)' : undefined,
                 }}
               >
                 {/* Comentario de corrección */}
                 {r.requiere_correccion && r.comentario_correccion && (
                   <div
                     className="flex items-start gap-2 px-4 pt-3 text-xs"
-                    style={{ color: 'var(--agro-warning-text)' }}
+                    style={{ color: 'var(--agro-info-text)' }}
                   >
                     <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" />
                     {r.comentario_correccion}
@@ -1331,7 +1331,7 @@ export function ReporteIncidencias() {
                     <span style={{ fontWeight: 600 }}>
                       {progreso.procesadas} / {progreso.total}
                       {progreso.fallidas > 0 && (
-                        <span style={{ color: 'var(--agro-warning-text)' }}>
+                        <span style={{ color: 'var(--agro-info-text)' }}>
                           {' '}({progreso.fallidas} error{progreso.fallidas !== 1 ? 'es' : ''})
                         </span>
                       )}

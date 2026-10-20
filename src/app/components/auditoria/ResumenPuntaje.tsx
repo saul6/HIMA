@@ -17,7 +17,7 @@ export function ResumenPuntaje({ preguntas, respuestas }: ResumenPuntajeProps) {
       : porcentaje >= 85
       ? 'var(--agro-success-text)'
       : porcentaje >= 70
-      ? 'var(--agro-warning-text)'
+      ? 'var(--agro-info-text)'
       : 'var(--agro-danger-text)'
 
   const bg =
@@ -26,7 +26,7 @@ export function ResumenPuntaje({ preguntas, respuestas }: ResumenPuntajeProps) {
       : porcentaje >= 85
       ? 'var(--agro-success-fill)'
       : porcentaje >= 70
-      ? 'var(--agro-warning-fill)'
+      ? 'var(--agro-info-fill)'
       : 'var(--agro-danger-fill)'
 
   return (

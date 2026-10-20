@@ -662,7 +662,7 @@ export function RondinesVigilancia() {
                 {obligatoria && !firmas[r.id]?.realizo && (
                   <div className="mb-1">
                     <span className="text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>
                       Pendiente de firma
                     </span>
                   </div>
@@ -864,10 +864,10 @@ export function RondinesVigilancia() {
                   ) : activeFormItems.length === 0 ? (
                     <div
                       className="flex items-start gap-2 rounded-xl p-3"
-                      style={{ backgroundColor: 'var(--agro-warning-fill)' }}
+                      style={{ backgroundColor: 'var(--agro-info-fill)' }}
                     >
-                      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-                      <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+                      <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
                         Sin puntos configurados. Usa el botón de ajustes para configurar el catálogo.
                       </p>
                     </div>
@@ -933,10 +933,10 @@ export function RondinesVigilancia() {
               ) && (
                 <div
                   className="flex items-start gap-2 rounded-xl p-3"
-                  style={{ backgroundColor: 'var(--agro-warning-fill)' }}
+                  style={{ backgroundColor: 'var(--agro-info-fill)' }}
                 >
-                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-                  <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+                  <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
                     Los puntos con "Con novedad" y descripción generarán una incidencia M13 automáticamente.
                   </p>
                 </div>

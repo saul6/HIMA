@@ -39,13 +39,13 @@
 | `--agro-primary` | `text-agro-primary` | `#173251` | Alias del primario (azul oscuro) |
 | `--agro-red` | `text-agro-red` / `bg-agro-red` | `#C02A2A` | Alertas críticas, errores visibles |
 | `--agro-blue` | `text-agro-blue` / `bg-agro-blue` | `#81BEE5` | Azul cielo; decoración, gráficas, anillos |
-| `--agro-amber` | `text-agro-amber` | `#2AAD95` | Verde menta (alias `--secondary`); confirmaciones, éxito |
+| `--agro-menta` | `text-agro-menta` | `#2AAD95` | Verde menta (alias `--secondary`); confirmaciones, éxito |
 | `--agro-background` | `bg-agro-background` | `#F8FAFC` | Fondo alternativo ligeramente off-white |
 | `--agro-surface` | `bg-agro-surface` | `#FFFFFF` | Superficie de componente |
 | `--agro-success-fill` | `bg-agro-success-fill` | `#E6F7F4` | Fondo de banners/chips de éxito |
 | `--agro-success-text` | `text-agro-success-text` | `#1B7262` | Texto en banners de éxito |
-| `--agro-warning-fill` | `bg-agro-warning-fill` | `#EBF5FB` | Fondo de banners de advertencia |
-| `--agro-warning-text` | `text-agro-warning-text` | `#173251` | Texto en banners de advertencia |
+| `--agro-info-fill` | `bg-agro-info-fill` | `#EBF5FB` | Fondo de banners de advertencia |
+| `--agro-info-text` | `text-agro-info-text` | `#173251` | Texto en banners de advertencia |
 | `--agro-danger-fill` | `bg-agro-danger-fill` | `#FAECE7` | Fondo de banners de peligro/error |
 | `--agro-danger-text` | `text-agro-danger-text` | `#993C1D` | Texto en banners de peligro |
 

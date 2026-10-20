@@ -285,7 +285,7 @@ export function ControlHerramientas() {
                     className="text-xs px-2 py-0.5 rounded font-medium"
                     style={r.devuelto
                       ? { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
-                      : { backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }
+                      : { backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }
                     }
                   >
                     {r.devuelto ? 'Devuelto' : 'Pendiente'}

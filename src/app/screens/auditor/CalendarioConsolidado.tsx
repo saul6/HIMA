@@ -13,7 +13,7 @@ const TIPO_CONFIG: Record<string, { fillVar: string; textVar: string }> = {
   AUDIT:             { fillVar: 'var(--agro-success-fill)', textVar: 'var(--agro-success-text)' },
   CORRECTIVE_ACTION: { fillVar: 'var(--agro-danger-fill)',  textVar: 'var(--agro-danger-text)' },
   TRAINING:          { fillVar: 'var(--muted)',             textVar: 'var(--primary)' },
-  FOLLOW_UP:         { fillVar: 'var(--agro-warning-fill)', textVar: 'var(--agro-warning-text)' },
+  FOLLOW_UP:         { fillVar: 'var(--agro-info-fill)', textVar: 'var(--agro-info-text)' },
   DOCUMENT_REVIEW:   { fillVar: 'var(--muted)',             textVar: 'var(--muted-foreground)' },
   MEETING:           { fillVar: 'var(--muted)',             textVar: 'var(--primary)' },
   VERIFICATION:      { fillVar: 'var(--agro-success-fill)', textVar: 'var(--agro-success-text)' },

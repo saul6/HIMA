@@ -323,7 +323,7 @@ export function ProductosAutorizados() {
                   {p.intervalo_seguridad_dias != null && (
                     <span
                       className="text-xs px-2 py-0.5 rounded font-medium"
-                      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
                     >
                       I.S. {p.intervalo_seguridad_dias} dias
                     </span>

@@ -15,7 +15,7 @@ export function TextareaContador({ limite, value, ...props }: Props) {
       <Textarea {...props} value={value} maxLength={limite} />
       <p
         className="text-[11px] text-right mt-0.5"
-        style={{ color: cerca ? 'var(--agro-warning-text)' : 'var(--muted-foreground)' }}
+        style={{ color: cerca ? 'var(--agro-info-text)' : 'var(--muted-foreground)' }}
       >
         {largo} / {limite}
       </p>

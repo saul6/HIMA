@@ -273,7 +273,7 @@ export function MonitoreoGermicida() {
                   <span className="text-xs text-muted-foreground">{m.preparado_por}</span>
                 </div>
                 {m.correccion && (
-                  <p className="text-xs mt-1" style={{ color: 'var(--agro-warning-text)' }}>
+                  <p className="text-xs mt-1" style={{ color: 'var(--agro-info-text)' }}>
                     Corrección: {m.correccion}
                   </p>
                 )}

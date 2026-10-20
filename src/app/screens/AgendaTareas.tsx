@@ -68,7 +68,7 @@ const EVENTO_LABELS: Record<string, string> = {
 function ChipPrioridad({ prioridad }: { prioridad: PrioridadTarea }) {
   const styles: Record<PrioridadTarea, { bg: string; text: string }> = {
     alta:  { bg: 'var(--agro-danger-fill)',  text: 'var(--agro-danger-text)'  },
-    media: { bg: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)' },
+    media: { bg: 'var(--agro-info-fill)', text: 'var(--agro-info-text)' },
     baja:  { bg: 'var(--muted)',             text: 'var(--muted-foreground)'  },
   }
   const s = styles[prioridad]
@@ -94,9 +94,9 @@ function ChipEstado({ estado, vencida }: { estado: EstadoTarea; vencida: boolean
     )
   }
   const map: Record<EstadoTarea, { bg: string; text: string; label: string }> = {
-    pendiente:     { bg: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)', label: 'Pendiente'    },
+    pendiente:     { bg: 'var(--agro-info-fill)', text: 'var(--agro-info-text)', label: 'Pendiente'    },
     en_progreso:   { bg: 'var(--agro-success-fill)', text: 'var(--agro-success-text)', label: 'En progreso'  },
-    por_verificar: { bg: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)', label: 'Por verificar'},
+    por_verificar: { bg: 'var(--agro-info-fill)', text: 'var(--agro-info-text)', label: 'Por verificar'},
     cerrada:       { bg: 'var(--agro-success-fill)', text: 'var(--agro-success-text)', label: 'Cerrada'      },
     cancelada:     { bg: 'var(--muted)',             text: 'var(--muted-foreground)',  label: 'Cancelada'    },
   }
@@ -133,7 +133,7 @@ function TareaCard({
       {tarea.regresada && (
         <div
           className="flex items-start gap-2 rounded-lg px-3 py-2 text-xs"
-          style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+          style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
         >
           <RotateCcw className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
           <span>Regresada: {tarea.motivo_regreso ?? '—'}</span>
@@ -152,7 +152,7 @@ function TareaCard({
         {(tarea.acuse_estado === 'pendiente' || tarea.acuse_estado === 'desactualizado') && (
           <span
             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold leading-none"
-            style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+            style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
           >
             <PenLine className="w-2.5 h-2.5" />
             Firma pendiente
@@ -650,7 +650,7 @@ function DetalleSheet({
           {tarea.regresada && (
             <span
               className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+              style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
             >
               <RotateCcw className="w-3 h-3" /> Regresada
             </span>
@@ -664,7 +664,7 @@ function DetalleSheet({
           {acuse.estado === 'desactualizado' && (
             <div
               className="rounded-lg p-3 text-sm"
-              style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+              style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
             >
               El administrador modificó esta tarea. Revísala y firma de nuevo.
             </div>
@@ -745,7 +745,7 @@ function DetalleSheet({
         {tarea.regresada && tarea.motivo_regreso && (
           <div
             className="rounded-lg p-3 text-sm"
-            style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+            style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
           >
             <p className="font-semibold mb-0.5">Motivo de regreso</p>
             <p>{tarea.motivo_regreso}</p>
@@ -986,7 +986,7 @@ function DetalleSheet({
                 <button
                   onClick={() => setAccion('regresar')}
                   className="flex-1 h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-1.5 border border-border transition-colors hover:bg-muted"
-                  style={{ color: 'var(--agro-warning-text)' }}
+                  style={{ color: 'var(--agro-info-text)' }}
                 >
                   <RotateCcw className="w-4 h-4" />
                   Regresar
@@ -1052,7 +1052,7 @@ function DetalleSheet({
                     onClick={handleRegresar}
                     disabled={guardando || !regresarMotivo.trim()}
                     className="flex-1 h-10 rounded-lg text-sm font-semibold disabled:opacity-40"
-                    style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+                    style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
                   >
                     {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Regresar'}
                   </button>
@@ -1090,7 +1090,7 @@ function DetalleSheet({
             {esAdmin && accion === 'editar' && acuse?.estado === 'firmado' && (
               <div
                 className="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
-                style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+                style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
               >
                 <PenLine className="w-3.5 h-3.5 flex-shrink-0" />
                 El colaborador tendrá que volver a firmar.
@@ -1277,7 +1277,7 @@ function DetalleSheet({
             {acuse.estado === 'pendiente' && esAdmin && (
               <div
                 className="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
-                style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+                style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
               >
                 <PenLine className="w-3.5 h-3.5 flex-shrink-0" />
                 Sin acuse: {tarea.asignado_nombre} aún no firma
@@ -1288,7 +1288,7 @@ function DetalleSheet({
               <div className="space-y-2">
                 <div
                   className="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
-                  style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+                  style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
                 >
                   <PenLine className="w-3.5 h-3.5 flex-shrink-0" />
                   Firma desactualizada: se editó la tarea
@@ -1720,10 +1720,10 @@ export function AgendaTareas() {
                   index={0}
                   valor={resumen.por_verificar ?? 0}
                   label="Por verificar"
-                  borde={resumen.por_verificar ? 'var(--agro-amber)' : 'var(--border)'}
-                  fondo={resumen.por_verificar ? 'var(--agro-warning-fill)' : 'var(--card)'}
-                  colorNumero={resumen.por_verificar ? 'var(--agro-warning-text)' : 'var(--foreground)'}
-                  colorEtiqueta={resumen.por_verificar ? 'var(--agro-warning-text)' : 'var(--muted-foreground)'}
+                  borde={resumen.por_verificar ? 'var(--agro-menta)' : 'var(--border)'}
+                  fondo={resumen.por_verificar ? 'var(--agro-info-fill)' : 'var(--card)'}
+                  colorNumero={resumen.por_verificar ? 'var(--agro-info-text)' : 'var(--foreground)'}
+                  colorEtiqueta={resumen.por_verificar ? 'var(--agro-info-text)' : 'var(--muted-foreground)'}
                   reducedMotion={!!reducedMotion}
                 />
                 <TarjetaResumenAdmin
@@ -1753,7 +1753,7 @@ export function AgendaTareas() {
             {resumen && (resumen.sin_acuse_org ?? 0) > 0 && (
               <div
                 className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold"
-                style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+                style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
               >
                 <PenLine className="w-3.5 h-3.5 flex-shrink-0" />
                 {resumen.sin_acuse_org} {(resumen.sin_acuse_org ?? 0) === 1 ? 'tarea sin acuse' : 'tareas sin acuse'}

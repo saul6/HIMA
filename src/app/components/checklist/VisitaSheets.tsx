@@ -327,7 +327,7 @@ function FilaVisita({ visita, abierta, onToggle, hook, pdf, firmas, loadingFirma
   }, [abierta, visita.id])
 
   const tono = visita.atrasada
-    ? { fill: 'var(--agro-warning-fill)', text: 'var(--agro-warning-text)' }
+    ? { fill: 'var(--agro-info-fill)', text: 'var(--agro-info-text)' }
     : visita.estado === 'cancelada'
       ? { fill: 'var(--agro-danger-fill)', text: 'var(--agro-danger-text)' }
       : visita.estado === 'realizada'

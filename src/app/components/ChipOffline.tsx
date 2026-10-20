@@ -14,8 +14,8 @@ export function ChipOffline({ lote }: Props) {
       title={motivoLote(lote) ?? undefined}
       className="text-[10px] px-2 py-0.5 rounded flex-shrink-0 flex items-center gap-1"
       style={{
-        backgroundColor: lote.estado === 'rechazado' ? 'var(--agro-danger-fill)' : 'var(--agro-warning-fill)',
-        color: lote.estado === 'rechazado' ? 'var(--agro-danger-text)' : 'var(--agro-warning-text)',
+        backgroundColor: lote.estado === 'rechazado' ? 'var(--agro-danger-fill)' : 'var(--agro-info-fill)',
+        color: lote.estado === 'rechazado' ? 'var(--agro-danger-text)' : 'var(--agro-info-text)',
         fontWeight: 600,
       }}
     >

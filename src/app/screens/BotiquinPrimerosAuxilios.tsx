@@ -589,14 +589,14 @@ export function BotiquinPrimerosAuxilios() {
                 key={r.id}
                 className="bg-card rounded-xl p-4 border"
                 style={{
-                  borderColor: r.requiere_correccion ? 'var(--agro-amber)' : 'var(--border)',
-                  backgroundColor: r.requiere_correccion ? 'var(--agro-warning-fill)' : undefined,
+                  borderColor: r.requiere_correccion ? 'var(--agro-menta)' : 'var(--border)',
+                  backgroundColor: r.requiere_correccion ? 'var(--agro-info-fill)' : undefined,
                 }}
               >
                 {r.requiere_correccion && r.comentario_correccion && (
                   <div
                     className="flex items-start gap-2 mb-3 text-xs rounded-lg px-3 py-2"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.05)', color: 'var(--agro-warning-text)' }}
+                    style={{ backgroundColor: 'rgba(0,0,0,0.05)', color: 'var(--agro-info-text)' }}
                   >
                     <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" />
                     {r.comentario_correccion}
@@ -618,7 +618,7 @@ export function BotiquinPrimerosAuxilios() {
                         className={`text-[11px] px-2 py-0.5 rounded flex-shrink-0 ${
                           completo
                             ? 'bg-agro-success-fill text-agro-success-text'
-                            : 'bg-agro-warning-fill text-agro-warning-text'
+                            : 'bg-agro-info-fill text-agro-info-text'
                         }`}
                         style={{ fontWeight: 600 }}
                       >

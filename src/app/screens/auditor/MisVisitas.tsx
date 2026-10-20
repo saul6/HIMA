@@ -46,7 +46,7 @@ function ChipAviso() {
   return (
     <span
       className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
     >
       Se elimina — descarga tu reporte
     </span>
@@ -108,7 +108,7 @@ function EventoCard({
         <button
           onClick={() => onAbrirAuditoria(evento.auditoria_id!)}
           className="text-xs font-semibold px-3 py-1.5 rounded-lg self-start transition-colors hover:opacity-80"
-          style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)' }}
+          style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
         >
           Abrir y descargar reporte →
         </button>

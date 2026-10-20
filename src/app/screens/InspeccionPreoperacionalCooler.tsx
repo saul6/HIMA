@@ -782,7 +782,7 @@ export function InspeccionPreoperacionalCooler() {
                 <div key={lote.id} className="bg-card rounded-xl border border-border p-4">
                   <div className="mb-1">
                     <span className="text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>
                       {formatMesLabel((lote.metadatos as any)?.mes + '-01')}
                     </span>
                   </div>
@@ -842,10 +842,10 @@ export function InspeccionPreoperacionalCooler() {
           {!puedeEditarFecha && registroActivo.mes.slice(0, 7) !== mesActual() && (
             <div
               className="flex items-start gap-2 rounded-xl p-3"
-              style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}
+              style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}
             >
-              <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-              <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+              <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+              <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
                 No puedes agregar días de inspección a meses pasados (candado de fecha).
               </p>
             </div>
@@ -1010,10 +1010,10 @@ export function InspeccionPreoperacionalCooler() {
                 {nYaExiste && (
                   <div
                     className="flex items-start gap-2 rounded-xl p-3"
-                    style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}
+                    style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}
                   >
-                    <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-                    <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                    <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+                    <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
                       Ya existe un registro para esta {termino.toLowerCase()} y mes.
                     </p>
                   </div>
@@ -1093,10 +1093,10 @@ export function InspeccionPreoperacionalCooler() {
                     {dYaExiste && (
                       <div
                         className="flex items-start gap-2 rounded-xl p-3"
-                        style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}
+                        style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}
                       >
-                        <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-                        <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                        <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+                        <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
                           Ya existe una inspección para esta fecha en el registro actual.
                         </p>
                       </div>

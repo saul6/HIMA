@@ -174,7 +174,7 @@ export function NuevaAuditoriaPgfsForm({ onClose }: { onClose: () => void }) {
             {ranchos.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
           </select>
           {ranchos.length === 0 && (
-            <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+            <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
               No hay instalaciones registradas en esta organización.
             </p>
           )}

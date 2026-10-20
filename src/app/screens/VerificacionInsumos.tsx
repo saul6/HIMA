@@ -794,7 +794,7 @@ export function VerificacionInsumos() {
                 <div key={lote.id} className="bg-card rounded-xl border border-border p-4">
                   <div className="mb-1">
                     <span className="text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>
                       {formatMesLabel((lote.metadatos as any)?.mes + '-01')}
                     </span>
                   </div>
@@ -863,9 +863,9 @@ export function VerificacionInsumos() {
           )}
 
           {insumosActivosFiltrados.length === 0 && !loadingInsumos && (
-            <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}>
-              <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-              <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+            <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
+              <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+              <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
                 No hay insumos activos. Configura el catálogo con el ícono de ajustes.
               </p>
             </div>
@@ -964,9 +964,9 @@ export function VerificacionInsumos() {
                     className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm" />
                 </div>
                 {nYaExiste && (
-                  <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}>
-                    <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-                    <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>Ya existe un registro para esta {termino.toLowerCase()} y mes.</p>
+                  <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
+                    <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+                    <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>Ya existe un registro para esta {termino.toLowerCase()} y mes.</p>
                   </div>
                 )}
                 <button
@@ -1028,9 +1028,9 @@ export function VerificacionInsumos() {
                     />
                     {dErrFecha && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Fecha requerida</p>}
                     {dYaExiste && (
-                      <div className="flex items-start gap-2 rounded-xl p-3 mt-1" style={{ backgroundColor: 'var(--agro-warning-fill)', border: '1px solid var(--agro-amber)' }}>
-                        <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-                        <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>Ya existe una verificación para esta fecha.</p>
+                      <div className="flex items-start gap-2 rounded-xl p-3 mt-1" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
+                        <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+                        <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>Ya existe una verificación para esta fecha.</p>
                       </div>
                     )}
                   </div>

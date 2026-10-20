@@ -16,7 +16,7 @@ export const PC = {  // PDF Colors
 
   // ── Diseño nuevo (origen: M13) — lo usan src/lib/pdf/disenoNuevo y los PDF que lo adoptan ──
   negativo:      '#993C1D',  // --agro-danger-text: valores negativos, legible en impresión
-  aviso:         '#854F0B',  // --agro-warning-text: valores de atención (ámbar oscuro)
+  aviso:         '#854F0B',  // ámbar propio del PDF: valores de atención
   m13Navy:       '#173251',  // --auth-navy-dark (theme.css)
   m13Menta:      '#2AAD95',  // --secondary (theme.css)
   m13MentaSuave: '#E4F5F1',  // menta al ~12 % sobre blanco

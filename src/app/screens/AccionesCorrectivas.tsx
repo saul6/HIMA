@@ -78,7 +78,7 @@ function ChipEstado({ estado }: { estado: 'sin_capturar' | 'abierta' | 'cerrada'
     return (
       <span
         className="inline-flex items-center px-2 py-0.5 rounded-full text-xs"
-        style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}
+        style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}
       >
         Abierta
       </span>
@@ -467,8 +467,8 @@ export function AccionesCorrectivas() {
                   style={
                     isPendiente
                       ? {
-                          borderColor: 'var(--agro-amber)',
-                          backgroundColor: 'var(--agro-warning-fill)',
+                          borderColor: 'var(--agro-menta)',
+                          backgroundColor: 'var(--agro-info-fill)',
                         }
                       : {}
                   }
@@ -522,7 +522,7 @@ export function AccionesCorrectivas() {
                   {item.accion && (
                     <div className="mt-2 pt-2 border-t border-border flex items-center justify-between gap-2">
                       {item.accion.fotosSinSubir ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                        <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>
                           {item.accion.fotosSinSubir} foto{item.accion.fotosSinSubir !== 1 ? 's' : ''} sin subir
                         </span>
                       ) : <span />}
@@ -576,8 +576,8 @@ export function AccionesCorrectivas() {
             </div>
           )}
           {!online && (
-            <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--agro-warning-fill)' }}>
-              <p className="text-xs" style={{ color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+            <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
+              <p className="text-xs" style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}>
                 {selectedItem?.accion?.id
                   ? 'Sin conexión: solo se guardan las fotos de evidencia. Cambiar el texto, el estado o cerrar la NC requiere internet.'
                   : 'Necesitas conexión para capturar esta acción correctiva.'}

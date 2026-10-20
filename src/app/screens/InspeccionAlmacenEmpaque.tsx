@@ -661,7 +661,7 @@ export function InspeccionAlmacenEmpaque() {
                 <div key={lote.id} className="bg-card rounded-xl border border-border p-4">
                   <div className="mb-1">
                     <span className="text-xs px-2 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--agro-warning-fill)', color: 'var(--agro-warning-text)', fontWeight: 600 }}>
+                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}>
                       {formatMesLabel((lote.metadatos as any)?.anio ?? 0, (lote.metadatos as any)?.mes ?? 0)}
                     </span>
                   </div>
@@ -1015,10 +1015,10 @@ export function InspeccionAlmacenEmpaque() {
               {puntos.some((p) => (dValores[p.id] ?? 'cumple') === 'no_cumple') && (
                 <div
                   className="flex items-start gap-2 rounded-xl p-3"
-                  style={{ backgroundColor: 'var(--agro-warning-fill)' }}
+                  style={{ backgroundColor: 'var(--agro-info-fill)' }}
                 >
-                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-warning-text)' }} />
-                  <p className="text-xs" style={{ color: 'var(--agro-warning-text)' }}>
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+                  <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
                     Los puntos marcados "No cumple" con descripción generarán una incidencia M13 automáticamente.
                   </p>
                 </div>
