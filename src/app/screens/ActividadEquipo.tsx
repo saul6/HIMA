@@ -11,6 +11,7 @@ import { marcarCorreccion } from '@/lib/queries'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
+import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -49,66 +50,35 @@ function CardActividad({
   onMarcar: (item: ActividadItem) => void
 }) {
   return (
-    <div
-      className="bg-card rounded-xl p-4 border"
-      style={{
-        borderColor: item.requiere_correccion ? 'var(--agro-menta)' : 'var(--border)',
-        backgroundColor: item.requiere_correccion ? 'var(--agro-info-fill)' : undefined,
-      }}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          {/* Módulo + estado */}
-          <div className="flex items-center gap-2 flex-wrap mb-1">
+    <FilaRegistro
+      icono={null}
+      tono={item.requiere_correccion ? 'resaltado' : 'normal'}
+      etiquetas={
+        <>
+          <span
+            className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground flex-shrink-0"
+            style={{ fontWeight: 600 }}
+          >
+            {item.moduloLabel}
+          </span>
+          {item.requiere_correccion && (
             <span
-              className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground flex-shrink-0"
-              style={{ fontWeight: 600 }}
-            >
-              {item.moduloLabel}
-            </span>
-            {item.requiere_correccion && (
-              <span
-                className="text-[10px] px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0"
-                style={{
-                  backgroundColor: 'var(--agro-menta)',
-                  color: '#fff',
-                  fontWeight: 600,
-                }}
-              >
-                <AlertTriangle className="w-3 h-3" />
-                Requiere corrección
-              </span>
-            )}
-          </div>
-
-          {/* Rancho y fecha */}
-          <p className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
-            {item.rancho_nombre}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {formatFecha(item.fecha)}
-          </p>
-
-          {/* Capturado por */}
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Por: {item.creado_por_nombre}
-          </p>
-
-          {/* Comentario de corrección */}
-          {item.requiere_correccion && item.comentario_correccion && (
-            <p
-              className="text-xs mt-2 p-2 rounded-lg"
+              className="text-[10px] px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0"
               style={{
-                backgroundColor: 'rgba(0,0,0,0.05)',
-                color: 'var(--agro-info-text)',
+                backgroundColor: 'var(--agro-menta)',
+                color: '#fff',
+                fontWeight: 600,
               }}
             >
-              "{item.comentario_correccion}"
-            </p>
+              <AlertTriangle className="w-3 h-3" />
+              Requiere corrección
+            </span>
           )}
-        </div>
-
-        {/* Botón marcar/desmarcar */}
+        </>
+      }
+      titulo={item.rancho_nombre}
+      lineas={<>{formatFecha(item.fecha)} · Por: {item.creado_por_nombre}</>}
+      acciones={
         <button
           onClick={() => onMarcar(item)}
           className="flex-shrink-0 text-xs px-3 py-1.5 rounded-lg border transition-colors"
@@ -119,8 +89,20 @@ function CardActividad({
         >
           {item.requiere_correccion ? 'Desmarcar' : 'Marcar'}
         </button>
-      </div>
-    </div>
+      }
+    >
+      {item.requiere_correccion && item.comentario_correccion && (
+        <p
+          className="text-xs mb-2 p-2 rounded-lg"
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.05)',
+            color: 'var(--agro-info-text)',
+          }}
+        >
+          "{item.comentario_correccion}"
+        </p>
+      )}
+    </FilaRegistro>
   )
 }
 

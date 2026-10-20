@@ -12,6 +12,7 @@ import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { motivoLote } from '@/lib/offline/motivosRechazo'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
 
 function formatFechaCaptura(iso: string): string {
   try {
@@ -82,22 +83,47 @@ function CardLote({
   const advertencia48h = lote.estado === 'pendiente' && horas >= 48
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4 space-y-2">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>{lote.descripcion}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Capturado: {formatFechaCaptura(lote.capturadoEn)}
-          </p>
-          {lote.sincronizadoEn && (
-            <p className="text-xs text-muted-foreground">
-              Subido: {formatFechaCaptura(lote.sincronizadoEn)}
-            </p>
+    <FilaRegistro
+      variante="tarjeta"
+      titulo={lote.descripcion}
+      lineas={
+        <>
+          <span className="block">Capturado: {formatFechaCaptura(lote.capturadoEn)}</span>
+          {lote.sincronizadoEn && <span className="block">Subido: {formatFechaCaptura(lote.sincronizadoEn)}</span>}
+        </>
+      }
+      derecha={<ChipEstado lote={lote} />}
+      acciones={
+        <>
+          {lote.estado === 'pendiente' && onReintentar && (
+            <Boton tamano="sm" onClick={() => onReintentar(lote.id)}>
+              <RefreshCw className="w-3 h-3" />
+              Reintentar
+            </Boton>
           )}
-        </div>
-        <ChipEstado lote={lote} />
-      </div>
-
+          {lote.estado === 'rechazado' && onVer && (
+            <button
+              onClick={() => onVer(lote)}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border"
+              style={{ fontWeight: 600 }}
+            >
+              <Eye className="w-3 h-3" />
+              Ver lo que capturé
+            </button>
+          )}
+          {lote.estado === 'rechazado' && onDescartar && (
+            <button
+              onClick={() => onDescartar(lote.id)}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-agro-danger-text"
+              style={{ color: 'var(--agro-danger-text)', fontWeight: 600 }}
+            >
+              <Trash2 className="w-3 h-3" />
+              Descartar
+            </button>
+          )}
+        </>
+      }
+    >
       {lote.estado === 'rechazado' && (
         <p className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>
           {motivoLote(lote)}
@@ -118,36 +144,7 @@ function CardLote({
       {lote.intentos > 0 && lote.estado === 'pendiente' && (
         <p className="text-[10px] text-muted-foreground">{lote.intentos} {lote.intentos === 1 ? 'intento' : 'intentos'}</p>
       )}
-
-      <div className="flex gap-2 pt-1">
-        {lote.estado === 'pendiente' && onReintentar && (
-          <Boton tamano="sm" onClick={() => onReintentar(lote.id)}>
-            <RefreshCw className="w-3 h-3" />
-            Reintentar
-          </Boton>
-        )}
-        {lote.estado === 'rechazado' && onVer && (
-          <button
-            onClick={() => onVer(lote)}
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border"
-            style={{ fontWeight: 600 }}
-          >
-            <Eye className="w-3 h-3" />
-            Ver lo que capturé
-          </button>
-        )}
-        {lote.estado === 'rechazado' && onDescartar && (
-          <button
-            onClick={() => onDescartar(lote.id)}
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-agro-danger-text"
-            style={{ color: 'var(--agro-danger-text)', fontWeight: 600 }}
-          >
-            <Trash2 className="w-3 h-3" />
-            Descartar
-          </button>
-        )}
-      </div>
-    </div>
+    </FilaRegistro>
   )
 }
 

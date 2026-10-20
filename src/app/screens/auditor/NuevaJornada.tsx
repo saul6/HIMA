@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import { ChevronLeft, Plus, AlertCircle, Loader, RefreshCw, CheckSquare, Square, Info } from 'lucide-react'
+import { ChevronLeft, Plus, AlertCircle, Loader, RefreshCw, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuditorJornada } from '@/hooks/useAuditorJornada'
 import type { JornadaCandidataFila } from '@/hooks/useAuditorJornada'
 import { hoyMX } from '@/lib/fecha'
 import { Portal } from '@/app/components/Portal'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
 
 const MODULO_LABELS: Record<number, string> = {
   1: 'M1', 2: 'M2', 3: 'M3', 4: 'M4', 5: 'M5', 6: 'M6', 7: 'M7',
@@ -25,70 +26,64 @@ function FilaOperacion({
   onToggle: () => void
 }) {
   return (
-    <button
+    <FilaRegistro
+      seleccionable
+      seleccionado={selected}
       onClick={onToggle}
-      className="w-full text-left px-4 py-3 flex items-center gap-3 active:opacity-70 transition-opacity"
-      style={{
-        backgroundColor: selected ? 'var(--agro-success-fill)' : 'transparent',
-        borderBottom: '1px solid var(--border)',
-      }}
-    >
-      <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-        {selected
-          ? <CheckSquare size={16} style={{ color: 'var(--primary)' }} />
-          : <Square size={16} style={{ color: 'var(--muted-foreground)' }} />
-        }
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>
+      titulo={
+        <>
           {fila.operacion}
           {fila.operacion_codigo ? <span className="ml-1.5 text-[10px] font-mono" style={{ color: 'var(--muted-foreground)' }}>({fila.operacion_codigo})</span> : null}
-        </p>
-        <div className="flex flex-wrap gap-2 mt-0.5">
-          {fila.producto && (
+        </>
+      }
+      lineas={
+        <>
+          <span className="flex flex-wrap gap-2">
+            {fila.producto && (
+              <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                {fila.producto}
+              </span>
+            )}
+            {fila.tipo_operacion && (
+              <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                · {fila.tipo_operacion}
+              </span>
+            )}
+            {fila.modulos.length > 0 && (
+              <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                · {fila.modulos.map(m => MODULO_LABELS[m] ?? `M${m}`).join(', ')}
+              </span>
+            )}
             <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
-              {fila.producto}
+              · {formatFecha(fila.fecha)}
             </span>
-          )}
-          {fila.tipo_operacion && (
-            <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
-              · {fila.tipo_operacion}
-            </span>
-          )}
-          {fila.modulos.length > 0 && (
-            <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
-              · {fila.modulos.map(m => MODULO_LABELS[m] ?? `M${m}`).join(', ')}
-            </span>
-          )}
-          <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
-            · {formatFecha(fila.fecha)}
           </span>
-        </div>
-        <div className="flex flex-wrap gap-1.5 mt-1">
-          <span
-            className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium"
-            style={{
-              backgroundColor: fila.estado === 'en_proceso' ? 'var(--agro-info-fill)' : 'var(--muted)',
-              color: fila.estado === 'en_proceso' ? 'var(--agro-info-text)' : 'var(--muted-foreground)',
-            }}
-          >
-            {fila.estado === 'en_proceso' ? 'En proceso' : fila.estado}
+          <span className="mt-1 flex flex-wrap gap-1.5">
+            <span
+              className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium"
+              style={{
+                backgroundColor: fila.estado === 'en_proceso' ? 'var(--agro-info-fill)' : 'var(--muted)',
+                color: fila.estado === 'en_proceso' ? 'var(--agro-info-text)' : 'var(--muted-foreground)',
+              }}
+            >
+              {fila.estado === 'en_proceso' ? 'En proceso' : fila.estado}
+            </span>
+            {fila.efimera && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]"
+                style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                Instalación no vinculada
+              </span>
+            )}
+            {fila.en_jornada_abierta && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]"
+                style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
+                Ya en jornada abierta
+              </span>
+            )}
           </span>
-          {fila.efimera && (
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]"
-              style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
-              Instalación no vinculada
-            </span>
-          )}
-          {fila.en_jornada_abierta && (
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]"
-              style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
-              Ya en jornada abierta
-            </span>
-          )}
-        </div>
-      </div>
-    </button>
+        </>
+      }
+    />
   )
 }
 

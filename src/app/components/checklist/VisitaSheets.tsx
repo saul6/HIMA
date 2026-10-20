@@ -13,6 +13,7 @@ import { fechaLarga } from './constantes'
 import { useColaboradoresChk } from './useColaboradores'
 import type { ChkVisita, ChkVisitaEvento, useChecklist } from '@/hooks/useChecklist'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
 
 type Hook = ReturnType<typeof useChecklist>
 
@@ -330,21 +331,23 @@ function FilaVisita({ visita, abierta, onToggle, hook, pdf, firmas, loadingFirma
         : { fill: 'var(--muted)', text: 'var(--foreground)' }
 
   return (
-    <div className="rounded-xl border border-border bg-card">
-      <button type="button" onClick={onToggle} className="w-full flex items-center justify-between gap-3 p-3 text-left">
-        <div className="min-w-0">
-          <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>{fechaLarga(visita.fecha)}</p>
-          {visita.revisor && <p className="text-xs text-muted-foreground">Revisa: {visita.revisor}</p>}
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+    <FilaRegistro
+      variante="tarjeta"
+      relleno="compacto"
+      titulo={fechaLarga(visita.fecha)}
+      lineas={visita.revisor ? `Revisa: ${visita.revisor}` : undefined}
+      onClick={onToggle}
+      expandido={abierta}
+      derecha={
+        <div className="flex items-center gap-2 flex-shrink-0 self-center">
           <span className="rounded-full px-2 py-0.5 text-[11px]" style={{ backgroundColor: tono.fill, color: tono.text, fontWeight: 600 }}>
             {visita.atrasada ? 'Atrasada' : visita.estado === 'programada' ? 'Programada' : visita.estado === 'realizada' ? 'Realizada' : 'Cancelada'}
           </span>
           <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${abierta ? 'rotate-180' : ''}`} />
         </div>
-      </button>
-      {abierta && (
-        <div className="border-t border-border px-3 py-3 space-y-2">
+      }
+      detalle={abierta ? (
+        <>
           {visita.nota && <p className="text-xs text-foreground whitespace-pre-wrap">{visita.nota}</p>}
           {(visita.estado === 'realizada' || visita.estado === 'programada') && (
             <div className="flex justify-end">
@@ -385,8 +388,8 @@ function FilaVisita({ visita, abierta, onToggle, hook, pdf, firmas, loadingFirma
               onFirmado={onFirmado}
             />
           )}
-        </div>
-      )}
-    </div>
+        </>
+      ) : undefined}
+    />
   )
 }
