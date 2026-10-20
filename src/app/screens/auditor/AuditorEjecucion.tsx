@@ -22,6 +22,7 @@ import { useReglasRama } from '@/hooks/useReglasRama'
 import { CapturaPreguntaAuditoria } from './CapturaPreguntaAuditoria'
 import type { CapturaPreguntaRef, AjusteInfo } from './CapturaPreguntaAuditoria'
 import { traducirErrorBd } from '@/lib/erroresBd'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -515,13 +516,9 @@ function PanelValidacion({
                   <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
                     {herenciaIssues.length} herencia{herenciaIssues.length !== 1 ? 's' : ''} pendiente{herenciaIssues.length !== 1 ? 's' : ''}
                   </span>
-                  <button
-                    onClick={navSiguienteHerencia}
-                    className="h-7 px-3 rounded-lg text-[10px] font-semibold"
-                    style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                  >
+                  <Boton onClick={navSiguienteHerencia}>
                     Siguiente pendiente →
-                  </button>
+                  </Boton>
                 </div>
               )}
             </div>
@@ -977,14 +974,10 @@ function PanelHallazgos({
                         ))}
                       </select>
                       {canWriteAC && (
-                        <button
-                          onClick={() => onVerAccion(h)}
-                          className="flex items-center gap-1 text-[10px] font-semibold h-7 px-2 rounded-lg"
-                          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                        >
+                        <Boton onClick={() => onVerAccion(h)}>
                           <ClipboardList size={11} />
                           Acción correctiva
-                        </button>
+                        </Boton>
                       )}
                       <button
                         onClick={() => onVerEvidencias(h)}
@@ -1846,17 +1839,12 @@ export function AuditorEjecucion() {
 
             {/* Botón descargar reporte PDF */}
             {auditoria && allPreguntas.length > 0 && (
-              <button
-                onClick={handleDescargarPDF}
-                disabled={descargando}
-                className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-                style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-              >
+              <Boton onClick={handleDescargarPDF} disabled={descargando} className="w-full">
                 {descargando
                   ? <><Loader size={15} className="animate-spin" /> Generando PDF…</>
                   : <><Download size={15} /> Descargar reporte PDF</>
                 }
-              </button>
+              </Boton>
             )}
 
             {/* Scoring en vivo */}
@@ -2089,14 +2077,9 @@ export function AuditorEjecucion() {
                     {cambiando ? 'Guardando…' : 'Marcar preliminar'}
                   </button>
                 )}
-                <button
-                  onClick={() => handleCambiarEstado('cerrada')}
-                  disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
-                  className="w-full h-11 rounded-xl text-sm font-semibold disabled:opacity-50"
-                  style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                >
+                <Boton onClick={() => handleCambiarEstado('cerrada')} disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema} className="w-full">
                   {cambiando ? 'Cerrando…' : 'Cerrar auditoría'}
-                </button>
+                </Boton>
               </div>
             )}
 
@@ -2158,14 +2141,9 @@ export function AuditorEjecucion() {
             </div>
           </div>
           <div className="px-4 pb-6 pt-3 flex-shrink-0 border-t border-border">
-            <button
-              onClick={handleGuardarHallazgo}
-              disabled={guardandoHallazgo || !formHallazgoDesc.trim()}
-              className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-              style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-            >
+            <Boton onClick={handleGuardarHallazgo} disabled={guardandoHallazgo || !formHallazgoDesc.trim()} className="w-full">
               {guardandoHallazgo ? <><Loader size={15} className="animate-spin" /> Guardando…</> : 'Registrar hallazgo'}
-            </button>
+            </Boton>
           </div>
         </div>
       </BottomSheet>
@@ -2351,16 +2329,12 @@ export function AuditorEjecucion() {
                       })}
 
                       {azzuleReady && canExternalStatus ? (
-                        <button
-                          onClick={() => navigate(
+                        <Boton onClick={() => navigate(
                             `/auditor/auditoria/${auditoriaId}/azzule`,
                             { state: { orgNombre, orgId, instalacionId, instalacionNombreNav } }
-                          )}
-                          className="w-full h-10 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
-                          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                        >
+                          )} className="w-full">
                           Abrir Modo Azzule
-                        </button>
+                        </Boton>
                       ) : !azzuleReady ? (
                         <p className="text-[10px] text-center py-1" style={{ color: 'var(--muted-foreground)' }}>
                           Resuelve los bloqueos para habilitar el Modo Azzule
@@ -2437,14 +2411,9 @@ export function AuditorEjecucion() {
                             />
                           </div>
                         ))}
-                        <button
-                          onClick={handleRegistrarResultado}
-                          disabled={guardandoResultado}
-                          className="w-full h-9 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-                          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                        >
+                        <Boton tamano="sm" onClick={handleRegistrarResultado} disabled={guardandoResultado} className="w-full">
                           {guardandoResultado ? <><Loader size={12} className="animate-spin" />Guardando…</> : 'Registrar resultado'}
-                        </button>
+                        </Boton>
                       </div>
                     )}
                   </div>
@@ -2513,14 +2482,9 @@ export function AuditorEjecucion() {
 
           {!cargandoAccion && canWriteAC && (
             <div className="px-4 pb-6 pt-3 flex-shrink-0 border-t border-border">
-              <button
-                onClick={handleGuardarAccion}
-                disabled={guardandoAccion}
-                className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-                style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-              >
+              <Boton onClick={handleGuardarAccion} disabled={guardandoAccion} className="w-full">
                 {guardandoAccion ? <><Loader size={15} className="animate-spin" /> Guardando…</> : (accionActual ? 'Actualizar acción' : 'Crear acción correctiva')}
-              </button>
+              </Boton>
             </div>
           )}
         </div>
@@ -2697,14 +2661,9 @@ export function AuditorEjecucion() {
                   className="h-9 rounded-lg px-3 text-xs flex-1"
                   style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                 />
-                <button
-                  onClick={handleBuscarIncidencias}
-                  disabled={incBuscando}
-                  className="h-9 px-3 rounded-lg text-[11px] font-semibold flex items-center gap-1 disabled:opacity-50 flex-shrink-0"
-                  style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                >
+                <Boton tamano="sm" onClick={handleBuscarIncidencias} disabled={incBuscando} className="flex-shrink-0">
                   {incBuscando ? <Loader size={12} className="animate-spin" /> : 'Buscar'}
-                </button>
+                </Boton>
               </div>
 
               {incBuscando ? (
@@ -2736,18 +2695,13 @@ export function AuditorEjecucion() {
                         </span>
                       </div>
                       <p className="text-[11px] leading-snug" style={{ color: 'var(--foreground)' }}>{inc.descripcion}</p>
-                      <button
-                        onClick={() => handleRelacionarIncidencia(inc)}
-                        disabled={!!incRelacionandoId}
-                        className="self-end flex items-center gap-1 text-[10px] font-semibold h-6 px-2 rounded disabled:opacity-50"
-                        style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                      >
+                      <Boton onClick={() => handleRelacionarIncidencia(inc)} disabled={!!incRelacionandoId} className="self-end">
                         {incRelacionandoId === inc.incidencia_id
                           ? <Loader size={10} className="animate-spin" />
                           : <Link2 size={10} />
                         }
                         Relacionar
-                      </button>
+                      </Boton>
                     </div>
                   ))}
                 </div>

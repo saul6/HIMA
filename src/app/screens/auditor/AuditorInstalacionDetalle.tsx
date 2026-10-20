@@ -13,6 +13,7 @@ import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { traducirErrorBd } from '@/lib/erroresBd'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -613,17 +614,12 @@ export function AuditorInstalacionDetalle() {
 
           {/* Botón vincular */}
           <div className="px-4 pb-6 pt-3 flex-shrink-0 border-t border-border">
-            <button
-              onClick={handleVincular}
-              disabled={vinculando || !confirmado}
-              className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-            >
+            <Boton onClick={handleVincular} disabled={vinculando || !confirmado} className="w-full">
               {vinculando
                 ? <><Loader size={15} className="animate-spin" /> Vinculando…</>
                 : <><Building2 size={15} /> Vincular expediente a M.A.D.Y.</>
               }
-            </button>
+            </Boton>
           </div>
         </div>
       </BottomSheet>

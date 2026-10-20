@@ -13,6 +13,7 @@ import type {
 import { CapturaPreguntaAuditoria } from './CapturaPreguntaAuditoria'
 import type { CapturaPreguntaRef } from './CapturaPreguntaAuditoria'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -728,16 +729,12 @@ export function EjecucionJornada() {
             <div className="flex flex-col gap-2">
               {/* Continuar con siguiente operación */}
               {sigOperacion && (
-                <button
-                  onClick={async () => {
+                <Boton onClick={async () => {
                     const ok = await cambiarOperacion(sigOperacion.auditoria_id)
                     if (!ok) return
-                  }}
-                  className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 active:opacity-70 transition-opacity"
-                  style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                >
+                  }} className="w-full">
                   Continuar con {sigOperacion.productor} · {sigOperacion.operacion} →
-                </button>
+                </Boton>
               )}
 
               {/* Siguiente pregunta */}

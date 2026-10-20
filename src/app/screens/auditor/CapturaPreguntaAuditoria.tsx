@@ -20,6 +20,7 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { traducirErrorBd, mensajeErrorBd } from '@/lib/erroresBd'
 import { guardarBorradorAuditor, cargarBorradorAuditor, borrarBorradorAuditor, claveBorradorAuditor } from '@/lib/idb/auditorBorradorStore'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -874,13 +875,9 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 </p>
                 {!esSugerenciaAbierta ? (
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => { setSugerenciaCId(regla.id); setSugerenciaCExplicacion(''); sugerenciaCEventIdRef.current = null }}
-                      className="flex-1 h-7 rounded-lg text-[10px] font-semibold"
-                      style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                    >
+                    <Boton onClick={() => { setSugerenciaCId(regla.id); setSugerenciaCExplicacion(''); sugerenciaCEventIdRef.current = null }} className="flex-1">
                       Sí, aplicar también
-                    </button>
+                    </Boton>
                     <button
                       onClick={() => setSugerenciaCId(null)}
                       className="h-7 px-3 rounded-lg text-[10px]"
@@ -906,9 +903,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                       }}
                     />
                     <div className="flex gap-2">
-                      <button
-                        disabled={!sugerenciaCExplicacion.trim() || aplicandoSugerenciaC}
-                        onClick={async () => {
+                      <Boton disabled={!sugerenciaCExplicacion.trim() || aplicandoSugerenciaC} onClick={async () => {
                           if (!sugerenciaCExplicacion.trim()) return
                           if (!sugerenciaCEventIdRef.current) sugerenciaCEventIdRef.current = crypto.randomUUID()
                           setAplicandoSugerenciaC(true)
@@ -919,12 +914,9 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                             else toast.warning(r.mensaje)
                           } catch { /* handled */ }
                           finally { setAplicandoSugerenciaC(false) }
-                        }}
-                        className="flex-1 h-7 rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1 disabled:opacity-50"
-                        style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                      >
+                        }} className="flex-1">
                         {aplicandoSugerenciaC ? <><Loader size={10} className="animate-spin" /> Aplicando…</> : 'Confirmar'}
-                      </button>
+                      </Boton>
                       <button
                         onClick={() => setSugerenciaCId(null)}
                         className="flex-1 h-7 rounded-lg text-[10px]"
@@ -1146,9 +1138,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     )}
 
                     <div className="flex gap-2">
-                      <button
-                        disabled={!reglaExplicacion.trim() || !!aplicandoReglaId}
-                        onClick={async () => {
+                      <Boton tamano="sm" disabled={!reglaExplicacion.trim() || !!aplicandoReglaId} onClick={async () => {
                           if (!reglaExplicacion.trim()) return
                           if (!reglaEventIdRef.current) reglaEventIdRef.current = crypto.randomUUID()
                           setAplicandoReglaId(regla.id)
@@ -1168,14 +1158,11 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                             }
                           } catch { /* handled */ }
                           finally { setAplicandoReglaId(null) }
-                        }}
-                        className="flex-1 h-8 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1 disabled:opacity-50"
-                        style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                      >
+                        }} className="flex-1">
                         {aplicandoReglaId === regla.id
                           ? <><Loader size={11} className="animate-spin" /> Aplicando…</>
                           : 'Confirmar N/A en dependientes'}
-                      </button>
+                      </Boton>
                       {reglaConflictos && reglaConflictos.length > 0 && (
                         <button
                           disabled={!reglaExplicacion.trim() || !!aplicandoReglaId}
@@ -1276,9 +1263,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                           }}
                         />
                         <div className="flex gap-2">
-                          <button
-                            disabled={retirandoEnCurso}
-                            onClick={async () => {
+                          <Boton disabled={retirandoEnCurso} onClick={async () => {
                               if (!retirarEventIdRef.current) retirarEventIdRef.current = crypto.randomUUID()
                               setRetirandoEnCurso(true)
                               try {
@@ -1287,14 +1272,11 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                                 setRetiroResultado(r)
                               } catch { /* handled */ }
                               finally { setRetirandoEnCurso(false) }
-                            }}
-                            className="flex-1 h-7 rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1 disabled:opacity-50"
-                            style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                          >
+                            }} className="flex-1">
                             {retirandoEnCurso
                               ? <><Loader size={10} className="animate-spin" /> Retirando…</>
                               : 'Confirmar retiro'}
-                          </button>
+                          </Boton>
                           <button
                             onClick={() => { setRetirandoReglaId(null); setMotivoRetiro('') }}
                             className="flex-1 h-7 rounded-lg text-[10px]"
@@ -1398,8 +1380,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   <div className="flex flex-col gap-1 flex-1">
                     <p className="text-[10px]" style={{ color: 'var(--agro-info-text)' }}>{ajusteWarning.mensaje}</p>
                     {!cerrada && (
-                      <button
-                        onClick={() => {
+                      <Boton onClick={() => {
                           const resp = CLASS_TO_RESP[ajusteWarning.clasificacion_sugerida!]
                           if (resp) {
                             handleRespuesta(preguntaId, resp)
@@ -1407,16 +1388,13 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                             onAjusteActualizado?.(preguntaId, null)
                             setAjusteWarning(null)
                           }
-                        }}
-                        className="self-start text-[10px] font-semibold px-2 py-0.5 rounded"
-                        style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                      >
+                        }} className="self-start">
                         Cambiar clasificación a{' '}
                         {ajusteWarning.clasificacion_sugerida === 'MINOR' ? 'Menor'
                           : ajusteWarning.clasificacion_sugerida === 'MAJOR' ? 'Mayor'
                           : ajusteWarning.clasificacion_sugerida === 'TOTAL' ? 'Total'
                           : 'No conformidad'}
-                      </button>
+                      </Boton>
                     )}
                   </div>
                 </div>
@@ -1529,14 +1507,9 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 )}
               </div>
               <div className="flex gap-2">
-                <button
-                  onClick={handleConfirmarAjuste}
-                  disabled={!puedeConfirmar}
-                  className="flex-1 h-9 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50"
-                  style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                >
+                <Boton tamano="sm" onClick={handleConfirmarAjuste} disabled={!puedeConfirmar} className="flex-1">
                   {enviandoAjuste ? <><Loader size={11} className="animate-spin" /> Guardando…</> : 'Confirmar'}
-                </button>
+                </Boton>
                 <button
                   onClick={() => setAjusteOpen(false)}
                   className="flex-1 h-9 rounded-lg text-[11px] font-medium"
@@ -1617,18 +1590,13 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                       </p>
                       {!cerrada && (
                         <div className="flex gap-1.5 flex-wrap">
-                          <button
-                            disabled={!!ejec}
-                            onClick={async () => {
+                          <Boton disabled={!!ejec} onClick={async () => {
                               setHerenciaAcciones(prev => new Map(prev).set(esq.id, 'cargando'))
                               try { await handleConfirmarHerencia(h.valor_id) }
                               finally { setHerenciaAcciones(prev => { const n = new Map(prev); n.delete(esq.id); return n }) }
-                            }}
-                            className="h-7 px-2.5 rounded-lg text-[10px] font-semibold disabled:opacity-50 flex items-center gap-1"
-                            style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                          >
+                            }}>
                             {ejec === 'cargando' ? <><Loader size={10} className="animate-spin" />…</> : 'Confirmar dato'}
-                          </button>
+                          </Boton>
                           <button
                             disabled={!!ejec}
                             onClick={() => setEscribiendoOtro(prev => new Set(prev).add(esq.id))}
@@ -1698,18 +1666,13 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                         </p>
                         {!cerrada && (
                           <div className="flex gap-1.5 flex-wrap">
-                            <button
-                              disabled={!!ejec}
-                              onClick={async () => {
+                            <Boton disabled={!!ejec} onClick={async () => {
                                 setHerenciaAcciones(prev => new Map(prev).set(esq.id, 'cargando'))
                                 try { await handleResolverHerencia(h.valor_id, 'propuesto') }
                                 finally { setHerenciaAcciones(prev => { const n = new Map(prev); n.delete(esq.id); return n }) }
-                              }}
-                              className="h-7 px-2.5 rounded-lg text-[10px] font-semibold disabled:opacity-50 flex items-center gap-1"
-                              style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                            >
+                              }}>
                               {ejec === 'cargando' ? <><Loader size={10} className="animate-spin" />…</> : 'Confirmar nuevo'}
-                            </button>
+                            </Boton>
                             <button
                               disabled={!!ejec}
                               onClick={() => setEscribiendoOtro(prev => new Set(prev).add(esq.id))}
@@ -1759,18 +1722,13 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                             >
                               {ejec === 'cargando' ? <><Loader size={10} className="animate-spin" />…</> : 'Conservar este'}
                             </button>
-                            <button
-                              disabled={!!ejec}
-                              onClick={async () => {
+                            <Boton disabled={!!ejec} onClick={async () => {
                                 setHerenciaAcciones(prev => new Map(prev).set(esq.id, 'cargando'))
                                 try { await handleResolverHerencia(h.valor_id, 'propuesto') }
                                 finally { setHerenciaAcciones(prev => { const n = new Map(prev); n.delete(esq.id); return n }) }
-                              }}
-                              className="h-7 px-2.5 rounded-lg text-[10px] font-semibold disabled:opacity-50 flex items-center gap-1"
-                              style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                            >
+                              }}>
                               Usar el de {h.origen_question_id ?? 'otra pregunta'}
-                            </button>
+                            </Boton>
                           </div>
                         )}
                       </div>

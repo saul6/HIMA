@@ -6,6 +6,7 @@ import { useAuditorJornada } from '@/hooks/useAuditorJornada'
 import type { JornadaCandidataFila } from '@/hooks/useAuditorJornada'
 import { hoyMX } from '@/lib/fecha'
 import { Portal } from '@/app/components/Portal'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 const MODULO_LABELS: Record<number, string> = {
   1: 'M1', 2: 'M2', 3: 'M3', 4: 'M4', 5: 'M5', 6: 'M6', 7: 'M7',
@@ -288,17 +289,12 @@ export function NuevaJornada() {
               padding: '0.5rem 0.75rem',
             }}
           />
-          <button
-            onClick={handleCrear}
-            disabled={creando}
-            className="w-full h-12 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
-            style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-          >
+          <Boton onClick={handleCrear} disabled={creando} className="w-full">
             {creando
               ? <><Loader size={15} className="animate-spin" />Creando…</>
               : <><Plus size={15} />Comenzar con {seleccionados.size} {seleccionados.size === 1 ? 'operación' : 'operaciones'} de {nProductores} {nProductores === 1 ? 'productor' : 'productores'}</>
             }
-          </button>
+          </Boton>
         </div>
         </Portal>
       )}

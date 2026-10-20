@@ -9,6 +9,7 @@ import { hoyMX } from '@/lib/fecha'
 import { ModulosSelectorStep } from './ModulosSelectorStep'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { SPRING_SUAVE } from '@/lib/motion'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -355,14 +356,9 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
       {/* Pie fijo */}
       <div className="px-4 pt-3 pb-4 border-t border-border flex-shrink-0">
         {paso === 1 ? (
-          <button
-            onClick={handleSiguiente}
-            disabled={cargandoModulos}
-            className="w-full h-11 rounded-xl text-sm font-semibold disabled:opacity-50"
-            style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-          >
+          <Boton onClick={handleSiguiente} disabled={cargandoModulos} className="w-full">
             {cargandoModulos ? 'Cargando…' : 'Siguiente'}
-          </button>
+          </Boton>
         ) : (
           <div className="flex gap-2">
             <button
@@ -372,14 +368,9 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
             >
               Atrás
             </button>
-            <button
-              onClick={handleCrear}
-              disabled={guardando || cargandoModulos}
-              className="flex-1 h-11 rounded-xl text-sm font-semibold disabled:opacity-50"
-              style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-            >
+            <Boton onClick={handleCrear} disabled={guardando || cargandoModulos} className="flex-1">
               {guardando ? 'Creando…' : 'Crear auditoría'}
-            </button>
+            </Boton>
           </div>
         )}
       </div>

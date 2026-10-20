@@ -6,6 +6,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { hoyMX } from '@/lib/fecha'
 import { ModulosSelectorStep } from './ModulosSelectorStep'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -248,14 +249,9 @@ export function NuevaAuditoriaPgfsForm({ onClose }: { onClose: () => void }) {
 
       {!cargando && (
         <div className="px-4 pt-3 pb-4 border-t border-border flex-shrink-0">
-          <button
-            onClick={handleCrear}
-            disabled={guardando}
-            className="w-full h-11 rounded-xl text-sm font-semibold disabled:opacity-50"
-            style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-          >
+          <Boton onClick={handleCrear} disabled={guardando} className="w-full">
             {guardando ? 'Creando…' : 'Crear auditoría'}
-          </button>
+          </Boton>
         </div>
       )}
     </>

@@ -9,6 +9,7 @@ import { ahora, ms, segundos, emitirEvento } from '@/lib/telemetria'
 import type {
   AudEvidenciaEntityType, AudEvidenciaTipo, AudEvidenciaSnapshot,
 } from '@/types/database.types'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 const TIPO_LABELS: Record<AudEvidenciaTipo, string> = {
   documento_procedimiento: 'Documento / Procedimiento',
@@ -351,14 +352,10 @@ export function EvidenciaPanel({
           {!cerrada && (canUpload || canLink) && (
             <div className="px-4 py-3 flex gap-2 flex-wrap border-t border-border">
               {canUpload && (
-                <button
-                  onClick={() => { setShowUpload(v => !v); setShowGateway(false) }}
-                  className="flex items-center gap-1.5 text-[11px] font-semibold h-8 px-3 rounded-lg"
-                  style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                >
+                <Boton tamano="sm" onClick={() => { setShowUpload(v => !v); setShowGateway(false) }}>
                   <Upload size={12} />
                   Subir evidencia
-                </button>
+                </Boton>
               )}
               {canLink && (
                 <button
@@ -422,16 +419,11 @@ export function EvidenciaPanel({
                   </ul>
                 )}
               </div>
-              <button
-                onClick={handleSubirExterno}
-                disabled={subiendo || uploadFiles.length === 0}
-                className="w-full h-9 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-                style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-              >
+              <Boton tamano="sm" onClick={handleSubirExterno} disabled={subiendo || uploadFiles.length === 0} className="w-full">
                 {subiendo
                   ? <><Loader size={12} className="animate-spin" />Subiendo {progresoSubida ? `${progresoSubida.hechas}/${progresoSubida.total}` : '…'}</>
                   : uploadFiles.length > 1 ? `Subir ${uploadFiles.length} evidencias` : 'Subir evidencia'}
-              </button>
+              </Boton>
             </div>
           )}
 
@@ -487,14 +479,10 @@ export function EvidenciaPanel({
 
                     <div className="flex items-center gap-2">
                       {esAsset && asset?.storage_path && (
-                        <button
-                          onClick={() => handleAbrir(asset.storage_path!)}
-                          className="flex items-center gap-1 text-[10px] font-semibold h-6 px-2 rounded"
-                          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                        >
+                        <Boton onClick={() => handleAbrir(asset.storage_path!)}>
                           <ExternalLink size={10} />
                           Abrir
-                        </button>
+                        </Boton>
                       )}
                       {!esAsset && snap && (
                         <button
@@ -670,18 +658,13 @@ export function EvidenciaPanel({
                             </button>
                           )}
                           {canLink && (
-                            <button
-                              onClick={() => handleRelacionar(reg)}
-                              disabled={!!gwRelacionandoId}
-                              className="flex items-center gap-1 text-[10px] font-semibold h-6 px-2 rounded ml-auto disabled:opacity-50"
-                              style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                            >
+                            <Boton onClick={() => handleRelacionar(reg)} disabled={!!gwRelacionandoId} className="ml-auto">
                               {gwRelacionandoId === reg.source_record_id
                                 ? <Loader size={10} className="animate-spin" />
                                 : <Link2 size={10} />
                               }
                               Relacionar
-                            </button>
+                            </Boton>
                           )}
                         </div>
                       </div>
@@ -745,17 +728,12 @@ export function EvidenciaPanel({
                   placeholder="Buscar por texto…"
                   style={{ ...inputBase, height: '2.25rem', flex: 1, width: 'auto' }}
                 />
-                <button
-                  onClick={() => handleBuscar()}
-                  disabled={gwCargando}
-                  className="h-9 px-3 rounded-lg text-[11px] font-semibold flex items-center gap-1 disabled:opacity-50 flex-shrink-0"
-                  style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                >
+                <Boton tamano="sm" onClick={() => handleBuscar()} disabled={gwCargando} className="flex-shrink-0">
                   {gwCargando
                     ? <Loader size={12} className="animate-spin" />
                     : 'Buscar'
                   }
-                </button>
+                </Boton>
               </div>
 
               {/* Resultados */}
@@ -812,18 +790,13 @@ export function EvidenciaPanel({
                           </button>
                         )}
                         {canLink && (
-                          <button
-                            onClick={() => handleRelacionar(reg)}
-                            disabled={!!gwRelacionandoId}
-                            className="flex items-center gap-1 text-[10px] font-semibold h-6 px-2 rounded ml-auto disabled:opacity-50"
-                            style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                          >
+                          <Boton onClick={() => handleRelacionar(reg)} disabled={!!gwRelacionandoId} className="ml-auto">
                             {gwRelacionandoId === reg.source_record_id
                               ? <Loader size={10} className="animate-spin" />
                               : <Link2 size={10} />
                             }
                             Relacionar
-                          </button>
+                          </Boton>
                         )}
                       </div>
                     </div>

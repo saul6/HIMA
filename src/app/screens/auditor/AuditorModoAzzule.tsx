@@ -4,6 +4,7 @@ import { ChevronLeft, Copy, CheckCircle, Loader, ArrowRight } from 'lucide-react
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import type { AudHallazgo, AudAccionCorrectivaCAPA, AudHallazgoClasificacion } from '@/types/database.types'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -204,13 +205,9 @@ export function AuditorModoAzzule() {
             <p className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
               Completa los campos requeridos en cada acción y válida antes de continuar.
             </p>
-            <button
-              onClick={() => navigate(`/auditor/auditoria/${auditoriaId}`, { state: backState })}
-              className="mt-2 h-10 px-6 rounded-xl text-sm font-semibold"
-              style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-            >
+            <Boton onClick={() => navigate(`/auditor/auditoria/${auditoriaId}`, { state: backState })} className="mt-2">
               Volver a la auditoría
-            </button>
+            </Boton>
           </div>
         ) : current ? (
           <>
@@ -314,21 +311,13 @@ export function AuditorModoAzzule() {
               </button>
 
               {currentIndex < items.length - 1 ? (
-                <button
-                  onClick={handleSiguiente}
-                  className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
-                  style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                >
+                <Boton onClick={handleSiguiente} className="w-full">
                   Siguiente <ArrowRight size={15} />
-                </button>
+                </Boton>
               ) : (
-                <button
-                  onClick={() => navigate(`/auditor/auditoria/${auditoriaId}`, { state: backState })}
-                  className="w-full h-11 rounded-xl text-sm font-semibold"
-                  style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                >
+                <Boton onClick={() => navigate(`/auditor/auditoria/${auditoriaId}`, { state: backState })} className="w-full">
                   Finalizar Modo Azzule
-                </button>
+                </Boton>
               )}
             </div>
           </>
