@@ -113,7 +113,7 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
     <div className="flex flex-col gap-4">
       {/* Encabezado de sección */}
       <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text" style={{ fontWeight: 600 }}>
+        <h3 className="text-body text-agro-success-text font-semibold">
           PRODUCTOS APLICADOS
         </h3>
       </div>
@@ -137,7 +137,7 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
-                      <div className="text-sm mb-1" style={{ fontWeight: 600 }}>
+                      <div className="text-sm mb-1 font-semibold">
                         {product.commercialName}
                       </div>
                       <div className="text-xs text-muted-foreground">{product.activeIngredient}</div>
@@ -173,7 +173,7 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
       {isAddingProduct ? (
         <div className="bg-card border-2 border-primary rounded-xl p-4 space-y-4">
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground mb-2 block font-semibold">
               Nombre comercial
             </label>
             {loadingCatalogo ? (
@@ -218,7 +218,7 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
 
           {/* Nivel de infestación */}
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground mb-2 block font-semibold">
               Nivel de infestación
             </label>
             <div className="flex gap-2">
@@ -290,8 +290,7 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
             <button
               onClick={addProduct}
               disabled={!currentProduct.productId}
-              className="flex-1 h-12 bg-primary text-white rounded-xl hover:bg-agro-blue transition-colors disabled:opacity-50"
-              style={{ fontWeight: 600 }}
+              className="flex-1 h-12 bg-primary text-white rounded-xl hover:bg-agro-blue transition-colors disabled:opacity-50 font-semibold"
             >
               Agregar
             </button>
@@ -300,8 +299,7 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
       ) : (
         <button
           onClick={() => setIsAddingProduct(true)}
-          className="w-full h-14 border-2 border-dashed border-primary text-primary rounded-xl flex items-center justify-center gap-2 hover:bg-agro-success-fill transition-colors"
-          style={{ fontWeight: 600 }}
+          className="w-full h-14 border-2 border-dashed border-primary text-primary rounded-xl flex items-center justify-center gap-2 hover:bg-agro-success-fill transition-colors font-semibold"
         >
           <Plus className="w-5 h-5" />
           Agregar producto
@@ -312,16 +310,14 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
       <div className="flex gap-3 pt-4">
         <button
           onClick={onBack}
-          className="flex-1 h-14 border border-border text-foreground rounded-3xl"
-          style={{ fontWeight: 600 }}
+          className="flex-1 h-14 border border-border text-foreground rounded-3xl font-semibold"
         >
           Atrás
         </button>
         <button
           onClick={onNext}
           disabled={formData.products.length === 0}
-          className="flex-1 h-14 bg-primary text-white rounded-3xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-agro-blue transition-colors"
-          style={{ fontWeight: 600 }}
+          className="flex-1 h-14 bg-primary text-white rounded-3xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-agro-blue transition-colors font-semibold"
         >
           Continuar
         </button>

@@ -174,8 +174,8 @@ function Contenido({
         <button
           type="button"
           onClick={() => navigate(item.modulo_ruta!)}
-          className="w-full h-10 rounded-lg border border-border text-sm inline-flex items-center justify-center gap-2 transition-colors hover:bg-muted active:scale-[0.99]"
-          style={{ fontWeight: 600, color: 'var(--primary)' }}
+          className="w-full h-10 rounded-lg border border-border text-sm inline-flex items-center justify-center gap-2 transition-colors hover:bg-muted active:scale-[0.99] font-semibold"
+          style={{ color: 'var(--primary)' }}
         >
           <ExternalLink className="w-4 h-4" />
           Abrir formato
@@ -184,7 +184,7 @@ function Contenido({
 
       {puedeEditar && (
         <section ref={revisarRef} className="space-y-3">
-          <h3 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Revisar</h3>
+          <h3 className="text-sm text-foreground font-semibold">Revisar</h3>
           {visitaAbierta && (
             <p className="text-xs rounded-lg px-2.5 py-1.5" style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}>
               Dentro de la visita del {fechaLarga(visitaAbierta.fecha)}
@@ -212,7 +212,7 @@ function Contenido({
 
       {puedeEditar && !esDoc && (
         <section className="space-y-2">
-          <h3 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Frecuencia esperada</h3>
+          <h3 className="text-sm text-foreground font-semibold">Frecuencia esperada</h3>
           <div className="flex flex-wrap gap-2">
             {FRECUENCIAS.map(f => (
               <Pildora key={f.value} activa={frecuencia === f.value} onClick={() => setFrecuencia(f.value)} disabled={guardandoFrec}>
@@ -246,8 +246,7 @@ function Contenido({
             type="button"
             onClick={guardarFrecuencia}
             disabled={!frecuenciaCambio || !frecuencia || guardandoFrec}
-            className="w-full h-10 rounded-lg border border-border text-sm transition-colors hover:bg-muted disabled:opacity-50"
-            style={{ fontWeight: 600 }}
+            className="w-full h-10 rounded-lg border border-border text-sm transition-colors hover:bg-muted disabled:opacity-50 font-semibold"
           >
             {guardandoFrec ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Guardar frecuencia'}
           </button>
@@ -260,7 +259,7 @@ function Contenido({
 
       {puedeEditar && (
         <section className="space-y-3">
-          <h3 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Datos</h3>
+          <h3 className="text-sm text-foreground font-semibold">Datos</h3>
           {!esModulo && (
             <Campo etiqueta="Nombre">
               <Input value={datos.nombre} maxLength={150} onChange={e => setDatos(d => ({ ...d, nombre: e.target.value }))} />
@@ -290,8 +289,7 @@ function Contenido({
             type="button"
             onClick={guardarDatos}
             disabled={guardandoDatos}
-            className="w-full h-10 rounded-lg border border-border text-sm transition-colors hover:bg-muted disabled:opacity-50"
-            style={{ fontWeight: 600 }}
+            className="w-full h-10 rounded-lg border border-border text-sm transition-colors hover:bg-muted disabled:opacity-50 font-semibold"
           >
             {guardandoDatos ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Guardar datos'}
           </button>
@@ -306,8 +304,8 @@ function Contenido({
                   type="button"
                   onClick={quitar}
                   disabled={guardandoDatos}
-                  className="flex-1 h-10 rounded-lg text-sm disabled:opacity-50"
-                  style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', fontWeight: 600 }}
+                  className="flex-1 h-10 rounded-lg text-sm disabled:opacity-50 font-semibold"
+                  style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
                 >
                   Sí, quitar
                 </button>
@@ -316,8 +314,8 @@ function Contenido({
               <button
                 type="button"
                 onClick={() => setConfirmarQuitar(true)}
-                className="w-full h-10 rounded-lg border text-sm transition-colors hover:bg-muted"
-                style={{ borderColor: 'var(--agro-red)', color: 'var(--agro-danger-text)', fontWeight: 600 }}
+                className="w-full h-10 rounded-lg border text-sm transition-colors hover:bg-muted font-semibold"
+                style={{ borderColor: 'var(--agro-red)', color: 'var(--agro-danger-text)' }}
               >
                 {esDoc ? 'Quitar documento' : 'Quitar formato'}
               </button>
@@ -327,7 +325,7 @@ function Contenido({
       )}
 
       <section className="space-y-2 pb-4">
-        <h3 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Historial</h3>
+        <h3 className="text-sm text-foreground font-semibold">Historial</h3>
         {historial === null ? (
           <p className="text-xs text-muted-foreground">Cargando…</p>
         ) : historial.length === 0 ? (
@@ -339,7 +337,7 @@ function Contenido({
               return (
                 <li key={i} className="rounded-lg border border-border p-3 space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="rounded-full px-2 py-0.5 text-caption" style={{ backgroundColor: t.fill, color: t.text, fontWeight: 600 }}>
+                    <span className="rounded-full px-2 py-0.5 text-caption font-semibold" style={{ backgroundColor: t.fill, color: t.text }}>
                       {ESTADO_REVISION_LABEL[h.estado]}
                     </span>
                     <span className="text-caption text-muted-foreground">

@@ -44,7 +44,7 @@ export function SeccionAccordion({
         className="w-full px-4 py-3 flex items-center gap-3 text-left"
       >
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+          <p className="text-sm text-foreground truncate font-semibold">
             {seccion.codigo} · {seccion.nombre}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">

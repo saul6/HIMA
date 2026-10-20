@@ -39,14 +39,14 @@ export function ConsolidadoSheetLimpieza({
     <BottomSheet open={open} onClose={onClose} height="85%">
       <div className="pt-4 px-4 pb-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
+          <h2 className="text-base text-foreground font-semibold">Exportar consolidado</h2>
           <button aria-label="Cerrar" type="button" onClick={onClose}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
         <div className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>{termino} *</label>
+            <label className="text-xs text-muted-foreground font-semibold">{termino} *</label>
             <select
               value={ranchoId}
               onChange={(e) => onRanchoChange(e.target.value)}
@@ -62,7 +62,7 @@ export function ConsolidadoSheetLimpieza({
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="flex-1 space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Desde</label>
+              <label className="text-xs text-muted-foreground font-semibold">Desde</label>
               <input
                 type="month"
                 value={desde}
@@ -71,7 +71,7 @@ export function ConsolidadoSheetLimpieza({
               />
             </div>
             <div className="flex-1 space-y-1">
-              <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Hasta</label>
+              <label className="text-xs text-muted-foreground font-semibold">Hasta</label>
               <input
                 type="month"
                 value={hasta}

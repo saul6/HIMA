@@ -52,7 +52,7 @@ function Formulario({ ranchoId, diasIniciales, resumenInicial, sinActividad, hoo
   return (
     <div className="px-4 py-4 space-y-5 overflow-y-auto">
       <section className="space-y-2">
-        <h3 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Días que opera</h3>
+        <h3 className="text-sm text-foreground font-semibold">Días que opera</h3>
         <p className="text-xs text-muted-foreground">Los módulos diarios solo esperan registros en estos días.</p>
         <div className="flex gap-2 flex-wrap">
           {DIAS_SEMANA.map(d => (
@@ -64,7 +64,7 @@ function Formulario({ ranchoId, diasIniciales, resumenInicial, sinActividad, hoo
       </section>
       <section className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Resumen semanal</p>
+          <p className="text-sm text-foreground font-semibold">Resumen semanal</p>
           <p className="text-xs text-muted-foreground">Recibe un resumen del checklist cada semana.</p>
         </div>
         <Switch checked={resumen} onCheckedChange={setResumen} aria-label="Resumen semanal" />

@@ -44,7 +44,7 @@ function CheckList({
   const sel = value ?? []
   return (
     <div>
-      <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+      <p className="text-xs text-muted-foreground mb-2 font-semibold">
         {label}
       </p>
       <div className="space-y-1">
@@ -77,7 +77,7 @@ function RadioGroup({
 }) {
   return (
     <div>
-      <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+      <p className="text-xs text-muted-foreground mb-2 font-semibold">
         {label}
       </p>
       <div className="flex flex-wrap gap-2">
@@ -115,7 +115,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
     <div className="space-y-5">
       {/* Tamaño de operación */}
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           TAMAÑO DE OPERACIÓN
         </p>
         <div className="flex gap-2">
@@ -154,7 +154,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
 
       {/* Temporada */}
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           TEMPORADA
         </p>
         <label className="flex items-center gap-2 mb-2 cursor-pointer">
@@ -201,7 +201,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
 
       {/* País destino */}
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           PAÍS DESTINO
         </p>
         <input
@@ -249,7 +249,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
       />
 
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           AGRUPACIÓN DE PRODUCTOS / AGUA
         </p>
         <input
@@ -268,7 +268,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
       />
 
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           NÚMERO DE TRABAJADORES
         </p>
         <input
@@ -297,7 +297,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
       )}
 
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           USO DE TIERRA ADYACENTE
         </p>
         <input

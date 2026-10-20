@@ -252,8 +252,8 @@ export function Layout() {
             </div>
             <div className="hidden lg:block min-w-0">
               <p
-                className="text-sm truncate"
-                style={{ color: 'var(--foreground)', fontWeight: 600 }}
+                className="text-sm truncate font-semibold"
+                style={{ color: 'var(--foreground)' }}
                 title={profile?.nombre_completo ?? undefined}
               >
                 {profile?.nombre_completo ?? '—'}
@@ -493,7 +493,7 @@ export function Layout() {
             {!online
               ? <WifiOff className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
               : <CloudUpload className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />}
-            <span className="text-sm" style={{ color: !online ? 'var(--agro-danger-text)' : 'var(--agro-info-text)', fontWeight: 600 }}>
+            <span className="text-sm font-semibold" style={{ color: !online ? 'var(--agro-danger-text)' : 'var(--agro-info-text)' }}>
               {!online ? 'Sin conexión' : `${totalPendientes} pendiente${totalPendientes !== 1 ? 's' : ''} de subir`}
             </span>
           </Link>

@@ -37,7 +37,7 @@ export function BannerLimiteOffline({
       style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
     >
       <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-      <p className="text-xs" style={{ fontWeight: 600 }}>{mensaje}</p>
+      <p className="text-xs font-semibold">{mensaje}</p>
     </div>
   )
 }

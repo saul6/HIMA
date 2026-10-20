@@ -32,7 +32,7 @@ function CheckList({
   const sel = value ?? []
   return (
     <div>
-      <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+      <p className="text-xs text-muted-foreground mb-2 font-semibold">
         {label}
       </p>
       <div className="space-y-1">
@@ -65,7 +65,7 @@ function RadioGroup({
 }) {
   return (
     <div>
-      <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+      <p className="text-xs text-muted-foreground mb-2 font-semibold">
         {label}
       </p>
       <div className="flex flex-wrap gap-2">
@@ -101,7 +101,7 @@ export function PortadaCosechaForm({ value, onChange }: PortadaCosechaFormProps)
     <div className="space-y-5">
       {/* Nombre de campo */}
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           NOMBRE DEL CAMPO
         </p>
         <input
@@ -114,7 +114,7 @@ export function PortadaCosechaForm({ value, onChange }: PortadaCosechaFormProps)
 
       {/* Temporada */}
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           TEMPORADA
         </p>
         <label className="flex items-center gap-2 mb-2 cursor-pointer">
@@ -161,7 +161,7 @@ export function PortadaCosechaForm({ value, onChange }: PortadaCosechaFormProps)
 
       {/* Número de trabajadores */}
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           NÚMERO DE TRABAJADORES
         </p>
         <input
@@ -198,7 +198,7 @@ export function PortadaCosechaForm({ value, onChange }: PortadaCosechaFormProps)
 
       {/* Agua poscosecha */}
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           AGUA POSCOSECHA
         </p>
         <div className="flex gap-2 mb-3">

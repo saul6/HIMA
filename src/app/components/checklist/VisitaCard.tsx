@@ -75,7 +75,7 @@ export function VisitaCard({ visita, puedeEditar, onProgramar, onTerminar, onRep
     >
       {hayVisitas && (
         <div className="flex justify-end">
-          <button type="button" onClick={onVerVisitas} className="text-xs" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+          <button type="button" onClick={onVerVisitas} className="text-xs font-semibold" style={{ color: 'var(--primary)' }}>
             Ver visitas
           </button>
         </div>

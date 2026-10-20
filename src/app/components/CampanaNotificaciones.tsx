@@ -110,7 +110,7 @@ export function CampanaNotificaciones({ iconClassName = 'w-4 h-4' }: { iconClass
               exit={reducedMotion ? undefined : { opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
             >
               <div className="px-4 py-3 border-b border-border flex-shrink-0">
-                <p className="text-sm" style={{ color: 'var(--foreground)', fontWeight: 600 }}>
+                <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
                   Notificaciones
                   {noLeidas > 0 && (
                     <span style={{ color: 'var(--muted-foreground)', fontWeight: 400 }}>

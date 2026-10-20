@@ -100,7 +100,7 @@ function FirmaEstadoChip({ firma, label }: { firma: FirmaDetalle | FirmaEnterado
   if (!firma) {
     return (
       <div>
-        <p className="text-caption mb-1" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+        <p className="text-caption mb-1 font-semibold" style={{ color: 'var(--muted-foreground)' }}>
           {label}
         </p>
         <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Pendiente de firma</p>
@@ -111,7 +111,7 @@ function FirmaEstadoChip({ firma, label }: { firma: FirmaDetalle | FirmaEnterado
   if (firma.estado === 'desactualizada') {
     return (
       <div>
-        <p className="text-caption mb-1" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+        <p className="text-caption mb-1 font-semibold" style={{ color: 'var(--muted-foreground)' }}>
           {label}
         </p>
         <div className="flex items-start gap-1">
@@ -131,12 +131,12 @@ function FirmaEstadoChip({ firma, label }: { firma: FirmaDetalle | FirmaEnterado
       animate={{ backgroundColor: resaltado ? 'var(--agro-success-fill)' : 'rgba(0,0,0,0)' }}
       transition={{ duration: resaltado ? 0.15 : 0.6, ease: [0.22, 1, 0.36, 1] }}
     >
-      <p className="text-caption mb-1" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+      <p className="text-caption mb-1 font-semibold" style={{ color: 'var(--muted-foreground)' }}>
         {label}
       </p>
       <div className="flex items-center gap-1">
         <CheckCircle2 className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-success-text)' }} />
-        <p className="text-xs truncate" style={{ color: 'var(--agro-success-text)', fontWeight: 600 }}>
+        <p className="text-xs truncate font-semibold" style={{ color: 'var(--agro-success-text)' }}>
           {firma.firmante}
         </p>
       </div>
@@ -658,10 +658,9 @@ export function FirmasRegistro({
                     <AlertTriangle className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
                   )}
                   <span
-                    className="text-xs"
+                    className="text-xs font-semibold"
                     style={{
                       color: h.estado === 'vigente' ? 'var(--agro-success-text)' : 'var(--agro-info-text)',
-                      fontWeight: 600,
                     }}
                   >
                     {h.estado === 'vigente' ? 'Vigente' : 'Desactualizada'}

@@ -35,7 +35,7 @@ export function ResumenPuntaje({ preguntas, respuestas }: ResumenPuntajeProps) {
       style={{ backgroundColor: bg }}
     >
       <div className="flex-1 min-w-0">
-        <p className="text-xs" style={{ color, fontWeight: 600 }}>
+        <p className="text-xs font-semibold" style={{ color }}>
           Puntaje global
         </p>
         <p className="text-xs mt-0.5" style={{ color }}>

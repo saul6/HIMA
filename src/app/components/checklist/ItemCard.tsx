@@ -77,8 +77,7 @@ export function NotasItem({ item, limite }: { item: ChkItem; limite?: number }) 
               <button
                 type="button"
                 onClick={e => { e.stopPropagation(); navigate(item.modulo_ruta!) }}
-                className="mt-1 ml-5 underline"
-                style={{ fontWeight: 600 }}
+                className="mt-1 ml-5 underline font-semibold"
               >
                 Abrir formato
               </button>
@@ -91,8 +90,7 @@ export function NotasItem({ item, limite }: { item: ChkItem; limite?: number }) 
           <button
             type="button"
             onClick={e => { e.stopPropagation(); setVerTodas(v => !v) }}
-            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-            style={{ fontWeight: 600 }}
+            className="text-xs text-muted-foreground transition-colors hover:text-foreground font-semibold"
           >
             {verTodas ? 'Ver menos' : `Ver ${total - limite} más`}
           </button>
@@ -127,15 +125,15 @@ export function ItemCard({ item, codigoClave, puedeEditar, onAbrir, onRevisar }:
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           {codigo && <p className="text-caption text-muted-foreground">{codigo}</p>}
-          <p className="text-sm text-foreground leading-snug" style={{ fontWeight: 600 }}>{item.nombre}</p>
+          <p className="text-sm text-foreground leading-snug font-semibold">{item.nombre}</p>
           {responsable && <p className="text-xs text-muted-foreground mt-0.5">{responsable}</p>}
           {textoFrecuencia(item) && <p className="text-xs text-muted-foreground mt-0.5">{textoFrecuencia(item)}</p>}
         </div>
         <div className="flex-shrink-0 text-right space-y-1">
           {rev && tono ? (
             <span
-              className="inline-block rounded-full px-2 py-0.5 text-caption"
-              style={{ backgroundColor: tono.fill, color: tono.text, fontWeight: 600 }}
+              className="inline-block rounded-full px-2 py-0.5 text-caption font-semibold"
+              style={{ backgroundColor: tono.fill, color: tono.text }}
             >
               {ESTADO_REVISION_LABEL[rev.estado]}
             </span>
@@ -155,8 +153,8 @@ export function ItemCard({ item, codigoClave, puedeEditar, onAbrir, onRevisar }:
           <button
             type="button"
             onClick={e => { e.stopPropagation(); onRevisar() }}
-            className="h-8 px-3 rounded-lg text-xs border border-border inline-flex items-center gap-1.5 transition-colors hover:bg-muted active:scale-[0.97]"
-            style={{ fontWeight: 600, color: 'var(--primary)' }}
+            className="h-8 px-3 rounded-lg text-xs border border-border inline-flex items-center gap-1.5 transition-colors hover:bg-muted active:scale-[0.97] font-semibold"
+            style={{ color: 'var(--primary)' }}
           >
             <ClipboardCheck className="w-3.5 h-3.5" />
             Revisar

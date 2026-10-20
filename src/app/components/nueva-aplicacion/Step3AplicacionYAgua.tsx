@@ -58,7 +58,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
     <div className="flex flex-col gap-4">
       {/* Section Header */}
       <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text" style={{ fontWeight: 600 }}>
+        <h3 className="text-body text-agro-success-text font-semibold">
           {esCampo ? "MÉTODO DE APLICACIÓN (GlobalG.A.P.)" : "TIPO DE APLICACIÓN"}
         </h3>
       </div>
@@ -132,14 +132,14 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
 
       {/* Section Header */}
       <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text" style={{ fontWeight: 600 }}>
+        <h3 className="text-body text-agro-success-text font-semibold">
           PREPARACIÓN DE AGUA
         </h3>
       </div>
 
       {/* Chlorination Toggle */}
       <div>
-        <label className="text-xs text-gray-600 mb-2 block" style={{ fontWeight: 600 }}>
+        <label className="text-xs text-gray-600 mb-2 block font-semibold">
           Cloración
         </label>
         <div className="flex gap-3">
@@ -187,7 +187,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
 
       {/* Section Header */}
       <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text" style={{ fontWeight: 600 }}>
+        <h3 className="text-body text-agro-success-text font-semibold">
           CONDICIONES CLIMÁTICAS
         </h3>
       </div>
@@ -212,7 +212,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
 
       {/* Section Header */}
       <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text" style={{ fontWeight: 600 }}>
+        <h3 className="text-body text-agro-success-text font-semibold">
           EQUIPO DE PROTECCIÓN PERSONAL (EPP)
         </h3>
       </div>
@@ -302,15 +302,13 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
       <div className="flex gap-3 pt-4">
         <button
           onClick={onBack}
-          className="flex-1 h-14 border border-gray-300 text-gray-700 rounded-3xl"
-          style={{ fontWeight: 600 }}
+          className="flex-1 h-14 border border-gray-300 text-gray-700 rounded-3xl font-semibold"
         >
           Atrás
         </button>
         <button
           onClick={onNext}
-          className="flex-1 h-14 bg-primary text-white rounded-3xl hover:bg-agro-blue transition-colors"
-          style={{ fontWeight: 600 }}
+          className="flex-1 h-14 bg-primary text-white rounded-3xl hover:bg-agro-blue transition-colors font-semibold"
         >
           Continuar
         </button>

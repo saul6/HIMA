@@ -65,7 +65,7 @@ export function SinOperacion({ ranchoId, itemId, periodos, puedeEditar, hook, on
 
   return (
     <section className="space-y-2">
-      <h3 className="text-sm text-foreground" style={{ fontWeight: 600 }}>Periodos sin operación</h3>
+      <h3 className="text-sm text-foreground font-semibold">Periodos sin operación</h3>
       {lista.length === 0 && <p className="text-xs text-muted-foreground">Sin periodos registrados.</p>}
       {lista.length > 0 && (
         <ul className="space-y-2">
@@ -88,8 +88,8 @@ export function SinOperacion({ ranchoId, itemId, periodos, puedeEditar, hook, on
                       type="button"
                       onClick={() => anular(p.id)}
                       disabled={guardando}
-                      className="flex-1 h-9 rounded-lg text-sm disabled:opacity-50"
-                      style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', fontWeight: 600 }}
+                      className="flex-1 h-9 rounded-lg text-sm disabled:opacity-50 font-semibold"
+                      style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
                     >
                       {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Anular'}
                     </button>
@@ -99,8 +99,8 @@ export function SinOperacion({ ranchoId, itemId, periodos, puedeEditar, hook, on
                 <button
                   type="button"
                   onClick={() => setAnulando(p.id)}
-                  className="text-xs underline"
-                  style={{ color: 'var(--agro-danger-text)', fontWeight: 600 }}
+                  className="text-xs underline font-semibold"
+                  style={{ color: 'var(--agro-danger-text)' }}
                 >
                   Anular
                 </button>
@@ -141,8 +141,7 @@ export function SinOperacion({ ranchoId, itemId, periodos, puedeEditar, hook, on
         <button
           type="button"
           onClick={() => setAbierto(true)}
-          className="w-full h-10 rounded-lg border border-border text-sm transition-colors hover:bg-muted"
-          style={{ fontWeight: 600 }}
+          className="w-full h-10 rounded-lg border border-border text-sm transition-colors hover:bg-muted font-semibold"
         >
           Registrar periodo sin operación
         </button>

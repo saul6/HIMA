@@ -98,11 +98,10 @@ export function PwaUpdatePrompt() {
       </p>
       <button
         onClick={handleActualizarAhora}
-        className="text-sm px-3 py-1.5 rounded-lg"
+        className="text-sm px-3 py-1.5 rounded-lg font-semibold"
         style={{
           backgroundColor: 'var(--primary)',
           color: 'var(--primary-foreground)',
-          fontWeight: 600,
           flexShrink: 0,
         }}
       >

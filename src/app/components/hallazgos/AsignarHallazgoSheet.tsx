@@ -99,7 +99,7 @@ export function AsignarHallazgoSheet({
     <BottomSheet open={!!item} onClose={() => { if (!guardando) onClose() }} height="75%">
       <form onSubmit={guardar} className="flex flex-col min-h-0 flex-1">
         <div className="flex items-start justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-          <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+          <h2 className="text-base text-foreground font-semibold">
             Asignar hallazgo {numeral}
           </h2>
           <button type="button" onClick={() => !guardando && onClose()} className="p-1" aria-label="Cerrar">
@@ -112,13 +112,13 @@ export function AsignarHallazgoSheet({
 
           {!online && (
             <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
-              <p className="text-xs" style={{ color: 'var(--agro-info-text)', fontWeight: 600 }}>
+              <p className="text-xs font-semibold" style={{ color: 'var(--agro-info-text)' }}>
                 Necesitas conexión para asignar un hallazgo.
               </p>
             </div>
           )}
           {cerrado && (
-            <p className="text-xs" style={{ color: 'var(--agro-danger-text)', fontWeight: 600 }}>
+            <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
               El hallazgo ya está cerrado.
             </p>
           )}
@@ -127,7 +127,7 @@ export function AsignarHallazgoSheet({
           )}
 
           <div className="space-y-1">
-            <label htmlFor={`${uid}-colab`} className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+            <label htmlFor={`${uid}-colab`} className="text-xs text-muted-foreground font-semibold">
               COLABORADOR *
             </label>
             <select
@@ -154,7 +154,7 @@ export function AsignarHallazgoSheet({
           </div>
 
           <div className="space-y-1">
-            <label htmlFor={`${uid}-fecha`} className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
+            <label htmlFor={`${uid}-fecha`} className="text-xs text-muted-foreground font-semibold">
               FECHA LÍMITE *
             </label>
             <input
@@ -182,8 +182,7 @@ export function AsignarHallazgoSheet({
           <button
             type="submit"
             disabled={guardando || bloqueado}
-            className="flex-1 h-12 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-            style={{ fontWeight: 600 }}
+            className="flex-1 h-12 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
           >
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
             {guardando ? 'Guardando…' : 'Guardar'}

@@ -67,8 +67,7 @@ function BotonPdf({ visitaId, previa, generando, onClick }: { visitaId: string; 
       type="button"
       onClick={onClick}
       disabled={!!generando}
-      className="h-8 px-3 rounded-lg border border-border bg-card text-xs text-foreground inline-flex items-center gap-1.5 transition-colors hover:bg-muted active:scale-[0.97] disabled:opacity-50"
-      style={{ fontWeight: 600 }}
+      className="h-8 px-3 rounded-lg border border-border bg-card text-xs text-foreground inline-flex items-center gap-1.5 transition-colors hover:bg-muted active:scale-[0.97] disabled:opacity-50 font-semibold"
     >
       {ocupado ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
       {previa ? 'Vista previa' : 'PDF'}
@@ -135,8 +134,7 @@ function PasoFirmasVisita({ visita, codigoClave, terminoSitio, onCerrar }: Opcio
           type="button"
           onClick={onCerrar}
           disabled={!!generando}
-          className="h-11 px-5 rounded-lg border border-border bg-card text-sm text-foreground transition-colors hover:bg-muted active:scale-[0.99]"
-          style={{ fontWeight: 600 }}
+          className="h-11 px-5 rounded-lg border border-border bg-card text-sm text-foreground transition-colors hover:bg-muted active:scale-[0.99] font-semibold"
         >
           Después
         </button>
@@ -340,7 +338,7 @@ function FilaVisita({ visita, abierta, onToggle, hook, pdf, firmas, loadingFirma
       expandido={abierta}
       derecha={
         <div className="flex items-center gap-2 flex-shrink-0 self-center">
-          <span className="rounded-full px-2 py-0.5 text-caption" style={{ backgroundColor: tono.fill, color: tono.text, fontWeight: 600 }}>
+          <span className="rounded-full px-2 py-0.5 text-caption font-semibold" style={{ backgroundColor: tono.fill, color: tono.text }}>
             {visita.atrasada ? 'Atrasada' : visita.estado === 'programada' ? 'Programada' : visita.estado === 'realizada' ? 'Realizada' : 'Cancelada'}
           </span>
           <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${abierta ? 'rotate-180' : ''}`} />
@@ -367,7 +365,7 @@ function FilaVisita({ visita, abierta, onToggle, hook, pdf, firmas, loadingFirma
             <ul className="space-y-2">
               {eventos.map((e, i) => (
                 <li key={i} className="text-xs">
-                  <p className="text-foreground" style={{ fontWeight: 600 }}>
+                  <p className="text-foreground font-semibold">
                     {ETIQUETA_EVENTO[e.tipo] ?? e.tipo}
                     <span className="text-muted-foreground" style={{ fontWeight: 400 }}>
                       {' · '}{fechaLarga(e.fecha)}{e.actor ? ` · ${e.actor}` : ''}

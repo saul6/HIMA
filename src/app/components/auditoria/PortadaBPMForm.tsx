@@ -39,7 +39,7 @@ function CheckList({
   const sel = value ?? []
   return (
     <div>
-      <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+      <p className="text-xs text-muted-foreground mb-2 font-semibold">
         {label}
       </p>
       <div className="space-y-1">
@@ -72,7 +72,7 @@ function RadioGroup({
 }) {
   return (
     <div>
-      <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+      <p className="text-xs text-muted-foreground mb-2 font-semibold">
         {label}
       </p>
       <div className="flex flex-wrap gap-2">
@@ -109,7 +109,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
 
       {/* Temporada */}
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           TEMPORADA
         </p>
         <label className="flex items-center gap-2 mb-2 cursor-pointer">
@@ -156,7 +156,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
 
       {/* País de destino */}
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           PAÍS DE DESTINO
         </p>
         <input
@@ -169,7 +169,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
 
       {/* Número de trabajadores */}
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           NÚMERO DE TRABAJADORES
         </p>
         <input
@@ -183,7 +183,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
 
       {/* Máx trabajadores temporada alta */}
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           MÁX. TRABAJADORES EN TEMPORADA ALTA
         </p>
         <input
@@ -198,7 +198,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
       {/* Núm. líneas de operación / en auditoría */}
       <div className="flex gap-3">
         <div className="flex-1">
-          <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+          <p className="text-xs text-muted-foreground mb-2 font-semibold">
             LÍNEAS DE LA OPERACIÓN
           </p>
           <input
@@ -210,7 +210,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
           />
         </div>
         <div className="flex-1">
-          <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+          <p className="text-xs text-muted-foreground mb-2 font-semibold">
             LÍNEAS EN AUDITORÍA
           </p>
           <input
@@ -225,7 +225,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
 
       {/* Tamaño de instalación */}
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           TAMAÑO DE LA INSTALACIÓN
         </p>
         <div className="flex gap-2">
@@ -307,7 +307,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
 
       {/* Productos */}
       <div>
-        <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
+        <p className="text-xs text-muted-foreground mb-2 font-semibold">
           PRODUCTOS MANEJADOS EN LA INSTALACIÓN
         </p>
         <p className="text-caption text-muted-foreground mb-2">

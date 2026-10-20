@@ -24,7 +24,7 @@ function UpsellPage({ modulo }: { modulo: ModuloVisible }) {
         >
           <ChevronLeft className="w-5 h-5 text-muted-foreground" />
         </button>
-        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+        <span className="text-sm text-foreground font-semibold">
           {modulo.nombre}
         </span>
       </header>
@@ -46,7 +46,7 @@ function UpsellPage({ modulo }: { modulo: ModuloVisible }) {
         </div>
 
         <div className="space-y-1.5">
-          <p className="text-base text-foreground" style={{ fontWeight: 600 }}>
+          <p className="text-base text-foreground font-semibold">
             Módulo no disponible
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
@@ -56,8 +56,8 @@ function UpsellPage({ modulo }: { modulo: ModuloVisible }) {
 
         <a
           href={mailtoHref}
-          className="h-10 px-6 rounded-lg text-sm inline-flex items-center justify-center"
-          style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
+          className="h-10 px-6 rounded-lg text-sm inline-flex items-center justify-center font-semibold"
+          style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
         >
           Contactar para activarlo
         </a>
@@ -87,7 +87,7 @@ function RequiereConexionPage({ modulo }: { modulo: ModuloVisible }) {
         >
           <ChevronLeft className="w-5 h-5 text-muted-foreground" />
         </button>
-        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+        <span className="text-sm text-foreground font-semibold">
           {modulo.nombre}
         </span>
       </header>
@@ -109,7 +109,7 @@ function RequiereConexionPage({ modulo }: { modulo: ModuloVisible }) {
         </div>
 
         <div className="space-y-1.5">
-          <p className="text-base text-foreground" style={{ fontWeight: 600 }}>
+          <p className="text-base text-foreground font-semibold">
             Requiere conexión
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">

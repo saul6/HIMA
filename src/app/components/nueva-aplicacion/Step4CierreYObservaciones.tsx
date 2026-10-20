@@ -26,7 +26,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
         <div className="bg-agro-danger-fill border border-agro-danger-text/20 rounded-xl p-4 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-agro-danger-text flex-shrink-0 mt-0.5" />
           <div>
-            <div className="text-sm text-agro-danger-text mb-1" style={{ fontWeight: 600 }}>
+            <div className="text-sm text-agro-danger-text mb-1 font-semibold">
               Advertencia de EPP
             </div>
             <div className="text-sm text-agro-danger-text">
@@ -38,14 +38,14 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
 
       {/* Section Header */}
       <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text" style={{ fontWeight: 600 }}>
+        <h3 className="text-body text-agro-success-text font-semibold">
           CALDOS SOBRANTES
         </h3>
       </div>
 
       {/* Leftover Toggle */}
       <div>
-        <label className="text-xs text-muted-foreground mb-2 block" style={{ fontWeight: 600 }}>
+        <label className="text-xs text-muted-foreground mb-2 block font-semibold">
           ¿Hubo caldos sobrantes?
         </label>
         <div className="flex gap-3">
@@ -92,7 +92,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
           </div>
 
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block" style={{ fontWeight: 600 }}>
+            <label className="text-xs text-muted-foreground mb-2 block font-semibold">
               ¿Se eliminó en área designada?
             </label>
             <div className="flex gap-3">
@@ -125,7 +125,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
 
       {/* Section Header */}
       <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text" style={{ fontWeight: 600 }}>
+        <h3 className="text-body text-agro-success-text font-semibold">
           PERSONAL Y RESPONSABLES
         </h3>
       </div>
@@ -153,7 +153,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
 
       {/* Section Header */}
       <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-body text-agro-success-text" style={{ fontWeight: 600 }}>
+        <h3 className="text-body text-agro-success-text font-semibold">
           OBSERVACIONES
         </h3>
       </div>
@@ -174,7 +174,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
           onClick={() => setShowSummary(!showSummary)}
           className="w-full px-4 py-3 flex items-center justify-between text-foreground"
         >
-          <span style={{ fontWeight: 600 }}>Resumen de aplicación</span>
+          <span className="font-semibold">Resumen de aplicación</span>
           {showSummary ? (
             <ChevronUp className="w-5 h-5 text-muted-foreground" />
           ) : (
@@ -186,13 +186,13 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
           <div className="px-4 pb-4 space-y-3 text-sm border-t border-border pt-3">
             <div className="grid grid-cols-2 gap-2">
               <div className="text-muted-foreground">Huerto:</div>
-              <div style={{ fontWeight: 600 }}>{formData.huerto || "—"}</div>
+              <div className="font-semibold">{formData.huerto || "—"}</div>
               <div className="text-muted-foreground">Superficie:</div>
-              <div style={{ fontWeight: 600 }}>{formData.surface} ha</div>
+              <div className="font-semibold">{formData.surface} ha</div>
               <div className="text-muted-foreground">Productos:</div>
-              <div style={{ fontWeight: 600 }}>{formData.products.length}</div>
+              <div className="font-semibold">{formData.products.length}</div>
               <div className="text-muted-foreground">Tipo:</div>
-              <div style={{ fontWeight: 600 }}>{formData.applicationType}</div>
+              <div className="font-semibold">{formData.applicationType}</div>
             </div>
           </div>
         )}
@@ -202,16 +202,14 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
       <div className="flex gap-3 pt-4">
         <button
           onClick={onBack}
-          className="flex-1 h-14 border border-border text-foreground rounded-3xl"
-          style={{ fontWeight: 600 }}
+          className="flex-1 h-14 border border-border text-foreground rounded-3xl font-semibold"
         >
           Atrás
         </button>
         <button
           onClick={onSave}
           disabled={saving}
-          className="flex-1 h-14 bg-primary text-white rounded-3xl hover:bg-agro-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ fontWeight: 600 }}
+          className="flex-1 h-14 bg-primary text-white rounded-3xl hover:bg-agro-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
         >
           {saving ? "Guardando..." : "Guardar y generar PDF"}
         </button>

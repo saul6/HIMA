@@ -26,7 +26,7 @@ export function AvisoVentana72h() {
       style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
     >
       <TriangleAlert className="w-4 h-4 flex-shrink-0 mt-0.5" />
-      <p className="text-xs" style={{ fontWeight: 600 }}>
+      <p className="text-xs font-semibold">
         Tienes registros sin subir desde el {fmt(desde)}. Conéctate antes del {fmt(limite)} para no perderlos.
       </p>
     </Link>

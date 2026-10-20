@@ -37,8 +37,8 @@ function chipEstado(estado: EstadoAuditoria) {
   if (estado === 'completada') {
     return (
       <span
-        className="text-caption px-2 py-0.5 rounded shrink-0"
-        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
+        className="text-caption px-2 py-0.5 rounded shrink-0 font-semibold"
+        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
       >
         Completada
       </span>
@@ -46,8 +46,8 @@ function chipEstado(estado: EstadoAuditoria) {
   }
   return (
     <span
-      className="text-caption px-2 py-0.5 rounded shrink-0"
-      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}
+      className="text-caption px-2 py-0.5 rounded shrink-0 font-semibold"
+      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
     >
       Borrador
     </span>
@@ -80,7 +80,7 @@ function PortadaAccordion({ children }: { children: ReactNode }) {
         onClick={() => setAbierto((a) => !a)}
         className="w-full px-4 py-3 flex items-center justify-between"
       >
-        <span className="text-sm text-foreground" style={{ fontWeight: 600 }}>
+        <span className="text-sm text-foreground font-semibold">
           Portada del reporte
         </span>
         <ChevronDown
@@ -321,8 +321,7 @@ export function AuditoriaScreen({
             setConsHasta(hoy())
             setSheetConsAbierto(true)
           }}
-          className="w-full h-10 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary text-sm hover:bg-primary/5 transition-colors"
-          style={{ fontWeight: 600 }}
+          className="w-full h-10 flex items-center justify-center gap-2 rounded-xl border border-primary text-primary text-sm hover:bg-primary/5 transition-colors font-semibold"
         >
           <Files className="w-4 h-4" />
           Exportar consolidado
@@ -355,7 +354,7 @@ export function AuditoriaScreen({
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-sm text-foreground truncate" style={{ fontWeight: 600 }}>
+                    <span className="text-sm text-foreground truncate font-semibold">
                       {a.rancho_nombre}
                     </span>
                     {chipEstado(a.estado)}
@@ -381,8 +380,7 @@ export function AuditoriaScreen({
                     <button
                       onClick={() => abrirEdicion(a)}
                       disabled={cargandoEdicion}
-                      className="text-xs px-3 py-1.5 rounded-lg border border-primary text-primary hover:bg-primary/5 transition-colors disabled:opacity-50"
-                      style={{ fontWeight: 600 }}
+                      className="text-xs px-3 py-1.5 rounded-lg border border-primary text-primary hover:bg-primary/5 transition-colors disabled:opacity-50 font-semibold"
                     >
                       {cargandoEdicion ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Continuar'}
                     </button>
@@ -420,7 +418,7 @@ export function AuditoriaScreen({
       {/* Bottom Sheet — consolidado */}
       <BottomSheet open={sheetConsAbierto} onClose={() => setSheetConsAbierto(false)}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-base text-foreground font-semibold">
                 Exportar consolidado
               </h2>
               <button aria-label="Cerrar" onClick={() => setSheetConsAbierto(false)} className="p-1">
@@ -429,7 +427,7 @@ export function AuditoriaScreen({
             </div>
             <div className="overflow-y-auto p-4 space-y-4">
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   {terminosSitio.singular.toUpperCase()}
                 </label>
                 <select
@@ -442,7 +440,7 @@ export function AuditoriaScreen({
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   DESDE *
                 </label>
                 <input type="date" value={consDesde} onChange={(e) => setConsDesde(e.target.value)}
@@ -450,7 +448,7 @@ export function AuditoriaScreen({
                 />
               </div>
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   HASTA *
                 </label>
                 <input type="date" value={consHasta} onChange={(e) => setConsHasta(e.target.value)}
@@ -462,8 +460,7 @@ export function AuditoriaScreen({
               <button
                 onClick={handleGenerarConsolidado}
                 disabled={generandoConsolidado}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 hover:bg-agro-blue transition-colors disabled:opacity-50"
-                style={{ fontWeight: 600 }}
+                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 hover:bg-agro-blue transition-colors disabled:opacity-50 font-semibold"
               >
                 {generandoConsolidado && <Loader2 className="w-4 h-4 animate-spin" />}
                 Generar PDF consolidado
@@ -476,7 +473,7 @@ export function AuditoriaScreen({
 
             {/* Header */}
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border shrink-0">
-              <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
+              <h2 className="text-base text-foreground font-semibold">
                 {editandoId ? 'Continuar auditoría' : 'Nueva auditoría'}
               </h2>
               <button aria-label="Cerrar" onClick={() => setSheetAbierto(false)} className="p-1">
@@ -489,7 +486,7 @@ export function AuditoriaScreen({
 
               {/* Sitio */}
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   {terminosSitio.singular.toUpperCase()} *
                 </label>
                 <select
@@ -504,7 +501,7 @@ export function AuditoriaScreen({
               </div>
 
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   FECHA *
                 </label>
                 <input
@@ -518,7 +515,7 @@ export function AuditoriaScreen({
               </div>
 
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5" style={{ fontWeight: 600 }}>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   AUDITOR
                 </label>
                 <input maxLength={limiteTexto('m14_auditorias', 'auditor_nombre')}
@@ -586,8 +583,7 @@ export function AuditoriaScreen({
               <button
                 onClick={() => handleGuardar('borrador')}
                 disabled={guardando}
-                className="flex-1 h-12 rounded-3xl border border-primary text-primary text-sm flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-primary/5 transition-colors"
-                style={{ fontWeight: 600 }}
+                className="flex-1 h-12 rounded-3xl border border-primary text-primary text-sm flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-primary/5 transition-colors font-semibold"
               >
                 {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                 Guardar borrador
@@ -595,8 +591,7 @@ export function AuditoriaScreen({
               <button
                 onClick={() => handleGuardar('completada')}
                 disabled={guardando}
-                className="flex-1 h-12 bg-primary text-white rounded-3xl text-sm flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors"
-                style={{ fontWeight: 600 }}
+                className="flex-1 h-12 bg-primary text-white rounded-3xl text-sm flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
               >
                 {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                 Completar

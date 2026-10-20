@@ -90,7 +90,7 @@ export function EncabezadoPantalla({
           <ChevronLeft className="w-5 h-5" />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-foreground truncate" style={{ fontWeight: 600 }}>{titulo}</h1>
+          <h1 className="text-foreground truncate font-semibold">{titulo}</h1>
           {subtitulo && <p className="text-xs text-muted-foreground">{subtitulo}</p>}
         </div>
         {(acciones || accionesMovil) && (
