@@ -34,6 +34,7 @@ import { useLimiteProactivo } from '@/hooks/useLimiteProactivo'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { BannerLimiteOffline } from '@/app/components/BannerLimiteOffline'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -431,13 +432,7 @@ export function RegistroLimpiezaBanos() {
         {loading ? (
           <ListaSkeleton />
         ) : jornadas.length === 0 && lotesOffline.length === 0 ? (
-          <div className="bg-card border border-border rounded-xl p-6 text-center">
-            <Droplets className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Sin registros aún</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Toca + para registrar la primera limpieza
-            </p>
-          </div>
+          <EstadoVacio icono={Droplets} titulo="Sin registros aún" ayuda="Toca + para registrar la primera limpieza" />
         ) : (
           jornadas.map((jornada) => {
             const key = `${jornada.rancho_id}|${jornada.fecha}`

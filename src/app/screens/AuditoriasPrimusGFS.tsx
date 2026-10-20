@@ -6,6 +6,7 @@ import type { AuditoriaListItem } from '@/hooks/useAuditoriasPGFS'
 import { LEYENDA_LEGAL_PGFS } from '@/lib/auditoriasPGFS'
 import { Fab } from '@/app/components/Fab'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 const ROLES_PERMITIDOS = ['auditor', 'admin_org', 'super_admin']
 
@@ -96,15 +97,7 @@ export default function AuditoriasPrimusGFS() {
             </button>
           </div>
         ) : auditorias.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-16">
-            <ClipboardCheck size={40} style={{ color: 'var(--muted-foreground)', opacity: 0.4 }} />
-            <p className="text-sm text-center" style={{ color: 'var(--muted-foreground)' }}>
-              Sin auditorías registradas
-            </p>
-            <p className="text-xs text-center" style={{ color: 'var(--muted-foreground)' }}>
-              Usa el botón + para crear la primera
-            </p>
-          </div>
+          <EstadoVacio icono={ClipboardCheck} titulo="Sin auditorías registradas" ayuda="Usa el botón + para crear la primera" />
         ) : (
           auditorias.map((a) => (
             <AuditoriaCard

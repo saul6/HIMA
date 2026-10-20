@@ -34,6 +34,7 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { opInsert } from '@/lib/offline/construirOperaciones'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 function formatFecha(iso: string): string {
   try {
@@ -242,9 +243,7 @@ export function CalibracionBombas() {
         ) : loading && registros.length === 0 && lotesOffline.length === 0 ? (
           <div style={{ minHeight: '280px' }} />
         ) : registros.length === 0 && lotesOffline.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground text-sm">
-            Sin registros. Usa el botón + para agregar.
-          </div>
+          <EstadoVacio titulo="Sin registros. Usa el botón + para agregar." />
         ) : null}
         {lotesOffline.map(lote => (
           <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">

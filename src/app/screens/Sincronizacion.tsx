@@ -10,6 +10,7 @@ import { sincronizarLote } from '@/lib/offline/sync'
 import type { LoteOutbox } from '@/lib/offline/tipos'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { motivoLote } from '@/lib/offline/motivosRechazo'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 function formatFechaCaptura(iso: string): string {
   try {
@@ -279,10 +280,7 @@ export function Sincronizacion() {
       <div className="p-4 space-y-6">
 
         {mostrarVacio && (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <CloudUpload className="w-10 h-10 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">Todo sincronizado</p>
-          </div>
+          <EstadoVacio icono={CloudUpload} titulo="Todo sincronizado" />
         )}
 
         {/* Pendientes */}

@@ -34,6 +34,7 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { opInsert } from '@/lib/offline/construirOperaciones'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -330,16 +331,7 @@ export function MantenimientoEquiposGG() {
         {loading ? (
           <ListaSkeleton />
         ) : registros.length === 0 ? (
-          <div
-            className="border rounded-xl p-6 text-center"
-            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-          >
-            <Wrench className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--muted-foreground)' }} />
-            <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
-              Crea el primer registro con el botón +
-            </p>
-          </div>
+          <EstadoVacio icono={Wrench} titulo="Sin registros aún" ayuda="Crea el primer registro con el botón +" />
         ) : (
           <div className="space-y-3">
             {registros.map((reg) => {

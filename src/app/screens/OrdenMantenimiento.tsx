@@ -30,6 +30,7 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -326,11 +327,7 @@ export function OrdenMantenimiento() {
         {loading ? (
           <ListaSkeleton />
         ) : ordenes.length === 0 ? (
-          <div className="bg-card border border-border rounded-xl p-6 text-center">
-            <Wrench className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin órdenes aún</p>
-            <p className="text-xs text-muted-foreground mt-1">Crea la primera orden con el botón +</p>
-          </div>
+          <EstadoVacio icono={Wrench} titulo="Sin órdenes aún" ayuda="Crea la primera orden con el botón +" />
         ) : (
           ordenes.map((o) => (
             <div

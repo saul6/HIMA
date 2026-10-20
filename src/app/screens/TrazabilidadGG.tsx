@@ -38,6 +38,7 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -293,16 +294,7 @@ export function TrazabilidadGG() {
         {loading ? (
           <ListaSkeleton />
         ) : registros.length === 0 ? (
-          <div
-            className="border rounded-xl p-6 text-center"
-            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-          >
-            <Truck className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--muted-foreground)' }} />
-            <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin notas aún</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
-              Registra la primera nota de trazabilidad con el botón +
-            </p>
-          </div>
+          <EstadoVacio icono={Truck} titulo="Sin notas aún" ayuda="Registra la primera nota de trazabilidad con el botón +" />
         ) : (
           <div className="space-y-3">
             {registros.map((reg) => (

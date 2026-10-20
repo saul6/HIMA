@@ -46,6 +46,7 @@ import {
 } from '@/lib/pdf/m75/generarInspeccionAlmacenEmpaqueGGPDF'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -477,16 +478,7 @@ export function AlmacenEmpaqueGG() {
           {loading ? (
             <ListaSkeleton />
           ) : registros.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').length === 0 ? (
-            <div
-              className="border rounded-xl p-6 text-center"
-              style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-            >
-              <Package className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--muted-foreground)' }} />
-              <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
-              <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
-                Crea el primer registro mensual con el botón +
-              </p>
-            </div>
+            <EstadoVacio icono={Package} titulo="Sin registros aún" ayuda="Crea el primer registro mensual con el botón +" />
           ) : (
             <div className="space-y-3">
               {lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').map((lote) => (

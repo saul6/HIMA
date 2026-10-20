@@ -45,6 +45,7 @@ import { WifiOff } from 'lucide-react'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto, MAX_FOTOS } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -630,10 +631,7 @@ export function RegistroAccidentesLaborales() {
             <p className="text-center text-sm text-[var(--agro-danger-text)] py-8">{error}</p>
           )}
           {!loading && !error && accidentes.length === 0 && lotesOffline.length === 0 && (
-            <div className="flex flex-col items-center gap-2 py-16 text-muted-foreground">
-              <ShieldAlert className="w-10 h-10 opacity-30" />
-              <p className="text-sm">No hay registros de accidentes</p>
-            </div>
+            <EstadoVacio icono={ShieldAlert} titulo="No hay registros de accidentes" />
           )}
           {lotesOffline.map(lote => (
             <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">

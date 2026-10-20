@@ -39,6 +39,7 @@ import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -981,11 +982,7 @@ export function RegistroFertilizacion() {
             ) : loading ? (
               <div style={{ minHeight: '280px' }} />
             ) : (
-              <div className="bg-card border border-border rounded-xl p-6 text-center">
-                <Sprout className="w-10 h-10 mx-auto mb-2" style={{ color: 'var(--muted-foreground)' }} />
-                <p className="text-sm text-muted-foreground">Sin registros aún</p>
-                <p className="text-xs text-muted-foreground mt-1">Toca + para agregar el primero</p>
-              </div>
+              <EstadoVacio icono={Sprout} titulo="Sin registros aún" ayuda="Toca + para agregar el primero" />
             )}
           </div>
         </>
@@ -1039,13 +1036,7 @@ export function RegistroFertilizacion() {
           ) : saldosLoading ? (
             <div style={{ minHeight: '200px' }} />
           ) : (
-            <div className="bg-card border border-border rounded-xl p-6 text-center">
-              <Package className="w-10 h-10 mx-auto mb-2" style={{ color: 'var(--muted-foreground)' }} />
-              <p className="text-sm text-muted-foreground">Sin saldos registrados</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Los saldos aparecen al registrar entradas de inventario
-              </p>
-            </div>
+            <EstadoVacio icono={Package} titulo="Sin saldos registrados" ayuda="Los saldos aparecen al registrar entradas de inventario" />
           )}
         </div>
       )}

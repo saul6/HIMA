@@ -40,6 +40,7 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -646,13 +647,7 @@ export function InspeccionPreoperacionalCosecha() {
           {loading ? (
             <ListaSkeleton />
           ) : registros.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').length === 0 ? (
-            <div className="bg-card border border-border rounded-xl p-6 text-center">
-              <ClipboardList className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Crea el primer registro mensual con el botón +
-              </p>
-            </div>
+            <EstadoVacio icono={ClipboardList} titulo="Sin registros aún" ayuda="Crea el primer registro mensual con el botón +" />
           ) : (
             <div className="space-y-3">
               {lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').map((lote) => (
@@ -775,12 +770,7 @@ export function InspeccionPreoperacionalCosecha() {
                   </div>
                 ))}
                 {dias.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'dia' && (l.metadatos as any)?.registro_id === registroActivo?.id).length === 0 ? (
-                  <div className="bg-card border border-border rounded-xl p-6 text-center">
-                    <CalendarDays className="w-7 h-7 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                      Sin días de inspección aún. Agrega el primer día con el botón +
-                    </p>
-                  </div>
+                  <EstadoVacio icono={CalendarDays} titulo="Sin días de inspección aún. Agrega el primer día con el botón +" />
                 ) : (
                   dias.map((d) => (
                     <DiaCard key={d.id} dia={d} />

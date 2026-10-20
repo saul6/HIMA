@@ -12,6 +12,7 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { traducirErrorBd } from '@/lib/erroresBd'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -354,15 +355,7 @@ export function AuditorInstalacionDetalle() {
               Auditorías ({auditorias.length})
             </p>
             {auditorias.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 py-10">
-                <ClipboardCheck size={36} style={{ color: 'var(--muted-foreground)', opacity: 0.4 }} />
-                <p className="text-sm text-center" style={{ color: 'var(--muted-foreground)' }}>
-                  Sin auditorías registradas
-                </p>
-                <p className="text-xs text-center" style={{ color: 'var(--muted-foreground)' }}>
-                  Usa el botón + para crear la primera
-                </p>
-              </div>
+              <EstadoVacio icono={ClipboardCheck} titulo="Sin auditorías registradas" ayuda="Usa el botón + para crear la primera" />
             ) : (
               <div className="flex flex-col gap-2">
                 {auditorias.map((a, index) => {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { BarChart3, ChevronDown, AlertTriangle, CheckCircle2, AlertCircle, XCircle, CircleDashed, Clock, TrendingUp } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
@@ -109,12 +110,7 @@ function TabSkeleton() {
 // ── Vacío ─────────────────────────────────────────────────────────────────────
 
 function Vacio({ mensaje = 'Sin datos en este periodo' }: { mensaje?: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 gap-2">
-      <BarChart3 className="w-10 h-10" style={{ color: 'var(--muted-foreground)' }} />
-      <p className="text-sm text-muted-foreground">{mensaje}</p>
-    </div>
-  )
+  return <EstadoVacio icono={BarChart3} titulo={mensaje} />
 }
 
 // ── Contador animado (mismo patrón que Home.tsx `AnimatedNumber`) ────────────

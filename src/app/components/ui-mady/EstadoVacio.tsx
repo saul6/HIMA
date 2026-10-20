@@ -1,8 +1,9 @@
 import * as React from 'react'
-import type { LucideIcon } from 'lucide-react'
+import { Inbox, type LucideIcon } from 'lucide-react'
 
 interface EstadoVacioProps {
-  icono: LucideIcon
+  /** Si no se pasa, usa el ícono genérico de bandeja. */
+  icono?: LucideIcon
   titulo: string
   ayuda?: string
   accion?: React.ReactNode
@@ -11,7 +12,7 @@ interface EstadoVacioProps {
 /** Estado vacío de listas (patrón de Auditorías): ícono 40px al 40 %, título,
  * ayuda y acción opcional; centrado y sin tarjeta.
  * Uso: <EstadoVacio icono={ClipboardCheck} titulo="Sin registros" ayuda="Usa + para crear" /> */
-export function EstadoVacio({ icono: Icono, titulo, ayuda, accion }: EstadoVacioProps) {
+export function EstadoVacio({ icono: Icono = Inbox, titulo, ayuda, accion }: EstadoVacioProps) {
   return (
     <div className="flex flex-col items-center gap-2 py-16">
       <Icono size={40} aria-hidden="true" style={{ color: 'var(--muted-foreground)', opacity: 0.4 }} />

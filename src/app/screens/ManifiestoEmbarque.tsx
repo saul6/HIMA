@@ -34,6 +34,7 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -436,11 +437,7 @@ export function ManifiestoEmbarque() {
         {loading ? (
           <ListaSkeleton />
         ) : manifiestos.length === 0 ? (
-          <div className="bg-card border border-border rounded-xl p-6 text-center">
-            <Truck className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin manifiestos aún</p>
-            <p className="text-xs text-muted-foreground mt-1">Crea el primer manifiesto con el botón +</p>
-          </div>
+          <EstadoVacio icono={Truck} titulo="Sin manifiestos aún" ayuda="Crea el primer manifiesto con el botón +" />
         ) : (
           manifiestos.map(m => (
             <div key={m.id} className="bg-card border border-border rounded-xl p-4">

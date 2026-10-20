@@ -33,6 +33,7 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
@@ -299,11 +300,7 @@ export function EntradasSalidasPreFrio() {
         {loading ? (
           <ListaSkeleton />
         ) : registros.length === 0 ? (
-          <div className="bg-card border border-border rounded-xl p-6 text-center">
-            <ArrowLeftRight className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
-            <p className="text-xs text-muted-foreground mt-1">Crea el primer registro con el botón +</p>
-          </div>
+          <EstadoVacio icono={ArrowLeftRight} titulo="Sin registros aún" ayuda="Crea el primer registro con el botón +" />
         ) : (
           registros.map(r => (
             <div key={r.id} className="bg-card border border-border rounded-xl p-4">

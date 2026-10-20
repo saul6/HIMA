@@ -49,6 +49,7 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -1091,11 +1092,7 @@ export function MonitoreoEstacionesPlagas() {
             <p className="text-center text-sm text-[var(--agro-danger-text)] py-8">{error}</p>
           )}
           {!loading && !error && revisiones.length === 0 && (
-            <div className="flex flex-col items-center gap-2 py-16 text-muted-foreground">
-              <Bug className="w-10 h-10 opacity-30" />
-              <p className="text-sm">Sin revisiones registradas</p>
-              <p className="text-xs">Primero configura las estaciones con el ícono de ajustes</p>
-            </div>
+            <EstadoVacio icono={Bug} titulo="Sin revisiones registradas" ayuda="Primero configura las estaciones con el ícono de ajustes" />
           )}
           {revisiones.length > 0 && revisiones.map(rev => (
             <RevisionCard

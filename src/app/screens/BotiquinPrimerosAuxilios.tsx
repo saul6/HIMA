@@ -44,6 +44,7 @@ import { useLimiteProactivo } from '@/hooks/useLimiteProactivo'
 import { ChipOffline } from '@/app/components/ChipOffline'
 import { BannerLimiteOffline } from '@/app/components/BannerLimiteOffline'
 import { WifiOff } from 'lucide-react'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -573,13 +574,7 @@ export function BotiquinPrimerosAuxilios() {
         {loading ? (
           <ListaSkeleton />
         ) : registros.length === 0 && lotesOffline.length === 0 ? (
-          <div className="bg-card border border-border rounded-xl p-6 text-center">
-            <Shield className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Sin registros aún</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Toca + para registrar la primera verificación
-            </p>
-          </div>
+          <EstadoVacio icono={Shield} titulo="Sin registros aún" ayuda="Toca + para registrar la primera verificación" />
         ) : (
           registros.map((r) => {
             const presentes = contarPresentes(r)

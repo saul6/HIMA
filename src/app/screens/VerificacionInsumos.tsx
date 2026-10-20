@@ -47,6 +47,7 @@ import { opCabecera, opInsert, opUpsert } from '@/lib/offline/construirOperacion
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -783,11 +784,7 @@ export function VerificacionInsumos() {
           {loading ? (
             <ListaSkeleton />
           ) : registros.length === 0 && lotesOffline.length === 0 ? (
-            <div className="bg-card border border-border rounded-xl p-6 text-center">
-              <ClipboardCheck className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
-              <p className="text-xs text-muted-foreground mt-1">Crea el primer registro mensual con el botón +</p>
-            </div>
+            <EstadoVacio icono={ClipboardCheck} titulo="Sin registros aún" ayuda="Crea el primer registro mensual con el botón +" />
           ) : (
             <div className="space-y-3">
               {lotesOffline.map((lote) => (
@@ -895,10 +892,7 @@ export function VerificacionInsumos() {
             {loadingDias ? (
               <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 text-primary animate-spin" /></div>
             ) : dias.length === 0 ? (
-              <div className="bg-card border border-border rounded-xl p-6 text-center">
-                <CalendarDays className="w-7 h-7 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">Sin días de verificación. Agrega el primer día con el botón +</p>
-              </div>
+              <EstadoVacio icono={CalendarDays} titulo="Sin días de verificación. Agrega el primer día con el botón +" />
             ) : (
               <div className="space-y-3">
                 {dias.map((d) => <DiaCardM23 key={d.id} dia={d} />)}

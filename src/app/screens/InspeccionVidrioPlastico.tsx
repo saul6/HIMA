@@ -47,6 +47,7 @@ import { WifiOff } from 'lucide-react'
 import { leerConCache } from '@/lib/offline/cacheLectura'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -759,11 +760,7 @@ export function InspeccionVidrioPlastico() {
         {loading ? (
           <ListaSkeleton />
         ) : inspecciones.length === 0 && lotesOffline.length === 0 ? (
-          <div className="bg-card border border-border rounded-xl p-6 text-center">
-            <Eye className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Sin inspecciones aún</p>
-            <p className="text-xs text-muted-foreground mt-1">Toca + para registrar la primera</p>
-          </div>
+          <EstadoVacio icono={Eye} titulo="Sin inspecciones aún" ayuda="Toca + para registrar la primera" />
         ) : (
           inspecciones.map((insp) => {
             const key = `${insp.rancho_id}|${insp.fecha}`

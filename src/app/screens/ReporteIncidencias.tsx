@@ -42,6 +42,7 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { Portal } from '@/app/components/Portal'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto, MAX_FOTOS } from '@/lib/limitesTexto'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -946,13 +947,7 @@ export function ReporteIncidencias() {
         {loading ? (
           <ListaSkeleton />
         ) : reportes.length === 0 && lotesOffline.length === 0 ? (
-          <div className="bg-card border border-border rounded-xl p-6 text-center">
-            <ClipboardList className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Sin reportes aún</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Toca + para registrar el primer reporte de incidencias
-            </p>
-          </div>
+          <EstadoVacio icono={ClipboardList} titulo="Sin reportes aún" ayuda="Toca + para registrar el primer reporte de incidencias" />
         ) : (
           reportes.map((r) => {
             const totalFotosReporte = r.incidencias.reduce((acc, inc) => acc + inc.fotos.length, 0)

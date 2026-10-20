@@ -36,6 +36,7 @@ import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolid
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -652,13 +653,7 @@ export function MantenimientoPreventivo() {
           {loading ? (
             <ListaSkeleton />
           ) : registros.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').length === 0 ? (
-            <div className="bg-card border border-border rounded-xl p-6 text-center">
-              <Settings className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm text-foreground" style={{ fontWeight: 600 }}>Sin registros aún</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Crea el primer registro mensual con el botón +
-              </p>
-            </div>
+            <EstadoVacio icono={Settings} titulo="Sin registros aún" ayuda="Crea el primer registro mensual con el botón +" />
           ) : (
             <div className="space-y-3">
               {lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').map((lote) => (
