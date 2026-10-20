@@ -397,8 +397,8 @@ export function UsoEpp() {
               value={form.momento}
               onChange={e => setForm(f => ({ ...f, momento: e.target.value as 'inicio' | 'fin' }))}
             >
-              <option value="inicio">Inicio de aplicacion</option>
-              <option value="fin">Fin de aplicacion</option>
+              <option value="inicio">Inicio de aplicación</option>
+              <option value="fin">Fin de aplicación</option>
             </select>
           </div>
 
@@ -439,7 +439,7 @@ export function UsoEpp() {
             <input maxLength={limiteTexto('m63_uso_epp', 'realizo')}
               type="text"
               className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
-              placeholder="Nombre de quien realizo la verificacion"
+              placeholder="Nombre de quien realizó la verificación"
               value={form.realizo}
               onChange={e => setForm(f => ({ ...f, realizo: e.target.value }))}
             />

@@ -469,7 +469,7 @@ export function ProductosAutorizados() {
               <input maxLength={limiteTexto('m66_productos_autorizados', 'mercado')}
                 type="text"
                 className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
-                placeholder="Ej. USA, Mexico, UE..."
+                placeholder="Ej. USA, México, UE..."
                 value={form.mercado}
                 onChange={e => setForm(f => ({ ...f, mercado: e.target.value }))}
               />
@@ -481,7 +481,7 @@ export function ProductosAutorizados() {
             <TextareaContador limite={limiteTexto('m66_productos_autorizados', 'plagas_control')}
               rows={3}
               className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
-              placeholder="Descripcion de plagas o enfermedades que controla"
+              placeholder="Descripción de plagas o enfermedades que controla"
               value={form.plagas_control}
               onChange={e => setForm(f => ({ ...f, plagas_control: e.target.value }))}
             />

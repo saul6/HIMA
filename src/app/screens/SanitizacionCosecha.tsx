@@ -337,7 +337,7 @@ export function SanitizacionCosecha() {
           <PasoFirmaRegistro
             modulo="M65"
             ids={[pendienteFirmaId]}
-            descripcion={`Sanitizacion del ${formatFecha(form.fecha)}`}
+            descripcion={`Sanitización del ${formatFecha(form.fecha)}`}
             obligatoria={obligatoria}
             onFirmadoYPDF={async () => {
               await generarSanitizacionCosechaPDF(pendienteFirmaId, orgId!, codigoClave)
@@ -349,7 +349,7 @@ export function SanitizacionCosecha() {
         )}
         {sheetPaso === 'form' && (<>
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
-          <h2 className="text-base font-semibold">Nueva sanitizacion</h2>
+          <h2 className="text-base font-semibold">Nueva sanitización</h2>
           <button aria-label="Cerrar" onClick={handleCerrarSheet}>
             <X className="w-5 h-5" />
           </button>
@@ -440,7 +440,7 @@ export function SanitizacionCosecha() {
               step="1"
               min="0"
               className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
-              placeholder="Numero de herramientas"
+              placeholder="Número de herramientas"
               value={form.herramientas_sanitizadas}
               onChange={e => setForm(f => ({ ...f, herramientas_sanitizadas: e.target.value }))}
             />

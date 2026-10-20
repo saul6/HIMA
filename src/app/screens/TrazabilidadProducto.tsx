@@ -460,7 +460,7 @@ export function TrazabilidadProducto() {
         formEtiqueta.verificado_por.trim(),
         parseInt(formEtiqueta.cantidad_etiquetas) || 1,
       )
-      toast.success('Etiqueta generada y liberacion registrada')
+      toast.success('Etiqueta generada y liberación registrada')
       setSheetEtiqueta(null)
       setFormEtiqueta({ verificado_por: '', cantidad_etiquetas: '1' })
     } catch (e: unknown) {
@@ -476,7 +476,7 @@ export function TrazabilidadProducto() {
     setBuscandoTraz(true); setResultadoTraz(null)
     try {
       const result = await consultarTrazabilidad(busqueda.trim(), orgId)
-      if (!result) { toast.warning('Codigo no encontrado en esta organizacion') }
+      if (!result) { toast.warning('Código no encontrado en esta organización') }
       setResultadoTraz(result)
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error en la consulta')
@@ -497,7 +497,7 @@ export function TrazabilidadProducto() {
         formEtiqueta.verificado_por.trim(),
         parseInt(formEtiqueta.cantidad_etiquetas) || 1,
       )
-      toast.success('Liberacion registrada — selecciona la impresora en el dialogo')
+      toast.success('Liberación registrada — selecciona la impresora en el diálogo')
       setSheetEtiqueta(null)
       setFormEtiqueta({ verificado_por: '', cantidad_etiquetas: '1' })
     } catch (e: unknown) {
@@ -572,7 +572,7 @@ export function TrazabilidadProducto() {
   // ── Render ──────────────────────────────────────────────────────────────────
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
-    { key: 'lr', label: 'Recepcion', icon: <Package className="w-3.5 h-3.5" /> },
+    { key: 'lr', label: 'Recepción', icon: <Package className="w-3.5 h-3.5" /> },
     { key: 'lpt', label: 'Empaque', icon: <Layers className="w-3.5 h-3.5" /> },
     { key: 'lc', label: 'Compuestos', icon: <GitBranch className="w-3.5 h-3.5" /> },
     { key: 'fe', label: 'Embarques', icon: <Truck className="w-3.5 h-3.5" /> },
@@ -630,7 +630,7 @@ export function TrazabilidadProducto() {
             <input
               value={filtroLR}
               onChange={e => setFiltroLR(e.target.value)}
-              placeholder="Buscar por codigo o proveedor..."
+              placeholder="Buscar por código o proveedor..."
               className="w-full h-9 px-3 rounded-lg bg-input-background border border-border-control text-sm focus:outline-none focus:border-primary"
             />
             {mostrarSkeletonLR ? (
@@ -656,7 +656,7 @@ export function TrazabilidadProducto() {
             )) : loadingLR ? (
               <div style={{ minHeight: '160px' }} />
             ) : (
-              <p className="text-center text-sm text-muted-foreground py-8">Sin lotes de recepcion</p>
+              <p className="text-center text-sm text-muted-foreground py-8">Sin lotes de recepción</p>
             )}
           </div>
         )}
@@ -667,7 +667,7 @@ export function TrazabilidadProducto() {
             <input
               value={filtroLPT}
               onChange={e => setFiltroLPT(e.target.value)}
-              placeholder="Buscar por codigo o presentacion..."
+              placeholder="Buscar por código o presentación..."
               className="w-full h-9 px-3 rounded-lg bg-input-background border border-border-control text-sm focus:outline-none focus:border-primary"
             />
             {mostrarSkeletonLPT ? (
@@ -842,7 +842,7 @@ export function TrazabilidadProducto() {
       {/* ── Bottom Sheet: LR ─────────────────────────────────────────────── */}
       {sheetLR && (
         <BottomSheet
-          title={sheetPaso === 'firma_decision' ? (profile?.rol === 'admin_org' ? 'Firmar como Realizó y verificó' : 'Firmar como Realizó') : sheetPaso === 'firma_gate' ? 'Registrar tu firma' : 'Nuevo Lote de Recepcion (LR)'}
+          title={sheetPaso === 'firma_decision' ? (profile?.rol === 'admin_org' ? 'Firmar como Realizó y verificó' : 'Firmar como Realizó') : sheetPaso === 'firma_gate' ? 'Registrar tu firma' : 'Nuevo Lote de Recepción (LR)'}
           onClose={() => { if (guardando) return; setSheetLR(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLR(LR_VACÍO) }}
           noContentPad={sheetPaso !== 'form'}
         >
@@ -851,7 +851,7 @@ export function TrazabilidadProducto() {
             <PasoFirmaRegistro
               modulo="M48"
               ids={[pendienteFirmaId]}
-              descripcion={`Lote de Recepcion · ${formLR.fecha || hoyMX()}`}
+              descripcion={`Lote de Recepción · ${formLR.fecha || hoyMX()}`}
               obligatoria={obligatoria}
               onFirmadoYPDF={async () => { setSheetLR(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLR(LR_VACÍO) }}
               onDespues={!obligatoria ? () => { setSheetLR(false); setSheetPaso('form'); setPendienteFirmaId(null); setFormLR(LR_VACÍO) } : undefined}
@@ -868,9 +868,9 @@ export function TrazabilidadProducto() {
             <input maxLength={limiteTexto('m48_lotes_recepcion', 'proveedor_nombre')} value={formLR.proveedor_nombre} onChange={e => setFormLR(f => ({ ...f, proveedor_nombre: e.target.value }))} placeholder="Nombre del proveedor" className={inputCls} />
           </FormField>
           <FormField label="ORIGEN">
-            <input maxLength={limiteTexto('m48_lotes_recepcion', 'proveedor_origen')} value={formLR.proveedor_origen} onChange={e => setFormLR(f => ({ ...f, proveedor_origen: e.target.value }))} placeholder="Municipio / region de origen" className={inputCls} />
+            <input maxLength={limiteTexto('m48_lotes_recepcion', 'proveedor_origen')} value={formLR.proveedor_origen} onChange={e => setFormLR(f => ({ ...f, proveedor_origen: e.target.value }))} placeholder="Municipio / región de origen" className={inputCls} />
           </FormField>
-          <FormField label="CODIGO PROVEEDOR" hint="Provisional hasta tener catalogo">
+          <FormField label="CÓDIGO PROVEEDOR" hint="Provisional hasta tener catálogo">
             <input value={formLR.proveedor_codigo} onChange={e => setFormLR(f => ({ ...f, proveedor_codigo: e.target.value }))} placeholder="P007" className={inputCls} />
           </FormField>
           <div className="flex gap-2">
@@ -883,7 +883,7 @@ export function TrazabilidadProducto() {
               </select>
             </FormField>
           </div>
-          <FormField label="CONDICION DEL VEHICULO">
+          <FormField label="CONDICIÓN DEL VEHÍCULO">
             <InputContador limite={limiteTexto('m48_lotes_recepcion', 'condicion_vehiculo')} value={formLR.condicion_vehiculo} onChange={e => setFormLR(f => ({ ...f, condicion_vehiculo: e.target.value }))} placeholder="Limpio, sin contaminantes..." className={inputCls} />
           </FormField>
           <FormField label="RESULTADO">
@@ -929,7 +929,7 @@ export function TrazabilidadProducto() {
               <input type="number" min="1" value={formLPT.turno} onChange={e => setFormLPT(f => ({ ...f, turno: e.target.value }))} className={inputCls} />
             </FormField>
           </div>
-          <FormField label="PRESENTACION">
+          <FormField label="PRESENTACIÓN">
             <input maxLength={limiteTexto('m48_lotes_producto', 'presentacion')} value={formLPT.presentacion} onChange={e => setFormLPT(f => ({ ...f, presentacion: e.target.value }))} placeholder="Coco natural 1 pza, Coco pelado 400g..." className={inputCls} />
           </FormField>
           <FormField label="TIPO DE ORIGEN">
@@ -938,13 +938,13 @@ export function TrazabilidadProducto() {
                 <button key={tipo} onClick={() => setFormLPT(f => ({ ...f, origen_tipo: tipo }))}
                   className="flex-1 h-9 rounded-lg text-sm transition-colors font-semibold"
                   style={{ background: formLPT.origen_tipo === tipo ? 'var(--primary)' : 'var(--muted)', color: formLPT.origen_tipo === tipo ? '#fff' : 'var(--muted-foreground)' }}>
-                  {tipo === 'lr' ? 'Lote de Recepcion (LR)' : 'Lote Compuesto (LC)'}
+                  {tipo === 'lr' ? 'Lote de Recepción (LR)' : 'Lote Compuesto (LC)'}
                 </button>
               ))}
             </div>
           </FormField>
           {formLPT.origen_tipo === 'lr' ? (
-            <FormField label="LOTE DE RECEPCION (LR) *">
+            <FormField label="LOTE DE RECEPCIÓN (LR) *">
               <select value={formLPT.lr_id} onChange={e => setFormLPT(f => ({ ...f, lr_id: e.target.value }))} className={inputCls}>
                 <option value="">Seleccionar LR...</option>
                 {lotesLR.map(lr => <option key={lr.id} value={lr.id}>{lr.codigo} — {lr.proveedor_nombre}</option>)}
@@ -1031,7 +1031,7 @@ export function TrazabilidadProducto() {
           <FormField label="MOTIVO DE MEZCLA">
             <InputContador limite={limiteTexto('m48_lotes_compuestos', 'motivo')} value={formLC.motivo} onChange={e => setFormLC(f => ({ ...f, motivo: e.target.value }))} placeholder="Ej: Completar tarima, mezcla de turno..." className={inputCls} />
           </FormField>
-          <FormField label="LOTES DE RECEPCION A INCLUIR (min. 2)">
+          <FormField label="LOTES DE RECEPCIÓN A INCLUIR (mín. 2)">
             <div className="space-y-1 max-h-40 overflow-y-auto">
               {lotesLR.length === 0 ? (
                 <p className="text-xs text-muted-foreground">Sin LR disponibles en esta {sTermino.toLowerCase()}</p>
@@ -1206,7 +1206,7 @@ export function TrazabilidadProducto() {
             {sheetEtiqueta.lpt.lc_codigo && <p className="text-xs mt-0.5" style={{ color: 'var(--agro-success-text)' }}>LC: {sheetEtiqueta.lpt.lc_codigo}</p>}
           </div>
           <p className="text-xs text-muted-foreground mb-3">
-            Al generar o imprimir se registra la liberacion del producto (POE-COCO-CAL-13).
+            Al generar o imprimir se registra la liberación del producto (POE-COCO-CAL-13).
           </p>
           <FormField label="VERIFICADO POR *">
             <input value={formEtiqueta.verificado_por} onChange={e => setFormEtiqueta(f => ({ ...f, verificado_por: e.target.value }))} placeholder="Nombre del responsable de calidad" className={inputCls} />
@@ -1217,7 +1217,7 @@ export function TrazabilidadProducto() {
           <SaveBtn loading={guardando} onClick={handleImprimirEtiqueta} label="Imprimir etiqueta" icon={<Printer className="w-4 h-4" />} />
           <SaveBtn loading={guardando} onClick={handleGenerarEtiqueta} label="Generar etiqueta (PDF)" secondary />
           <p className="text-xs text-center" style={{ color: 'var(--muted-foreground)' }}>
-            Al imprimir: elige "Tamano real / 100%" (sin ajustar a pagina) en el dialogo.
+            Al imprimir: elige "Tamaño real / 100%" (sin ajustar a página) en el diálogo.
           </p>
         </BottomSheet>
       )}
@@ -1320,7 +1320,7 @@ function TrazabilidadResultado({ nodo }: { nodo: TrazabilidadNodo }) {
 
       {/* LRs componentes (para LC) */}
       {nodo.lrs && nodo.lrs.length > 0 && (
-        <TrazSection title="Lotes de Recepcion incluidos" icon="←">
+        <TrazSection title="Lotes de Recepción incluidos" icon="←">
           {nodo.lrs.map((lr: any) => <TrazChip key={lr.id} label="LR" code={lr.codigo} sub={lr.proveedor_nombre} />)}
         </TrazSection>
       )}

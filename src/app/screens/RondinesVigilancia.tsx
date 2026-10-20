@@ -170,7 +170,7 @@ function ItemChecklist({
             value={descripcion}
             onChange={(e) => onDescripcion(e.target.value)}
             rows={2}
-            placeholder="Descripcion de la novedad (opcional — si se llena, crea incidencia M13)"
+            placeholder="Descripción de la novedad (opcional — si se llena, crea incidencia M13)"
             className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-xs resize-none"
             style={{ color: 'var(--foreground)' }}
           />

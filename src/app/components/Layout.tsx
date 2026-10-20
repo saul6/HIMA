@@ -34,12 +34,27 @@ const PATH_TITLES: Record<string, string> = {
   '/metricas': 'Métricas',
 }
 
-function getPageTitle(pathname: string): string {
+// Respaldo cuando el módulo aún no llega del catálogo: palabras del slug con su acento.
+const PALABRAS_SLUG: Record<string, string> = {
+  acciones: 'acciones', almacen: 'almacén', aplicacion: 'aplicación', auditoria: 'auditoría', auditorias: 'auditorías',
+  banos: 'baños', basculas: 'básculas', bpm: 'BPM', calibracion: 'calibración', capacitacion: 'capacitación',
+  contrasena: 'contraseña', energia: 'energía', epp: 'EPP', fertilizacion: 'fertilización', gestion: 'gestión',
+  haccp: 'HACCP', inspeccion: 'inspección', instalacion: 'instalación', metricas: 'métricas', mip: 'MIP',
+  observacion: 'observación', organizacion: 'organización', plastico: 'plástico', preparacion: 'preparación',
+  primusgfs: 'PrimusGFS', quimicos: 'químicos', recepcion: 'recepción', saia: 'SAIA', sanitizacion: 'sanitización',
+  sincronizacion: 'sincronización', tensiometros: 'tensiómetros', verificacion: 'verificación', volumetricos: 'volumétricos',
+}
+
+function tituloDesdeSlug(slug: string): string {
+  const texto = slug.split('-').map(p => PALABRAS_SLUG[p] ?? p).join(' ')
+  return texto.charAt(0).toUpperCase() + texto.slice(1)
+}
+
+function getPageTitle(pathname: string, nombreModulo?: string): string {
   if (PATH_TITLES[pathname]) return PATH_TITLES[pathname]
   if (pathname.startsWith('/historial/')) return 'Detalle'
   if (pathname.startsWith('/inocuidad/')) {
-    const seg = pathname.replace('/inocuidad/', '').replace(/-/g, ' ')
-    return seg.charAt(0).toUpperCase() + seg.slice(1)
+    return nombreModulo ?? tituloDesdeSlug(pathname.replace('/inocuidad/', ''))
   }
   if (pathname === '/auditor') return 'Mis organizaciones'
   if (pathname === '/auditor/agenda') return 'Agenda'
@@ -125,10 +140,10 @@ export function Layout() {
   // Opciones del menú del isotipo: Perfil se abre desde la fila del usuario.
   const menuItems = navItems;
 
-  const pageTitle = getPageTitle(location.pathname);
   const moduloActual = location.pathname.startsWith('/inocuidad/')
     ? modulos.find(m => m.ruta === location.pathname)
     : undefined;
+  const pageTitle = getPageTitle(location.pathname, moduloActual?.nombre);
   const categoriaLabel = moduloActual?.categoria ? CATEGORIA_MAP[moduloActual.categoria]?.label : undefined;
   // Las pantallas del menú lateral llevan exactamente el nombre del menú
   const topbarTitulo = PATH_TITLES[location.pathname] ?? categoriaLabel ?? pageTitle;

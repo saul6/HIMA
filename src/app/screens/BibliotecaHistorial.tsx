@@ -48,8 +48,8 @@ const MODULO_META: Record<ModuloKey, { label: string; color: string }> = {
   M24: { label: 'Inv. Químicos',        color: '#37474F' },
   M25: { label: 'No-Conformidades',     color: '#7B1FA2' },
   M26: { label: 'Acciones Correctivas', color: '#BF360C' },
-  M27: { label: 'Preparacion Cloro',   color: '#00796B' },
-  M28: { label: 'Limpieza Banos/Quimicos', color: '#1B5E20' },
+  M27: { label: 'Preparación Cloro',   color: '#00796B' },
+  M28: { label: 'Limpieza Baños/Químicos', color: '#1B5E20' },
   M29: { label: 'Limpieza Aduana',         color: '#00695C' },
   M30: { label: 'Limpieza Comedor',        color: '#E65100' },
   M31: { label: 'Limpieza Oficinas',       color: '#0D47A1' },
@@ -649,7 +649,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       rancho_id: r.rancho_id,
       rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
       fecha: r.fecha,
-      resumen: `Preparacion cloro · ${r.area} · ${r.litros_agua} L => ${r.ml_cloro} mL`,
+      resumen: `Preparación cloro · ${r.area} · ${r.litros_agua} L => ${r.ml_cloro} mL`,
       pdfRef: { tipo: 'M27', id: r.id },
     })
   }
@@ -663,7 +663,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       rancho_id: r.rancho_id,
       rancho_nombre: (r.ranchos as any)?.nombre ?? '—',
       fecha: `${r.anio}-${String(r.mes).padStart(2, '0')}-01`,
-      resumen: `Limpieza de baños y almacen - ${mesLabel}`,
+      resumen: `Limpieza de baños y almacén - ${mesLabel}`,
       pdfRef: { tipo: 'M28', id: r.id },
     })
   }
