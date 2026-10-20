@@ -288,7 +288,7 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
             </label>
             <div className="flex gap-2">
               <div className="flex-1 flex flex-col gap-1">
-                <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>Inicio</span>
+                <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Inicio</span>
                 <input
                   type="date"
                   value={fechaInicio}
@@ -300,7 +300,7 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
                 />
               </div>
               <div className="flex-1 flex flex-col gap-1">
-                <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>Fin</span>
+                <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Fin</span>
                 <input
                   type="date"
                   value={fechaFin}
@@ -310,7 +310,7 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
                 />
               </div>
             </div>
-            <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+            <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
               Si la visita es de un solo día, deja inicio y fin iguales.
             </p>
           </div>

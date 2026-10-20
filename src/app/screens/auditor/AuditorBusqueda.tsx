@@ -211,7 +211,7 @@ export function AuditorBusqueda() {
                           )}
                           {item.fecha && (
                             <p
-                              className="text-[10px] mt-0.5"
+                              className="text-caption mt-0.5"
                               style={{ color: 'var(--muted-foreground)', opacity: 0.7 }}
                             >
                               {new Date(item.fecha).toLocaleDateString('es-MX', {

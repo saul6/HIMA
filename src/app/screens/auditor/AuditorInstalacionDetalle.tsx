@@ -328,11 +328,11 @@ export function AuditorInstalacionDetalle() {
                   Vinculada a M.A.D.Y.{linkedOrgNombre ? ` · ${linkedOrgNombre}` : ''}
                 </p>
                 {instalacion.linked_at && (
-                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--agro-success-text)' }}>
+                  <p className="text-caption mt-0.5" style={{ color: 'var(--agro-success-text)' }}>
                     Desde {new Date(instalacion.linked_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })}
                   </p>
                 )}
-                <p className="text-[10px] mt-0.5" style={{ color: 'var(--agro-success-text)' }}>
+                <p className="text-caption mt-0.5" style={{ color: 'var(--agro-success-text)' }}>
                   El expediente pertenece a la organización productora. Las auditorías siguen accesibles por tu asignación.
                 </p>
               </div>
@@ -383,7 +383,7 @@ export function AuditorInstalacionDetalle() {
                         </p>
                       </div>
                       <span
-                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+                        className="text-caption font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
                         style={{ backgroundColor: style.bg, color: style.color }}
                       >
                         {ESTADO_LABELS[a.estado] ?? a.estado}
@@ -413,7 +413,7 @@ export function AuditorInstalacionDetalle() {
               <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
                 Vincular a M.A.D.Y.
               </h2>
-              <p className="text-[10px] mt-0.5 line-clamp-1" style={{ color: 'var(--muted-foreground)' }}>
+              <p className="text-caption mt-0.5 line-clamp-1" style={{ color: 'var(--muted-foreground)' }}>
                 {instalacion?.nombre}
               </p>
             </div>
@@ -433,7 +433,7 @@ export function AuditorInstalacionDetalle() {
                 <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
                   Acción permanente e irreversible
                 </p>
-                <p className="text-[10px] mt-0.5 leading-relaxed" style={{ color: 'var(--agro-danger-text)' }}>
+                <p className="text-caption mt-0.5 leading-relaxed" style={{ color: 'var(--agro-danger-text)' }}>
                   El expediente completo (auditorías, NC, acciones correctivas, evidencias y snapshots) se transfiere a la organización productora destino. No se crea un sitio duplicado. Esta acción no puede deshacerse desde el front.
                 </p>
               </div>
@@ -471,7 +471,7 @@ export function AuditorInstalacionDetalle() {
 
               {modoOrg === 'asignada' ? (
                 <div className="flex flex-col gap-1">
-                  <label className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+                  <label className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                     Selecciona la organización
                   </label>
                   <select
@@ -489,14 +489,14 @@ export function AuditorInstalacionDetalle() {
                     ))}
                   </select>
                   {orgsAsignadas.length === 0 && (
-                    <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                    <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                       No tienes organizaciones asignadas. Usa "Ingresar ID" si ya tienes el UUID de la org.
                     </p>
                   )}
                 </div>
               ) : (
                 <div className="flex flex-col gap-1">
-                  <label className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+                  <label className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                     ID de organización (UUID)
                   </label>
                   <input
@@ -506,14 +506,14 @@ export function AuditorInstalacionDetalle() {
                     placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                     style={inputSt}
                   />
-                  <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                  <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                     El admin de la organización puede obtenerlo en Ajustes de su cuenta.
                   </p>
                   {orgManualId.trim().length > 10 && (
                     <button
                       onClick={() => cargarPerfiles(orgManualId.trim())}
                       disabled={cargandoPerfiles}
-                      className="self-start text-[10px] font-semibold h-7 px-3 rounded-lg disabled:opacity-50 flex items-center gap-1"
+                      className="self-start text-caption font-semibold h-7 px-3 rounded-lg disabled:opacity-50 flex items-center gap-1"
                       style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)', border: '1px solid var(--border)' }}
                     >
                       {cargandoPerfiles ? <Loader size={10} className="animate-spin" /> : null}
@@ -549,7 +549,7 @@ export function AuditorInstalacionDetalle() {
                 </select>
               ) : (
                 <div className="flex flex-col gap-1">
-                  <label className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+                  <label className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                     ID de perfil (UUID) del productor
                   </label>
                   <input
@@ -559,7 +559,7 @@ export function AuditorInstalacionDetalle() {
                     placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                     style={inputSt}
                   />
-                  <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                  <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                     El productor puede consultar su ID de perfil en Ajustes de M.A.D.Y.
                   </p>
                 </div>
@@ -572,7 +572,7 @@ export function AuditorInstalacionDetalle() {
                 Opcionales (para el rancho que se creará)
               </p>
               <div className="flex flex-col gap-1">
-                <label className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Código de rancho</label>
+                <label className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Código de rancho</label>
                 <input
                   type="text"
                   value={ranchoCodigo}
@@ -582,7 +582,7 @@ export function AuditorInstalacionDetalle() {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Cultivo / Producto</label>
+                <label className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Cultivo / Producto</label>
                 <input
                   type="text"
                   value={ranchoCultivo}

@@ -71,14 +71,14 @@ function EventoItem({
     >
       <div className="flex items-center gap-1.5 flex-wrap">
         <span
-          className="text-[10px] font-semibold px-2 py-0.5 rounded-full leading-none"
+          className="text-caption font-semibold px-2 py-0.5 rounded-full leading-none"
           style={{ backgroundColor: tipo.fillVar, color: tipo.textVar }}
         >
           {tipoLabel}
         </span>
         {evento.estado && (
           <span
-            className="text-[10px] px-2 py-0.5 rounded-full leading-none"
+            className="text-caption px-2 py-0.5 rounded-full leading-none"
             style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
           >
             {evento.estado}
@@ -95,7 +95,7 @@ function EventoItem({
         </p>
       )}
       {interactivo && (
-        <p className="text-[10px] font-semibold mt-0.5" style={{ color: 'var(--primary)' }}>
+        <p className="text-caption font-semibold mt-0.5" style={{ color: 'var(--primary)' }}>
           Ver detalle →
         </p>
       )}
@@ -221,7 +221,7 @@ export function CalendarioConsolidado() {
               <button
                 key={t.event_type}
                 onClick={() => toggleTipo(t.event_type)}
-                className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="text-caption font-semibold px-2.5 py-1 rounded-full transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 style={activo
                   ? { backgroundColor: cfg.textVar, color: 'var(--card)' }
                   : { backgroundColor: cfg.fillVar, color: cfg.textVar, border: '1px solid transparent' }
@@ -234,7 +234,7 @@ export function CalendarioConsolidado() {
           {tiposActivos.size > 0 && (
             <button
               onClick={() => setTiposActivos(new Set())}
-              className="text-[11px] px-2.5 py-1 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="text-caption px-2.5 py-1 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
             >
               Limpiar
@@ -268,7 +268,7 @@ export function CalendarioConsolidado() {
           {eventosPorDia.map(([dayIso, evs]) => (
             <section key={dayIso}>
               <p
-                className="text-[11px] font-semibold uppercase tracking-wide mb-2"
+                className="text-caption font-semibold uppercase tracking-wide mb-2"
                 style={{ color: 'var(--muted-foreground)' }}
               >
                 {formatDayHeader(dayIso)}

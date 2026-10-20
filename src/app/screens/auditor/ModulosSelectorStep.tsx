@@ -30,7 +30,7 @@ export function ModulosSelectorStep({ modulos, seleccionados, onToggle }: Props)
             }}
           >
             <div
-              className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border text-[10px] font-bold"
+              className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border text-caption font-bold"
               style={{
                 backgroundColor: sel ? 'var(--primary)' : 'transparent',
                 borderColor: sel ? 'var(--primary)' : 'var(--muted-foreground)',

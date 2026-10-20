@@ -62,7 +62,7 @@ function AuditoriaCard({
           </p>
         </div>
         <span
-          className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+          className="text-caption font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
           style={{ backgroundColor: style.bg, color: style.color }}
         >
           {ESTADO_LABELS[a.estado] ?? a.estado}

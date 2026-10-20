@@ -151,7 +151,7 @@ function WorkQueueCard({
         <div className="flex flex-wrap gap-1.5 items-center">
           {vencida && (
             <span
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-caption font-semibold"
               style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
             >
               <AlertCircle size={10} />
@@ -160,14 +160,14 @@ function WorkQueueCard({
           )}
           {item.next_action_code !== 'SIN_ACCION' && (
             <span
-              className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium"
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-caption font-medium"
               style={accionChipStyle(item.next_action_code)}
             >
               {ACCION_LABELS[item.next_action_code] ?? item.next_action_code}
             </span>
           )}
           {orgNombre && (
-            <span className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+            <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
               {orgNombre}
             </span>
           )}
@@ -300,7 +300,7 @@ export function AuditorHome() {
                 <PlayCircle size={18} style={{ color: 'var(--agro-success-text)' }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
+                <p className="text-caption font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
                   Continuar trabajo
                 </p>
                 <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>
@@ -399,7 +399,7 @@ export function AuditorHome() {
             <TituloSeccion as="p" className="mb-0">Captura por bloque</TituloSeccion>
             <button
               onClick={() => navigate('/auditor/jornada/nueva')}
-              className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-colors hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="flex items-center gap-1 text-caption font-semibold px-2.5 py-1 rounded-lg transition-colors hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               style={{ border: '1px solid var(--ring)', color: 'var(--foreground)', transitionDuration: 'var(--motion-fast)' }}
             >
               <Layers size={11} />
@@ -455,7 +455,7 @@ export function AuditorHome() {
             {filtro && (
               <button
                 onClick={() => setFiltro(null)}
-                className="text-[10px] font-semibold px-2.5 py-0.5 rounded-md"
+                className="text-caption font-semibold px-2.5 py-0.5 rounded-md"
                 style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
               >
                 Ver todos

@@ -263,7 +263,7 @@ function PanelM9({
         <p className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
           MIP · Módulo 9
         </p>
-        <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+        <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
           Complemento cualitativo · no afecta el puntaje numérico
         </p>
       </div>
@@ -273,7 +273,7 @@ function PanelM9({
           {calculo.resueltas}/{calculo.total}
         </span>
         <span
-          className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg"
+          className="flex items-center gap-1 text-caption font-semibold px-2 py-1 rounded-lg"
           style={{ backgroundColor: cfg.bg, color: cfg.color }}
         >
           {cfg.icon}
@@ -379,7 +379,7 @@ function PanelValidacion({
                 return (
                   <span
                     key={sev}
-                    className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                    className="text-caption font-bold px-1.5 py-0.5 rounded-full"
                     style={{ backgroundColor: cfg.bg, color: cfg.color }}
                   >
                     {count} {cfg.label.slice(0, 3)}
@@ -413,7 +413,7 @@ function PanelValidacion({
               </div>
               <button
                 onClick={onReintentar}
-                className="text-[11px] font-semibold px-3 py-1.5 rounded-lg"
+                className="text-caption font-semibold px-3 py-1.5 rounded-lg"
                 style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', border: '1px solid var(--agro-red)' }}
               >
                 Reintentar
@@ -438,7 +438,7 @@ function PanelValidacion({
                       className="px-4 py-1.5"
                       style={{ backgroundColor: cfg.bg }}
                     >
-                      <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: cfg.color }}>
+                      <span className="text-caption font-semibold uppercase tracking-wide" style={{ color: cfg.color }}>
                         {cfg.label} · {grupo.length}
                       </span>
                     </div>
@@ -455,7 +455,7 @@ function PanelValidacion({
                           {issue.pregunta_id && (
                             <button
                               onClick={() => scrollToPreg(issue.pregunta_id!)}
-                              className="text-[10px] font-semibold px-2 py-1 rounded-lg transition-colors hover:opacity-80"
+                              className="text-caption font-semibold px-2 py-1 rounded-lg transition-colors hover:opacity-80"
                               style={{ backgroundColor: 'var(--accent)', color: 'var(--primary)' }}
                             >
                               → Ir a pregunta
@@ -464,7 +464,7 @@ function PanelValidacion({
                           {descartandoId !== issue.id && (
                             <button
                               onClick={() => onDescartarClick(issue.id)}
-                              className="text-[10px] px-2 py-1 rounded-lg transition-colors hover:bg-muted"
+                              className="text-caption px-2 py-1 rounded-lg transition-colors hover:bg-muted"
                               style={{ color: 'var(--muted-foreground)', border: '1px solid var(--border)' }}
                             >
                               Descartar
@@ -492,14 +492,14 @@ function PanelValidacion({
                             <div className="flex gap-2">
                               <button
                                 onClick={onConfirmarDescarte}
-                                className="flex-1 h-7 rounded-lg text-[10px] font-semibold transition-colors hover:opacity-80"
+                                className="flex-1 h-7 rounded-lg text-caption font-semibold transition-colors hover:opacity-80"
                                 style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                               >
                                 Confirmar descarte
                               </button>
                               <button
                                 onClick={onCancelarDescarte}
-                                className="h-7 px-3 rounded-lg text-[10px] transition-colors hover:bg-muted"
+                                className="h-7 px-3 rounded-lg text-caption transition-colors hover:bg-muted"
                                 style={{ color: 'var(--muted-foreground)' }}
                               >
                                 Cancelar
@@ -514,7 +514,7 @@ function PanelValidacion({
               })}
               {herenciaIssues.length > 0 && (
                 <div className="px-4 py-3 border-t border-border flex items-center justify-between gap-2">
-                  <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                  <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                     {herenciaIssues.length} herencia{herenciaIssues.length !== 1 ? 's' : ''} pendiente{herenciaIssues.length !== 1 ? 's' : ''}
                   </span>
                   <Boton onClick={navSiguienteHerencia}>
@@ -620,17 +620,17 @@ function PanelScoring({
             <Loader size={12} className="animate-spin flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
           )}
           {scoringEstado === 'desactualizado' && (
-            <span className="flex items-center gap-1 text-[10px] flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
+            <span className="flex items-center gap-1 text-caption flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
               <Loader size={10} className="animate-spin" /> Actualizando…
             </span>
           )}
           {scoringEstado === 'error' && calculo && (
-            <span className="text-[10px] flex-shrink-0" style={{ color: 'var(--agro-info-text)' }}>
+            <span className="text-caption flex-shrink-0" style={{ color: 'var(--agro-info-text)' }}>
               Cálculo anterior (no actualizado)
             </span>
           )}
           {scoringEstado === 'error' && !calculo && (
-            <span className="text-[10px] flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }}>
+            <span className="text-caption flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }}>
               No se pudo calcular
             </span>
           )}
@@ -644,7 +644,7 @@ function PanelScoring({
       {abierto && (
         <div className="border-t border-border px-4 pb-4 flex flex-col gap-3">
           {/* Etiqueta invariante */}
-          <p className="text-[10px] pt-3 italic" style={{ color: 'var(--muted-foreground)' }}>
+          <p className="text-caption pt-3 italic" style={{ color: 'var(--muted-foreground)' }}>
             Cálculo interno M.A.D.Y. · no oficial — el puntaje definitivo lo emite el organismo certificador.
           </p>
 
@@ -656,10 +656,10 @@ function PanelScoring({
             >
               <AlertOctagon size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
               <div className="flex flex-col gap-0.5">
-                <p className="text-[11px] font-bold" style={{ color: 'var(--agro-danger-text)' }}>
+                <p className="text-caption font-bold" style={{ color: 'var(--agro-danger-text)' }}>
                   Fallo automático detectado · módulo afectado 0% efectivo
                 </p>
-                <p className="text-[11px]" style={{ color: 'var(--agro-danger-text)' }}>
+                <p className="text-caption" style={{ color: 'var(--agro-danger-text)' }}>
                   Resultado aritmético bruto: {calculo.resultado_bruto}% (antes de aplicar el cero)
                 </p>
               </div>
@@ -669,10 +669,10 @@ function PanelScoring({
           {calculo && estado === 'BLOCKED_MISSING_MAX' && (
             <>
               <div className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
-                <p className="text-[11px] font-medium" style={{ color: 'var(--foreground)' }}>
+                <p className="text-caption font-medium" style={{ color: 'var(--foreground)' }}>
                   Puntuación integral no disponible — faltan máximos verificados
                 </p>
-                <p className="text-[10px] mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                <p className="text-caption mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
                   {calculo.mensaje}
                 </p>
               </div>
@@ -683,7 +683,7 @@ function PanelScoring({
                   ['Pendientes máx.', calculo.conteo.missing_max ?? calculo.conteo.pendientes_maximo],
                 ].map(([lbl, val]) => (
                   <div key={lbl as string} className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
-                    <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>{lbl}</p>
+                    <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>{lbl}</p>
                     <p className="text-base font-bold" style={{ color: 'var(--foreground)' }}>{val ?? '—'}</p>
                   </div>
                 ))}
@@ -701,16 +701,16 @@ function PanelScoring({
                   ['Pendientes', `${calculo.pendientes} pts`],
                 ].map(([lbl, val]) => (
                   <div key={lbl as string} className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
-                    <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>{lbl}</p>
+                    <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>{lbl}</p>
                     <p className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>{val}</p>
                   </div>
                 ))}
               </div>
               <div className="rounded-lg px-3 py-2 flex flex-col gap-1" style={{ backgroundColor: 'var(--agro-success-fill)' }}>
-                <p className="text-[10px] font-semibold" style={{ color: 'var(--agro-success-text)' }}>
+                <p className="text-caption font-semibold" style={{ color: 'var(--agro-success-text)' }}>
                   Escenario si pendientes cumplen: {calculo.proyeccion_si_pendientes_cumplen}%
                 </p>
-                <p className="text-[10px]" style={{ color: 'var(--agro-success-text)' }}>
+                <p className="text-caption" style={{ color: 'var(--agro-success-text)' }}>
                   Cota inferior (todas fallan): {calculo.cota_inferior}%
                 </p>
               </div>
@@ -718,13 +718,13 @@ function PanelScoring({
                 <div className="grid grid-cols-2 gap-2">
                   {(calculo.conteo.na_por_rama ?? 0) > 0 && (
                     <div className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
-                      <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>N/A por rama</p>
+                      <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>N/A por rama</p>
                       <p className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>{calculo.conteo.na_por_rama}</p>
                     </div>
                   )}
                   {(calculo.conteo.revision_pendiente ?? 0) > 0 && (
                     <div className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
-                      <p className="text-[10px]" style={{ color: 'var(--agro-info-text)' }}>Revisión pendiente</p>
+                      <p className="text-caption" style={{ color: 'var(--agro-info-text)' }}>Revisión pendiente</p>
                       <p className="text-sm font-bold" style={{ color: 'var(--agro-info-text)' }}>{calculo.conteo.revision_pendiente}</p>
                     </div>
                   )}
@@ -735,7 +735,7 @@ function PanelScoring({
 
           {calculo && estado === 'INTERNAL_COMPLETE' && (
             <div className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
-              <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>
+              <p className="text-caption font-semibold" style={{ color: 'var(--foreground)' }}>
                 Resultado aritmético interno: {calculo.resultado_bruto}%
               </p>
             </div>
@@ -744,10 +744,10 @@ function PanelScoring({
           {calculo && estado === 'REQUIRES_VALIDATION' && (
             <>
               <div className="rounded-lg px-3 py-2 flex flex-col gap-1" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
-                <p className="text-[11px] font-bold" style={{ color: 'var(--agro-info-text)' }}>
+                <p className="text-caption font-bold" style={{ color: 'var(--agro-info-text)' }}>
                   Revisión de puntuación requerida
                 </p>
-                <p className="text-[11px]" style={{ color: 'var(--agro-info-text)' }}>
+                <p className="text-caption" style={{ color: 'var(--agro-info-text)' }}>
                   Resultado normativo: {calculo.resultado_bruto}%
                   {(calculo.ajustes_en_conflicto ?? 0) > 0 && (
                     <span className="font-semibold"> · {calculo.ajustes_en_conflicto} ajuste{calculo.ajustes_en_conflicto !== 1 ? 's' : ''} en conflicto</span>
@@ -758,7 +758,7 @@ function PanelScoring({
           )}
 
           {calculo && estado === 'NO_SCORABLE_CRITERIA' && (
-            <p className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+            <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
               Sin puntuación aplicable
             </p>
           )}
@@ -772,7 +772,7 @@ function PanelScoring({
               <p className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>
                 {calculo.escenario_trabajo.resultado}%
               </p>
-              <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+              <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                 {calculo.escenario_trabajo.etiqueta} · {calculo.ajustes_manuales} ajuste{calculo.ajustes_manuales !== 1 ? 's' : ''} manual{calculo.ajustes_manuales !== 1 ? 'es' : ''}
               </p>
             </div>
@@ -786,10 +786,10 @@ function PanelScoring({
               </TituloSeccion>
               {calculo.fallas!.map(f => (
                 <div key={f.question_id} className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
+                  <span className="text-caption font-mono px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
                     {f.question_id}
                   </span>
-                  <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>{f.modulo}</span>
+                  <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>{f.modulo}</span>
                 </div>
               ))}
             </div>
@@ -804,31 +804,31 @@ function PanelScoring({
               {calculo.por_modulo.map(m => (
                 <div key={m.modulo} className="rounded-lg px-3 py-2 flex flex-col gap-0.5" style={{ backgroundColor: 'var(--muted)' }}>
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-[11px] font-semibold truncate flex-1" style={{ color: 'var(--foreground)' }}>
+                    <p className="text-caption font-semibold truncate flex-1" style={{ color: 'var(--foreground)' }}>
                       {m.nombre || m.modulo}
                     </p>
                     {m.falla_automatica && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
+                      <span className="text-caption font-bold px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
                         Falla
                       </span>
                     )}
                   </div>
                   <div className="flex gap-3 flex-wrap">
-                    <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                    <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                       Bruto: <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{m.resultado_bruto}%</span>
                     </span>
                     {m.falla_automatica && (
-                      <span className="text-[10px]" style={{ color: 'var(--agro-danger-text)' }}>
+                      <span className="text-caption" style={{ color: 'var(--agro-danger-text)' }}>
                         Efectivo: <span className="font-bold">0%</span>
                       </span>
                     )}
                     {!m.falla_automatica && m.resultado_efectivo !== m.resultado_bruto && (
-                      <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                      <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                         Efectivo: <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{m.resultado_efectivo}%</span>
                       </span>
                     )}
                     {m.proyeccion_si_cumplen > 0 && (
-                      <span className="text-[10px]" style={{ color: 'var(--agro-success-text)' }}>
+                      <span className="text-caption" style={{ color: 'var(--agro-success-text)' }}>
                         Proj.: {m.proyeccion_si_cumplen}%
                       </span>
                     )}
@@ -841,12 +841,12 @@ function PanelScoring({
           {/* COR-08: estado error con botón reintentar */}
           {scoringEstado === 'error' && !calculo && (
             <div className="flex flex-col gap-2 pt-3">
-              <p className="text-[11px]" style={{ color: 'var(--agro-danger-text)' }}>
+              <p className="text-caption" style={{ color: 'var(--agro-danger-text)' }}>
                 No se pudo calcular el puntaje.
               </p>
               <button
                 onClick={() => setReintento(v => v + 1)}
-                className="self-start text-[11px] font-semibold px-3 py-1.5 rounded-lg"
+                className="self-start text-caption font-semibold px-3 py-1.5 rounded-lg"
                 style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
               >
                 Reintentar
@@ -857,13 +857,13 @@ function PanelScoring({
             <div className="flex flex-col gap-2 pt-3">
               <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
                 <AlertCircle size={13} style={{ color: 'var(--agro-info-text)' }} />
-                <p className="text-[11px]" style={{ color: 'var(--agro-info-text)' }}>
+                <p className="text-caption" style={{ color: 'var(--agro-info-text)' }}>
                   Mostrando cálculo anterior — no refleja los últimos cambios.
                 </p>
               </div>
               <button
                 onClick={() => setReintento(v => v + 1)}
-                className="self-start text-[11px] font-semibold px-3 py-1.5 rounded-lg"
+                className="self-start text-caption font-semibold px-3 py-1.5 rounded-lg"
                 style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
               >
                 Reintentar
@@ -871,7 +871,7 @@ function PanelScoring({
             </div>
           )}
           {!calculo && scoringEstado !== 'error' && !cargando && (
-            <p className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+            <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
               No se pudo obtener el cálculo. Recarga la pantalla.
             </p>
           )}
@@ -937,22 +937,22 @@ function PanelHallazgos({
                 return (
                   <div key={h.id} className="px-4 py-3 flex flex-col gap-2">
                     <div className="flex items-start gap-2 flex-wrap">
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0"
+                      <span className="text-caption font-bold px-1.5 py-0.5 rounded flex-shrink-0"
                             style={{ backgroundColor: clasConfig.bg, color: clasConfig.color }}>
                         {clasConfig.label}
                       </span>
-                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded flex-shrink-0"
+                      <span className="text-caption font-semibold px-1.5 py-0.5 rounded flex-shrink-0"
                             style={{ backgroundColor: estConfig.bg, color: estConfig.color }}>
                         {estConfig.label}
                       </span>
                     </div>
-                    <p className="text-[0.8125rem] leading-snug" style={{ color: 'var(--foreground)' }}>
+                    <p className="text-body leading-snug" style={{ color: 'var(--foreground)' }}>
                       {h.descripcion}
                     </p>
                     {preg && (
                       <button
                         onClick={() => scrollToPreg(preg.id)}
-                        className="self-start text-[10px] font-medium px-2 py-0.5 rounded"
+                        className="self-start text-caption font-medium px-2 py-0.5 rounded"
                         style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)' }}
                       >
                         → {preg.question_id}
@@ -963,7 +963,7 @@ function PanelHallazgos({
                         value={h.estado}
                         onChange={e => onEstadoChange(h.id, e.target.value as AudHallazgoEstado)}
                         disabled={!canWriteNC}
-                        className="text-[10px] h-7 rounded-lg px-2 disabled:opacity-50"
+                        className="text-caption h-7 rounded-lg px-2 disabled:opacity-50"
                         style={{
                           border: '1px solid var(--border)',
                           backgroundColor: canWriteNC ? 'var(--input-background)' : 'var(--muted)',
@@ -982,7 +982,7 @@ function PanelHallazgos({
                       )}
                       <button
                         onClick={() => onVerEvidencias(h)}
-                        className="flex items-center gap-1 text-[10px] font-semibold h-7 px-2 rounded-lg"
+                        className="flex items-center gap-1 text-caption font-semibold h-7 px-2 rounded-lg"
                         style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                       >
                         <Paperclip size={11} />
@@ -990,7 +990,7 @@ function PanelHallazgos({
                       </button>
                       <button
                         onClick={() => onVerIncidencias(h)}
-                        className="flex items-center gap-1 text-[10px] font-semibold h-7 px-2 rounded-lg"
+                        className="flex items-center gap-1 text-caption font-semibold h-7 px-2 rounded-lg"
                         style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                       >
                         <Link2 size={11} />
@@ -1766,7 +1766,7 @@ export function AuditorEjecucion() {
         </div>
         {auditoria && (
           <span
-            className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+            className="text-caption font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
             style={{ backgroundColor: estadoStyle.bg, color: estadoStyle.color }}
           >
             {ESTADO_LABELS[auditoria.estado] ?? auditoria.estado}
@@ -1792,12 +1792,12 @@ export function AuditorEjecucion() {
               const hayErrorGuardado = values.some(s => s === 'error')
               const nError = values.filter(s => s === 'error').length
               if (hayGuardando) return (
-                <div className="flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-lg self-start" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                <div className="flex items-center gap-1.5 text-caption px-3 py-1.5 rounded-lg self-start" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
                   <Loader size={11} className="animate-spin" /> Guardando…
                 </div>
               )
               if (hayErrorGuardado) return (
-                <div className="flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-lg self-start" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
+                <div className="flex items-center gap-1.5 text-caption px-3 py-1.5 rounded-lg self-start" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
                   <XCircle size={11} /> Error al guardar ({nError})
                 </div>
               )
@@ -1810,11 +1810,11 @@ export function AuditorEjecucion() {
                 <XCircle size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
                 <div className="flex-1">
                   <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>No se pudieron cargar los campos de comentario</p>
-                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--agro-danger-text)' }}>Reintenta antes de continuar.</p>
+                  <p className="text-caption mt-0.5" style={{ color: 'var(--agro-danger-text)' }}>Reintenta antes de continuar.</p>
                 </div>
                 <button
                   onClick={refetch}
-                  className="text-[11px] font-semibold px-2 py-1 rounded flex-shrink-0"
+                  className="text-caption font-semibold px-2 py-1 rounded flex-shrink-0"
                   style={{ backgroundColor: 'rgba(0,0,0,0.1)', color: 'var(--agro-danger-text)' }}
                 >
                   Reintentar
@@ -1826,11 +1826,11 @@ export function AuditorEjecucion() {
                 <AlertCircle size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
                 <div className="flex-1">
                   <p className="text-xs font-semibold" style={{ color: 'var(--agro-info-text)' }}>No se pudieron cargar las observaciones guardadas</p>
-                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--agro-info-text)' }}>Es posible que algunas observaciones no se muestren.</p>
+                  <p className="text-caption mt-0.5" style={{ color: 'var(--agro-info-text)' }}>Es posible que algunas observaciones no se muestren.</p>
                 </div>
                 <button
                   onClick={refetch}
-                  className="text-[11px] font-semibold px-2 py-1 rounded flex-shrink-0"
+                  className="text-caption font-semibold px-2 py-1 rounded flex-shrink-0"
                   style={{ backgroundColor: 'rgba(0,0,0,0.1)', color: 'var(--agro-info-text)' }}
                 >
                   Reintentar
@@ -1920,7 +1920,7 @@ export function AuditorEjecucion() {
                 </button>
                 {panelAntecedentesAbierto && (
                   <div className="border-t border-border">
-                    <p className="text-[11px] px-4 pt-3 pb-1" style={{ color: 'var(--muted-foreground)' }}>
+                    <p className="text-caption px-4 pt-3 pb-1" style={{ color: 'var(--muted-foreground)' }}>
                       Criterios con historial de NC en este sitio. Informativo — no determina cumplimiento.
                     </p>
                     {historialCriterios.map(h => {
@@ -1929,19 +1929,19 @@ export function AuditorEjecucion() {
                         <div key={h.criterion_code} className="px-4 py-3 flex flex-col gap-1.5 border-t border-border">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span
-                              className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+                              className="text-caption font-mono px-1.5 py-0.5 rounded"
                               style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                             >
                               {h.criterion_code}
                             </span>
                             <span
-                              className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                              className="text-caption font-semibold px-1.5 py-0.5 rounded"
                               style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
                             >
                               {h.n_hallazgos} NC
                             </span>
                             {h.ultimo_detectado && (
-                              <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                              <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                                 último: {formatFecha(h.ultimo_detectado)}{h.ultimo_estado ? ` (${h.ultimo_estado})` : ''}
                               </span>
                             )}
@@ -1949,7 +1949,7 @@ export function AuditorEjecucion() {
                           {pregMatch && (
                             <button
                               onClick={() => document.getElementById(`preg-${pregMatch.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-                              className="self-start text-[10px] font-medium px-2 py-0.5 rounded"
+                              className="self-start text-caption font-medium px-2 py-0.5 rounded"
                               style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)' }}
                             >
                               → Ir a criterio {pregMatch.question_id}
@@ -1974,7 +1974,7 @@ export function AuditorEjecucion() {
                   <p className="text-xs font-bold flex-1" style={{ color: '#fff' }}>
                     {modulo.modulo_nombre}
                   </p>
-                  <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                  <span className="text-caption" style={{ color: 'rgba(255,255,255,0.7)' }}>
                     {modulo.preguntas.length} preguntas
                   </span>
                 </div>
@@ -1989,7 +1989,7 @@ export function AuditorEjecucion() {
                         style={{ backgroundColor: 'var(--muted)' }}
                       >
                         <span
-                          className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+                          className="text-caption font-mono px-1.5 py-0.5 rounded"
                           style={{ backgroundColor: 'var(--border)', color: 'var(--muted-foreground)' }}
                         >
                           {bloque.codigo}
@@ -1997,7 +1997,7 @@ export function AuditorEjecucion() {
                         <p className="text-xs font-semibold flex-1" style={{ color: 'var(--foreground)' }}>
                           {bloque.nombre}
                         </p>
-                        <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                        <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                           {pregBloque.length} preg.
                         </span>
                       </div>
@@ -2106,7 +2106,7 @@ export function AuditorEjecucion() {
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
+              <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>
                 Clasificación
               </label>
               <select
@@ -2122,7 +2122,7 @@ export function AuditorEjecucion() {
               </select>
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
+              <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>
                 Descripción <span style={{ color: 'var(--agro-red)' }}>*</span>
               </label>
               <textarea
@@ -2156,7 +2156,7 @@ export function AuditorEjecucion() {
             <div className="min-w-0 flex-1">
               <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Acción correctiva</h2>
               {sheetAccion && (
-                <p className="text-[10px] mt-0.5 line-clamp-1" style={{ color: 'var(--muted-foreground)' }}>
+                <p className="text-caption mt-0.5 line-clamp-1" style={{ color: 'var(--muted-foreground)' }}>
                   {sheetAccion.descripcion}
                 </p>
               )}
@@ -2175,7 +2175,7 @@ export function AuditorEjecucion() {
             <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
               {/* Estado interno M.A.D.Y */}
               <div className="rounded-xl p-3 flex flex-col gap-2" style={{ backgroundColor: 'var(--muted)' }}>
-                <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>Estado interno — M.A.D.Y</p>
+                <p className="text-caption font-bold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>Estado interno — M.A.D.Y</p>
                 <select
                   value={formAccion.internal_status ?? 'REGISTERED'}
                   onChange={e => setFormAccion(prev => ({ ...prev, internal_status: e.target.value as AudInternalStatus }))}
@@ -2190,8 +2190,8 @@ export function AuditorEjecucion() {
 
               {/* Estado externo Azzule / organismo */}
               <div className="rounded-xl p-3 flex flex-col gap-2" style={{ border: '1.5px solid var(--border)' }}>
-                <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>Estado externo — Azzule / organismo</p>
-                <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>Registra manualmente lo que ocurrió fuera del sistema.</p>
+                <p className="text-caption font-bold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>Estado externo — Azzule / organismo</p>
+                <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Registra manualmente lo que ocurrió fuera del sistema.</p>
                 <select
                   value={formAccion.external_status ?? 'NOT_TRACKED'}
                   onChange={e => setFormAccion(prev => ({ ...prev, external_status: e.target.value as AudExternalStatus }))}
@@ -2206,7 +2206,7 @@ export function AuditorEjecucion() {
 
               {/* Contraparte externa */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Contraparte externa (sin usuario MADY)</label>
+                <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Contraparte externa (sin usuario MADY)</label>
                 <input
                   type="text"
                   value={formAccion.owner_external_party ?? ''}
@@ -2229,7 +2229,7 @@ export function AuditorEjecucion() {
                 ['comentario_accion',      'Comentario de la acción'],
               ] as [keyof AudAccionCorrectivaCAPA, string][]).map(([campo, etiqueta]) => (
                 <div key={campo} className="flex flex-col gap-1">
-                  <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>{etiqueta}</label>
+                  <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>{etiqueta}</label>
                   <textarea
                     value={(formAccion[campo] as string) ?? ''}
                     onChange={e => setFormAccion(prev => ({ ...prev, [campo]: e.target.value || null }))}
@@ -2282,7 +2282,7 @@ export function AuditorEjecucion() {
                 <div className="flex flex-col gap-3">
                   {/* Disclaimer */}
                   <div className="rounded-xl px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
-                    <p className="text-[10px] italic" style={{ color: 'var(--muted-foreground)' }}>
+                    <p className="text-caption italic" style={{ color: 'var(--muted-foreground)' }}>
                       M.A.D.Y organiza, valida y da seguimiento. No sustituye a PrimusGFS, Azzule Systems, al auditor autorizado ni al organismo de certificación.
                     </p>
                   </div>
@@ -2316,7 +2316,7 @@ export function AuditorEjecucion() {
                         return (
                           <div key={sev} className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
                             <div className="px-3 py-1.5" style={{ backgroundColor: cfg.bg }}>
-                              <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: cfg.color }}>
+                              <span className="text-caption font-bold uppercase tracking-wide" style={{ color: cfg.color }}>
                                 {cfg.label} · {grupo.length}
                               </span>
                             </div>
@@ -2337,7 +2337,7 @@ export function AuditorEjecucion() {
                           Abrir Modo Azzule
                         </Boton>
                       ) : !azzuleReady ? (
-                        <p className="text-[10px] text-center py-1" style={{ color: 'var(--muted-foreground)' }}>
+                        <p className="text-caption text-center py-1" style={{ color: 'var(--muted-foreground)' }}>
                           Resuelve los bloqueos para habilitar el Modo Azzule
                         </p>
                       ) : null}
@@ -2359,11 +2359,11 @@ export function AuditorEjecucion() {
                     </button>
                     {sheetRegistrarResultado && (
                       <div className="px-3 pb-3 flex flex-col gap-3 border-t" style={{ borderColor: 'var(--border)' }}>
-                        <p className="text-[10px] pt-2" style={{ color: 'var(--muted-foreground)' }}>
+                        <p className="text-caption pt-2" style={{ color: 'var(--muted-foreground)' }}>
                           Cada registro es una nueva observación — no sobrescribe el anterior.
                         </p>
                         <div className="flex flex-col gap-1">
-                          <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Estado observado *</label>
+                          <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Estado observado *</label>
                           <select
                             value={formResultado.observed_status}
                             onChange={e => setFormResultado(p => ({ ...p, observed_status: e.target.value as AudExternalObservedStatus }))}
@@ -2376,7 +2376,7 @@ export function AuditorEjecucion() {
                           </select>
                         </div>
                         <div className="flex flex-col gap-1">
-                          <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Fecha observada</label>
+                          <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Fecha observada</label>
                           <input
                             type="date"
                             value={formResultado.observed_at}
@@ -2386,7 +2386,7 @@ export function AuditorEjecucion() {
                           />
                         </div>
                         <div className="flex flex-col gap-1">
-                          <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>ID auditoría Azzule</label>
+                          <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>ID auditoría Azzule</label>
                           <input
                             type="text"
                             value={formResultado.external_audit_id}
@@ -2402,7 +2402,7 @@ export function AuditorEjecucion() {
                           ['official_comment',      'Comentario'],
                         ] as [keyof typeof formResultado, string][]).map(([campo, label]) => (
                           <div key={campo} className="flex flex-col gap-1">
-                            <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>{label}</label>
+                            <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>{label}</label>
                             <textarea
                               value={formResultado[campo]}
                               onChange={e => setFormResultado(p => ({ ...p, [campo]: e.target.value }))}
@@ -2453,21 +2453,21 @@ export function AuditorEjecucion() {
                             {historialExterno.map(ewr => (
                               <div key={ewr.id} className="px-3 py-2.5 flex flex-col gap-1">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-[10px] font-bold" style={{ color: 'var(--foreground)' }}>
+                                  <span className="text-caption font-bold" style={{ color: 'var(--foreground)' }}>
                                     {OBSERVED_STATUS_LABELS[ewr.observed_status]}
                                   </span>
-                                  <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                                  <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                                     {new Date(ewr.observed_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
                                   </span>
                                 </div>
                                 {ewr.official_decision && (
-                                  <p className="text-[10px]" style={{ color: 'var(--foreground)' }}>{ewr.official_decision}</p>
+                                  <p className="text-caption" style={{ color: 'var(--foreground)' }}>{ewr.official_decision}</p>
                                 )}
                                 {ewr.official_comment && (
-                                  <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>{ewr.official_comment}</p>
+                                  <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>{ewr.official_comment}</p>
                                 )}
                                 {ewr.source_note && (
-                                  <p className="text-[10px] italic" style={{ color: 'var(--muted-foreground)' }}>{ewr.source_note}</p>
+                                  <p className="text-caption italic" style={{ color: 'var(--muted-foreground)' }}>{ewr.source_note}</p>
                                 )}
                               </div>
                             ))}
@@ -2508,7 +2508,7 @@ export function AuditorEjecucion() {
                 <div key={v.id} className="rounded-xl border border-border p-3 flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold" style={{ color: 'var(--foreground)' }}>Versión {v.version}</span>
-                    <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                    <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                       {new Date(v.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
@@ -2525,7 +2525,7 @@ export function AuditorEjecucion() {
                     if (!val) return null
                     return (
                       <div key={campo}>
-                        <p className="text-[10px] font-medium" style={{ color: 'var(--muted-foreground)' }}>{etiqueta}</p>
+                        <p className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>{etiqueta}</p>
                         <p className="text-xs" style={{ color: 'var(--foreground)' }}>{val}</p>
                       </div>
                     )
@@ -2544,7 +2544,7 @@ export function AuditorEjecucion() {
             <div className="min-w-0 flex-1">
               <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Antecedentes — Incidencias M13</h2>
               {sheetIncidenciasHallazgo && (
-                <p className="text-[10px] mt-0.5 line-clamp-1" style={{ color: 'var(--muted-foreground)' }}>
+                <p className="text-caption mt-0.5 line-clamp-1" style={{ color: 'var(--muted-foreground)' }}>
                   {sheetIncidenciasHallazgo.descripcion}
                 </p>
               )}
@@ -2580,24 +2580,24 @@ export function AuditorEjecucion() {
                       >
                         <div className="flex items-center gap-2 flex-wrap">
                           <span
-                            className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
+                            className="text-caption font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
                             style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                           >
                             {v.relation_type === 'ANTECEDENTE' ? 'Antecedente' : 'Evidencia'}
                           </span>
                           {fecha && (
-                            <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                            <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                               {new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
                             </span>
                           )}
                         </div>
-                        <p className="text-[0.8125rem] leading-snug" style={{ color: 'var(--foreground)' }}>{desc}</p>
+                        <p className="text-body leading-snug" style={{ color: 'var(--foreground)' }}>{desc}</p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <a
                             href="/inocuidad/incidencias"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-[10px] h-6 px-2 rounded"
+                            className="flex items-center gap-1 text-caption h-6 px-2 rounded"
                             style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
                           >
                             <AlertTriangle size={10} />
@@ -2606,7 +2606,7 @@ export function AuditorEjecucion() {
                           <button
                             onClick={() => handleQuitarIncidencia(v.id)}
                             disabled={incQuitandoId === v.id}
-                            className="flex items-center gap-1 text-[10px] h-6 px-2 rounded disabled:opacity-50 ml-auto"
+                            className="flex items-center gap-1 text-caption h-6 px-2 rounded disabled:opacity-50 ml-auto"
                             style={{ color: 'var(--agro-danger-text)' }}
                           >
                             {incQuitandoId === v.id
@@ -2631,7 +2631,7 @@ export function AuditorEjecucion() {
 
               <div className="flex gap-2">
                 <div className="flex flex-col gap-1 flex-1">
-                  <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Desde</label>
+                  <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Desde</label>
                   <input
                     type="date"
                     value={incDesde}
@@ -2641,7 +2641,7 @@ export function AuditorEjecucion() {
                   />
                 </div>
                 <div className="flex flex-col gap-1 flex-1">
-                  <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Hasta</label>
+                  <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Hasta</label>
                   <input
                     type="date"
                     value={incHasta}
@@ -2670,10 +2670,10 @@ export function AuditorEjecucion() {
               {incBuscando ? (
                 <div className="flex items-center gap-2 py-1">
                   <Loader size={12} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
-                  <span className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Buscando incidencias…</span>
+                  <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Buscando incidencias…</span>
                 </div>
               ) : incResultados.length === 0 ? (
-                <p className="text-[11px] text-center py-1" style={{ color: 'var(--muted-foreground)' }}>
+                <p className="text-caption text-center py-1" style={{ color: 'var(--muted-foreground)' }}>
                   Usa los filtros y presiona Buscar.
                 </p>
               ) : (
@@ -2686,16 +2686,16 @@ export function AuditorEjecucion() {
                     >
                       <div className="flex items-center gap-2 flex-wrap">
                         <span
-                          className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
+                          className="text-caption font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
                           style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                         >
                           M13
                         </span>
-                        <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                        <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                           {new Date(inc.fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </span>
                       </div>
-                      <p className="text-[11px] leading-snug" style={{ color: 'var(--foreground)' }}>{inc.descripcion}</p>
+                      <p className="text-caption leading-snug" style={{ color: 'var(--foreground)' }}>{inc.descripcion}</p>
                       <Boton onClick={() => handleRelacionarIncidencia(inc)} disabled={!!incRelacionandoId} className="self-end">
                         {incRelacionandoId === inc.incidencia_id
                           ? <Loader size={10} className="animate-spin" />
@@ -2719,7 +2719,7 @@ export function AuditorEjecucion() {
             <div className="min-w-0 flex-1">
               <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Evidencias del hallazgo</h2>
               {sheetEvidenciaHallazgo && (
-                <p className="text-[10px] mt-0.5 line-clamp-1" style={{ color: 'var(--muted-foreground)' }}>
+                <p className="text-caption mt-0.5 line-clamp-1" style={{ color: 'var(--muted-foreground)' }}>
                   {sheetEvidenciaHallazgo.descripcion}
                 </p>
               )}

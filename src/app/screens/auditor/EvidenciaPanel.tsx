@@ -360,7 +360,7 @@ export function EvidenciaPanel({
               {canLink && (
                 <button
                   onClick={() => { setShowGateway(v => !v); setShowFallback(true); setShowUpload(false) }}
-                  className="flex items-center gap-1 text-[10px] font-semibold h-7 px-3 rounded-lg"
+                  className="flex items-center gap-1 text-caption font-semibold h-7 px-3 rounded-lg"
                   style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                 >
                   <Database size={10} />
@@ -374,11 +374,11 @@ export function EvidenciaPanel({
           {showUpload && (
             <div className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="flex items-center justify-between pt-3">
-                <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>Subir evidencia externa</p>
+                <p className="text-caption font-semibold" style={{ color: 'var(--foreground)' }}>Subir evidencia externa</p>
                 <button aria-label="Cerrar" onClick={() => setShowUpload(false)}><X size={14} style={{ color: 'var(--muted-foreground)' }} /></button>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Tipo</label>
+                <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Tipo</label>
                 <select
                   value={uploadTipo}
                   onChange={e => setUploadTipo(e.target.value as AudEvidenciaTipo)}
@@ -390,7 +390,7 @@ export function EvidenciaPanel({
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Código de documento (opcional)</label>
+                <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Código de documento (opcional)</label>
                 <input
                   type="text"
                   value={uploadCodigo}
@@ -400,7 +400,7 @@ export function EvidenciaPanel({
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
+                <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>
                   Archivos <span style={{ color: 'var(--agro-red)' }}>*</span> (puedes elegir varios)
                 </label>
                 <input
@@ -408,11 +408,11 @@ export function EvidenciaPanel({
                   multiple
                   accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.csv,.txt"
                   onChange={e => setUploadFiles(Array.from(e.target.files ?? []))}
-                  className="text-[11px]"
+                  className="text-caption"
                   style={{ color: 'var(--foreground)' }}
                 />
                 {uploadFiles.length > 0 && (
-                  <ul className="text-[10px] flex flex-col gap-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                  <ul className="text-caption flex flex-col gap-0.5" style={{ color: 'var(--muted-foreground)' }}>
                     {uploadFiles.map((f, i) => (
                       <li key={`${f.name}-${i}`}>{f.name} ({(f.size / 1024).toFixed(0)} KB)</li>
                     ))}
@@ -445,7 +445,7 @@ export function EvidenciaPanel({
                   <div key={uso.id} className="px-4 py-3 flex flex-col gap-1.5">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
-                        className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
+                        className="text-caption font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
                         style={esAsset
                           ? { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }
                           : { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
@@ -454,12 +454,12 @@ export function EvidenciaPanel({
                         {esAsset ? 'Carga externa' : `M.A.D.Y · ${snap?.source_module_code ?? '?'}`}
                       </span>
                       {asset?.evidencia_tipo && (
-                        <span className="text-[9px]" style={{ color: 'var(--muted-foreground)' }}>
+                        <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                           {TIPO_LABELS[asset.evidencia_tipo]}
                         </span>
                       )}
                       {asset?.documento_codigo && (
-                        <span className="text-[9px] font-mono" style={{ color: 'var(--foreground)' }}>
+                        <span className="text-caption font-mono" style={{ color: 'var(--foreground)' }}>
                           {asset.documento_codigo}
                           {asset.revision ? ` · ${asset.revision}` : ''}
                         </span>
@@ -467,7 +467,7 @@ export function EvidenciaPanel({
                     </div>
 
                     {snap && (
-                      <p className="text-[10px] font-mono break-all" style={{ color: 'var(--muted-foreground)' }}>
+                      <p className="text-caption font-mono break-all" style={{ color: 'var(--muted-foreground)' }}>
                         SHA: {snap.snapshot_hash.slice(0, 16)}…
                         {snap.source_updated_at && (
                           <span className="ml-2">
@@ -487,7 +487,7 @@ export function EvidenciaPanel({
                       {!esAsset && snap && (
                         <button
                           onClick={() => setViewSnap(viewSnap?.id === snap.id ? null : snap)}
-                          className="flex items-center gap-1 text-[10px] font-semibold h-6 px-2 rounded"
+                          className="flex items-center gap-1 text-caption font-semibold h-6 px-2 rounded"
                           style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)', border: '1px solid var(--border)' }}
                         >
                           <Database size={10} />
@@ -498,7 +498,7 @@ export function EvidenciaPanel({
                         <button
                           onClick={() => handleQuitar(uso.id)}
                           disabled={quitandoId === uso.id}
-                          className="flex items-center gap-1 text-[10px] h-6 px-2 rounded disabled:opacity-50 ml-auto"
+                          className="flex items-center gap-1 text-caption h-6 px-2 rounded disabled:opacity-50 ml-auto"
                           style={{ color: 'var(--agro-danger-text)' }}
                         >
                           {quitandoId === uso.id
@@ -512,7 +512,7 @@ export function EvidenciaPanel({
 
                     {viewSnap?.id === snap?.id && snap && (
                       <pre
-                        className="text-[9px] p-2 rounded overflow-x-auto max-h-40"
+                        className="text-caption p-2 rounded overflow-x-auto max-h-40"
                         style={{
                           backgroundColor: 'var(--muted)',
                           color: 'var(--foreground)',
@@ -535,7 +535,7 @@ export function EvidenciaPanel({
             <div className="border-t border-border flex flex-col gap-0">
               {/* Header */}
               <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-                <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>
+                <p className="text-caption font-semibold" style={{ color: 'var(--foreground)' }}>
                   Evidencia sugerida
                 </p>
                 {sugeridasCargando && (
@@ -558,7 +558,7 @@ export function EvidenciaPanel({
                           setShowGateway(true)
                           handleBuscar(chip.capability)
                         }}
-                        className="text-[9px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1"
+                        className="text-caption font-semibold px-2 py-0.5 rounded-full flex items-center gap-1"
                         style={isHigh
                           ? { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
                           : isMed
@@ -578,10 +578,10 @@ export function EvidenciaPanel({
               {/* Sugeridas list or empty state */}
               {sugeridasCargando ? (
                 <div className="flex items-center gap-2 px-4 pb-3">
-                  <span className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Buscando evidencia sugerida…</span>
+                  <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Buscando evidencia sugerida…</span>
                 </div>
               ) : sugeridas.length === 0 && sugeridasCargadas ? (
-                <p className="text-[11px] px-4 pb-3" style={{ color: 'var(--muted-foreground)' }}>
+                <p className="text-caption px-4 pb-3" style={{ color: 'var(--muted-foreground)' }}>
                   Sin evidencia sugerida para este criterio.{' '}
                   <button
                     onClick={() => { setShowFallback(true); setShowGateway(true); setShowUpload(false) }}
@@ -610,39 +610,39 @@ export function EvidenciaPanel({
                       >
                         <div className="flex items-center gap-2 flex-wrap">
                           <span
-                            className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
+                            className="text-caption font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
                             style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                           >
                             M.A.D.Y · {reg.source_module_code.toUpperCase()}
                           </span>
                           <span
-                            className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
+                            className="text-caption font-semibold px-1.5 py-0.5 rounded-full"
                             style={relStyle}
                           >
                             {relLabel}
                           </span>
                           {reg.preferred && (
                             <span
-                              className="text-[9px] px-1.5 py-0.5 rounded-full"
+                              className="text-caption px-1.5 py-0.5 rounded-full"
                               style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                             >
                               ● Sugerido
                             </span>
                           )}
-                          <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                          <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                             {new Date(reg.record_date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
                           </span>
                           {reg.responsible_name && (
-                            <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                            <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                               · {reg.responsible_name}
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] font-semibold leading-tight" style={{ color: 'var(--foreground)' }}>
+                        <p className="text-caption font-semibold leading-tight" style={{ color: 'var(--foreground)' }}>
                           {reg.title}
                         </p>
                         {reg.human_summary && (
-                          <p className="text-[10px] leading-snug" style={{ color: 'var(--muted-foreground)' }}>
+                          <p className="text-caption leading-snug" style={{ color: 'var(--muted-foreground)' }}>
                             {reg.human_summary}
                           </p>
                         )}
@@ -650,7 +650,7 @@ export function EvidenciaPanel({
                           {reg.source_route && (
                             <button
                               onClick={() => window.open(reg.source_route!, '_blank')}
-                              className="flex items-center gap-1 text-[10px] h-6 px-2 rounded"
+                              className="flex items-center gap-1 text-caption h-6 px-2 rounded"
                               style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
                             >
                               <ExternalLink size={10} />
@@ -679,14 +679,14 @@ export function EvidenciaPanel({
           {showGateway && (
             <div className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="flex items-center justify-between pt-3">
-                <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>Buscar en otro módulo</p>
+                <p className="text-caption font-semibold" style={{ color: 'var(--foreground)' }}>Buscar en otro módulo</p>
                 <button aria-label="Cerrar" onClick={() => setShowGateway(false)}>
                   <X size={14} style={{ color: 'var(--muted-foreground)' }} />
                 </button>
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Tipo de registro</label>
+                <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Tipo de registro</label>
                 <select
                   value={gwCapacidad}
                   onChange={e => { setGwCapacidad(e.target.value); handleBuscar(e.target.value) }}
@@ -700,7 +700,7 @@ export function EvidenciaPanel({
 
               <div className="flex gap-2">
                 <div className="flex flex-col gap-1 flex-1">
-                  <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Desde</label>
+                  <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Desde</label>
                   <input
                     type="date"
                     value={gwDesde}
@@ -709,7 +709,7 @@ export function EvidenciaPanel({
                   />
                 </div>
                 <div className="flex flex-col gap-1 flex-1">
-                  <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Hasta</label>
+                  <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Hasta</label>
                   <input
                     type="date"
                     value={gwHasta}
@@ -740,10 +740,10 @@ export function EvidenciaPanel({
               {gwCargando ? (
                 <div className="flex items-center gap-2 py-2">
                   <Loader size={12} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
-                  <span className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Buscando registros…</span>
+                  <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Buscando registros…</span>
                 </div>
               ) : gwRegistros.length === 0 ? (
-                <p className="text-[11px] py-2 text-center" style={{ color: 'var(--muted-foreground)' }}>
+                <p className="text-caption py-2 text-center" style={{ color: 'var(--muted-foreground)' }}>
                   Sin registros disponibles para esta capacidad.
                 </p>
               ) : (
@@ -756,25 +756,25 @@ export function EvidenciaPanel({
                     >
                       <div className="flex items-center gap-2 flex-wrap">
                         <span
-                          className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
+                          className="text-caption font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
                           style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                         >
                           Origen: M.A.D.Y · {reg.source_module_code.toUpperCase()}
                         </span>
-                        <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                        <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                           {new Date(reg.record_date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </span>
                         {reg.responsible_name && (
-                          <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                          <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                             · {reg.responsible_name}
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] font-semibold leading-tight" style={{ color: 'var(--foreground)' }}>
+                      <p className="text-caption font-semibold leading-tight" style={{ color: 'var(--foreground)' }}>
                         {reg.title}
                       </p>
                       {reg.human_summary && (
-                        <p className="text-[10px] leading-snug" style={{ color: 'var(--muted-foreground)' }}>
+                        <p className="text-caption leading-snug" style={{ color: 'var(--muted-foreground)' }}>
                           {reg.human_summary}
                         </p>
                       )}
@@ -782,7 +782,7 @@ export function EvidenciaPanel({
                         {reg.source_route && (
                           <button
                             onClick={() => window.open(reg.source_route!, '_blank')}
-                            className="flex items-center gap-1 text-[10px] h-6 px-2 rounded"
+                            className="flex items-center gap-1 text-caption h-6 px-2 rounded"
                             style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
                           >
                             <ExternalLink size={10} />

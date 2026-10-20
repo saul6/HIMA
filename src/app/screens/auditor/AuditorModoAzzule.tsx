@@ -176,7 +176,7 @@ export function AuditorModoAzzule() {
           </div>
           {!loading && items.length > 0 && (
             <span
-              className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+              className="text-caption font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
               style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
             >
               {currentIndex + 1} / {items.length}
@@ -184,7 +184,7 @@ export function AuditorModoAzzule() {
           )}
         </div>
         <div className="px-4 pb-2.5">
-          <p className="text-[10px] italic" style={{ color: 'var(--muted-foreground)' }}>
+          <p className="text-caption italic" style={{ color: 'var(--muted-foreground)' }}>
             M.A.D.Y organiza, valida y da seguimiento. No sustituye a PrimusGFS, Azzule Systems, al auditor autorizado ni al organismo de certificación.
           </p>
         </div>
@@ -202,7 +202,7 @@ export function AuditorModoAzzule() {
             <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
               No hay acciones listas para Azzule en este momento.
             </p>
-            <p className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+            <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
               Completa los campos requeridos en cada acción y válida antes de continuar.
             </p>
             <Boton onClick={() => navigate(`/auditor/auditoria/${auditoriaId}`, { state: backState })} className="mt-2">
@@ -214,11 +214,11 @@ export function AuditorModoAzzule() {
             {/* NC header */}
             <div className="rounded-xl px-4 py-3 flex flex-col gap-2" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
+                <span className="text-caption font-bold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
                   NC {currentIndex + 1} de {items.length}
                 </span>
                 <span
-                  className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                  className="text-caption font-semibold px-1.5 py-0.5 rounded"
                   style={{
                     backgroundColor: current.hallazgo.clasificacion === 'critico' || current.hallazgo.clasificacion === 'mayor'
                       ? 'var(--agro-danger-fill)' : 'var(--muted)',
@@ -235,7 +235,7 @@ export function AuditorModoAzzule() {
               {current.marcada && (
                 <div className="flex items-center gap-1">
                   <CheckCircle size={11} style={{ color: 'var(--agro-success-text)' }} />
-                  <span className="text-[10px] font-semibold" style={{ color: 'var(--agro-success-text)' }}>
+                  <span className="text-caption font-semibold" style={{ color: 'var(--agro-success-text)' }}>
                     Enviada — verifica aceptación en Azzule Systems
                   </span>
                 </div>
@@ -248,7 +248,7 @@ export function AuditorModoAzzule() {
                 <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>Respuesta lista</span>
                 <button
                   onClick={handleCopiar}
-                  className="flex items-center gap-1.5 text-[10px] font-semibold h-7 px-2.5 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 text-caption font-semibold h-7 px-2.5 rounded-lg transition-colors"
                   style={copied
                     ? { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
                     : { backgroundColor: 'var(--primary)', color: '#fff' }
@@ -265,7 +265,7 @@ export function AuditorModoAzzule() {
                   const texto = buildRespuestaText(current.accion)
                   return texto.trim() ? (
                     <pre
-                      className="text-[11px] whitespace-pre-wrap leading-relaxed"
+                      className="text-caption whitespace-pre-wrap leading-relaxed"
                       style={{ color: 'var(--foreground)', fontFamily: 'inherit' }}
                     >
                       {texto}
@@ -285,7 +285,7 @@ export function AuditorModoAzzule() {
                 <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>Evidencias</span>
               </div>
               <div className="px-4 py-3">
-                <p className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+                <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                   Evidencias — disponible con el módulo de evidencias.
                 </p>
               </div>

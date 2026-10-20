@@ -35,7 +35,7 @@ function formatRango(inicio: string, fin: string): string {
 function ChipVisita() {
   return (
     <span
-      className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+      className="text-caption font-semibold px-2 py-0.5 rounded-full"
       style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
     >
       Visita
@@ -46,7 +46,7 @@ function ChipVisita() {
 function ChipAviso() {
   return (
     <span
-      className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+      className="text-caption font-semibold px-2 py-0.5 rounded-full"
       style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
     >
       Se elimina — descarga tu reporte

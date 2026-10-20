@@ -33,34 +33,34 @@ function FilaOperacion({
       titulo={
         <>
           {fila.operacion}
-          {fila.operacion_codigo ? <span className="ml-1.5 text-[10px] font-mono" style={{ color: 'var(--muted-foreground)' }}>({fila.operacion_codigo})</span> : null}
+          {fila.operacion_codigo ? <span className="ml-1.5 text-caption font-mono" style={{ color: 'var(--muted-foreground)' }}>({fila.operacion_codigo})</span> : null}
         </>
       }
       lineas={
         <>
           <span className="flex flex-wrap gap-2">
             {fila.producto && (
-              <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+              <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                 {fila.producto}
               </span>
             )}
             {fila.tipo_operacion && (
-              <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+              <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                 · {fila.tipo_operacion}
               </span>
             )}
             {fila.modulos.length > 0 && (
-              <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+              <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                 · {fila.modulos.map(m => MODULO_LABELS[m] ?? `M${m}`).join(', ')}
               </span>
             )}
-            <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+            <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
               · {formatFecha(fila.fecha)}
             </span>
           </span>
           <span className="mt-1 flex flex-wrap gap-1.5">
             <span
-              className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium"
+              className="inline-flex items-center px-1.5 py-0.5 rounded text-caption font-medium"
               style={{
                 backgroundColor: fila.estado === 'en_proceso' ? 'var(--agro-info-fill)' : 'var(--muted)',
                 color: fila.estado === 'en_proceso' ? 'var(--agro-info-text)' : 'var(--muted-foreground)',
@@ -69,13 +69,13 @@ function FilaOperacion({
               {fila.estado === 'en_proceso' ? 'En proceso' : fila.estado}
             </span>
             {fila.efimera && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]"
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-caption"
                 style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
                 Instalación no vinculada
               </span>
             )}
             {fila.en_jornada_abierta && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]"
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-caption"
                 style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
                 Ya en jornada abierta
               </span>
@@ -227,7 +227,7 @@ export function NuevaJornada() {
               className="px-4 py-2"
               style={{ backgroundColor: 'var(--muted)' }}
             >
-              <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
+              <p className="text-caption font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
                 {productor}
               </p>
             </div>
@@ -245,7 +245,7 @@ export function NuevaJornada() {
         {/* Enlace a nuevas auditorías */}
         {!cargandoCandidatas && candidatas.length > 0 && (
           <div className="px-4 py-3 border-t border-border mt-2">
-            <p className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+            <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
               ¿Necesitas crear una auditoría?{' '}
               <button
                 onClick={() => navigate('/auditor')}
