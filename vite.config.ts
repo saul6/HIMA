@@ -43,7 +43,7 @@ export default defineConfig({
         name: 'M.A.D.Y',
         short_name: 'M.A.D.Y',
         description: 'Inocuidad Inteligente',
-        theme_color: '#2B7AB5',
+        theme_color: '#173251',
         background_color: '#F8F9FA',
         display: 'standalone',
         start_url: '/',

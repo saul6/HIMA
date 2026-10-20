@@ -293,7 +293,7 @@ Fuente de verdad: `src/styles/theme.css`, bloque `@theme inline`.
 ```css
 /* Modo claro */
 --primary:              #173251   /* Navy — botones, toggles activos, FAB */
---secondary:            #2AAD95   /* Menta — acento, NUNCA primario */
+--secondary:            #2AAD95   /* Menta — acento, NUNCA primario; texto encima: navy (--secondary-foreground) */
 --ring:                 #81BEE5   /* Foco */
 --agro-blue:            #81BEE5   /* Sky — acento secundario */
 --background:           #F8F9FA
@@ -313,7 +313,7 @@ Fuente de verdad: `src/styles/theme.css`, bloque `@theme inline`.
 --agro-info-fill:       #EBF5FB / #0F1E2E   /* avisos informativos (navy/sky) */
 --agro-info-text:       #173251 / #81BEE5
 --agro-danger-fill:     #FAECE7 / #2D1515
---agro-danger-text:     #993C1D / #E54D4D
+--agro-danger-text:     #C02A2A / #EC5F5F
 --agro-red:             #C02A2A / #E54D4D
 ```
 

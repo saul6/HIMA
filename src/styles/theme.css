@@ -15,7 +15,7 @@
   --primary: #173251;             /* Azul Oscuro Principal */
   --primary-foreground: #FFFFFF;
   --secondary: #2AAD95;           /* Verde Esmeralda/Menta */
-  --secondary-foreground: #FFFFFF;
+  --secondary-foreground: #173251;     /* Navy sobre menta: 4.66:1 */
   --muted: #E3EAF1;               /* Azul/Gris Muted claro */
   --muted-foreground: #4A5A6C;
   --accent: #D6E8F6;              /* Fondo de Acento (Azul Cielo Claro) */
@@ -48,7 +48,7 @@
   --agro-info-fill: #EBF5FB;
   --agro-info-text: #173251;
   --agro-danger-fill: #FAECE7;
-  --agro-danger-text: #993C1D;
+  --agro-danger-text: #C02A2A;
   
   --chart-1: #173251;
   --chart-2: #2AAD95;
@@ -201,7 +201,7 @@
   --primary: #81BEE5;             /* En modo oscuro destaca más el Azul Cielo */
   --primary-foreground: #090D15;
   --secondary: #2AAD95;
-  --secondary-foreground: #FFFFFF;
+  --secondary-foreground: #090D15;
   --muted: #1A2332;
   --muted-foreground: #8B9BB4;
   --accent: #173251;
@@ -243,7 +243,7 @@
   --agro-info-fill: #0F1E2E;
   --agro-info-text: #81BEE5;
   --agro-danger-fill: #2D1515;
-  --agro-danger-text: #E54D4D;
+  --agro-danger-text: #EC5F5F;
 
   /* Scrollbars nativas en modo oscuro — pista y pulgar en tonos navy/gris azulado de marca */
   --scrollbar-track: var(--muted);

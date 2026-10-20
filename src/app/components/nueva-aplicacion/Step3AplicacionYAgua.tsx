@@ -147,7 +147,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
             onClick={() => updateFormData({ chlorination: true })}
             className={`flex-1 h-12 rounded-full transition-all ${
               formData.chlorination
-                ? "bg-[#2B7AB5] text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-white border border-gray-300 text-gray-700"
             }`}
             style={{ fontWeight: 600 }}
@@ -158,7 +158,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
             onClick={() => updateFormData({ chlorination: false })}
             className={`flex-1 h-12 rounded-full transition-all ${
               !formData.chlorination
-                ? "bg-[#2B7AB5] text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-white border border-gray-300 text-gray-700"
             }`}
             style={{ fontWeight: 600 }}
@@ -200,7 +200,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
             onClick={() => updateFormData({ weather: condition })}
             className={`flex-shrink-0 px-4 h-10 rounded-full transition-all whitespace-nowrap ${
               formData.weather === condition
-                ? "bg-[#2B7AB5] text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-white border border-gray-300 text-gray-700"
             }`}
             style={{ fontWeight: 600 }}
@@ -287,7 +287,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
               onClick={() => togglePPE(item)}
               className={`h-12 rounded-full transition-all ${
                 formData.ppe[item]
-                  ? "bg-[#2B7AB5] text-white"
+                  ? "bg-primary text-primary-foreground"
                   : "bg-white border border-gray-300 text-gray-700"
               }`}
               style={{ fontWeight: 600 }}

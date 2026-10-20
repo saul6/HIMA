@@ -19,13 +19,13 @@ function RootError() {
         background: 'var(--background, #F8F9FA)',
       }}
     >
-      <p className="text-sm text-center" style={{ color: 'var(--agro-danger-text, #993C1D)' }}>
+      <p className="text-sm text-center" style={{ color: 'var(--agro-danger-text, #C02A2A)' }}>
         Algo salió mal. Tus datos guardados sin conexión siguen en la cola.
       </p>
       <button
         onClick={() => navigate('/', { replace: true })}
         className="text-sm underline"
-        style={{ color: 'var(--primary, #2B7AB5)' }}
+        style={{ color: 'var(--primary)' }}
       >
         Volver al inicio
       </button>
