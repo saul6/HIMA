@@ -35,7 +35,7 @@ export function PreguntaItem({
     <div className="py-3 border-b border-border last:border-b-0">
       <div className="mb-2">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[10px] text-muted-foreground shrink-0">{pregunta.codigo}</span>
+          <span className="text-caption text-muted-foreground shrink-0">{pregunta.codigo}</span>
           {pregunta.puntos > 0 ? (
             <Etiqueta tono="neutral">
               {pregunta.puntos} pts
@@ -77,7 +77,7 @@ export function PreguntaItem({
         />
       )}
       {respuesta && (comentario?.length ?? 0) > 0 && (
-        <p className="text-[11px] text-right mt-0.5 text-muted-foreground">{comentario!.length} / 1000</p>
+        <p className="text-caption text-right mt-0.5 text-muted-foreground">{comentario!.length} / 1000</p>
       )}
     </div>
   )

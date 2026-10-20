@@ -170,7 +170,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
         {!value.temporada?.todo_el_ano && (
           <div className="flex gap-2">
             <div className="flex-1">
-              <p className="text-[10px] text-muted-foreground mb-1">DESDE</p>
+              <p className="text-caption text-muted-foreground mb-1">DESDE</p>
               <select
                 value={value.temporada?.desde_mes ?? ''}
                 onChange={(e) =>
@@ -183,7 +183,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
               </select>
             </div>
             <div className="flex-1">
-              <p className="text-[10px] text-muted-foreground mb-1">HASTA</p>
+              <p className="text-caption text-muted-foreground mb-1">HASTA</p>
               <select
                 value={value.temporada?.al_mes ?? ''}
                 onChange={(e) =>

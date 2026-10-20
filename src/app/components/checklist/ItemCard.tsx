@@ -126,7 +126,7 @@ export function ItemCard({ item, codigoClave, puedeEditar, onAbrir, onRevisar }:
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          {codigo && <p className="text-[11px] text-muted-foreground">{codigo}</p>}
+          {codigo && <p className="text-caption text-muted-foreground">{codigo}</p>}
           <p className="text-sm text-foreground leading-snug" style={{ fontWeight: 600 }}>{item.nombre}</p>
           {responsable && <p className="text-xs text-muted-foreground mt-0.5">{responsable}</p>}
           {textoFrecuencia(item) && <p className="text-xs text-muted-foreground mt-0.5">{textoFrecuencia(item)}</p>}
@@ -134,7 +134,7 @@ export function ItemCard({ item, codigoClave, puedeEditar, onAbrir, onRevisar }:
         <div className="flex-shrink-0 text-right space-y-1">
           {rev && tono ? (
             <span
-              className="inline-block rounded-full px-2 py-0.5 text-[11px]"
+              className="inline-block rounded-full px-2 py-0.5 text-caption"
               style={{ backgroundColor: tono.fill, color: tono.text, fontWeight: 600 }}
             >
               {ESTADO_REVISION_LABEL[rev.estado]}
@@ -144,7 +144,7 @@ export function ItemCard({ item, codigoClave, puedeEditar, onAbrir, onRevisar }:
               Sin revisar
             </Etiqueta>
           )}
-          {rev && <p className="text-[11px] text-muted-foreground">{haceDias(item.dias_sin_revisar)}</p>}
+          {rev && <p className="text-caption text-muted-foreground">{haceDias(item.dias_sin_revisar)}</p>}
         </div>
       </div>
 

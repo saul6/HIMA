@@ -113,7 +113,7 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
     <div className="flex flex-col gap-4">
       {/* Encabezado de sección */}
       <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-[13px] text-agro-success-text" style={{ fontWeight: 600 }}>
+        <h3 className="text-body text-agro-success-text" style={{ fontWeight: 600 }}>
           PRODUCTOS APLICADOS
         </h3>
       </div>

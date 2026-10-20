@@ -340,7 +340,7 @@ function FilaVisita({ visita, abierta, onToggle, hook, pdf, firmas, loadingFirma
       expandido={abierta}
       derecha={
         <div className="flex items-center gap-2 flex-shrink-0 self-center">
-          <span className="rounded-full px-2 py-0.5 text-[11px]" style={{ backgroundColor: tono.fill, color: tono.text, fontWeight: 600 }}>
+          <span className="rounded-full px-2 py-0.5 text-caption" style={{ backgroundColor: tono.fill, color: tono.text, fontWeight: 600 }}>
             {visita.atrasada ? 'Atrasada' : visita.estado === 'programada' ? 'Programada' : visita.estado === 'realizada' ? 'Realizada' : 'Cancelada'}
           </span>
           <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${abierta ? 'rotate-180' : ''}`} />

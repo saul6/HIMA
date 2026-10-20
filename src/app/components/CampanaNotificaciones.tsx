@@ -88,7 +88,7 @@ export function CampanaNotificaciones({ iconClassName = 'w-4 h-4' }: { iconClass
         <Bell className={iconClassName} style={{ color: 'var(--muted-foreground)' }} />
         {noLeidas > 0 && (
           <span
-            className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[10px] font-bold px-0.5 leading-none"
+            className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full flex items-center justify-center text-caption font-bold px-0.5 leading-none"
             style={{ backgroundColor: 'var(--agro-red)', color: 'var(--primary-foreground)' }}
           >
             {noLeidas > 9 ? '9+' : noLeidas}
@@ -155,7 +155,7 @@ export function CampanaNotificaciones({ iconClassName = 'w-4 h-4' }: { iconClass
                           {n.cuerpo}
                         </p>
                       )}
-                      <p className="text-[10px] mt-1" style={{ color: 'var(--muted-foreground)' }}>
+                      <p className="text-caption mt-1" style={{ color: 'var(--muted-foreground)' }}>
                         {new Date(n.created_at).toLocaleDateString('es-MX', {
                           day: 'numeric', month: 'short',
                         })}

@@ -100,7 +100,7 @@ function FirmaEstadoChip({ firma, label }: { firma: FirmaDetalle | FirmaEnterado
   if (!firma) {
     return (
       <div>
-        <p className="text-[10px] mb-1" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+        <p className="text-caption mb-1" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
           {label}
         </p>
         <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Pendiente de firma</p>
@@ -111,7 +111,7 @@ function FirmaEstadoChip({ firma, label }: { firma: FirmaDetalle | FirmaEnterado
   if (firma.estado === 'desactualizada') {
     return (
       <div>
-        <p className="text-[10px] mb-1" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+        <p className="text-caption mb-1" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
           {label}
         </p>
         <div className="flex items-start gap-1">
@@ -131,7 +131,7 @@ function FirmaEstadoChip({ firma, label }: { firma: FirmaDetalle | FirmaEnterado
       animate={{ backgroundColor: resaltado ? 'var(--agro-success-fill)' : 'rgba(0,0,0,0)' }}
       transition={{ duration: resaltado ? 0.15 : 0.6, ease: [0.22, 1, 0.36, 1] }}
     >
-      <p className="text-[10px] mb-1" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
+      <p className="text-caption mb-1" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>
         {label}
       </p>
       <div className="flex items-center gap-1">
@@ -141,13 +141,13 @@ function FirmaEstadoChip({ firma, label }: { firma: FirmaDetalle | FirmaEnterado
         </p>
       </div>
       {cargo && (
-        <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>{cargo}</p>
+        <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>{cargo}</p>
       )}
-      <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+      <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
         {formatFirmaFecha(firma.firmado_en)}
       </p>
       {capturadoPor && (
-        <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+        <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
           Capturada por {capturadoPor}
         </p>
       )}
@@ -673,18 +673,18 @@ export function FirmasRegistro({
                 </div>
                 <p className="text-xs" style={{ color: 'var(--foreground)' }}>{h.firmante}</p>
                 {h.rol_firma === 'enterado' && h.cargo && (
-                  <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>{h.cargo}</p>
+                  <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>{h.cargo}</p>
                 )}
                 {h.rol_firma === 'enterado' && h.capturado_por && (
-                  <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                  <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                     Capturada por {h.capturado_por}
                   </p>
                 )}
-                <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                   {formatFirmaFecha(h.firmado_en)}
                 </p>
                 {h.sello && (
-                  <p className="text-[10px] font-mono" style={{ color: 'var(--muted-foreground)' }}>
+                  <p className="text-caption font-mono" style={{ color: 'var(--muted-foreground)' }}>
                     Sello: {(h.sello ?? '').slice(0, 12)}
                   </p>
                 )}

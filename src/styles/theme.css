@@ -217,7 +217,7 @@
   --mint-tint-fill: var(--primary);
   --mint-tint-text: #FFFFFF;
   --mint-tint-border: transparent;
-  --font-weight-medium: 500;
+  --font-weight-medium: 600;
   --font-weight-normal: 400;
   --chart-1: #81BEE5;
   --chart-2: #2AAD95;
@@ -277,6 +277,20 @@
   --color-ring: var(--ring);
   --color-text-sky-strong: var(--text-sky-strong);
   --color-text-mint-strong: var(--text-mint-strong);
+
+  /* Escala de letra (5 tamaños). Piso 11 px. Solo pesos cargados: 400 y 600. */
+  --text-caption: 0.6875rem;
+  --text-caption--line-height: 1rem;
+  --text-small: 0.75rem;
+  --text-small--line-height: 1rem;
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.25rem;
+  --text-seccion: 1rem;
+  --text-seccion--line-height: 1.5rem;
+  --text-seccion--font-weight: 600;
+  --text-pantalla: 1.25rem;
+  --text-pantalla--line-height: 1.75rem;
+  --text-pantalla--font-weight: 600;
   
   /* AgroCampo Brand Colors */
   --color-agro-primary: var(--agro-primary);

@@ -53,7 +53,7 @@ export function SeccionAccordion({
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span
-            className={`text-[11px] px-2 py-0.5 rounded ${scoreClass(porcentaje, puntos_posibles)}`}
+            className={`text-caption px-2 py-0.5 rounded ${scoreClass(porcentaje, puntos_posibles)}`}
             style={{ fontWeight: 600 }}
           >
             {puntos_posibles > 0

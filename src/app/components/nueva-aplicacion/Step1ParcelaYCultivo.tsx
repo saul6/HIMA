@@ -37,7 +37,7 @@ export function Step1ParcelaYCultivo({ formData, updateFormData, onNext, esCampo
     <div className="flex flex-col" style={{ gap: '16px' }}>
       {/* Encabezado de sección */}
       <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-[13px] text-agro-success-text" style={{ fontWeight: 600 }}>
+        <h3 className="text-body text-agro-success-text" style={{ fontWeight: 600 }}>
           INFORMACIÓN DE PARCELA Y CULTIVO
         </h3>
       </div>
@@ -104,7 +104,7 @@ export function Step1ParcelaYCultivo({ formData, updateFormData, onNext, esCampo
 
       {/* Encabezado de sección */}
       <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-[13px] text-agro-success-text" style={{ fontWeight: 600 }}>
+        <h3 className="text-body text-agro-success-text" style={{ fontWeight: 600 }}>
           FECHAS Y HORARIOS
         </h3>
       </div>

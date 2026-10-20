@@ -37,7 +37,7 @@ function chipEstado(estado: EstadoAuditoria) {
   if (estado === 'completada') {
     return (
       <span
-        className="text-[11px] px-2 py-0.5 rounded shrink-0"
+        className="text-caption px-2 py-0.5 rounded shrink-0"
         style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
       >
         Completada
@@ -46,7 +46,7 @@ function chipEstado(estado: EstadoAuditoria) {
   }
   return (
     <span
-      className="text-[11px] px-2 py-0.5 rounded shrink-0"
+      className="text-caption px-2 py-0.5 rounded shrink-0"
       style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}
     >
       Borrador
@@ -63,7 +63,7 @@ function scoreChip(porcentaje: number, posibles: number) {
       ? 'bg-agro-info-fill text-agro-info-text'
       : 'bg-agro-danger-fill text-agro-danger-text'
   return (
-    <span className={`text-[11px] px-2 py-0.5 rounded shrink-0 ${cls}`} style={{ fontWeight: 600 }}>
+    <span className={`text-caption px-2 py-0.5 rounded shrink-0 ${cls}`} style={{ fontWeight: 600 }}>
       {porcentaje}%
     </span>
   )

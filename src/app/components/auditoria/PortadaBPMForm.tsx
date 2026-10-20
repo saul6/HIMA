@@ -125,7 +125,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
         {!value.temporada?.todo_el_ano && (
           <div className="flex gap-2">
             <div className="flex-1">
-              <p className="text-[10px] text-muted-foreground mb-1">DESDE</p>
+              <p className="text-caption text-muted-foreground mb-1">DESDE</p>
               <select
                 value={value.temporada?.desde_mes ?? ''}
                 onChange={(e) =>
@@ -138,7 +138,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
               </select>
             </div>
             <div className="flex-1">
-              <p className="text-[10px] text-muted-foreground mb-1">HASTA</p>
+              <p className="text-caption text-muted-foreground mb-1">HASTA</p>
               <select
                 value={value.temporada?.al_mes ?? ''}
                 onChange={(e) =>
@@ -310,7 +310,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
         <p className="text-xs text-muted-foreground mb-2" style={{ fontWeight: 600 }}>
           PRODUCTOS MANEJADOS EN LA INSTALACIÓN
         </p>
-        <p className="text-[10px] text-muted-foreground mb-2">
+        <p className="text-caption text-muted-foreground mb-2">
           Escribe cada producto y presiona Enter para agregar.
         </p>
         <div className="flex flex-wrap gap-1.5 mb-2">

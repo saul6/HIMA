@@ -218,7 +218,7 @@ function Contenido({
               <Pildora key={f.value} activa={frecuencia === f.value} onClick={() => setFrecuencia(f.value)} disabled={guardandoFrec}>
                 {f.label}
                 {item.frecuencia_sugerida === f.value && (
-                  <span className="ml-1.5 text-[10px] opacity-80" style={{ fontWeight: 400 }}>Sugerida</span>
+                  <span className="ml-1.5 text-caption opacity-80" style={{ fontWeight: 400 }}>Sugerida</span>
                 )}
               </Pildora>
             ))}
@@ -240,7 +240,7 @@ function Contenido({
             />
           )}
           {item.frecuencia_fijada_en && (
-            <p className="text-[11px] text-muted-foreground">Fijada el {fechaLarga(item.frecuencia_fijada_en)}</p>
+            <p className="text-caption text-muted-foreground">Fijada el {fechaLarga(item.frecuencia_fijada_en)}</p>
           )}
           <button
             type="button"
@@ -339,16 +339,16 @@ function Contenido({
               return (
                 <li key={i} className="rounded-lg border border-border p-3 space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="rounded-full px-2 py-0.5 text-[11px]" style={{ backgroundColor: t.fill, color: t.text, fontWeight: 600 }}>
+                    <span className="rounded-full px-2 py-0.5 text-caption" style={{ backgroundColor: t.fill, color: t.text, fontWeight: 600 }}>
                       {ESTADO_REVISION_LABEL[h.estado]}
                     </span>
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-caption text-muted-foreground">
                       {fechaLarga(h.revisado_en)}{h.revisado_por ? ` · ${h.revisado_por}` : ''}
                     </span>
                   </div>
                   {h.observacion && <p className="text-xs text-foreground whitespace-pre-wrap">{h.observacion}</p>}
                   {h.notas?.map((n, j) => (
-                    <p key={j} className="text-[11px] text-muted-foreground">{n.texto}</p>
+                    <p key={j} className="text-caption text-muted-foreground">{n.texto}</p>
                   ))}
                 </li>
               )
@@ -356,7 +356,7 @@ function Contenido({
           </ul>
         )}
         {item.ultima_revision && (
-          <p className="text-[11px] text-muted-foreground">Última revisión {haceDias(item.dias_sin_revisar)}</p>
+          <p className="text-caption text-muted-foreground">Última revisión {haceDias(item.dias_sin_revisar)}</p>
         )}
       </section>
     </div>

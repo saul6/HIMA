@@ -13,7 +13,7 @@ export function InputContador({ limite, value, ...props }: Props) {
     <>
       <input {...props} value={value} maxLength={limite} />
       <p
-        className="text-[11px] text-right mt-0.5"
+        className="text-caption text-right mt-0.5"
         style={{ color: cerca ? 'var(--agro-info-text)' : 'var(--muted-foreground)' }}
       >
         {largo} / {limite}

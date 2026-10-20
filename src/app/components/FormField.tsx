@@ -25,7 +25,7 @@ export function FormField({
     <div className="relative mt-3">
       <label
         className={`absolute left-4 transition-all pointer-events-none text-muted-foreground z-10
-          ${isFloating ? "top-2 text-[11px]" : "top-4 text-sm"}`}
+          ${isFloating ? "top-2 text-caption" : "top-4 text-sm"}`}
         style={{ fontWeight: isFloating ? 600 : 400 }}
       >
         {label}

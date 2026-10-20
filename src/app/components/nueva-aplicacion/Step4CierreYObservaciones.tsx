@@ -38,7 +38,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
 
       {/* Section Header */}
       <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-[13px] text-agro-success-text" style={{ fontWeight: 600 }}>
+        <h3 className="text-body text-agro-success-text" style={{ fontWeight: 600 }}>
           CALDOS SOBRANTES
         </h3>
       </div>
@@ -125,7 +125,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
 
       {/* Section Header */}
       <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-[13px] text-agro-success-text" style={{ fontWeight: 600 }}>
+        <h3 className="text-body text-agro-success-text" style={{ fontWeight: 600 }}>
           PERSONAL Y RESPONSABLES
         </h3>
       </div>
@@ -153,7 +153,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
 
       {/* Section Header */}
       <div className="bg-agro-success-fill -mx-4 px-4 py-2">
-        <h3 className="text-[13px] text-agro-success-text" style={{ fontWeight: 600 }}>
+        <h3 className="text-body text-agro-success-text" style={{ fontWeight: 600 }}>
           OBSERVACIONES
         </h3>
       </div>
