@@ -944,7 +944,7 @@ export function BotiquinPrimerosAuxilios() {
                         ref={firmaPadDecisionRef}
                         onChange={(info) => setFirmaPadDecisionInfo(info)}
                       />
-                      <Boton onClick={handleGuardarFirmaDecision} disabled={guardandoFirmaDecision || firmaPadDecisionInfo.puntos < 15} className="w-full">
+                      <Boton onClick={handleGuardarFirmaDecision} cargando={guardandoFirmaDecision} disabled={firmaPadDecisionInfo.puntos < 15} className="w-full">
                         {guardandoFirmaDecision ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : 'Guardar mi firma'}

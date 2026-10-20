@@ -627,7 +627,7 @@ function DetalleSheet({
               ref={firmaRef}
               onChange={({ puntos }) => setFirmaPuntos(puntos)}
             />
-            <Boton onClick={handleFirmarAcuse} disabled={firmando || firmaPuntos < 15} className="w-full">
+            <Boton onClick={handleFirmarAcuse} cargando={firmando} disabled={firmaPuntos < 15} className="w-full">
               {firmando
                 ? <Loader2 className="w-4 h-4 animate-spin" />
                 : <><PenLine className="w-4 h-4" /> Firmar de enterado</>
@@ -858,7 +858,7 @@ function DetalleSheet({
                   >
                     Cancelar
                   </button>
-                  <Boton onClick={handleReportar} disabled={guardando || (!reportarNota.trim() && fotosLocales.length === 0)} className="flex-1">
+                  <Boton onClick={handleReportar} cargando={guardando} disabled={(!reportarNota.trim() && fotosLocales.length === 0)} className="flex-1">
                     {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Confirmar'}
                   </Boton>
                 </div>
@@ -900,7 +900,7 @@ function DetalleSheet({
                   <button onClick={() => { setAccion(null); setAprobarNota('') }} className="flex-1 h-10 rounded-lg text-sm border border-border hover:bg-muted" style={{ color: 'var(--foreground)' }}>
                     Cancelar
                   </button>
-                  <Boton onClick={handleAprobar} disabled={guardando} className="flex-1">
+                  <Boton onClick={handleAprobar} cargando={guardando} className="flex-1">
                     {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Confirmar'}
                   </Boton>
                 </div>
@@ -1416,7 +1416,7 @@ function EditarForm({
         >
           Cancelar
         </button>
-        <Boton onClick={onSave} disabled={guardando || !form.titulo.trim()} className="flex-1">
+        <Boton onClick={onSave} cargando={guardando} disabled={!form.titulo.trim()} className="flex-1">
           {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Guardar'}
         </Boton>
       </div>

@@ -595,7 +595,7 @@ export function OrdenMantenimiento() {
                 </div>
               </div>
 
-              <Boton onClick={guardar} disabled={cargando} className="w-full">
+              <Boton onClick={guardar} cargando={cargando} className="w-full">
                 {cargando ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />

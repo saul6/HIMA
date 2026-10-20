@@ -118,7 +118,7 @@ function RondinCard({
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">Vigilante: {rondin.vigilante}</p>
         </div>
-        <Boton variante="secundario" tamano="sm" onClick={onPDF} disabled={generando} aria-label="Descargar PDF" className="flex-shrink-0">
+        <Boton variante="secundario" tamano="sm" onClick={onPDF} cargando={generando} aria-label="Descargar PDF" className="flex-shrink-0">
           {generando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
         </Boton>
       </div>
@@ -932,7 +932,7 @@ export function RondinesVigilancia() {
                 </div>
               )}
 
-              <Boton type="button" onClick={handleGuardar} disabled={nGuardando} className="w-full">
+              <Boton type="button" onClick={handleGuardar} cargando={nGuardando} className="w-full">
                 {nGuardando ? (
                   <><Loader2 className="w-4 h-4 animate-spin" />Guardando…</>
                 ) : online ? 'Guardar rondín' : 'Guardar sin conexión'}
@@ -962,7 +962,7 @@ export function RondinesVigilancia() {
 
               {confRanchoId && (
                 <>
-                  <Boton variante="secundario" tamano="sm" type="button" onClick={handleCargarPlantilla} disabled={confCargandoPlantilla} className="w-full">
+                  <Boton variante="secundario" tamano="sm" type="button" onClick={handleCargarPlantilla} cargando={confCargandoPlantilla} className="w-full">
                     {confCargandoPlantilla
                       ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       : <Plus className="w-3.5 h-3.5" />}
@@ -1079,7 +1079,7 @@ export function RondinesVigilancia() {
                   />
                 </div>
               </div>
-              <Boton type="button" onClick={handleConsolidado} disabled={cGenerando} className="w-full">
+              <Boton type="button" onClick={handleConsolidado} cargando={cGenerando} className="w-full">
                 {cGenerando
                   ? <><Loader2 className="w-4 h-4 animate-spin" />Generando…</>
                   : 'Descargar PDF'}

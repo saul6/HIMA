@@ -467,7 +467,7 @@ export function EmpleadosGG() {
         </div>
 
         <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
-          <Boton onClick={handleGuardar} disabled={guardando || !form.rancho_id || !form.nombre.trim()} className="w-full">
+          <Boton onClick={handleGuardar} cargando={guardando} disabled={!form.rancho_id || !form.nombre.trim()} className="w-full">
             {!online ? 'Guardar sin conexión' : guardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</> : 'Guardar empleado'}
           </Boton>
         </div>
@@ -495,7 +495,7 @@ export function EmpleadosGG() {
               {ranchos.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
             </select>
           </div>
-          <Boton onClick={exportarConsolidado} disabled={exportandoConsolidado} className="w-full">
+          <Boton onClick={exportarConsolidado} cargando={exportandoConsolidado} className="w-full">
             {exportandoConsolidado ? <><Loader2 className="w-4 h-4 animate-spin" /> Generando…</> : 'Descargar PDF empleados'}
           </Boton>
         </div>

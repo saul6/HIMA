@@ -1841,7 +1841,7 @@ export function AuditorEjecucion() {
 
             {/* Botón descargar reporte PDF */}
             {auditoria && allPreguntas.length > 0 && (
-              <Boton onClick={handleDescargarPDF} disabled={descargando} className="w-full">
+              <Boton onClick={handleDescargarPDF} cargando={descargando} className="w-full">
                 {descargando
                   ? <><Loader size={15} className="animate-spin" /> Generando PDF…</>
                   : <><Download size={15} /> Descargar reporte PDF</>
@@ -2143,7 +2143,7 @@ export function AuditorEjecucion() {
             </div>
           </div>
           <div className="px-4 pb-6 pt-3 flex-shrink-0 border-t border-border">
-            <Boton onClick={handleGuardarHallazgo} disabled={guardandoHallazgo || !formHallazgoDesc.trim()} className="w-full">
+            <Boton onClick={handleGuardarHallazgo} cargando={guardandoHallazgo} disabled={!formHallazgoDesc.trim()} className="w-full">
               {guardandoHallazgo ? <><Loader size={15} className="animate-spin" /> Guardando…</> : 'Registrar hallazgo'}
             </Boton>
           </div>
@@ -2413,7 +2413,7 @@ export function AuditorEjecucion() {
                             />
                           </div>
                         ))}
-                        <Boton tamano="sm" onClick={handleRegistrarResultado} disabled={guardandoResultado} className="w-full">
+                        <Boton tamano="sm" onClick={handleRegistrarResultado} cargando={guardandoResultado} className="w-full">
                           {guardandoResultado ? <><Loader size={12} className="animate-spin" />Guardando…</> : 'Registrar resultado'}
                         </Boton>
                       </div>
@@ -2484,7 +2484,7 @@ export function AuditorEjecucion() {
 
           {!cargandoAccion && canWriteAC && (
             <div className="px-4 pb-6 pt-3 flex-shrink-0 border-t border-border">
-              <Boton onClick={handleGuardarAccion} disabled={guardandoAccion} className="w-full">
+              <Boton onClick={handleGuardarAccion} cargando={guardandoAccion} className="w-full">
                 {guardandoAccion ? <><Loader size={15} className="animate-spin" /> Guardando…</> : (accionActual ? 'Actualizar acción' : 'Crear acción correctiva')}
               </Boton>
             </div>
@@ -2663,7 +2663,7 @@ export function AuditorEjecucion() {
                   className="h-9 rounded-lg px-3 text-xs flex-1"
                   style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                 />
-                <Boton tamano="sm" onClick={handleBuscarIncidencias} disabled={incBuscando} className="flex-shrink-0">
+                <Boton tamano="sm" onClick={handleBuscarIncidencias} cargando={incBuscando} className="flex-shrink-0">
                   {incBuscando ? <Loader size={12} className="animate-spin" /> : 'Buscar'}
                 </Boton>
               </div>
@@ -2697,7 +2697,7 @@ export function AuditorEjecucion() {
                         </span>
                       </div>
                       <p className="text-caption leading-snug" style={{ color: 'var(--foreground)' }}>{inc.descripcion}</p>
-                      <Boton onClick={() => handleRelacionarIncidencia(inc)} disabled={!!incRelacionandoId} className="self-end">
+                      <Boton onClick={() => handleRelacionarIncidencia(inc)} cargando={!!incRelacionandoId} className="self-end">
                         {incRelacionandoId === inc.incidencia_id
                           ? <Loader size={10} className="animate-spin" />
                           : <Link2 size={10} />

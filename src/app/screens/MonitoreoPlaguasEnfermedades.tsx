@@ -591,7 +591,7 @@ export function MonitoreoPlaguasEnfermedades() {
         </div>
 
         <div className="px-4 pb-6 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
-          <Boton onClick={guardar} disabled={guardando} className="w-full">
+          <Boton onClick={guardar} cargando={guardando} className="w-full">
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
             {!guardando && !online && <WifiOff className="w-4 h-4" />}
             {online ? 'Guardar' : 'Guardar sin conexión'}
@@ -639,7 +639,7 @@ export function MonitoreoPlaguasEnfermedades() {
           </div>
         </div>
         <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
-          <Boton onClick={exportarConsolidado} disabled={exportandoConsolidado} className="w-full">
+          <Boton onClick={exportarConsolidado} cargando={exportandoConsolidado} className="w-full">
             {exportandoConsolidado
               ? <><Loader2 className="w-4 h-4 animate-spin" /> Generando PDF…</>
               : <><FileDown className="w-4 h-4" /> Descargar PDF consolidado</>

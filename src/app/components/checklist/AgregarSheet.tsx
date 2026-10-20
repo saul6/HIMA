@@ -104,7 +104,7 @@ function Formulario({ ranchoId, hook, onClose, onGuardado }: Omit<Props, 'open'>
           <Input type="date" value={vence} onChange={e => setVence(e.target.value)} />
         </label>
       )}
-      <Boton type="button" onClick={guardar} disabled={guardando} className="w-full">
+      <Boton type="button" onClick={guardar} cargando={guardando} className="w-full">
         {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Agregar'}
       </Boton>
     </div>

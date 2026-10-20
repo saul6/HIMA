@@ -216,7 +216,7 @@ export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) 
 
       {!cargando && (
         <div className="px-4 pt-3 pb-4 border-t border-border flex-shrink-0">
-          <Boton onClick={handleCrear} disabled={guardando} className="w-full">
+          <Boton onClick={handleCrear} cargando={guardando} className="w-full">
             {guardando ? 'Creando…' : 'Crear auditoría'}
           </Boton>
         </div>

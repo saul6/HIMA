@@ -612,7 +612,7 @@ export function MantenimientoPreventivo() {
         onBack={vista === 'detalle' ? volverALista : undefined}
         acciones={
           vista === 'detalle' && registroActivo ? (
-            <Boton variante="secundario" tamano="sm" onClick={() => handlePDFIndividual(registroActivo.id)} disabled={!!generandoPDF}>
+            <Boton variante="secundario" tamano="sm" onClick={() => handlePDFIndividual(registroActivo.id)} cargando={!!generandoPDF}>
               {generandoPDF ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
@@ -740,7 +740,7 @@ export function MantenimientoPreventivo() {
               placeholder="Observaciones generales…"
               className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
             />
-            <Boton tamano="sm" onClick={handleActualizarObs} disabled={savingMeta}>
+            <Boton tamano="sm" onClick={handleActualizarObs} cargando={savingMeta}>
               {savingMeta ? 'Guardando…' : 'Guardar observaciones'}
             </Boton>
           </div>
@@ -888,7 +888,7 @@ export function MantenimientoPreventivo() {
                   className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
-              <Boton onClick={handleCrearRegistro} disabled={creando} className="w-full">
+              <Boton onClick={handleCrearRegistro} cargando={creando} className="w-full">
                 {creando ? 'Creando…' : 'Crear registro'}
               </Boton>
             </div>
@@ -988,7 +988,7 @@ export function MantenimientoPreventivo() {
                 )
               })}
 
-              <Boton onClick={handleGuardarDia} disabled={dGuardando || items.length === 0} className="w-full">
+              <Boton onClick={handleGuardarDia} cargando={dGuardando} disabled={items.length === 0} className="w-full">
                 {dGuardando ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
                 ) : !online ? (
@@ -1052,7 +1052,7 @@ export function MantenimientoPreventivo() {
                 )
               })}
 
-              <Boton onClick={handleGuardarAcciones} disabled={savingAcciones} className="w-full">
+              <Boton onClick={handleGuardarAcciones} cargando={savingAcciones} className="w-full">
                 {savingAcciones ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -1106,7 +1106,7 @@ export function MantenimientoPreventivo() {
                   className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
-              <Boton onClick={handleConsolidado} disabled={cGenerando} className="w-full">
+              <Boton onClick={handleConsolidado} cargando={cGenerando} className="w-full">
                 {cGenerando ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />

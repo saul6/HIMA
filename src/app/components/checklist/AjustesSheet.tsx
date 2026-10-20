@@ -70,7 +70,7 @@ function Formulario({ ranchoId, diasIniciales, resumenInicial, sinActividad, hoo
         <Switch checked={resumen} onCheckedChange={setResumen} aria-label="Resumen semanal" />
       </section>
       <SinOperacion ranchoId={ranchoId} itemId={null} periodos={sinActividad} puedeEditar hook={hook} onCambio={onGuardado} />
-      <Boton type="button" onClick={guardar} disabled={guardando} className="w-full">
+      <Boton type="button" onClick={guardar} cargando={guardando} className="w-full">
         {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Guardar'}
       </Boton>
     </div>

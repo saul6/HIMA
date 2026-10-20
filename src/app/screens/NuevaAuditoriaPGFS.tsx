@@ -146,7 +146,7 @@ export function NuevaAuditoriaPGFS() {
             </div>
 
             {/* Botón crear */}
-            <Boton onClick={handleCrear} disabled={guardando} className="w-full mt-2">
+            <Boton onClick={handleCrear} cargando={guardando} className="w-full mt-2">
               {guardando ? 'Creando…' : 'Crear auditoría'}
             </Boton>
           </>

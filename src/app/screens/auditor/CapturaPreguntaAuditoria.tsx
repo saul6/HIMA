@@ -904,7 +904,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                       }}
                     />
                     <div className="flex gap-2">
-                      <Boton disabled={!sugerenciaCExplicacion.trim() || aplicandoSugerenciaC} onClick={async () => {
+                      <Boton cargando={aplicandoSugerenciaC} disabled={!sugerenciaCExplicacion.trim()} onClick={async () => {
                           if (!sugerenciaCExplicacion.trim()) return
                           if (!sugerenciaCEventIdRef.current) sugerenciaCEventIdRef.current = crypto.randomUUID()
                           setAplicandoSugerenciaC(true)
@@ -1139,7 +1139,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     )}
 
                     <div className="flex gap-2">
-                      <Boton tamano="sm" disabled={!reglaExplicacion.trim() || !!aplicandoReglaId} onClick={async () => {
+                      <Boton tamano="sm" cargando={!!aplicandoReglaId} disabled={!reglaExplicacion.trim()} onClick={async () => {
                           if (!reglaExplicacion.trim()) return
                           if (!reglaEventIdRef.current) reglaEventIdRef.current = crypto.randomUUID()
                           setAplicandoReglaId(regla.id)
@@ -1264,7 +1264,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                           }}
                         />
                         <div className="flex gap-2">
-                          <Boton disabled={retirandoEnCurso} onClick={async () => {
+                          <Boton cargando={retirandoEnCurso} onClick={async () => {
                               if (!retirarEventIdRef.current) retirarEventIdRef.current = crypto.randomUUID()
                               setRetirandoEnCurso(true)
                               try {
@@ -1508,7 +1508,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 )}
               </div>
               <div className="flex gap-2">
-                <Boton tamano="sm" onClick={handleConfirmarAjuste} disabled={!puedeConfirmar} className="flex-1">
+                <Boton tamano="sm" onClick={handleConfirmarAjuste} cargando={enviandoAjuste} disabled={!puedeConfirmar} className="flex-1">
                   {enviandoAjuste ? <><Loader size={11} className="animate-spin" /> Guardando…</> : 'Confirmar'}
                 </Boton>
                 <button
@@ -1591,7 +1591,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                       </p>
                       {!cerrada && (
                         <div className="flex gap-1.5 flex-wrap">
-                          <Boton disabled={!!ejec} onClick={async () => {
+                          <Boton cargando={!!ejec} onClick={async () => {
                               setHerenciaAcciones(prev => new Map(prev).set(esq.id, 'cargando'))
                               try { await handleConfirmarHerencia(h.valor_id) }
                               finally { setHerenciaAcciones(prev => { const n = new Map(prev); n.delete(esq.id); return n }) }
@@ -1667,7 +1667,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                         </p>
                         {!cerrada && (
                           <div className="flex gap-1.5 flex-wrap">
-                            <Boton disabled={!!ejec} onClick={async () => {
+                            <Boton cargando={!!ejec} onClick={async () => {
                                 setHerenciaAcciones(prev => new Map(prev).set(esq.id, 'cargando'))
                                 try { await handleResolverHerencia(h.valor_id, 'propuesto') }
                                 finally { setHerenciaAcciones(prev => { const n = new Map(prev); n.delete(esq.id); return n }) }

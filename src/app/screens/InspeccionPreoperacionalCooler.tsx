@@ -721,7 +721,7 @@ export function InspeccionPreoperacionalCooler() {
         onBack={vista === 'detalle' ? volverALista : undefined}
         acciones={
           vista === 'detalle' && registroActivo ? (
-            <Boton variante="secundario" tamano="sm" onClick={() => handlePDFIndividual(registroActivo.id)} disabled={generandoPDF === registroActivo.id || dias.length === 0}>
+            <Boton variante="secundario" tamano="sm" onClick={() => handlePDFIndividual(registroActivo.id)} cargando={generandoPDF === registroActivo.id} disabled={dias.length === 0}>
               {generandoPDF === registroActivo.id ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
@@ -874,7 +874,7 @@ export function InspeccionPreoperacionalCooler() {
               placeholder="Observaciones generales del mes…"
               className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
             />
-            <Boton tamano="sm" onClick={handleGuardarObs} disabled={savingObs}>
+            <Boton tamano="sm" onClick={handleGuardarObs} cargando={savingObs}>
               {savingObs ? 'Guardando…' : 'Guardar observaciones'}
             </Boton>
           </div>
@@ -1110,7 +1110,7 @@ export function InspeccionPreoperacionalCooler() {
 
                 {/* Botón guardar */}
                 <div className="px-4 py-4 border-t border-border flex-shrink-0">
-                  <Boton onClick={handleGuardarDia} disabled={dGuardando || dYaExiste || !dFecha || loadingItems} className="w-full">
+                  <Boton onClick={handleGuardarDia} cargando={dGuardando} disabled={dYaExiste || !dFecha || loadingItems} className="w-full">
                     {dGuardando ? (
                       <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
                     ) : (
@@ -1177,7 +1177,7 @@ export function InspeccionPreoperacionalCooler() {
                   </div>
                 </div>
 
-                <Boton onClick={handleConsolidado} disabled={cGenerando || !cRanchoId} className="w-full">
+                <Boton onClick={handleConsolidado} cargando={cGenerando} disabled={!cRanchoId} className="w-full">
                   {cGenerando ? (
                     <><Loader2 className="w-4 h-4 animate-spin" /> Generando PDF…</>
                   ) : (

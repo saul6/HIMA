@@ -420,7 +420,7 @@ export function EvidenciaPanel({
                   </ul>
                 )}
               </div>
-              <Boton tamano="sm" onClick={handleSubirExterno} disabled={subiendo || uploadFiles.length === 0} className="w-full">
+              <Boton tamano="sm" onClick={handleSubirExterno} cargando={subiendo} disabled={uploadFiles.length === 0} className="w-full">
                 {subiendo
                   ? <><Loader size={12} className="animate-spin" />Subiendo {progresoSubida ? `${progresoSubida.hechas}/${progresoSubida.total}` : '…'}</>
                   : uploadFiles.length > 1 ? `Subir ${uploadFiles.length} evidencias` : 'Subir evidencia'}
@@ -659,7 +659,7 @@ export function EvidenciaPanel({
                             </button>
                           )}
                           {canLink && (
-                            <Boton onClick={() => handleRelacionar(reg)} disabled={!!gwRelacionandoId} className="ml-auto">
+                            <Boton onClick={() => handleRelacionar(reg)} cargando={!!gwRelacionandoId} className="ml-auto">
                               {gwRelacionandoId === reg.source_record_id
                                 ? <Loader size={10} className="animate-spin" />
                                 : <Link2 size={10} />
@@ -729,7 +729,7 @@ export function EvidenciaPanel({
                   placeholder="Buscar por texto…"
                   style={{ ...inputBase, height: '2.25rem', flex: 1, width: 'auto' }}
                 />
-                <Boton tamano="sm" onClick={() => handleBuscar()} disabled={gwCargando} className="flex-shrink-0">
+                <Boton tamano="sm" onClick={() => handleBuscar()} cargando={gwCargando} className="flex-shrink-0">
                   {gwCargando
                     ? <Loader size={12} className="animate-spin" />
                     : 'Buscar'
@@ -791,7 +791,7 @@ export function EvidenciaPanel({
                           </button>
                         )}
                         {canLink && (
-                          <Boton onClick={() => handleRelacionar(reg)} disabled={!!gwRelacionandoId} className="ml-auto">
+                          <Boton onClick={() => handleRelacionar(reg)} cargando={!!gwRelacionandoId} className="ml-auto">
                             {gwRelacionandoId === reg.source_record_id
                               ? <Loader size={10} className="animate-spin" />
                               : <Link2 size={10} />

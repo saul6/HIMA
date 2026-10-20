@@ -622,6 +622,63 @@ button:not(:disabled):active:not(.no-press),
   }
 }
 
+/* Avisos (sonner) con la paleta de marca: éxito menta, error rojo fuerte, aviso sky,
+   info neutral. Mismo radio, borde y tipografía que las tarjetas. */
+[data-sonner-toaster] {
+  --border-radius: var(--radius);
+  font-family: inherit;
+}
+[data-sonner-toast].mady-toast {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+[data-sonner-toast].mady-toast [data-title] {
+  font-weight: 600;
+}
+[data-sonner-toast].mady-toast [data-description] {
+  color: inherit;
+  opacity: 0.85;
+}
+[data-sonner-toast].mady-toast[data-type='success'] {
+  background: var(--agro-success-fill);
+  color: var(--agro-success-text);
+  border-color: var(--agro-menta);
+}
+[data-sonner-toast].mady-toast[data-type='warning'] {
+  background: var(--agro-info-fill);
+  color: var(--agro-info-text);
+  border-color: var(--ring);
+}
+[data-sonner-toast].mady-toast[data-type='error'] {
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+  border-color: var(--destructive);
+}
+.dark [data-sonner-toast].mady-toast[data-type='error'] {
+  background: var(--agro-danger-fill);
+  color: var(--agro-danger-text);
+}
+
+/* Palomita del aviso de éxito: entra con escala y fade. Sin animación con reduced motion. */
+@keyframes palomitaEntra {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+.mady-palomita {
+  color: var(--text-mint-strong);
+  animation: palomitaEntra 250ms var(--ease-out) backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mady-palomita {
+    animation: none;
+  }
+}
+
 /* Error de campo corto (shake) — solo donde ya existe un mensaje de error
    bajo el campo (ver CapturaAuditoriaPGFS/CapturaPreguntaAuditoria). */
 @keyframes fieldShake {

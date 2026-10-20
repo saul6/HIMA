@@ -80,7 +80,7 @@ export function ConsolidadoSheetLimpieza({
               />
             </div>
           </div>
-          <Boton type="button" onClick={onGenerar} disabled={generando} className="w-full">
+          <Boton type="button" onClick={onGenerar} cargando={generando} className="w-full">
             {generando ? (
               <><Loader2 className="w-4 h-4 animate-spin" />Generando…</>
             ) : (

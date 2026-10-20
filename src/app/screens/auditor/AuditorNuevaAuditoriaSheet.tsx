@@ -364,7 +364,7 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
             <Boton variante="secundario" onClick={() => { setDireccion(-1); setPaso(1) }}>
               Atrás
             </Boton>
-            <Boton onClick={handleCrear} disabled={guardando || cargandoModulos} className="flex-1">
+            <Boton onClick={handleCrear} cargando={guardando} disabled={cargandoModulos} className="flex-1">
               {guardando ? 'Creando…' : 'Crear auditoría'}
             </Boton>
           </div>

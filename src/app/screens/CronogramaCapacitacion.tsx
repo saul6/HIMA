@@ -352,7 +352,7 @@ export function CronogramaCapacitacion() {
           )}
         </div>
         <div className="px-4 pb-6 pt-3 border-t border-border">
-          <Boton onClick={guardar} disabled={guardando} className="w-full">
+          <Boton onClick={guardar} cargando={guardando} className="w-full">
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
             {!online && editId === null ? 'Guardar sin conexión' : 'Guardar'}
           </Boton>

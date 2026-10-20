@@ -204,7 +204,7 @@ function Contenido({
               rows={3}
             />
           </div>
-          <Boton type="button" onClick={guardarRevision} disabled={!estado || guardando} className="w-full">
+          <Boton type="button" onClick={guardarRevision} cargando={guardando} disabled={!estado} className="w-full">
             {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Guardar revisión'}
           </Boton>
         </section>

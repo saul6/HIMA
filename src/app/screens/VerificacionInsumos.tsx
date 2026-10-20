@@ -750,7 +750,7 @@ export function VerificacionInsumos() {
           ) : vista === 'detalle' && registroActivo ? (
             <>
               <BotonConfigurar onClick={abrirCatalogo} />
-              <Boton variante="secundario" tamano="sm" onClick={() => handlePDFIndividual(registroActivo.id)} disabled={generandoPDF === registroActivo.id || dias.length === 0}>
+              <Boton variante="secundario" tamano="sm" onClick={() => handlePDFIndividual(registroActivo.id)} cargando={generandoPDF === registroActivo.id} disabled={dias.length === 0}>
                 {generandoPDF === registroActivo.id
                   ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   : <FileDown className="w-3.5 h-3.5" />
@@ -874,7 +874,7 @@ export function VerificacionInsumos() {
               placeholder="Observaciones generales…"
               className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
             />
-            <Boton tamano="sm" onClick={handleGuardarObs} disabled={savingObs}>
+            <Boton tamano="sm" onClick={handleGuardarObs} cargando={savingObs}>
               {savingObs ? 'Guardando…' : 'Guardar observaciones'}
             </Boton>
           </div>
@@ -1051,7 +1051,7 @@ export function VerificacionInsumos() {
                 )}
 
                 <div className="px-4 py-4 border-t border-border flex-shrink-0">
-                  <Boton onClick={handleGuardarDia} disabled={dGuardando || dYaExiste || !dFecha || loadingInsumos || insumosActivosFiltrados.length === 0} className="w-full">
+                  <Boton onClick={handleGuardarDia} cargando={dGuardando} disabled={dYaExiste || !dFecha || loadingInsumos || insumosActivosFiltrados.length === 0} className="w-full">
                     {dGuardando
                       ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
                       : `Guardar ${insumosActivosFiltrados.length} insumos`
@@ -1106,7 +1106,7 @@ export function VerificacionInsumos() {
                       onKeyDown={(e) => { if (e.key === 'Enter') handleAgregarInsumo() }}
                       className="flex-1 h-9 px-2 rounded-lg border border-border-control bg-input-background text-xs"
                     />
-                    <Boton tamano="sm" onClick={handleAgregarInsumo} disabled={catAgregando || !catNuevaArea.trim() || !catNuevoInsumo.trim()} className="w-9 px-0">
+                    <Boton tamano="sm" onClick={handleAgregarInsumo} cargando={catAgregando} disabled={!catNuevaArea.trim() || !catNuevoInsumo.trim()} className="w-9 px-0">
                       {catAgregando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                     </Boton>
                   </div>
@@ -1189,7 +1189,7 @@ export function VerificacionInsumos() {
                       className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm" />
                   </div>
                 </div>
-                <Boton onClick={handleConsolidado} disabled={cGenerando || !cRanchoId} className="w-full">
+                <Boton onClick={handleConsolidado} cargando={cGenerando} disabled={!cRanchoId} className="w-full">
                   {cGenerando
                     ? <><Loader2 className="w-4 h-4 animate-spin" /> Generando PDF…</>
                     : <><FileDown className="w-4 h-4" /> Descargar PDF</>

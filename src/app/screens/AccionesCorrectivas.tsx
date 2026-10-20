@@ -405,7 +405,7 @@ export function AccionesCorrectivas() {
         tituloFallback="Plan de Acciones Correctivas"
         onBack={() => navigate(-1)}
         acciones={
-          <Boton tamano="sm" onClick={handleExportarPDF} disabled={generandoPDF}>
+          <Boton tamano="sm" onClick={handleExportarPDF} cargando={generandoPDF}>
             {generandoPDF ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (

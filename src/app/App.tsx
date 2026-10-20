@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { RouterProvider } from 'react-router'
-import { Toaster } from 'sonner'
 import { router } from './routes'
 import { AuthProvider } from '@/context/AuthContext'
 import { ModulosProvider } from '@/context/ModulosContext'
@@ -10,6 +9,7 @@ import { ThemeProvider } from '@/context/ThemeContext'
 import { IntroTransitionProvider } from '@/context/IntroTransitionContext'
 import { PwaUpdatePrompt } from '@/app/components/PwaUpdatePrompt'
 import { SyncManager } from '@/app/components/SyncManager'
+import { AvisosToaster } from '@/app/components/AvisosToaster'
 
 export default function App() {
   // Limpia el navy inline que theme-init.js pinta en <html> antes de montar
@@ -28,7 +28,7 @@ export default function App() {
             <IntroTransitionProvider>
               <RouterProvider router={router} />
             </IntroTransitionProvider>
-            <Toaster position="top-center" richColors />
+            <AvisosToaster />
             <PwaUpdatePrompt />
             <SyncManager />
           </HomeSearchProvider>

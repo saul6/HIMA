@@ -197,7 +197,7 @@ export function PasoFirmaRegistro({
               ref={firmaPadRef}
               onChange={(info) => setFirmaPadInfo(info)}
             />
-            <Boton onClick={handleGuardarFirma} disabled={guardandoFirma || firmaPadInfo.puntos < 15} className="w-full">
+            <Boton onClick={handleGuardarFirma} cargando={guardandoFirma} disabled={firmaPadInfo.puntos < 15} className="w-full">
               {guardandoFirma ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Guardar mi firma'}
             </Boton>
           </div>

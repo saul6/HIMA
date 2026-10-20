@@ -561,7 +561,7 @@ export function LimpiezaOficinas() {
           ) : vista === 'detalle' && registroActivo ? (
             <>
               <BotonConfigurar onClick={abrirConfigurar} />
-              <Boton variante="secundario" tamano="sm" onClick={handlePDFIndividual} disabled={generandoPDF}>
+              <Boton variante="secundario" tamano="sm" onClick={handlePDFIndividual} cargando={generandoPDF}>
                 {generandoPDF ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
                 PDF
               </Boton>
@@ -863,7 +863,7 @@ export function LimpiezaOficinas() {
                   placeholder="Observaciones generales…"
                   className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
                 />
-                <Boton tamano="sm" onClick={handleGuardarObs} disabled={savingObs}>
+                <Boton tamano="sm" onClick={handleGuardarObs} cargando={savingObs}>
                   {savingObs ? 'Guardando…' : 'Guardar observaciones'}
                 </Boton>
               </div>
@@ -978,7 +978,7 @@ export function LimpiezaOficinas() {
 
             {catRanchoId && (
               <>
-                <Boton variante="secundario" tamano="sm" type="button" onClick={handleCargarPlantilla} disabled={catCargandoPlantilla} className="w-full">
+                <Boton variante="secundario" tamano="sm" type="button" onClick={handleCargarPlantilla} cargando={catCargandoPlantilla} className="w-full">
                   {catCargandoPlantilla ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
                   Sembrar 7 ítems estándar
                 </Boton>

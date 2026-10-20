@@ -572,7 +572,7 @@ export function TrazabilidadGG() {
         </div>
 
         <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
-          <Boton onClick={handleGuardar} disabled={guardando || !form.rancho_id} className="w-full">
+          <Boton onClick={handleGuardar} cargando={guardando} disabled={!form.rancho_id} className="w-full">
             {guardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</> : online ? 'Guardar nota' : <><WifiOff className="w-4 h-4" /> Guardar sin conexión</>}
           </Boton>
         </div>
@@ -618,7 +618,7 @@ export function TrazabilidadGG() {
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
-          <Boton onClick={exportarConsolidado} disabled={exportando} className="w-full">
+          <Boton onClick={exportarConsolidado} cargando={exportando} className="w-full">
             {exportando ? <><Loader2 className="w-4 h-4 animate-spin" /> Exportando…</> : 'Exportar PDF'}
           </Boton>
         </div>

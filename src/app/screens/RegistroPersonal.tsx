@@ -835,7 +835,7 @@ export function RegistroPersonal() {
         </div>
 
         <div className="px-4 pb-6 pt-3 border-t border-border">
-          <Boton type="button" onClick={guardar} disabled={guardando} className="w-full">
+          <Boton type="button" onClick={guardar} cargando={guardando} className="w-full">
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
             {guardando ? 'Guardando…' : !online ? 'Guardar sin conexión' : editingId ? 'Guardar cambios' : 'Registrar trabajador'}
           </Boton>
@@ -981,7 +981,7 @@ export function RegistroPersonal() {
                         onChange={e => setNuevoItemNombre(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') agregarItem() }}
                       />
-                      <Boton type="button" onClick={agregarItem} disabled={agregandoItem || !nuevoItemNombre.trim()}>
+                      <Boton type="button" onClick={agregarItem} cargando={agregandoItem} disabled={!nuevoItemNombre.trim()}>
                         {agregandoItem ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                       </Boton>
                     </div>
@@ -1020,7 +1020,7 @@ export function RegistroPersonal() {
           </div>
         </div>
         <div className="px-4 pb-6 pt-3 border-t border-border">
-          <Boton type="button" onClick={exportarPDF} disabled={exportando || !pdfRanchoId} className="w-full">
+          <Boton type="button" onClick={exportarPDF} cargando={exportando} disabled={!pdfRanchoId} className="w-full">
             {exportando ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
             {exportando ? 'Generando…' : 'Descargar PDF'}
           </Boton>

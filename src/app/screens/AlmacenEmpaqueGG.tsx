@@ -775,7 +775,7 @@ export function AlmacenEmpaqueGG() {
             className="sticky bottom-0 py-3 -mx-4 px-4"
             style={{ backgroundColor: 'var(--background)', borderTop: '1px solid var(--border)' }}
           >
-            <Boton onClick={handleGuardarDetalle} disabled={guardando || loadingCeldas || loadingItems} className="w-full">
+            <Boton onClick={handleGuardarDetalle} cargando={guardando} disabled={loadingCeldas || loadingItems} className="w-full">
               {guardando ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
               ) : (
@@ -918,7 +918,7 @@ export function AlmacenEmpaqueGG() {
             </div>
 
             <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
-              <Boton onClick={handleCrearRegistro} disabled={nGuardando || nYaExiste || !nRanchoId} className="w-full">
+              <Boton onClick={handleCrearRegistro} cargando={nGuardando} disabled={nYaExiste || !nRanchoId} className="w-full">
                 {nGuardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Creando…</> : !online ? <><WifiOff className="w-4 h-4" /> Crear sin conexión</> : 'Crear registro'}
               </Boton>
             </div>
@@ -971,7 +971,7 @@ export function AlmacenEmpaqueGG() {
           </div>
         </div>
         <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
-          <Boton onClick={exportarConsolidado} disabled={exportandoConsolidado} className="w-full">
+          <Boton onClick={exportarConsolidado} cargando={exportandoConsolidado} className="w-full">
             {exportandoConsolidado
               ? <><Loader2 className="w-4 h-4 animate-spin" /> Generando PDF…</>
               : <><FileDown className="w-4 h-4" /> Descargar PDF consolidado</>

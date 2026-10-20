@@ -534,7 +534,7 @@ export function FirmasRegistro({
                 ref={firmaPadRef}
                 onChange={(info) => setFirmaPadInfo(info)}
               />
-              <Boton tamano="sm" onClick={handleGuardarFirma} disabled={guardandoFirmaLocal || firmaPadInfo.puntos < 15} className="w-full">
+              <Boton tamano="sm" onClick={handleGuardarFirma} cargando={guardandoFirmaLocal} disabled={firmaPadInfo.puntos < 15} className="w-full">
                 {guardandoFirmaLocal ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
                 ) : 'Guardar mi firma'}
@@ -551,7 +551,7 @@ export function FirmasRegistro({
             >
               Cancelar
             </button>
-            <Boton tamano="sm" onClick={handleFirmar} disabled={firmando || !miFirmaInfo?.tiene} className="flex-1">
+            <Boton tamano="sm" onClick={handleFirmar} cargando={firmando} disabled={!miFirmaInfo?.tiene} className="flex-1">
               {firmando ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Firmar'}
             </Boton>
           </div>
@@ -612,7 +612,7 @@ export function FirmasRegistro({
           >
             Cancelar
           </button>
-          <Boton onClick={handleFirmarEnterado} disabled={!puedeEnviarEnterado} className="flex-1">
+          <Boton onClick={handleFirmarEnterado} cargando={firmandoEnterado} disabled={!puedeEnviarEnterado} className="flex-1">
             {firmandoEnterado ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Firmar'}
           </Boton>
         </div>

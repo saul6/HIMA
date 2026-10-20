@@ -1165,7 +1165,7 @@ export function RegistroFertilizacion() {
                 </div>
 
                 <div className="px-4 py-4 border-t border-border flex-shrink-0">
-                  <Boton onClick={handleGuardar} disabled={guardando} className="w-full">
+                  <Boton onClick={handleGuardar} cargando={guardando} className="w-full">
                     {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                     {guardando ? 'Guardando...' : online ? 'Guardar y generar PDF' : 'Guardar sin conexión'}
                   </Boton>
@@ -1239,7 +1239,7 @@ export function RegistroFertilizacion() {
             </div>
 
             <div className="px-4 py-4 border-t border-border flex-shrink-0">
-              <Boton onClick={handleGenerarConsolidado} disabled={generandoConsolidado} className="w-full">
+              <Boton onClick={handleGenerarConsolidado} cargando={generandoConsolidado} className="w-full">
                 {generandoConsolidado
                   ? <Loader2 className="w-4 h-4 animate-spin" />
                   : <FileDown className="w-4 h-4" />
@@ -1435,7 +1435,7 @@ export function RegistroFertilizacion() {
             </div>
 
             <div className="px-4 py-4 border-t border-border flex-shrink-0">
-              <Boton onClick={handleGuardarMovimiento} disabled={guardandoMov} className="w-full">
+              <Boton onClick={handleGuardarMovimiento} cargando={guardandoMov} className="w-full">
                 {guardandoMov && <Loader2 className="w-4 h-4 animate-spin" />}
                 {guardandoMov ? 'Guardando...' : 'Registrar movimiento'}
               </Boton>

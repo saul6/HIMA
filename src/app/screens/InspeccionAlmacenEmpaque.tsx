@@ -609,7 +609,7 @@ export function InspeccionAlmacenEmpaque() {
         onBack={vista === 'detalle' ? volverALista : undefined}
         acciones={
           vista === 'detalle' && registroActivo ? (
-            <Boton variante="secundario" tamano="sm" onClick={() => handlePDFIndividual(registroActivo.id)} disabled={generandoPDF === registroActivo.id || dias.length === 0}>
+            <Boton variante="secundario" tamano="sm" onClick={() => handlePDFIndividual(registroActivo.id)} cargando={generandoPDF === registroActivo.id} disabled={dias.length === 0}>
               {generandoPDF === registroActivo.id ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
@@ -791,7 +791,7 @@ export function InspeccionAlmacenEmpaque() {
                 className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
               />
             </div>
-            <Boton tamano="sm" onClick={handleActualizarEncabezado} disabled={savingMeta}>
+            <Boton tamano="sm" onClick={handleActualizarEncabezado} cargando={savingMeta}>
               {savingMeta ? 'Guardando…' : 'Guardar encabezado'}
             </Boton>
           </div>
@@ -925,7 +925,7 @@ export function InspeccionAlmacenEmpaque() {
                   className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 />
               </div>
-              <Boton onClick={handleCrearRegistro} disabled={creando} className="w-full">
+              <Boton onClick={handleCrearRegistro} cargando={creando} className="w-full">
                 {creando ? 'Creando…' : !online ? <><WifiOff className="w-4 h-4" /> Crear sin conexión</> : 'Crear registro'}
               </Boton>
             </div>
@@ -1005,7 +1005,7 @@ export function InspeccionAlmacenEmpaque() {
                 </div>
               )}
 
-              <Boton onClick={handleGuardarDia} disabled={dGuardando || puntos.length === 0} className="w-full">
+              <Boton onClick={handleGuardarDia} cargando={dGuardando} disabled={puntos.length === 0} className="w-full">
                 {dGuardando ? 'Guardando…' : 'Guardar día'}
               </Boton>
             </div>
@@ -1063,7 +1063,7 @@ export function InspeccionAlmacenEmpaque() {
                   className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
-              <Boton onClick={handleConsolidado} disabled={cGenerando} className="w-full">
+              <Boton onClick={handleConsolidado} cargando={cGenerando} className="w-full">
                 {cGenerando ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />

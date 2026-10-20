@@ -310,7 +310,7 @@ export function Perfil() {
                       Cancelar
                     </button>
                   )}
-                  <Boton onClick={handleGuardarFirma} disabled={guardandoFirma || firmaInfo.puntos < 15} className="flex-1">
+                  <Boton onClick={handleGuardarFirma} cargando={guardandoFirma} disabled={firmaInfo.puntos < 15} className="flex-1">
                     {guardandoFirma ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : 'Guardar firma'}

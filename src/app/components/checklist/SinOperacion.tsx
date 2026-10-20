@@ -132,7 +132,7 @@ export function SinOperacion({ ranchoId, itemId, periodos, puedeEditar, hook, on
             <button type="button" onClick={() => setAbierto(false)} className="flex-1 h-10 rounded-lg border border-border text-sm hover:bg-muted">
               Cancelar
             </button>
-            <Boton type="button" onClick={registrar} disabled={guardando} className="flex-1">
+            <Boton type="button" onClick={registrar} cargando={guardando} className="flex-1">
               {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Registrar'}
             </Boton>
           </div>

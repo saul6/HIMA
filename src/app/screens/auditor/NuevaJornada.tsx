@@ -284,7 +284,7 @@ export function NuevaJornada() {
               padding: '0.5rem 0.75rem',
             }}
           />
-          <Boton onClick={handleCrear} disabled={creando} className="w-full">
+          <Boton onClick={handleCrear} cargando={creando} className="w-full">
             {creando
               ? <><Loader size={15} className="animate-spin" />Creando…</>
               : <><Plus size={15} />Comenzar con {seleccionados.size} {seleccionados.size === 1 ? 'operación' : 'operaciones'} de {nProductores} {nProductores === 1 ? 'productor' : 'productores'}</>

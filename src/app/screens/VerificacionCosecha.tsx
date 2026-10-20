@@ -890,7 +890,7 @@ export function VerificacionCosecha() {
             className="sticky bottom-0 py-3 -mx-4 px-4"
             style={{ backgroundColor: 'var(--background)', borderTop: '1px solid var(--border)' }}
           >
-            <Boton onClick={handleGuardarDetalle} disabled={guardando || loadingCeldas || loadingItems} className="w-full">
+            <Boton onClick={handleGuardarDetalle} cargando={guardando} disabled={loadingCeldas || loadingItems} className="w-full">
               {guardando ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Guardando…</>
               ) : (
@@ -1086,7 +1086,7 @@ export function VerificacionCosecha() {
                 </div>
               )}
 
-              <Boton onClick={handleCrearRegistro} disabled={nGuardando || nYaExiste || !nRanchoId} className="w-full">
+              <Boton onClick={handleCrearRegistro} cargando={nGuardando} disabled={nYaExiste || !nRanchoId} className="w-full">
                 {nGuardando ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Creando…</>
                 ) : !online ? (
@@ -1175,7 +1175,7 @@ export function VerificacionCosecha() {
                 } finally {
                   setExportandoConsolidado(false)
                 }
-              }} disabled={exportandoConsolidado} className="w-full">
+              }} cargando={exportandoConsolidado} className="w-full">
               {exportandoConsolidado ? <><Loader2 className="w-4 h-4 animate-spin" /> Exportando…</> : <><FileDown className="w-4 h-4" /> Descargar PDF</>}
             </Boton>
           </div>

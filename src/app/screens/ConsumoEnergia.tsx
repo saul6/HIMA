@@ -465,7 +465,7 @@ export function ConsumoEnergia() {
 
         </div>
         <div className="px-4 pb-6 pt-3 border-t border-border">
-          <Boton onClick={guardar} disabled={guardando} className="w-full">
+          <Boton onClick={guardar} cargando={guardando} className="w-full">
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
             {!online ? 'Guardar sin conexión' : 'Guardar'}
           </Boton>
@@ -514,7 +514,7 @@ export function ConsumoEnergia() {
           </div>
         </div>
         <div className="px-4 pb-6 pt-3 border-t border-border">
-          <Boton onClick={exportarConsolidado} disabled={exportando} className="w-full">
+          <Boton onClick={exportarConsolidado} cargando={exportando} className="w-full">
             {exportando ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
             Exportar PDF
           </Boton>

@@ -614,7 +614,7 @@ export function AuditorInstalacionDetalle() {
 
           {/* Botón vincular */}
           <div className="px-4 pb-6 pt-3 flex-shrink-0 border-t border-border">
-            <Boton onClick={handleVincular} disabled={vinculando || !confirmado} className="w-full">
+            <Boton onClick={handleVincular} cargando={vinculando} disabled={!confirmado} className="w-full">
               {vinculando
                 ? <><Loader size={15} className="animate-spin" /> Vinculando…</>
                 : <><Building2 size={15} /> Vincular expediente a M.A.D.Y.</>

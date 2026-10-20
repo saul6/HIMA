@@ -845,7 +845,7 @@ export function ManifiestoEmbarque() {
         </div>
 
         <div className="px-4 pb-6 pt-3 border-t border-border">
-          <Boton type="button" onClick={guardar} disabled={guardando} className="w-full">
+          <Boton type="button" onClick={guardar} cargando={guardando} className="w-full">
             {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
             {guardando ? 'Guardando…' : online ? 'Guardar' : 'Guardar sin conexión'}
           </Boton>
@@ -892,7 +892,7 @@ export function ManifiestoEmbarque() {
           </div>
         </div>
         <div className="px-4 pb-6 pt-3 border-t border-border">
-          <Boton type="button" onClick={exportarConsolidado} disabled={exportando} className="w-full">
+          <Boton type="button" onClick={exportarConsolidado} cargando={exportando} className="w-full">
             {exportando ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
             {exportando ? 'Generando…' : 'Descargar PDF'}
           </Boton>

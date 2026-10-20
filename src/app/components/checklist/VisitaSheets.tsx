@@ -127,7 +127,7 @@ function PasoFirmasVisita({ visita, codigoClave, terminoSitio, onCerrar }: Opcio
         onFirmado={refetch}
       />
       <div className="flex gap-2">
-        <Boton type="button" onClick={generarYCerrar} disabled={!!generando} className="flex-1">
+        <Boton type="button" onClick={generarYCerrar} cargando={!!generando} className="flex-1">
           {generando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Generar PDF'}
         </Boton>
         <button
