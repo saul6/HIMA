@@ -23,6 +23,7 @@ import type {
 import { bandaCumplimiento, type BandaCumplimiento } from '@/lib/metricas/bandaCumplimiento'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
+import { formatoNumero, formatoPct } from '@/lib/formato'
 
 // Mismo timing/curva que el resto de la app (ver NuevaAplicacion.tsx) — constante
 // local para no repetir el array de easing en cada transición de este archivo.
@@ -81,7 +82,7 @@ function ChipPct({ pct }: { pct: number }) {
   else if (pct < 90) { color = 'var(--agro-info-text)'; bg = 'var(--agro-info-fill)' }
   return (
     <span className="text-xs px-1.5 py-0.5 rounded-md tabular-nums" style={{ color, backgroundColor: bg }}>
-      {pct.toFixed(0)}%
+      {formatoPct(Math.round(pct))}
     </span>
   )
 }
@@ -193,7 +194,7 @@ function TabProductividad({
             <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
               <TarjetaResumen
                 label="Total capturas"
-                valor={<AnimatedNumber value={totalCapturas} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />}
+                valor={<AnimatedNumber value={totalCapturas} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
               />
             </EntradaEscalonada>
             <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
@@ -208,7 +209,7 @@ function TabProductividad({
             <EntradaEscalonada index={2} reducedMotion={reducedMotion}>
               <TarjetaResumen
                 label="Con corrección"
-                valor={<AnimatedNumber value={pctCorreccion} format={n => `${n.toFixed(1)}%`} reducedMotion={reducedMotion} />}
+                valor={<AnimatedNumber value={pctCorreccion} format={n => `${formatoPct(n)}`} reducedMotion={reducedMotion} />}
                 sub={`${totalCorrecciones} registros`}
               />
             </EntradaEscalonada>
@@ -218,7 +219,7 @@ function TabProductividad({
             <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
               <TarjetaResumen
                 label="Mis capturas"
-                valor={<AnimatedNumber value={mr?.capturas ?? 0} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />}
+                valor={<AnimatedNumber value={mr?.capturas ?? 0} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
               />
             </EntradaEscalonada>
             <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
@@ -236,7 +237,7 @@ function TabProductividad({
               <TarjetaResumen
                 label="Con corrección"
                 valor={mr?.pct_correccion != null ? (
-                  <AnimatedNumber value={mr.pct_correccion} format={n => `${n.toFixed(1)}%`} reducedMotion={reducedMotion} />
+                  <AnimatedNumber value={mr.pct_correccion} format={n => `${formatoPct(n)}`} reducedMotion={reducedMotion} />
                 ) : '—'}
               />
             </EntradaEscalonada>
@@ -246,7 +247,7 @@ function TabProductividad({
           <EntradaEscalonada index={3} reducedMotion={reducedMotion}>
             <TarjetaResumen
               label="Verificados"
-              valor={<AnimatedNumber value={v.verificados} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />}
+              valor={<AnimatedNumber value={v.verificados} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
               sub={`${v.pendientes_verificar} pendientes${v.horas_promedio != null ? ` · ${v.horas_promedio.toFixed(1)} h prom.` : ''}`}
             />
           </EntradaEscalonada>
@@ -321,7 +322,7 @@ function TabProductividad({
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                       <span className="text-sm tabular-nums font-semibold" style={{ color: 'var(--primary)' }}>
-                        <AnimatedNumber value={c.capturas} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />
+                        <AnimatedNumber value={c.capturas} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />
                       </span>
                       {tieneDesglose && (
                         <ChevronDown
@@ -350,7 +351,7 @@ function TabProductividad({
                         <>
                           <span>
                             {(c.correcciones ?? 0) > 0
-                              ? `${(c.pct_correccion ?? 0).toFixed(1)}% corrección`
+                              ? `${formatoPct((c.pct_correccion ?? 0))} corrección`
                               : 'Sin correcciones'}
                           </span>
                           {(c.sin_firma ?? 0) > 0 && (
@@ -411,7 +412,7 @@ function TabProductividad({
                                   {mod ? mod.nombre : codigo}
                                 </span>
                                 <span className="tabular-nums font-semibold" style={{ color: 'var(--primary)' }}>
-                                  {(n as number).toLocaleString('es-MX')}
+                                  {formatoNumero((n as number))}
                                 </span>
                               </div>
                             )
@@ -707,7 +708,7 @@ function GrupoAuditoriasInternas({
                           className="text-sm tabular-nums font-semibold px-2 py-0.5 rounded-md"
                           style={{ color: bc, backgroundColor: bbg }}
                         >
-                          {a.porcentaje.toFixed(1)}%
+                          {formatoPct(a.porcentaje)}
                         </span>
                         <p className="text-xs tabular-nums mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
                           {a.puntos}/{a.posibles} pts
@@ -782,7 +783,7 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
                           style={{ color, backgroundColor: bg }}
                         >
                           {r.promedio != null
-                            ? <AnimatedNumber value={r.promedio} format={n => `${n.toFixed(1)}%`} reducedMotion={reducedMotion} />
+                            ? <AnimatedNumber value={r.promedio} format={n => `${formatoPct(n)}`} reducedMotion={reducedMotion} />
                             : '—'}
                         </span>
                         <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
@@ -881,13 +882,13 @@ function TabCumplimiento({ datos }: { datos: MetCumplimiento }) {
                 <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
                   <TarjetaResumen
                     label="Reportes"
-                    valor={<AnimatedNumber value={datos.incidencias.reportes} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />}
+                    valor={<AnimatedNumber value={datos.incidencias.reportes} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
                   />
                 </EntradaEscalonada>
                 <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
                   <TarjetaResumen
                     label="Incidencias"
-                    valor={<AnimatedNumber value={datos.incidencias.incidencias} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />}
+                    valor={<AnimatedNumber value={datos.incidencias.incidencias} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
                   />
                 </EntradaEscalonada>
               </div>
@@ -1020,7 +1021,7 @@ function TabCampo({ datos }: { datos: MetCampo }) {
               <EntradaEscalonada index={0} reducedMotion={reducedMotion}>
                 <TarjetaResumen
                   label="Aplicaciones"
-                  valor={<AnimatedNumber value={porMes[meses[0]]?.aplicaciones ?? 0} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />}
+                  valor={<AnimatedNumber value={porMes[meses[0]]?.aplicaciones ?? 0} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />}
                 />
               </EntradaEscalonada>
               <EntradaEscalonada index={1} reducedMotion={reducedMotion}>
@@ -1061,7 +1062,7 @@ function TabCampo({ datos }: { datos: MetCampo }) {
                   <div className="flex items-center justify-between text-sm">
                     <span className="truncate" style={{ color: 'var(--foreground)' }}>{p.producto}</span>
                     <span className="tabular-nums flex-shrink-0 ml-2 text-xs font-semibold" style={{ color: 'var(--primary)' }}>
-                      <AnimatedNumber value={p.aplicaciones} format={n => Math.round(n).toLocaleString('es-MX')} reducedMotion={reducedMotion} />
+                      <AnimatedNumber value={p.aplicaciones} format={n => formatoNumero(Math.round(n))} reducedMotion={reducedMotion} />
                     </span>
                   </div>
                   <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--muted)' }}>

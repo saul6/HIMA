@@ -12,6 +12,7 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
+import { fechaCorta, fechaHora, mesAnio } from '@/lib/formato'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -20,12 +21,9 @@ function formatFecha(iso: string): string {
   try {
     if (iso.length === 7) {
       // YYYY-MM — registro mensual
-      const [y, m] = iso.split('-')
-      return new Date(Number(y), Number(m) - 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+      return mesAnio(iso)
     }
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
-      day: 'numeric', month: 'short', year: 'numeric',
-    })
+    return fechaCorta(iso)
   } catch {
     return iso
   }
@@ -34,9 +32,7 @@ function formatFecha(iso: string): string {
 function formatTimestamp(iso: string | null): string {
   if (!iso) return ''
   try {
-    return new Date(iso).toLocaleDateString('es-MX', {
-      day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
-    })
+    return fechaHora(iso)
   } catch { return '' }
 }
 

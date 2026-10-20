@@ -14,6 +14,7 @@ import { contarPendientes } from '@/lib/offline/outbox'
 import { isUpdateDisponible, UPDATE_DISPONIBLE_EVENT, ejecutarActualizacion } from '@/lib/offline/actualizacionSegura'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { fechaHora } from '@/lib/formato'
 
 const ROL_LABEL: Record<string, string> = {
   super_admin: 'Super Admin',
@@ -63,14 +64,7 @@ export function Perfil() {
 
   const fechaBuild = (() => {
     try {
-      return new Date(__APP_BUILD__).toLocaleString('es-MX', {
-        timeZone: 'America/Mexico_City',
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
+      return fechaHora(__APP_BUILD__)
     } catch {
       return __APP_BUILD__
     }

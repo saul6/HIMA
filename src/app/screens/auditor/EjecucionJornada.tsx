@@ -15,6 +15,7 @@ import type { CapturaPreguntaRef } from './CapturaPreguntaAuditoria'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
+import { formatoPct } from '@/lib/formato'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -581,7 +582,7 @@ export function EjecucionJornada() {
                 {operacionActiva.productor} · {operacionActiva.operacion}
               </p>
               <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                {avancePct(operacionActiva.conteo)}% completado · {operacionActiva.conteo.pendientes ?? 0} pendientes
+                {formatoPct(avancePct(operacionActiva.conteo))} completado · {operacionActiva.conteo.pendientes ?? 0} pendientes
               </p>
             </div>
           </div>

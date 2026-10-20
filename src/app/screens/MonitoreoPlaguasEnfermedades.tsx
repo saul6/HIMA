@@ -36,6 +36,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
+import { fechaCorta } from '@/lib/formato'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -43,7 +44,7 @@ const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/
 
 function formatFecha(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
+    return fechaCorta(iso)
   } catch { return iso }
 }
 

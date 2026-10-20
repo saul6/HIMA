@@ -22,14 +22,13 @@ import { generarAuditoriaPDF, generarAuditoriaConsolidadoPDF } from '@/lib/pdf/a
 import type { RespuestaAuditoria, EstadoAuditoria } from '@/types/database.types'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { fechaCorta, formatoPct } from '@/lib/formato'
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 
 function formatFecha(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
-      day: 'numeric', month: 'short', year: 'numeric',
-    })
+    return fechaCorta(iso)
   } catch { return iso }
 }
 
@@ -64,7 +63,7 @@ function scoreChip(porcentaje: number, posibles: number) {
       : 'bg-agro-danger-fill text-agro-danger-text'
   return (
     <span className={`text-caption px-2 py-0.5 rounded shrink-0 ${cls}`} style={{ fontWeight: 600 }}>
-      {porcentaje}%
+      {formatoPct(porcentaje)}
     </span>
   )
 }
@@ -571,7 +570,7 @@ export function AuditoriaScreen({
               {!loadingCatalogo && preguntas.length > 0 && scoreTotal.puntos_posibles > 0 && (
                 <div className="rounded-xl p-3 bg-muted text-center">
                   <p className="text-xs text-muted-foreground">
-                    Total: <strong>{scoreTotal.puntos_obtenidos}/{scoreTotal.puntos_posibles} pts · {scoreTotal.porcentaje}%</strong>
+                    Total: <strong>{scoreTotal.puntos_obtenidos}/{scoreTotal.puntos_posibles} pts · {formatoPct(scoreTotal.porcentaje)}</strong>
                   </p>
                 </div>
               )}

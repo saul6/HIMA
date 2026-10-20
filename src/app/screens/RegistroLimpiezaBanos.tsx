@@ -35,6 +35,7 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { BannerLimiteOffline } from '@/app/components/BannerLimiteOffline'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { fechaCorta } from '@/lib/formato'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -71,9 +72,7 @@ const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Me
 
 function formatFecha(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
-      day: 'numeric', month: 'short', year: 'numeric',
-    })
+    return fechaCorta(iso)
   } catch { return iso }
 }
 

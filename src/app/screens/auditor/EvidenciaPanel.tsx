@@ -10,6 +10,7 @@ import type {
   AudEvidenciaEntityType, AudEvidenciaTipo, AudEvidenciaSnapshot,
 } from '@/types/database.types'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { fechaCorta } from '@/lib/formato'
 
 const TIPO_LABELS: Record<AudEvidenciaTipo, string> = {
   documento_procedimiento: 'Documento / Procedimiento',
@@ -471,7 +472,7 @@ export function EvidenciaPanel({
                         SHA: {snap.snapshot_hash.slice(0, 16)}…
                         {snap.source_updated_at && (
                           <span className="ml-2">
-                            · {new Date(snap.source_updated_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            · {fechaCorta(snap.source_updated_at)}
                           </span>
                         )}
                       </p>
@@ -630,7 +631,7 @@ export function EvidenciaPanel({
                             </span>
                           )}
                           <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                            {new Date(reg.record_date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            {fechaCorta(reg.record_date)}
                           </span>
                           {reg.responsible_name && (
                             <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
@@ -762,7 +763,7 @@ export function EvidenciaPanel({
                           Origen: M.A.D.Y · {reg.source_module_code.toUpperCase()}
                         </span>
                         <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                          {new Date(reg.record_date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          {fechaCorta(reg.record_date)}
                         </span>
                         {reg.responsible_name && (
                           <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>

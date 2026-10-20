@@ -36,10 +36,11 @@ import { InputContador } from '@/app/components/InputContador'
 import { opInsert } from '@/lib/offline/construirOperaciones'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { fechaCorta } from '@/lib/formato'
 
 function formatFecha(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
+    return fechaCorta(iso)
   } catch { return iso }
 }
 

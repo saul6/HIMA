@@ -27,6 +27,7 @@ import { AsignarHallazgoSheet } from '@/app/components/hallazgos/AsignarHallazgo
 import { resolverHallazgoVisita, formatFechaLimite } from '@/lib/hallazgos/asignacion'
 import { useConexion } from '@/hooks/useConexion'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { fechaCorta, formatoPct } from '@/lib/formato'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -39,9 +40,7 @@ const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Me
 
 function formatFecha(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
-      day: 'numeric', month: 'short', year: 'numeric',
-    })
+    return fechaCorta(iso)
   } catch { return iso }
 }
 
@@ -548,7 +547,7 @@ export function ResumenNoConformidades() {
                             color: 'var(--agro-success-text)',
                           }}
                         >
-                          {item.porcentaje}%
+                          {formatoPct(item.porcentaje)}
                         </span>
                         <button
                           onClick={() => handleDesvincular(item)}
@@ -610,7 +609,7 @@ export function ResumenNoConformidades() {
                                 color: 'var(--muted-foreground)',
                               }}
                             >
-                              {item.porcentaje}%
+                              {formatoPct(item.porcentaje)}
                             </span>
                             <Link2 className="w-3 h-3" />
                           </button>

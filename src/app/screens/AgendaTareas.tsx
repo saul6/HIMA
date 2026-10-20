@@ -27,15 +27,13 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { fechaCorta, fechaHora } from '@/lib/formato'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatFechaLimite(fecha: string | null): string {
   if (!fecha) return '—'
-  const [y, m, d] = fecha.split('-').map(Number)
-  return new Date(y, m - 1, d).toLocaleDateString('es-MX', {
-    day: 'numeric', month: 'short', year: 'numeric',
-  })
+  return fechaCorta(fecha)
 }
 
 function formatFechaCorta(iso: string): string {
@@ -1053,9 +1051,7 @@ function DetalleSheet({
                   <PenLine className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--agro-success-text)' }} />
                   <p className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
                     Firmado por {acuse.ultimo.firmante} el{' '}
-                    {new Date(acuse.ultimo.firmado_en).toLocaleString('es-MX', {
-                      day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
-                    })}
+                    {fechaHora(acuse.ultimo.firmado_en)}
                   </p>
                 </div>
                 <p className="text-caption font-mono" style={{ color: 'var(--muted-foreground)' }}>
@@ -1203,7 +1199,7 @@ function DetalleSheet({
                       <img src={ac.firma_png} alt="Firma" className="h-14 w-auto rounded border border-border" style={{ backgroundColor: '#fff' }} />
                     ) : null}
                     <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                      {ac.firmante} · {new Date(ac.firmado_en).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      {ac.firmante} · {fechaHora(ac.firmado_en)}
                     </p>
                   </div>
                 ))}

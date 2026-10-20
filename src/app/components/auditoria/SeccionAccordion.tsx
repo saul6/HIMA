@@ -3,6 +3,7 @@ import { ChevronDown } from 'lucide-react'
 import { PreguntaItem } from './PreguntaItem'
 import { calcularAgregados } from '@/hooks/useAuditoria'
 import type { AuditoriaSeccion, AuditoriaPregunta, RespuestaAuditoria } from '@/types/database.types'
+import { formatoPct } from '@/lib/formato'
 
 function scoreClass(porcentaje: number, posibles: number): string {
   if (posibles === 0) return 'bg-muted text-muted-foreground'
@@ -57,7 +58,7 @@ export function SeccionAccordion({
             style={{ fontWeight: 600 }}
           >
             {puntos_posibles > 0
-              ? `${porcentaje}% · ${puntos_obtenidos}/${puntos_posibles} pts`
+              ? `${formatoPct(porcentaje)} · ${puntos_obtenidos}/${puntos_posibles} pts`
               : respondidas > 0
               ? 'Solo info'
               : '—'}

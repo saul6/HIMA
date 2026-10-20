@@ -24,6 +24,7 @@ import type { CapturaPreguntaRef, AjusteInfo } from './CapturaPreguntaAuditoria'
 import { traducirErrorBd } from '@/lib/erroresBd'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
+import { fechaCorta, fechaHora, formatoPct } from '@/lib/formato'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -815,7 +816,7 @@ function PanelScoring({
                   </div>
                   <div className="flex gap-3 flex-wrap">
                     <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                      Bruto: <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{m.resultado_bruto}%</span>
+                      Bruto: <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{formatoPct(m.resultado_bruto)}</span>
                     </span>
                     {m.falla_automatica && (
                       <span className="text-caption" style={{ color: 'var(--agro-danger-text)' }}>
@@ -824,12 +825,12 @@ function PanelScoring({
                     )}
                     {!m.falla_automatica && m.resultado_efectivo !== m.resultado_bruto && (
                       <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                        Efectivo: <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{m.resultado_efectivo}%</span>
+                        Efectivo: <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{formatoPct(m.resultado_efectivo)}</span>
                       </span>
                     )}
                     {m.proyeccion_si_cumplen > 0 && (
                       <span className="text-caption" style={{ color: 'var(--agro-success-text)' }}>
-                        Proj.: {m.proyeccion_si_cumplen}%
+                        Proj.: {formatoPct(m.proyeccion_si_cumplen)}
                       </span>
                     )}
                   </div>
@@ -2457,7 +2458,7 @@ export function AuditorEjecucion() {
                                     {OBSERVED_STATUS_LABELS[ewr.observed_status]}
                                   </span>
                                   <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                                    {new Date(ewr.observed_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                    {fechaCorta(ewr.observed_at)}
                                   </span>
                                 </div>
                                 {ewr.official_decision && (
@@ -2509,7 +2510,7 @@ export function AuditorEjecucion() {
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold" style={{ color: 'var(--foreground)' }}>Versión {v.version}</span>
                     <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                      {new Date(v.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {fechaHora(v.created_at)}
                     </span>
                   </div>
                   {([
@@ -2587,7 +2588,7 @@ export function AuditorEjecucion() {
                           </span>
                           {fecha && (
                             <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                              {new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                              {fechaCorta(fecha)}
                             </span>
                           )}
                         </div>
@@ -2692,7 +2693,7 @@ export function AuditorEjecucion() {
                           M13
                         </span>
                         <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                          {new Date(inc.fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          {fechaCorta(inc.fecha)}
                         </span>
                       </div>
                       <p className="text-caption leading-snug" style={{ color: 'var(--foreground)' }}>{inc.descripcion}</p>

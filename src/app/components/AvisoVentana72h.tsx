@@ -1,12 +1,13 @@
 import { Link } from 'react-router'
 import { TriangleAlert } from 'lucide-react'
 import { useOutbox } from '@/hooks/useOutbox'
+import { fechaHora } from '@/lib/formato'
 
 const HORAS_AVISO = 48
 const HORAS_VENTANA = 72
 
 function fmt(d: Date): string {
-  return d.toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+  return fechaHora(d)
 }
 
 // Banner fijo cuando hay registros sin subir con más de 48 h: la ventana para subirlos es de 72 h.

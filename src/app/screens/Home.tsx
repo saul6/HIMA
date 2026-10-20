@@ -30,6 +30,7 @@ import { CATEGORIA_MAP } from '@/lib/categoriasModulos'
 import { ordenarAlfabetico } from '@/lib/ordenAlfabetico'
 import { useConexion } from '@/hooks/useConexion'
 import { MODULOS_OFFLINE, type CodigoOffline } from '@/lib/offline/modulosOffline'
+import { formatoPct } from '@/lib/formato'
 
 const MAX_PINNED = 4
 // Foco visible por teclado — nunca `ring-*` (usa box-shadow, prohibido).
@@ -934,11 +935,11 @@ export function Home() {
                 icon={<BarChart2 className="w-4 h-4 text-primary flex-shrink-0" />}
                 value={
                   resumen?.cumplimiento_promedio != null
-                    ? `${Math.round(resumen.cumplimiento_promedio)}%`
+                    ? `${formatoPct(Math.round(resumen.cumplimiento_promedio))}`
                     : '—'
                 }
                 numericValue={resumen?.cumplimiento_promedio ?? null}
-                format={(n) => `${Math.round(n)}%`}
+                format={(n) => `${formatoPct(Math.round(n))}`}
                 reducedMotion={reducedMotion}
                 label="Cumplimiento promedio"
               />

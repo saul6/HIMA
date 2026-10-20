@@ -46,6 +46,7 @@ import { BannerLimiteOffline } from '@/app/components/BannerLimiteOffline'
 import { WifiOff } from 'lucide-react'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { fechaCorta } from '@/lib/formato'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -107,11 +108,7 @@ function contarPresentes(r: Pick<FormState, 'parches_curitas' | 'guantes_curacio
 
 function formatFecha(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    })
+    return fechaCorta(iso)
   } catch {
     return iso
   }

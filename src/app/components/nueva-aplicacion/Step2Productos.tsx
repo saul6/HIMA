@@ -6,6 +6,7 @@ import { FormSelect } from "../FormSelect";
 import { ProductoCombobox } from "./ProductoCombobox";
 import { useCatalogoProductos } from "@/hooks/useCatalogoProductos";
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { fechaHora } from '@/lib/formato'
 
 interface Props {
   formData: any;
@@ -190,7 +191,7 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
             )}
             {inventarioAl != null && (
               <p className="text-xs text-muted-foreground mt-1">
-                Saldo de inventario al {new Date(inventarioAl).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })} (incluye salidas sin subir)
+                Saldo de inventario al {fechaHora(inventarioAl)} (incluye salidas sin subir)
               </p>
             )}
           </div>

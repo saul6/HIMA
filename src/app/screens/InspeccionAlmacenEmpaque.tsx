@@ -41,6 +41,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { mesAnio } from '@/lib/formato'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -49,7 +50,7 @@ function hoyMX() {
 }
 
 function formatMesLabel(anio: number, mes: number): string {
-  return new Date(anio, mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+  return mesAnio(`${anio}-${String(mes).padStart(2, '0')}`)
 }
 
 function siguienteValor(v: ValorM43): ValorM43 {

@@ -33,6 +33,7 @@ import { opInsert } from '@/lib/offline/construirOperaciones'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { mesAnio } from '@/lib/formato'
 
 function mesActual(): string {
   const d = new Date()
@@ -41,7 +42,7 @@ function mesActual(): string {
 
 function formatMes(iso: string): string {
   try {
-    const label = new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    const label = mesAnio(iso)
     return label.charAt(0).toUpperCase() + label.slice(1)
   } catch { return iso }
 }

@@ -53,6 +53,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { fechaCorta, mesAnio } from '@/lib/formato'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -80,18 +81,14 @@ function mesActual(): string {
 
 function formatMesLabel(isoDate: string): string {
   try {
-    const label = new Date(isoDate + 'T12:00:00').toLocaleDateString('es-MX', {
-      month: 'long', year: 'numeric',
-    })
+    const label = mesAnio(isoDate)
     return label.charAt(0).toUpperCase() + label.slice(1)
   } catch { return isoDate }
 }
 
 function formatFechaCorta(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
-      day: 'numeric', month: 'short', year: 'numeric',
-    })
+    return fechaCorta(iso)
   } catch { return iso }
 }
 

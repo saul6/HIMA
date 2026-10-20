@@ -46,6 +46,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { mesAnio } from '@/lib/formato'
 
 const tbl = (name: string) => (supabase as any).from(name)
 
@@ -97,7 +98,7 @@ function mesActual(): string {
 
 function formatMesLabel(anio: number, mes: number): string {
   try {
-    const label = new Date(anio, mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    const label = mesAnio(`${anio}-${String(mes).padStart(2, '0')}`)
     return label.charAt(0).toUpperCase() + label.slice(1)
   } catch { return `${mes}/${anio}` }
 }

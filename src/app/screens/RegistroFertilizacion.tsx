@@ -41,6 +41,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { fechaCorta } from '@/lib/formato'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -83,9 +84,7 @@ const filaVacia = (): FilaFertilizante => ({
 
 function formatFecha(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
-      day: 'numeric', month: 'short', year: 'numeric',
-    })
+    return fechaCorta(iso)
   } catch {
     return iso
   }

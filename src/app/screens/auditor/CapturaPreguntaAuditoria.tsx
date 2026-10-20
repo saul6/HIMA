@@ -21,6 +21,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { traducirErrorBd, mensajeErrorBd } from '@/lib/erroresBd'
 import { guardarBorradorAuditor, cargarBorradorAuditor, borrarBorradorAuditor, claveBorradorAuditor } from '@/lib/idb/auditorBorradorStore'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { fechaCorta } from '@/lib/formato'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -498,7 +499,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
 
     function fmtHerenciaTs(ts: string | null): string {
       if (!ts) return ''
-      return new Date(ts).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
+      return fechaCorta(ts)
     }
 
     async function handleConfirmarHerencia(valorId: string) {
@@ -947,7 +948,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   )}
                   {causa.created_at && (
                     <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                      {new Date(causa.created_at).toLocaleDateString('es-MX')}
+                      {fechaCorta(causa.created_at)}
                     </p>
                   )}
                 </div>

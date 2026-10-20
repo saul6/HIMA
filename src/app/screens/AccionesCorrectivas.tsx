@@ -38,15 +38,14 @@ import { AsignarHallazgoSheet } from '@/app/components/hallazgos/AsignarHallazgo
 import { esModuloAsignable, formatFechaLimite } from '@/lib/hallazgos/asignacion'
 import type { AccionCorrectivaFoto } from '@/types/database.types'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { fechaCorta } from '@/lib/formato'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatFecha(iso: string | null | undefined): string {
   if (!iso) return '—'
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
-      day: 'numeric', month: 'short', year: 'numeric',
-    })
+    return fechaCorta(iso)
   } catch { return iso }
 }
 

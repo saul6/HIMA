@@ -9,6 +9,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { supabase } from '@/lib/supabase'
 import { TextoResaltado } from '@/app/components/TextoResaltado'
 import { ahora, ms, emitirEvento } from '@/lib/telemetria'
+import { fechaCorta } from '@/lib/formato'
 
 interface BusquedaResultado {
   tipo: 'ORGANIZACION' | 'RANCHO' | 'AUDITORIA' | 'HALLAZGO' | 'ACCION' | 'EVIDENCIA'
@@ -214,9 +215,7 @@ export function AuditorBusqueda() {
                               className="text-caption mt-0.5"
                               style={{ color: 'var(--muted-foreground)', opacity: 0.7 }}
                             >
-                              {new Date(item.fecha).toLocaleDateString('es-MX', {
-                                day: 'numeric', month: 'short', year: 'numeric',
-                              })}
+                              {fechaCorta(item.fecha)}
                             </p>
                           )}
                         </div>

@@ -1,5 +1,6 @@
 import { calcularAgregados } from '@/hooks/useAuditoria'
 import type { AuditoriaPregunta, RespuestaAuditoria } from '@/types/database.types'
+import { formatoPct } from '@/lib/formato'
 
 interface ResumenPuntajeProps {
   preguntas: AuditoriaPregunta[]
@@ -44,7 +45,7 @@ export function ResumenPuntaje({ preguntas, respuestas }: ResumenPuntajeProps) {
       </div>
       <div className="text-right shrink-0">
         <p className="text-2xl" style={{ color, fontWeight: 700, lineHeight: 1 }}>
-          {puntos_posibles > 0 ? `${porcentaje}%` : '—'}
+          {puntos_posibles > 0 ? `${formatoPct(porcentaje)}` : '—'}
         </p>
         {puntos_posibles > 0 && (
           <p className="text-xs mt-0.5" style={{ color }}>

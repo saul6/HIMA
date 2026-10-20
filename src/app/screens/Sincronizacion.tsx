@@ -13,13 +13,11 @@ import { motivoLote } from '@/lib/offline/motivosRechazo'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
+import { fechaHora } from '@/lib/formato'
 
 function formatFechaCaptura(iso: string): string {
   try {
-    return new Date(iso).toLocaleString('es-MX', {
-      day: 'numeric', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    })
+    return fechaHora(iso)
   } catch { return iso }
 }
 

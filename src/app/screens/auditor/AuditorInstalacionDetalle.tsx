@@ -15,6 +15,7 @@ import { traducirErrorBd } from '@/lib/erroresBd'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
+import { fechaCorta } from '@/lib/formato'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -329,7 +330,7 @@ export function AuditorInstalacionDetalle() {
                 </p>
                 {instalacion.linked_at && (
                   <p className="text-caption mt-0.5" style={{ color: 'var(--agro-success-text)' }}>
-                    Desde {new Date(instalacion.linked_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })}
+                    Desde {fechaCorta(instalacion.linked_at)}
                   </p>
                 )}
                 <p className="text-caption mt-0.5" style={{ color: 'var(--agro-success-text)' }}>

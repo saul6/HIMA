@@ -21,6 +21,7 @@ import {
   mergePDFBlobs,
 } from '@/lib/pdf/generarBlobHistorial'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { fechaCorta, formatoPct, mesAnio } from '@/lib/formato'
 
 // ── Metadatos de módulo ───────────────────────────────────────────────────────
 
@@ -80,9 +81,7 @@ function hoy(): string {
 
 function formatFecha(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
-      day: '2-digit', month: 'short', year: 'numeric',
-    })
+    return fechaCorta(iso)
   } catch { return iso }
 }
 
@@ -453,7 +452,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
 
   // M14 — una fila = una auditoría SAIA
   for (const r of (r14 as any)?.data ?? []) {
-    const pct = r.porcentaje > 0 ? ` · ${r.porcentaje}%` : ''
+    const pct = r.porcentaje > 0 ? ` · ${formatoPct(r.porcentaje)}` : ''
     todos.push({
       key: `M14-${r.id}`,
       modulo: 'M14',
@@ -467,7 +466,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
 
   // M15 — una fila = una auditoría Granja
   for (const r of (r15 as any)?.data ?? []) {
-    const pct = r.porcentaje > 0 ? ` · ${r.porcentaje}%` : ''
+    const pct = r.porcentaje > 0 ? ` · ${formatoPct(r.porcentaje)}` : ''
     todos.push({
       key: `M15-${r.id}`,
       modulo: 'M15',
@@ -481,7 +480,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
 
   // M16 — una fila = una auditoría Cuadrilla
   for (const r of (r16 as any)?.data ?? []) {
-    const pct = r.porcentaje > 0 ? ` · ${r.porcentaje}%` : ''
+    const pct = r.porcentaje > 0 ? ` · ${formatoPct(r.porcentaje)}` : ''
     todos.push({
       key: `M16-${r.id}`,
       modulo: 'M16',
@@ -495,7 +494,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
 
   // M17 — una fila = una auditoría BPM
   for (const r of (r17 as any)?.data ?? []) {
-    const pct = r.porcentaje > 0 ? ` · ${r.porcentaje}%` : ''
+    const pct = r.porcentaje > 0 ? ` · ${formatoPct(r.porcentaje)}` : ''
     todos.push({
       key: `M17-${r.id}`,
       modulo: 'M17',
@@ -509,7 +508,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
 
   // M18 — una fila = una auditoría HACCP
   for (const r of (r18 as any)?.data ?? []) {
-    const pct = r.porcentaje > 0 ? ` · ${r.porcentaje}%` : ''
+    const pct = r.porcentaje > 0 ? ` · ${formatoPct(r.porcentaje)}` : ''
     todos.push({
       key: `M18-${r.id}`,
       modulo: 'M18',
@@ -657,7 +656,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
 
   // M28 — una fila = un registro mensual de limpieza de baños y almacen de químicos
   for (const r of (r28 as any)?.data ?? []) {
-    const mesLabel = new Date(r.anio, r.mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    const mesLabel = mesAnio(`${r.anio}-${String(r.mes).padStart(2, '0')}`)
     todos.push({
       key: `M28-${r.id}`,
       modulo: 'M28',
@@ -671,7 +670,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
 
   // M29 — una fila = un registro mensual de limpieza de la aduana
   for (const r of (r29 as any)?.data ?? []) {
-    const mesLabel = new Date(r.anio, r.mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    const mesLabel = mesAnio(`${r.anio}-${String(r.mes).padStart(2, '0')}`)
     todos.push({
       key: `M29-${r.id}`,
       modulo: 'M29',
@@ -685,7 +684,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
 
   // M30 — una fila = un registro mensual de limpieza del comedor
   for (const r of (r30 as any)?.data ?? []) {
-    const mesLabel = new Date(r.anio, r.mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    const mesLabel = mesAnio(`${r.anio}-${String(r.mes).padStart(2, '0')}`)
     todos.push({
       key: `M30-${r.id}`,
       modulo: 'M30',
@@ -699,7 +698,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
 
   // M31 — una fila = un registro mensual de limpieza de las oficinas
   for (const r of (r31 as any)?.data ?? []) {
-    const mesLabel = new Date(r.anio, r.mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    const mesLabel = mesAnio(`${r.anio}-${String(r.mes).padStart(2, '0')}`)
     todos.push({
       key: `M31-${r.id}`,
       modulo: 'M31',
@@ -713,7 +712,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
 
   // M32 — una fila = un registro mensual de limpieza de patios exteriores y azoteas
   for (const r of (r32 as any)?.data ?? []) {
-    const mesLabel = new Date(r.anio, r.mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    const mesLabel = mesAnio(`${r.anio}-${String(r.mes).padStart(2, '0')}`)
     todos.push({
       key: `M32-${r.id}`,
       modulo: 'M32',
@@ -727,7 +726,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
 
   // M33 — una fila = un registro mensual de limpieza del área de recepción
   for (const r of (r33 as any)?.data ?? []) {
-    const mesLabel = new Date(r.anio, r.mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    const mesLabel = mesAnio(`${r.anio}-${String(r.mes).padStart(2, '0')}`)
     todos.push({
       key: `M33-${r.id}`,
       modulo: 'M33',
@@ -741,7 +740,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
 
   // M34 — una fila = un registro mensual de limpieza de cuartos de pre-enfrío y conservador
   for (const r of (r34 as any)?.data ?? []) {
-    const mesLabel = new Date(r.anio, r.mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    const mesLabel = mesAnio(`${r.anio}-${String(r.mes).padStart(2, '0')}`)
     todos.push({
       key: `M34-${r.id}`,
       modulo: 'M34',
@@ -755,7 +754,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
 
   // M35 — una fila = un registro mensual de limpieza del almacén de material de empaque
   for (const r of (r35 as any)?.data ?? []) {
-    const mesLabel = new Date(r.anio, r.mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    const mesLabel = mesAnio(`${r.anio}-${String(r.mes).padStart(2, '0')}`)
     todos.push({
       key: `M35-${r.id}`,
       modulo: 'M35',
@@ -851,7 +850,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
     const hastaV = parseInt(hastaM.slice(0, 4)) * 12 + parseInt(hastaM.slice(5, 7))
     const v = (r.anio as number) * 12 + (r.mes as number)
     if (v < desdeV || v > hastaV) continue
-    const ml = new Date(r.anio, r.mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+    const ml = mesAnio(`${r.anio}-${String(r.mes).padStart(2, '0')}`)
     todos.push({
       key: `M45-${r.id}`,
       modulo: 'M45',
