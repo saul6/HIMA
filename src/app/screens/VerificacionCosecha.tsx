@@ -672,7 +672,7 @@ export function VerificacionCosecha() {
                   placeholder="REG-13-..."
                   className="w-full h-9 px-3 rounded-lg border text-sm text-foreground focus:outline-none focus:border-primary"
                   style={{
-                    borderColor: 'var(--border)',
+                    borderColor: 'var(--border-control)',
                     backgroundColor: 'var(--input-background)',
                   }}
                 />
@@ -688,7 +688,7 @@ export function VerificacionCosecha() {
                   placeholder="Ej. Zarzamora"
                   className="w-full h-9 px-3 rounded-lg border text-sm text-foreground focus:outline-none focus:border-primary"
                   style={{
-                    borderColor: 'var(--border)',
+                    borderColor: 'var(--border-control)',
                     backgroundColor: 'var(--input-background)',
                   }}
                 />
@@ -706,7 +706,7 @@ export function VerificacionCosecha() {
                 placeholder="Nombre del responsable"
                 className="w-full h-9 px-3 rounded-lg border text-sm text-foreground focus:outline-none focus:border-primary"
                 style={{
-                  borderColor: 'var(--border)',
+                  borderColor: 'var(--border-control)',
                   backgroundColor: 'var(--input-background)',
                 }}
               />
@@ -1001,7 +1001,7 @@ export function VerificacionCosecha() {
                   onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
                   style={{
-                    borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border)',
+                    borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border-control)',
                     backgroundColor: 'var(--input-background)',
                   }}
                 >
@@ -1025,7 +1025,7 @@ export function VerificacionCosecha() {
                   value={nMes}
                   onChange={(e) => setNMes(e.target.value)}
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                  style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                 />
               </div>
 
@@ -1040,7 +1040,7 @@ export function VerificacionCosecha() {
                   onChange={(e) => setNCodigo(e.target.value)}
                   placeholder="REG-13-..."
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                  style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                 />
               </div>
 
@@ -1055,7 +1055,7 @@ export function VerificacionCosecha() {
                   onChange={(e) => setNCultivo(e.target.value)}
                   placeholder="Ej. Zarzamora"
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                  style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                 />
               </div>
 
@@ -1070,7 +1070,7 @@ export function VerificacionCosecha() {
                   onChange={(e) => setNRealizo(e.target.value)}
                   placeholder="Nombre del responsable"
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                  style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                 />
               </div>
 
@@ -1147,7 +1147,7 @@ export function VerificacionCosecha() {
                 value={cRanchoId}
                 onChange={(e) => setCRanchoId(e.target.value)}
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
               >
                 <option value="">Todos</option>
                 {ranchoOptions.map((o) => (
@@ -1166,7 +1166,7 @@ export function VerificacionCosecha() {
                   value={cDesde}
                   onChange={(e) => setCDesde(e.target.value)}
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                  style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                 />
               </div>
               <div className="space-y-1">
@@ -1178,7 +1178,7 @@ export function VerificacionCosecha() {
                   value={cHasta}
                   onChange={(e) => setCHasta(e.target.value)}
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                  style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                 />
               </div>
             </div>

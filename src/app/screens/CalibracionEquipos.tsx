@@ -329,7 +329,7 @@ export function CalibracionEquipos() {
           <div>
             <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.rancho_id}
               onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -341,7 +341,7 @@ export function CalibracionEquipos() {
             <label className="block text-xs font-medium mb-1">Fecha</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.fecha}
               min={puedeEditarFecha ? undefined : hoyMX()}
               max={puedeEditarFecha ? undefined : hoyMX()}
@@ -352,7 +352,7 @@ export function CalibracionEquipos() {
             <label className="block text-xs font-medium mb-1">N° de equipo</label>
             <input maxLength={limiteTexto('m50_calibracion_equipos', 'num_equipo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. 001"
               value={form.num_equipo}
               onChange={e => setForm(f => ({ ...f, num_equipo: e.target.value }))}
@@ -363,7 +363,7 @@ export function CalibracionEquipos() {
               <label className="block text-xs font-medium mb-1">Velocidad (km/h)</label>
               <input
                 type="number" inputMode="decimal" step="any" min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0.0"
                 value={form.velocidad_kmh}
                 onChange={e => setForm(f => ({ ...f, velocidad_kmh: e.target.value }))}
@@ -373,7 +373,7 @@ export function CalibracionEquipos() {
               <label className="block text-xs font-medium mb-1">Presión trabajo (bar)</label>
               <input
                 type="number" inputMode="decimal" step="any" min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0.00"
                 value={form.presion_trabajo_bar}
                 onChange={e => setForm(f => ({ ...f, presion_trabajo_bar: e.target.value }))}
@@ -385,7 +385,7 @@ export function CalibracionEquipos() {
               <label className="block text-xs font-medium mb-1">Boquilla <span className="text-muted-foreground">(opcional)</span></label>
               <input maxLength={limiteTexto('m50_calibracion_equipos', 'boquilla')}
                 type="text"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="Tipo de boquilla"
                 value={form.boquilla}
                 onChange={e => setForm(f => ({ ...f, boquilla: e.target.value }))}
@@ -395,7 +395,7 @@ export function CalibracionEquipos() {
               <label className="block text-xs font-medium mb-1">Gasto boquilla (ml)</label>
               <input
                 type="number" inputMode="decimal" step="any" min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0.0"
                 value={form.gasto_boquilla_ml}
                 onChange={e => setForm(f => ({ ...f, gasto_boquilla_ml: e.target.value }))}
@@ -406,7 +406,7 @@ export function CalibracionEquipos() {
             <label className="block text-xs font-medium mb-1">Resultado <span className="text-muted-foreground">(opcional)</span></label>
             <InputContador limite={limiteTexto('m50_calibracion_equipos', 'resultado')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Aprobado, Requiere ajuste..."
               value={form.resultado}
               onChange={e => setForm(f => ({ ...f, resultado: e.target.value }))}
@@ -416,7 +416,7 @@ export function CalibracionEquipos() {
             <label className="block text-xs font-medium mb-1">Realizó</label>
             <input maxLength={limiteTexto('m50_calibracion_equipos', 'realizo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
               value={form.realizo}
               readOnly
@@ -425,7 +425,7 @@ export function CalibracionEquipos() {
           <div>
             <label className="block text-xs font-medium mb-1">Observaciones <span className="text-muted-foreground">(opcional)</span></label>
             <TextareaContador limite={limiteTexto('m50_calibracion_equipos', 'observaciones')}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               rows={2}
               placeholder="Notas adicionales..."
               value={form.observaciones}
@@ -459,7 +459,7 @@ export function CalibracionEquipos() {
               {terminosSitio.singular} <span className="text-muted-foreground">(opcional)</span>
             </label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.rancho_id}
               onChange={e => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -469,12 +469,12 @@ export function CalibracionEquipos() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Desde</label>
-            <input type="date" className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+            <input type="date" className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.desde} onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))} />
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Hasta</label>
-            <input type="date" className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+            <input type="date" className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.hasta} onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))} />
           </div>
         </div>

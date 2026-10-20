@@ -308,7 +308,7 @@ export function FrecuenciaCapacitacion() {
             <label className="block text-xs font-medium mb-1">Tema</label>
             <input maxLength={limiteTexto('m56_frecuencia_capacitacion', 'tema')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Higiene personal, BPA..."
               value={form.tema}
               onChange={e => setForm(f => ({ ...f, tema: e.target.value }))}
@@ -319,7 +319,7 @@ export function FrecuenciaCapacitacion() {
             <div>
               <label className="block text-xs font-medium mb-1">Año</label>
               <select
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 value={form.anio}
                 onChange={e => setForm(f => ({ ...f, anio: Number(e.target.value) }))}
               >
@@ -331,7 +331,7 @@ export function FrecuenciaCapacitacion() {
             <div>
               <label className="block text-xs font-medium mb-1">Mes</label>
               <select
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 value={form.mes}
                 onChange={e => setForm(f => ({ ...f, mes: Number(e.target.value) }))}
               >
@@ -348,7 +348,7 @@ export function FrecuenciaCapacitacion() {
             </label>
             <input maxLength={limiteTexto('m56_frecuencia_capacitacion', 'capacitador')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre del instructor"
               value={form.capacitador}
               onChange={e => setForm(f => ({ ...f, capacitador: e.target.value }))}
@@ -376,7 +376,7 @@ export function FrecuenciaCapacitacion() {
             </label>
             <TextareaContador limite={limiteTexto('m56_frecuencia_capacitacion', 'observaciones')}
               rows={3}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}
               onChange={e => setForm(f => ({ ...f, observaciones: e.target.value }))}
             />

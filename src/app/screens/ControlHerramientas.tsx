@@ -354,7 +354,7 @@ export function ControlHerramientas() {
           <div>
             <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.rancho_id}
               onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -367,7 +367,7 @@ export function ControlHerramientas() {
             <label className="block text-xs font-medium mb-1">Fecha</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.fecha}
               min={puedeEditarFecha ? undefined : hoyMX()}
               max={puedeEditarFecha ? undefined : hoyMX()}
@@ -379,7 +379,7 @@ export function ControlHerramientas() {
             <label className="block text-xs font-medium mb-1">Trabajador</label>
             <input maxLength={limiteTexto('m64_control_herramientas', 'trabajador')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre del trabajador"
               value={form.trabajador}
               onChange={e => setForm(f => ({ ...f, trabajador: e.target.value }))}
@@ -390,7 +390,7 @@ export function ControlHerramientas() {
             <label className="block text-xs font-medium mb-1">Herramienta</label>
             <input maxLength={limiteTexto('m64_control_herramientas', 'herramienta')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Tijeras de poda, cuchillo..."
               value={form.herramienta}
               onChange={e => setForm(f => ({ ...f, herramienta: e.target.value }))}
@@ -404,7 +404,7 @@ export function ControlHerramientas() {
               inputMode="numeric"
               min="1"
               step="1"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.cantidad}
               onChange={e => setForm(f => ({ ...f, cantidad: e.target.value }))}
             />
@@ -414,7 +414,7 @@ export function ControlHerramientas() {
             <label className="block text-xs font-medium mb-1">Quien entrega</label>
             <input maxLength={limiteTexto('m64_control_herramientas', 'entrega_nombre')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre de quien entrega"
               value={form.entrega_nombre}
               onChange={e => setForm(f => ({ ...f, entrega_nombre: e.target.value }))}
@@ -425,7 +425,7 @@ export function ControlHerramientas() {
             <label className="block text-xs font-medium mb-1">Quien recibe</label>
             <input maxLength={limiteTexto('m64_control_herramientas', 'recibe_nombre')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre de quien recibe"
               value={form.recibe_nombre}
               onChange={e => setForm(f => ({ ...f, recibe_nombre: e.target.value }))}
@@ -452,7 +452,7 @@ export function ControlHerramientas() {
               <label className="block text-xs font-medium mb-1">Fecha de devolucion</label>
               <input
                 type="date"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 value={form.fecha_devolucion}
                 onChange={e => setForm(f => ({ ...f, fecha_devolucion: e.target.value }))}
               />
@@ -465,7 +465,7 @@ export function ControlHerramientas() {
             </label>
             <input maxLength={limiteTexto('m64_control_herramientas', 'realizo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre de quien registro"
               value={form.realizo}
               onChange={e => setForm(f => ({ ...f, realizo: e.target.value }))}
@@ -478,7 +478,7 @@ export function ControlHerramientas() {
             </label>
             <TextareaContador limite={limiteTexto('m64_control_herramientas', 'observaciones')}
               rows={3}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}
               onChange={e => setForm(f => ({ ...f, observaciones: e.target.value }))}
             />
@@ -512,7 +512,7 @@ export function ControlHerramientas() {
               {terminosSitio.singular} <span className="text-muted-foreground">(opcional)</span>
             </label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.rancho_id}
               onChange={e => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -524,7 +524,7 @@ export function ControlHerramientas() {
             <label className="block text-xs font-medium mb-1">Desde</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.desde}
               onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
             />
@@ -533,7 +533,7 @@ export function ControlHerramientas() {
             <label className="block text-xs font-medium mb-1">Hasta</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.hasta}
               onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
             />

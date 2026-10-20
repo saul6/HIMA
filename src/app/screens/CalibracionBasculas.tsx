@@ -333,7 +333,7 @@ export function CalibracionBasculas() {
           <div>
             <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.rancho_id}
               onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -345,7 +345,7 @@ export function CalibracionBasculas() {
             <label className="block text-xs font-medium mb-1">Fecha</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.fecha}
               min={puedeEditarFecha ? undefined : hoyMX()}
               max={puedeEditarFecha ? undefined : hoyMX()}
@@ -356,7 +356,7 @@ export function CalibracionBasculas() {
             <label className="block text-xs font-medium mb-1">Uso de la báscula</label>
             <input maxLength={limiteTexto('m51_calibracion_basculas', 'uso_bascula')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Pesaje de fruta, Control de insumos..."
               value={form.uso_bascula}
               onChange={e => setForm(f => ({ ...f, uso_bascula: e.target.value }))}
@@ -367,7 +367,7 @@ export function CalibracionBasculas() {
               <label className="block text-xs font-medium mb-1">Pesa patrón (kg)</label>
               <input
                 type="number" inputMode="decimal" step="any" min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0.000"
                 value={form.pesa_patron_kg}
                 onChange={e => setForm(f => ({ ...f, pesa_patron_kg: e.target.value }))}
@@ -377,7 +377,7 @@ export function CalibracionBasculas() {
               <label className="block text-xs font-medium mb-1">Punto calibración</label>
               <input maxLength={limiteTexto('m51_calibracion_basculas', 'punto_calibracion')}
                 type="text"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="Ej. Cero, Máximo..."
                 value={form.punto_calibracion}
                 onChange={e => setForm(f => ({ ...f, punto_calibracion: e.target.value }))}
@@ -389,7 +389,7 @@ export function CalibracionBasculas() {
               <label className="block text-xs font-medium mb-1">Peso medido (kg)</label>
               <input
                 type="number" inputMode="decimal" step="any" min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0.000"
                 value={form.peso_medido_kg}
                 onChange={e => setForm(f => ({ ...f, peso_medido_kg: e.target.value }))}
@@ -399,7 +399,7 @@ export function CalibracionBasculas() {
               <label className="block text-xs font-medium mb-1">Desviación</label>
               <input
                 type="number" inputMode="decimal" step="any"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0.000"
                 value={form.desviacion}
                 onChange={e => setForm(f => ({ ...f, desviacion: e.target.value }))}
@@ -409,7 +409,7 @@ export function CalibracionBasculas() {
           <div>
             <label className="block text-xs font-medium mb-1">Dentro de tolerancia</label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.dentro_tolerancia}
               onChange={e => setForm(f => ({ ...f, dentro_tolerancia: e.target.value as FormState['dentro_tolerancia'] }))}
             >
@@ -422,7 +422,7 @@ export function CalibracionBasculas() {
             <label className="block text-xs font-medium mb-1">Realizó</label>
             <input maxLength={limiteTexto('m51_calibracion_basculas', 'realizo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
               value={form.realizo}
               readOnly
@@ -431,7 +431,7 @@ export function CalibracionBasculas() {
           <div>
             <label className="block text-xs font-medium mb-1">Observaciones <span className="text-muted-foreground">(opcional)</span></label>
             <TextareaContador limite={limiteTexto('m51_calibracion_basculas', 'observaciones')}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               rows={2}
               placeholder="Notas adicionales..."
               value={form.observaciones}
@@ -465,7 +465,7 @@ export function CalibracionBasculas() {
               {terminosSitio.singular} <span className="text-muted-foreground">(opcional)</span>
             </label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.rancho_id}
               onChange={e => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -475,12 +475,12 @@ export function CalibracionBasculas() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Desde</label>
-            <input type="date" className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+            <input type="date" className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.desde} onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))} />
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Hasta</label>
-            <input type="date" className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+            <input type="date" className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.hasta} onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))} />
           </div>
         </div>

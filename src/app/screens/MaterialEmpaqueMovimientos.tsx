@@ -425,7 +425,7 @@ export function MaterialEmpaqueMovimientos() {
                   value={form.rancho_id}
                   onChange={e => setF({ rancho_id: e.target.value })}
                   className="w-full rounded-lg px-3 py-2 text-[13px] border"
-                  style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                  style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                 >
                   <option value="">Seleccionar...</option>
                   {(ranchos as any[]).map((r: any) => (
@@ -444,7 +444,7 @@ export function MaterialEmpaqueMovimientos() {
                   max={puedeEditarFecha ? undefined : hoyMX()}
                   onChange={e => { if (puedeEditarFecha) setF({ fecha: e.target.value }) }}
                   className="w-full rounded-lg px-3 py-2 text-[13px] border"
-                  style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                  style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                 />
               </div>
 
@@ -456,7 +456,7 @@ export function MaterialEmpaqueMovimientos() {
                   value={form.empresa}
                   onChange={e => setF({ empresa: e.target.value })}
                   className="w-full rounded-lg px-3 py-2 text-[13px] border"
-                  style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                  style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                   placeholder="Nombre de la empresa"
                 />
               </div>
@@ -490,7 +490,7 @@ export function MaterialEmpaqueMovimientos() {
                       value={(form as any)[key]}
                       onChange={e => setF({ [key]: e.target.value } as any)}
                       className="w-full rounded-lg px-3 py-2 text-[13px] border text-center"
-                      style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                      style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                       placeholder="0"
                     />
                   </div>
@@ -506,7 +506,7 @@ export function MaterialEmpaqueMovimientos() {
                     value={form.entrega}
                     onChange={e => setF({ entrega: e.target.value })}
                     className="w-full rounded-lg px-3 py-2 text-[13px] border"
-                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                     placeholder="Nombre"
                   />
                 </div>
@@ -517,7 +517,7 @@ export function MaterialEmpaqueMovimientos() {
                     value={form.recibe}
                     onChange={e => setF({ recibe: e.target.value })}
                     className="w-full rounded-lg px-3 py-2 text-[13px] border"
-                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                     placeholder="Nombre"
                   />
                 </div>
@@ -621,7 +621,7 @@ export function MaterialEmpaqueMovimientos() {
                   value={consolRanchoId}
                   onChange={e => setConsolRanchoId(e.target.value)}
                   className="w-full rounded-lg px-3 py-2 text-[13px] border"
-                  style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                  style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                 >
                   <option value="">{terminosSitio.plural}</option>
                   {(ranchos as any[]).map((r: any) => (
@@ -637,7 +637,7 @@ export function MaterialEmpaqueMovimientos() {
                     value={consolDesde}
                     onChange={e => setConsolDesde(e.target.value)}
                     className="w-full rounded-lg px-3 py-2 text-[13px] border"
-                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                   />
                 </div>
                 <div className="flex-1">
@@ -647,7 +647,7 @@ export function MaterialEmpaqueMovimientos() {
                     value={consolHasta}
                     onChange={e => setConsolHasta(e.target.value)}
                     className="w-full rounded-lg px-3 py-2 text-[13px] border"
-                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                   />
                 </div>
               </div>

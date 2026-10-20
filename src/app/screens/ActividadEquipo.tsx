@@ -252,7 +252,7 @@ export function ActividadEquipo() {
                 <select
                   value={filtroEmpleado}
                   onChange={(e) => setFiltroEmpleado(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm focus:outline-none focus:border-primary"
+                  className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm focus:outline-none focus:border-primary"
                 >
                   <option value="">Todos</option>
                   {empleados.map((e) => (
@@ -269,7 +269,7 @@ export function ActividadEquipo() {
                 <select
                   value={filtroModulo}
                   onChange={(e) => setFiltroModulo(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm focus:outline-none focus:border-primary"
+                  className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm focus:outline-none focus:border-primary"
                 >
                   <option value="">Todos</option>
                   {modulosUnicos.map((m) => (
@@ -404,7 +404,7 @@ export function ActividadEquipo() {
                   onChange={(e) => setComentario(e.target.value)}
                   rows={4}
                   placeholder="Describe qué está mal o qué debe corregirse..."
-                  className="w-full px-3 py-2 rounded-lg bg-input-background border border-border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+                  className="w-full px-3 py-2 rounded-lg bg-input-background border border-border-control text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
                 />
               </div>
             </div>

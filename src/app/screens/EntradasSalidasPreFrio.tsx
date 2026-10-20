@@ -267,8 +267,8 @@ export function EntradasSalidasPreFrio() {
     }
   }
 
-  const fieldCls = 'w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm'
-  const inputSm = 'w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm'
+  const fieldCls = 'w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm'
+  const inputSm = 'w-full h-9 rounded-lg border border-border-control bg-input-background px-2.5 text-sm'
 
   return (
     <div className="flex flex-col min-h-full bg-background pb-safe-nav">
@@ -575,7 +575,7 @@ export function EntradasSalidasPreFrio() {
               onChange={e => setF('observaciones', e.target.value)}
               rows={2}
               placeholder="Observaciones generales del registro..."
-              className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
             />
           </section>
         </div>

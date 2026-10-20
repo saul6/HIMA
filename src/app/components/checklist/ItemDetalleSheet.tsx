@@ -391,7 +391,7 @@ export function SelectorResponsable({
       <select
         value={profileId}
         onChange={e => onProfile(e.target.value)}
-        className="w-full h-9 rounded-md border border-border bg-input-background px-3 text-sm text-foreground"
+        className="w-full h-9 rounded-md border border-border-control bg-input-background px-3 text-sm text-foreground"
       >
         <option value="">Escribir nombre o puesto</option>
         {colaboradores.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}

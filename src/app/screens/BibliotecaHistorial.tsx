@@ -1133,7 +1133,7 @@ export function BibliotecaHistorial() {
                 value={inputDesde}
                 onChange={(e) => setInputDesde(e.target.value)}
                 className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border appearance-none [&::-webkit-date-and-time-value]:text-left"
-                style={{ background: 'var(--input-background)', borderColor: 'var(--border)' }}
+                style={{ background: 'var(--input-background)', borderColor: 'var(--border-control)' }}
               />
             </div>
             <div className="min-w-0">
@@ -1146,7 +1146,7 @@ export function BibliotecaHistorial() {
                 value={inputHasta}
                 onChange={(e) => setInputHasta(e.target.value)}
                 className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border appearance-none [&::-webkit-date-and-time-value]:text-left"
-                style={{ background: 'var(--input-background)', borderColor: 'var(--border)' }}
+                style={{ background: 'var(--input-background)', borderColor: 'var(--border-control)' }}
               />
             </div>
 
@@ -1159,7 +1159,7 @@ export function BibliotecaHistorial() {
                 value={filtroRancho}
                 onChange={(e) => setFiltroRancho(e.target.value)}
                 className="w-full min-w-0 mt-1 px-3 py-2 rounded-lg text-sm border"
-                style={{ background: 'var(--input-background)', borderColor: 'var(--border)' }}
+                style={{ background: 'var(--input-background)', borderColor: 'var(--border-control)' }}
               >
                 <option value="todos">{terminosSitio.plural}</option>
                 {ranchos.map(([id, nombre]) => (

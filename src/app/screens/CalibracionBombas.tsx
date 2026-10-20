@@ -346,7 +346,7 @@ export function CalibracionBombas() {
           <div>
             <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.rancho_id}
               onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -358,7 +358,7 @@ export function CalibracionBombas() {
             <label className="block text-xs font-medium mb-1">Fecha</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.fecha}
               min={puedeEditarFecha ? undefined : hoyMX()}
               max={puedeEditarFecha ? undefined : hoyMX()}
@@ -369,7 +369,7 @@ export function CalibracionBombas() {
             <label className="block text-xs font-medium mb-1">Tipo de equipo / bomba</label>
             <input maxLength={limiteTexto('m49_calibracion_bombas', 'equipo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Aspersora de mochila"
               value={form.equipo}
               onChange={e => setForm(f => ({ ...f, equipo: e.target.value }))}
@@ -379,7 +379,7 @@ export function CalibracionBombas() {
             <label className="block text-xs font-medium mb-1">N° de equipo</label>
             <input maxLength={limiteTexto('m49_calibracion_bombas', 'num_equipo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. 001"
               value={form.num_equipo}
               onChange={e => setForm(f => ({ ...f, num_equipo: e.target.value }))}
@@ -390,7 +390,7 @@ export function CalibracionBombas() {
               <label className="block text-xs font-medium mb-1">Cultivo <span className="text-muted-foreground">(opcional)</span></label>
               <input maxLength={limiteTexto('m49_calibracion_bombas', 'cultivo')}
                 type="text"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="Ej. Zarzamora"
                 value={form.cultivo}
                 onChange={e => setForm(f => ({ ...f, cultivo: e.target.value }))}
@@ -400,7 +400,7 @@ export function CalibracionBombas() {
               <label className="block text-xs font-medium mb-1">Parcela <span className="text-muted-foreground">(opcional)</span></label>
               <input maxLength={limiteTexto('m49_calibracion_bombas', 'parcela')}
                 type="text"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="Ej. A-1"
                 value={form.parcela}
                 onChange={e => setForm(f => ({ ...f, parcela: e.target.value }))}
@@ -412,7 +412,7 @@ export function CalibracionBombas() {
               <label className="block text-xs font-medium mb-1">Distancia (m)</label>
               <input
                 type="number" inputMode="decimal" step="any" min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0.0"
                 value={form.distancia_m}
                 onChange={e => setForm(f => ({ ...f, distancia_m: e.target.value }))}
@@ -422,7 +422,7 @@ export function CalibracionBombas() {
               <label className="block text-xs font-medium mb-1">Velocidad (km/h)</label>
               <input
                 type="number" inputMode="decimal" step="any" min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0.0"
                 value={form.velocidad_kmh}
                 onChange={e => setForm(f => ({ ...f, velocidad_kmh: e.target.value }))}
@@ -434,7 +434,7 @@ export function CalibracionBombas() {
               <label className="block text-xs font-medium mb-1">Presión (bar)</label>
               <input
                 type="number" inputMode="decimal" step="any" min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0.00"
                 value={form.presion_bar}
                 onChange={e => setForm(f => ({ ...f, presion_bar: e.target.value }))}
@@ -444,7 +444,7 @@ export function CalibracionBombas() {
               <label className="block text-xs font-medium mb-1">Vol. recolectado (ml)</label>
               <input
                 type="number" inputMode="decimal" step="any" min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0.0"
                 value={form.volumen_recolectado_ml}
                 onChange={e => setForm(f => ({ ...f, volumen_recolectado_ml: e.target.value }))}
@@ -455,7 +455,7 @@ export function CalibracionBombas() {
             <label className="block text-xs font-medium mb-1">Gasto (L) <span className="text-muted-foreground">(opcional)</span></label>
             <input
               type="number" inputMode="decimal" step="any" min="0"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="0.00"
               value={form.gasto_l}
               onChange={e => setForm(f => ({ ...f, gasto_l: e.target.value }))}
@@ -465,7 +465,7 @@ export function CalibracionBombas() {
             <label className="block text-xs font-medium mb-1">Resultado <span className="text-muted-foreground">(opcional)</span></label>
             <InputContador limite={limiteTexto('m49_calibracion_bombas', 'resultado')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Aprobado, Requiere ajuste..."
               value={form.resultado}
               onChange={e => setForm(f => ({ ...f, resultado: e.target.value }))}
@@ -475,7 +475,7 @@ export function CalibracionBombas() {
             <label className="block text-xs font-medium mb-1">Realizó</label>
             <input maxLength={limiteTexto('m49_calibracion_bombas', 'realizo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
               value={form.realizo}
               readOnly
@@ -484,7 +484,7 @@ export function CalibracionBombas() {
           <div>
             <label className="block text-xs font-medium mb-1">Observaciones <span className="text-muted-foreground">(opcional)</span></label>
             <TextareaContador limite={limiteTexto('m49_calibracion_bombas', 'observaciones')}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               rows={2}
               placeholder="Notas adicionales..."
               value={form.observaciones}
@@ -519,7 +519,7 @@ export function CalibracionBombas() {
               {terminosSitio.singular} <span className="text-muted-foreground">(opcional)</span>
             </label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.rancho_id}
               onChange={e => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -531,7 +531,7 @@ export function CalibracionBombas() {
             <label className="block text-xs font-medium mb-1">Desde</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.desde}
               onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
             />
@@ -540,7 +540,7 @@ export function CalibracionBombas() {
             <label className="block text-xs font-medium mb-1">Hasta</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.hasta}
               onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
             />

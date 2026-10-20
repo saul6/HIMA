@@ -411,7 +411,7 @@ export function EmpleadosGG() {
               value={form.rancho_id}
               onChange={(e) => { setForm((f) => ({ ...f, rancho_id: e.target.value })); setErrRancho(false) }}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: errRancho ? 'var(--agro-red)' : 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              style={{ borderColor: errRancho ? 'var(--agro-red)' : 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             >
               <option value="">Selecciona {termino.toLowerCase()}…</option>
               {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -428,7 +428,7 @@ export function EmpleadosGG() {
               onChange={(e) => { setForm((f) => ({ ...f, nombre: e.target.value })); setErrNombre(false) }}
               placeholder="Nombre del empleado"
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: errNombre ? 'var(--agro-red)' : 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              style={{ borderColor: errNombre ? 'var(--agro-red)' : 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             />
             {errNombre && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>}
           </div>
@@ -439,13 +439,13 @@ export function EmpleadosGG() {
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>FECHA INGRESO</label>
               <input type="date" value={form.fecha_ingreso} onChange={setF('fecha_ingreso')}
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>TELÉFONO</label>
               <input maxLength={limiteTexto('m77_empleados', 'telefono')} type="tel" value={form.telefono} onChange={setF('telefono')} placeholder="10 dígitos"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
 
@@ -462,7 +462,7 @@ export function EmpleadosGG() {
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>PERSONA DE CONTACTO EN CASO DE EMERGENCIA</label>
             <input maxLength={limiteTexto('m77_empleados', 'persona_contacto')} type="text" value={form.persona_contacto} onChange={setF('persona_contacto')} placeholder="Nombre y teléfono"
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
           </div>
 
           {/* Observaciones */}
@@ -502,7 +502,7 @@ export function EmpleadosGG() {
               value={consolidadoRanchoId}
               onChange={(e) => setConsolidadoRanchoId(e.target.value)}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             >
               <option value="">{terminosSitio.plural}</option>
               {ranchos.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}

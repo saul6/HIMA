@@ -458,7 +458,7 @@ export function MantenimientoEquiposGG() {
               value={form.rancho_id}
               onChange={(e) => { setF('rancho_id', e.target.value); setErrRancho(false) }}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: errRancho ? 'var(--agro-red)' : 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              style={{ borderColor: errRancho ? 'var(--agro-red)' : 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             >
               <option value="">Selecciona {termino.toLowerCase()}…</option>
               {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -472,13 +472,13 @@ export function MantenimientoEquiposGG() {
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>FECHA</label>
               <input type="date" value={form.fecha} onChange={(e) => setF('fecha', e.target.value)}
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>EQUIPO</label>
               <input maxLength={limiteTexto('m76_mantenimiento_equipos', 'equipo')} type="text" value={form.equipo} onChange={(e) => setF('equipo', e.target.value)} placeholder="Ej: Bomba A1"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
 
@@ -487,7 +487,7 @@ export function MantenimientoEquiposGG() {
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>REALIZÓ</label>
             <input maxLength={limiteTexto('m76_mantenimiento_equipos', 'realizo')} type="text" value={form.realizo} onChange={(e) => setF('realizo', e.target.value)} placeholder="Nombre del responsable"
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
           </div>
 
           {/* Tipo de actividad */}
@@ -583,7 +583,7 @@ export function MantenimientoEquiposGG() {
               value={consolidadoForm.ranchoId}
               onChange={(e) => setConsolidadoForm((f) => ({ ...f, ranchoId: e.target.value }))}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             >
               <option value="">{terminosSitio.plural}</option>
               {ranchos.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
@@ -594,13 +594,13 @@ export function MantenimientoEquiposGG() {
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DESDE</label>
               <input type="date" value={consolidadoForm.desde} onChange={(e) => setConsolidadoForm((f) => ({ ...f, desde: e.target.value }))}
                 className="w-full h-11 px-3 rounded-xl border text-sm focus:outline-none"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA</label>
               <input type="date" value={consolidadoForm.hasta} onChange={(e) => setConsolidadoForm((f) => ({ ...f, hasta: e.target.value }))}
                 className="w-full h-11 px-3 rounded-xl border text-sm focus:outline-none"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
           <button

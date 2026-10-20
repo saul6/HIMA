@@ -132,7 +132,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
                 },
               })
             }
-            className="flex-1 h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+            className="flex-1 h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
           <select
             value={value.tamano_operacion?.unidad ?? 'Hectáreas'}
@@ -144,7 +144,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
                 },
               })
             }
-            className="h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary"
+            className="h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary"
           >
             <option>Hectáreas</option>
             <option>Acres</option>
@@ -176,7 +176,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
                 onChange={(e) =>
                   up({ temporada: { ...value.temporada, desde_mes: e.target.value } })
                 }
-                className="w-full h-10 px-2 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary"
+                className="w-full h-10 px-2 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary"
               >
                 <option value="">Mes</option>
                 {MESES.map((m) => <option key={m}>{m}</option>)}
@@ -189,7 +189,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
                 onChange={(e) =>
                   up({ temporada: { ...value.temporada, al_mes: e.target.value } })
                 }
-                className="w-full h-10 px-2 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary"
+                className="w-full h-10 px-2 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary"
               >
                 <option value="">Mes</option>
                 {MESES.map((m) => <option key={m}>{m}</option>)}
@@ -209,7 +209,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
           placeholder="Ej. México, Estados Unidos"
           value={value.pais_destino ?? ''}
           onChange={(e) => up({ pais_destino: e.target.value })}
-          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
       </div>
 
@@ -256,7 +256,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
           type="text"
           value={value.agrupacion_productos_agua ?? ''}
           onChange={(e) => up({ agrupacion_productos_agua: e.target.value })}
-          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
       </div>
 
@@ -276,7 +276,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
           min={0}
           value={value.num_trabajadores ?? ''}
           onChange={(e) => up({ num_trabajadores: parseInt(e.target.value) || 0 })}
-          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
       </div>
 
@@ -304,7 +304,7 @@ export function PortadaGranjaForm({ value, onChange }: PortadaGranjaFormProps) {
           type="text"
           value={value.tierra_adyacente ?? ''}
           onChange={(e) => up({ tierra_adyacente: e.target.value })}
-          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
       </div>
 

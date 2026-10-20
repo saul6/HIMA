@@ -32,7 +32,7 @@ import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
-import { InputContador } from '@/app/components/InputContador'
+import { InputContador } from '@/app/components/InputContador'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
@@ -405,7 +405,7 @@ export function ManifiestoEmbarque() {
     }
   }
 
-  const fieldCls = 'w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm'
+  const fieldCls = 'w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm'
 
   return (
     <div className="flex flex-col min-h-full bg-background pb-safe-nav">
@@ -637,7 +637,7 @@ export function ManifiestoEmbarque() {
                   <div className="p-1.5">
                     <input
                       type="time"
-                      className="w-full h-8 rounded-lg border border-border bg-input-background px-2 text-sm text-center"
+                      className="w-full h-8 rounded-lg border border-border-control bg-input-background px-2 text-sm text-center"
                       value={form[row.horaKey]}
                       onChange={e => setF(row.horaKey, e.target.value)}
                     />
@@ -648,7 +648,7 @@ export function ManifiestoEmbarque() {
                       inputMode="decimal"
                       step="0.1"
                       placeholder="—"
-                      className="w-full h-8 rounded-lg border border-border bg-input-background px-2 text-sm text-center"
+                      className="w-full h-8 rounded-lg border border-border-control bg-input-background px-2 text-sm text-center"
                       value={form[row.tempKey]}
                       onChange={e => setF(row.tempKey, e.target.value)}
                     />
@@ -696,7 +696,7 @@ export function ManifiestoEmbarque() {
                     <div className="space-y-1">
                       <label className="text-xs text-muted-foreground">Tarima</label>
                       <input maxLength={limiteTexto('m38_lineas', 'tarima')} type="text"
-                        className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                        className="w-full h-9 rounded-lg border border-border-control bg-input-background px-2.5 text-sm"
                         placeholder="Ej: T-01"
                         value={l.tarima}
                         onChange={e => actualizarLinea(l._key, 'tarima', e.target.value)} />
@@ -704,7 +704,7 @@ export function ManifiestoEmbarque() {
                     <div className="space-y-1">
                       <label className="text-xs text-muted-foreground">Cajas</label>
                       <input type="number" inputMode="numeric" min="0"
-                        className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                        className="w-full h-9 rounded-lg border border-border-control bg-input-background px-2.5 text-sm"
                         placeholder="0"
                         value={l.cajas}
                         onChange={e => actualizarLinea(l._key, 'cajas', e.target.value)} />
@@ -713,7 +713,7 @@ export function ManifiestoEmbarque() {
                   <div className="space-y-1">
                     <label className="text-xs text-muted-foreground">Producto</label>
                     <InputContador limite={limiteTexto('m38_lineas', 'producto')} type="text"
-                      className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                      className="w-full h-9 rounded-lg border border-border-control bg-input-background px-2.5 text-sm"
                       placeholder="Nombre del producto"
                       value={l.producto}
                       onChange={e => actualizarLinea(l._key, 'producto', e.target.value)} />
@@ -721,7 +721,7 @@ export function ManifiestoEmbarque() {
                   <div className="space-y-1">
                     <label className="text-xs text-muted-foreground">Presentación</label>
                     <input maxLength={limiteTexto('m38_lineas', 'presentacion')} type="text"
-                      className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                      className="w-full h-9 rounded-lg border border-border-control bg-input-background px-2.5 text-sm"
                       placeholder="Ej: Caja 8 lbs"
                       value={l.presentacion}
                       onChange={e => actualizarLinea(l._key, 'presentacion', e.target.value)} />
@@ -735,7 +735,7 @@ export function ManifiestoEmbarque() {
                       <div key={key} className="space-y-1">
                         <label className="text-xs text-muted-foreground">{label}</label>
                         <input type="number" inputMode="decimal" step="0.1" placeholder="°C"
-                          className="w-full h-9 rounded-lg border border-border bg-input-background px-2 text-sm text-center"
+                          className="w-full h-9 rounded-lg border border-border-control bg-input-background px-2 text-sm text-center"
                           value={l[key]}
                           onChange={e => actualizarLinea(l._key, key, e.target.value)} />
                       </div>
@@ -800,7 +800,7 @@ export function ManifiestoEmbarque() {
                     onChange={e => setF('plaga_descripcion', e.target.value)}
                     rows={2}
                     placeholder="Describe qué tipo de plaga se encontró y dónde..."
-                    className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm resize-none"
+                    className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
                   />
                 </div>
               </div>
@@ -838,7 +838,7 @@ export function ManifiestoEmbarque() {
               onChange={e => setF('observaciones', e.target.value)}
               rows={2}
               placeholder="Observaciones generales del embarque..."
-              className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
             />
           </section>
         </div>

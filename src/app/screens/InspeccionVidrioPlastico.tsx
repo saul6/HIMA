@@ -148,7 +148,7 @@ function SuggestionInput({
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         placeholder={placeholder}
         className={`w-full h-10 px-3 rounded-lg bg-card border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-          error ? 'border-agro-red' : 'border-border'
+          error ? 'border-agro-red' : 'border-border-control'
         }`}
       />
       {open && filtered.length > 0 && (
@@ -859,7 +859,7 @@ export function InspeccionVidrioPlastico() {
                 <select
                   value={configRanchoId}
                   onChange={(e) => setConfigRanchoId(e.target.value)}
-                  className={`w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
+                  className={`w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
                     !configRanchoId ? 'text-muted-foreground' : 'text-foreground'
                   }`}
                 >
@@ -1007,7 +1007,7 @@ export function InspeccionVidrioPlastico() {
                   value={consRanchoId}
                   onChange={(e) => { setConsRanchoId(e.target.value); setErrConsRancho(false) }}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                    errConsRancho ? 'border-agro-red' : 'border-border'
+                    errConsRancho ? 'border-agro-red' : 'border-border-control'
                   } ${!consRanchoId ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
                   <option value="" disabled>Seleccionar {terminosSitio.singular.toLowerCase()}</option>
@@ -1027,7 +1027,7 @@ export function InspeccionVidrioPlastico() {
                   value={consDesde}
                   onChange={(e) => { setConsDesde(e.target.value); setErrConsFechas(false) }}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                    errConsFechas && !consDesde ? 'border-agro-red' : 'border-border'
+                    errConsFechas && !consDesde ? 'border-agro-red' : 'border-border-control'
                   }`}
                 />
               </div>
@@ -1041,7 +1041,7 @@ export function InspeccionVidrioPlastico() {
                   value={consHasta}
                   onChange={(e) => { setConsHasta(e.target.value); setErrConsFechas(false) }}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                    errConsFechas && !consHasta ? 'border-agro-red' : 'border-border'
+                    errConsFechas && !consHasta ? 'border-agro-red' : 'border-border-control'
                   }`}
                 />
                 {errConsFechas && <p className="text-xs text-agro-red mt-1">Indica el rango de fechas</p>}
@@ -1108,7 +1108,7 @@ export function InspeccionVidrioPlastico() {
                   value={ranchoId}
                   onChange={(e) => { setRanchoId(e.target.value); setErrRancho(false) }}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                    errRancho ? 'border-agro-red' : 'border-border'
+                    errRancho ? 'border-agro-red' : 'border-border-control'
                   } ${!ranchoId ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
                   <option value="" disabled>Seleccionar {terminosSitio.singular.toLowerCase()}</option>
@@ -1130,7 +1130,7 @@ export function InspeccionVidrioPlastico() {
                   min={puedeEditarFecha ? undefined : hoy()}
                   max={puedeEditarFecha ? undefined : hoy()}
                   onChange={(e) => { if (puedeEditarFecha) setFecha(e.target.value) }}
-                  className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
 

@@ -131,7 +131,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
                 onChange={(e) =>
                   up({ temporada: { ...value.temporada, desde_mes: e.target.value } })
                 }
-                className="w-full h-10 px-2 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary"
+                className="w-full h-10 px-2 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary"
               >
                 <option value="">Mes</option>
                 {MESES.map((m) => <option key={m}>{m}</option>)}
@@ -144,7 +144,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
                 onChange={(e) =>
                   up({ temporada: { ...value.temporada, al_mes: e.target.value } })
                 }
-                className="w-full h-10 px-2 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary"
+                className="w-full h-10 px-2 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary"
               >
                 <option value="">Mes</option>
                 {MESES.map((m) => <option key={m}>{m}</option>)}
@@ -163,7 +163,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
           type="text"
           value={value.pais_destino ?? ''}
           onChange={(e) => up({ pais_destino: e.target.value })}
-          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
       </div>
 
@@ -177,7 +177,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
           min={0}
           value={value.num_trabajadores ?? ''}
           onChange={(e) => up({ num_trabajadores: parseInt(e.target.value) || 0 })}
-          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
       </div>
 
@@ -191,7 +191,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
           min={0}
           value={value.max_trabajadores_temporada_alta ?? ''}
           onChange={(e) => up({ max_trabajadores_temporada_alta: parseInt(e.target.value) || 0 })}
-          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
       </div>
 
@@ -206,7 +206,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
             min={0}
             value={value.num_lineas ?? ''}
             onChange={(e) => up({ num_lineas: parseInt(e.target.value) || 0 })}
-            className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+            className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
         </div>
         <div className="flex-1">
@@ -218,7 +218,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
             min={0}
             value={value.num_lineas_auditoria ?? ''}
             onChange={(e) => up({ num_lineas_auditoria: parseInt(e.target.value) || 0 })}
-            className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+            className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
         </div>
       </div>
@@ -243,7 +243,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
                 },
               })
             }
-            className="flex-1 h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+            className="flex-1 h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
           <select
             value={value.tamano_instalacion?.unidad ?? 'Metros Cuadrados'}
@@ -256,7 +256,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
                 },
               })
             }
-            className="h-10 px-2 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary"
+            className="h-10 px-2 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary"
           >
             <option value="Metros Cuadrados">m²</option>
             <option value="Pies Cuadrados">ft²</option>
@@ -336,7 +336,7 @@ export function PortadaBPMForm({ value, onChange }: PortadaBPMFormProps) {
         <input
           type="text"
           placeholder="Nombre del producto..."
-          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault()

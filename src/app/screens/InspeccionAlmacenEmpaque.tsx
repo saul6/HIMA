@@ -166,7 +166,7 @@ function TogglePunto({
             onChange={(e) => onDescripcion(e.target.value)}
             rows={2}
             placeholder="Descripción de incidencia (opcional — si se llena, se vincula a M13)"
-            className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+            className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
           />
         </div>
       )}
@@ -766,7 +766,7 @@ export function InspeccionAlmacenEmpaque() {
                   value={realizadoPorLocal}
                   onChange={(e) => setRealizadoPorLocal(e.target.value)}
                   placeholder="Nombre"
-                  className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                  className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 />
               </div>
               <div>
@@ -776,7 +776,7 @@ export function InspeccionAlmacenEmpaque() {
                   value={verificaLocal}
                   onChange={(e) => setVerificaLocal(e.target.value)}
                   placeholder="Nombre"
-                  className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                  className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 />
               </div>
             </div>
@@ -787,7 +787,7 @@ export function InspeccionAlmacenEmpaque() {
                 value={autorizaLocal}
                 onChange={(e) => setAutorizaLocal(e.target.value)}
                 placeholder="Nombre (opcional)"
-                className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
               />
             </div>
             <div>
@@ -797,7 +797,7 @@ export function InspeccionAlmacenEmpaque() {
                 onChange={(e) => setObsLocal(e.target.value)}
                 rows={2}
                 placeholder="Observaciones generales del mes…"
-                className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+                className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
               />
             </div>
             <button
@@ -886,7 +886,7 @@ export function InspeccionAlmacenEmpaque() {
                   value={nRanchoId}
                   onChange={(e) => { setNRanchoId(e.target.value); setErrRancho(false) }}
                   className="w-full rounded-xl border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={{ borderColor: errRancho ? 'var(--agro-red)' : 'var(--border)' }}
+                  style={{ borderColor: errRancho ? 'var(--agro-red)' : 'var(--border-control)' }}
                 >
                   <option value="">Seleccionar…</option>
                   {ranchoOptions.map((o) => (
@@ -906,7 +906,7 @@ export function InspeccionAlmacenEmpaque() {
                   value={nMes}
                   max={puedeEditarFecha ? undefined : mesActual}
                   onChange={(e) => { if (puedeEditarFecha || e.target.value <= mesActual) setNMes(e.target.value) }}
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
               <div>
@@ -916,7 +916,7 @@ export function InspeccionAlmacenEmpaque() {
                   value={nRealizadoPor}
                   onChange={(e) => setNRealizadoPor(e.target.value)}
                   placeholder="Nombre del responsable"
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 />
               </div>
               <div>
@@ -926,7 +926,7 @@ export function InspeccionAlmacenEmpaque() {
                   value={nVerifica}
                   onChange={(e) => setNVerifica(e.target.value)}
                   placeholder="Nombre del verificador"
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 />
               </div>
               <div>
@@ -936,7 +936,7 @@ export function InspeccionAlmacenEmpaque() {
                   value={nAutoriza}
                   onChange={(e) => setNAutoriza(e.target.value)}
                   placeholder="Nombre del autorizador"
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 />
               </div>
               <button
@@ -974,7 +974,7 @@ export function InspeccionAlmacenEmpaque() {
                   min={puedeEditarFecha ? undefined : hoyMX()}
                   max={puedeEditarFecha ? undefined : hoyMX()}
                   onChange={(e) => { if (puedeEditarFecha) setDFecha(e.target.value) }}
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
 
@@ -1008,7 +1008,7 @@ export function InspeccionAlmacenEmpaque() {
                   onChange={(e) => setDAcciones(e.target.value)}
                   rows={2}
                   placeholder="Describe las acciones tomadas durante este día…"
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
                 />
               </div>
 
@@ -1056,7 +1056,7 @@ export function InspeccionAlmacenEmpaque() {
                   value={cRanchoId}
                   onChange={(e) => { setCRanchoId(e.target.value); setCErrRancho(false) }}
                   className="w-full rounded-xl border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={{ borderColor: cErrRancho ? 'var(--agro-red)' : 'var(--border)' }}
+                  style={{ borderColor: cErrRancho ? 'var(--agro-red)' : 'var(--border-control)' }}
                 >
                   <option value="">Seleccionar…</option>
                   {ranchoOptions.map((o) => (
@@ -1075,7 +1075,7 @@ export function InspeccionAlmacenEmpaque() {
                   type="month"
                   value={cDesde}
                   onChange={(e) => setCDesde(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
               <div>
@@ -1084,7 +1084,7 @@ export function InspeccionAlmacenEmpaque() {
                   type="month"
                   value={cHasta}
                   onChange={(e) => setCHasta(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
               <button

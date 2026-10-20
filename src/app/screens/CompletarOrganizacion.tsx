@@ -75,7 +75,7 @@ export function CompletarOrganizacion() {
               required
               autoFocus
               autoComplete="organization"
-              className="w-full h-12 px-4 rounded-lg border border-border bg-input-background
+              className="w-full h-12 px-4 rounded-lg border border-border-control bg-input-background
                 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
             <p className="text-xs text-muted-foreground pt-1">

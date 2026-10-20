@@ -347,7 +347,7 @@ export function MonitoreoGermicida() {
               <div>
                 <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
                 <select
-                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                   value={form.rancho_id}
                   onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
                 >
@@ -360,7 +360,7 @@ export function MonitoreoGermicida() {
                 <label className="block text-xs font-medium mb-1">Fecha</label>
                 <input
                   type="date"
-                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                   value={form.fecha}
                   min={puedeEditarFecha ? undefined : hoyMX()}
                   max={puedeEditarFecha ? undefined : hoyMX()}
@@ -372,7 +372,7 @@ export function MonitoreoGermicida() {
                 <label className="block text-xs font-medium mb-1">Tipo de germicida</label>
                 <input maxLength={limiteTexto('m36_monitoreos', 'tipo_germicida')}
                   type="text"
-                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                   placeholder="Ej. Cloro, Amonio cuaternario..."
                   value={form.tipo_germicida}
                   onChange={e => setForm(f => ({ ...f, tipo_germicida: e.target.value }))}
@@ -383,7 +383,7 @@ export function MonitoreoGermicida() {
                 <label className="block text-xs font-medium mb-1">Uso</label>
                 <InputContador limite={limiteTexto('m36_monitoreos', 'uso')}
                   type="text"
-                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                   placeholder="Para qué o dónde se usó"
                   value={form.uso}
                   onChange={e => setForm(f => ({ ...f, uso: e.target.value }))}
@@ -397,7 +397,7 @@ export function MonitoreoGermicida() {
                   inputMode="decimal"
                   step="any"
                   min="0"
-                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                   placeholder="Ej. 200"
                   value={form.concentracion}
                   onChange={e => setForm(f => ({ ...f, concentracion: e.target.value }))}
@@ -410,7 +410,7 @@ export function MonitoreoGermicida() {
                 </label>
                 <InputContador limite={limiteTexto('m36_monitoreos', 'correccion')}
                   type="text"
-                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                   placeholder="Ajuste realizado si estuvo fuera de rango"
                   value={form.correccion}
                   onChange={e => setForm(f => ({ ...f, correccion: e.target.value }))}
@@ -421,7 +421,7 @@ export function MonitoreoGermicida() {
                 <label className="block text-xs font-medium mb-1">Preparado por</label>
                 <input maxLength={limiteTexto('m36_monitoreos', 'preparado_por')}
                   type="text"
-                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                   placeholder="Nombre completo"
                   value={form.preparado_por}
                   onChange={e => setForm(f => ({ ...f, preparado_por: e.target.value }))}
@@ -459,7 +459,7 @@ export function MonitoreoGermicida() {
               {terminosSitio.singular} <span className="text-muted-foreground">(opcional)</span>
             </label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.rancho_id}
               onChange={e => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -471,7 +471,7 @@ export function MonitoreoGermicida() {
             <label className="block text-xs font-medium mb-1">Desde</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.desde}
               onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
             />
@@ -480,7 +480,7 @@ export function MonitoreoGermicida() {
             <label className="block text-xs font-medium mb-1">Hasta</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.hasta}
               onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
             />

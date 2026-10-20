@@ -335,7 +335,7 @@ export function CalibracionVolumetricos() {
           <div>
             <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.rancho_id}
               onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -347,7 +347,7 @@ export function CalibracionVolumetricos() {
             <label className="block text-xs font-medium mb-1">Fecha</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.fecha}
               min={puedeEditarFecha ? undefined : hoyMX()}
               max={puedeEditarFecha ? undefined : hoyMX()}
@@ -358,7 +358,7 @@ export function CalibracionVolumetricos() {
             <label className="block text-xs font-medium mb-1">Uso / Artículo</label>
             <input maxLength={limiteTexto('m52_calibracion_volumetricos', 'uso_articulo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Probeta 100 ml, Bureta..."
               value={form.uso_articulo}
               onChange={e => setForm(f => ({ ...f, uso_articulo: e.target.value }))}
@@ -369,7 +369,7 @@ export function CalibracionVolumetricos() {
               <label className="block text-xs font-medium mb-1">Capacidad</label>
               <input
                 type="number" inputMode="decimal" step="any" min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0.00"
                 value={form.capacidad}
                 onChange={e => setForm(f => ({ ...f, capacidad: e.target.value }))}
@@ -379,7 +379,7 @@ export function CalibracionVolumetricos() {
               <label className="block text-xs font-medium mb-1">Unidad</label>
               <input maxLength={limiteTexto('m52_calibracion_volumetricos', 'unidad')}
                 type="text"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="Ej. ml, L"
                 value={form.unidad}
                 onChange={e => setForm(f => ({ ...f, unidad: e.target.value }))}
@@ -391,7 +391,7 @@ export function CalibracionVolumetricos() {
               <label className="block text-xs font-medium mb-1">Lectura 1 (ml)</label>
               <input
                 type="number" inputMode="decimal" step="any" min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0.0"
                 value={form.lectura1_ml}
                 onChange={e => setForm(f => ({ ...f, lectura1_ml: e.target.value }))}
@@ -401,7 +401,7 @@ export function CalibracionVolumetricos() {
               <label className="block text-xs font-medium mb-1">Lectura 2 (ml)</label>
               <input
                 type="number" inputMode="decimal" step="any" min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0.0"
                 value={form.lectura2_ml}
                 onChange={e => setForm(f => ({ ...f, lectura2_ml: e.target.value }))}
@@ -411,7 +411,7 @@ export function CalibracionVolumetricos() {
               <label className="block text-xs font-medium mb-1">Lectura 3 (ml)</label>
               <input
                 type="number" inputMode="decimal" step="any" min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0.0"
                 value={form.lectura3_ml}
                 onChange={e => setForm(f => ({ ...f, lectura3_ml: e.target.value }))}
@@ -422,7 +422,7 @@ export function CalibracionVolumetricos() {
             <label className="block text-xs font-medium mb-1">Desviación <span className="text-muted-foreground">(opcional)</span></label>
             <input
               type="number" inputMode="decimal" step="any"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="0.00"
               value={form.desviacion}
               onChange={e => setForm(f => ({ ...f, desviacion: e.target.value }))}
@@ -432,7 +432,7 @@ export function CalibracionVolumetricos() {
             <label className="block text-xs font-medium mb-1">Realizó</label>
             <input maxLength={limiteTexto('m52_calibracion_volumetricos', 'realizo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
               value={form.realizo}
               readOnly
@@ -441,7 +441,7 @@ export function CalibracionVolumetricos() {
           <div>
             <label className="block text-xs font-medium mb-1">Observaciones <span className="text-muted-foreground">(opcional)</span></label>
             <TextareaContador limite={limiteTexto('m52_calibracion_volumetricos', 'observaciones')}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               rows={2}
               placeholder="Notas adicionales..."
               value={form.observaciones}
@@ -475,7 +475,7 @@ export function CalibracionVolumetricos() {
               {terminosSitio.singular} <span className="text-muted-foreground">(opcional)</span>
             </label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.rancho_id}
               onChange={e => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -485,12 +485,12 @@ export function CalibracionVolumetricos() {
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Desde</label>
-            <input type="date" className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+            <input type="date" className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.desde} onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))} />
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Hasta</label>
-            <input type="date" className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+            <input type="date" className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.hasta} onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))} />
           </div>
         </div>

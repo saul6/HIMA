@@ -358,7 +358,7 @@ export function SanitizacionCosecha() {
           <div>
             <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.rancho_id}
               onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -371,7 +371,7 @@ export function SanitizacionCosecha() {
             <label className="block text-xs font-medium mb-1">Fecha</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.fecha}
               min={puedeEditarFecha ? undefined : hoyMX()}
               max={puedeEditarFecha ? undefined : hoyMX()}
@@ -383,7 +383,7 @@ export function SanitizacionCosecha() {
             <label className="block text-xs font-medium mb-1">Sector</label>
             <input maxLength={limiteTexto('m65_sanitizacion_cosecha', 'sector')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Bloque A, Parcela 3..."
               value={form.sector}
               onChange={e => setForm(f => ({ ...f, sector: e.target.value }))}
@@ -393,7 +393,7 @@ export function SanitizacionCosecha() {
           <div>
             <label className="block text-xs font-medium mb-1">Tipo de cosecha</label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.empaque_o_granel}
               onChange={e => setForm(f => ({ ...f, empaque_o_granel: e.target.value as 'Empaque' | 'Granel' }))}
             >
@@ -410,7 +410,7 @@ export function SanitizacionCosecha() {
                 inputMode="decimal"
                 step="any"
                 min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0.00"
                 value={form.cantidad_ton}
                 onChange={e => setForm(f => ({ ...f, cantidad_ton: e.target.value }))}
@@ -423,7 +423,7 @@ export function SanitizacionCosecha() {
                 inputMode="numeric"
                 step="1"
                 min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0"
                 value={form.canastos}
                 onChange={e => setForm(f => ({ ...f, canastos: e.target.value }))}
@@ -438,7 +438,7 @@ export function SanitizacionCosecha() {
               inputMode="numeric"
               step="1"
               min="0"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Numero de herramientas"
               value={form.herramientas_sanitizadas}
               onChange={e => setForm(f => ({ ...f, herramientas_sanitizadas: e.target.value }))}
@@ -449,7 +449,7 @@ export function SanitizacionCosecha() {
             <label className="block text-xs font-medium mb-1">Producto sanitizante</label>
             <input maxLength={limiteTexto('m65_sanitizacion_cosecha', 'producto_sanitizante')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Cloro, Amonio cuaternario..."
               value={form.producto_sanitizante}
               onChange={e => setForm(f => ({ ...f, producto_sanitizante: e.target.value }))}
@@ -464,7 +464,7 @@ export function SanitizacionCosecha() {
                 inputMode="decimal"
                 step="any"
                 min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="Ej. 200"
                 value={form.ppm}
                 onChange={e => setForm(f => ({ ...f, ppm: e.target.value }))}
@@ -476,7 +476,7 @@ export function SanitizacionCosecha() {
               </label>
               <input
                 type="time"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 value={form.hora}
                 onChange={e => setForm(f => ({ ...f, hora: e.target.value }))}
               />
@@ -489,7 +489,7 @@ export function SanitizacionCosecha() {
             </label>
             <input maxLength={limiteTexto('m65_sanitizacion_cosecha', 'realizo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre de quien realizo"
               value={form.realizo}
               onChange={e => setForm(f => ({ ...f, realizo: e.target.value }))}
@@ -502,7 +502,7 @@ export function SanitizacionCosecha() {
             </label>
             <TextareaContador limite={limiteTexto('m65_sanitizacion_cosecha', 'observaciones')}
               rows={3}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}
               onChange={e => setForm(f => ({ ...f, observaciones: e.target.value }))}
             />
@@ -536,7 +536,7 @@ export function SanitizacionCosecha() {
               {terminosSitio.singular} <span className="text-muted-foreground">(opcional)</span>
             </label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.rancho_id}
               onChange={e => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -548,7 +548,7 @@ export function SanitizacionCosecha() {
             <label className="block text-xs font-medium mb-1">Desde</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.desde}
               onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
             />
@@ -557,7 +557,7 @@ export function SanitizacionCosecha() {
             <label className="block text-xs font-medium mb-1">Hasta</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.hasta}
               onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
             />

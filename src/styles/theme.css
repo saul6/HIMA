@@ -270,6 +270,7 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
+  --color-border-control: var(--border-control);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
   --color-switch-background: var(--switch-background);

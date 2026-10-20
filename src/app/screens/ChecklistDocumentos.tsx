@@ -152,7 +152,7 @@ export function ChecklistDocumentos() {
                 <select
                   value={sitioId ?? ''}
                   onChange={e => elegirSitio(e.target.value)}
-                  className="w-full h-10 rounded-lg border border-border bg-card px-3 text-sm text-foreground"
+                  className="w-full h-10 rounded-lg border border-border-control bg-card px-3 text-sm text-foreground"
                 >
                   {ranchos.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
                 </select>

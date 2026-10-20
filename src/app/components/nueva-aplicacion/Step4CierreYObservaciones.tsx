@@ -163,7 +163,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
           value={formData.observations}
           onChange={(e) => updateFormData({ observations: e.target.value })}
           placeholder="Observaciones adicionales..."
-          className="w-full min-h-[100px] px-4 py-3 rounded-lg border border-border bg-input-background text-foreground placeholder:text-muted-foreground
+          className="w-full min-h-[100px] px-4 py-3 rounded-lg border border-border-control bg-input-background text-foreground placeholder:text-muted-foreground
             focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
         />
       </div>

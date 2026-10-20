@@ -611,7 +611,7 @@ export function AccionesCorrectivas() {
               type="date"
               value={fFechaDeteccion}
               onChange={(e) => setFFechaDeteccion(e.target.value)}
-              className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+              className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
             />
           </div>
 
@@ -625,7 +625,7 @@ export function AccionesCorrectivas() {
               onChange={(e) => setFNoConformidad(e.target.value)}
               rows={3}
               placeholder="Describe el incumplimiento observado…"
-              className="w-full px-3 py-2.5 rounded-xl border border-border bg-input-background text-sm resize-none"
+              className="w-full px-3 py-2.5 rounded-xl border border-border-control bg-input-background text-sm resize-none"
             />
           </div>
 
@@ -639,7 +639,7 @@ export function AccionesCorrectivas() {
               onChange={(e) => setFCausa(e.target.value)}
               rows={2}
               placeholder="Causa raíz del incumplimiento…"
-              className="w-full px-3 py-2.5 rounded-xl border border-border bg-input-background text-sm resize-none"
+              className="w-full px-3 py-2.5 rounded-xl border border-border-control bg-input-background text-sm resize-none"
             />
           </div>
 
@@ -653,7 +653,7 @@ export function AccionesCorrectivas() {
               onChange={(e) => setFAccionCorrectiva(e.target.value)}
               rows={3}
               placeholder="Descripción de la corrección aplicada…"
-              className="w-full px-3 py-2.5 rounded-xl border border-border bg-input-background text-sm resize-none"
+              className="w-full px-3 py-2.5 rounded-xl border border-border-control bg-input-background text-sm resize-none"
             />
           </div>
 
@@ -667,7 +667,7 @@ export function AccionesCorrectivas() {
               onChange={(e) => setFAccionPreventiva(e.target.value)}
               rows={2}
               placeholder="Medidas para prevenir recurrencia…"
-              className="w-full px-3 py-2.5 rounded-xl border border-border bg-input-background text-sm resize-none"
+              className="w-full px-3 py-2.5 rounded-xl border border-border-control bg-input-background text-sm resize-none"
             />
           </div>
 
@@ -680,7 +680,7 @@ export function AccionesCorrectivas() {
               type="date"
               value={fFechaCumplimiento}
               onChange={(e) => setFFechaCumplimiento(e.target.value)}
-              className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+              className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
             />
           </div>
 
@@ -695,7 +695,7 @@ export function AccionesCorrectivas() {
                 value={fRealizo}
                 onChange={(e) => setFRealizo(e.target.value)}
                 placeholder="Nombre"
-                className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
               />
             </div>
             <div className="space-y-1">
@@ -707,7 +707,7 @@ export function AccionesCorrectivas() {
                 value={fverifico}
                 onChange={(e) => setFverifico(e.target.value)}
                 placeholder="Nombre"
-                className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
               />
             </div>
           </div>
@@ -792,7 +792,7 @@ export function AccionesCorrectivas() {
                   value={leyendaFotoNueva}
                   onChange={(e) => setLeyendaFotoNueva(e.target.value)}
                   placeholder="Descripción de la foto…"
-                  className="w-full h-9 px-3 rounded-lg border border-border bg-input-background text-sm"
+                  className="w-full h-9 px-3 rounded-lg border border-border-control bg-input-background text-sm"
                 />
               </div>
               <input

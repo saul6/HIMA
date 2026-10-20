@@ -359,7 +359,7 @@ export function RegistroMuestrasLaboratorio() {
               <div>
                 <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
                 <select
-                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                   value={form.rancho_id}
                   onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
                 >
@@ -373,7 +373,7 @@ export function RegistroMuestrasLaboratorio() {
                 <label className="block text-xs font-medium mb-1">Fecha de muestreo</label>
                 <input
                   type="date"
-                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                   value={form.fecha_muestreo}
                   min={puedeEditarFecha ? undefined : hoy()}
                   max={puedeEditarFecha ? undefined : hoy()}
@@ -386,7 +386,7 @@ export function RegistroMuestrasLaboratorio() {
                 <label className="block text-xs font-medium mb-1">Hora de muestreo <span className="text-muted-foreground">(opcional)</span></label>
                 <input
                   type="time"
-                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                   value={form.hora_muestreo}
                   onChange={e => setForm(f => ({ ...f, hora_muestreo: e.target.value }))}
                 />
@@ -397,7 +397,7 @@ export function RegistroMuestrasLaboratorio() {
                 <label className="block text-xs font-medium mb-1">Descripción de la muestra</label>
                 <TextareaContador limite={limiteTexto('m22_muestras', 'descripcion_muestra')}
                   rows={3}
-                  className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+                  className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
                   placeholder="Describe la muestra..."
                   value={form.descripcion_muestra}
                   onChange={e => setForm(f => ({ ...f, descripcion_muestra: e.target.value }))}
@@ -456,7 +456,7 @@ export function RegistroMuestrasLaboratorio() {
                 <label className="block text-xs font-medium mb-1">Laboratorio</label>
                 <input maxLength={limiteTexto('m22_muestras', 'laboratorio')}
                   type="text"
-                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                   placeholder="Nombre del laboratorio"
                   value={form.laboratorio}
                   onChange={e => setForm(f => ({ ...f, laboratorio: e.target.value }))}
@@ -468,7 +468,7 @@ export function RegistroMuestrasLaboratorio() {
                 <label className="block text-xs font-medium mb-1">Nombre del solicitante</label>
                 <input maxLength={limiteTexto('m22_muestras', 'solicitante_nombre')}
                   type="text"
-                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                   placeholder="Nombre completo"
                   value={form.solicitante_nombre}
                   onChange={e => setForm(f => ({ ...f, solicitante_nombre: e.target.value }))}
@@ -502,7 +502,7 @@ export function RegistroMuestrasLaboratorio() {
               <div>
                 <label className="block text-xs font-medium mb-1">{terminosSitio.singular} <span className="text-muted-foreground">(opcional)</span></label>
                 <select
-                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                   value={consolidadoForm.rancho_id}
                   onChange={e => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
                 >
@@ -514,7 +514,7 @@ export function RegistroMuestrasLaboratorio() {
                 <label className="block text-xs font-medium mb-1">Desde</label>
                 <input
                   type="date"
-                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                   value={consolidadoForm.desde}
                   onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
                 />
@@ -523,7 +523,7 @@ export function RegistroMuestrasLaboratorio() {
                 <label className="block text-xs font-medium mb-1">Hasta</label>
                 <input
                   type="date"
-                  className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                  className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                   value={consolidadoForm.hasta}
                   onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
                 />

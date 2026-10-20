@@ -39,7 +39,7 @@ export function FormSelect({
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        className={`w-full h-16 px-4 pt-7 pb-2 rounded-lg border border-border bg-input-background
+        className={`w-full h-16 px-4 pt-7 pb-2 rounded-lg border border-border-control bg-input-background
           appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary
           transition-all cursor-pointer text-sm`}
       >

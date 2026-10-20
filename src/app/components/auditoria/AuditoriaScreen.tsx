@@ -434,7 +434,7 @@ export function AuditoriaScreen({
                 <select
                   value={consRanchoId}
                   onChange={(e) => setConsRanchoId(e.target.value)}
-                  className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${!consRanchoId ? 'text-muted-foreground' : 'text-foreground'} border-border`}
+                  className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${!consRanchoId ? 'text-muted-foreground' : 'text-foreground'} border-border-control`}
                 >
                   <option value="">{terminosSitio.plural}</option>
                   {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -445,7 +445,7 @@ export function AuditoriaScreen({
                   DESDE *
                 </label>
                 <input type="date" value={consDesde} onChange={(e) => setConsDesde(e.target.value)}
-                  className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
               <div>
@@ -453,7 +453,7 @@ export function AuditoriaScreen({
                   HASTA *
                 </label>
                 <input type="date" value={consHasta} onChange={(e) => setConsHasta(e.target.value)}
-                  className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
             </div>
@@ -494,7 +494,7 @@ export function AuditoriaScreen({
                 <select
                   value={rancho_id}
                   onChange={(e) => { setRanchoId(e.target.value); setErrRancho(false) }}
-                  className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${errRancho ? 'border-agro-red' : 'border-border'} ${!rancho_id ? 'text-muted-foreground' : 'text-foreground'}`}
+                  className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${errRancho ? 'border-agro-red' : 'border-border-control'} ${!rancho_id ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
                   <option value="" disabled>Seleccionar {terminosSitio.singular.toLowerCase()}</option>
                   {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -512,7 +512,7 @@ export function AuditoriaScreen({
                   min={puedeEditarFecha ? undefined : hoy()}
                   max={puedeEditarFecha ? undefined : hoy()}
                   onChange={(e) => { if (puedeEditarFecha) setFecha(e.target.value) }}
-                  className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
 
@@ -525,7 +525,7 @@ export function AuditoriaScreen({
                   placeholder="Nombre del auditor"
                   value={auditor_nombre}
                   onChange={(e) => setAuditorNombre(e.target.value)}
-                  className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
 

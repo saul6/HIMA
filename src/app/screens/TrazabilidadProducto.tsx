@@ -595,7 +595,7 @@ export function TrazabilidadProducto() {
         <select
           value={ranchoId}
           onChange={e => setRanchoId(e.target.value)}
-          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         >
           <option value="">Seleccionar {sTermino.toLowerCase()}...</option>
           {ranchos.map(r => (
@@ -632,7 +632,7 @@ export function TrazabilidadProducto() {
               value={filtroLR}
               onChange={e => setFiltroLR(e.target.value)}
               placeholder="Buscar por codigo o proveedor..."
-              className="w-full h-9 px-3 rounded-lg bg-input-background border border-border text-sm focus:outline-none focus:border-primary"
+              className="w-full h-9 px-3 rounded-lg bg-input-background border border-border-control text-sm focus:outline-none focus:border-primary"
             />
             {mostrarSkeletonLR ? (
               <ListaSkeleton />
@@ -669,7 +669,7 @@ export function TrazabilidadProducto() {
               value={filtroLPT}
               onChange={e => setFiltroLPT(e.target.value)}
               placeholder="Buscar por codigo o presentacion..."
-              className="w-full h-9 px-3 rounded-lg bg-input-background border border-border text-sm focus:outline-none focus:border-primary"
+              className="w-full h-9 px-3 rounded-lg bg-input-background border border-border-control text-sm focus:outline-none focus:border-primary"
             />
             {mostrarSkeletonLPT ? (
               <ListaSkeleton />
@@ -811,7 +811,7 @@ export function TrazabilidadProducto() {
                 onChange={e => setBusqueda(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleBuscarTraz() }}
                 placeholder="LR-COC-... / LPT-COC-... / LC-COC-... / FE-..."
-                className="flex-1 h-10 px-3 rounded-lg bg-input-background border border-border text-sm font-mono focus:outline-none focus:border-primary"
+                className="flex-1 h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm font-mono focus:outline-none focus:border-primary"
               />
               <button
                 onClick={handleBuscarTraz}
@@ -1125,7 +1125,7 @@ export function TrazabilidadProducto() {
                 <select
                   value={linea.lpt_id}
                   onChange={e => setFormFE(f => ({ ...f, lineas: f.lineas.map((l, i) => i === idx ? { ...l, lpt_id: e.target.value } : l) }))}
-                  className="flex-1 h-9 px-2 rounded-lg bg-input-background border border-border text-xs focus:outline-none focus:border-primary"
+                  className="flex-1 h-9 px-2 rounded-lg bg-input-background border border-border-control text-xs focus:outline-none focus:border-primary"
                 >
                   <option value="">LPT...</option>
                   {lotesLPT.map(lpt => <option key={lpt.id} value={lpt.id}>{lpt.codigo}</option>)}
@@ -1134,13 +1134,13 @@ export function TrazabilidadProducto() {
                   type="number" placeholder="Tarima" min="1"
                   value={linea.numero_tarima}
                   onChange={e => setFormFE(f => ({ ...f, lineas: f.lineas.map((l, i) => i === idx ? { ...l, numero_tarima: e.target.value } : l) }))}
-                  className="w-16 h-9 px-2 rounded-lg bg-input-background border border-border text-xs focus:outline-none focus:border-primary"
+                  className="w-16 h-9 px-2 rounded-lg bg-input-background border border-border-control text-xs focus:outline-none focus:border-primary"
                 />
                 <input
                   type="number" placeholder="Cant." min="0"
                   value={linea.cantidad}
                   onChange={e => setFormFE(f => ({ ...f, lineas: f.lineas.map((l, i) => i === idx ? { ...l, cantidad: e.target.value } : l) }))}
-                  className="w-16 h-9 px-2 rounded-lg bg-input-background border border-border text-xs focus:outline-none focus:border-primary"
+                  className="w-16 h-9 px-2 rounded-lg bg-input-background border border-border-control text-xs focus:outline-none focus:border-primary"
                 />
                 {formFE.lineas.length > 1 && (
                   <button onClick={() => setFormFE(f => ({ ...f, lineas: f.lineas.filter((_, i) => i !== idx) }))}
@@ -1228,7 +1228,7 @@ export function TrazabilidadProducto() {
 
 // ── Sub-componentes ───────────────────────────────────────────────────────────
 
-const inputCls = 'w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'
+const inputCls = 'w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'
 
 function FormField({ label, hint, children, className }: { label: string; hint?: string; children: React.ReactNode; className?: string }) {
   return (

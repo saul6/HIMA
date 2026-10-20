@@ -802,7 +802,7 @@ export function InspeccionPerimetral() {
                 onChange={(e) => setObsLocal(e.target.value)}
                 rows={2}
                 placeholder="Observaciones generales del mes…"
-                className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+                className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
               />
             </div>
             <div className="space-y-1">
@@ -814,7 +814,7 @@ export function InspeccionPerimetral() {
                 onChange={(e) => setOtroLocal(e.target.value)}
                 rows={2}
                 placeholder="Otro comentario relevante…"
-                className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+                className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
               />
             </div>
             <button
@@ -920,7 +920,7 @@ export function InspeccionPerimetral() {
                   <select
                     value={nRanchoId}
                     onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     style={{ borderColor: nErrRancho ? 'var(--agro-red)' : undefined }}
                   >
                     <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
@@ -942,7 +942,7 @@ export function InspeccionPerimetral() {
                     type="month"
                     value={nMes}
                     onChange={(e) => setNMes(e.target.value)}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
 
@@ -1038,7 +1038,7 @@ export function InspeccionPerimetral() {
                       min={esSuperAdmin && registroActivo ? registroActivo.mes : hoy()}
                       max={esSuperAdmin && registroActivo ? ultimoDiaMes(registroActivo.mes) : hoy()}
                       onChange={(e) => { if (esSuperAdmin) { setDFecha(e.target.value); setDErrFecha(false) } }}
-                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                      className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                       style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
                     />
                     {!esSuperAdmin && (
@@ -1139,7 +1139,7 @@ export function InspeccionPerimetral() {
                   <select
                     value={cRanchoId}
                     onChange={(e) => { setCRanchoId(e.target.value); setCErrRancho(false) }}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     style={{ borderColor: cErrRancho ? 'var(--agro-red)' : undefined }}
                   >
                     <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
@@ -1162,7 +1162,7 @@ export function InspeccionPerimetral() {
                       type="month"
                       value={cDesde}
                       onChange={(e) => setCDesde(e.target.value)}
-                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                      className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     />
                   </div>
                   <div className="space-y-1">
@@ -1173,7 +1173,7 @@ export function InspeccionPerimetral() {
                       type="month"
                       value={cHasta}
                       onChange={(e) => setCHasta(e.target.value)}
-                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                      className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     />
                   </div>
                 </div>

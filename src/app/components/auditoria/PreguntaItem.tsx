@@ -72,7 +72,7 @@ export function PreguntaItem({
           placeholder="Comentario (opcional)"
           value={comentario ?? ''} maxLength={limiteTexto('m14_respuestas', 'comentario')}
           onChange={(e) => onComentario(pregunta.id, e.target.value)}
-          className="w-full mt-2 h-8 px-2.5 text-xs rounded-lg bg-input-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          className="w-full mt-2 h-8 px-2.5 text-xs rounded-lg bg-input-background border border-border-control text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
       )}
       {respuesta && (comentario?.length ?? 0) > 0 && (

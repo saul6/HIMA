@@ -47,7 +47,7 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro, type MapaFirmas } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { TextareaContador } from '@/app/components/TextareaContador'
-import { limiteTexto } from '@/lib/limitesTexto'
+import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -297,7 +297,7 @@ function EstacionRevisionRow({
               <input maxLength={limiteTexto('m21_resultado', 'tipo_consumo')}
                 type="text"
                 placeholder="Ej. Parcial, Total, Sin consumo"
-                className="w-full h-9 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
+                className="w-full h-9 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm text-foreground"
                 value={data.tipo_consumo}
                 onChange={e => onUpdate(est.id, { tipo_consumo: e.target.value })}
               />
@@ -306,7 +306,7 @@ function EstacionRevisionRow({
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold text-muted-foreground">Estado de la trampa</label>
               <select
-                className="w-full h-9 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
+                className="w-full h-9 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm text-foreground"
                 value={data.estado_trampa}
                 onChange={e => {
                   const val = e.target.value
@@ -323,7 +323,7 @@ function EstacionRevisionRow({
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold text-muted-foreground">Condiciones</label>
               <select
-                className="w-full h-9 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
+                className="w-full h-9 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm text-foreground"
                 value={data.condiciones}
                 onChange={e => onUpdate(est.id, { condiciones: e.target.value })}
               >
@@ -377,7 +377,7 @@ function EstacionRevisionRow({
               <input maxLength={limiteTexto('m21_resultado', 'estado_equipo')}
                 type="text"
                 placeholder="Ej. Funcional, Dañado"
-                className="w-full h-9 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
+                className="w-full h-9 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm text-foreground"
                 value={data.estado_equipo}
                 onChange={e => onUpdate(est.id, { estado_equipo: e.target.value })}
               />
@@ -388,7 +388,7 @@ function EstacionRevisionRow({
               <input maxLength={limiteTexto('m21_resultado', 'estado_lampara')}
                 type="text"
                 placeholder="Ej. Encendida, Fundida"
-                className="w-full h-9 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
+                className="w-full h-9 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm text-foreground"
                 value={data.estado_lampara}
                 onChange={e => onUpdate(est.id, { estado_lampara: e.target.value })}
               />
@@ -1135,7 +1135,7 @@ export function MonitoreoEstacionesPlagas() {
                 {terminosSitio.singular}
               </label>
               <select
-                className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
+                className="w-full h-11 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm text-foreground"
                 value={estRanchoId}
                 onChange={e => setEstRanchoId(e.target.value)}
               >
@@ -1182,7 +1182,7 @@ export function MonitoreoEstacionesPlagas() {
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs text-muted-foreground">Tipo de trampa</label>
                     <select
-                      className="w-full h-10 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
+                      className="w-full h-10 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm text-foreground"
                       value={addTipo}
                       onChange={e => setAddTipo(e.target.value as TipoTrampa)}
                     >
@@ -1195,7 +1195,7 @@ export function MonitoreoEstacionesPlagas() {
                     <input
                       type="text"
                       placeholder="N.° (ej. 1, 100, 200, 1F)"
-                      className="flex-1 h-10 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
+                      className="flex-1 h-10 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm text-foreground"
                       value={addNumero}
                       onChange={e => setAddNumero(e.target.value)}
                     />
@@ -1260,7 +1260,7 @@ export function MonitoreoEstacionesPlagas() {
                 {terminosSitio.singular}
               </label>
               <select
-                className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
+                className="w-full h-11 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm text-foreground"
                 value={form.ranchoId}
                 onChange={e => setFormField('ranchoId', e.target.value)}
               >
@@ -1278,7 +1278,7 @@ export function MonitoreoEstacionesPlagas() {
               </label>
               <input
                 type="date"
-                className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
+                className="w-full h-11 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm text-foreground"
                 value={form.fecha}
                 min={puedeEditarFecha ? undefined : hoy()}
                 max={hoy()}
@@ -1294,7 +1294,7 @@ export function MonitoreoEstacionesPlagas() {
               <input maxLength={limiteTexto('m21_revision', 'inspector_nombre')}
                 type="text"
                 placeholder="Nombre del inspector"
-                className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
+                className="w-full h-11 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm text-foreground"
                 value={form.inspectorNombre}
                 onChange={e => setFormField('inspectorNombre', e.target.value)}
               />
@@ -1383,7 +1383,7 @@ export function MonitoreoEstacionesPlagas() {
                 {terminosSitio.singular}
               </label>
               <select
-                className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm"
+                className="w-full h-11 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm"
                 value={consRanchoId}
                 onChange={e => setConsRanchoId(e.target.value)}
               >
@@ -1398,7 +1398,7 @@ export function MonitoreoEstacionesPlagas() {
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Desde</label>
                 <input
                   type="date"
-                  className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm"
+                  className="w-full h-11 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm"
                   value={consDesde}
                   onChange={e => setConsDesde(e.target.value)}
                 />
@@ -1407,7 +1407,7 @@ export function MonitoreoEstacionesPlagas() {
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Hasta</label>
                 <input
                   type="date"
-                  className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm"
+                  className="w-full h-11 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm"
                   value={consHasta}
                   onChange={e => setConsHasta(e.target.value)}
                 />

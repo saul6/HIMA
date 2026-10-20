@@ -53,7 +53,7 @@ export function ProductoCombobox({ productos, value, onSelect, disabled, product
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            'w-full h-11 px-3 rounded-lg border border-border bg-input-background',
+            'w-full h-11 px-3 rounded-lg border border-border-control bg-input-background',
             'flex items-center justify-between gap-2 text-sm text-left',
             'focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary',
             'disabled:opacity-50 disabled:cursor-not-allowed',

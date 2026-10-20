@@ -530,7 +530,7 @@ export function RecepcionFruta() {
     }
   }
 
-  const fieldCls = 'w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm'
+  const fieldCls = 'w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm'
 
   return (
     <div className="flex flex-col min-h-full bg-background pb-safe-nav">
@@ -779,7 +779,7 @@ export function RecepcionFruta() {
                           <label className="text-xs text-muted-foreground">Hora</label>
                           <input
                             type="time"
-                            className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                            className="w-full h-9 rounded-lg border border-border-control bg-input-background px-2.5 text-sm"
                             value={l.hora}
                             onChange={e => actualizarLinea(l._key, 'hora', e.target.value)}
                           />
@@ -788,7 +788,7 @@ export function RecepcionFruta() {
                           <label className="text-xs text-muted-foreground">Cultivo</label>
                           <input maxLength={limiteTexto('m39_lineas', 'cultivo')}
                             type="text"
-                            className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                            className="w-full h-9 rounded-lg border border-border-control bg-input-background px-2.5 text-sm"
                             placeholder="Ej: Zarzamora"
                             value={l.cultivo}
                             onChange={e => actualizarLinea(l._key, 'cultivo', e.target.value)}
@@ -804,7 +804,7 @@ export function RecepcionFruta() {
                             inputMode="numeric"
                             min="0"
                             placeholder="0"
-                            className="w-full h-9 rounded-lg border border-border bg-input-background px-2 text-sm text-center"
+                            className="w-full h-9 rounded-lg border border-border-control bg-input-background px-2 text-sm text-center"
                             value={l.cajas}
                             onChange={e => actualizarLinea(l._key, 'cajas', e.target.value)}
                           />
@@ -816,7 +816,7 @@ export function RecepcionFruta() {
                             inputMode="numeric"
                             min="0"
                             placeholder="0"
-                            className="w-full h-9 rounded-lg border border-border bg-input-background px-2 text-sm text-center"
+                            className="w-full h-9 rounded-lg border border-border-control bg-input-background px-2 text-sm text-center"
                             value={l.piezas}
                             onChange={e => actualizarLinea(l._key, 'piezas', e.target.value)}
                           />
@@ -827,7 +827,7 @@ export function RecepcionFruta() {
                         <label className="text-xs text-muted-foreground">Entrega</label>
                         <input maxLength={limiteTexto('m39_lineas', 'entrega')}
                           type="text"
-                          className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                          className="w-full h-9 rounded-lg border border-border-control bg-input-background px-2.5 text-sm"
                           placeholder="Nombre o referencia de entrega"
                           value={l.entrega}
                           onChange={e => actualizarLinea(l._key, 'entrega', e.target.value)}
@@ -867,7 +867,7 @@ export function RecepcionFruta() {
                           <label className="text-xs text-muted-foreground">Hora</label>
                           <input
                             type="time"
-                            className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                            className="w-full h-9 rounded-lg border border-border-control bg-input-background px-2.5 text-sm"
                             value={l.hora}
                             onChange={e => actualizarLinea(l._key, 'hora', e.target.value)}
                           />
@@ -876,7 +876,7 @@ export function RecepcionFruta() {
                           <label className="text-xs text-muted-foreground">Cód. Productor</label>
                           <input maxLength={limiteTexto('m39_lineas', 'codigo_productor')}
                             type="text"
-                            className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                            className="w-full h-9 rounded-lg border border-border-control bg-input-background px-2.5 text-sm"
                             placeholder="Ej: P-001"
                             value={l.codigo_productor}
                             onChange={e => actualizarLinea(l._key, 'codigo_productor', e.target.value)}
@@ -898,7 +898,7 @@ export function RecepcionFruta() {
                         <label className="text-xs text-muted-foreground">Producto</label>
                         <InputContador limite={limiteTexto('m39_lineas', 'producto')}
                           type="text"
-                          className="w-full h-9 rounded-lg border border-border bg-input-background px-2.5 text-sm"
+                          className="w-full h-9 rounded-lg border border-border-control bg-input-background px-2.5 text-sm"
                           placeholder="Nombre del producto"
                           value={l.producto}
                           onChange={e => actualizarLinea(l._key, 'producto', e.target.value)}
@@ -918,7 +918,7 @@ export function RecepcionFruta() {
                               inputMode="numeric"
                               min="0"
                               placeholder="0"
-                              className="w-full h-9 rounded-lg border border-border bg-input-background px-2 text-sm text-center"
+                              className="w-full h-9 rounded-lg border border-border-control bg-input-background px-2 text-sm text-center"
                               value={l[key]}
                               onChange={e => actualizarLinea(l._key, key, e.target.value)}
                             />
@@ -997,7 +997,7 @@ export function RecepcionFruta() {
               onChange={e => setF('observaciones', e.target.value)}
               rows={2}
               placeholder="Observaciones generales de la recepción..."
-              className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
             />
           </section>
         </div>

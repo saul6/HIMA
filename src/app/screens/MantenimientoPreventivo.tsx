@@ -746,7 +746,7 @@ export function MantenimientoPreventivo() {
               onChange={(e) => setObsLocal(e.target.value)}
               rows={2}
               placeholder="Observaciones generales…"
-              className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+              className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
             />
             <button
               onClick={handleActualizarObs}
@@ -879,7 +879,7 @@ export function MantenimientoPreventivo() {
                   value={nRanchoId}
                   onChange={(e) => { setNRanchoId(e.target.value); setErrRancho(false) }}
                   className="w-full rounded-xl border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={{ borderColor: errRancho ? 'var(--agro-red)' : 'var(--border)' }}
+                  style={{ borderColor: errRancho ? 'var(--agro-red)' : 'var(--border-control)' }}
                 >
                   <option value="">Seleccionar…</option>
                   {ranchoOptions.map((o) => (
@@ -898,7 +898,7 @@ export function MantenimientoPreventivo() {
                   type="month"
                   value={nMes}
                   onChange={(e) => setNMes(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
               <button
@@ -940,7 +940,7 @@ export function MantenimientoPreventivo() {
                     }
                     setDValores(init)
                   }}
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
 
@@ -1104,7 +1104,7 @@ export function MantenimientoPreventivo() {
                   value={cRanchoId}
                   onChange={(e) => { setCRanchoId(e.target.value); setCErrRancho(false) }}
                   className="w-full rounded-xl border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={{ borderColor: cErrRancho ? 'var(--agro-red)' : 'var(--border)' }}
+                  style={{ borderColor: cErrRancho ? 'var(--agro-red)' : 'var(--border-control)' }}
                 >
                   <option value="">Seleccionar…</option>
                   {ranchoOptions.map((o) => (
@@ -1123,7 +1123,7 @@ export function MantenimientoPreventivo() {
                   type="month"
                   value={cDesde}
                   onChange={(e) => setCDesde(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
               <div>
@@ -1132,7 +1132,7 @@ export function MantenimientoPreventivo() {
                   type="month"
                   value={cHasta}
                   onChange={(e) => setCHasta(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
               <button

@@ -582,7 +582,7 @@ export function MiOrganizacion() {
                   onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
                   placeholder={`Ej: ${sTermino} El Solar`}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                    errores.nombre ? 'border-agro-red' : 'border-border'
+                    errores.nombre ? 'border-agro-red' : 'border-border-control'
                   }`}
                 />
                 {errores.nombre && (
@@ -600,7 +600,7 @@ export function MiOrganizacion() {
                     onChange={(e) => setForm((f) => ({ ...f, codigo: e.target.value.toUpperCase() }))}
                     placeholder="Ej: RS-01"
                     className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm font-mono focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                      errores.codigo ? 'border-agro-red' : 'border-border'
+                      errores.codigo ? 'border-agro-red' : 'border-border-control'
                     }`}
                   />
                   {errores.codigo && (
@@ -617,7 +617,7 @@ export function MiOrganizacion() {
                   value={form.cultivo}
                   onChange={(e) => setForm((f) => ({ ...f, cultivo: e.target.value }))}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                    errores.cultivo ? 'border-agro-red' : 'border-border'
+                    errores.cultivo ? 'border-agro-red' : 'border-border-control'
                   } ${!form.cultivo ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
                   <option value="" disabled>Seleccionar cultivo</option>
@@ -636,7 +636,7 @@ export function MiOrganizacion() {
                       onChange={(e) => setForm((f) => ({ ...f, cultivoOtro: e.target.value }))}
                       placeholder="Especifica el cultivo"
                       className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                        errores.cultivoOtro ? 'border-agro-red' : 'border-border'
+                        errores.cultivoOtro ? 'border-agro-red' : 'border-border-control'
                       }`}
                     />
                     {errores.cultivoOtro && (
@@ -658,7 +658,7 @@ export function MiOrganizacion() {
                   onChange={(e) => setForm((f) => ({ ...f, superficie_ha: e.target.value }))}
                   placeholder="Ej: 5.5"
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                    errores.superficie_ha ? 'border-agro-red' : 'border-border'
+                    errores.superficie_ha ? 'border-agro-red' : 'border-border-control'
                   }`}
                 />
                 {errores.superficie_ha && (

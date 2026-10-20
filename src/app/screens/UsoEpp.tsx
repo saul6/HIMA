@@ -358,7 +358,7 @@ export function UsoEpp() {
           <div>
             <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.rancho_id}
               onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -371,7 +371,7 @@ export function UsoEpp() {
             <label className="block text-xs font-medium mb-1">Fecha</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.fecha}
               min={puedeEditarFecha ? undefined : hoyMX()}
               max={puedeEditarFecha ? undefined : hoyMX()}
@@ -383,7 +383,7 @@ export function UsoEpp() {
             <label className="block text-xs font-medium mb-1">Aplicador</label>
             <input maxLength={limiteTexto('m63_uso_epp', 'aplicador')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre del aplicador"
               value={form.aplicador}
               onChange={e => setForm(f => ({ ...f, aplicador: e.target.value }))}
@@ -393,7 +393,7 @@ export function UsoEpp() {
           <div>
             <label className="block text-xs font-medium mb-1">Momento</label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.momento}
               onChange={e => setForm(f => ({ ...f, momento: e.target.value as 'inicio' | 'fin' }))}
             >
@@ -438,7 +438,7 @@ export function UsoEpp() {
             </label>
             <input maxLength={limiteTexto('m63_uso_epp', 'realizo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre de quien realizo la verificacion"
               value={form.realizo}
               onChange={e => setForm(f => ({ ...f, realizo: e.target.value }))}
@@ -451,7 +451,7 @@ export function UsoEpp() {
             </label>
             <TextareaContador limite={limiteTexto('m63_uso_epp', 'observaciones')}
               rows={3}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}
               onChange={e => setForm(f => ({ ...f, observaciones: e.target.value }))}
             />
@@ -484,7 +484,7 @@ export function UsoEpp() {
               {terminosSitio.singular} <span className="text-muted-foreground">(opcional)</span>
             </label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.rancho_id}
               onChange={e => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -496,7 +496,7 @@ export function UsoEpp() {
             <label className="block text-xs font-medium mb-1">Desde</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.desde}
               onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
             />
@@ -505,7 +505,7 @@ export function UsoEpp() {
             <label className="block text-xs font-medium mb-1">Hasta</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.hasta}
               onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
             />

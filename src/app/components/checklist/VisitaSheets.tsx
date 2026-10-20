@@ -214,7 +214,7 @@ function FormularioAccion({ modo, ranchoId, hook, onClose, onGuardado, onTermina
           <select
             value={revisor}
             onChange={e => setRevisor(e.target.value)}
-            className="w-full h-9 rounded-md border border-border bg-input-background px-3 text-sm text-foreground"
+            className="w-full h-9 rounded-md border border-border-control bg-input-background px-3 text-sm text-foreground"
           >
             <option value="">Yo</option>
             {admins.map(a => <option key={a.id} value={a.id}>{a.nombre}</option>)}

@@ -458,7 +458,7 @@ export function PreparacionCloro() {
               value={consRanchoId}
               onChange={(e) => { setConsRanchoId(e.target.value); setErrConsRancho(false) }}
               className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary ${
-                errConsRancho ? 'border-agro-red' : 'border-border'
+                errConsRancho ? 'border-agro-red' : 'border-border-control'
               } ${!consRanchoId ? 'text-muted-foreground' : 'text-foreground'}`}
             >
               <option value="" disabled>Seleccionar {terminosSitio.singular.toLowerCase()}</option>
@@ -481,7 +481,7 @@ export function PreparacionCloro() {
               value={consDesde}
               onChange={(e) => { setConsDesde(e.target.value); setErrConsFechas(false) }}
               className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm text-foreground focus:outline-none focus:border-primary ${
-                errConsFechas && !consDesde ? 'border-agro-red' : 'border-border'
+                errConsFechas && !consDesde ? 'border-agro-red' : 'border-border-control'
               }`}
             />
           </div>
@@ -494,7 +494,7 @@ export function PreparacionCloro() {
               value={consHasta}
               onChange={(e) => { setConsHasta(e.target.value); setErrConsFechas(false) }}
               className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm text-foreground focus:outline-none focus:border-primary ${
-                errConsFechas && !consHasta ? 'border-agro-red' : 'border-border'
+                errConsFechas && !consHasta ? 'border-agro-red' : 'border-border-control'
               }`}
             />
             {errConsFechas && (
@@ -555,7 +555,7 @@ export function PreparacionCloro() {
               value={ranchoId}
               onChange={(e) => { setRanchoId(e.target.value); setErrRancho(false) }}
               className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                errRancho ? 'border-agro-red' : 'border-border'
+                errRancho ? 'border-agro-red' : 'border-border-control'
               } ${!ranchoId ? 'text-muted-foreground' : 'text-foreground'}`}
             >
               <option value="" disabled>Seleccionar {terminosSitio.singular.toLowerCase()}</option>
@@ -581,7 +581,7 @@ export function PreparacionCloro() {
               min={puedeEditarFecha ? undefined : hoy()}
               max={puedeEditarFecha ? undefined : hoy()}
               onChange={(e) => { if (puedeEditarFecha) setFecha(e.target.value) }}
-              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -596,7 +596,7 @@ export function PreparacionCloro() {
               onChange={(e) => { setArea(e.target.value); setErrArea(false) }}
               placeholder="Ej. Baño general, Área de empaque..."
               className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                errArea ? 'border-agro-red' : 'border-border'
+                errArea ? 'border-agro-red' : 'border-border-control'
               }`}
             />
             {errArea && (
@@ -619,7 +619,7 @@ export function PreparacionCloro() {
               onChange={(e) => { setLitrosAgua(e.target.value); setErrLitros(false) }}
               placeholder="Ej. 10"
               className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                errLitros ? 'border-agro-red' : 'border-border'
+                errLitros ? 'border-agro-red' : 'border-border-control'
               }`}
             />
             {errLitros && (
@@ -673,7 +673,7 @@ export function PreparacionCloro() {
               value={responsable}
               onChange={(e) => setResponsable(e.target.value)}
               placeholder="Nombre del responsable"
-              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -687,7 +687,7 @@ export function PreparacionCloro() {
               onChange={(e) => setObservaciones(e.target.value)}
               placeholder="Observaciones adicionales..."
               rows={3}
-              className="w-full px-3 py-2.5 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+              className="w-full px-3 py-2.5 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
             />
           </div>
 

@@ -258,7 +258,7 @@ export function ProductosAutorizados() {
 
           {mercadosUnicos.length > 0 && (
             <select
-              className="h-8 rounded-lg border border-border bg-input-background px-2 text-xs text-muted-foreground"
+              className="h-8 rounded-lg border border-border-control bg-input-background px-2 text-xs text-muted-foreground"
               value={mercadoFiltro}
               onChange={e => setMercadoFiltro(e.target.value)}
             >
@@ -384,7 +384,7 @@ export function ProductosAutorizados() {
             <label className="block text-xs font-medium mb-1">Cultivo</label>
             <input maxLength={limiteTexto('m66_productos_autorizados', 'cultivo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Zarzamora, Aguacate..."
               value={form.cultivo}
               onChange={e => setForm(f => ({ ...f, cultivo: e.target.value }))}
@@ -395,7 +395,7 @@ export function ProductosAutorizados() {
             <label className="block text-xs font-medium mb-1">Ingrediente activo</label>
             <input maxLength={limiteTexto('m66_productos_autorizados', 'ingrediente_activo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Clorpirifos, Imidacloprid..."
               value={form.ingrediente_activo}
               onChange={e => setForm(f => ({ ...f, ingrediente_activo: e.target.value }))}
@@ -406,7 +406,7 @@ export function ProductosAutorizados() {
             <label className="block text-xs font-medium mb-1">Nombre comercial</label>
             <input maxLength={limiteTexto('m66_productos_autorizados', 'nombre_comercial')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre del producto"
               value={form.nombre_comercial}
               onChange={e => setForm(f => ({ ...f, nombre_comercial: e.target.value }))}
@@ -418,7 +418,7 @@ export function ProductosAutorizados() {
               <label className="block text-xs font-medium mb-1">Concentracion</label>
               <input maxLength={limiteTexto('m66_productos_autorizados', 'concentracion')}
                 type="text"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="Ej. 480 g/L"
                 value={form.concentracion}
                 onChange={e => setForm(f => ({ ...f, concentracion: e.target.value }))}
@@ -428,7 +428,7 @@ export function ProductosAutorizados() {
               <label className="block text-xs font-medium mb-1">Dosis/ha</label>
               <input maxLength={limiteTexto('m66_productos_autorizados', 'dosis_ha')}
                 type="text"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="Ej. 1.5 L/ha"
                 value={form.dosis_ha}
                 onChange={e => setForm(f => ({ ...f, dosis_ha: e.target.value }))}
@@ -440,7 +440,7 @@ export function ProductosAutorizados() {
             <label className="block text-xs font-medium mb-1">Empresa / Fabricante</label>
             <input maxLength={limiteTexto('m66_productos_autorizados', 'empresa')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre del fabricante"
               value={form.empresa}
               onChange={e => setForm(f => ({ ...f, empresa: e.target.value }))}
@@ -457,7 +457,7 @@ export function ProductosAutorizados() {
                 inputMode="numeric"
                 step="1"
                 min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="Ej. 14"
                 value={form.intervalo_seguridad_dias}
                 onChange={e => setForm(f => ({ ...f, intervalo_seguridad_dias: e.target.value }))}
@@ -467,7 +467,7 @@ export function ProductosAutorizados() {
               <label className="block text-xs font-medium mb-1">Mercado objetivo</label>
               <input maxLength={limiteTexto('m66_productos_autorizados', 'mercado')}
                 type="text"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="Ej. USA, Mexico, UE..."
                 value={form.mercado}
                 onChange={e => setForm(f => ({ ...f, mercado: e.target.value }))}
@@ -479,7 +479,7 @@ export function ProductosAutorizados() {
             <label className="block text-xs font-medium mb-1">Plagas que controla</label>
             <TextareaContador limite={limiteTexto('m66_productos_autorizados', 'plagas_control')}
               rows={3}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               placeholder="Descripcion de plagas o enfermedades que controla"
               value={form.plagas_control}
               onChange={e => setForm(f => ({ ...f, plagas_control: e.target.value }))}

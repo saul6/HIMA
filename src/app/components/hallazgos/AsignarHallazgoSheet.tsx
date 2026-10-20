@@ -135,7 +135,7 @@ export function AsignarHallazgoSheet({
               value={ownerId}
               onChange={e => setOwnerId(e.target.value)}
               disabled={bloqueado || guardando}
-              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground disabled:opacity-50"
+              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground disabled:opacity-50"
             >
               <option value="">
                 {cargandoColab || leyendo ? 'Cargando…' : 'Selecciona un colaborador'}
@@ -164,7 +164,7 @@ export function AsignarHallazgoSheet({
               min={fechaMinimaAsignacion(hoyMX(), fechaActual)}
               onChange={e => setFecha(e.target.value)}
               disabled={bloqueado || guardando}
-              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground disabled:opacity-50"
+              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground disabled:opacity-50"
             />
             <p className="text-xs text-muted-foreground">Incluye todo ese día (hora de Ciudad de México).</p>
           </div>

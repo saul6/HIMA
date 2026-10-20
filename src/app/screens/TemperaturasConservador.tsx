@@ -458,7 +458,7 @@ export function TemperaturasConservador() {
                   value={form.rancho_id}
                   onChange={e => handleRanchoChange(e.target.value, form.fecha)}
                   className="w-full rounded-lg px-3 py-2 text-[13px] border"
-                  style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                  style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                 >
                   <option value="">Seleccionar...</option>
                   {(ranchos as any[]).map((r: any) => (
@@ -479,7 +479,7 @@ export function TemperaturasConservador() {
                   max={puedeEditarFecha ? undefined : hoyMX()}
                   onChange={e => { if (puedeEditarFecha) setForm(f => ({ ...f, fecha: e.target.value })) }}
                   className="w-full rounded-lg px-3 py-2 text-[13px] border"
-                  style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                  style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                 />
               </div>
 
@@ -494,7 +494,7 @@ export function TemperaturasConservador() {
                     value={form.temp_min}
                     onChange={e => setForm(f => ({ ...f, temp_min: e.target.value }))}
                     className="w-full rounded-lg px-3 py-2 text-[13px] border"
-                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                     placeholder="ej. 2"
                   />
                 </div>
@@ -507,7 +507,7 @@ export function TemperaturasConservador() {
                     value={form.temp_max}
                     onChange={e => setForm(f => ({ ...f, temp_max: e.target.value }))}
                     className="w-full rounded-lg px-3 py-2 text-[13px] border"
-                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                     placeholder="ej. 8"
                   />
                 </div>
@@ -559,7 +559,7 @@ export function TemperaturasConservador() {
                                   textAlign: 'center',
                                   fontSize: 12,
                                   borderRadius: 6,
-                                  border: `1px solid ${oor ? 'var(--agro-danger-text)' : 'var(--border)'}`,
+                                  border: `1px solid ${oor ? 'var(--agro-danger-text)' : 'var(--border-control)'}`,
                                   backgroundColor: oor ? 'var(--agro-danger-fill)' : 'var(--input-background)',
                                   color: oor ? 'var(--agro-danger-text)' : 'inherit',
                                   outline: 'none',
@@ -616,7 +616,7 @@ export function TemperaturasConservador() {
                   value={consolRanchoId}
                   onChange={e => setConsolRanchoId(e.target.value)}
                   className="w-full rounded-lg px-3 py-2 text-[13px] border"
-                  style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                  style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                 >
                   <option value="">{terminosSitio.plural}</option>
                   {(ranchos as any[]).map((r: any) => (
@@ -632,7 +632,7 @@ export function TemperaturasConservador() {
                     value={consolDesde}
                     onChange={e => setConsolDesde(e.target.value)}
                     className="w-full rounded-lg px-3 py-2 text-[13px] border"
-                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                   />
                 </div>
                 <div className="flex-1">
@@ -642,7 +642,7 @@ export function TemperaturasConservador() {
                     value={consolHasta}
                     onChange={e => setConsolHasta(e.target.value)}
                     className="w-full rounded-lg px-3 py-2 text-[13px] border"
-                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
+                    style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                   />
                 </div>
               </div>

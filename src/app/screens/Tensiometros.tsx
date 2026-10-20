@@ -326,7 +326,7 @@ export function Tensiometros() {
           <div>
             <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.rancho_id}
               onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -340,7 +340,7 @@ export function Tensiometros() {
               <label className="block text-xs font-medium mb-1">Fecha</label>
               <input
                 type="date"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 value={form.fecha}
                 min={puedeEditarFecha ? undefined : hoyMX()}
                 max={puedeEditarFecha ? undefined : hoyMX()}
@@ -353,7 +353,7 @@ export function Tensiometros() {
               </label>
               <input
                 type="time"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 value={form.hora}
                 onChange={e => setForm(f => ({ ...f, hora: e.target.value }))}
               />
@@ -370,7 +370,7 @@ export function Tensiometros() {
                 inputMode="decimal"
                 step="any"
                 min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0"
                 value={form.prof_15cm}
                 onChange={e => setForm(f => ({ ...f, prof_15cm: e.target.value }))}
@@ -385,7 +385,7 @@ export function Tensiometros() {
                 inputMode="decimal"
                 step="any"
                 min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0"
                 value={form.prof_45cm}
                 onChange={e => setForm(f => ({ ...f, prof_45cm: e.target.value }))}
@@ -403,7 +403,7 @@ export function Tensiometros() {
                 inputMode="decimal"
                 step="any"
                 min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="cm"
                 value={form.prof_otra_cm}
                 onChange={e => setForm(f => ({ ...f, prof_otra_cm: e.target.value }))}
@@ -418,7 +418,7 @@ export function Tensiometros() {
                 inputMode="decimal"
                 step="any"
                 min="0"
-                className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                 placeholder="0"
                 value={form.lectura_otra}
                 onChange={e => setForm(f => ({ ...f, lectura_otra: e.target.value }))}
@@ -432,7 +432,7 @@ export function Tensiometros() {
             </label>
             <input maxLength={limiteTexto('m58_tensiometros', 'realizo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
               value={form.realizo}
               onChange={e => setForm(f => ({ ...f, realizo: e.target.value }))}
@@ -445,7 +445,7 @@ export function Tensiometros() {
             </label>
             <TextareaContador limite={limiteTexto('m58_tensiometros', 'observaciones')}
               rows={2}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}
               onChange={e => setForm(f => ({ ...f, observaciones: e.target.value }))}
             />
@@ -479,7 +479,7 @@ export function Tensiometros() {
               {terminosSitio.singular} <span className="text-muted-foreground">(opcional)</span>
             </label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.rancho_id}
               onChange={e => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -491,7 +491,7 @@ export function Tensiometros() {
             <label className="block text-xs font-medium mb-1">Desde</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.desde}
               onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
             />
@@ -500,7 +500,7 @@ export function Tensiometros() {
             <label className="block text-xs font-medium mb-1">Hasta</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.hasta}
               onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
             />

@@ -129,7 +129,7 @@ function FertilizanteCombobox({
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         placeholder="Nombre comercial"
         className="w-full h-10 px-3 rounded-lg bg-card border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-        style={error ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border)' }}
+        style={error ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border-control)' }}
       />
       {open && filtered.length > 0 && (
         <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-card border border-border rounded-xl overflow-hidden shadow-lg max-h-40 overflow-y-auto">
@@ -234,14 +234,14 @@ function FilaFertilizanteForm({
           value={fila.ingrediente_activo}
           onChange={(e) => onChange({ ...fila, ingrediente_activo: e.target.value })}
           placeholder="Ingrediente activo"
-          className="h-9 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+          className="h-9 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
         />
         <input maxLength={limiteTexto('fertilizantes_org', 'concentracion')}
           type="text"
           value={fila.concentracion}
           onChange={(e) => onChange({ ...fila, concentracion: e.target.value })}
           placeholder="Concentración"
-          className="h-9 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+          className="h-9 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
         />
       </div>
 
@@ -301,7 +301,7 @@ function FilaFertilizanteForm({
             onChange={(e) => handleSuperficieChange(e.target.value)}
             placeholder="0.00"
             className="w-full h-9 px-3 rounded-lg bg-input-background border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
-            style={errores.superficie ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border)' }}
+            style={errores.superficie ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border-control)' }}
           />
           {errores.superficie && (
             <p className="text-xs mt-0.5" style={{ color: 'var(--agro-red)' }}>Requerido</p>
@@ -317,7 +317,7 @@ function FilaFertilizanteForm({
             onChange={(e) => handleDosisChange(e.target.value)}
             placeholder="0.000"
             className="w-full h-9 px-3 rounded-lg bg-input-background border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
-            style={errores.dosis ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border)' }}
+            style={errores.dosis ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border-control)' }}
           />
           {errores.dosis && (
             <p className="text-xs mt-0.5" style={{ color: 'var(--agro-red)' }}>Requerido</p>
@@ -1105,7 +1105,7 @@ export function RegistroFertilizacion() {
                       value={ranchoId}
                       onChange={(e) => { setRanchoId(e.target.value); setErrRancho(false) }}
                       className="w-full h-10 px-3 rounded-lg bg-card border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                      style={errRancho ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border)' }}
+                      style={errRancho ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border-control)' }}
                     >
                       <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
                       {ranchos.map((r) => (
@@ -1129,7 +1129,7 @@ export function RegistroFertilizacion() {
                         min={puedeEditarFecha ? undefined : hoy()}
                         max={puedeEditarFecha ? undefined : hoy()}
                         onChange={(e) => { if (puedeEditarFecha) setFecha(e.target.value) }}
-                        className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary"
+                        className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary"
                       />
                     </div>
                     <div>
@@ -1141,7 +1141,7 @@ export function RegistroFertilizacion() {
                         value={sector}
                         onChange={(e) => setSector(e.target.value)}
                         placeholder="Ej. Bloque A"
-                        className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                        className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                       />
                     </div>
                   </div>
@@ -1212,7 +1212,7 @@ export function RegistroFertilizacion() {
                   value={consRanchoId}
                   onChange={(e) => { setConsRanchoId(e.target.value); setErrConsRancho(false) }}
                   className="w-full h-10 px-3 rounded-lg bg-card border text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={errConsRancho ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border)' }}
+                  style={errConsRancho ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border-control)' }}
                 >
                   <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
                   {ranchos.map((r) => (
@@ -1234,7 +1234,7 @@ export function RegistroFertilizacion() {
                     value={consDesde}
                     onChange={(e) => { setConsDesde(e.target.value); setErrConsFechas(false) }}
                     className="w-full h-10 px-3 rounded-lg bg-input-background border text-sm text-foreground focus:outline-none focus:border-primary"
-                    style={errConsFechas ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border)' }}
+                    style={errConsFechas ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border-control)' }}
                   />
                 </div>
                 <div>
@@ -1246,7 +1246,7 @@ export function RegistroFertilizacion() {
                     value={consHasta}
                     onChange={(e) => { setConsHasta(e.target.value); setErrConsFechas(false) }}
                     className="w-full h-10 px-3 rounded-lg bg-input-background border text-sm text-foreground focus:outline-none focus:border-primary"
-                    style={errConsFechas ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border)' }}
+                    style={errConsFechas ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border-control)' }}
                   />
                 </div>
               </div>
@@ -1297,7 +1297,7 @@ export function RegistroFertilizacion() {
                     saldoFetchKey.current = ''
                   }}
                   className="w-full h-10 px-3 rounded-lg bg-card border text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={errMovRancho ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border)' }}
+                  style={errMovRancho ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border-control)' }}
                 >
                   <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
                   {ranchos.map((r) => (
@@ -1338,14 +1338,14 @@ export function RegistroFertilizacion() {
                   value={movIngActivo}
                   onChange={(e) => setMovIngActivo(e.target.value)}
                   placeholder="Ingrediente activo"
-                  className="h-9 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                  className="h-9 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 />
                 <input
                   type="text"
                   value={movConcentracion}
                   onChange={(e) => setMovConcentracion(e.target.value)}
                   placeholder="Concentración"
-                  className="h-9 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                  className="h-9 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 />
               </div>
 
@@ -1413,7 +1413,7 @@ export function RegistroFertilizacion() {
                   onChange={(e) => { setMovCantidad(e.target.value); setErrMovCantidad(false) }}
                   placeholder="0.00"
                   className="w-full h-10 px-3 rounded-lg bg-input-background border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
-                  style={errMovCantidad ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border)' }}
+                  style={errMovCantidad ? { borderColor: 'var(--agro-red)' } : { borderColor: 'var(--border-control)' }}
                 />
                 {errMovCantidad && (
                   <p className="text-xs mt-0.5" style={{ color: 'var(--agro-red)' }}>
@@ -1437,7 +1437,7 @@ export function RegistroFertilizacion() {
                   type="date"
                   value={movFecha}
                   onChange={(e) => setMovFecha(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary"
+                  className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
 
@@ -1451,7 +1451,7 @@ export function RegistroFertilizacion() {
                   value={movReferencia}
                   onChange={(e) => setMovReferencia(e.target.value)}
                   placeholder="Ej. Factura #123"
-                  className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                  className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 />
               </div>
             </div>

@@ -454,7 +454,7 @@ export function BotiquinGG() {
               onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
               style={{
-                borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border)',
+                borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border-control)',
                 backgroundColor: 'var(--input-background)',
               }}
             >
@@ -474,7 +474,7 @@ export function BotiquinGG() {
               value={nFecha}
               onChange={(e) => setNFecha(e.target.value)}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             />
           </div>
 
@@ -488,7 +488,7 @@ export function BotiquinGG() {
                 onChange={(e) => setNBotiquinNum(e.target.value)}
                 placeholder="Ej: B-01"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
               />
             </div>
             <div className="space-y-1">
@@ -499,7 +499,7 @@ export function BotiquinGG() {
                 onChange={(e) => setNRealizo(e.target.value)}
                 placeholder="Nombre"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
               />
             </div>
           </div>
@@ -557,7 +557,7 @@ export function BotiquinGG() {
                         value={fila[campo]}
                         onChange={(e) => actualizarFilaCatalogo(idx, campo, e.target.value)}
                         className="w-full h-8 px-1 rounded border text-center text-xs focus:outline-none"
-                        style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                        style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                         placeholder="0"
                       />
                     ))}
@@ -566,7 +566,7 @@ export function BotiquinGG() {
                       value={fila.usuario}
                       onChange={(e) => actualizarFilaCatalogo(idx, 'usuario', e.target.value)}
                       className="w-full h-8 px-2 rounded border text-xs focus:outline-none"
-                      style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                      style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                       placeholder="—"
                     />
                   </div>
@@ -600,7 +600,7 @@ export function BotiquinGG() {
                         value={fila[campo]}
                         onChange={(e) => actualizarFilaExtra(idx, campo, e.target.value)}
                         className="w-full h-8 px-1 rounded border text-center text-xs focus:outline-none"
-                        style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                        style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                         placeholder="0"
                       />
                     ))}
@@ -609,7 +609,7 @@ export function BotiquinGG() {
                       value={fila.usuario}
                       onChange={(e) => actualizarFilaExtra(idx, 'usuario', e.target.value)}
                       className="w-full h-8 px-2 rounded border text-xs focus:outline-none"
-                      style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                      style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                       placeholder="—"
                     />
                     <button onClick={() => eliminarFilaExtra(idx)} className="p-1">
@@ -684,7 +684,7 @@ export function BotiquinGG() {
               value={consolidadoForm.ranchoId}
               onChange={(e) => setConsolidadoForm((f) => ({ ...f, ranchoId: e.target.value }))}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             >
               <option value="">{terminosSitio.plural}</option>
               {ranchos.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
@@ -695,13 +695,13 @@ export function BotiquinGG() {
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DESDE</label>
               <input type="date" value={consolidadoForm.desde} onChange={(e) => setConsolidadoForm((f) => ({ ...f, desde: e.target.value }))}
                 className="w-full h-11 px-3 rounded-xl border text-sm focus:outline-none"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA</label>
               <input type="date" value={consolidadoForm.hasta} onChange={(e) => setConsolidadoForm((f) => ({ ...f, hasta: e.target.value }))}
                 className="w-full h-11 px-3 rounded-xl border text-sm focus:outline-none"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
           <button

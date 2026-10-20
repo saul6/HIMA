@@ -362,7 +362,7 @@ export function ResumenNoConformidades() {
               value={rancho_id}
               onChange={(e) => { setRanchoId(e.target.value); setErrRancho(false) }}
               className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                errRancho ? 'border-agro-red' : 'border-border'
+                errRancho ? 'border-agro-red' : 'border-border-control'
               } ${!rancho_id ? 'text-muted-foreground' : 'text-foreground'}`}
             >
               <option value="" disabled>
@@ -390,7 +390,7 @@ export function ResumenNoConformidades() {
               min={puedeEditarFecha ? undefined : hoy()}
               max={puedeEditarFecha ? undefined : hoy()}
               onChange={(e) => { if (puedeEditarFecha) setFecha(e.target.value) }}
-              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -404,7 +404,7 @@ export function ResumenNoConformidades() {
               value={auditor_nombre}
               onChange={(e) => setAuditorNombre(e.target.value)}
               placeholder={profile?.nombre_completo ?? 'Nombre del auditor'}
-              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -418,7 +418,7 @@ export function ResumenNoConformidades() {
               value={cliente_nombre}
               onChange={(e) => setClienteNombre(e.target.value)}
               placeholder="Nombre del cliente o representante"
-              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -432,7 +432,7 @@ export function ResumenNoConformidades() {
               value={pa_pgfs}
               onChange={(e) => setPaPgfs(e.target.value)}
               placeholder="Opcional"
-              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -446,7 +446,7 @@ export function ResumenNoConformidades() {
               onChange={(e) => setObservaciones(e.target.value)}
               placeholder="Observaciones generales de la visita..."
               rows={3}
-              className="w-full px-3 py-2.5 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+              className="w-full px-3 py-2.5 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
             />
           </div>
 

@@ -108,7 +108,7 @@ export function PortadaCosechaForm({ value, onChange }: PortadaCosechaFormProps)
           type="text"
           value={value.nombre_campo ?? ''}
           onChange={(e) => up({ nombre_campo: e.target.value })}
-          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
       </div>
 
@@ -136,7 +136,7 @@ export function PortadaCosechaForm({ value, onChange }: PortadaCosechaFormProps)
                 onChange={(e) =>
                   up({ temporada: { ...value.temporada, desde_mes: e.target.value } })
                 }
-                className="w-full h-10 px-2 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary"
+                className="w-full h-10 px-2 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary"
               >
                 <option value="">Mes</option>
                 {MESES.map((m) => <option key={m}>{m}</option>)}
@@ -149,7 +149,7 @@ export function PortadaCosechaForm({ value, onChange }: PortadaCosechaFormProps)
                 onChange={(e) =>
                   up({ temporada: { ...value.temporada, al_mes: e.target.value } })
                 }
-                className="w-full h-10 px-2 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary"
+                className="w-full h-10 px-2 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary"
               >
                 <option value="">Mes</option>
                 {MESES.map((m) => <option key={m}>{m}</option>)}
@@ -169,7 +169,7 @@ export function PortadaCosechaForm({ value, onChange }: PortadaCosechaFormProps)
           min={0}
           value={value.num_trabajadores ?? ''}
           onChange={(e) => up({ num_trabajadores: parseInt(e.target.value) || 0 })}
-          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          className="w-full h-10 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
       </div>
 

@@ -327,7 +327,7 @@ export function ConsumoEnergia() {
           <div>
             <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.rancho_id}
               onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -340,7 +340,7 @@ export function ConsumoEnergia() {
             <label className="block text-xs font-medium mb-1">Mes</label>
             <input
               type="month"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.mes}
               onChange={e => setForm(f => ({ ...f, mes: e.target.value }))}
             />
@@ -352,7 +352,7 @@ export function ConsumoEnergia() {
             </label>
             <input maxLength={limiteTexto('m60_consumo_energia', 'tipo_combustible')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Diesel, Gas LP..."
               value={form.tipo_combustible}
               onChange={e => setForm(f => ({ ...f, tipo_combustible: e.target.value }))}
@@ -368,7 +368,7 @@ export function ConsumoEnergia() {
               inputMode="decimal"
               step="any"
               min="0"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="0"
               value={form.cantidad_litros}
               onChange={e => setForm(f => ({ ...f, cantidad_litros: e.target.value }))}
@@ -384,7 +384,7 @@ export function ConsumoEnergia() {
               inputMode="decimal"
               step="any"
               min="0"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="$0.00"
               value={form.costo_combustible}
               onChange={e => setForm(f => ({ ...f, costo_combustible: e.target.value }))}
@@ -397,7 +397,7 @@ export function ConsumoEnergia() {
             </label>
             <input maxLength={limiteTexto('m60_consumo_energia', 'actividad')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Riego, Bombeo..."
               value={form.actividad}
               onChange={e => setForm(f => ({ ...f, actividad: e.target.value }))}
@@ -413,7 +413,7 @@ export function ConsumoEnergia() {
               inputMode="decimal"
               step="any"
               min="0"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="$0.00"
               value={form.luz_costo}
               onChange={e => setForm(f => ({ ...f, luz_costo: e.target.value }))}
@@ -429,7 +429,7 @@ export function ConsumoEnergia() {
               inputMode="decimal"
               step="any"
               min="0"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="0"
               value={form.luz_kwh}
               onChange={e => setForm(f => ({ ...f, luz_kwh: e.target.value }))}
@@ -442,7 +442,7 @@ export function ConsumoEnergia() {
             </label>
             <input maxLength={limiteTexto('m60_consumo_energia', 'realizo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
               value={form.realizo}
               onChange={e => setForm(f => ({ ...f, realizo: e.target.value }))}
@@ -455,7 +455,7 @@ export function ConsumoEnergia() {
             </label>
             <TextareaContador limite={limiteTexto('m60_consumo_energia', 'observaciones')}
               rows={2}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}
               onChange={e => setForm(f => ({ ...f, observaciones: e.target.value }))}
             />
@@ -489,7 +489,7 @@ export function ConsumoEnergia() {
               {terminosSitio.singular} <span className="text-muted-foreground">(opcional)</span>
             </label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.rancho_id}
               onChange={e => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -501,7 +501,7 @@ export function ConsumoEnergia() {
             <label className="block text-xs font-medium mb-1">Desde</label>
             <input
               type="month"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.desde}
               onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
             />
@@ -510,7 +510,7 @@ export function ConsumoEnergia() {
             <label className="block text-xs font-medium mb-1">Hasta</label>
             <input
               type="month"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.hasta}
               onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
             />

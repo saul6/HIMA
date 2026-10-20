@@ -438,7 +438,7 @@ export function GermicidaGG() {
               value={form.rancho_id}
               onChange={(e) => { setForm((f) => ({ ...f, rancho_id: e.target.value })); setErrRancho(false) }}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: errRancho ? 'var(--agro-red)' : 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              style={{ borderColor: errRancho ? 'var(--agro-red)' : 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             >
               <option value="">Selecciona {termino.toLowerCase()}…</option>
               {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -458,7 +458,7 @@ export function GermicidaGG() {
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>FECHA</label>
               <input type="date" value={form.fecha} onChange={set('fecha')}
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
 
@@ -468,13 +468,13 @@ export function GermicidaGG() {
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>MATERIAL UTILIZADO</label>
               <input maxLength={limiteTexto('m74_germicida', 'material_utilizado')} type="text" value={form.material_utilizado} onChange={set('material_utilizado')} placeholder="Ej: Cubeta"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>SECTOR</label>
               <input maxLength={limiteTexto('m74_germicida', 'sector')} type="text" value={form.sector} onChange={set('sector')} placeholder="Ej: Empaque"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
 
@@ -493,19 +493,19 @@ export function GermicidaGG() {
                     <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Hora</label>
                     <input type="time" value={form[horaKey]} onChange={set(horaKey)}
                       className="w-full h-9 px-2 rounded-lg border text-sm text-foreground focus:outline-none"
-                      style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                      style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>PPM</label>
                     <input type="number" min="0" step="0.1" value={form[ppmKey]} onChange={set(ppmKey)} placeholder="0.0"
                       className="w-full h-9 px-2 rounded-lg border text-sm text-foreground focus:outline-none"
-                      style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                      style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Ajuste</label>
                     <input type="text" value={form[ajusteKey]} onChange={set(ajusteKey)} placeholder="Ej: +20ml"
                       className="w-full h-9 px-2 rounded-lg border text-sm text-foreground focus:outline-none"
-                      style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                      style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
                   </div>
                 </div>
               </div>
@@ -517,7 +517,7 @@ export function GermicidaGG() {
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>REALIZÓ</label>
             <input maxLength={limiteTexto('m74_germicida', 'realizo')} type="text" value={form.realizo} onChange={set('realizo')} placeholder="Nombre del responsable"
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
           </div>
 
           {/* Observaciones */}
@@ -560,7 +560,7 @@ export function GermicidaGG() {
               value={consolidadoForm.rancho_id}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             >
               <option value="">Todos los {termino.toLowerCase()}s</option>
               {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -571,14 +571,14 @@ export function GermicidaGG() {
             <input type="date" value={consolidadoForm.desde}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
           </div>
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA</label>
             <input type="date" value={consolidadoForm.hasta}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
           </div>
         </div>
         <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>

@@ -40,7 +40,7 @@ import { useFirmaContext } from '@/context/FirmaContext'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { TextareaContador } from '@/app/components/TextareaContador'
-import { limiteTexto } from '@/lib/limitesTexto'
+import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -175,7 +175,7 @@ function ItemChecklist({
             onChange={(e) => onDescripcion(e.target.value)}
             rows={2}
             placeholder="Descripcion de la novedad (opcional — si se llena, crea incidencia M13)"
-            className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-xs resize-none"
+            className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-xs resize-none"
             style={{ color: 'var(--foreground)' }}
           />
         </div>
@@ -733,7 +733,7 @@ export function RondinesVigilancia() {
                     value={nRanchoId}
                     onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
                     className="w-full h-11 px-3 rounded-xl border bg-input-background text-sm"
-                    style={{ borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border)' }}
+                    style={{ borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border-control)' }}
                   >
                     <option value="">Seleccionar…</option>
                     {ranchoOptions.map((o) => (
@@ -756,7 +756,7 @@ export function RondinesVigilancia() {
                       min={puedeEditarFecha ? undefined : hoyMX()}
                       max={puedeEditarFecha ? undefined : hoyMX()}
                       onChange={(e) => { if (puedeEditarFecha) setNFecha(e.target.value) }}
-                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                      className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                     />
                   </div>
                   <div className="space-y-1">
@@ -766,7 +766,7 @@ export function RondinesVigilancia() {
                       value={nTurno}
                       onChange={(e) => setNTurno(e.target.value)}
                       placeholder="Ej: Nocturno"
-                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                      className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                     />
                   </div>
                 </div>
@@ -780,7 +780,7 @@ export function RondinesVigilancia() {
                       onChange={(e) => { setNVigilante(e.target.value); setNErrVigilante(false) }}
                       placeholder="Nombre"
                       className="w-full h-11 px-3 rounded-xl border bg-input-background text-sm"
-                      style={{ borderColor: nErrVigilante ? 'var(--agro-red)' : 'var(--border)' }}
+                      style={{ borderColor: nErrVigilante ? 'var(--agro-red)' : 'var(--border-control)' }}
                     />
                     {nErrVigilante && (
                       <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Requerido</p>
@@ -793,7 +793,7 @@ export function RondinesVigilancia() {
                       value={nJefe}
                       onChange={(e) => setNJefe(e.target.value)}
                       placeholder="Nombre"
-                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                      className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                     />
                   </div>
                 </div>
@@ -851,7 +851,7 @@ export function RondinesVigilancia() {
                     type="time"
                     value={nHoras[nRondaActiva]}
                     onChange={(e) => setNHoras((prev) => ({ ...prev, [nRondaActiva]: e.target.value }))}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                   />
                 </div>
 
@@ -923,7 +923,7 @@ export function RondinesVigilancia() {
                   onChange={(e) => setNObs(e.target.value)}
                   rows={2}
                   placeholder="Novedades adicionales del turno…"
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2 text-sm resize-none"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
                 />
               </div>
 
@@ -969,7 +969,7 @@ export function RondinesVigilancia() {
                 <select
                   value={confRanchoId}
                   onChange={(e) => setConfRanchoId(e.target.value)}
-                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                  className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                 >
                   <option value="">Seleccionar…</option>
                   {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -1040,7 +1040,7 @@ export function RondinesVigilancia() {
                         value={confArea}
                         onChange={(e) => setConfArea(e.target.value)}
                         placeholder="Ej: Bodega / Almacén"
-                        className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
+                        className="w-full h-10 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                       />
                     </div>
                     <div className="space-y-1">
@@ -1050,7 +1050,7 @@ export function RondinesVigilancia() {
                         value={confNombre}
                         onChange={(e) => setConfNombre(e.target.value)}
                         placeholder="Ej: Puertas y cerraduras"
-                        className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
+                        className="w-full h-10 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                       />
                     </div>
                     <button
@@ -1081,7 +1081,7 @@ export function RondinesVigilancia() {
                   value={cRanchoId}
                   onChange={(e) => { setCRanchoId(e.target.value); setCErrRancho(false) }}
                   className="w-full h-11 px-3 rounded-xl border bg-input-background text-sm"
-                  style={{ borderColor: cErrRancho ? 'var(--agro-red)' : 'var(--border)' }}
+                  style={{ borderColor: cErrRancho ? 'var(--agro-red)' : 'var(--border-control)' }}
                 >
                   <option value="">Seleccionar…</option>
                   {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -1095,7 +1095,7 @@ export function RondinesVigilancia() {
                     type="date"
                     value={cDesde}
                     onChange={(e) => setCDesde(e.target.value)}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                   />
                 </div>
                 <div className="space-y-1">
@@ -1104,7 +1104,7 @@ export function RondinesVigilancia() {
                     type="date"
                     value={cHasta}
                     onChange={(e) => setCHasta(e.target.value)}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                   />
                 </div>
               </div>

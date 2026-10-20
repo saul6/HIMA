@@ -178,7 +178,7 @@ export function Perfil() {
                     value={nuevoNombre}
                     onChange={(e) => setNuevoNombre(e.target.value)}
                     autoFocus
-                    className="flex-1 h-9 px-3 rounded-lg border border-border bg-input-background text-sm
+                    className="flex-1 h-9 px-3 rounded-lg border border-border-control bg-input-background text-sm
                       focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                   <button

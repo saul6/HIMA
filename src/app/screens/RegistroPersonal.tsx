@@ -172,7 +172,7 @@ export function RegistroPersonal() {
   const formDocs = useMemo(() => formItems.filter(i => i.activo && i.tipo === 'documento'), [formItems])
   const formCaps = useMemo(() => formItems.filter(i => i.activo && i.tipo === 'capacitacion'), [formItems])
 
-  const fieldCls = 'w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm'
+  const fieldCls = 'w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm'
 
   // ── Handlers ──
 
@@ -497,7 +497,7 @@ export function RegistroPersonal() {
             placeholder="Buscar por nombre…"
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
-            className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background pl-9 pr-3 text-sm"
+            className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background pl-9 pr-3 text-sm"
           />
         </div>
       </div>
@@ -647,7 +647,7 @@ export function RegistroPersonal() {
                 <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>
                   {terminosSitio.singular}
                 </label>
-                <p className="text-sm text-muted-foreground px-3 py-2 rounded-[0.625rem] border border-border bg-input-background">
+                <p className="text-sm text-muted-foreground px-3 py-2 rounded-[0.625rem] border border-border-control bg-input-background">
                   {ranchos.find(r => r.id === form.rancho_id)?.nombre ?? '—'}
                 </p>
               </div>
@@ -827,7 +827,7 @@ export function RegistroPersonal() {
               onChange={e => setF('observaciones', e.target.value)}
               rows={2}
               placeholder="Observaciones adicionales…"
-              className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
             />
           </section>
         </div>
@@ -981,7 +981,7 @@ export function RegistroPersonal() {
                     <div className="flex gap-2">
                       <input maxLength={limiteTexto('m47_items', 'nombre')}
                         type="text"
-                        className="flex-1 h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+                        className="flex-1 h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
                         placeholder="Nombre del ítem"
                         value={nuevoItemNombre}
                         onChange={e => setNuevoItemNombre(e.target.value)}

@@ -124,7 +124,7 @@ function ToggleItem({
           value={codigo}
           onChange={(e) => onCodigo(e.target.value)}
           placeholder="Cód. correctivo (opcional)"
-          className="mt-1.5 w-full h-8 px-2 rounded-lg border border-border bg-input-background text-xs text-foreground focus:outline-none focus:border-primary"
+          className="mt-1.5 w-full h-8 px-2 rounded-lg border border-border-control bg-input-background text-xs text-foreground focus:outline-none focus:border-primary"
         />
       )}
     </div>
@@ -738,7 +738,7 @@ export function InspeccionPreoperacionalCosecha() {
               onChange={(e) => setObsLocal(e.target.value)}
               rows={2}
               placeholder="Observaciones generales del mes…"
-              className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+              className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
             />
             <button
               onClick={handleGuardarObs}
@@ -829,7 +829,7 @@ export function InspeccionPreoperacionalCosecha() {
                   <select
                     value={nRanchoId}
                     onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     style={{ borderColor: nErrRancho ? 'var(--agro-red)' : undefined }}
                   >
                     <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
@@ -851,7 +851,7 @@ export function InspeccionPreoperacionalCosecha() {
                     type="month"
                     value={nMes}
                     onChange={(e) => setNMes(e.target.value)}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
 
@@ -865,7 +865,7 @@ export function InspeccionPreoperacionalCosecha() {
                     value={nRealizadoPor}
                     onChange={(e) => setNRealizadoPor(e.target.value)}
                     placeholder="Nombre del operario"
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
 
@@ -937,7 +937,7 @@ export function InspeccionPreoperacionalCosecha() {
                       min={profile?.rol === 'super_admin' ? registroActivo?.mes : hoyMX()}
                       max={profile?.rol === 'super_admin' ? (registroActivo ? ultimoDiaMes(registroActivo.mes) : undefined) : hoyMX()}
                       onChange={(e) => { if (profile?.rol === 'super_admin') { setDFecha(e.target.value); setDErrFecha(false) } }}
-                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                      className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                       style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
                     />
                     {dErrFecha && (
@@ -1037,7 +1037,7 @@ export function InspeccionPreoperacionalCosecha() {
                   <select
                     value={cRanchoId}
                     onChange={(e) => { setCRanchoId(e.target.value); setCErrRancho(false) }}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     style={{ borderColor: cErrRancho ? 'var(--agro-red)' : undefined }}
                   >
                     <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {terminosSitio.singular.toLowerCase()}</option>
@@ -1060,7 +1060,7 @@ export function InspeccionPreoperacionalCosecha() {
                       type="month"
                       value={cDesde}
                       onChange={(e) => setCDesde(e.target.value)}
-                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                      className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     />
                   </div>
                   <div className="space-y-1">
@@ -1071,7 +1071,7 @@ export function InspeccionPreoperacionalCosecha() {
                       type="month"
                       value={cHasta}
                       onChange={(e) => setCHasta(e.target.value)}
-                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                      className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     />
                   </div>
                 </div>

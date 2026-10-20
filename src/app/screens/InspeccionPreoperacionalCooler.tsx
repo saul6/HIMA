@@ -168,14 +168,14 @@ function ToggleItemM19({
             value={codigo}
             onChange={(e) => onCodigo(e.target.value)}
             placeholder="Cód. correctivo (opcional)"
-            className="w-full h-8 px-2 rounded-lg border border-border bg-input-background text-xs text-foreground focus:outline-none focus:border-primary"
+            className="w-full h-8 px-2 rounded-lg border border-border-control bg-input-background text-xs text-foreground focus:outline-none focus:border-primary"
           />
           <InputContador limite={limiteTexto('m13_incidencias', 'descripcion')}
             type="text"
             value={incidenciaDesc}
             onChange={(e) => onIncidenciaDesc(e.target.value)}
             placeholder="Descripción de incidencia M13 (opcional)"
-            className="w-full h-8 px-2 rounded-lg border border-border bg-input-background text-xs text-foreground focus:outline-none"
+            className="w-full h-8 px-2 rounded-lg border border-border-control bg-input-background text-xs text-foreground focus:outline-none"
             style={{ borderColor: incidenciaDesc ? 'var(--agro-red)' : undefined }}
           />
           {incidenciaDesc && (
@@ -889,7 +889,7 @@ export function InspeccionPreoperacionalCooler() {
               onChange={(e) => setObsLocal(e.target.value)}
               rows={2}
               placeholder="Observaciones generales del mes…"
-              className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+              className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
             />
             <button
               onClick={handleGuardarObs}
@@ -967,7 +967,7 @@ export function InspeccionPreoperacionalCooler() {
                   <select
                     value={nRanchoId}
                     onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     style={{ borderColor: nErrRancho ? 'var(--agro-red)' : undefined }}
                   >
                     <option value="">Selecciona una {termino.toLowerCase()}</option>
@@ -989,7 +989,7 @@ export function InspeccionPreoperacionalCooler() {
                     type="month"
                     value={nMes}
                     onChange={(e) => setNMes(e.target.value)}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
 
@@ -1003,7 +1003,7 @@ export function InspeccionPreoperacionalCooler() {
                     value={nRealizadoPor}
                     onChange={(e) => setNRealizadoPor(e.target.value)}
                     placeholder="Nombre del operario"
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
 
@@ -1081,7 +1081,7 @@ export function InspeccionPreoperacionalCooler() {
                       min={puedeEditarFecha && registroActivo ? registroActivo.mes : hoy()}
                       max={puedeEditarFecha && registroActivo ? ultimoDiaMes(registroActivo.mes) : hoy()}
                       onChange={(e) => { if (puedeEditarFecha) { setDFecha(e.target.value); setDErrFecha(false) } }}
-                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                      className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                       style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
                     />
                     {!puedeEditarFecha && (
@@ -1180,7 +1180,7 @@ export function InspeccionPreoperacionalCooler() {
                   <select
                     value={cRanchoId}
                     onChange={(e) => { setCRanchoId(e.target.value); setCErrRancho(false) }}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     style={{ borderColor: cErrRancho ? 'var(--agro-red)' : undefined }}
                   >
                     <option value="">Selecciona una {termino.toLowerCase()}</option>
@@ -1200,7 +1200,7 @@ export function InspeccionPreoperacionalCooler() {
                       type="month"
                       value={cDesde}
                       onChange={(e) => setCDesde(e.target.value)}
-                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                      className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     />
                   </div>
                   <div className="space-y-1">
@@ -1209,7 +1209,7 @@ export function InspeccionPreoperacionalCooler() {
                       type="month"
                       value={cHasta}
                       onChange={(e) => setCHasta(e.target.value)}
-                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
+                      className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm text-foreground focus:outline-none focus:border-primary"
                     />
                   </div>
                 </div>

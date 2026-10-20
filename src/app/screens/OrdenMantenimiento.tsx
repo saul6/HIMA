@@ -28,7 +28,7 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { TextareaContador } from '@/app/components/TextareaContador'
-import { limiteTexto } from '@/lib/limitesTexto'
+import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -440,7 +440,7 @@ export function OrdenMantenimiento() {
                   value={form.rancho_id}
                   onChange={(e) => { setF({ rancho_id: e.target.value }); setErrRancho(false) }}
                   className="w-full rounded-xl border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={{ borderColor: errRancho ? 'var(--agro-red)' : 'var(--border)' }}
+                  style={{ borderColor: errRancho ? 'var(--agro-red)' : 'var(--border-control)' }}
                 >
                   <option value="">Seleccionar…</option>
                   {ranchoOptions.map((o) => (
@@ -464,7 +464,7 @@ export function OrdenMantenimiento() {
                     min={puedeEditarFecha ? undefined : hoyMX()}
                     max={puedeEditarFecha ? undefined : hoyMX()}
                     onChange={(e) => { if (puedeEditarFecha) setF({ fecha: e.target.value }) }}
-                    className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
+                    className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -474,7 +474,7 @@ export function OrdenMantenimiento() {
                     value={form.folio}
                     onChange={(e) => setF({ folio: e.target.value })}
                     placeholder="Ej. MTT-001"
-                    className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                    className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
               </div>
@@ -487,7 +487,7 @@ export function OrdenMantenimiento() {
                   onChange={(e) => setF({ descripcion_solicitud: e.target.value })}
                   rows={3}
                   placeholder="Describe el trabajo de mantenimiento solicitado…"
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
                 />
               </div>
 
@@ -497,7 +497,7 @@ export function OrdenMantenimiento() {
                 <select
                   value={form.prioridad}
                   onChange={(e) => setF({ prioridad: e.target.value as PrioridadM44 })}
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
                 >
                   <option value="inmediata">Atención inmediata</option>
                   <option value="turno">Atención durante el turno</option>
@@ -514,7 +514,7 @@ export function OrdenMantenimiento() {
                     value={form.solicita}
                     onChange={(e) => setF({ solicita: e.target.value })}
                     placeholder="Nombre"
-                    className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                    className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -524,7 +524,7 @@ export function OrdenMantenimiento() {
                     value={form.recibe_mtto}
                     onChange={(e) => setF({ recibe_mtto: e.target.value })}
                     placeholder="Nombre"
-                    className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                    className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
               </div>
@@ -569,7 +569,7 @@ export function OrdenMantenimiento() {
                   onChange={(e) => setF({ observaciones: e.target.value })}
                   rows={2}
                   placeholder="Observaciones adicionales…"
-                  className="w-full rounded-xl border border-border bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+                  className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
                 />
               </div>
 
@@ -582,7 +582,7 @@ export function OrdenMantenimiento() {
                     value={form.entrega_mtto}
                     onChange={(e) => setF({ entrega_mtto: e.target.value })}
                     placeholder="Nombre"
-                    className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                    className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -592,7 +592,7 @@ export function OrdenMantenimiento() {
                     value={form.recibe}
                     onChange={(e) => setF({ recibe: e.target.value })}
                     placeholder="Nombre"
-                    className="w-full rounded-xl border border-border bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                    className="w-full rounded-xl border border-border-control bg-input-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
               </div>

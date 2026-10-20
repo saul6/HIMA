@@ -899,7 +899,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                       className="resize-none text-[0.8125rem] outline-none"
                       style={{
                         borderRadius: 'var(--radius)',
-                        border: `1px solid ${!sugerenciaCExplicacion.trim() ? 'var(--agro-red)' : 'var(--border)'}`,
+                        border: `1px solid ${!sugerenciaCExplicacion.trim() ? 'var(--agro-red)' : 'var(--border-control)'}`,
                         backgroundColor: 'var(--input-background)',
                         color: 'var(--foreground)',
                         padding: '0.375rem 0.625rem',
@@ -1475,7 +1475,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     onChange={e => handlePuntosChange(e.target.value)}
                     className="h-9 rounded-lg px-2 text-sm outline-none text-center"
                     style={{
-                      border: `1px solid ${errorPuntos ? 'var(--agro-red)' : 'var(--border)'}`,
+                      border: `1px solid ${errorPuntos ? 'var(--agro-red)' : 'var(--border-control)'}`,
                       backgroundColor: 'var(--input-background)',
                       color: 'var(--foreground)',
                     }}
@@ -1494,7 +1494,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     onChange={e => handleDescuentoChange(e.target.value)}
                     className="h-9 rounded-lg px-2 text-sm outline-none text-center"
                     style={{
-                      border: `1px solid ${errorPuntos ? 'var(--agro-red)' : 'var(--border)'}`,
+                      border: `1px solid ${errorPuntos ? 'var(--agro-red)' : 'var(--border-control)'}`,
                       backgroundColor: 'var(--input-background)',
                       color: 'var(--foreground)',
                     }}
@@ -1516,7 +1516,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   className="resize-none text-[0.8125rem] outline-none"
                   style={{
                     borderRadius: 'var(--radius)',
-                    border: `1px solid ${difiere && !motivoValido ? 'var(--agro-red)' : 'var(--border)'}`,
+                    border: `1px solid ${difiere && !motivoValido ? 'var(--agro-red)' : 'var(--border-control)'}`,
                     backgroundColor: 'var(--input-background)',
                     color: 'var(--foreground)',
                     padding: '0.375rem 0.625rem',

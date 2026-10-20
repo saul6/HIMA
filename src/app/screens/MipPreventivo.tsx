@@ -387,7 +387,7 @@ export function MipPreventivo() {
           <div>
             <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.rancho_id}
               onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -400,7 +400,7 @@ export function MipPreventivo() {
             <label className="block text-xs font-medium mb-1">Fecha</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.fecha}
               min={puedeEditarFecha ? undefined : hoyMX()}
               max={puedeEditarFecha ? undefined : hoyMX()}
@@ -414,7 +414,7 @@ export function MipPreventivo() {
             </label>
             <InputContador limite={limiteTexto('m53_registro', 'producto')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Zarzamora, Tomate..."
               value={form.producto}
               onChange={e => setForm(f => ({ ...f, producto: e.target.value }))}
@@ -427,7 +427,7 @@ export function MipPreventivo() {
             </label>
             <input maxLength={limiteTexto('m53_registro', 'region')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Norte, Sector A..."
               value={form.region}
               onChange={e => setForm(f => ({ ...f, region: e.target.value }))}
@@ -440,7 +440,7 @@ export function MipPreventivo() {
             </label>
             <input maxLength={limiteTexto('m53_registro', 'realizo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
               value={form.realizo}
               onChange={e => setForm(f => ({ ...f, realizo: e.target.value }))}
@@ -453,7 +453,7 @@ export function MipPreventivo() {
             </label>
             <TextareaContador limite={limiteTexto('m53_registro', 'observaciones')}
               rows={2}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}
               onChange={e => setForm(f => ({ ...f, observaciones: e.target.value }))}
             />
@@ -487,7 +487,7 @@ export function MipPreventivo() {
                       </div>
                       <InputContador limite={limiteTexto('m53_resultados', 'comentario')}
                         type="text"
-                        className="w-full h-8 rounded-lg border border-border bg-input-background px-3 text-xs"
+                        className="w-full h-8 rounded-lg border border-border-control bg-input-background px-3 text-xs"
                         placeholder="Comentario (opcional)"
                         value={m.comentario}
                         onChange={e => setMarcas(mp => ({ ...mp, [item.id]: { ...(mp[item.id] ?? MARCAS_INIT), comentario: e.target.value } }))}
@@ -501,7 +501,7 @@ export function MipPreventivo() {
                   <p className="text-xs font-semibold mb-2 text-muted-foreground">Otra técnica (opcional)</p>
                   <input
                     type="text"
-                    className="w-full h-8 rounded-lg border border-border bg-input-background px-3 text-xs mb-2"
+                    className="w-full h-8 rounded-lg border border-border-control bg-input-background px-3 text-xs mb-2"
                     placeholder="Describe la técnica..."
                     value={otra.texto}
                     onChange={e => setOtra(o => ({ ...o, texto: e.target.value }))}
@@ -514,7 +514,7 @@ export function MipPreventivo() {
                   </div>
                   <InputContador limite={limiteTexto('m53_resultados', 'comentario')}
                     type="text"
-                    className="w-full h-8 rounded-lg border border-border bg-input-background px-3 text-xs"
+                    className="w-full h-8 rounded-lg border border-border-control bg-input-background px-3 text-xs"
                     placeholder="Comentario (opcional)"
                     value={otra.comentario}
                     onChange={e => setOtra(o => ({ ...o, comentario: e.target.value }))}
@@ -554,7 +554,7 @@ export function MipPreventivo() {
               {terminosSitio.singular} <span className="text-muted-foreground">(opcional)</span>
             </label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.rancho_id}
               onChange={e => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -566,7 +566,7 @@ export function MipPreventivo() {
             <label className="block text-xs font-medium mb-1">Desde</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.desde}
               onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
             />
@@ -575,7 +575,7 @@ export function MipPreventivo() {
             <label className="block text-xs font-medium mb-1">Hasta</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.hasta}
               onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
             />

@@ -620,7 +620,7 @@ export function LimpiezaCampo() {
                 placeholder="Nombre del responsable"
                 className="w-full h-9 px-3 rounded-lg border text-sm text-foreground focus:outline-none focus:border-primary"
                 style={{
-                  borderColor: 'var(--border)',
+                  borderColor: 'var(--border-control)',
                   backgroundColor: 'var(--input-background)',
                 }}
               />
@@ -905,7 +905,7 @@ export function LimpiezaCampo() {
                 onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
                 style={{
-                  borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border)',
+                  borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border-control)',
                   backgroundColor: 'var(--input-background)',
                 }}
               >
@@ -929,7 +929,7 @@ export function LimpiezaCampo() {
                 value={nMes}
                 onChange={(e) => setNMes(e.target.value)}
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
               />
             </div>
 
@@ -944,7 +944,7 @@ export function LimpiezaCampo() {
                 onChange={(e) => setNRealizo(e.target.value)}
                 placeholder="Nombre del responsable"
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
               />
             </div>
 
@@ -1021,7 +1021,7 @@ export function LimpiezaCampo() {
                 value={cRanchoId}
                 onChange={(e) => setCRanchoId(e.target.value)}
                 className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
               >
                 <option value="">Todos</option>
                 {ranchoOptions.map((o) => (
@@ -1040,7 +1040,7 @@ export function LimpiezaCampo() {
                   value={cDesde}
                   onChange={(e) => setCDesde(e.target.value)}
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                  style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                 />
               </div>
               <div className="space-y-1">
@@ -1052,7 +1052,7 @@ export function LimpiezaCampo() {
                   value={cHasta}
                   onChange={(e) => setCHasta(e.target.value)}
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none focus:border-primary"
-                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                  style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                 />
               </div>
             </div>

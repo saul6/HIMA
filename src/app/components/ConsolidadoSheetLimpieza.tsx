@@ -49,7 +49,7 @@ export function ConsolidadoSheetLimpieza({
             <select
               value={ranchoId}
               onChange={(e) => onRanchoChange(e.target.value)}
-              className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+              className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
               style={{ borderColor: errRancho ? 'var(--agro-red)' : undefined }}
             >
               <option value="">Selecciona {terminoGenero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}</option>
@@ -66,7 +66,7 @@ export function ConsolidadoSheetLimpieza({
                 type="month"
                 value={desde}
                 onChange={(e) => onDesdeChange(e.target.value)}
-                className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
               />
             </div>
             <div className="flex-1 space-y-1">
@@ -75,7 +75,7 @@ export function ConsolidadoSheetLimpieza({
                 type="month"
                 value={hasta}
                 onChange={(e) => onHastaChange(e.target.value)}
-                className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
               />
             </div>
           </div>

@@ -550,7 +550,7 @@ export function Inventario() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por nombre o ingrediente…"
-            className="w-full h-12 pl-12 pr-4 rounded-lg border border-border bg-input-background
+            className="w-full h-12 pl-12 pr-4 rounded-lg border border-border-control bg-input-background
               focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
         </div>

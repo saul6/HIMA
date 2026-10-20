@@ -176,7 +176,7 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
               Nombre comercial
             </label>
             {loadingCatalogo ? (
-              <div className="h-11 rounded-lg border border-border bg-input-background flex items-center px-3 text-sm text-muted-foreground">
+              <div className="h-11 rounded-lg border border-border-control bg-input-background flex items-center px-3 text-sm text-muted-foreground">
                 Cargando catálogo…
               </div>
             ) : (

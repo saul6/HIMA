@@ -281,7 +281,7 @@ export function CronogramaCapacitacion() {
             <label className="block text-xs font-medium mb-1">Cargo</label>
             <input maxLength={limiteTexto('m57_cronograma_capacitacion', 'cargo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Operario, Supervisor..."
               value={form.cargo}
               onChange={e => setForm(f => ({ ...f, cargo: e.target.value }))}
@@ -292,7 +292,7 @@ export function CronogramaCapacitacion() {
             <label className="block text-xs font-medium mb-1">Temática</label>
             <TextareaContador limite={limiteTexto('m57_cronograma_capacitacion', 'tematica')}
               rows={3}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               placeholder="Describe la temática de la capacitación..."
               value={form.tematica}
               onChange={e => setForm(f => ({ ...f, tematica: e.target.value }))}
@@ -302,7 +302,7 @@ export function CronogramaCapacitacion() {
           <div>
             <label className="block text-xs font-medium mb-1">Periodicidad</label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.periodicidad}
               onChange={e => setForm(f => ({ ...f, periodicidad: e.target.value }))}
             >
@@ -319,7 +319,7 @@ export function CronogramaCapacitacion() {
             </label>
             <input maxLength={limiteTexto('m57_cronograma_capacitacion', 'mes_programado')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Enero, Marzo-Abril..."
               value={form.mes_programado}
               onChange={e => setForm(f => ({ ...f, mes_programado: e.target.value }))}
@@ -332,7 +332,7 @@ export function CronogramaCapacitacion() {
             </label>
             <TextareaContador limite={limiteTexto('m57_cronograma_capacitacion', 'observaciones')}
               rows={3}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}
               onChange={e => setForm(f => ({ ...f, observaciones: e.target.value }))}
             />

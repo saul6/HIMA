@@ -617,14 +617,14 @@ export function AlmacenEmpaqueGG() {
                 <input maxLength={limiteTexto('m75_registro', 'cultivo')} type="text" value={dCultivo} onChange={(e) => setDCultivo(e.target.value)}
                   placeholder="Cultivo"
                   className="w-full h-9 px-3 rounded-lg border text-sm focus:outline-none"
-                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                  style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
               </div>
               <div className="space-y-1">
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>Realizó</label>
                 <input maxLength={limiteTexto('m75_registro', 'realizo')} type="text" value={dRealizo} onChange={(e) => setDRealizo(e.target.value)}
                   placeholder="Responsable"
                   className="w-full h-9 px-3 rounded-lg border text-sm focus:outline-none"
-                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                  style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
               </div>
             </div>
             <div className="space-y-1">
@@ -878,7 +878,7 @@ export function AlmacenEmpaqueGG() {
                   value={nRanchoId}
                   onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-                  style={{ borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border)', backgroundColor: 'var(--input-background)' }}
+                  style={{ borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                 >
                   <option value="">Selecciona {termino.toLowerCase()}…</option>
                   {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -891,7 +891,7 @@ export function AlmacenEmpaqueGG() {
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>MES DE REGISTRO *</label>
                 <input type="month" value={nMes} onChange={(e) => setNMes(e.target.value)}
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                  style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
               </div>
 
               {/* Cultivo */}
@@ -899,7 +899,7 @@ export function AlmacenEmpaqueGG() {
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>CULTIVO</label>
                 <input maxLength={limiteTexto('m75_registro', 'cultivo')} type="text" value={nCultivo} onChange={(e) => setNCultivo(e.target.value)} placeholder="Ej: Zarzamora"
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                  style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
               </div>
 
               {/* Realizó */}
@@ -907,7 +907,7 @@ export function AlmacenEmpaqueGG() {
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>REALIZÓ</label>
                 <input maxLength={limiteTexto('m75_registro', 'realizo')} type="text" value={nRealizo} onChange={(e) => setNRealizo(e.target.value)} placeholder="Nombre del responsable"
                   className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+                  style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
               </div>
 
               {/* Observaciones */}
@@ -963,7 +963,7 @@ export function AlmacenEmpaqueGG() {
               value={consolidadoForm.rancho_id}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             >
               <option value="">Todos los {termino.toLowerCase()}s</option>
               {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -976,7 +976,7 @@ export function AlmacenEmpaqueGG() {
               value={consolidadoForm.desde.slice(0, 7)}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, desde: e.target.value + '-01' }))}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             />
           </div>
           <div className="space-y-1">
@@ -986,7 +986,7 @@ export function AlmacenEmpaqueGG() {
               value={consolidadoForm.hasta.slice(0, 7)}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, hasta: e.target.value + '-01' }))}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             />
           </div>
         </div>

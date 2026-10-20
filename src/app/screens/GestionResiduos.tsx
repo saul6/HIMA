@@ -323,7 +323,7 @@ export function GestionResiduos() {
           <div>
             <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.rancho_id}
               onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -336,7 +336,7 @@ export function GestionResiduos() {
             <label className="block text-xs font-medium mb-1">Fecha</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={form.fecha}
               min={puedeEditarFecha ? undefined : hoyMX()}
               max={puedeEditarFecha ? undefined : hoyMX()}
@@ -348,7 +348,7 @@ export function GestionResiduos() {
             <label className="block text-xs font-medium mb-1">Fuente de residuo</label>
             <input maxLength={limiteTexto('m61_gestion_residuos', 'fuente_residuo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Área de empaque, Comedor..."
               value={form.fuente_residuo}
               onChange={e => setForm(f => ({ ...f, fuente_residuo: e.target.value }))}
@@ -361,7 +361,7 @@ export function GestionResiduos() {
             </label>
             <InputContador limite={limiteTexto('m61_gestion_residuos', 'descripcion')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Breve descripción del residuo"
               value={form.descripcion}
               onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))}
@@ -374,7 +374,7 @@ export function GestionResiduos() {
             </label>
             <input maxLength={limiteTexto('m61_gestion_residuos', 'clasificacion')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Orgánico, Inorgánico, Peligroso..."
               value={form.clasificacion}
               onChange={e => setForm(f => ({ ...f, clasificacion: e.target.value }))}
@@ -387,7 +387,7 @@ export function GestionResiduos() {
             </label>
             <input maxLength={limiteTexto('m61_gestion_residuos', 'destino_final')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. Relleno sanitario, Recolector..."
               value={form.destino_final}
               onChange={e => setForm(f => ({ ...f, destino_final: e.target.value }))}
@@ -400,7 +400,7 @@ export function GestionResiduos() {
             </label>
             <input maxLength={limiteTexto('m61_gestion_residuos', 'cantidad')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Ej. 50 kg, 3 bolsas..."
               value={form.cantidad}
               onChange={e => setForm(f => ({ ...f, cantidad: e.target.value }))}
@@ -413,7 +413,7 @@ export function GestionResiduos() {
             </label>
             <input maxLength={limiteTexto('m61_gestion_residuos', 'realizo')}
               type="text"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               placeholder="Nombre completo"
               value={form.realizo}
               onChange={e => setForm(f => ({ ...f, realizo: e.target.value }))}
@@ -426,7 +426,7 @@ export function GestionResiduos() {
             </label>
             <TextareaContador limite={limiteTexto('m61_gestion_residuos', 'observaciones')}
               rows={2}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               value={form.observaciones}
               onChange={e => setForm(f => ({ ...f, observaciones: e.target.value }))}
             />
@@ -460,7 +460,7 @@ export function GestionResiduos() {
               {terminosSitio.singular} <span className="text-muted-foreground">(opcional)</span>
             </label>
             <select
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.rancho_id}
               onChange={e => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -472,7 +472,7 @@ export function GestionResiduos() {
             <label className="block text-xs font-medium mb-1">Desde</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.desde}
               onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
             />
@@ -481,7 +481,7 @@ export function GestionResiduos() {
             <label className="block text-xs font-medium mb-1">Hasta</label>
             <input
               type="date"
-              className="w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm"
+              className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"
               value={consolidadoForm.hasta}
               onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
             />

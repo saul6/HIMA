@@ -264,7 +264,7 @@ export function FertilizacionGG() {
     }
   }
 
-  const inputCls = 'w-full h-10 rounded-[0.625rem] border border-border bg-input-background px-3 text-sm'
+  const inputCls = 'w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm'
   const labelCls = 'block text-xs font-medium mb-1'
   const optionalSpan = <span className="text-muted-foreground font-normal">(opcional)</span>
 
@@ -580,7 +580,7 @@ export function FertilizacionGG() {
           <div>
             <label className={labelCls}>Observaciones {optionalSpan}</label>
             <TextareaContador limite={limiteTexto('m67_fertilizacion_gg', 'observaciones')}
-              className="w-full rounded-[0.625rem] border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-[0.625rem] border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
               rows={3}
               placeholder="Notas adicionales..."
               value={form.observaciones}

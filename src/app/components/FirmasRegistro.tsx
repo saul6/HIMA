@@ -579,7 +579,7 @@ export function FirmasRegistro({
               onChange={(e) => setEnteradoNombre(e.target.value)}
               maxLength={120}
               autoComplete="off"
-              className="w-full h-10 rounded-lg border border-border px-3 text-sm"
+              className="w-full h-10 rounded-lg border border-border-control px-3 text-sm"
               style={{ backgroundColor: 'var(--input-background)' }}
             />
           </div>
@@ -593,7 +593,7 @@ export function FirmasRegistro({
               onChange={(e) => setEnteradoCargo(e.target.value)}
               maxLength={80}
               autoComplete="off"
-              className="w-full h-10 rounded-lg border border-border px-3 text-sm"
+              className="w-full h-10 rounded-lg border border-border-control px-3 text-sm"
               style={{ backgroundColor: 'var(--input-background)' }}
             />
             <datalist id="enterado-cargos">

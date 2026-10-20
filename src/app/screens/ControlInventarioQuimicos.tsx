@@ -423,7 +423,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                   step="any"
                   value={movForm.cantidad}
                   onChange={e => setMovForm(f => ({ ...f, cantidad: e.target.value }))}
-                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border-control"
                   style={{ backgroundColor: 'var(--input-background)' }}
                   placeholder="0"
                 />
@@ -437,7 +437,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                   min={esSuperAdmin ? undefined : hoy()}
                   max={esSuperAdmin ? undefined : hoy()}
                   onChange={e => { if (esSuperAdmin) setMovForm(f => ({ ...f, fecha: e.target.value })) }}
-                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border-control"
                   style={{ backgroundColor: 'var(--input-background)' }}
                 />
               </div>
@@ -448,7 +448,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                   type="text"
                   value={movForm.persona_solicita}
                   readOnly
-                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border-control"
                   style={{ backgroundColor: 'var(--input-background)' }}
                   placeholder="Nombre completo"
                 />
@@ -460,7 +460,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
                   type="text"
                   value={movForm.area}
                   onChange={e => setMovForm(f => ({ ...f, area: e.target.value }))}
-                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border-control"
                   style={{ backgroundColor: 'var(--input-background)' }}
                   placeholder="Ej: Producción, Limpieza..."
                 />
@@ -662,7 +662,7 @@ export function ControlInventarioQuimicos() {
             <select
               value={ranchoId}
               onChange={e => setRanchoId(e.target.value)}
-              className="w-full rounded-xl px-3 py-2.5 text-sm border border-border"
+              className="w-full rounded-xl px-3 py-2.5 text-sm border border-border-control"
               style={{ backgroundColor: 'var(--input-background)' }}
             >
               <option value="">{terminosSitio.plural}</option>
@@ -759,7 +759,7 @@ export function ControlInventarioQuimicos() {
               <select
                 value={ranchoId}
                 onChange={e => setRanchoId(e.target.value)}
-                className="w-full rounded-xl px-3 py-2.5 text-sm border border-border"
+                className="w-full rounded-xl px-3 py-2.5 text-sm border border-border-control"
                 style={{ backgroundColor: 'var(--input-background)' }}
               >
                 <option value="">Seleccionar...</option>
@@ -835,7 +835,7 @@ export function ControlInventarioQuimicos() {
                   type="text"
                   value={quimicoForm.nombre}
                   onChange={e => setQuimicoForm(f => ({ ...f, nombre: e.target.value }))}
-                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border-control"
                   style={{ backgroundColor: 'var(--input-background)' }}
                   placeholder="Ej: Cloro, Jabón desengrasante..."
                 />
@@ -846,7 +846,7 @@ export function ControlInventarioQuimicos() {
                   type="text"
                   value={quimicoForm.unidad}
                   onChange={e => setQuimicoForm(f => ({ ...f, unidad: e.target.value }))}
-                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border-control"
                   style={{ backgroundColor: 'var(--input-background)' }}
                   placeholder="L, kg, pz, gal..."
                 />
@@ -859,7 +859,7 @@ export function ControlInventarioQuimicos() {
                   step="any"
                   value={quimicoForm.stock_minimo}
                   onChange={e => setQuimicoForm(f => ({ ...f, stock_minimo: e.target.value }))}
-                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border-control"
                   style={{ backgroundColor: 'var(--input-background)' }}
                   placeholder="Sin mínimo"
                 />
@@ -891,7 +891,7 @@ export function ControlInventarioQuimicos() {
                 <select
                   value={consolidadoForm.rancho_id}
                   onChange={e => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
-                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border-control"
                   style={{ backgroundColor: 'var(--input-background)' }}
                 >
                   <option value="">Seleccionar...</option>
@@ -904,7 +904,7 @@ export function ControlInventarioQuimicos() {
                   type="date"
                   value={consolidadoForm.desde}
                   onChange={e => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
-                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border-control"
                   style={{ backgroundColor: 'var(--input-background)' }}
                 />
               </div>
@@ -914,7 +914,7 @@ export function ControlInventarioQuimicos() {
                   type="date"
                   value={consolidadoForm.hasta}
                   onChange={e => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
-                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm border border-border-control"
                   style={{ backgroundColor: 'var(--input-background)' }}
                 />
               </div>

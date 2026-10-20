@@ -702,7 +702,7 @@ export function RegistroAccidentesLaborales() {
                 {terminosSitio.singular}
               </label>
               <select
-                className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
+                className="w-full h-11 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm text-foreground"
                 value={form.ranchoId}
                 onChange={(e) => set('ranchoId', e.target.value)}
               >
@@ -720,7 +720,7 @@ export function RegistroAccidentesLaborales() {
               </label>
               <input
                 type="date"
-                className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
+                className="w-full h-11 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm text-foreground"
                 value={form.fecha}
                 min={puedeEditarFecha ? undefined : hoy()}
                 max={hoy()}
@@ -736,7 +736,7 @@ export function RegistroAccidentesLaborales() {
               <input maxLength={limiteTexto('m20_accidentes', 'trabajador_nombre')}
                 type="text"
                 placeholder="Nombre completo"
-                className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm text-foreground"
+                className="w-full h-11 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm text-foreground"
                 value={form.trabajadorNombre}
                 onChange={(e) => set('trabajadorNombre', e.target.value)}
               />
@@ -965,7 +965,7 @@ export function RegistroAccidentesLaborales() {
                 {terminosSitio.singular}
               </label>
               <select
-                className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm"
+                className="w-full h-11 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm"
                 value={consolidadoRanchoId}
                 onChange={(e) => setConsolidadoRanchoId(e.target.value)}
               >
@@ -982,7 +982,7 @@ export function RegistroAccidentesLaborales() {
                 </label>
                 <input
                   type="date"
-                  className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm"
+                  className="w-full h-11 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm"
                   value={consolidadoDesde}
                   onChange={(e) => setConsolidadoDesde(e.target.value)}
                 />
@@ -993,7 +993,7 @@ export function RegistroAccidentesLaborales() {
                 </label>
                 <input
                   type="date"
-                  className="w-full h-11 rounded-lg border border-border bg-[var(--input-background)] px-3 text-sm"
+                  className="w-full h-11 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm"
                   value={consolidadoHasta}
                   onChange={(e) => setConsolidadoHasta(e.target.value)}
                 />

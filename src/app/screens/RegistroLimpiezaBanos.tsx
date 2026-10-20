@@ -560,7 +560,7 @@ export function RegistroLimpiezaBanos() {
                   value={consRanchoId}
                   onChange={(e) => { setConsRanchoId(e.target.value); setErrConsRancho(false) }}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary ${
-                    errConsRancho ? 'border-agro-red' : 'border-border'
+                    errConsRancho ? 'border-agro-red' : 'border-border-control'
                   } ${!consRanchoId ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
                   <option value="" disabled>Seleccionar {terminosSitio.singular.toLowerCase()}</option>
@@ -580,7 +580,7 @@ export function RegistroLimpiezaBanos() {
                   value={consDesde}
                   onChange={(e) => { setConsDesde(e.target.value); setErrConsFechas(false) }}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm text-foreground focus:outline-none focus:border-primary ${
-                    errConsFechas && !consDesde ? 'border-agro-red' : 'border-border'
+                    errConsFechas && !consDesde ? 'border-agro-red' : 'border-border-control'
                   }`}
                 />
               </div>
@@ -594,7 +594,7 @@ export function RegistroLimpiezaBanos() {
                   value={consHasta}
                   onChange={(e) => { setConsHasta(e.target.value); setErrConsFechas(false) }}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm text-foreground focus:outline-none focus:border-primary ${
-                    errConsFechas && !consHasta ? 'border-agro-red' : 'border-border'
+                    errConsFechas && !consHasta ? 'border-agro-red' : 'border-border-control'
                   }`}
                 />
                 {errConsFechas && <p className="text-xs text-agro-red mt-1">Indica el rango de fechas</p>}
@@ -662,7 +662,7 @@ export function RegistroLimpiezaBanos() {
                   value={ranchoId}
                   onChange={(e) => { setRanchoId(e.target.value); setErrRancho(false) }}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                    errRancho ? 'border-agro-red' : 'border-border'
+                    errRancho ? 'border-agro-red' : 'border-border-control'
                   } ${!ranchoId ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
                   <option value="" disabled>Seleccionar {terminosSitio.singular.toLowerCase()}</option>
@@ -684,7 +684,7 @@ export function RegistroLimpiezaBanos() {
                   min={puedeEditarFecha ? undefined : hoy()}
                   max={puedeEditarFecha ? undefined : hoy()}
                   onChange={(e) => { if (puedeEditarFecha) setFecha(e.target.value) }}
-                  className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
 
@@ -735,7 +735,7 @@ export function RegistroLimpiezaBanos() {
                           value={bano.bano_numero}
                           onChange={(e) => actualizarBano(idx, 'bano_numero', e.target.value)}
                           placeholder={`B${idx + 1}`}
-                          className="w-full h-10 px-3 rounded-lg bg-card border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                          className="w-full h-10 px-3 rounded-lg bg-card border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                         />
                       </div>
 
@@ -771,7 +771,7 @@ export function RegistroLimpiezaBanos() {
                           value={bano.concentracion_ppm}
                           onChange={(e) => actualizarBano(idx, 'concentracion_ppm', e.target.value)}
                           placeholder="200"
-                          className="w-full h-10 px-3 rounded-lg bg-card border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                          className="w-full h-10 px-3 rounded-lg bg-card border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                         />
                       </div>
 

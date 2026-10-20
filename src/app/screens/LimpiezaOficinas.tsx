@@ -791,7 +791,7 @@ export function LimpiezaOficinas() {
                       value={diaRealizo}
                       onChange={(e) => setDiaRealizo(e.target.value)}
                       placeholder="Nombre"
-                      className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
+                      className="w-full h-10 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                     />
                   </div>
                   <div className="flex-1 space-y-1">
@@ -801,7 +801,7 @@ export function LimpiezaOficinas() {
                       value={diaAprobo}
                       onChange={(e) => setDiaAprobo(e.target.value)}
                       placeholder="Nombre"
-                      className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
+                      className="w-full h-10 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                     />
                   </div>
                 </div>
@@ -872,7 +872,7 @@ export function LimpiezaOficinas() {
                   onChange={(e) => setObsLocal(e.target.value)}
                   rows={2}
                   placeholder="Observaciones generales…"
-                  className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm resize-none"
+                  className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
                 />
                 <button
                   onClick={handleGuardarObs}
@@ -934,7 +934,7 @@ export function LimpiezaOficinas() {
                 <select
                   value={nRanchoId}
                   onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
-                  className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                  className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                   style={{ borderColor: nErrRancho ? 'var(--agro-red)' : undefined }}
                 >
                   <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}</option>
@@ -948,7 +948,7 @@ export function LimpiezaOficinas() {
                   <select
                     value={nAnio}
                     onChange={(e) => setNAnio(Number(e.target.value))}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                   >
                     {anioOpts.map((y) => <option key={y} value={y}>{y}</option>)}
                   </select>
@@ -958,7 +958,7 @@ export function LimpiezaOficinas() {
                   <select
                     value={nMes}
                     onChange={(e) => setNMes(Number(e.target.value))}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                   >
                     {MESES.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
                   </select>
@@ -991,7 +991,7 @@ export function LimpiezaOficinas() {
               <select
                 value={catRanchoId}
                 onChange={(e) => setCatRanchoId(e.target.value)}
-                className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
               >
                 <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}</option>
                 {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -1052,7 +1052,7 @@ export function LimpiezaOficinas() {
                       value={catNombre}
                       onChange={(e) => setCatNombre(e.target.value)}
                       placeholder="Ej: Limpieza de pisos"
-                      className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
+                      className="w-full h-10 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                     />
                   </div>
                   <div className="space-y-1">
@@ -1060,7 +1060,7 @@ export function LimpiezaOficinas() {
                     <select
                       value={catFrecuencia}
                       onChange={(e) => setCatFrecuencia(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm"
+                      className="w-full h-10 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                     >
                       {FRECUENCIA_OPTS.map((opt) => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>

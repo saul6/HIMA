@@ -390,7 +390,7 @@ export function VerificacionRoedores() {
             <label className="block text-xs font-medium mb-1">{terminosSitio.singular}</label>
             <select
               className="w-full h-10 rounded-[0.625rem] border px-3 text-sm"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
               value={form.rancho_id}
               onChange={e => setForm(f => ({ ...f, rancho_id: e.target.value }))}
             >
@@ -405,7 +405,7 @@ export function VerificacionRoedores() {
             <input
               type="date"
               className="w-full h-10 rounded-[0.625rem] border px-3 text-sm"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
               value={form.fecha}
               min={puedeEditarFecha ? undefined : hoyMX()}
               max={puedeEditarFecha ? undefined : hoyMX()}
@@ -457,7 +457,7 @@ export function VerificacionRoedores() {
                     <input maxLength={limiteTexto('m70_verificacion_roedores', 'num_trampa')}
                       type="text"
                       className="w-full h-9 rounded-[0.625rem] border px-3 text-sm"
-                      style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}
+                      style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--card)' }}
                       placeholder="Ej. T-01, T-Norte..."
                       value={fila.num_trampa}
                       onChange={e => actualizarFila(fila.id, 'num_trampa', e.target.value)}
@@ -494,7 +494,7 @@ export function VerificacionRoedores() {
                     <input maxLength={limiteTexto('m70_verificacion_roedores', 'verifico')}
                       type="text"
                       className="w-full h-9 rounded-[0.625rem] border px-3 text-sm"
-                      style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}
+                      style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--card)' }}
                       placeholder="Nombre"
                       value={fila.verifico}
                       onChange={e => actualizarFila(fila.id, 'verifico', e.target.value)}
@@ -552,7 +552,7 @@ export function VerificacionRoedores() {
               value={consolidadoForm.rancho_id}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             >
               <option value="">{terminosSitio.plural}</option>
               {ranchos.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
@@ -563,14 +563,14 @@ export function VerificacionRoedores() {
             <input type="date" value={consolidadoForm.desde}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
           </div>
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA</label>
             <input type="date" value={consolidadoForm.hasta}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
               className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
-              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
+              style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
           </div>
         </div>
         <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>

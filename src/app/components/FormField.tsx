@@ -38,7 +38,7 @@ export function FormField({
         onBlur={() => setIsFocused(false)}
         disabled={disabled}
         placeholder={isFloating ? placeholder : ""}
-        className={`w-full h-16 px-4 pt-7 pb-2 rounded-lg border border-border bg-input-background
+        className={`w-full h-16 px-4 pt-7 pb-2 rounded-lg border border-border-control bg-input-background
           focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary
           disabled:bg-muted disabled:text-muted-foreground transition-all text-sm`}
       />

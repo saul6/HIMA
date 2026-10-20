@@ -147,14 +147,14 @@ function ToggleInsumo({
             value={codigo}
             onChange={(e) => onCodigo(e.target.value)}
             placeholder="Cód. correctivo (opcional)"
-            className="w-full h-8 px-2 rounded-lg border border-border bg-input-background text-xs"
+            className="w-full h-8 px-2 rounded-lg border border-border-control bg-input-background text-xs"
           />
           <InputContador limite={limiteTexto('m13_incidencias', 'descripcion')}
             type="text"
             value={incidenciaDesc}
             onChange={(e) => onIncidenciaDesc(e.target.value)}
             placeholder="Descripción de incidencia M13 (opcional)"
-            className="w-full h-8 px-2 rounded-lg border border-border bg-input-background text-xs"
+            className="w-full h-8 px-2 rounded-lg border border-border-control bg-input-background text-xs"
             style={{ borderColor: incidenciaDesc ? 'var(--agro-red)' : undefined }}
           />
           {incidenciaDesc && (
@@ -878,7 +878,7 @@ export function VerificacionInsumos() {
               onChange={(e) => setObsLocal(e.target.value)}
               rows={2}
               placeholder="Observaciones generales…"
-              className="w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm resize-none"
+              className="w-full rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm resize-none"
             />
             <button
               onClick={handleGuardarObs}
@@ -938,7 +938,7 @@ export function VerificacionInsumos() {
                   <select
                     value={nRanchoId}
                     onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                     style={{ borderColor: nErrRancho ? 'var(--agro-red)' : undefined }}
                   >
                     <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}</option>
@@ -949,19 +949,19 @@ export function VerificacionInsumos() {
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Mes *</label>
                   <input type="month" value={nMes} onChange={(e) => setNMes(e.target.value)}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm" />
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Verificó (Jefe del Cooler)</label>
                   <input maxLength={limiteTexto('m23_registro_mensual', 'verifico_nombre')} type="text" value={nVerificoNombre} onChange={(e) => setNVerificoNombre(e.target.value)}
                     placeholder="Nombre completo"
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm" />
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Autorizó (Gerente)</label>
                   <input maxLength={limiteTexto('m23_registro_mensual', 'autorizo_nombre')} type="text" value={nAutorizoNombre} onChange={(e) => setNAutorizoNombre(e.target.value)}
                     placeholder="Nombre completo"
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm" />
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm" />
                 </div>
                 {nYaExiste && (
                   <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
@@ -1023,7 +1023,7 @@ export function VerificacionInsumos() {
                       min={puedeEditarFecha && registroActivo ? registroActivo.mes : hoy()}
                       max={puedeEditarFecha && registroActivo ? ultimoDiaMes(registroActivo.mes) : hoy()}
                       onChange={(e) => { if (puedeEditarFecha) { setDFecha(e.target.value); setDErrFecha(false) } }}
-                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                      className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                       style={{ borderColor: dErrFecha ? 'var(--agro-red)' : undefined }}
                     />
                     {dErrFecha && <p className="text-xs" style={{ color: 'var(--agro-red)' }}>Fecha requerida</p>}
@@ -1096,7 +1096,7 @@ export function VerificacionInsumos() {
               <select
                 value={catRanchoId}
                 onChange={(e) => setCatRanchoId(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl border border-border bg-input-background text-sm mb-3"
+                className="w-full h-10 px-3 rounded-xl border border-border-control bg-input-background text-sm mb-3"
               >
                 <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}</option>
                 {ranchoOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -1120,7 +1120,7 @@ export function VerificacionInsumos() {
                       value={catNuevaArea}
                       onChange={(e) => setCatNuevaArea(e.target.value)}
                       placeholder="Área"
-                      className="flex-1 h-9 px-2 rounded-lg border border-border bg-input-background text-xs"
+                      className="flex-1 h-9 px-2 rounded-lg border border-border-control bg-input-background text-xs"
                     />
                     <input
                       type="text"
@@ -1128,7 +1128,7 @@ export function VerificacionInsumos() {
                       onChange={(e) => setCatNuevoInsumo(e.target.value)}
                       placeholder="Insumo"
                       onKeyDown={(e) => { if (e.key === 'Enter') handleAgregarInsumo() }}
-                      className="flex-1 h-9 px-2 rounded-lg border border-border bg-input-background text-xs"
+                      className="flex-1 h-9 px-2 rounded-lg border border-border-control bg-input-background text-xs"
                     />
                     <button
                       onClick={handleAgregarInsumo}
@@ -1199,7 +1199,7 @@ export function VerificacionInsumos() {
                   <select
                     value={cRanchoId}
                     onChange={(e) => { setCRanchoId(e.target.value); setCErrRancho(false) }}
-                    className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm"
+                    className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
                     style={{ borderColor: cErrRancho ? 'var(--agro-red)' : undefined }}
                   >
                     <option value="">Selecciona {terminosSitio.genero === 'f' ? 'una' : 'un'} {termino.toLowerCase()}</option>
@@ -1211,12 +1211,12 @@ export function VerificacionInsumos() {
                   <div className="space-y-1">
                     <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Desde</label>
                     <input type="month" value={cDesde} onChange={(e) => setCDesde(e.target.value)}
-                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm" />
+                      className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs text-muted-foreground" style={{ fontWeight: 600 }}>Hasta</label>
                     <input type="month" value={cHasta} onChange={(e) => setCHasta(e.target.value)}
-                      className="w-full h-11 px-3 rounded-xl border border-border bg-input-background text-sm" />
+                      className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm" />
                   </div>
                 </div>
                 <button

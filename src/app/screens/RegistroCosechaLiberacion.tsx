@@ -658,7 +658,7 @@ export function RegistroCosechaLiberacion() {
                   value={consRanchoId}
                   onChange={(e) => { setConsRanchoId(e.target.value); setErrConsRancho(false) }}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary ${
-                    errConsRancho ? 'border-agro-red' : 'border-border'
+                    errConsRancho ? 'border-agro-red' : 'border-border-control'
                   } ${!consRanchoId ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
                   <option value="" disabled>Seleccionar {terminosSitio.singular.toLowerCase()}</option>
@@ -678,7 +678,7 @@ export function RegistroCosechaLiberacion() {
                   value={consDesde}
                   onChange={(e) => { setConsDesde(e.target.value); setErrConsFechas(false) }}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm text-foreground focus:outline-none focus:border-primary ${
-                    errConsFechas && !consDesde ? 'border-agro-red' : 'border-border'
+                    errConsFechas && !consDesde ? 'border-agro-red' : 'border-border-control'
                   }`}
                 />
               </div>
@@ -692,7 +692,7 @@ export function RegistroCosechaLiberacion() {
                   value={consHasta}
                   onChange={(e) => { setConsHasta(e.target.value); setErrConsFechas(false) }}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm text-foreground focus:outline-none focus:border-primary ${
-                    errConsFechas && !consHasta ? 'border-agro-red' : 'border-border'
+                    errConsFechas && !consHasta ? 'border-agro-red' : 'border-border-control'
                   }`}
                 />
                 {errConsFechas && <p className="text-xs text-agro-red mt-1">Indica el rango de fechas</p>}
@@ -770,7 +770,7 @@ export function RegistroCosechaLiberacion() {
                   value={ranchoId}
                   onChange={(e) => { setRanchoId(e.target.value); setErrRancho(false) }}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                    errRancho ? 'border-agro-red' : 'border-border'
+                    errRancho ? 'border-agro-red' : 'border-border-control'
                   } ${!ranchoId ? 'text-muted-foreground' : 'text-foreground'}`}
                 >
                   <option value="" disabled>Seleccionar {terminosSitio.singular.toLowerCase()}</option>
@@ -792,7 +792,7 @@ export function RegistroCosechaLiberacion() {
                   min={puedeEditarFecha ? undefined : hoy()}
                   max={puedeEditarFecha ? undefined : hoy()}
                   onChange={(e) => { if (puedeEditarFecha) setFecha(e.target.value) }}
-                  className="w-full h-11 px-3 rounded-lg bg-input-background border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
 
@@ -870,7 +870,7 @@ export function RegistroCosechaLiberacion() {
                           value={lib.sector}
                           onChange={(e) => actualizarFila(idx, 'sector', e.target.value)}
                           placeholder="Ej: Sector A-1"
-                          className="w-full h-10 px-3 rounded-lg bg-card border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                          className="w-full h-10 px-3 rounded-lg bg-card border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                         />
                       </div>
 
@@ -886,7 +886,7 @@ export function RegistroCosechaLiberacion() {
                             onChange={(e) => actualizarFila(idx, 'cantidad_bandejas', e.target.value)}
                             placeholder="0"
                             min="0"
-                            className="w-full h-10 px-3 rounded-lg bg-card border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                            className="w-full h-10 px-3 rounded-lg bg-card border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                           />
                         </div>
                         <div>
@@ -910,7 +910,7 @@ export function RegistroCosechaLiberacion() {
                           value={lib.numero_comprobante}
                           onChange={(e) => actualizarFila(idx, 'numero_comprobante', e.target.value)}
                           placeholder="VAL-YYYY-000"
-                          className="w-full h-10 px-3 rounded-lg bg-card border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                          className="w-full h-10 px-3 rounded-lg bg-card border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                         />
                       </div>
 
@@ -924,7 +924,7 @@ export function RegistroCosechaLiberacion() {
                           value={lib.codigo_trazabilidad}
                           onChange={(e) => actualizarFila(idx, 'codigo_trazabilidad', e.target.value)}
                           placeholder="Ej: HF-MX-A1-20260601"
-                          className="w-full h-10 px-3 rounded-lg bg-card border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-mono"
+                          className="w-full h-10 px-3 rounded-lg bg-card border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-mono"
                         />
                       </div>
 
@@ -938,7 +938,7 @@ export function RegistroCosechaLiberacion() {
                           value={lib.marca_embalaje}
                           onChange={(e) => actualizarFila(idx, 'marca_embalaje', e.target.value)}
                           placeholder="Ej: Driscoll's"
-                          className="w-full h-10 px-3 rounded-lg bg-card border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                          className="w-full h-10 px-3 rounded-lg bg-card border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                         />
                       </div>
 
@@ -952,7 +952,7 @@ export function RegistroCosechaLiberacion() {
                           value={lib.destino_final}
                           onChange={(e) => actualizarFila(idx, 'destino_final', e.target.value)}
                           placeholder="Ej: Exportación USA"
-                          className="w-full h-10 px-3 rounded-lg bg-card border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                          className="w-full h-10 px-3 rounded-lg bg-card border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                         />
                       </div>
 
@@ -969,7 +969,7 @@ export function RegistroCosechaLiberacion() {
                             placeholder="0.0"
                             min="0"
                             step="0.1"
-                            className="w-full h-10 px-3 rounded-lg bg-card border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                            className="w-full h-10 px-3 rounded-lg bg-card border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                           />
                         </div>
                         <div>
@@ -991,7 +991,7 @@ export function RegistroCosechaLiberacion() {
                         <select
                           value={lib.encargado_liberacion_id}
                           onChange={(e) => actualizarFila(idx, 'encargado_liberacion_id', e.target.value)}
-                          className={`w-full h-10 px-3 rounded-lg bg-card border border-border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
+                          className={`w-full h-10 px-3 rounded-lg bg-card border border-border-control text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
                             !lib.encargado_liberacion_id ? 'text-muted-foreground' : 'text-foreground'
                           }`}
                         >
@@ -1016,7 +1016,7 @@ export function RegistroCosechaLiberacion() {
                               type="time"
                               value={lib.hora_inicio_cosecha}
                               onChange={(e) => actualizarFila(idx, 'hora_inicio_cosecha', e.target.value)}
-                              className="w-full h-10 px-3 rounded-lg bg-card border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                              className="w-full h-10 px-3 rounded-lg bg-card border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                             />
                           </div>
                           <div>
@@ -1027,7 +1027,7 @@ export function RegistroCosechaLiberacion() {
                               type="time"
                               value={lib.hora_fin_cosecha}
                               onChange={(e) => actualizarFila(idx, 'hora_fin_cosecha', e.target.value)}
-                              className="w-full h-10 px-3 rounded-lg bg-card border border-border text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                              className="w-full h-10 px-3 rounded-lg bg-card border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                             />
                           </div>
                         </div>
