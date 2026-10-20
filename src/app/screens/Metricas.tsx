@@ -1197,7 +1197,7 @@ function Filtros({
               type="date"
               value={desdePersonalizado}
               onChange={e => setDesdePersonalizado(e.target.value)}
-              className="flex-1 h-9 px-3 rounded-lg text-sm outline-none"
+              className="flex-1 h-9 px-3 rounded-lg text-sm"
               style={{
                 backgroundColor: 'var(--input-background)',
                 border: '1px solid var(--border)',
@@ -1208,7 +1208,7 @@ function Filtros({
               type="date"
               value={hastaPersonalizado}
               onChange={e => setHastaPersonalizado(e.target.value)}
-              className="flex-1 h-9 px-3 rounded-lg text-sm outline-none"
+              className="flex-1 h-9 px-3 rounded-lg text-sm"
               style={{
                 backgroundColor: 'var(--input-background)',
                 border: '1px solid var(--border)',
@@ -1224,7 +1224,7 @@ function Filtros({
         <select
           value={ranchoId}
           onChange={e => setRanchoId(e.target.value)}
-          className="w-full h-9 px-3 rounded-lg text-sm outline-none mt-3"
+          className="w-full h-9 px-3 rounded-lg text-sm mt-3"
           style={{
             backgroundColor: 'var(--input-background)',
             border: '1px solid var(--border)',

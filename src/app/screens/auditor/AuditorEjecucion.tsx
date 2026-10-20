@@ -477,7 +477,7 @@ function PanelValidacion({
                               onChange={e => onMotivoChange(e.target.value)}
                               placeholder="Motivo del descarte (opcional)"
                               autoFocus
-                              className="text-xs outline-none"
+                              className="text-xs"
                               style={{
                                 width: '100%', height: '2rem',
                                 borderRadius: 'var(--radius)',
@@ -965,7 +965,7 @@ function PanelHallazgos({
                         value={h.estado}
                         onChange={e => onEstadoChange(h.id, e.target.value as AudHallazgoEstado)}
                         disabled={!canWriteNC}
-                        className="text-[10px] h-7 rounded-lg px-2 outline-none disabled:opacity-50"
+                        className="text-[10px] h-7 rounded-lg px-2 disabled:opacity-50"
                         style={{
                           border: '1px solid var(--border)',
                           backgroundColor: canWriteNC ? 'var(--input-background)' : 'var(--muted)',
@@ -1751,7 +1751,7 @@ export function AuditorEjecucion() {
   return (
     <div className="flex flex-col min-h-screen bg-background pb-8">
       <header className="sticky top-0 z-10 bg-card border-b border-border flex items-center gap-3 px-4 py-3">
-        <button
+        <button aria-label="Volver"
           onClick={() => navigate(backTarget, { state: backState })}
           className="text-muted-foreground flex-shrink-0"
         >
@@ -2116,7 +2116,7 @@ export function AuditorEjecucion() {
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
             <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Registrar hallazgo</h2>
-            <button onClick={() => setSheetHallazgo(null)} className="text-muted-foreground">
+            <button aria-label="Cerrar" onClick={() => setSheetHallazgo(null)} className="text-muted-foreground">
               <XCircle size={20} />
             </button>
           </div>
@@ -2128,7 +2128,7 @@ export function AuditorEjecucion() {
               <select
                 value={formHallazgoClas}
                 onChange={e => setFormHallazgoClas(e.target.value as AudHallazgoClasificacion)}
-                className="h-10 rounded-xl px-3 outline-none text-sm"
+                className="h-10 rounded-xl px-3 text-sm"
                 style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
               >
                 <option value="menor">Menor</option>
@@ -2146,7 +2146,7 @@ export function AuditorEjecucion() {
                 onChange={e => setFormHallazgoDesc(e.target.value)}
                 rows={4}
                 placeholder="Describe el hallazgo encontrado…"
-                className="resize-none text-sm outline-none"
+                className="resize-none text-sm"
                 style={{
                   borderRadius: 'var(--radius)',
                   border: '1px solid var(--border)',
@@ -2182,7 +2182,7 @@ export function AuditorEjecucion() {
                 </p>
               )}
             </div>
-            <button onClick={() => { setSheetAccion(null); setAccionActual(null); setFormAccion({}) }} className="text-muted-foreground ml-2 flex-shrink-0">
+            <button aria-label="Cerrar" onClick={() => { setSheetAccion(null); setAccionActual(null); setFormAccion({}) }} className="text-muted-foreground ml-2 flex-shrink-0">
               <XCircle size={20} />
             </button>
           </div>
@@ -2200,7 +2200,7 @@ export function AuditorEjecucion() {
                 <select
                   value={formAccion.internal_status ?? 'REGISTERED'}
                   onChange={e => setFormAccion(prev => ({ ...prev, internal_status: e.target.value as AudInternalStatus }))}
-                  className="h-10 rounded-xl px-3 outline-none text-sm w-full"
+                  className="h-10 rounded-xl px-3 text-sm w-full"
                   style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                 >
                   {(Object.keys(INTERNAL_STATUS_LABELS) as AudInternalStatus[]).map(k => (
@@ -2216,7 +2216,7 @@ export function AuditorEjecucion() {
                 <select
                   value={formAccion.external_status ?? 'NOT_TRACKED'}
                   onChange={e => setFormAccion(prev => ({ ...prev, external_status: e.target.value as AudExternalStatus }))}
-                  className="h-10 rounded-xl px-3 outline-none text-sm w-full"
+                  className="h-10 rounded-xl px-3 text-sm w-full"
                   style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
                 >
                   {(Object.keys(EXTERNAL_STATUS_LABELS) as AudExternalStatus[]).map(k => (
@@ -2233,7 +2233,7 @@ export function AuditorEjecucion() {
                   value={formAccion.owner_external_party ?? ''}
                   onChange={e => setFormAccion(prev => ({ ...prev, owner_external_party: e.target.value || null }))}
                   placeholder="Nombre de la persona u organismo responsable"
-                  className="h-10 rounded-xl px-3 outline-none text-sm"
+                  className="h-10 rounded-xl px-3 text-sm"
                   style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
                 />
               </div>
@@ -2255,7 +2255,7 @@ export function AuditorEjecucion() {
                     value={(formAccion[campo] as string) ?? ''}
                     onChange={e => setFormAccion(prev => ({ ...prev, [campo]: e.target.value || null }))}
                     rows={2}
-                    className="resize-none text-sm outline-none"
+                    className="resize-none text-sm"
                     style={{
                       borderRadius: 'var(--radius)',
                       border: '1px solid var(--border)',
@@ -2392,7 +2392,7 @@ export function AuditorEjecucion() {
                           <select
                             value={formResultado.observed_status}
                             onChange={e => setFormResultado(p => ({ ...p, observed_status: e.target.value as AudExternalObservedStatus }))}
-                            className="h-9 rounded-lg px-2 text-xs outline-none"
+                            className="h-9 rounded-lg px-2 text-xs"
                             style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
                           >
                             {(Object.keys(OBSERVED_STATUS_LABELS) as AudExternalObservedStatus[]).map(k => (
@@ -2406,7 +2406,7 @@ export function AuditorEjecucion() {
                             type="date"
                             value={formResultado.observed_at}
                             onChange={e => setFormResultado(p => ({ ...p, observed_at: e.target.value }))}
-                            className="h-9 rounded-lg px-2 text-xs outline-none"
+                            className="h-9 rounded-lg px-2 text-xs"
                             style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
                           />
                         </div>
@@ -2417,7 +2417,7 @@ export function AuditorEjecucion() {
                             value={formResultado.external_audit_id}
                             onChange={e => setFormResultado(p => ({ ...p, external_audit_id: e.target.value }))}
                             placeholder="Ej. AZZ-2024-00123"
-                            className="h-9 rounded-lg px-2 text-xs outline-none"
+                            className="h-9 rounded-lg px-2 text-xs"
                             style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
                           />
                         </div>
@@ -2432,7 +2432,7 @@ export function AuditorEjecucion() {
                               value={formResultado[campo]}
                               onChange={e => setFormResultado(p => ({ ...p, [campo]: e.target.value }))}
                               rows={2}
-                              className="resize-none text-xs outline-none"
+                              className="resize-none text-xs"
                               style={{ borderRadius: 'var(--radius)', border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)', padding: '0.375rem 0.625rem' }}
                             />
                           </div>
@@ -2531,7 +2531,7 @@ export function AuditorEjecucion() {
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
             <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Historial de versiones</h2>
-            <button onClick={() => setSheetHistorial(null)} className="text-muted-foreground">
+            <button aria-label="Cerrar" onClick={() => setSheetHistorial(null)} className="text-muted-foreground">
               <XCircle size={20} />
             </button>
           </div>
@@ -2584,7 +2584,7 @@ export function AuditorEjecucion() {
                 </p>
               )}
             </div>
-            <button onClick={() => setSheetIncidenciasHallazgo(null)} className="text-muted-foreground ml-2 flex-shrink-0">
+            <button aria-label="Cerrar" onClick={() => setSheetIncidenciasHallazgo(null)} className="text-muted-foreground ml-2 flex-shrink-0">
               <XCircle size={20} />
             </button>
           </div>
@@ -2671,7 +2671,7 @@ export function AuditorEjecucion() {
                     type="date"
                     value={incDesde}
                     onChange={e => setIncDesde(e.target.value)}
-                    className="h-9 rounded-lg px-2 text-xs outline-none"
+                    className="h-9 rounded-lg px-2 text-xs"
                     style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                   />
                 </div>
@@ -2681,7 +2681,7 @@ export function AuditorEjecucion() {
                     type="date"
                     value={incHasta}
                     onChange={e => setIncHasta(e.target.value)}
-                    className="h-9 rounded-lg px-2 text-xs outline-none"
+                    className="h-9 rounded-lg px-2 text-xs"
                     style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                   />
                 </div>
@@ -2694,7 +2694,7 @@ export function AuditorEjecucion() {
                   onChange={e => setIncSearch(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') handleBuscarIncidencias() }}
                   placeholder="Buscar por descripción…"
-                  className="h-9 rounded-lg px-3 text-xs outline-none flex-1"
+                  className="h-9 rounded-lg px-3 text-xs flex-1"
                   style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                 />
                 <button
@@ -2769,7 +2769,7 @@ export function AuditorEjecucion() {
                 </p>
               )}
             </div>
-            <button onClick={() => setSheetEvidenciaHallazgo(null)} className="text-muted-foreground ml-2 flex-shrink-0">
+            <button aria-label="Cerrar" onClick={() => setSheetEvidenciaHallazgo(null)} className="text-muted-foreground ml-2 flex-shrink-0">
               <XCircle size={20} />
             </button>
           </div>

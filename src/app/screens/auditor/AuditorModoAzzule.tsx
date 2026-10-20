@@ -161,7 +161,7 @@ export function AuditorModoAzzule() {
       {/* Header */}
       <header className="sticky top-0 z-10 bg-card border-b border-border flex flex-col">
         <div className="flex items-center gap-3 px-4 py-3">
-          <button
+          <button aria-label="Volver"
             onClick={() => navigate(`/auditor/auditoria/${auditoriaId}`, { state: backState })}
             className="text-muted-foreground flex-shrink-0"
           >

@@ -1064,7 +1064,7 @@ export function LimpiezaAlmacenEmpaque() {
               <Wrench className="w-4 h-4" style={{ color: 'var(--agro-danger-text)' }} />
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Daño en montacargas</h2>
             </div>
-            <button type="button" onClick={() => { if (!incSaving) setIncSheet(false) }}>
+            <button aria-label="Cerrar" type="button" onClick={() => { if (!incSaving) setIncSheet(false) }}>
               <X className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
@@ -1108,7 +1108,7 @@ export function LimpiezaAlmacenEmpaque() {
           <h2 className="text-base font-semibold">
             {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nuevo registro mensual'}
           </h2>
-          <button type="button" onClick={handleCerrarSheet}><X className="w-5 h-5 text-muted-foreground" /></button>
+          <button aria-label="Cerrar" type="button" onClick={handleCerrarSheet}><X className="w-5 h-5 text-muted-foreground" /></button>
         </div>
         {sheetPaso === 'firma_gate' && (
           <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />
@@ -1187,7 +1187,7 @@ export function LimpiezaAlmacenEmpaque() {
         <div className="pt-4 px-4 pb-4 overflow-y-auto h-full">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Configurar ítems</h2>
-            <button type="button" onClick={() => setSheetConfigurar(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
+            <button aria-label="Cerrar" type="button" onClick={() => setSheetConfigurar(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
           </div>
           <div className="space-y-4">
             <div className="space-y-1">

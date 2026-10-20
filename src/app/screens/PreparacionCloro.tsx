@@ -445,7 +445,7 @@ export function PreparacionCloro() {
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             Exportar consolidado
           </h2>
-          <button onClick={() => setSheetConsAbierto(false)} className="p-1">
+          <button aria-label="Cerrar" onClick={() => setSheetConsAbierto(false)} className="p-1">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
@@ -539,7 +539,7 @@ export function PreparacionCloro() {
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             Nueva preparación de cloro
           </h2>
-          <button onClick={handleCerrarSheet} className="p-1">
+          <button type="button" aria-label="Cerrar" onClick={handleCerrarSheet} className="p-3 -m-2">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>

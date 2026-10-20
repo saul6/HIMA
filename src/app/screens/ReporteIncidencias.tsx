@@ -271,7 +271,7 @@ function IncidenciaForm({
                   alt="Preview"
                   className="w-16 h-16 object-cover rounded-lg border border-border"
                 />
-                <button
+                <button aria-label="Quitar"
                   type="button"
                   onClick={() => quitarFoto(f.uid)}
                   className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-agro-red text-white rounded-full flex items-center justify-center"
@@ -1069,7 +1069,7 @@ export function ReporteIncidencias() {
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 Exportar consolidado
               </h2>
-              <button
+              <button aria-label="Cerrar"
                 onClick={() => !generandoConsolidado && setSheetConsolidadoAbierto(false)}
                 className="p-1"
               >
@@ -1201,7 +1201,7 @@ export function ReporteIncidencias() {
                   <span className="text-[11px] text-muted-foreground">Borrador guardado</span>
                 )}
               </div>
-              <button
+              <button aria-label="Cerrar"
                 onClick={handleCerrarSheet}
                 className="p-1"
               >

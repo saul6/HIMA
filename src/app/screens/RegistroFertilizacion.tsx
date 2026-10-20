@@ -204,7 +204,7 @@ function FilaFertilizanteForm({
           Fertilizante
         </span>
         {puedeEliminar && (
-          <button
+          <button aria-label="Quitar"
             type="button"
             onClick={onRemove}
             className="p-1 transition-colors"
@@ -340,7 +340,7 @@ function FilaFertilizanteForm({
           value={cantidadMostrada}
           onChange={(e) => onChange({ ...fila, cantidad: e.target.value })}
           placeholder={cantidadCalc || '0.00'}
-          className="w-24 text-right bg-transparent border-b border-current text-sm focus:outline-none"
+          className="w-24 text-right bg-transparent border-b border-current text-sm"
           style={{ color: 'var(--agro-success-text)', fontWeight: 600 }}
         />
       </div>
@@ -1059,7 +1059,7 @@ export function RegistroFertilizacion() {
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 {sheetNuevoPaso === 'firma_decision' ? 'Firmar registro' : sheetNuevoPaso === 'firma_gate' ? 'Firma requerida' : 'Nuevo registro'}
               </h2>
-              <button onClick={() => !guardando && handleCerrarSheetNuevo()} className="p-1">
+              <button aria-label="Cerrar" onClick={() => !guardando && handleCerrarSheetNuevo()} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -1195,7 +1195,7 @@ export function RegistroFertilizacion() {
       <BottomSheet open={sheetConsolidadoAbierto} onClose={() => !generandoConsolidado && setSheetConsolidadoAbierto(false)} height="85%">
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
-              <button
+              <button aria-label="Cerrar"
                 onClick={() => !generandoConsolidado && setSheetConsolidadoAbierto(false)}
                 className="p-1"
               >
@@ -1277,7 +1277,7 @@ export function RegistroFertilizacion() {
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 Movimiento de inventario
               </h2>
-              <button onClick={() => !guardandoMov && setSheetMovAbierto(false)} className="p-1">
+              <button aria-label="Cerrar" onClick={() => !guardandoMov && setSheetMovAbierto(false)} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>

@@ -130,7 +130,7 @@ export function CampanaNotificaciones({ iconClassName = 'w-4 h-4' }: { iconClass
                     <motion.button
                       key={n.id}
                       onClick={() => marcarLeida(n)}
-                      className="relative w-full text-left px-4 py-3 pl-6 border-b border-border transition-colors hover:bg-muted last:border-b-0 focus-visible:outline-none"
+                      className="relative w-full text-left px-4 py-3 pl-6 border-b border-border transition-colors hover:bg-muted last:border-b-0"
                       style={{ backgroundColor: n.leida ? undefined : 'var(--accent)' }}
                       initial={reducedMotion ? false : { opacity: 0 }}
                       animate={{ opacity: 1, transition: { duration: 0.15, delay: Math.min(i, 5) * 0.03 } }}

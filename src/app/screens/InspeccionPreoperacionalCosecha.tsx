@@ -815,7 +815,7 @@ export function InspeccionPreoperacionalCosecha() {
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                   Nuevo registro mensual
                 </h2>
-                <button onClick={() => setSheetNuevo(false)}>
+                <button aria-label="Cerrar" onClick={() => setSheetNuevo(false)}>
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
@@ -902,7 +902,7 @@ export function InspeccionPreoperacionalCosecha() {
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                   {sheetDiaPaso === 'firma_decision' ? 'Firmar registro' : sheetDiaPaso === 'firma_gate' ? 'Firma requerida' : 'Agregar día de inspección'}
                 </h2>
-                <button onClick={handleCerrarSheetDia}>
+                <button aria-label="Cerrar" onClick={handleCerrarSheetDia}>
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
@@ -1023,7 +1023,7 @@ export function InspeccionPreoperacionalCosecha() {
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                   Exportar consolidado
                 </h2>
-                <button onClick={() => setSheetConsolidado(false)}>
+                <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}>
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>

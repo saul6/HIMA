@@ -784,7 +784,7 @@ export function Home() {
             placeholder="Buscar formato…"
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
-            className="w-full h-9 pl-9 pr-4 rounded-lg text-sm outline-none transition-colors placeholder:text-muted-foreground"
+            className="w-full h-9 pl-9 pr-4 rounded-lg text-sm transition-colors placeholder:text-muted-foreground"
             style={{
               backgroundColor: 'var(--input-background)',
               border: '1px solid var(--border)',

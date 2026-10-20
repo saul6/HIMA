@@ -558,7 +558,7 @@ export function RegistroPersonal() {
                       )}
                     </div>
                   </div>
-                  <button
+                  <button aria-label="Editar"
                     onClick={() => abrirEditar(t)}
                     className="p-2 rounded-lg border border-border flex-shrink-0"
                   >
@@ -580,7 +580,7 @@ export function RegistroPersonal() {
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             {editingId ? 'Editar trabajador' : 'Nuevo trabajador'}
           </h2>
-          <button type="button" onClick={() => { if (!guardando) handleCerrarSheet() }}>
+          <button aria-label="Cerrar" type="button" onClick={() => { if (!guardando) handleCerrarSheet() }}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
@@ -851,7 +851,7 @@ export function RegistroPersonal() {
       <BottomSheet open={configurarOpen} onClose={() => setConfigurarOpen(false)} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Configurar catálogo</h2>
-          <button type="button" onClick={() => setConfigurarOpen(false)}>
+          <button aria-label="Cerrar" type="button" onClick={() => setConfigurarOpen(false)}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
@@ -1009,7 +1009,7 @@ export function RegistroPersonal() {
       <BottomSheet open={pdfSheetOpen} onClose={() => setPdfSheetOpen(false)} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Descargar PDF</h2>
-          <button type="button" onClick={() => setPdfSheetOpen(false)}>
+          <button aria-label="Cerrar" type="button" onClick={() => setPdfSheetOpen(false)}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>

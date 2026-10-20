@@ -694,7 +694,7 @@ export function BotiquinPrimerosAuxilios() {
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 Exportar consolidado
               </h2>
-              <button onClick={() => setSheetConsolidadoAbierto(false)} className="p-1">
+              <button aria-label="Cerrar" onClick={() => setSheetConsolidadoAbierto(false)} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -773,7 +773,7 @@ export function BotiquinPrimerosAuxilios() {
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 {sheetPaso === 'form' ? 'Nueva verificación' : 'Firmar registro'}
               </h2>
-              <button
+              <button aria-label="Cerrar"
                 onClick={handleCerrarSheet}
                 className="p-1"
               >

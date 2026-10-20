@@ -1470,7 +1470,7 @@ export function BibliotecaHistorial() {
             >
               Limpiar
             </button>
-            <button type="button" onClick={cerrarModulosSheet} className="p-1" aria-label="Cerrar">
+            <button type="button" onClick={cerrarModulosSheet} className="p-3 -m-2" aria-label="Cerrar">
               <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
             </button>
           </div>
@@ -1489,7 +1489,7 @@ export function BibliotecaHistorial() {
               onChange={(e) => setBusquedaModulos(e.target.value)}
               placeholder="Buscar módulo por nombre o código"
               aria-label="Buscar módulo por nombre o código"
-              className="w-full h-10 pl-9 pr-3 rounded-lg text-sm border outline-none"
+              className="w-full h-10 pl-9 pr-3 rounded-lg text-sm border"
               style={{ background: 'var(--input-background)', borderColor: 'var(--ring)', color: 'var(--foreground)' }}
             />
           </div>

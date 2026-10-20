@@ -343,7 +343,7 @@ export function ProductosAutorizados() {
                 )}
               </div>
               {esAdmin && (
-                <button
+                <button aria-label="Editar"
                   onClick={() => abrirEdicion(p)}
                   className="p-1.5 rounded-lg border border-border shrink-0"
                 >
@@ -374,7 +374,7 @@ export function ProductosAutorizados() {
           <h2 className="text-base font-semibold">
             {editId ? 'Editar producto' : 'Nuevo producto autorizado'}
           </h2>
-          <button onClick={() => setSheetOpen(false)}>
+          <button aria-label="Cerrar" onClick={() => setSheetOpen(false)}>
             <X className="w-5 h-5" />
           </button>
         </div>

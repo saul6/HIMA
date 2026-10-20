@@ -686,7 +686,7 @@ export function RondinesVigilancia() {
       <BottomSheet open={sheetNuevo} onClose={() => { if (!nGuardando) handleCerrarSheetNuevo() }}>
             <div className="px-4 pt-4 pb-3 flex items-center justify-between flex-shrink-0 border-b border-border">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Nuevo rondín</h2>
-              <button onClick={() => { if (!nGuardando) handleCerrarSheetNuevo() }}>
+              <button aria-label="Cerrar" onClick={() => { if (!nGuardando) handleCerrarSheetNuevo() }}>
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -961,7 +961,7 @@ export function RondinesVigilancia() {
       <BottomSheet open={sheetConf} onClose={() => setSheetConf(false)}>
             <div className="px-4 pt-4 pb-3 flex items-center justify-between flex-shrink-0 border-b border-border">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Configurar puntos</h2>
-              <button onClick={() => setSheetConf(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
+              <button aria-label="Cerrar" onClick={() => setSheetConf(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
             </div>
             <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-4 pt-4">
               <div className="space-y-1">
@@ -1072,7 +1072,7 @@ export function RondinesVigilancia() {
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)}>
             <div className="px-4 pt-4 pb-3 flex items-center justify-between flex-shrink-0 border-b border-border">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Exportar consolidado</h2>
-              <button onClick={() => setSheetConsolidado(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
+              <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
             </div>
             <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-4 pt-4">
               <div className="space-y-1">

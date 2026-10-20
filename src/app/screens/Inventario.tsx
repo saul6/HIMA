@@ -228,7 +228,7 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             Registrar movimiento
           </h2>
-          <button onClick={onClose} className="p-1">
+          <button type="button" aria-label="Cerrar" onClick={onClose} className="p-3 -m-2">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
@@ -364,7 +364,7 @@ function ExportarReg01Sheet({ onClose, ranchoOptions, ranchos, orgId }: ExportSh
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             Exportar REG-01
           </h2>
-          <button onClick={onClose} className="p-1">
+          <button type="button" aria-label="Cerrar" onClick={onClose} className="p-3 -m-2">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>

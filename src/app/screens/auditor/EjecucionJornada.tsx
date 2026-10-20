@@ -559,7 +559,7 @@ export function EjecucionJornada() {
 
           {/* Menu jornada */}
           {!terminada && (
-            <button
+            <button aria-label="Más opciones"
               onClick={() => setMenuAbierto(m => !m)}
               className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
@@ -602,7 +602,7 @@ export function EjecucionJornada() {
           style={{ backgroundColor: 'var(--agro-danger-fill)', borderColor: 'var(--agro-danger-text)' }}>
           <AlertCircle size={14} className="flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
           <p className="text-[11px] flex-1" style={{ color: 'var(--agro-danger-text)' }}>{saveError}</p>
-          <button onClick={() => setSaveError(null)} className="flex-shrink-0">
+          <button aria-label="Cerrar" onClick={() => setSaveError(null)} className="flex-shrink-0">
             <XCircle size={14} style={{ color: 'var(--agro-danger-text)' }} />
           </button>
         </div>

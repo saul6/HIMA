@@ -417,7 +417,7 @@ export function BotiquinGG() {
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             {sheetPaso === 'firma_decision' ? 'Firmar registro' : sheetPaso === 'firma_gate' ? 'Firma requerida' : 'Nuevo registro de botiquín'}
           </h2>
-          <button onClick={handleCerrarSheet}>
+          <button aria-label="Cerrar" onClick={handleCerrarSheet}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
@@ -452,7 +452,7 @@ export function BotiquinGG() {
             <select
               value={nRanchoId}
               onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
-              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
               style={{
                 borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border-control)',
                 backgroundColor: 'var(--input-background)',
@@ -473,7 +473,7 @@ export function BotiquinGG() {
               type="date"
               value={nFecha}
               onChange={(e) => setNFecha(e.target.value)}
-              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
               style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             />
           </div>
@@ -487,7 +487,7 @@ export function BotiquinGG() {
                 value={nBotiquinNum}
                 onChange={(e) => setNBotiquinNum(e.target.value)}
                 placeholder="Ej: B-01"
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
               />
             </div>
@@ -498,7 +498,7 @@ export function BotiquinGG() {
                 value={nRealizo}
                 onChange={(e) => setNRealizo(e.target.value)}
                 placeholder="Nombre"
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
               />
             </div>
@@ -556,7 +556,7 @@ export function BotiquinGG() {
                         step="1"
                         value={fila[campo]}
                         onChange={(e) => actualizarFilaCatalogo(idx, campo, e.target.value)}
-                        className="w-full h-8 px-1 rounded border text-center text-xs focus:outline-none"
+                        className="w-full h-8 px-1 rounded border text-center text-xs"
                         style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                         placeholder="0"
                       />
@@ -565,7 +565,7 @@ export function BotiquinGG() {
                       type="text"
                       value={fila.usuario}
                       onChange={(e) => actualizarFilaCatalogo(idx, 'usuario', e.target.value)}
-                      className="w-full h-8 px-2 rounded border text-xs focus:outline-none"
+                      className="w-full h-8 px-2 rounded border text-xs"
                       style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                       placeholder="—"
                     />
@@ -587,7 +587,7 @@ export function BotiquinGG() {
                       type="text"
                       value={fila.material_otro}
                       onChange={(e) => actualizarFilaExtra(idx, 'material_otro', e.target.value)}
-                      className="w-full h-8 px-2 rounded border text-xs focus:outline-none"
+                      className="w-full h-8 px-2 rounded border text-xs"
                       style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
                       placeholder="Otro material…"
                     />
@@ -599,7 +599,7 @@ export function BotiquinGG() {
                         step="1"
                         value={fila[campo]}
                         onChange={(e) => actualizarFilaExtra(idx, campo, e.target.value)}
-                        className="w-full h-8 px-1 rounded border text-center text-xs focus:outline-none"
+                        className="w-full h-8 px-1 rounded border text-center text-xs"
                         style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                         placeholder="0"
                       />
@@ -608,11 +608,11 @@ export function BotiquinGG() {
                       type="text"
                       value={fila.usuario}
                       onChange={(e) => actualizarFilaExtra(idx, 'usuario', e.target.value)}
-                      className="w-full h-8 px-2 rounded border text-xs focus:outline-none"
+                      className="w-full h-8 px-2 rounded border text-xs"
                       style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                       placeholder="—"
                     />
-                    <button onClick={() => eliminarFilaExtra(idx)} className="p-1">
+                    <button aria-label="Quitar" onClick={() => eliminarFilaExtra(idx)} className="p-1">
                       <X className="w-3.5 h-3.5" style={{ color: 'var(--agro-red)' }} />
                     </button>
                   </div>
@@ -642,7 +642,7 @@ export function BotiquinGG() {
               onChange={(e) => setNObservaciones(e.target.value)}
               rows={2}
               placeholder="Observaciones generales…"
-              className="w-full rounded-xl border px-3 py-2 text-sm text-foreground focus:outline-none resize-none"
+              className="w-full rounded-xl border px-3 py-2 text-sm text-foreground resize-none"
               style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
             />
           </div>
@@ -673,7 +673,7 @@ export function BotiquinGG() {
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="60%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
-          <button onClick={() => setSheetConsolidado(false)}>
+          <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
@@ -683,7 +683,7 @@ export function BotiquinGG() {
             <select
               value={consolidadoForm.ranchoId}
               onChange={(e) => setConsolidadoForm((f) => ({ ...f, ranchoId: e.target.value }))}
-              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
               style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             >
               <option value="">{terminosSitio.plural}</option>
@@ -694,13 +694,13 @@ export function BotiquinGG() {
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DESDE</label>
               <input type="date" value={consolidadoForm.desde} onChange={(e) => setConsolidadoForm((f) => ({ ...f, desde: e.target.value }))}
-                className="w-full h-11 px-3 rounded-xl border text-sm focus:outline-none"
+                className="w-full h-11 px-3 rounded-xl border text-sm"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA</label>
               <input type="date" value={consolidadoForm.hasta} onChange={(e) => setConsolidadoForm((f) => ({ ...f, hasta: e.target.value }))}
-                className="w-full h-11 px-3 rounded-xl border text-sm focus:outline-none"
+                className="w-full h-11 px-3 rounded-xl border text-sm"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>

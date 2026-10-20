@@ -321,7 +321,7 @@ export function MiOrganizacion() {
     <div className="min-h-full pb-safe-nav">
       {/* Header */}
       <header className="bg-card border-b border-border px-4 py-4 flex items-center gap-3">
-        <button
+        <button aria-label="Volver"
           onClick={() => navigate('/perfil')}
           className="p-1 text-muted-foreground"
         >
@@ -567,7 +567,7 @@ export function MiOrganizacion() {
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 {ranchoEditando ? `Editar ${sTerminoL}` : `Nuevo ${sTerminoL}`}
               </h2>
-              <button onClick={cerrarSheet} className="p-1">
+              <button type="button" aria-label="Cerrar" onClick={cerrarSheet} className="p-3 -m-2">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -692,7 +692,7 @@ export function MiOrganizacion() {
                   {asignacionesEmpleado.size} {asignacionesEmpleado.size === 1 ? sTerminoL : sPluralL} asignado{sGenero === 'f' ? 'a' : ''}s
                 </p>
               </div>
-              <button onClick={() => setEmpleadoSeleccionado(null)} className="p-1 ml-2">
+              <button aria-label="Cerrar" onClick={() => setEmpleadoSeleccionado(null)} className="p-1 ml-2">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>

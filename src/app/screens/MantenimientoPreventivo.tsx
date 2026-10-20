@@ -841,7 +841,7 @@ export function MantenimientoPreventivo() {
       <BottomSheet open={sheetCrear} onClose={handleCerrarSheetCrear}>
             <div className="pt-4 px-4 pb-2 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>Nuevo registro mensual</h2>
-              <button type="button" onClick={handleCerrarSheetCrear}><X className="w-5 h-5 text-muted-foreground" /></button>
+              <button aria-label="Cerrar" type="button" onClick={handleCerrarSheetCrear}><X className="w-5 h-5 text-muted-foreground" /></button>
             </div>
 
             {sheetCrearPaso === 'firma_gate' && (

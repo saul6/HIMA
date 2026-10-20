@@ -1765,7 +1765,7 @@ export function AgendaTareas() {
               <select
                 value={filtroColaborador}
                 onChange={e => { dirTabRef.current = 0; setFiltroColaborador(e.target.value) }}
-                className="w-full h-9 rounded-lg text-sm outline-none"
+                className="w-full h-9 rounded-lg text-sm"
                 style={{
                   backgroundColor: 'var(--input-background)',
                   border: '1px solid var(--border)',

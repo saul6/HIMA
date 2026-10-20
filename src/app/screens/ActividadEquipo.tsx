@@ -372,7 +372,7 @@ export function ActividadEquipo() {
                   {itemSeleccionado.moduloLabel} · {itemSeleccionado.rancho_nombre}
                 </p>
               </div>
-              <button onClick={cerrarSheet} className="p-1 ml-2">
+              <button type="button" aria-label="Cerrar" onClick={cerrarSheet} className="p-3 -m-2 ml-2">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>

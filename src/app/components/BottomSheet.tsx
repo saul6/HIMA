@@ -59,7 +59,7 @@ function SheetHeader({ title, onClose }: { title: string; onClose: () => void })
     <>
       <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
         <h2 className="text-base font-semibold">{title}</h2>
-        <button onClick={onClose}><X className="w-5 h-5" /></button>
+        <button type="button" onClick={onClose} aria-label="Cerrar" className="p-3 -m-2 rounded-lg"><X className="w-5 h-5" /></button>
       </div>
     </>
   )

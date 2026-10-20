@@ -273,7 +273,7 @@ export function FrecuenciaCapacitacion() {
                   {r.realizado ? 'Realizado' : 'Pendiente'}
                 </span>
                 {esAdmin && (
-                  <button
+                  <button aria-label="Editar"
                     onClick={() => abrirEdicion(r)}
                     className="p-1.5 rounded-lg border border-border"
                   >
@@ -298,7 +298,7 @@ export function FrecuenciaCapacitacion() {
           <h2 className="text-base font-semibold">
             {editId ? 'Editar registro' : 'Nuevo registro'}
           </h2>
-          <button onClick={() => setSheetOpen(false)}>
+          <button aria-label="Cerrar" onClick={() => setSheetOpen(false)}>
             <X className="w-5 h-5" />
           </button>
         </div>

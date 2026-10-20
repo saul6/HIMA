@@ -366,7 +366,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
               <h2 className="text-base font-semibold">
                 {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nuevo movimiento'}
               </h2>
-              <button onClick={handleCerrarSheet} className="p-1 rounded hover:bg-muted">
+              <button type="button" aria-label="Cerrar" onClick={handleCerrarSheet} className="p-3 -m-2 rounded hover:bg-muted">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -747,7 +747,7 @@ export function ControlInventarioQuimicos() {
       <BottomSheet open={configurarOpen} onClose={() => setConfigurarOpen(false)}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base font-semibold">Configurar químicos</h2>
-              <button onClick={() => setConfigurarOpen(false)} className="p-1 rounded hover:bg-muted">
+              <button aria-label="Cerrar" onClick={() => setConfigurarOpen(false)} className="p-1 rounded hover:bg-muted">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -821,7 +821,7 @@ export function ControlInventarioQuimicos() {
       <BottomSheet open={nuevoQuimicoOpen} onClose={() => { if (!guardandoQuimico) setNuevoQuimicoOpen(false) }}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base font-semibold">Nuevo químico / insumo</h2>
-              <button
+              <button aria-label="Cerrar"
                 onClick={() => { if (!guardandoQuimico) setNuevoQuimicoOpen(false) }}
                 className="p-1 rounded hover:bg-muted"
               >
@@ -878,7 +878,7 @@ export function ControlInventarioQuimicos() {
       <BottomSheet open={consolidadoOpen} onClose={() => { if (!exportando) setConsolidadoOpen(false) }}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base font-semibold">Exportar consolidado</h2>
-              <button
+              <button aria-label="Cerrar"
                 onClick={() => { if (!exportando) setConsolidadoOpen(false) }}
                 className="p-1 rounded hover:bg-muted"
               >

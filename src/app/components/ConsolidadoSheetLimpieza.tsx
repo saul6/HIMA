@@ -39,7 +39,7 @@ export function ConsolidadoSheetLimpieza({
       <div className="pt-4 px-4 pb-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
-          <button type="button" onClick={onClose}>
+          <button aria-label="Cerrar" type="button" onClick={onClose}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>

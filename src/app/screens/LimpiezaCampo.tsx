@@ -858,7 +858,7 @@ export function LimpiezaCampo() {
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             {sheetNuevoPaso === 'firma_gate' ? 'Registra tu firma' : sheetNuevoPaso === 'firma_decision' ? 'Firmar registro' : 'Nuevo registro mensual'}
           </h2>
-          <button onClick={() => { setSheetNuevo(false); setSheetNuevoPaso('form'); if (pendienteDetalle) { setPendienteDetalle(null); abrirDetalle(pendienteDetalle) } }}>
+          <button aria-label="Cerrar" onClick={() => { setSheetNuevo(false); setSheetNuevoPaso('form'); if (pendienteDetalle) { setPendienteDetalle(null); abrirDetalle(pendienteDetalle) } }}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
@@ -1007,7 +1007,7 @@ export function LimpiezaCampo() {
             <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
               Exportar consolidado
             </h2>
-            <button onClick={() => setSheetConsolidado(false)}>
+            <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}>
               <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
             </button>
           </div>

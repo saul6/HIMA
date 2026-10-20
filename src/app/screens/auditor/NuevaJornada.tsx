@@ -279,7 +279,7 @@ export function NuevaJornada() {
             value={nombre}
             onChange={e => setNombre(e.target.value)}
             placeholder={nombreDefault}
-            className="w-full text-sm outline-none"
+            className="w-full text-sm"
             style={{
               borderRadius: 'var(--radius)',
               border: '1px solid var(--border)',

@@ -1143,7 +1143,7 @@ export function TrazabilidadProducto() {
                   className="w-16 h-9 px-2 rounded-lg bg-input-background border border-border-control text-xs focus:outline-none focus:border-primary"
                 />
                 {formFE.lineas.length > 1 && (
-                  <button onClick={() => setFormFE(f => ({ ...f, lineas: f.lineas.filter((_, i) => i !== idx) }))}
+                  <button aria-label="Quitar" onClick={() => setFormFE(f => ({ ...f, lineas: f.lineas.filter((_, i) => i !== idx) }))}
                     className="w-9 h-9 flex items-center justify-center text-muted-foreground">
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -1178,7 +1178,7 @@ export function TrazabilidadProducto() {
             onClick={e => e.stopPropagation()}
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}
           >
-            <button onClick={() => setPreviewInfo(null)} style={{ alignSelf: 'flex-end', color: '#fff', padding: 4 }}>
+            <button aria-label="Cerrar" onClick={() => setPreviewInfo(null)} style={{ alignSelf: 'flex-end', color: '#fff', padding: 4 }}>
               <X className="w-5 h-5" />
             </button>
             {/* Container clipped to scaled size; inner div holds the real mm layout */}

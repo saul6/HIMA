@@ -273,7 +273,7 @@ function PreguntaCard({
           disabled={cerrada}
           rows={2}
           placeholder="Notas libres sobre esta pregunta…"
-          className="resize-none text-[0.8125rem] outline-none"
+          className="resize-none text-[0.8125rem]"
           style={{
             borderRadius: 'var(--radius)',
             border: '1px solid var(--border)',

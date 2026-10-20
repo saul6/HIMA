@@ -88,7 +88,7 @@ export function AuditorOrgDetalle() {
   return (
     <div className="flex flex-col min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-10 bg-card border-b border-border flex items-center gap-3 px-4 py-3">
-        <button onClick={() => navigate('/auditor')} className="text-muted-foreground flex-shrink-0">
+        <button aria-label="Volver" onClick={() => navigate('/auditor')} className="text-muted-foreground flex-shrink-0">
           <ChevronLeft size={24} />
         </button>
         <div className="flex-1 min-w-0">

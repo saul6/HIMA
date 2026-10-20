@@ -952,7 +952,7 @@ export function VerificacionCosecha() {
             <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
               {sheetNuevoPaso === 'firma_decision' ? 'Firmar registro' : sheetNuevoPaso === 'firma_gate' ? 'Firma requerida' : 'Nuevo registro mensual'}
             </h2>
-            <button onClick={() => {
+            <button aria-label="Cerrar" onClick={() => {
               setSheetNuevo(false)
               setSheetNuevoPaso('form')
               setPendienteFirmaId(null)
@@ -1133,7 +1133,7 @@ export function VerificacionCosecha() {
             <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
               Exportar consolidado
             </h2>
-            <button onClick={() => setSheetConsolidado(false)}>
+            <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}>
               <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
             </button>
           </div>

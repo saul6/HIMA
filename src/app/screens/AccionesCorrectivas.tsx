@@ -144,7 +144,7 @@ function GaleriaGuardadas({
             </p>
             {f.leyenda && <p className="text-xs text-foreground truncate">{f.leyenda}</p>}
           </div>
-          <button
+          <button aria-label="Quitar"
             onClick={() => onDelete(f.id, f.storage_path)}
             className="p-1.5 text-muted-foreground flex-shrink-0"
           >
@@ -741,7 +741,7 @@ export function AccionesCorrectivas() {
                         Pendiente de guardar
                       </p>
                     </div>
-                    <button
+                    <button aria-label="Quitar"
                       onClick={() =>
                         setFotosPendientes((prev) => prev.filter((f) => f.uid !== fp.uid))
                       }

@@ -342,7 +342,7 @@ export function ResumenNoConformidades() {
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             {editandoVisita ? 'Editar visita' : 'Nueva visita'}
           </h2>
-          <button
+          <button aria-label="Cerrar"
             onClick={() => !guardando && setSheetFormAbierto(false)}
             className="p-1"
           >
@@ -485,7 +485,7 @@ export function ResumenNoConformidades() {
               </p>
             )}
           </div>
-          <button
+          <button aria-label="Cerrar"
             onClick={() => setSheetDetalleAbierto(false)}
             className="p-1 flex-shrink-0"
           >

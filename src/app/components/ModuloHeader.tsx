@@ -33,7 +33,7 @@ export function ModuloHeader({ tituloFallback, forzarTitulo, subtitulo, onBack, 
       <div className="flex items-center gap-3">
         <button
           onClick={onBack ?? (() => navigate('/'))}
-          className="p-1 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted active:scale-95"
+          className="p-3 -m-2 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted active:scale-95"
           aria-label="Volver"
         >
           <ChevronLeft className="w-5 h-5" />

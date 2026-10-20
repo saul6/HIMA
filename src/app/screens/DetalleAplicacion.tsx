@@ -77,7 +77,7 @@ export function DetalleAplicacion() {
         <header className="sticky top-0 bg-card border-b border-border px-4 py-4 z-20">
           <div className="flex items-center justify-between mb-3">
             <Skeleton className="h-5 w-40" />
-            <button onClick={() => navigate("/historial")} className="p-1">
+            <button aria-label="Cerrar" onClick={() => navigate("/historial")} className="p-1">
               <X className="w-6 h-6 text-foreground" />
             </button>
           </div>
@@ -141,7 +141,7 @@ export function DetalleAplicacion() {
           <h1 className="text-foreground flex-1" style={{ fontWeight: 600 }}>
             Detalle de Aplicación
           </h1>
-          <button onClick={() => navigate("/historial")} className="p-1">
+          <button aria-label="Cerrar" onClick={() => navigate("/historial")} className="p-1">
             <X className="w-6 h-6 text-foreground" />
           </button>
         </div>

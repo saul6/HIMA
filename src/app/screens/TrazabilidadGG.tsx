@@ -395,7 +395,7 @@ export function TrazabilidadGG() {
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nueva nota de trazabilidad'}
           </h2>
-          <button onClick={handleCerrarSheet}>
+          <button aria-label="Cerrar" onClick={handleCerrarSheet}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
@@ -428,7 +428,7 @@ export function TrazabilidadGG() {
             <select
               value={form.rancho_id}
               onChange={(e) => { setForm((f) => ({ ...f, rancho_id: e.target.value })); setErrRancho(false) }}
-              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
               style={{ borderColor: errRancho ? 'var(--agro-red)' : 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             >
               <option value="">Selecciona {termino.toLowerCase()}…</option>
@@ -442,13 +442,13 @@ export function TrazabilidadGG() {
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>FOLIO</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'folio')} type="text" value={form.folio} onChange={setF('folio')} placeholder="Ej: NT-001"
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>FECHA</label>
               <input type="date" value={form.fecha} onChange={setF('fecha')}
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
@@ -457,13 +457,13 @@ export function TrazabilidadGG() {
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>PRODUCTOR</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'productor')} type="text" value={form.productor} onChange={setF('productor')} placeholder="Nombre"
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HORA SALIDA</label>
               <input type="time" value={form.hora_salida} onChange={setF('hora_salida')}
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
@@ -473,13 +473,13 @@ export function TrazabilidadGG() {
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>N° CAMIÓN</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'num_camion')} type="text" value={form.num_camion} onChange={setF('num_camion')} placeholder="Placas o número"
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>ZONA</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'zona')} type="text" value={form.zona} onChange={setF('zona')} placeholder="Zona"
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
@@ -488,13 +488,13 @@ export function TrazabilidadGG() {
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>SECTOR</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'sector')} type="text" value={form.sector} onChange={setF('sector')} placeholder="Sector"
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>CULTIVO</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'cultivo')} type="text" value={form.cultivo} onChange={setF('cultivo')} placeholder="Ej: Zarzamora"
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
@@ -521,7 +521,7 @@ export function TrazabilidadGG() {
             </div>
             {form.presentacion === 'Otro' && (
               <InputContador limite={limiteTexto('m78_nota_trazabilidad', 'otro_presentacion')} type="text" value={form.otro_presentacion} onChange={setF('otro_presentacion')} placeholder="Especifica la presentación"
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
             )}
           </div>
@@ -531,19 +531,19 @@ export function TrazabilidadGG() {
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>PESO BRUTO (Ton)</label>
               <input type="number" min="0" step="0.001" value={form.peso_bruto} onChange={setF('peso_bruto')} placeholder="0.000"
-                className="w-full h-11 px-2 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-2 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>PESO NETO (Ton)</label>
               <input type="number" min="0" step="0.001" value={form.peso_neto} onChange={setF('peso_neto')} placeholder="0.000"
-                className="w-full h-11 px-2 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-2 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>TOTAL PRODUCTO</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'total_producto')} type="text" value={form.total_producto} onChange={setF('total_producto')} placeholder="Ej: 500 cajas"
-                className="w-full h-11 px-2 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-2 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
@@ -553,19 +553,19 @@ export function TrazabilidadGG() {
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>EMBARCÓ</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'embarco')} type="text" value={form.embarco} onChange={setF('embarco')} placeholder="Nombre"
-                className="w-full h-11 px-2 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-2 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>CHOFER</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'chofer')} type="text" value={form.chofer} onChange={setF('chofer')} placeholder="Nombre"
-                className="w-full h-11 px-2 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-2 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>RECIBIÓ</label>
               <input maxLength={limiteTexto('m78_nota_trazabilidad', 'recibio')} type="text" value={form.recibio} onChange={setF('recibio')} placeholder="Nombre"
-                className="w-full h-11 px-2 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-2 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
@@ -575,7 +575,7 @@ export function TrazabilidadGG() {
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
             <TextareaContador limite={limiteTexto('m78_nota_trazabilidad', 'observaciones')} value={form.observaciones} onChange={setF('observaciones')} rows={2}
               placeholder="Observaciones adicionales…"
-              className="w-full rounded-xl border px-3 py-2 text-sm focus:outline-none resize-none"
+              className="w-full rounded-xl border px-3 py-2 text-sm resize-none"
               style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
           </div>
         </div>
@@ -597,7 +597,7 @@ export function TrazabilidadGG() {
       <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}>
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
-          <button onClick={() => setConsolidadoOpen(false)}>
+          <button aria-label="Cerrar" onClick={() => setConsolidadoOpen(false)}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
@@ -609,7 +609,7 @@ export function TrazabilidadGG() {
             <select
               value={consolidadoForm.rancho_id}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
-              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
               style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             >
               <option value="">Todos los {terminosSitio.plural.toLowerCase()}</option>
@@ -621,14 +621,14 @@ export function TrazabilidadGG() {
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DESDE</label>
               <input type="date" value={consolidadoForm.desde}
                 onChange={(e) => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA</label>
               <input type="date" value={consolidadoForm.hasta}
                 onChange={(e) => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
-                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                 style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>

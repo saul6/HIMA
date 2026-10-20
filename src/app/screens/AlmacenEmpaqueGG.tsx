@@ -616,14 +616,14 @@ export function AlmacenEmpaqueGG() {
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>Cultivo</label>
                 <input maxLength={limiteTexto('m75_registro', 'cultivo')} type="text" value={dCultivo} onChange={(e) => setDCultivo(e.target.value)}
                   placeholder="Cultivo"
-                  className="w-full h-9 px-3 rounded-lg border text-sm focus:outline-none"
+                  className="w-full h-9 px-3 rounded-lg border text-sm"
                   style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
               </div>
               <div className="space-y-1">
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>Realizó</label>
                 <input maxLength={limiteTexto('m75_registro', 'realizo')} type="text" value={dRealizo} onChange={(e) => setDRealizo(e.target.value)}
                   placeholder="Responsable"
-                  className="w-full h-9 px-3 rounded-lg border text-sm focus:outline-none"
+                  className="w-full h-9 px-3 rounded-lg border text-sm"
                   style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
               </div>
             </div>
@@ -631,7 +631,7 @@ export function AlmacenEmpaqueGG() {
               <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>Observaciones</label>
               <TextareaContador limite={limiteTexto('m75_registro', 'observaciones')} value={dObservaciones} onChange={(e) => setDObservaciones(e.target.value)} rows={2}
                 placeholder="Observaciones generales del mes…"
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none resize-none"
+                className="w-full rounded-lg border px-3 py-2 text-sm resize-none"
                 style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
             </div>
           </div>
@@ -829,7 +829,7 @@ export function AlmacenEmpaqueGG() {
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
             {sheetNuevoPaso === 'firma_decision' ? 'Firmar registro' : sheetNuevoPaso === 'firma_gate' ? 'Firma requerida' : 'Nuevo registro mensual'}
           </h2>
-          <button onClick={() => {
+          <button aria-label="Cerrar" onClick={() => {
             setSheetNuevo(false)
             setSheetNuevoPaso('form')
             setPendienteFirmaId(null)
@@ -877,7 +877,7 @@ export function AlmacenEmpaqueGG() {
                 <select
                   value={nRanchoId}
                   onChange={(e) => { setNRanchoId(e.target.value); setNErrRancho(false) }}
-                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                   style={{ borderColor: nErrRancho ? 'var(--agro-red)' : 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
                 >
                   <option value="">Selecciona {termino.toLowerCase()}…</option>
@@ -890,7 +890,7 @@ export function AlmacenEmpaqueGG() {
               <div className="space-y-1">
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>MES DE REGISTRO *</label>
                 <input type="month" value={nMes} onChange={(e) => setNMes(e.target.value)}
-                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                   style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
               </div>
 
@@ -898,7 +898,7 @@ export function AlmacenEmpaqueGG() {
               <div className="space-y-1">
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>CULTIVO</label>
                 <input maxLength={limiteTexto('m75_registro', 'cultivo')} type="text" value={nCultivo} onChange={(e) => setNCultivo(e.target.value)} placeholder="Ej: Zarzamora"
-                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                   style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
               </div>
 
@@ -906,7 +906,7 @@ export function AlmacenEmpaqueGG() {
               <div className="space-y-1">
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>REALIZÓ</label>
                 <input maxLength={limiteTexto('m75_registro', 'realizo')} type="text" value={nRealizo} onChange={(e) => setNRealizo(e.target.value)} placeholder="Nombre del responsable"
-                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+                  className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
                   style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
               </div>
 
@@ -915,7 +915,7 @@ export function AlmacenEmpaqueGG() {
                 <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>OBSERVACIONES</label>
                 <TextareaContador limite={limiteTexto('m75_registro', 'observaciones')} value={nObservaciones} onChange={(e) => setNObservaciones(e.target.value)} rows={2}
                   placeholder="Observaciones generales…"
-                  className="w-full rounded-xl border px-3 py-2 text-sm focus:outline-none resize-none"
+                  className="w-full rounded-xl border px-3 py-2 text-sm resize-none"
                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }} />
               </div>
 
@@ -950,7 +950,7 @@ export function AlmacenEmpaqueGG() {
       <BottomSheet open={sheetConsolidado} onClose={() => setSheetConsolidado(false)} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
-          <button onClick={() => setSheetConsolidado(false)}>
+          <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
@@ -962,7 +962,7 @@ export function AlmacenEmpaqueGG() {
             <select
               value={consolidadoForm.rancho_id}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
-              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
               style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             >
               <option value="">Todos los {termino.toLowerCase()}s</option>
@@ -975,7 +975,7 @@ export function AlmacenEmpaqueGG() {
               type="month"
               value={consolidadoForm.desde.slice(0, 7)}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, desde: e.target.value + '-01' }))}
-              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
               style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             />
           </div>
@@ -985,7 +985,7 @@ export function AlmacenEmpaqueGG() {
               type="month"
               value={consolidadoForm.hasta.slice(0, 7)}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, hasta: e.target.value + '-01' }))}
-              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
               style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             />
           </div>

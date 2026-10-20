@@ -644,7 +644,7 @@ export function RegistroCosechaLiberacion() {
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 Exportar consolidado
               </h2>
-              <button onClick={() => setSheetConsAbierto(false)} className="p-1">
+              <button aria-label="Cerrar" onClick={() => setSheetConsAbierto(false)} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -718,7 +718,7 @@ export function RegistroCosechaLiberacion() {
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nueva liberación de cosecha'}
               </h2>
-              <button onClick={() => setSheetAbierto(false)} className="p-1">
+              <button aria-label="Cerrar" onClick={() => setSheetAbierto(false)} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -852,7 +852,7 @@ export function RegistroCosechaLiberacion() {
                           Liberación {idx + 1}
                         </span>
                         {liberaciones.length > 1 && (
-                          <button
+                          <button aria-label="Quitar"
                             type="button"
                             onClick={() => quitarLiberacion(idx)}
                             className="p-1 text-agro-danger-text hover:opacity-70 transition-opacity"

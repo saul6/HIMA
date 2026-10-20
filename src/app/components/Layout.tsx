@@ -171,7 +171,7 @@ export function Layout() {
           <Link
             to="/"
             aria-label="Ir al inicio"
-            className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
+            className="rounded-lg"
             style={{ opacity: ocultarLogoSidebar ? 0 : 1, transition: 'opacity 120ms ease-in-out' }}
           >
             <MadyLogo
@@ -220,7 +220,7 @@ export function Layout() {
         <div className="px-1 lg:px-3 py-2 border-t border-border">
           <button
             onClick={e => cycleTheme(e.currentTarget as HTMLElement)}
-            className="w-full flex items-center justify-center lg:justify-start gap-0 lg:gap-3 px-0 lg:px-3 py-2.5 rounded-lg transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
+            className="w-full flex items-center justify-center lg:justify-start gap-0 lg:gap-3 px-0 lg:px-3 py-2.5 rounded-lg transition-colors hover:bg-muted"
             aria-label={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
             title={themeLabel}
           >
@@ -239,7 +239,7 @@ export function Layout() {
           <Link
             to="/perfil"
             aria-label="Ir a perfil"
-            className="flex items-center justify-center lg:justify-start gap-0 lg:gap-3 px-1 lg:px-2 py-2 rounded-lg transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
+            className="flex items-center justify-center lg:justify-start gap-0 lg:gap-3 px-1 lg:px-2 py-2 rounded-lg transition-colors hover:bg-muted"
             style={{
               backgroundColor: isActive('/perfil') ? 'var(--accent)' : undefined,
             }}
@@ -324,7 +324,7 @@ export function Layout() {
                   placeholder="Buscar formato…"
                   value={busqueda}
                   onChange={e => setBusqueda(e.target.value)}
-                  className="w-full h-9 pl-9 pr-4 rounded-lg text-sm outline-none transition-colors"
+                  className="w-full h-9 pl-9 pr-4 rounded-lg text-sm transition-colors"
                   style={{
                     backgroundColor: 'var(--input-background)',
                     border: '1px solid var(--border)',
@@ -356,7 +356,7 @@ export function Layout() {
             )}
             <button
               onClick={e => cycleTheme(e.currentTarget as HTMLElement)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-muted"
               aria-label={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
               title={themeLabel}
             >
@@ -404,7 +404,7 @@ export function Layout() {
           </div>
           <button
             onClick={() => setMenuAbierto(false)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted transition-colors"
+            className="w-11 h-11 -m-1.5 rounded-lg flex items-center justify-center hover:bg-muted transition-colors"
             aria-label="Cerrar menú"
           >
             <X className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />

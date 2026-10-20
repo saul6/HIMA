@@ -896,7 +896,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                       onChange={e => setSugerenciaCExplicacion(e.target.value)}
                       rows={2}
                       placeholder="Explicación obligatoria…"
-                      className="resize-none text-[0.8125rem] outline-none"
+                      className="resize-none text-[0.8125rem]"
                       style={{
                         borderRadius: 'var(--radius)',
                         border: `1px solid ${!sugerenciaCExplicacion.trim() ? 'var(--agro-red)' : 'var(--border-control)'}`,
@@ -1118,7 +1118,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                         onChange={e => setReglaExplicacion(e.target.value)}
                         rows={2}
                         placeholder="Obligatoria — describe el motivo de esta N/A por rama…"
-                        className="resize-none text-[0.8125rem] outline-none"
+                        className="resize-none text-[0.8125rem]"
                         style={{
                           borderRadius: 'var(--radius)',
                           border: '1px solid var(--border)',
@@ -1266,7 +1266,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                           onChange={e => setMotivoRetiro(e.target.value)}
                           rows={2}
                           placeholder="Describe el motivo…"
-                          className="resize-none text-[0.8125rem] outline-none"
+                          className="resize-none text-[0.8125rem]"
                           style={{
                             borderRadius: 'var(--radius)',
                             border: '1px solid var(--border)',
@@ -1457,7 +1457,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>
                   Ajuste manual de puntuación
                 </p>
-                <button onClick={() => setAjusteOpen(false)} style={{ color: 'var(--muted-foreground)' }}>
+                <button aria-label="Cerrar" onClick={() => setAjusteOpen(false)} style={{ color: 'var(--muted-foreground)' }}>
                   <X size={14} />
                 </button>
               </div>
@@ -1473,7 +1473,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     step={1}
                     value={puntosInput}
                     onChange={e => handlePuntosChange(e.target.value)}
-                    className="h-9 rounded-lg px-2 text-sm outline-none text-center"
+                    className="h-9 rounded-lg px-2 text-sm text-center"
                     style={{
                       border: `1px solid ${errorPuntos ? 'var(--agro-red)' : 'var(--border-control)'}`,
                       backgroundColor: 'var(--input-background)',
@@ -1492,7 +1492,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     step={1}
                     value={descuentoInput}
                     onChange={e => handleDescuentoChange(e.target.value)}
-                    className="h-9 rounded-lg px-2 text-sm outline-none text-center"
+                    className="h-9 rounded-lg px-2 text-sm text-center"
                     style={{
                       border: `1px solid ${errorPuntos ? 'var(--agro-red)' : 'var(--border-control)'}`,
                       backgroundColor: 'var(--input-background)',
@@ -1513,7 +1513,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   onChange={e => setMotivoInput(e.target.value)}
                   rows={2}
                   placeholder={difiere ? 'Requerido cuando el valor difiere de la sugerencia…' : 'Opcional cuando coincide con la matriz…'}
-                  className="resize-none text-[0.8125rem] outline-none"
+                  className="resize-none text-[0.8125rem]"
                   style={{
                     borderRadius: 'var(--radius)',
                     border: `1px solid ${difiere && !motivoValido ? 'var(--agro-red)' : 'var(--border-control)'}`,
@@ -1818,7 +1818,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               disabled={bloqueado}
               rows={3}
               placeholder="Observaciones del auditor…"
-              className="resize-none text-[0.8125rem] outline-none"
+              className="resize-none text-[0.8125rem]"
               style={{
                 borderRadius: 'var(--radius)',
                 border: '1px solid var(--border)',

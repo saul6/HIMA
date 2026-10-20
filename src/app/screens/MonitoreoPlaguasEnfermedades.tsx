@@ -356,7 +356,7 @@ export function MonitoreoPlaguasEnfermedades() {
           <h2 className="text-base font-semibold">
             {sheetPaso === 'firma_decision' ? 'Monitoreo guardado' : 'Nuevo monitoreo'}
           </h2>
-          <button onClick={handleCerrarSheet}>
+          <button aria-label="Cerrar" onClick={handleCerrarSheet}>
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -574,7 +574,7 @@ export function MonitoreoPlaguasEnfermedades() {
                         />
                       ))}
                       {/* Eliminar fila */}
-                      <button
+                      <button aria-label="Quitar"
                         type="button"
                         onClick={() => eliminarFila(fila.id)}
                         className="w-8 h-8 shrink-0 flex items-center justify-center rounded"
@@ -610,7 +610,7 @@ export function MonitoreoPlaguasEnfermedades() {
       <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
-          <button onClick={() => setConsolidadoOpen(false)}>
+          <button aria-label="Cerrar" onClick={() => setConsolidadoOpen(false)}>
             <X className="w-5 h-5" style={{ color: 'var(--muted-foreground)' }} />
           </button>
         </div>
@@ -622,7 +622,7 @@ export function MonitoreoPlaguasEnfermedades() {
             <select
               value={consolidadoForm.rancho_id}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, rancho_id: e.target.value }))}
-              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
               style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }}
             >
               <option value="">{terminosSitio.plural}</option>
@@ -633,14 +633,14 @@ export function MonitoreoPlaguasEnfermedades() {
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>DESDE</label>
             <input type="date" value={consolidadoForm.desde}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, desde: e.target.value }))}
-              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
               style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
           </div>
           <div className="space-y-1">
             <label className="text-xs" style={{ color: 'var(--muted-foreground)', fontWeight: 600 }}>HASTA</label>
             <input type="date" value={consolidadoForm.hasta}
               onChange={(e) => setConsolidadoForm(f => ({ ...f, hasta: e.target.value }))}
-              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground focus:outline-none"
+              className="w-full h-11 px-3 rounded-xl border text-sm text-foreground"
               style={{ borderColor: 'var(--border-control)', backgroundColor: 'var(--input-background)' }} />
           </div>
         </div>

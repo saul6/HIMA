@@ -546,7 +546,7 @@ export function RegistroLimpiezaBanos() {
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 Exportar consolidado
               </h2>
-              <button onClick={() => setSheetConsAbierto(false)} className="p-1">
+              <button aria-label="Cerrar" onClick={() => setSheetConsAbierto(false)} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -620,7 +620,7 @@ export function RegistroLimpiezaBanos() {
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 {sheetPaso === 'firma_decision' ? 'Firmar registro' : sheetPaso === 'firma_gate' ? 'Firma requerida' : 'Nueva limpieza de baños'}
               </h2>
-              <button onClick={handleCerrarSheet} className="p-1">
+              <button type="button" aria-label="Cerrar" onClick={handleCerrarSheet} className="p-3 -m-2">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -715,7 +715,7 @@ export function RegistroLimpiezaBanos() {
                           Baño {idx + 1}
                         </span>
                         {banos.length > 1 && (
-                          <button
+                          <button aria-label="Quitar"
                             type="button"
                             onClick={() => quitarBano(idx)}
                             className="p-1 text-agro-danger-text hover:opacity-70 transition-opacity"

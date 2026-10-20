@@ -845,7 +845,7 @@ export function InspeccionVidrioPlastico() {
       <BottomSheet open={sheetConfigAbierto} onClose={() => setSheetConfigAbierto(false)} height="85%">
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Configurar materiales</h2>
-              <button onClick={() => setSheetConfigAbierto(false)} className="p-1">
+              <button aria-label="Cerrar" onClick={() => setSheetConfigAbierto(false)} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -993,7 +993,7 @@ export function InspeccionVidrioPlastico() {
       <BottomSheet open={sheetConsolidadoAbierto} onClose={() => setSheetConsolidadoAbierto(false)}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
-              <button onClick={() => setSheetConsolidadoAbierto(false)} className="p-1">
+              <button aria-label="Cerrar" onClick={() => setSheetConsolidadoAbierto(false)} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -1067,7 +1067,7 @@ export function InspeccionVidrioPlastico() {
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 {sheetInspeccionPaso === 'firma_gate' ? 'Registra tu firma' : sheetInspeccionPaso === 'firma_decision' ? 'Firmar registro' : 'Nueva inspección'}
               </h2>
-              <button onClick={handleCerrarSheetInspeccion} className="p-1">
+              <button type="button" aria-label="Cerrar" onClick={handleCerrarSheetInspeccion} className="p-3 -m-2">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>

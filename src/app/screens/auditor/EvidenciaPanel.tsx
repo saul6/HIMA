@@ -378,7 +378,7 @@ export function EvidenciaPanel({
             <div className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="flex items-center justify-between pt-3">
                 <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>Subir evidencia externa</p>
-                <button onClick={() => setShowUpload(false)}><X size={14} style={{ color: 'var(--muted-foreground)' }} /></button>
+                <button aria-label="Cerrar" onClick={() => setShowUpload(false)}><X size={14} style={{ color: 'var(--muted-foreground)' }} /></button>
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>Tipo</label>
@@ -697,7 +697,7 @@ export function EvidenciaPanel({
             <div className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="flex items-center justify-between pt-3">
                 <p className="text-[11px] font-semibold" style={{ color: 'var(--foreground)' }}>Buscar en otro módulo</p>
-                <button onClick={() => setShowGateway(false)}>
+                <button aria-label="Cerrar" onClick={() => setShowGateway(false)}>
                   <X size={14} style={{ color: 'var(--muted-foreground)' }} />
                 </button>
               </div>

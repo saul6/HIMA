@@ -1139,7 +1139,7 @@ export function LimpiezaCisterna() {
               <Bug className="w-4 h-4" style={{ color: 'var(--agro-danger-text)' }} />
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Hallazgo de plaga</h2>
             </div>
-            <button type="button" onClick={() => { if (!plagaSaving) setPlagaSheet(false) }}>
+            <button aria-label="Cerrar" type="button" onClick={() => { if (!plagaSaving) setPlagaSheet(false) }}>
               <X className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
@@ -1182,7 +1182,7 @@ export function LimpiezaCisterna() {
         <div className="pt-4 px-4 pb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nuevo registro mensual</h2>
-            <button type="button" onClick={handleCerrarSheetNuevo}><X className="w-5 h-5 text-muted-foreground" /></button>
+            <button aria-label="Cerrar" type="button" onClick={handleCerrarSheetNuevo}><X className="w-5 h-5 text-muted-foreground" /></button>
           </div>
 
           {sheetNuevoPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetNuevoPaso('form')} />}
@@ -1259,7 +1259,7 @@ export function LimpiezaCisterna() {
         <div className="pt-4 px-4 pb-4 overflow-y-auto h-full">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Configurar ítems</h2>
-            <button type="button" onClick={() => setSheetConfigurar(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
+            <button aria-label="Cerrar" type="button" onClick={() => setSheetConfigurar(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
           </div>
           <div className="space-y-4">
             <div className="space-y-1">

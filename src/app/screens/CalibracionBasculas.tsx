@@ -305,7 +305,7 @@ export function CalibracionBasculas() {
           <h2 className="text-base font-semibold">
             {sheetPaso === 'firma_gate' ? 'Registra tu firma' : sheetPaso === 'firma_decision' ? 'Firmar registro' : 'Nueva calibración de báscula'}
           </h2>
-          <button onClick={handleCerrarSheet}><X className="w-5 h-5" /></button>
+          <button aria-label="Cerrar" onClick={handleCerrarSheet}><X className="w-5 h-5" /></button>
         </div>
 
         {sheetPaso === 'firma_gate' && (
@@ -457,7 +457,7 @@ export function CalibracionBasculas() {
       <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)}>
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <h2 className="text-base font-semibold">Exportar consolidado</h2>
-          <button onClick={() => setConsolidadoOpen(false)}><X className="w-5 h-5" /></button>
+          <button aria-label="Cerrar" onClick={() => setConsolidadoOpen(false)}><X className="w-5 h-5" /></button>
         </div>
         <div className="overflow-y-auto flex-1 px-4 pt-4 pb-8 space-y-4">
           <div>

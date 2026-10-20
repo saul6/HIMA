@@ -422,7 +422,7 @@ export function AuditoriaScreen({
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 Exportar consolidado
               </h2>
-              <button onClick={() => setSheetConsAbierto(false)} className="p-1">
+              <button aria-label="Cerrar" onClick={() => setSheetConsAbierto(false)} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -478,7 +478,7 @@ export function AuditoriaScreen({
               <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                 {editandoId ? 'Continuar auditoría' : 'Nueva auditoría'}
               </h2>
-              <button onClick={() => setSheetAbierto(false)} className="p-1">
+              <button aria-label="Cerrar" onClick={() => setSheetAbierto(false)} className="p-1">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>

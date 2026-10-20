@@ -929,7 +929,7 @@ export function VerificacionInsumos() {
             <div className="pt-4 px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nuevo registro mensual</h2>
-                <button onClick={() => setSheetNuevo(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
+                <button aria-label="Cerrar" onClick={() => setSheetNuevo(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
               </div>
               <div className="space-y-4">
 
@@ -988,7 +988,7 @@ export function VerificacionInsumos() {
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>
                   {sheetDiaPaso === 'firma_decision' ? 'Firmar registro' : sheetDiaPaso === 'firma_gate' ? 'Firma requerida' : 'Agregar día de verificación'}
                 </h2>
-                <button onClick={handleCerrarSheetDia}><X className="w-5 h-5 text-muted-foreground" /></button>
+                <button aria-label="Cerrar" onClick={handleCerrarSheetDia}><X className="w-5 h-5 text-muted-foreground" /></button>
               </div>
             </div>
 
@@ -1091,7 +1091,7 @@ export function VerificacionInsumos() {
             <div className="pt-4 px-4 pb-3 flex-shrink-0 border-b border-border">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Catálogo de insumos</h2>
-                <button onClick={() => setSheetCatalogo(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
+                <button aria-label="Cerrar" onClick={() => setSheetCatalogo(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
               </div>
               <select
                 value={catRanchoId}
@@ -1191,7 +1191,7 @@ export function VerificacionInsumos() {
             <div className="pt-4 px-4 pb-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
-                <button onClick={() => setSheetConsolidado(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
+                <button aria-label="Cerrar" onClick={() => setSheetConsolidado(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
               </div>
               <div className="space-y-4">
                 <div className="space-y-1">

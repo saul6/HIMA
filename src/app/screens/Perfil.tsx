@@ -188,7 +188,7 @@ export function Perfil() {
                   >
                     <Check className="w-4 h-4" />
                   </button>
-                  <button
+                  <button aria-label="Cerrar"
                     onClick={handleCancelarEdicion}
                     className="p-1.5 rounded-lg border border-border text-muted-foreground"
                   >
@@ -198,7 +198,7 @@ export function Perfil() {
               ) : (
                 <div className="flex items-center gap-2">
                   <h2 className="text-foreground truncate" style={{ fontWeight: 600 }}>{nombre}</h2>
-                  <button
+                  <button aria-label="Editar"
                     onClick={() => {
                       setNuevoNombre(profile?.nombre_completo ?? '')
                       setEditando(true)

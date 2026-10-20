@@ -509,7 +509,7 @@ export function ManifiestoEmbarque() {
       <BottomSheet open={sheetOpen} onClose={() => { if (!guardando) handleCerrarSheet() }} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Nuevo manifiesto</h2>
-          <button type="button" onClick={() => { if (!guardando) handleCerrarSheet() }}>
+          <button aria-label="Cerrar" type="button" onClick={() => { if (!guardando) handleCerrarSheet() }}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
@@ -683,7 +683,7 @@ export function ManifiestoEmbarque() {
                       Línea {idx + 1}
                     </span>
                     {lineas.length > 1 && (
-                      <button
+                      <button aria-label="Quitar"
                         type="button"
                         onClick={() => setLineas(prev => prev.filter(x => x._key !== l._key))}
                         className="p-0.5"
@@ -862,7 +862,7 @@ export function ManifiestoEmbarque() {
       <BottomSheet open={consolidadoOpen} onClose={() => setConsolidadoOpen(false)} height="85%">
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border">
           <h2 className="text-base text-foreground" style={{ fontWeight: 600 }}>Exportar consolidado</h2>
-          <button type="button" onClick={() => setConsolidadoOpen(false)}>
+          <button aria-label="Cerrar" type="button" onClick={() => setConsolidadoOpen(false)}>
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>

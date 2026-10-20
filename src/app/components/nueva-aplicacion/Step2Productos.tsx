@@ -141,7 +141,7 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
                       </div>
                       <div className="text-xs text-muted-foreground">{product.activeIngredient}</div>
                     </div>
-                    <button
+                    <button aria-label="Quitar"
                       onClick={() => removeProduct(index)}
                       className="p-1 text-destructive"
                     >

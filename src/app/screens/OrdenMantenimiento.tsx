@@ -413,7 +413,7 @@ export function OrdenMantenimiento() {
               <h2 className="text-base text-foreground" style={{ fontWeight: 700 }}>
                 Nueva Orden de Mantenimiento
               </h2>
-              <button type="button" onClick={handleCerrarModal}><X className="w-5 h-5 text-muted-foreground" /></button>
+              <button aria-label="Cerrar" type="button" onClick={handleCerrarModal}><X className="w-5 h-5 text-muted-foreground" /></button>
             </div>
 
             {sheetPaso === 'firma_gate' && <FirmaGatePaso onFirmaGuardada={() => setSheetPaso('form')} />}
