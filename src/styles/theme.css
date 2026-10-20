@@ -684,6 +684,16 @@ button:not(:disabled):active:not(.no-press),
   }
 }
 
+/* Ventanas (BottomSheet): altura máxima en dvh (respaldo vh) para que la barra
+   del navegador móvil no las recorte, y zona segura inferior del iPhone. */
+.sheet-max-h {
+  max-height: 85vh;
+  max-height: 85dvh;
+}
+.sheet-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -698,6 +708,9 @@ button:not(:disabled):active:not(.no-press),
 
   body {
     @apply bg-background text-foreground;
+    /* Con viewport-fit=cover: sin esto el contenido se mete bajo el notch en horizontal */
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
 
   html {

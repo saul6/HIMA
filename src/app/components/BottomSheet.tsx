@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect } from 'react'
+import { type ReactNode, type RefObject, useEffect, useId, useRef } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { X } from 'lucide-react'
 import { Portal } from '@/app/components/Portal'
@@ -54,11 +54,96 @@ export const fabMenuItemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] as const } },
 }
 
-function SheetHeader({ title, onClose }: { title: string; onClose: () => void }) {
+// ── Accesibilidad de la ventana ─────────────────────────────────────────────
+// Pila de ventanas abiertas: Escape y el atrapado de foco solo responden a la
+// de arriba. El bloqueo del scroll del fondo es un contador para que, con
+// ventanas encimadas, solo se restaure al cerrar la última.
+const pilaVentanas: symbol[] = []
+let bloqueosScroll = 0
+let overflowPrevio = ''
+
+function bloquearScroll() {
+  if (bloqueosScroll++ === 0) {
+    overflowPrevio = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+  }
+}
+
+function liberarScroll() {
+  if (--bloqueosScroll === 0) document.body.style.overflow = overflowPrevio
+}
+
+const FOCUSABLES =
+  'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+
+function controlesEnfocables(panel: HTMLElement): HTMLElement[] {
+  return Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLES)).filter(
+    (el) => el.getClientRects().length > 0,
+  )
+}
+
+// Un campo de texto como primer control abriría el teclado del celular al
+// abrir la ventana: en ese caso el foco va al panel y no al campo.
+function abreTeclado(el: HTMLElement) {
+  if (el instanceof HTMLTextAreaElement) return true
+  if (!(el instanceof HTMLInputElement)) return false
+  return !['button', 'checkbox', 'radio', 'file', 'submit', 'reset', 'range', 'color'].includes(el.type)
+}
+
+function useVentanaAccesible(open: boolean, panelRef: RefObject<HTMLDivElement | null>, onClose: () => void) {
+  const onCloseRef = useRef(onClose)
+  useEffect(() => { onCloseRef.current = onClose })
+
+  useEffect(() => {
+    if (!open) return
+    const id = Symbol('ventana')
+    pilaVentanas.push(id)
+    const previo = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    bloquearScroll()
+
+    const panel = panelRef.current
+    if (panel && !panel.contains(document.activeElement)) {
+      const primero = controlesEnfocables(panel)[0]
+      if (primero && !abreTeclado(primero)) primero.focus({ preventScroll: true })
+      else panel.focus({ preventScroll: true })
+    }
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (pilaVentanas[pilaVentanas.length - 1] !== id) return
+      if (e.key === 'Escape') {
+        // Radix (Select, Popover…) y los selectores nativos atienden su propio Escape.
+        if (e.defaultPrevented || e.isComposing) return
+        e.preventDefault()
+        onCloseRef.current()
+        return
+      }
+      if (e.key !== 'Tab' || !panelRef.current) return
+      const lista = controlesEnfocables(panelRef.current)
+      if (lista.length === 0) { e.preventDefault(); panelRef.current.focus(); return }
+      const primero = lista[0]
+      const ultimo = lista[lista.length - 1]
+      const activo = document.activeElement
+      if (e.shiftKey && (activo === primero || activo === panelRef.current)) { e.preventDefault(); ultimo.focus() }
+      else if (!e.shiftKey && activo === ultimo) { e.preventDefault(); primero.focus() }
+      else if (!panelRef.current.contains(activo)) { e.preventDefault(); primero.focus() }
+    }
+    document.addEventListener('keydown', onKeyDown)
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      const i = pilaVentanas.indexOf(id)
+      if (i >= 0) pilaVentanas.splice(i, 1)
+      liberarScroll()
+      if (previo && previo.isConnected) previo.focus({ preventScroll: true })
+    }
+  }, [open, panelRef])
+}
+
+function SheetHeader({ title, titleId, onClose }: { title: string; titleId: string; onClose: () => void }) {
   return (
     <>
       <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-        <h2 className="text-base font-semibold">{title}</h2>
+        <h2 id={titleId} className="text-base font-semibold">{title}</h2>
         <button type="button" onClick={onClose} aria-label="Cerrar" className="p-3 -m-2 rounded-lg"><X className="w-5 h-5" /></button>
       </div>
     </>
@@ -73,15 +158,24 @@ function StaticSheet({ open, onClose, height, title, children, raised }: {
   children: ReactNode
   raised?: boolean
 }) {
+  const panelRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
+  useVentanaAccesible(open, panelRef, onClose)
   if (!open) return null
   return (
     <Portal>
-      <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} aria-hidden="true" />
       <div
-        className={`${PANEL_CLASS} ${raised ? 'bottom-3' : 'bottom-0'} sheet-desktop-fade`}
-        style={height ? { height } : { maxHeight: '85vh' }}
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
+        aria-label={title ? undefined : 'Ventana'}
+        tabIndex={-1}
+        className={`${PANEL_CLASS} ${raised ? 'bottom-3' : 'bottom-0'} sheet-desktop-fade sheet-safe-bottom outline-none${height ? '' : ' sheet-max-h'}`}
+        style={height ? { height } : undefined}
       >
-        {title && <SheetHeader title={title} onClose={onClose} />}
+        {title && <SheetHeader title={title} titleId={titleId} onClose={onClose} />}
         {children}
       </div>
     </Portal>
@@ -94,6 +188,10 @@ function StaticSheet({ open, onClose, height, title, children, raised }: {
  */
 export function BottomSheet({ open, onClose, height, title, children, animateFrom }: BottomSheetProps) {
   const reducedMotion = useReducedMotion()
+  const panelAnimRef = useRef<HTMLDivElement>(null)
+  // La variante estática y la reducida montan su propio hook (StaticSheet);
+  // este solo atiende la variante animada.
+  useVentanaAccesible(open && !!animateFrom && !reducedMotion, panelAnimRef, onClose)
 
   // Cuenta cuántas ventanas están abiertas para saber si es seguro actualizar el SW
   useEffect(() => {
@@ -119,6 +217,7 @@ export function BottomSheet({ open, onClose, height, title, children, animateFro
         <>
           <motion.div
             key="overlay"
+            aria-hidden="true"
             className="fixed inset-0 bg-black/40 z-40"
             onClick={onClose}
             initial={{ opacity: 0 }}
@@ -127,9 +226,14 @@ export function BottomSheet({ open, onClose, height, title, children, animateFro
           />
           <motion.div
             key="panel"
-            className={`${PANEL_CLASS} bottom-3`}
+            ref={panelAnimRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={title ?? 'Menú'}
+            tabIndex={-1}
+            className={`${PANEL_CLASS} bottom-3 sheet-safe-bottom outline-none${height ? '' : ' sheet-max-h'}`}
             style={{
-              ...(height ? { height } : { maxHeight: '85vh' }),
+              ...(height ? { height } : {}),
               transformOrigin: 'bottom left',
             }}
             variants={{
