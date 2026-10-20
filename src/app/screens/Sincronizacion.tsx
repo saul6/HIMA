@@ -252,8 +252,8 @@ export function Sincronizacion() {
         <div
           className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm"
           style={{
-            backgroundColor: online ? 'var(--agro-success-fill)' : 'var(--agro-danger-fill)',
-            color: online ? 'var(--agro-success-text)' : 'var(--agro-danger-text)',
+            backgroundColor: online ? 'var(--agro-success-fill)' : 'var(--muted)',
+            color: online ? 'var(--agro-success-text)' : 'var(--muted-foreground)',
           }}
         >
           {online

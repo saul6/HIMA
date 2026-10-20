@@ -359,8 +359,8 @@ export function Layout() {
                 to="/sincronizacion"
                 className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg"
                 style={{
-                  backgroundColor: !online ? 'var(--agro-danger-fill)' : 'var(--agro-info-fill)',
-                  color: !online ? 'var(--agro-danger-text)' : 'var(--agro-info-text)',
+                  backgroundColor: !online ? 'var(--muted)' : 'var(--agro-info-fill)',
+                  color: !online ? 'var(--muted-foreground)' : 'var(--agro-info-text)',
                   fontWeight: 600,
                 }}
                 title={!online ? 'Sin conexión' : `${totalPendientes} pendientes de subir`}
@@ -506,9 +506,9 @@ export function Layout() {
             className="flex items-center gap-4 px-4 py-3 border-t border-border"
           >
             {!online
-              ? <WifiOff className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
+              ? <WifiOff className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
               : <CloudUpload className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />}
-            <span className="text-sm font-semibold" style={{ color: !online ? 'var(--agro-danger-text)' : 'var(--agro-info-text)' }}>
+            <span className="text-sm font-semibold" style={{ color: !online ? 'var(--muted-foreground)' : 'var(--agro-info-text)' }}>
               {!online ? 'Sin conexión' : `${totalPendientes} pendiente${totalPendientes !== 1 ? 's' : ''} de subir`}
             </span>
           </Link>
