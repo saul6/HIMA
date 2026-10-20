@@ -75,9 +75,9 @@ export function DetalleAplicacion() {
     return (
       <div className="min-h-full pb-[calc(96px+env(safe-area-inset-bottom,0px))] md:pb-6">
         <header className="sticky top-0 bg-card border-b border-border px-4 py-4 z-20">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between gap-3 mb-3">
             <Skeleton className="h-5 w-40" />
-            <button aria-label="Cerrar" onClick={() => navigate("/historial")} className="p-1">
+            <button aria-label="Cerrar" onClick={() => navigate("/historial")} className="p-3 -m-2 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted active:scale-95">
               <X className="w-6 h-6 text-foreground" />
             </button>
           </div>
@@ -137,11 +137,11 @@ export function DetalleAplicacion() {
     <div className="min-h-full pb-[calc(96px+env(safe-area-inset-bottom,0px))] md:pb-6">
       {/* Header */}
       <header className="sticky top-0 bg-card border-b border-border px-4 py-4 z-20">
-        <div className="flex items-center justify-between mb-3">
-          <h1 className="text-foreground flex-1" style={{ fontWeight: 600 }}>
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <h1 className="text-foreground flex-1 min-w-0 truncate" style={{ fontWeight: 600 }}>
             Detalle de Aplicación
           </h1>
-          <button aria-label="Cerrar" onClick={() => navigate("/historial")} className="p-1">
+          <button aria-label="Cerrar" onClick={() => navigate("/historial")} className="p-3 -m-2 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted active:scale-95">
             <X className="w-6 h-6 text-foreground" />
           </button>
         </div>

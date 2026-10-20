@@ -320,14 +320,14 @@ export function MiOrganizacion() {
   return (
     <div className="min-h-full pb-safe-nav">
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4 flex items-center gap-3">
+      <header className="bg-card border-b border-border px-4 py-4 sticky top-0 z-20 flex items-center gap-3">
         <button aria-label="Volver"
           onClick={() => navigate('/perfil')}
-          className="p-1 text-muted-foreground"
+          className="p-3 -m-2 rounded-lg text-muted-foreground flex-shrink-0 transition-colors hover:bg-muted active:scale-95"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-foreground" style={{ fontWeight: 600 }}>
+        <h1 className="text-foreground flex-1 min-w-0 truncate" style={{ fontWeight: 600 }}>
           Mi organización
         </h1>
       </header>
