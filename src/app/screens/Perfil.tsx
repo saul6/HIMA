@@ -198,7 +198,7 @@ export function Perfil() {
                       setNuevoNombre(profile?.nombre_completo ?? '')
                       setEditando(true)
                     }}
-                    className="p-1 text-muted-foreground hover:text-foreground flex-shrink-0"
+                    className="p-1 text-muted-foreground transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:text-foreground flex-shrink-0"
                   >
                     <Pencil className="w-4 h-4" />
                   </button>

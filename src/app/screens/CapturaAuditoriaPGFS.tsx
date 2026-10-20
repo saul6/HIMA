@@ -207,7 +207,7 @@ function PreguntaCard({
               onClick={() => !cerrada && onRespuesta(opt.value)}
               disabled={cerrada}
               title={RESP_TOOLTIPS[opt.value]}
-              className="flex-1 min-w-0 h-8 rounded-lg text-xs font-bold border transition-all disabled:opacity-50"
+              className="flex-1 min-w-0 h-8 rounded-lg text-xs font-bold border transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] disabled:opacity-50"
               style={
                 active
                   ? { backgroundColor: opt.activeStyle.bg, color: opt.activeStyle.color, borderColor: 'transparent' }

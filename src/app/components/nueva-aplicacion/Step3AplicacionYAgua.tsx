@@ -76,7 +76,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
                   chlorination: esCloro,
                 });
               }}
-              className={`flex-shrink-0 px-5 h-12 rounded-full transition-all whitespace-nowrap ${
+              className={`flex-shrink-0 px-5 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] whitespace-nowrap ${
                 formData.metodoAplicacionGg === metodo
                   ? "bg-primary text-white"
                   : "bg-card border border-border text-foreground"
@@ -92,7 +92,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
         <div className="flex gap-3">
           <button
             onClick={() => updateFormData({ applicationType: "Foliar" })}
-            className={`flex-1 h-12 rounded-full transition-all ${
+            className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.applicationType === "Foliar"
                 ? "bg-primary text-white"
                 : "bg-card border border-border text-foreground"
@@ -103,7 +103,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
           </button>
           <button
             onClick={() => updateFormData({ applicationType: "Drench" })}
-            className={`flex-1 h-12 rounded-full transition-all ${
+            className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.applicationType === "Drench"
                 ? "bg-primary text-white"
                 : "bg-card border border-border text-foreground"
@@ -145,7 +145,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
         <div className="flex gap-3">
           <button
             onClick={() => updateFormData({ chlorination: true })}
-            className={`flex-1 h-12 rounded-full transition-all ${
+            className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.chlorination
                 ? "bg-primary text-primary-foreground"
                 : "bg-white border border-gray-300 text-gray-700"
@@ -156,7 +156,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
           </button>
           <button
             onClick={() => updateFormData({ chlorination: false })}
-            className={`flex-1 h-12 rounded-full transition-all ${
+            className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               !formData.chlorination
                 ? "bg-primary text-primary-foreground"
                 : "bg-white border border-gray-300 text-gray-700"
@@ -198,7 +198,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
           <button
             key={condition}
             onClick={() => updateFormData({ weather: condition })}
-            className={`flex-shrink-0 px-4 h-10 rounded-full transition-all whitespace-nowrap ${
+            className={`flex-shrink-0 px-4 h-10 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] whitespace-nowrap ${
               formData.weather === condition
                 ? "bg-primary text-primary-foreground"
                 : "bg-white border border-gray-300 text-gray-700"
@@ -223,7 +223,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
           {/* Traje */}
           <button
             onClick={() => togglePPE("Traje protector")}
-            className={`h-12 rounded-full transition-all ${
+            className={`h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.ppe["Traje protector"]
                 ? "bg-primary text-white"
                 : "bg-card border border-border text-foreground"
@@ -235,7 +235,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
           {/* Mascarilla */}
           <button
             onClick={() => togglePPE("Mascarillas")}
-            className={`h-12 rounded-full transition-all ${
+            className={`h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.ppe["Mascarillas"]
                 ? "bg-primary text-white"
                 : "bg-card border border-border text-foreground"
@@ -256,7 +256,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
                 },
               });
             }}
-            className={`h-12 rounded-full transition-all ${
+            className={`h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.ppe["Botas"]
                 ? "bg-primary text-white"
                 : "bg-card border border-border text-foreground"
@@ -268,7 +268,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
           {/* Guantes de nitrilo */}
           <button
             onClick={() => togglePPE("Guantes")}
-            className={`h-12 rounded-full transition-all ${
+            className={`h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.ppe["Guantes"]
                 ? "bg-primary text-white"
                 : "bg-card border border-border text-foreground"
@@ -285,7 +285,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
             <button
               key={item}
               onClick={() => togglePPE(item)}
-              className={`h-12 rounded-full transition-all ${
+              className={`h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
                 formData.ppe[item]
                   ? "bg-primary text-primary-foreground"
                   : "bg-white border border-gray-300 text-gray-700"

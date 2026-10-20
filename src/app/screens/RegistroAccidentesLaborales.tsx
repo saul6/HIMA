@@ -219,7 +219,7 @@ function AccidenteCard({
         <Button
           variant="ghost"
           size="icon"
-          className="shrink-0 text-[var(--primary)] hover:bg-[var(--agro-success-fill)]"
+          className="shrink-0 text-[var(--primary)] transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-[var(--agro-success-fill)]"
           onClick={() => onPDF(acc.id)}
           disabled={cargandoPDF === acc.id}
           aria-label="Descargar PDF"
@@ -935,7 +935,7 @@ export function RegistroAccidentesLaborales() {
           {/* Botón guardar */}
           <div className="px-4 pb-safe-bottom pb-6 pt-3 border-t border-border shrink-0">
             <Button
-              className="w-full h-12 text-base bg-[var(--primary)] hover:bg-[var(--agro-blue)] text-white"
+              className="w-full h-12 text-base bg-[var(--primary)] transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-[var(--agro-blue)] text-white"
               onClick={handleGuardar}
               disabled={guardando}
             >
@@ -999,7 +999,7 @@ export function RegistroAccidentesLaborales() {
               </div>
             </div>
             <Button
-              className="w-full h-12 text-base bg-[var(--primary)] hover:bg-[var(--agro-blue)] text-white"
+              className="w-full h-12 text-base bg-[var(--primary)] transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-[var(--agro-blue)] text-white"
               onClick={handleConsolidado}
               disabled={cargandoConsolidado}
             >

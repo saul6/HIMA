@@ -81,7 +81,7 @@ export function SinOperacion({ ranchoId, itemId, periodos, puedeEditar, hook, on
                 <div className="space-y-2">
                   <Input value={motivoAnular} maxLength={300} placeholder="Motivo para anular" onChange={e => setMotivoAnular(e.target.value)} />
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => { setAnulando(null); setMotivoAnular('') }} className="flex-1 h-9 rounded-lg border border-border text-sm hover:bg-muted">
+                    <button type="button" onClick={() => { setAnulando(null); setMotivoAnular('') }} className="flex-1 h-9 rounded-lg border border-border text-sm transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-muted">
                       Cancelar
                     </button>
                     <button
@@ -129,7 +129,7 @@ export function SinOperacion({ ranchoId, itemId, periodos, puedeEditar, hook, on
           </div>
           <Input value={texto} maxLength={300} placeholder="Detalle del motivo" onChange={e => setTexto(e.target.value)} />
           <div className="flex gap-2">
-            <button type="button" onClick={() => setAbierto(false)} className="flex-1 h-10 rounded-lg border border-border text-sm hover:bg-muted">
+            <button type="button" onClick={() => setAbierto(false)} className="flex-1 h-10 rounded-lg border border-border text-sm transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-muted">
               Cancelar
             </button>
             <Boton type="button" onClick={registrar} cargando={guardando} className="flex-1">

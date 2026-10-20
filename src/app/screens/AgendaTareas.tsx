@@ -897,7 +897,7 @@ function DetalleSheet({
                   />
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => { setAccion(null); setAprobarNota('') }} className="flex-1 h-10 rounded-lg text-sm border border-border hover:bg-muted" style={{ color: 'var(--foreground)' }}>
+                  <button onClick={() => { setAccion(null); setAprobarNota('') }} className="flex-1 h-10 rounded-lg text-sm border border-border transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-muted" style={{ color: 'var(--foreground)' }}>
                     Cancelar
                   </button>
                   <Boton onClick={handleAprobar} cargando={guardando} className="flex-1">
@@ -921,7 +921,7 @@ function DetalleSheet({
                   />
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => { setAccion(null); setRegresarMotivo('') }} className="flex-1 h-10 rounded-lg text-sm border border-border hover:bg-muted" style={{ color: 'var(--foreground)' }}>
+                  <button onClick={() => { setAccion(null); setRegresarMotivo('') }} className="flex-1 h-10 rounded-lg text-sm border border-border transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-muted" style={{ color: 'var(--foreground)' }}>
                     Cancelar
                   </button>
                   <button
@@ -996,7 +996,7 @@ function DetalleSheet({
                       Esta acción no se puede deshacer. ¿Estás seguro?
                     </p>
                     <div className="flex gap-2">
-                      <button onClick={() => setAccion(null)} className="flex-1 h-10 rounded-lg text-sm border border-border hover:bg-muted" style={{ color: 'var(--foreground)' }}>
+                      <button onClick={() => setAccion(null)} className="flex-1 h-10 rounded-lg text-sm border border-border transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-muted" style={{ color: 'var(--foreground)' }}>
                         No, volver
                       </button>
                       <button
@@ -1021,7 +1021,7 @@ function DetalleSheet({
                       />
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => { setAccion(null); setCancelarMotivo(''); setCancelarConfirm(false) }} className="flex-1 h-10 rounded-lg text-sm border border-border hover:bg-muted" style={{ color: 'var(--foreground)' }}>
+                      <button onClick={() => { setAccion(null); setCancelarMotivo(''); setCancelarConfirm(false) }} className="flex-1 h-10 rounded-lg text-sm border border-border transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-muted" style={{ color: 'var(--foreground)' }}>
                         Cancelar
                       </button>
                       <button

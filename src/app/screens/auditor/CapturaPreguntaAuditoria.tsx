@@ -840,7 +840,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     onClick={() => !bloqueado && handleRespuesta(preguntaId, opt.value)}
                     disabled={bloqueado}
                     title={opt.label}
-                    className="flex-1 min-w-0 h-10 rounded-lg text-xs font-bold border transition-all disabled:opacity-50"
+                    className="flex-1 min-w-0 h-10 rounded-lg text-xs font-bold border transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] disabled:opacity-50"
                     style={
                       active
                         ? { backgroundColor: opt.activeStyle.bg, color: opt.activeStyle.color, borderColor: 'transparent' }

@@ -43,13 +43,13 @@ export function VisitaCard({ visita, puedeEditar, onProgramar, onTerminar, onRep
                 >
                   Terminar visita
                 </button>
-                <button type="button" onClick={onReprogramar} className={`${boton} border-border bg-card text-foreground hover:bg-muted`} style={{ fontWeight: 600 }}>
+                <button type="button" onClick={onReprogramar} className={`${boton} border-border bg-card text-foreground transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-muted`} style={{ fontWeight: 600 }}>
                   Reprogramar
                 </button>
                 <button
                   type="button"
                   onClick={onCancelar}
-                  className={`${boton} bg-card hover:bg-muted`}
+                  className={`${boton} bg-card transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-muted`}
                   style={{ borderColor: 'var(--agro-red)', color: 'var(--agro-danger-text)', fontWeight: 600 }}
                 >
                   Cancelar

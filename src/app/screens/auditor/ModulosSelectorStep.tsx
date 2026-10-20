@@ -23,7 +23,7 @@ export function ModulosSelectorStep({ modulos, seleccionados, onToggle }: Props)
             key={m.id}
             type="button"
             onClick={() => onToggle(m.id)}
-            className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border transition-all"
+            className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)]"
             style={{
               backgroundColor: sel ? 'var(--accent)' : 'var(--card)',
               borderColor: sel ? 'var(--primary)' : 'var(--border)',

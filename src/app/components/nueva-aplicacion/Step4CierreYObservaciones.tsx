@@ -51,7 +51,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
         <div className="flex gap-3">
           <button
             onClick={() => updateFormData({ leftover: true })}
-            className={`flex-1 h-12 rounded-full transition-all ${
+            className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.leftover
                 ? "bg-primary text-white"
                 : "bg-card border border-border text-foreground"
@@ -62,7 +62,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
           </button>
           <button
             onClick={() => updateFormData({ leftover: false })}
-            className={`flex-1 h-12 rounded-full transition-all ${
+            className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               !formData.leftover
                 ? "bg-primary text-white"
                 : "bg-card border border-border text-foreground"
@@ -98,7 +98,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
             <div className="flex gap-3">
               <button
                 onClick={() => updateFormData({ eliminatedDesignatedArea: true })}
-                className={`flex-1 h-12 rounded-full transition-all ${
+                className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
                   formData.eliminatedDesignatedArea
                     ? "bg-primary text-white"
                     : "bg-card border border-border text-foreground"
@@ -109,7 +109,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
               </button>
               <button
                 onClick={() => updateFormData({ eliminatedDesignatedArea: false })}
-                className={`flex-1 h-12 rounded-full transition-all ${
+                className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
                   !formData.eliminatedDesignatedArea
                     ? "bg-primary text-white"
                     : "bg-card border border-border text-foreground"

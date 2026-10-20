@@ -23,7 +23,7 @@ const BASE =
   'disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0'
 
 const VARIANTES: Record<Variante, string> = {
-  primario: 'bg-primary text-primary-foreground hover:bg-primary/90',
+  primario: 'bg-primary text-primary-foreground transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-primary/90',
   secundario: 'border border-border-control bg-transparent text-foreground hover:bg-muted',
   icono: 'border border-transparent bg-transparent text-foreground hover:bg-muted',
 }

@@ -1421,12 +1421,12 @@ export function BibliotecaHistorial() {
                 {progresoActual} de {progresoTotal} registros
               </p>
             </div>
-            <div className="w-full h-2 rounded-full" style={{ background: 'var(--muted)' }}>
+            <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--muted)' }}>
               <div
-                className="h-2 rounded-full transition-all duration-300"
+                className="h-2 w-full rounded-full transition-transform duration-300 ease-[var(--ease-out)]"
                 style={{
                   background: 'var(--primary)',
-                  width: progresoTotal > 0 ? `${(progresoActual / progresoTotal) * 100}%` : '0%',
+                  transform: `translateX(-${progresoTotal > 0 ? 100 - (progresoActual / progresoTotal) * 100 : 100}%)`,
                 }}
               />
             </div>

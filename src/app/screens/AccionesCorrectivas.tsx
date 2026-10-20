@@ -426,7 +426,7 @@ export function AccionesCorrectivas() {
           ]}
           value={filtro}
           onChange={setFiltro}
-          inactiveClassName="bg-muted border-transparent text-muted-foreground hover:bg-card"
+          inactiveClassName="bg-muted border-transparent text-muted-foreground transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-card"
         />
       </div>
 

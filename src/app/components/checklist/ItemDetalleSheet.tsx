@@ -298,7 +298,7 @@ function Contenido({
           {!esModulo && (
             confirmarQuitar ? (
               <div className="flex gap-2">
-                <button type="button" onClick={() => setConfirmarQuitar(false)} className="flex-1 h-10 rounded-lg border border-border text-sm hover:bg-muted">
+                <button type="button" onClick={() => setConfirmarQuitar(false)} className="flex-1 h-10 rounded-lg border border-border text-sm transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-muted">
                   No
                 </button>
                 <button

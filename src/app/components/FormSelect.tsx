@@ -28,7 +28,7 @@ export function FormSelect({
   return (
     <div className="relative mt-3">
       <label
-        className={`absolute left-4 transition-all pointer-events-none text-muted-foreground z-10
+        className={`absolute left-4 transition-[top,font-size,font-weight] duration-[var(--motion-fast)] ease-[var(--ease-out)] pointer-events-none text-muted-foreground z-10
           ${isFloating ? "top-2 text-caption" : "top-4 text-sm"}`}
         style={{ fontWeight: isFloating ? 600 : 400 }}
       >
@@ -41,7 +41,7 @@ export function FormSelect({
         onBlur={() => setIsFocused(false)}
         className={`w-full h-16 px-4 pt-7 pb-2 rounded-lg border border-border-control bg-input-background
           appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary
-          transition-all cursor-pointer text-sm`}
+          transition-[color,background-color,border-color,box-shadow] duration-[var(--motion-fast)] ease-[var(--ease-out)] cursor-pointer text-sm`}
       >
         <option value="">{placeholder}</option>
         {options.map((option) => (

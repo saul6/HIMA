@@ -227,7 +227,7 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
                 <button
                   key={level}
                   onClick={() => setCurrentProduct((prev) => ({ ...prev, infestationLevel: level }))}
-                  className={`flex-1 h-10 rounded-full transition-all ${
+                  className={`flex-1 h-10 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
                     currentProduct.infestationLevel === level
                       ? "bg-primary text-white"
                       : "bg-card border border-border text-foreground"

@@ -1273,7 +1273,7 @@ export function Home() {
                           else btnRefs.current.delete(grupo.key)
                         }}
                         onClick={() => abrirCategoria(grupo.key)}
-                        className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border bg-card transition-all duration-[var(--motion-fast)] hover:-translate-y-[2px] hover:border-secondary focus-visible:border-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                        className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border bg-card transition-[transform,border-color] duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:-translate-y-[2px] hover:border-secondary focus-visible:border-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                         style={cascadeStyle(index, !reducedMotion && primeraCargaModulosRef.current)}
                       >
                         <div

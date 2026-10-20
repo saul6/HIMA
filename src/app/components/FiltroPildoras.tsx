@@ -21,7 +21,7 @@ interface FiltroPildorasProps<T extends string = string> {
   inactiveClassName?: string
 }
 
-const INACTIVE_DEFAULT = "bg-card border-border text-foreground hover:bg-muted"
+const INACTIVE_DEFAULT = "bg-card border-border text-foreground transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-muted"
 
 function normalizar<T extends string>(opt: FiltroPildorasOption<T> | T): FiltroPildorasOption<T> {
   return typeof opt === "string" ? { value: opt, label: opt } : opt

@@ -1331,8 +1331,8 @@ export function ReporteIncidencias() {
                   </div>
                   <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-primary transition-all duration-300"
-                      style={{ width: `${Math.round((progreso.procesadas / progreso.total) * 100)}%` }}
+                      className="h-full w-full bg-primary transition-transform duration-300 ease-[var(--ease-out)]"
+                      style={{ transform: `translateX(-${100 - Math.round((progreso.procesadas / progreso.total) * 100)}%)` }}
                     />
                   </div>
                 </div>

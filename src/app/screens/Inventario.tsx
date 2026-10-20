@@ -251,7 +251,7 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
                 <button
                   key={t.value}
                   onClick={() => setForm((prev) => ({ ...prev, tipo: t.value }))}
-                  className={`flex-1 h-10 rounded-full transition-all text-sm ${
+                  className={`flex-1 h-10 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] text-sm ${
                     form.tipo === t.value
                       ? "bg-primary text-white"
                       : "bg-card border border-border text-foreground"

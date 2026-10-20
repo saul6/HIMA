@@ -173,7 +173,7 @@ function DetalleCapturado({ lote, onCerrar }: { lote: LoteOutbox; onCerrar: () =
             <p className="text-sm text-foreground font-semibold">{lote.descripcion}</p>
             <p className="text-xs text-muted-foreground">Capturado: {formatFechaCaptura(lote.capturadoEn)}</p>
           </div>
-          <button onClick={onCerrar} aria-label="Cerrar" className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted">
+          <button onClick={onCerrar} aria-label="Cerrar" className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-muted">
             <X className="w-4 h-4" />
           </button>
         </div>

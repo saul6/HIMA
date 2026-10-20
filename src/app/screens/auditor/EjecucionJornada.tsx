@@ -54,7 +54,7 @@ function OperacionChip({ op, activa, onClick }: {
     <button
       onClick={onClick}
       disabled={!op.disponible}
-      className="flex flex-col gap-1 px-3 py-2 rounded-xl border transition-all flex-shrink-0 disabled:opacity-50 text-left"
+      className="flex flex-col gap-1 px-3 py-2 rounded-xl border transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] flex-shrink-0 disabled:opacity-50 text-left"
       style={{
         minWidth: 160,
         backgroundColor: activa ? 'var(--primary)' : 'var(--card)',
