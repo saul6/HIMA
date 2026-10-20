@@ -735,26 +735,44 @@ button:not(:disabled):active:not(.no-press):not(.fixed):not(.sticky):not([style*
   }
 }
 
-/* BottomSheet por defecto (sin animateFrom, ~68 usos) — en escritorio entra
-   con fade + escala desde 0.96; en móvil queda igual (sin animación).
-   Solo `scale` aquí, nunca `translateY`: el centrado vertical del panel
-   (`md:-translate-y-1/2`) lo pone Tailwind v4 con la propiedad CSS nativa
-   `translate` (independiente de `transform`, ver spec CSS Transforms
-   Level 2). Si estos keyframes repitieran `translateY(-50%)` en `transform`,
-   el navegador aplicaría AMBAS propiedades a la vez (nativa + legacy) y el
-   panel quedaría desplazado el doble (-100%) — pegado arriba y recortado. */
-@keyframes sheetDesktopIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+/* BottomSheet por defecto (sin animateFrom, ~68 usos) — entrada suave.
+   Celular: el panel sube 16 px con fundido (220 ms); escritorio: fundido con
+   escala .98 -> 1. Fondo: fundido. Solo se anima la entrada (la salida desmonta
+   al instante para no tocar sumarVentana, ventanas encimadas ni el foco).
+   - Celular usa la propiedad `translate` (no `transform`) y escritorio solo
+     `scale` en `transform`: el centrado vertical del panel
+     (`md:-translate-y-1/2`) lo pone Tailwind v4 con la propiedad nativa
+     `translate`; repetirlo en `transform` lo aplicaría doble.
+   - Fill `backwards` (no `both`): al terminar no queda ningún transform en el
+     panel, así no se vuelve contenedor de elementos fixed internos.
+   - Ninguna medida cambia durante la animación (el lienzo de firma mide con
+     clientWidth/clientHeight, que ignoran transform). */
+@keyframes sheetSubeMovil {
+  from { opacity: 0; translate: 0 16px; }
+}
+@keyframes sheetEntraEscritorio {
+  from { opacity: 0; transform: scale(0.98); }
+}
+@keyframes sheetFundido {
+  from { opacity: 0; }
+}
+.sheet-entrada {
+  animation: sheetSubeMovil var(--motion-base) var(--ease-out) backwards;
+}
+.sheet-fondo-entrada {
+  animation: sheetFundido var(--motion-base) var(--ease-out) backwards;
 }
 @media (min-width: 768px) {
-  .sheet-desktop-fade {
-    animation: sheetDesktopIn var(--motion-base) var(--ease-out) both;
+  .sheet-entrada {
+    animation: sheetEntraEscritorio var(--motion-base) var(--ease-out) backwards;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .sheet-desktop-fade {
-    animation: none;
+  .sheet-entrada {
+    animation: sheetFundido var(--motion-fast) linear backwards;
+  }
+  .sheet-fondo-entrada {
+    animation-duration: var(--motion-fast);
   }
 }
 

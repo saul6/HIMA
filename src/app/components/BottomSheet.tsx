@@ -164,7 +164,7 @@ function StaticSheet({ open, onClose, height, title, children, raised }: {
   if (!open) return null
   return (
     <Portal>
-      <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} aria-hidden="true" />
+      <div className="fixed inset-0 bg-black/40 z-40 sheet-fondo-entrada" onClick={onClose} aria-hidden="true" />
       <div
         ref={panelRef}
         role="dialog"
@@ -172,7 +172,7 @@ function StaticSheet({ open, onClose, height, title, children, raised }: {
         aria-labelledby={title ? titleId : undefined}
         aria-label={title ? undefined : 'Ventana'}
         tabIndex={-1}
-        className={`${PANEL_CLASS} ${raised ? 'bottom-3' : 'bottom-0'} sheet-desktop-fade sheet-safe-bottom outline-none${height ? '' : ' sheet-max-h'}`}
+        className={`${PANEL_CLASS} ${raised ? 'bottom-3' : 'bottom-0'} sheet-entrada sheet-safe-bottom outline-none${height ? '' : ' sheet-max-h'}`}
         style={height ? { height } : undefined}
       >
         {title && <SheetHeader title={title} titleId={titleId} onClose={onClose} />}

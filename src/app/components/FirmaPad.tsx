@@ -41,9 +41,10 @@ export const FirmaPad = forwardRef<FirmaPadRef, FirmaPadProps>(function FirmaPad
     const canvas = canvasRef.current
     if (!canvas) return
     const dpr = window.devicePixelRatio || 1
-    const rect = canvas.getBoundingClientRect()
-    canvas.width = Math.round(rect.width * dpr)
-    canvas.height = Math.round(rect.height * dpr)
+    // clientWidth/Height ignoran transform: si la ventana aún está animando su
+    // entrada (escala), getBoundingClientRect daría un tamaño menor y el trazo saldría desfasado.
+    canvas.width = Math.round(canvas.clientWidth * dpr)
+    canvas.height = Math.round(canvas.clientHeight * dpr)
     const ctx = canvas.getContext('2d')!
     ctx.scale(dpr, dpr)
   }, [])
