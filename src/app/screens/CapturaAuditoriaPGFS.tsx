@@ -110,7 +110,7 @@ function CampoEsquema({
         style={{ ...base, height: '2.25rem' }}
       />
       {esquema.regla_validacion && (
-        <p className="text-[10px] leading-snug" style={{ color: 'var(--muted-foreground)' }}>
+        <p className="text-caption leading-snug" style={{ color: 'var(--muted-foreground)' }}>
           {esquema.regla_validacion}
         </p>
       )}
@@ -158,14 +158,14 @@ function PreguntaCard({
       {/* Encabezado */}
       <div className="flex items-start gap-2">
         <span
-          className="text-[10px] font-mono flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
+          className="text-caption font-mono flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
           style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
         >
           {pregunta.question_id}
         </span>
         {pregunta.tipo === 'informativa' && (
           <span
-            className="text-[10px] font-semibold flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
+            className="text-caption font-semibold flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
             style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
           >
             Informativa
@@ -173,7 +173,7 @@ function PreguntaCard({
         )}
         {pregunta.trigger_falla_automatica !== 'ninguno' && (
           <span
-            className="text-[10px] font-semibold flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
+            className="text-caption font-semibold flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
             style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
           >
             Falla automática
@@ -187,10 +187,10 @@ function PreguntaCard({
       {/* Información mínima para validar */}
       {pregunta.info_minima && (
         <div className="rounded-lg px-3 py-2 flex flex-col gap-0.5" style={{ backgroundColor: 'var(--agro-success-fill)' }}>
-          <p className="text-[10px] font-semibold" style={{ color: 'var(--agro-success-text)' }}>
+          <p className="text-caption font-semibold" style={{ color: 'var(--agro-success-text)' }}>
             Para validar, registra:
           </p>
-          <p className="text-[11px] leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--agro-success-text)' }}>
+          <p className="text-caption leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--agro-success-text)' }}>
             {pregunta.info_minima}
           </p>
         </div>
@@ -223,7 +223,7 @@ function PreguntaCard({
       {falla && (
         <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
           <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
-          <p className="text-[11px] font-medium" style={{ color: 'var(--agro-info-text)' }}>
+          <p className="text-caption font-medium" style={{ color: 'var(--agro-info-text)' }}>
             Alerta interna: esta pregunta activa un control de falla automática. Revisar con el auditor certificado.
           </p>
         </div>
@@ -234,11 +234,11 @@ function PreguntaCard({
         <div className="flex items-start gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
           <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
           <div className="flex flex-col gap-0.5">
-            <p className="text-[11px] font-semibold" style={{ color: 'var(--agro-info-text)' }}>
+            <p className="text-caption font-semibold" style={{ color: 'var(--agro-info-text)' }}>
               Incompleta — registra la observación para validar esta respuesta
             </p>
             {pregunta.info_minima && (
-              <p className="text-[11px] whitespace-pre-wrap" style={{ color: 'var(--agro-info-text)' }}>
+              <p className="text-caption whitespace-pre-wrap" style={{ color: 'var(--agro-info-text)' }}>
                 {pregunta.info_minima}
               </p>
             )}
@@ -264,7 +264,7 @@ function PreguntaCard({
 
       {/* Observación libre */}
       <div className="flex flex-col gap-1">
-        <label className="text-[11px] font-medium" style={{ color: 'var(--muted-foreground)' }}>
+        <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>
           Observación del auditor
         </label>
         <TextareaContador limite={limiteTexto('aud_observaciones', 'observacion')}
@@ -274,7 +274,7 @@ function PreguntaCard({
           disabled={cerrada}
           rows={2}
           placeholder="Notas libres sobre esta pregunta…"
-          className="resize-none text-[0.8125rem]"
+          className="resize-none text-body"
           style={{
             borderRadius: 'var(--radius)',
             border: '1px solid var(--border)',
@@ -288,23 +288,23 @@ function PreguntaCard({
       {/* Save status */}
       <div className="flex justify-end items-center gap-2 min-h-[1rem]">
         {saveStatus === 'saving' && (
-          <span className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+          <span className="flex items-center gap-1 text-caption" style={{ color: 'var(--muted-foreground)' }}>
             <Loader size={11} className="animate-spin" /> Guardando…
           </span>
         )}
         {saveStatus === 'saved' && (
-          <span className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--agro-success-text)' }}>
+          <span className="flex items-center gap-1 text-caption" style={{ color: 'var(--agro-success-text)' }}>
             <CheckCircle size={11} /> Guardado
           </span>
         )}
         {saveStatus === 'error' && (
           <>
-            <span className="field-error-shake flex items-center gap-1 text-[10px]" style={{ color: 'var(--agro-danger-text)' }}>
+            <span className="field-error-shake flex items-center gap-1 text-caption" style={{ color: 'var(--agro-danger-text)' }}>
               <XCircle size={11} /> {saveErrorMsg ?? 'No se pudo guardar. Reintenta.'}
             </span>
             <button
               onClick={onRetry}
-              className="text-[10px] underline flex-shrink-0"
+              className="text-caption underline flex-shrink-0"
               style={{ color: 'var(--agro-danger-text)' }}
             >
               Reintentar
@@ -491,7 +491,7 @@ export function CapturaAuditoriaPGFS() {
           <>
             {auditoria && (
               <span
-                className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+                className="text-caption font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
                 style={{ backgroundColor: estadoStyle.bg, color: estadoStyle.color }}
               >
                 {ESTADO_LABELS[auditoria.estado] ?? auditoria.estado}
@@ -509,7 +509,7 @@ export function CapturaAuditoriaPGFS() {
       {/* Leyenda legal */}
       <div className="mx-4 mt-3 rounded-xl border border-border bg-card px-4 py-3 flex gap-3">
         <AlertCircle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
-        <p className="text-[11px] leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>
+        <p className="text-caption leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>
           {LEYENDA_LEGAL_PGFS}
         </p>
       </div>
@@ -535,7 +535,7 @@ export function CapturaAuditoriaPGFS() {
                   style={{ backgroundColor: 'var(--muted)' }}
                 >
                   <span
-                    className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+                    className="text-caption font-mono px-1.5 py-0.5 rounded"
                     style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
                   >
                     {bloque.codigo}
@@ -543,7 +543,7 @@ export function CapturaAuditoriaPGFS() {
                   <p className="text-xs font-semibold flex-1" style={{ color: 'var(--foreground)' }}>
                     {bloque.nombre}
                   </p>
-                  <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                  <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                     {preguntasBloque.length} preg.
                   </span>
                 </div>

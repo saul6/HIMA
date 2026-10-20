@@ -286,7 +286,7 @@ export function RegistroMuestrasLaboratorio() {
                 <p className="text-xs text-muted-foreground mt-1">{m.laboratorio}</p>
                 <div className="flex flex-wrap gap-1 mt-2">
                   {m.microorganismos.map(c => (
-                    <span key={c} className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{c}</span>
+                    <span key={c} className="text-caption px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{c}</span>
                   ))}
                 </div>
                 {obligatoria && !firmas[m.id]?.realizo && (

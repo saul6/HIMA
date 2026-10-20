@@ -778,7 +778,7 @@ export function InspeccionVidrioPlastico() {
                         {insp.rancho_nombre}
                       </span>
                       <span
-                        className="text-[11px] px-2 py-0.5 rounded bg-muted text-muted-foreground flex-shrink-0"
+                        className="text-caption px-2 py-0.5 rounded bg-muted text-muted-foreground flex-shrink-0"
                         style={{ fontWeight: 600 }}
                       >
                         {insp.materiales.length} materiales
@@ -803,7 +803,7 @@ export function InspeccionVidrioPlastico() {
                   {(Object.entries(estadoResumen) as [Estado, number][]).map(([estado, count]) => (
                     <span
                       key={estado}
-                      className="text-[10px] px-2 py-0.5 rounded"
+                      className="text-caption px-2 py-0.5 rounded"
                       style={{
                         backgroundColor: ESTADO_CHIP[estado].bg,
                         color: ESTADO_CHIP[estado].text,

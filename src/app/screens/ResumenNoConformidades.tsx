@@ -545,7 +545,7 @@ export function ResumenNoConformidades() {
                       >
                         <span className="text-foreground">{item.modulo_label}</span>
                         <span
-                          className="px-1.5 py-0.5 rounded text-[10px]"
+                          className="px-1.5 py-0.5 rounded text-caption"
                           style={{
                             backgroundColor: 'var(--agro-success-fill)',
                             color: 'var(--agro-success-text)',
@@ -608,7 +608,7 @@ export function ResumenNoConformidades() {
                           >
                             {item.modulo_label}
                             <span
-                              className="px-1.5 py-0.5 rounded text-[10px]"
+                              className="px-1.5 py-0.5 rounded text-caption"
                               style={{
                                 backgroundColor: 'var(--muted)',
                                 color: 'var(--muted-foreground)',

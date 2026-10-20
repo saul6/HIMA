@@ -958,7 +958,7 @@ export function MantenimientoPreventivo() {
                             >
                               <span className="flex-1 text-xs text-foreground">{item.nombre}</span>
                               {item.frecuencia && (
-                                <span className="text-[10px] text-muted-foreground flex-shrink-0">
+                                <span className="text-caption text-muted-foreground flex-shrink-0">
                                   {frecuenciaLabel(item.frecuencia)}
                                 </span>
                               )}

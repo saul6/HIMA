@@ -611,7 +611,7 @@ export function BotiquinPrimerosAuxilios() {
                         {r.rancho_nombre}
                       </span>
                       <span
-                        className={`text-[11px] px-2 py-0.5 rounded flex-shrink-0 ${
+                        className={`text-caption px-2 py-0.5 rounded flex-shrink-0 ${
                           completo
                             ? 'bg-agro-success-fill text-agro-success-text'
                             : 'bg-agro-info-fill text-agro-info-text'
@@ -651,7 +651,7 @@ export function BotiquinPrimerosAuxilios() {
                     return (
                       <span
                         key={a.key}
-                        className={`text-[10px] px-2 py-0.5 rounded ${
+                        className={`text-caption px-2 py-0.5 rounded ${
                           tiene
                             ? 'bg-agro-success-fill text-agro-success-text'
                             : 'bg-agro-danger-fill text-agro-danger-text'

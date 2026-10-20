@@ -987,7 +987,7 @@ export function ReporteIncidencias() {
                           {r.rancho_nombre}
                         </span>
                         <span
-                          className="text-[11px] px-2 py-0.5 rounded flex-shrink-0 bg-muted text-muted-foreground"
+                          className="text-caption px-2 py-0.5 rounded flex-shrink-0 bg-muted text-muted-foreground"
                           style={{ fontWeight: 600 }}
                         >
                           {r.incidencias.length} incidencia{r.incidencias.length !== 1 ? 's' : ''}
@@ -1194,7 +1194,7 @@ export function ReporteIncidencias() {
                   {sheetPaso === 'firma_decision' ? 'Firmar reporte' : sheetPaso === 'firma_gate' ? 'Registra tu firma' : 'Nuevo reporte'}
                 </h2>
                 {sheetPaso === 'form' && estadoBorrador === 'guardado' && (
-                  <span className="text-[11px] text-muted-foreground">Borrador guardado</span>
+                  <span className="text-caption text-muted-foreground">Borrador guardado</span>
                 )}
               </div>
               <button aria-label="Cerrar"

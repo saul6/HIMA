@@ -1125,7 +1125,7 @@ export function BibliotecaHistorial() {
         <div className="bg-card rounded-xl border border-border p-4">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:items-end">
             <div className="min-w-0">
-              <label htmlFor="historial-desde" className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+              <label htmlFor="historial-desde" className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                 Desde
               </label>
               <input
@@ -1138,7 +1138,7 @@ export function BibliotecaHistorial() {
               />
             </div>
             <div className="min-w-0">
-              <label htmlFor="historial-hasta" className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+              <label htmlFor="historial-hasta" className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                 Hasta
               </label>
               <input
@@ -1152,7 +1152,7 @@ export function BibliotecaHistorial() {
             </div>
 
             <div className="col-span-2 md:col-span-1 min-w-0">
-              <label htmlFor="historial-sitio" className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+              <label htmlFor="historial-sitio" className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                 {terminosSitio.singular}
               </label>
               <select
@@ -1170,7 +1170,7 @@ export function BibliotecaHistorial() {
             </div>
 
             <div className="col-span-2 md:col-span-1 min-w-0">
-              <span id="historial-modulos-label" className="text-[11px] block" style={{ color: 'var(--muted-foreground)' }}>
+              <span id="historial-modulos-label" className="text-caption block" style={{ color: 'var(--muted-foreground)' }}>
                 Módulos
               </span>
               <button
@@ -1199,11 +1199,11 @@ export function BibliotecaHistorial() {
           </div>
 
           {!fechasValidas ? (
-            <p role="status" aria-live="polite" className="text-[11px] mt-2" style={{ color: 'var(--destructive)' }}>
+            <p role="status" aria-live="polite" className="text-caption mt-2" style={{ color: 'var(--destructive)' }}>
               La fecha inicial debe ser anterior o igual a la final
             </p>
           ) : loading ? (
-            <p role="status" aria-live="polite" className="text-[11px] mt-2" style={{ color: 'var(--muted-foreground)' }}>
+            <p role="status" aria-live="polite" className="text-caption mt-2" style={{ color: 'var(--muted-foreground)' }}>
               Buscando…
             </p>
           ) : null}
@@ -1326,7 +1326,7 @@ export function BibliotecaHistorial() {
               <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                 Sin registros en este periodo
               </p>
-              <p className="text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
+              <p className="text-small" style={{ color: 'var(--muted-foreground)' }}>
                 Prueba un rango de fechas más amplio
               </p>
             </motion.div>
@@ -1362,27 +1362,27 @@ export function BibliotecaHistorial() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span
-                            className="px-2 py-0.5 rounded-full text-[10px] text-white"
+                            className="px-2 py-0.5 rounded-full text-caption text-white"
                             style={{ backgroundColor: MODULO_META[reg.modulo].color, fontWeight: 700 }}
                           >
                             {reg.modulo}
                           </span>
-                          <span className="text-[11px] truncate" style={{ color: 'var(--muted-foreground)' }}>
+                          <span className="text-caption truncate" style={{ color: 'var(--muted-foreground)' }}>
                             {MODULO_META[reg.modulo].label}
                           </span>
                         </div>
                         <p
-                          className="text-[13px] truncate"
+                          className="text-body truncate"
                           style={{ fontWeight: 600, overflowWrap: 'anywhere' }}
                           title={reg.rancho_nombre}
                         >
                           {reg.rancho_nombre}
                         </p>
-                        <p className="text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
+                        <p className="text-small" style={{ color: 'var(--muted-foreground)' }}>
                           {formatFecha(reg.fecha)}
                         </p>
                         <p
-                          className="text-[11px] mt-0.5 line-clamp-2"
+                          className="text-caption mt-0.5 line-clamp-2"
                           style={{ color: 'var(--muted-foreground)', overflowWrap: 'anywhere' }}
                           title={reg.resumen}
                         >
@@ -1418,8 +1418,8 @@ export function BibliotecaHistorial() {
           <div className="bg-card rounded-2xl p-6 mx-4 w-full max-w-xs text-center space-y-4">
             <Loader2 className="w-8 h-8 animate-spin mx-auto" style={{ color: 'var(--primary)' }} />
             <div>
-              <p className="text-[15px]" style={{ fontWeight: 600 }}>Generando paquete PDF</p>
-              <p className="text-[13px] mt-1" style={{ color: 'var(--muted-foreground)' }}>
+              <p className="text-seccion" style={{ fontWeight: 600 }}>Generando paquete PDF</p>
+              <p className="text-small mt-1" style={{ color: 'var(--muted-foreground)' }}>
                 {progresoActual} de {progresoTotal} registros
               </p>
             </div>
@@ -1448,7 +1448,7 @@ export function BibliotecaHistorial() {
               initial={reducedMotion ? false : { scale: 0.7 }}
               animate={{ scale: 1 }}
               transition={reducedMotion ? { duration: 0 } : SPRING_SUAVE}
-              className="px-2 py-0.5 rounded-full text-[11px]"
+              className="px-2 py-0.5 rounded-full text-caption"
               style={{ backgroundColor: 'rgba(42, 173, 149, 0.16)', color: 'var(--primary)', fontWeight: 700 }}
             >
               {filtroModulos.size}

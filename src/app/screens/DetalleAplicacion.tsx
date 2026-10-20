@@ -300,7 +300,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <div>
       <div className="bg-accent -mx-4 px-4 py-2 mb-4">
         <h3
-          className="text-[13px]"
+          className="text-body"
           style={{
             fontWeight: 600,
             color: resolvedTheme === "dark" ? "var(--ring)" : "var(--accent-foreground)",

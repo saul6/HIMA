@@ -31,7 +31,7 @@ function ChipEstado({ lote }: { lote: LoteOutbox }) {
   if (lote.estado === 'pendiente') {
     return (
       <span
-        className="text-[10px] px-2 py-0.5 rounded"
+        className="text-caption px-2 py-0.5 rounded"
         style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}
       >
         Pendiente de subir
@@ -41,7 +41,7 @@ function ChipEstado({ lote }: { lote: LoteOutbox }) {
   if (lote.estado === 'rechazado') {
     return (
       <span
-        className="text-[10px] px-2 py-0.5 rounded"
+        className="text-caption px-2 py-0.5 rounded"
         style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', fontWeight: 600 }}
       >
         No se pudo subir
@@ -51,7 +51,7 @@ function ChipEstado({ lote }: { lote: LoteOutbox }) {
   if (lote.tarde) {
     return (
       <span
-        className="text-[10px] px-2 py-0.5 rounded"
+        className="text-caption px-2 py-0.5 rounded"
         style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', fontWeight: 600 }}
       >
         Sincronizado tarde
@@ -60,7 +60,7 @@ function ChipEstado({ lote }: { lote: LoteOutbox }) {
   }
   return (
     <span
-      className="text-[10px] px-2 py-0.5 rounded"
+      className="text-caption px-2 py-0.5 rounded"
       style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', fontWeight: 600 }}
     >
       Subido
@@ -142,7 +142,7 @@ function CardLote({
       )}
 
       {lote.intentos > 0 && lote.estado === 'pendiente' && (
-        <p className="text-[10px] text-muted-foreground">{lote.intentos} {lote.intentos === 1 ? 'intento' : 'intentos'}</p>
+        <p className="text-caption text-muted-foreground">{lote.intentos} {lote.intentos === 1 ? 'intento' : 'intentos'}</p>
       )}
     </FilaRegistro>
   )

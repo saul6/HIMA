@@ -75,7 +75,7 @@ function ChipPrioridad({ prioridad }: { prioridad: PrioridadTarea }) {
   const s = styles[prioridad]
   return (
     <span
-      className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold leading-none"
+      className="inline-flex items-center px-2 py-0.5 rounded-full text-caption font-semibold leading-none"
       style={{ backgroundColor: s.bg, color: s.text }}
     >
       {PRIORIDAD_LABELS[prioridad]}
@@ -87,7 +87,7 @@ function ChipEstado({ estado, vencida }: { estado: EstadoTarea; vencida: boolean
   if (vencida && (estado === 'pendiente' || estado === 'en_progreso')) {
     return (
       <span
-        className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold leading-none"
+        className="inline-flex items-center px-2 py-0.5 rounded-full text-caption font-semibold leading-none"
         style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
       >
         Vencida
@@ -104,7 +104,7 @@ function ChipEstado({ estado, vencida }: { estado: EstadoTarea; vencida: boolean
   const s = map[estado]
   return (
     <span
-      className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold leading-none"
+      className="inline-flex items-center px-2 py-0.5 rounded-full text-caption font-semibold leading-none"
       style={{ backgroundColor: s.bg, color: s.text }}
     >
       {s.label}
@@ -152,7 +152,7 @@ function TareaCard({
         {esTareaDeChecklist(tarea) && <ChipChecklist />}
         {(tarea.acuse_estado === 'pendiente' || tarea.acuse_estado === 'desactualizado') && (
           <span
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold leading-none"
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-caption font-semibold leading-none"
             style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
           >
             <PenLine className="w-2.5 h-2.5" />
@@ -1058,7 +1058,7 @@ function DetalleSheet({
                     })}
                   </p>
                 </div>
-                <p className="text-[10px] font-mono" style={{ color: 'var(--muted-foreground)' }}>
+                <p className="text-caption font-mono" style={{ color: 'var(--muted-foreground)' }}>
                   Sello: {acuse.ultimo.registro_sha256.slice(0, 12)}…
                 </p>
                 <button
@@ -1085,7 +1085,7 @@ function DetalleSheet({
                   >
                     {!ac.vigente && (
                       <span
-                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                        className="text-caption font-semibold px-2 py-0.5 rounded-full"
                         style={{ backgroundColor: 'var(--border)', color: 'var(--muted-foreground)' }}
                       >
                         anterior
@@ -1106,7 +1106,7 @@ function DetalleSheet({
                         style={{ backgroundColor: '#fff' }}
                       />
                     ) : null}
-                    <div className="text-[10px] space-y-1" style={{ color: 'var(--muted-foreground)' }}>
+                    <div className="text-caption space-y-1" style={{ color: 'var(--muted-foreground)' }}>
                       <p className="italic">"{ac.declaracion}"</p>
                       <div className="flex items-center gap-1 font-mono">
                         <span>Sello: {ac.registro_sha256.slice(0, 12)}…</span>
@@ -1189,7 +1189,7 @@ function DetalleSheet({
                 </button>
                 {acuseExpandido && acusesDetalle && acusesDetalle.map((ac) => (
                   <div key={ac.acuse_id} className="rounded-lg p-3 space-y-2 border border-border" style={{ backgroundColor: 'var(--muted)' }}>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
+                    <span className="text-caption font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
                       anterior
                     </span>
                     {ac.trazos && ac.trazos.length > 0 ? (
@@ -1202,7 +1202,7 @@ function DetalleSheet({
                     ) : ac.firma_png ? (
                       <img src={ac.firma_png} alt="Firma" className="h-14 w-auto rounded border border-border" style={{ backgroundColor: '#fff' }} />
                     ) : null}
-                    <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                    <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                       {ac.firmante} · {new Date(ac.firmado_en).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
@@ -1234,7 +1234,7 @@ function DetalleSheet({
                     {ev.nota && (
                       <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>{ev.nota}</p>
                     )}
-                    <p className="text-[10px] mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                    <p className="text-caption mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
                       {formatFechaCorta(ev.fecha)}
                     </p>
                   </div>
@@ -1262,7 +1262,7 @@ function esTareaDeChecklist(t: { modulo_codigo: string | null } | undefined): bo
 function ChipChecklist() {
   return (
     <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold leading-none"
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-caption font-semibold leading-none"
       style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
     >
       Del checklist

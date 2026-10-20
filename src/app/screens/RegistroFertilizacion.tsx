@@ -926,7 +926,7 @@ export function RegistroFertilizacion() {
                             {reg.rancho_nombre}
                           </span>
                           <span
-                            className="text-[11px] px-2 py-0.5 rounded flex-shrink-0"
+                            className="text-caption px-2 py-0.5 rounded flex-shrink-0"
                             style={{
                               backgroundColor: 'var(--muted)',
                               color: 'var(--muted-foreground)',
@@ -937,7 +937,7 @@ export function RegistroFertilizacion() {
                           </span>
                           {reg.sector && (
                             <span
-                              className="text-[11px] px-2 py-0.5 rounded flex-shrink-0"
+                              className="text-caption px-2 py-0.5 rounded flex-shrink-0"
                               style={{
                                 backgroundColor: 'var(--agro-success-fill)',
                                 color: 'var(--agro-success-text)',

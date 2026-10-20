@@ -564,7 +564,7 @@ function GraficaBarrasMes({
                       style={{ width: `${BAR_W}px`, height: `${ALTO + OVERHEAD}px` }}
                     >
                       <span
-                        className="absolute text-[10px] tabular-nums text-center w-full"
+                        className="absolute text-caption tabular-nums text-center w-full"
                         style={{
                           color: 'var(--muted-foreground)',
                           bottom: `${Math.round(ALTO * ratio) + 2}px`,
@@ -588,7 +588,7 @@ function GraficaBarrasMes({
                 })}
               </div>
               <div className="w-full h-px" style={{ backgroundColor: 'var(--border)' }} />
-              <span className="text-[10px] text-muted-foreground text-center mt-1">
+              <span className="text-caption text-muted-foreground text-center mt-1">
                 {etiqueta(mes)}
               </span>
             </div>

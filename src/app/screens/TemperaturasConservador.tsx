@@ -366,22 +366,22 @@ export function TemperaturasConservador() {
           <div key={r.id} className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex items-start gap-2">
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold truncate">{r.rancho_nombre}</p>
-                <p className="text-[12px] mt-0.5" style={{ color: 'var(--muted-foreground)' }}>{fmtFecha(r.fecha)}</p>
+                <p className="text-body font-semibold truncate">{r.rancho_nombre}</p>
+                <p className="text-small mt-0.5" style={{ color: 'var(--muted-foreground)' }}>{fmtFecha(r.fecha)}</p>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1.5">
                   {(r.temp_min != null || r.temp_max != null) && (
-                    <span className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+                    <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                       Rango: {r.temp_min ?? '—'} – {r.temp_max ?? '—'} °C
                     </span>
                   )}
-                  <span className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+                  <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                     {r.lecturas_count} lectura{r.lecturas_count !== 1 ? 's' : ''}
                   </span>
                 </div>
                 {r.fuera_de_rango && (
                   <div className="flex items-center gap-1 mt-1.5">
                     <AlertTriangle size={11} style={{ color: 'var(--agro-danger-text)' }} />
-                    <span className="text-[11px] font-medium" style={{ color: 'var(--agro-danger-text)' }}>
+                    <span className="text-caption font-medium" style={{ color: 'var(--agro-danger-text)' }}>
                       Con incidencias
                     </span>
                   </div>
@@ -429,7 +429,7 @@ export function TemperaturasConservador() {
             <h2 className="text-base font-semibold">
               {registroExistenteId ? 'Actualizar registro' : 'Nuevo registro'}
             </h2>
-            <button onClick={handleCerrarSheet} className="text-[13px]" style={{ color: 'var(--muted-foreground)' }}>
+            <button onClick={handleCerrarSheet} className="text-body" style={{ color: 'var(--muted-foreground)' }}>
               Cancelar
             </button>
           </div>
@@ -452,13 +452,13 @@ export function TemperaturasConservador() {
           {sheetPaso === 'form' && <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-4">
               {/* Instalación */}
               <div>
-                <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
+                <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   {terminosSitio.singular} *
                 </label>
                 <select
                   value={form.rancho_id}
                   onChange={e => handleRanchoChange(e.target.value, form.fecha)}
-                  className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                  className="w-full rounded-lg px-3 py-2 text-body border"
                   style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                 >
                   <option value="">Seleccionar...</option>
@@ -470,7 +470,7 @@ export function TemperaturasConservador() {
 
               {/* Fecha */}
               <div>
-                <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
+                <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   Fecha *
                 </label>
                 <input
@@ -479,7 +479,7 @@ export function TemperaturasConservador() {
                   min={puedeEditarFecha ? undefined : hoyMX()}
                   max={puedeEditarFecha ? undefined : hoyMX()}
                   onChange={e => { if (puedeEditarFecha) setForm(f => ({ ...f, fecha: e.target.value })) }}
-                  className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                  className="w-full rounded-lg px-3 py-2 text-body border"
                   style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                 />
               </div>
@@ -487,27 +487,27 @@ export function TemperaturasConservador() {
               {/* Rango objetivo */}
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
+                  <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
                     Temp. mínima (°C)
                   </label>
                   <input
                     type="number"
                     value={form.temp_min}
                     onChange={e => setForm(f => ({ ...f, temp_min: e.target.value }))}
-                    className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                    className="w-full rounded-lg px-3 py-2 text-body border"
                     style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                     placeholder="ej. 2"
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
+                  <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
                     Temp. máxima (°C)
                   </label>
                   <input
                     type="number"
                     value={form.temp_max}
                     onChange={e => setForm(f => ({ ...f, temp_max: e.target.value }))}
-                    className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                    className="w-full rounded-lg px-3 py-2 text-body border"
                     style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                     placeholder="ej. 8"
                   />
@@ -516,11 +516,11 @@ export function TemperaturasConservador() {
 
               {/* Grid de 24 horas */}
               <div>
-                <label className="text-[12px] font-medium block mb-2" style={{ color: 'var(--muted-foreground)' }}>
+                <label className="text-small font-medium block mb-2" style={{ color: 'var(--muted-foreground)' }}>
                   Lecturas por hora
                 </label>
                 {cargandoLecturas ? (
-                  <p className="text-[12px] py-2" style={{ color: 'var(--muted-foreground)' }}>Cargando lecturas...</p>
+                  <p className="text-small py-2" style={{ color: 'var(--muted-foreground)' }}>Cargando lecturas...</p>
                 ) : (
                   <div className="overflow-x-auto -mx-5 px-5">
                     <div style={{ minWidth: 1380 }}>
@@ -577,14 +577,14 @@ export function TemperaturasConservador() {
 
               {/* Observaciones */}
               <div>
-                <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
+                <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   Observaciones
                 </label>
                 <TextareaContador limite={limiteTexto('m41_registros', 'observaciones')}
                   value={form.observaciones}
                   onChange={e => setForm(f => ({ ...f, observaciones: e.target.value }))}
                   rows={3}
-                  className="w-full rounded-lg px-3 py-2 text-[13px] border resize-none"
+                  className="w-full rounded-lg px-3 py-2 text-body border resize-none"
                   style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
                 />
               </div>
@@ -592,7 +592,7 @@ export function TemperaturasConservador() {
               <button
                 onClick={guardar}
                 disabled={cargando || !form.rancho_id}
-                className="w-full py-3 rounded-xl text-[14px] font-semibold text-white"
+                className="w-full py-3 rounded-xl text-body font-semibold text-white"
                 style={{ backgroundColor: cargando || !form.rancho_id ? 'var(--muted-foreground)' : 'var(--primary)' }}
               >
                 {cargando ? 'Guardando...' : !online ? 'Guardar sin conexión' : registroExistenteId ? 'Actualizar' : 'Guardar'}
@@ -604,19 +604,19 @@ export function TemperaturasConservador() {
       <BottomSheet open={consolAbierto} onClose={() => setConsolAbierto(false)} height="52%">
             <div className="pt-4 flex items-center justify-between px-5 pb-3 flex-shrink-0">
               <h2 className="text-base font-semibold">Exportar consolidado</h2>
-              <button onClick={() => setConsolAbierto(false)} className="text-[13px]" style={{ color: 'var(--muted-foreground)' }}>
+              <button onClick={() => setConsolAbierto(false)} className="text-body" style={{ color: 'var(--muted-foreground)' }}>
                 Cancelar
               </button>
             </div>
             <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-4">
               <div>
-                <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
+                <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   {terminosSitio.singular} (opcional)
                 </label>
                 <select
                   value={consolRanchoId}
                   onChange={e => setConsolRanchoId(e.target.value)}
-                  className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                  className="w-full rounded-lg px-3 py-2 text-body border"
                   style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                 >
                   <option value="">{terminosSitio.plural}</option>
@@ -627,22 +627,22 @@ export function TemperaturasConservador() {
               </div>
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Desde</label>
+                  <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Desde</label>
                   <input
                     type="date"
                     value={consolDesde}
                     onChange={e => setConsolDesde(e.target.value)}
-                    className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                    className="w-full rounded-lg px-3 py-2 text-body border"
                     style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Hasta</label>
+                  <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Hasta</label>
                   <input
                     type="date"
                     value={consolHasta}
                     onChange={e => setConsolHasta(e.target.value)}
-                    className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                    className="w-full rounded-lg px-3 py-2 text-body border"
                     style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                   />
                 </div>
@@ -650,7 +650,7 @@ export function TemperaturasConservador() {
               <button
                 onClick={generarConsolidado}
                 disabled={consolCargando || !consolDesde || !consolHasta}
-                className="w-full py-3 rounded-xl text-[14px] font-semibold text-white"
+                className="w-full py-3 rounded-xl text-body font-semibold text-white"
                 style={{ backgroundColor: consolCargando || !consolDesde || !consolHasta ? 'var(--muted-foreground)' : 'var(--primary)' }}
               >
                 {consolCargando ? 'Generando...' : 'Generar PDF'}

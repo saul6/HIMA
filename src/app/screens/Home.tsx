@@ -379,7 +379,7 @@ function CategoriaPopup({ grupo, modulosFijados, toggleFijar, onClose, onBloquea
                     </span>
                     {!online && !MODULOS_OFFLINE.includes(modulo.codigo as CodigoOffline) && (
                       <span
-                        className="text-[10px] px-1.5 py-0.5 rounded flex-shrink-0"
+                        className="text-caption px-1.5 py-0.5 rounded flex-shrink-0"
                         style={{
                           backgroundColor: 'var(--muted)',
                           color: 'var(--muted-foreground)',
@@ -749,7 +749,7 @@ export function Home() {
                 >
                   {m.nombre}
                   <span
-                    className="ml-1 px-1 rounded-full text-[10px]"
+                    className="ml-1 px-1 rounded-full text-caption"
                     style={{ backgroundColor: 'var(--agro-red)', color: 'white' }}
                   >
                     {m.sin_firma}

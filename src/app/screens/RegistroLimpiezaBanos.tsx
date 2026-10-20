@@ -414,7 +414,7 @@ export function RegistroLimpiezaBanos() {
                       {meta?.rancho_nombre ?? '—'}
                     </span>
                     {meta?.banos_count && (
-                      <span className="text-[11px] px-2 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0" style={{ fontWeight: 600 }}>
+                      <span className="text-caption px-2 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0" style={{ fontWeight: 600 }}>
                         {meta.banos_count} {meta.banos_count === 1 ? 'baño' : 'baños'}
                       </span>
                     )}
@@ -450,7 +450,7 @@ export function RegistroLimpiezaBanos() {
                         {jornada.rancho_nombre}
                       </span>
                       <span
-                        className="text-[11px] px-2 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0"
+                        className="text-caption px-2 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0"
                         style={{ fontWeight: 600 }}
                       >
                         {jornada.banos.length} {jornada.banos.length === 1 ? 'baño' : 'baños'}
@@ -475,7 +475,7 @@ export function RegistroLimpiezaBanos() {
                 {/* Chips de estado */}
                 <div className="flex flex-wrap gap-1 mt-2">
                   <span
-                    className={`text-[10px] px-2 py-0.5 rounded ${
+                    className={`text-caption px-2 py-0.5 rounded ${
                       todosLimpieza
                         ? 'bg-agro-success-fill text-agro-success-text'
                         : 'bg-agro-info-fill text-agro-info-text'
@@ -484,7 +484,7 @@ export function RegistroLimpiezaBanos() {
                     {todosLimpieza ? 'Limpieza completa' : 'Limpieza parcial'}
                   </span>
                   <span
-                    className={`text-[10px] px-2 py-0.5 rounded ${
+                    className={`text-caption px-2 py-0.5 rounded ${
                       todosDesinfeccion
                         ? 'bg-agro-success-fill text-agro-success-text'
                         : 'bg-agro-info-fill text-agro-info-text'

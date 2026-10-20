@@ -56,14 +56,14 @@ function CardActividad({
       etiquetas={
         <>
           <span
-            className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground flex-shrink-0"
+            className="text-caption px-2 py-0.5 rounded bg-muted text-muted-foreground flex-shrink-0"
             style={{ fontWeight: 600 }}
           >
             {item.moduloLabel}
           </span>
           {item.requiere_correccion && (
             <span
-              className="text-[10px] px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0"
+              className="text-caption px-2 py-0.5 rounded flex items-center gap-1 flex-shrink-0"
               style={{
                 backgroundColor: 'var(--agro-menta)',
                 color: '#fff',

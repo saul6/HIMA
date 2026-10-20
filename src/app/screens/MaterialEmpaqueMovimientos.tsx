@@ -87,11 +87,11 @@ const FORM_INICIAL: FormState = {
 function SiNoToggle({ value, onChange, label, danger }: { value: boolean; onChange: (v: boolean) => void; label: string; danger?: boolean }) {
   return (
     <div className="flex items-center justify-between py-1.5">
-      <span className="text-[12px]" style={{ color: !value && danger ? 'var(--agro-danger-text)' : 'inherit' }}>{label}</span>
+      <span className="text-small" style={{ color: !value && danger ? 'var(--agro-danger-text)' : 'inherit' }}>{label}</span>
       <button
         type="button"
         onClick={() => onChange(!value)}
-        className="px-3 py-1 rounded-full text-[11px] font-semibold min-w-[40px]"
+        className="px-3 py-1 rounded-full text-caption font-semibold min-w-[40px]"
         style={{
           backgroundColor: value ? 'var(--agro-success-fill)' : 'var(--agro-danger-fill)',
           color: value ? 'var(--agro-success-text)' : 'var(--agro-danger-text)',
@@ -328,30 +328,30 @@ export function MaterialEmpaqueMovimientos() {
           <div key={m.id} className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex items-start gap-2">
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold truncate">{m.rancho_nombre}</p>
-                <p className="text-[12px] mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                <p className="text-body font-semibold truncate">{m.rancho_nombre}</p>
+                <p className="text-small mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
                   {fmtFecha(m.fecha)}{m.empresa ? ` · ${m.empresa}` : ''}
                 </p>
                 {m.descripcion_material && (
-                  <p className="text-[12px] mt-1 truncate" style={{ color: 'var(--muted-foreground)' }}>
+                  <p className="text-small mt-1 truncate" style={{ color: 'var(--muted-foreground)' }}>
                     {m.descripcion_material}
                   </p>
                 )}
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1.5">
                   {m.entrada != null && (
-                    <span className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Ent: {m.entrada}</span>
+                    <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Ent: {m.entrada}</span>
                   )}
                   {m.salida != null && (
-                    <span className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Sal: {m.salida}</span>
+                    <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Sal: {m.salida}</span>
                   )}
                   {m.total != null && (
-                    <span className="text-[11px] font-medium">Total: {m.total}</span>
+                    <span className="text-caption font-medium">Total: {m.total}</span>
                   )}
                 </div>
                 {(!m.mat_libre_plagas || !m.tr_libre_plagas) && (
                   <div className="flex items-center gap-1 mt-1.5">
                     <AlertTriangle size={11} style={{ color: 'var(--agro-danger-text)' }} />
-                    <span className="text-[11px] font-medium" style={{ color: 'var(--agro-danger-text)' }}>
+                    <span className="text-caption font-medium" style={{ color: 'var(--agro-danger-text)' }}>
                       Presencia de plagas — incidencia generada
                     </span>
                   </div>
@@ -396,7 +396,7 @@ export function MaterialEmpaqueMovimientos() {
       <BottomSheet open={abierto} onClose={handleCerrarSheet} height="85%">
           <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
             <h2 className="text-base font-semibold">Nuevo movimiento</h2>
-            <button onClick={handleCerrarSheet} className="text-[13px]" style={{ color: 'var(--muted-foreground)' }}>
+            <button onClick={handleCerrarSheet} className="text-body" style={{ color: 'var(--muted-foreground)' }}>
               Cancelar
             </button>
           </div>
@@ -419,13 +419,13 @@ export function MaterialEmpaqueMovimientos() {
           {sheetPaso === 'form' && <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-4">
               {/* Instalación */}
               <div>
-                <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
+                <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   {terminosSitio.singular} *
                 </label>
                 <select
                   value={form.rancho_id}
                   onChange={e => setF({ rancho_id: e.target.value })}
-                  className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                  className="w-full rounded-lg px-3 py-2 text-body border"
                   style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                 >
                   <option value="">Seleccionar...</option>
@@ -437,26 +437,26 @@ export function MaterialEmpaqueMovimientos() {
 
               {/* Fecha */}
               <div>
-                <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Fecha *</label>
+                <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Fecha *</label>
                 <input
                   type="date"
                   value={form.fecha}
                   min={puedeEditarFecha ? undefined : hoyMX()}
                   max={puedeEditarFecha ? undefined : hoyMX()}
                   onChange={e => { if (puedeEditarFecha) setF({ fecha: e.target.value }) }}
-                  className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                  className="w-full rounded-lg px-3 py-2 text-body border"
                   style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                 />
               </div>
 
               {/* Empresa */}
               <div>
-                <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Empresa</label>
+                <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Empresa</label>
                 <input maxLength={limiteTexto('m42_movimientos', 'empresa')}
                   type="text"
                   value={form.empresa}
                   onChange={e => setF({ empresa: e.target.value })}
-                  className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                  className="w-full rounded-lg px-3 py-2 text-body border"
                   style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                   placeholder="Nombre de la empresa"
                 />
@@ -464,14 +464,14 @@ export function MaterialEmpaqueMovimientos() {
 
               {/* Descripción del material */}
               <div>
-                <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
+                <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   Descripción del material
                 </label>
                 <InputContador limite={limiteTexto('m42_movimientos', 'descripcion_material')}
                   type="text"
                   value={form.descripcion_material}
                   onChange={e => setF({ descripcion_material: e.target.value })}
-                  className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                  className="w-full rounded-lg px-3 py-2 text-body border"
                   style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
                   placeholder="Descripción del material de empaque"
                 />
@@ -485,12 +485,12 @@ export function MaterialEmpaqueMovimientos() {
                   { key: 'total',   label: 'Total'   },
                 ].map(({ key, label }) => (
                   <div key={key}>
-                    <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>{label}</label>
+                    <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>{label}</label>
                     <input
                       type="number"
                       value={(form as any)[key]}
                       onChange={e => setF({ [key]: e.target.value } as any)}
-                      className="w-full rounded-lg px-3 py-2 text-[13px] border text-center"
+                      className="w-full rounded-lg px-3 py-2 text-body border text-center"
                       style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                       placeholder="0"
                     />
@@ -501,23 +501,23 @@ export function MaterialEmpaqueMovimientos() {
               {/* Entrega / Recibe */}
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Entrega</label>
+                  <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Entrega</label>
                   <input maxLength={limiteTexto('m42_movimientos', 'entrega')}
                     type="text"
                     value={form.entrega}
                     onChange={e => setF({ entrega: e.target.value })}
-                    className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                    className="w-full rounded-lg px-3 py-2 text-body border"
                     style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                     placeholder="Nombre"
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Recibe</label>
+                  <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Recibe</label>
                   <input maxLength={limiteTexto('m42_movimientos', 'recibe')}
                     type="text"
                     value={form.recibe}
                     onChange={e => setF({ recibe: e.target.value })}
-                    className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                    className="w-full rounded-lg px-3 py-2 text-body border"
                     style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                     placeholder="Nombre"
                   />
@@ -526,7 +526,7 @@ export function MaterialEmpaqueMovimientos() {
 
               {/* Condición del material */}
               <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--muted)' }}>
-                <p className="text-[12px] font-semibold mb-2">Condición del material</p>
+                <p className="text-small font-semibold mb-2">Condición del material</p>
                 <SiNoToggle value={form.mat_integro}       onChange={v => setF({ mat_integro: v })}       label="Íntegro" />
                 <SiNoToggle value={form.mat_buen_estado}   onChange={v => setF({ mat_buen_estado: v })}   label="En buen estado" />
                 <SiNoToggle value={form.mat_limpio}        onChange={v => setF({ mat_limpio: v })}        label="Limpio" />
@@ -534,18 +534,18 @@ export function MaterialEmpaqueMovimientos() {
                 <SiNoToggle value={form.mat_libre_plagas}  onChange={v => setF({ mat_libre_plagas: v })}  label="Libre de plagas" danger />
                 {!form.mat_libre_plagas && (
                   <div className="mt-2 p-2 rounded-lg" style={{ backgroundColor: 'var(--agro-danger-fill)' }}>
-                    <p className="text-[11px] font-medium" style={{ color: 'var(--agro-danger-text)' }}>
+                    <p className="text-caption font-medium" style={{ color: 'var(--agro-danger-text)' }}>
                       Se creará una incidencia M13 al guardar
                     </p>
                   </div>
                 )}
                 <div className="mt-2">
-                  <label className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Otros (explique)</label>
+                  <label className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Otros (explique)</label>
                   <InputContador limite={limiteTexto('m42_movimientos', 'mat_otros')}
                     type="text"
                     value={form.mat_otros}
                     onChange={e => setF({ mat_otros: e.target.value })}
-                    className="w-full rounded-lg px-3 py-1.5 text-[12px] border mt-1"
+                    className="w-full rounded-lg px-3 py-1.5 text-small border mt-1"
                     style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
                     placeholder="Observación adicional"
                   />
@@ -554,7 +554,7 @@ export function MaterialEmpaqueMovimientos() {
 
               {/* Condición del transporte */}
               <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--muted)' }}>
-                <p className="text-[12px] font-semibold mb-2">Condición del transporte</p>
+                <p className="text-small font-semibold mb-2">Condición del transporte</p>
                 <SiNoToggle value={form.tr_integro}       onChange={v => setF({ tr_integro: v })}       label="Íntegro" />
                 <SiNoToggle value={form.tr_buen_estado}   onChange={v => setF({ tr_buen_estado: v })}   label="En buen estado" />
                 <SiNoToggle value={form.tr_limpio}        onChange={v => setF({ tr_limpio: v })}        label="Limpio" />
@@ -562,18 +562,18 @@ export function MaterialEmpaqueMovimientos() {
                 <SiNoToggle value={form.tr_libre_plagas}  onChange={v => setF({ tr_libre_plagas: v })}  label="Libre de plagas" danger />
                 {!form.tr_libre_plagas && (
                   <div className="mt-2 p-2 rounded-lg" style={{ backgroundColor: 'var(--agro-danger-fill)' }}>
-                    <p className="text-[11px] font-medium" style={{ color: 'var(--agro-danger-text)' }}>
+                    <p className="text-caption font-medium" style={{ color: 'var(--agro-danger-text)' }}>
                       Se creará una incidencia M13 al guardar
                     </p>
                   </div>
                 )}
                 <div className="mt-2">
-                  <label className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>Otros (explique)</label>
+                  <label className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Otros (explique)</label>
                   <InputContador limite={limiteTexto('m42_movimientos', 'tr_otros')}
                     type="text"
                     value={form.tr_otros}
                     onChange={e => setF({ tr_otros: e.target.value })}
-                    className="w-full rounded-lg px-3 py-1.5 text-[12px] border mt-1"
+                    className="w-full rounded-lg px-3 py-1.5 text-small border mt-1"
                     style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
                     placeholder="Observación adicional"
                   />
@@ -582,14 +582,14 @@ export function MaterialEmpaqueMovimientos() {
 
               {/* Observaciones */}
               <div>
-                <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
+                <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   Observaciones
                 </label>
                 <TextareaContador limite={limiteTexto('m42_movimientos', 'observaciones')}
                   value={form.observaciones}
                   onChange={e => setF({ observaciones: e.target.value })}
                   rows={3}
-                  className="w-full rounded-lg px-3 py-2 text-[13px] border resize-none"
+                  className="w-full rounded-lg px-3 py-2 text-body border resize-none"
                   style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border)' }}
                 />
               </div>
@@ -597,7 +597,7 @@ export function MaterialEmpaqueMovimientos() {
               <button
                 onClick={guardar}
                 disabled={cargando || !form.rancho_id}
-                className="w-full py-3 rounded-xl text-[14px] font-semibold text-white"
+                className="w-full py-3 rounded-xl text-body font-semibold text-white"
                 style={{ backgroundColor: cargando || !form.rancho_id ? 'var(--muted-foreground)' : 'var(--primary)' }}
               >
                 {cargando ? 'Guardando...' : online ? 'Guardar' : 'Guardar sin conexión'}
@@ -609,19 +609,19 @@ export function MaterialEmpaqueMovimientos() {
       <BottomSheet open={consolAbierto} onClose={() => setConsolAbierto(false)} height="52%">
           <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
             <h2 className="text-base font-semibold">Exportar consolidado</h2>
-            <button onClick={() => setConsolAbierto(false)} className="text-[13px]" style={{ color: 'var(--muted-foreground)' }}>
+            <button onClick={() => setConsolAbierto(false)} className="text-body" style={{ color: 'var(--muted-foreground)' }}>
               Cancelar
             </button>
           </div>
             <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-4">
               <div>
-                <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
+                <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   {terminosSitio.singular} (opcional)
                 </label>
                 <select
                   value={consolRanchoId}
                   onChange={e => setConsolRanchoId(e.target.value)}
-                  className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                  className="w-full rounded-lg px-3 py-2 text-body border"
                   style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                 >
                   <option value="">{terminosSitio.plural}</option>
@@ -632,22 +632,22 @@ export function MaterialEmpaqueMovimientos() {
               </div>
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Desde</label>
+                  <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Desde</label>
                   <input
                     type="date"
                     value={consolDesde}
                     onChange={e => setConsolDesde(e.target.value)}
-                    className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                    className="w-full rounded-lg px-3 py-2 text-body border"
                     style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[12px] font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Hasta</label>
+                  <label className="text-small font-medium block mb-1" style={{ color: 'var(--muted-foreground)' }}>Hasta</label>
                   <input
                     type="date"
                     value={consolHasta}
                     onChange={e => setConsolHasta(e.target.value)}
-                    className="w-full rounded-lg px-3 py-2 text-[13px] border"
+                    className="w-full rounded-lg px-3 py-2 text-body border"
                     style={{ backgroundColor: 'var(--input-background)', borderColor: 'var(--border-control)' }}
                   />
                 </div>
@@ -655,7 +655,7 @@ export function MaterialEmpaqueMovimientos() {
               <button
                 onClick={generarConsolidado}
                 disabled={consolCargando || !consolDesde || !consolHasta}
-                className="w-full py-3 rounded-xl text-[14px] font-semibold text-white"
+                className="w-full py-3 rounded-xl text-body font-semibold text-white"
                 style={{ backgroundColor: consolCargando || !consolDesde || !consolHasta ? 'var(--muted-foreground)' : 'var(--primary)' }}
               >
                 {consolCargando ? 'Generando...' : 'Generar PDF'}

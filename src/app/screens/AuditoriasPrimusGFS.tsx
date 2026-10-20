@@ -44,7 +44,7 @@ function AuditoriaCard({ a, onClick }: { a: AuditoriaListItem; onClick: () => vo
           </p>
         </div>
         <span
-          className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+          className="text-caption font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
           style={{ backgroundColor: style.bg, color: style.color }}
         >
           {ESTADO_LABELS[a.estado] ?? a.estado}
@@ -75,7 +75,7 @@ export default function AuditoriasPrimusGFS() {
       {/* Leyenda legal */}
       <div className="mx-4 mt-4 rounded-xl border border-border bg-card px-4 py-3 flex gap-3">
         <AlertCircle size={16} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
-        <p className="text-[11px] leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>
+        <p className="text-caption leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>
           {LEYENDA_LEGAL_PGFS}
         </p>
       </div>

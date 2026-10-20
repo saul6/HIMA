@@ -385,7 +385,7 @@ export function PreparacionCloro() {
               {/* Chips */}
               <div className="flex flex-wrap gap-2 mt-2">
                 <span
-                  className="text-[11px] px-2.5 py-1 rounded-lg"
+                  className="text-caption px-2.5 py-1 rounded-lg"
                   style={{
                     fontWeight: 600,
                     backgroundColor: 'var(--agro-success-fill)',
@@ -395,7 +395,7 @@ export function PreparacionCloro() {
                   {prep.litros_agua} L agua
                 </span>
                 <span
-                  className="text-[11px] px-2.5 py-1 rounded-lg bg-primary text-white"
+                  className="text-caption px-2.5 py-1 rounded-lg bg-primary text-white"
                   style={{ fontWeight: 600 }}
                 >
                   {prep.ml_cloro} mL cloro

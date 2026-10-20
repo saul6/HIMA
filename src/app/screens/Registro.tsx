@@ -281,7 +281,7 @@ export function Registro() {
                     <p className="text-xs font-semibold" style={{ color: 'var(--auth-label-color)' }}>
                       Verificación de seguridad
                     </p>
-                    <p className="text-[11px]" style={{ color: 'var(--auth-subtext-color)' }}>
+                    <p className="text-caption" style={{ color: 'var(--auth-subtext-color)' }}>
                       Completa el captcha para continuar
                     </p>
                   </div>
