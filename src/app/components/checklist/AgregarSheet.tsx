@@ -7,6 +7,7 @@ import { Pildora } from './Pildora'
 import { SelectorResponsable } from './ItemDetalleSheet'
 import { useColaboradoresChk } from './useColaboradores'
 import { FRECUENCIAS, type ChkFrecuencia, type useChecklist } from '@/hooks/useChecklist'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 interface Props {
   open: boolean
@@ -103,15 +104,9 @@ function Formulario({ ranchoId, hook, onClose, onGuardado }: Omit<Props, 'open'>
           <Input type="date" value={vence} onChange={e => setVence(e.target.value)} />
         </label>
       )}
-      <button
-        type="button"
-        onClick={guardar}
-        disabled={guardando}
-        className="w-full h-11 rounded-lg text-sm transition active:scale-[0.99] disabled:opacity-50"
-        style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
-      >
+      <Boton type="button" onClick={guardar} disabled={guardando} className="w-full">
         {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Agregar'}
-      </button>
+      </Boton>
     </div>
   )
 }

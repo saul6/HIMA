@@ -7,6 +7,7 @@ import { Pildora } from './Pildora'
 import { DIAS_SEMANA } from './constantes'
 import { SinOperacion } from './SinOperacion'
 import type { ChkSinActividad, useChecklist } from '@/hooks/useChecklist'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 interface Props {
   open: boolean
@@ -69,15 +70,9 @@ function Formulario({ ranchoId, diasIniciales, resumenInicial, sinActividad, hoo
         <Switch checked={resumen} onCheckedChange={setResumen} aria-label="Resumen semanal" />
       </section>
       <SinOperacion ranchoId={ranchoId} itemId={null} periodos={sinActividad} puedeEditar hook={hook} onCambio={onGuardado} />
-      <button
-        type="button"
-        onClick={guardar}
-        disabled={guardando}
-        className="w-full h-11 rounded-lg text-sm transition active:scale-[0.99] disabled:opacity-50"
-        style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
-      >
+      <Boton type="button" onClick={guardar} disabled={guardando} className="w-full">
         {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Guardar'}
-      </button>
+      </Boton>
     </div>
   )
 }

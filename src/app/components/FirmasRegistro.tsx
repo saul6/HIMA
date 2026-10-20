@@ -17,6 +17,7 @@ import { FirmaPad, type FirmaPadRef } from '@/app/components/FirmaPad'
 import { FirmaSvg } from '@/app/components/FirmaSvg'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { SkeletonFilas } from '@/app/components/SkeletonFilas'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -533,16 +534,11 @@ export function FirmasRegistro({
                 ref={firmaPadRef}
                 onChange={(info) => setFirmaPadInfo(info)}
               />
-              <button
-                onClick={handleGuardarFirma}
-                disabled={guardandoFirmaLocal || firmaPadInfo.puntos < 15}
-                className="w-full h-9 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition-colors"
-                style={{ backgroundColor: 'var(--primary)', color: 'white' }}
-              >
+              <Boton tamano="sm" onClick={handleGuardarFirma} disabled={guardandoFirmaLocal || firmaPadInfo.puntos < 15} className="w-full">
                 {guardandoFirmaLocal ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
                 ) : 'Guardar mi firma'}
-              </button>
+              </Boton>
             </div>
           )}
 
@@ -555,14 +551,9 @@ export function FirmasRegistro({
             >
               Cancelar
             </button>
-            <button
-              onClick={handleFirmar}
-              disabled={firmando || !miFirmaInfo?.tiene}
-              className="flex-1 h-9 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 disabled:opacity-40 transition-colors"
-              style={{ backgroundColor: 'var(--primary)', color: 'white' }}
-            >
+            <Boton tamano="sm" onClick={handleFirmar} disabled={firmando || !miFirmaInfo?.tiene} className="flex-1">
               {firmando ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Firmar'}
-            </button>
+            </Boton>
           </div>
         </div>
       )}
@@ -621,14 +612,9 @@ export function FirmasRegistro({
           >
             Cancelar
           </button>
-          <button
-            onClick={handleFirmarEnterado}
-            disabled={!puedeEnviarEnterado}
-            className="flex-1 h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 disabled:opacity-40 transition-colors"
-            style={{ backgroundColor: 'var(--primary)', color: 'white' }}
-          >
+          <Boton onClick={handleFirmarEnterado} disabled={!puedeEnviarEnterado} className="flex-1">
             {firmandoEnterado ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Firmar'}
-          </button>
+          </Boton>
         </div>
       </BottomSheet>
 

@@ -15,6 +15,7 @@ import {
 } from '@/hooks/useFirmasRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { useAuthContext } from '@/context/AuthContext'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 const ERRORES_FIRMA_WARNING = [
   'Primero registra tu firma',
@@ -196,14 +197,9 @@ export function PasoFirmaRegistro({
               ref={firmaPadRef}
               onChange={(info) => setFirmaPadInfo(info)}
             />
-            <button
-              onClick={handleGuardarFirma}
-              disabled={guardandoFirma || firmaPadInfo.puntos < 15}
-              className="w-full h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition-colors"
-              style={{ backgroundColor: 'var(--primary)', color: 'white' }}
-            >
+            <Boton onClick={handleGuardarFirma} disabled={guardandoFirma || firmaPadInfo.puntos < 15} className="w-full">
               {guardandoFirma ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Guardar mi firma'}
-            </button>
+            </Boton>
           </div>
         )}
       </div>

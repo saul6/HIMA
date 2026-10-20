@@ -1,5 +1,6 @@
 import { X, Loader2 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 interface ConsolidadoSheetLimpiezaProps {
   open: boolean
@@ -79,19 +80,13 @@ export function ConsolidadoSheetLimpieza({
               />
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onGenerar}
-            disabled={generando}
-            className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2"
-            style={{ backgroundColor: 'var(--primary)', fontWeight: 600 }}
-          >
+          <Boton type="button" onClick={onGenerar} disabled={generando} className="w-full">
             {generando ? (
               <><Loader2 className="w-4 h-4 animate-spin" />Generando…</>
             ) : (
               'Descargar PDF'
             )}
-          </button>
+          </Boton>
         </div>
       </div>
     </BottomSheet>

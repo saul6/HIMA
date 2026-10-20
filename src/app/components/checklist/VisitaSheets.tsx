@@ -12,6 +12,7 @@ import { Pildora } from './Pildora'
 import { fechaLarga } from './constantes'
 import { useColaboradoresChk } from './useColaboradores'
 import type { ChkVisita, ChkVisitaEvento, useChecklist } from '@/hooks/useChecklist'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 type Hook = ReturnType<typeof useChecklist>
 
@@ -126,15 +127,9 @@ function PasoFirmasVisita({ visita, codigoClave, terminoSitio, onCerrar }: Opcio
         onFirmado={refetch}
       />
       <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={generarYCerrar}
-          disabled={!!generando}
-          className="flex-1 h-11 rounded-lg text-sm transition active:scale-[0.99] disabled:opacity-50"
-          style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
-        >
+        <Boton type="button" onClick={generarYCerrar} disabled={!!generando} className="flex-1">
           {generando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Generar PDF'}
-        </button>
+        </Boton>
         <button
           type="button"
           onClick={onCerrar}

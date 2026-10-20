@@ -14,6 +14,7 @@ import {
 } from '@/hooks/useChecklist'
 import { SinOperacion } from './SinOperacion'
 import { useColaboradoresChk, type ColaboradorChk } from './useColaboradores'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 type Hook = ReturnType<typeof useChecklist>
 
@@ -203,15 +204,9 @@ function Contenido({
               rows={3}
             />
           </div>
-          <button
-            type="button"
-            onClick={guardarRevision}
-            disabled={!estado || guardando}
-            className="w-full h-11 rounded-lg text-sm transition active:scale-[0.99] disabled:opacity-50"
-            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
-          >
+          <Boton type="button" onClick={guardarRevision} disabled={!estado || guardando} className="w-full">
             {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Guardar revisión'}
-          </button>
+          </Boton>
         </section>
       )}
 

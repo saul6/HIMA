@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 interface Props {
   tareaId: string | null
@@ -47,13 +48,9 @@ export function BannerTareaOrigen({ tareaId, registroGuardado = false }: Props) 
         <span className="text-xs font-semibold flex-1 min-w-0" style={{ color: 'var(--agro-success-text)' }}>
           Registro guardado. ¿Reportar la tarea como realizada?
         </span>
-        <button
-          onClick={() => navigate(`/inocuidad/agenda?tarea=${tareaId}&accion=reportar`)}
-          className="text-xs font-semibold flex-shrink-0 px-2.5 py-1 rounded-lg transition-colors"
-          style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-        >
+        <Boton tamano="sm" onClick={() => navigate(`/inocuidad/agenda?tarea=${tareaId}&accion=reportar`)} className="flex-shrink-0">
           Reportar
-        </button>
+        </Boton>
       </div>
     )
   }

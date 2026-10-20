@@ -5,6 +5,7 @@ import { Input } from '@/app/components/ui/input'
 import { Pildora } from './Pildora'
 import { fechaLarga } from './constantes'
 import type { ChkSinActividad, useChecklist } from '@/hooks/useChecklist'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 const MOTIVOS_RAPIDOS = ['Temporada', 'Lluvias', 'Mantenimiento', 'Otro']
 
@@ -131,15 +132,9 @@ export function SinOperacion({ ranchoId, itemId, periodos, puedeEditar, hook, on
             <button type="button" onClick={() => setAbierto(false)} className="flex-1 h-10 rounded-lg border border-border text-sm hover:bg-muted">
               Cancelar
             </button>
-            <button
-              type="button"
-              onClick={registrar}
-              disabled={guardando}
-              className="flex-1 h-10 rounded-lg text-sm disabled:opacity-50"
-              style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
-            >
+            <Boton type="button" onClick={registrar} disabled={guardando} className="flex-1">
               {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Registrar'}
-            </button>
+            </Boton>
           </div>
         </div>
       ) : (

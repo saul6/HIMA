@@ -7,6 +7,7 @@ import { useConexion } from '@/hooks/useConexion'
 import { resolverIcono } from '@/app/components/iconos-modulos'
 import type { ModuloVisible } from '@/hooks/useMisModulos'
 import { MODULOS_OFFLINE, type CodigoOffline } from '@/lib/offline/modulosOffline'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 function UpsellPage({ modulo }: { modulo: ModuloVisible }) {
   const navigate = useNavigate()
@@ -116,13 +117,9 @@ function RequiereConexionPage({ modulo }: { modulo: ModuloVisible }) {
           </p>
         </div>
 
-        <button
-          onClick={() => navigate('/', { replace: true })}
-          className="h-10 px-6 rounded-lg text-sm inline-flex items-center justify-center"
-          style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }}
-        >
+        <Boton onClick={() => navigate('/', { replace: true })}>
           Volver al inicio
-        </button>
+        </Boton>
       </div>
     </div>
   )
