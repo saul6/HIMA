@@ -5,7 +5,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-export function useAuthSlides(srcs: string[], intervalMs: number, paused = false) {
+export function useAuthSlides(
+  srcs: string[],
+  intervalMs: number,
+  paused = false,
+  srcSets?: string[],
+  sizes?: string,
+) {
   const [active, setActive] = useState(0)
   const [prev, setPrev] = useState<number | null>(null)
   const [loaded, setLoaded] = useState<Set<number>>(new Set())
@@ -32,6 +38,8 @@ export function useAuthSlides(srcs: string[], intervalMs: number, paused = false
     const cargar = (idx: number) => {
       const img = new Image()
       img.onload = () => marcar(idx)
+      // Mismo srcset/sizes que la <img> para precargar el archivo que se va a mostrar.
+      if (srcSets) { img.sizes = sizes ?? '100vw'; img.srcset = srcSets[idx] }
       img.src = srcs[idx]
       return img
     }

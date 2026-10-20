@@ -8,16 +8,20 @@
 
 import { MadyLogo } from '@/app/components/MadyLogo'
 import { useAuthSlides } from '@/hooks/useAuthSlides'
+import { fotoAuthSrc, fotoAuthSrcSet, type FotoAuth } from '@/lib/fotosAuth'
 
 const SLIDES = [
-  { src: '/images/campo.jpg', area: 'Campo' },
-  { src: '/images/invernadero.jpeg', area: 'Invernadero' },
-  { src: '/images/empacadora.jpeg', area: 'Empacadora' },
-  { src: '/images/cuartofrio.jpg', area: 'Cuarto frío' },
-  { src: '/images/almacen.jpg', area: 'Almacén' },
-  { src: '/images/carnicos.jpg', area: 'Cárnicos' },
+  { foto: 'campo' as FotoAuth, area: 'Campo' },
+  { foto: 'invernadero' as FotoAuth, area: 'Invernadero' },
+  { foto: 'empacadora' as FotoAuth, area: 'Empacadora' },
+  { foto: 'cuartofrio' as FotoAuth, area: 'Cuarto frío' },
+  { foto: 'almacen' as FotoAuth, area: 'Almacén' },
+  { foto: 'carnicos' as FotoAuth, area: 'Cárnicos' },
 ]
-const SLIDE_SRCS = SLIDES.map((s) => s.src)
+const SLIDE_SRCS = SLIDES.map((s) => fotoAuthSrc(s.foto))
+const SLIDE_SRCSETS = SLIDES.map((s) => fotoAuthSrcSet(s.foto))
+// El panel ocupa a lo mucho la mitad de la pantalla en escritorio.
+const SLIDE_SIZES = '50vw'
 // Misma duración para la rotación de fotos y para el relleno de la píldora.
 const SLIDE_INTERVAL_MS = 4500
 
@@ -26,7 +30,7 @@ interface AuthCarouselPanelProps {
 }
 
 export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
-  const { active, prev, loaded, reducedMotion, irA, ciclo } = useAuthSlides(SLIDE_SRCS, SLIDE_INTERVAL_MS)
+  const { active, prev, loaded, reducedMotion, irA, ciclo } = useAuthSlides(SLIDE_SRCS, SLIDE_INTERVAL_MS, false, SLIDE_SRCSETS, SLIDE_SIZES)
 
   return (
     <div
@@ -46,15 +50,18 @@ export function AuthCarouselPanel({ className = '' }: AuthCarouselPanelProps) {
         {[prev, active].map((i) =>
           i === null ? null : (
             <div
-              key={SLIDES[i].src}
+              key={SLIDES[i].foto}
               className={`absolute inset-0 ${i === prev ? 'auth-slide-out' : prev !== null ? 'auth-slide-in' : ''}`}
             >
               {/* Acercamiento en el contenedor; filter estático en la <img>. */}
               <div className={`h-full w-full ${reducedMotion ? '' : 'auth-kenburns'}`}>
                 <img
-                  src={SLIDES[i].src}
+                  src={SLIDE_SRCS[i]}
+                  srcSet={SLIDE_SRCSETS[i]}
+                  sizes={SLIDE_SIZES}
                   alt=""
                   decoding="async"
+                  loading={i === 0 ? 'eager' : 'lazy'}
                   fetchPriority={i === 0 ? 'high' : undefined}
                   className="h-full w-full object-cover"
                   style={{ filter: 'saturate(.85) brightness(.9)' }}

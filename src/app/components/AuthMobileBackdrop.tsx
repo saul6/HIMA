@@ -19,15 +19,13 @@
 
 import { MadyLogo } from '@/app/components/MadyLogo'
 import { useAuthSlides } from '@/hooks/useAuthSlides'
+import { fotoAuthSrc, fotoAuthSrcSet, type FotoAuth } from '@/lib/fotosAuth'
 
-const SLIDES = [
-  '/images/campo.jpg',
-  '/images/invernadero.jpeg',
-  '/images/empacadora.jpeg',
-  '/images/cuartofrio.jpg',
-  '/images/almacen.jpg',
-  '/images/carnicos.jpg',
-]
+const FOTOS: FotoAuth[] = ['campo', 'invernadero', 'empacadora', 'cuartofrio', 'almacen', 'carnicos']
+const SLIDES = FOTOS.map(fotoAuthSrc)
+const SLIDE_SRCSETS = FOTOS.map(fotoAuthSrcSet)
+// Fondo a pantalla completa.
+const SLIDE_SIZES = '100vw'
 
 interface AuthMobileBackdropProps {
   paused?: boolean
@@ -35,7 +33,7 @@ interface AuthMobileBackdropProps {
 
 export function AuthMobileBackdrop({ paused = false }: AuthMobileBackdropProps) {
   // Rotación lenta — es un fondo, no debe distraer del formulario.
-  const { active, prev, loaded, reducedMotion } = useAuthSlides(SLIDES, 8000, paused)
+  const { active, prev, loaded, reducedMotion } = useAuthSlides(SLIDES, 8000, paused, SLIDE_SRCSETS, SLIDE_SIZES)
 
   return (
     <>
@@ -56,8 +54,11 @@ export function AuthMobileBackdrop({ paused = false }: AuthMobileBackdropProps) 
               >
                 <img
                   src={SLIDES[i]}
+                  srcSet={SLIDE_SRCSETS[i]}
+                  sizes={SLIDE_SIZES}
                   alt=""
                   decoding="async"
+                  loading={i === 0 ? 'eager' : 'lazy'}
                   fetchPriority={i === 0 ? 'high' : undefined}
                   className="h-full w-full object-cover"
                   style={{ filter: 'saturate(.85) brightness(.9)' }}

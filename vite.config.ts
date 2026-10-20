@@ -31,6 +31,8 @@ export default defineConfig({
       workbox: {
         // Precache el app shell: JS, CSS, fonts, icons
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        // Los originales de images/ ya no los usa la interfaz (usa images/app/); se piden en línea si hacen falta.
+        globIgnores: ['images/*.png'],
         navigateFallback: '/index.html',
         // No cachear peticiones a Supabase — los datos van por IndexedDB
         runtimeCaching: [],

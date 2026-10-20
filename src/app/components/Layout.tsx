@@ -392,7 +392,7 @@ export function Layout() {
         style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
         aria-label="Abrir menú"
       >
-        <img src="/images/MADYIsotipo.png" alt="" aria-hidden="true" className="w-7 h-7 object-contain" />
+        <img src="/images/app/MADYIsotipo.png" alt="" aria-hidden="true" className="w-7 h-7 object-contain" />
       </button>
 
       {/* ── Mobile Menu Sheet ─────────────────────────────────────────────── */}

@@ -12,8 +12,8 @@ export function MadyLogo({
 } & Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt' | 'className' | 'style'>) {
   // Selecciona la imagen de public/images según el tema
   const logoSrc = theme === 'dark' 
-    ? '/images/MADYOscuro.png'  // Cambia por el nombre exacto de tu archivo
-    : '/images/MADY.png' // o '/images/logo.png' si solo tienes uno
+    ? '/images/app/MADYOscuro.png'  // Cambia por el nombre exacto de tu archivo
+    : '/images/app/MADY.png' // o '/images/logo.png' si solo tienes uno
 
   return (
     <img
