@@ -4,6 +4,7 @@ import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface PlanSueloItemRow {
   numero: number
@@ -25,10 +26,7 @@ export interface PlanSueloPDFProps {
 }
 
 function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 function labelRespuesta(r: 'si' | 'no' | 'na'): string {

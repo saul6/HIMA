@@ -1,13 +1,14 @@
 // PATRÓN INOCUIDAD — PDF M39 Almacén (diseño nuevo: lib/pdf/disenoNuevo)
 // Recepción diaria de fruta (variante Almacén) — A4 landscape.
 import { Document, View, Text } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface M39LineaAlmacenPDF {
   orden: number
@@ -32,9 +33,7 @@ export interface M39RecepcionAlmacenDataPDF {
   lineas: M39LineaAlmacenPDF[]
 }
 
-function fmtFecha(iso: string): string {
-  try { const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}` } catch { return iso }
-}
+function fmtFecha(iso: string): string { return fechaPdf(iso) }
 const t  = (v: string | null | undefined): string => v ?? '—'
 const n  = (v: number | null | undefined): string => v != null ? String(v) : '—'
 const b3 = (v: boolean | null): string => v === true ? 'Si' : v === false ? 'No' : '—'
@@ -62,7 +61,7 @@ export function RecepcionFrutaAlmacenPDF({
   firmaRealizo?: FirmaParaPdf | null
   firmaVerifico?: FirmaParaPdf | null
 }) {
-  const emision    = new Date().toLocaleDateString('es-MX')
+  const emision    = fechaEmisionHoy()
   const codigoFmt  = codigoFormato('F-FRUS-PRO-02', codigoClave)
   const fechaLabel = fmtFecha(d.fecha)
 

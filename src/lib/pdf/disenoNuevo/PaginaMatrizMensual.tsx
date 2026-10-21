@@ -81,7 +81,7 @@ export function PaginaMatrizMensual({
       <View
         fixed
         style={{}}
-        render={({ subPageNumber }) => (subPageNumber > 1 ? (
+        render={({ subPageNumber }) => (subPageNumber !== 1 ? (
           <EncabezadoCompacto
             titulo={titulo}
             folio={folio}

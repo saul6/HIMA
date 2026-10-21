@@ -3,12 +3,13 @@
 // PdfPageFrame + PdfHeader + tabla de preparaciones + PdfSignatures.
 
 import { Document, View, Text } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -37,7 +38,7 @@ export interface PreparacionCloroPaginaProps {
 
 function fmt(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
+    return fechaPdf(iso, {
       day: '2-digit', month: 'short', year: 'numeric',
     })
   } catch { return iso }
@@ -60,7 +61,7 @@ export function PreparacionCloroPagina({
   rancho, orgNombre, desde, hasta, preparaciones, codigoClave, terminoSitio = 'Instalación',
   firmaRealizo, firmaVerifico,
 }: PreparacionCloroPaginaProps) {
-  const emision = new Date().toLocaleDateString('es-MX')
+  const emision = fechaEmisionHoy()
   const codigoFmt = codigoFormato('F-FRUS-SAN-03', codigoClave)
   const periodoLabel = desde === hasta ? fmt(desde) : `${fmt(desde)} — ${fmt(hasta)}`
   const totalLabel = String(preparaciones.length)
@@ -71,7 +72,7 @@ export function PreparacionCloroPagina({
       titulo="PREPARACIÓN DE CLORO A 200 ppm"
       subtitulo={`Formato operativo | ${rancho}`}
       codigoFmt={codigoFmt}
-      folio={desde}
+      folio={fechaPdf(desde)}
       emision={emision}
       tituloDatos="1. DATOS GENERALES"
       camposDatos={[

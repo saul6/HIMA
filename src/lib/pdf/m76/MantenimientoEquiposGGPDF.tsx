@@ -7,6 +7,7 @@ import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface MantenimientoEquiposGGFilaPDF {
   id: string
@@ -47,7 +48,7 @@ const CHECK_LABELS: { key: keyof MantenimientoEquiposGGFilaPDF; label: string }[
 ]
 
 function formatFecha(iso: string) {
-  try { return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) }
+  try { return fechaPdf(iso, { day: 'numeric', month: 'long', year: 'numeric' }) }
   catch { return iso }
 }
 
@@ -68,13 +69,13 @@ export function MantenimientoEquiposGGPagina({ fila, orgNombre, firmaRealizo }: 
       titulo="VERIFICACIÓN Y MANTENIMIENTO DE EQUIPOS DE APLICACIÓN"
       subtitulo={`REG-09 · GlobalGAP | ${fila.rancho}`}
       codigoFmt="REG-09"
-      folio={fila.fecha}
-      emision={fila.fecha}
+      folio={fechaPdf(fila.fecha)}
+      emision={fechaPdf(fila.fecha)}
       etiquetaEmision="Fecha"
       tituloDatos="DATOS GENERALES"
       camposDatos={[
         ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Empresa', valor: orgNombre }] : []),
-        { icono: 'ubicacion', etiqueta: 'Rancho / instalacion', valor: fila.rancho },
+        { icono: 'ubicacion', etiqueta: 'Rancho / instalación', valor: fila.rancho },
         { icono: 'calendario', etiqueta: 'Fecha', valor: formatFecha(fila.fecha) },
         { etiqueta: 'Equipo', valor: fila.equipo ?? '—' },
         { icono: 'usuario', etiqueta: 'Realizó', valor: fila.realizo ?? '—' },
@@ -135,7 +136,7 @@ export function MantenimientoEquiposGGConsolidadoPDF({ filas, orgNombre }: {
   orgNombre?: string | null
 }) {
   function formatFechaCorta(iso: string) {
-    try { return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) }
+    try { return fechaPdf(iso, { day: '2-digit', month: 'short', year: 'numeric' }) }
     catch { return iso }
   }
 
@@ -146,7 +147,7 @@ export function MantenimientoEquiposGGConsolidadoPDF({ filas, orgNombre }: {
         subtitulo={orgNombre ? `GlobalGAP | ${orgNombre}` : 'GlobalGAP'}
         codigoFmt="REG-09"
         folio="Consolidado"
-        emision={filas[0]?.fecha ?? ''}
+        emision={fechaPdf(filas[0]?.fecha)}
         etiquetaEmision="Fecha"
         camposDatos={[]}
       >

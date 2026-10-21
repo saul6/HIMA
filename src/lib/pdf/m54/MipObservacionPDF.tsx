@@ -5,6 +5,7 @@ import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface MipObservacionItemRow {
   numero: number | null
@@ -31,10 +32,7 @@ export interface MipObservacionPDFProps {
 }
 
 function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 // Marca de la técnica ("X"): es una selección, no un valor negativo
@@ -83,7 +81,7 @@ export function MipObservacionPDFPage({
     >
       {observaciones ? <FranjaDatos campos={[{ etiqueta: 'Observaciones', valor: observaciones }]} /> : null}
 
-      <Seccion titulo="2. MATRIZ DE OBSERVACION Y MONITOREO">
+      <Seccion titulo="2. MATRIZ DE OBSERVACIÓN Y MONITOREO">
         <TablaDatos
           columnas={COLS}
           fuente={8}

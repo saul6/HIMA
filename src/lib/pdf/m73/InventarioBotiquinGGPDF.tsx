@@ -5,6 +5,7 @@ import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface M73MaterialFilaPDF {
   nombre: string
@@ -40,7 +41,7 @@ function fmt(n: number | null): string {
 }
 
 function formatFecha(iso: string) {
-  try { return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) }
+  try { return fechaPdf(iso, { day: 'numeric', month: 'long', year: 'numeric' }) }
   catch { return iso }
 }
 
@@ -48,16 +49,16 @@ export function InventarioBotiquinGGPagina({ rancho, orgNombre, fecha, botiquin_
   return (
     <PaginaEstandar
       orientacion="portrait"
-      titulo="INVENTARIO DE MATERIAL DE CURACION — BOTIQUIN"
+      titulo="INVENTARIO DE MATERIAL DE CURACIÓN — BOTIQUÍN"
       subtitulo={`GlobalGAP | ${rancho}`}
       codigoFmt="M73-GG"
-      folio={fecha}
-      emision={fecha}
+      folio={fechaPdf(fecha)}
+      emision={fechaPdf(fecha)}
       etiquetaEmision="Fecha"
       tituloDatos="DATOS GENERALES"
       camposDatos={[
         ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Empresa', valor: orgNombre }] : []),
-        { icono: 'ubicacion', etiqueta: 'Rancho / instalacion', valor: rancho },
+        { icono: 'ubicacion', etiqueta: 'Rancho / instalación', valor: rancho },
         { icono: 'calendario', etiqueta: 'Fecha', valor: formatFecha(fecha) },
         { etiqueta: 'N. Botiquin', valor: botiquin_num ?? '—' },
         { icono: 'usuario', etiqueta: 'Realizó', valor: realizo ?? '—' },
@@ -111,18 +112,18 @@ export function InventarioBotiquinGGConsolidadoPDF({ filas, orgNombre }: {
   orgNombre?: string | null
 }) {
   function fmtCorta(iso: string) {
-    try { return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) }
+    try { return fechaPdf(iso, { day: '2-digit', month: 'short', year: 'numeric' }) }
     catch { return iso }
   }
   return (
     <Document>
       <PaginaEstandar
         orientacion="portrait"
-        titulo="INVENTARIO DE MATERIAL DE CURACION — CONSOLIDADO"
+        titulo="INVENTARIO DE MATERIAL DE CURACIÓN — CONSOLIDADO"
         subtitulo={orgNombre ? `GlobalGAP | ${orgNombre}` : 'GlobalGAP'}
         codigoFmt="M73-GG"
         folio="Consolidado"
-        emision={filas[0]?.fecha ?? ''}
+        emision={fechaPdf(filas[0]?.fecha)}
         etiquetaEmision="Fecha"
         camposDatos={[]}
       >

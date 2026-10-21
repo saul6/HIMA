@@ -48,13 +48,13 @@ export interface LimpiezaCisternaConsolidadoProps {
 // ── Registro diario de cloración y personal ───────────────────────────────────
 
 const COLS_DIA: ColumnaDato[] = [
-  { texto: 'Dia', ancho: 20, align: 'center' },
+  { texto: 'Día', ancho: 20, align: 'center' },
   { texto: 'Cloro cisterna (1.5-3.0 ppm)', ancho: 65, align: 'center' },
   { texto: 'Ajuste cloro cisterna', ancho: 60, align: 'center' },
   { texto: 'Cloro desinfección (100-200 ppm)', ancho: 65, align: 'center' },
   { texto: 'Ajuste cloro desinfección', ancho: 60, align: 'center' },
   { texto: 'Realizó', ancho: 95, align: 'center' },
-  { texto: 'Aprobo', ancho: 95, align: 'center' },
+  { texto: 'Aprobó', ancho: 95, align: 'center' },
 ]
 
 // ── LimpiezaCisternaPagina ────────────────────────────────────────────────────

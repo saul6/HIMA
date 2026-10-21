@@ -4,6 +4,7 @@ import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface BasculaRow {
   fecha: string
@@ -30,10 +31,7 @@ interface Props {
 }
 
 function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 function fmtNum(n: number | null, dec = 3): string {
@@ -97,7 +95,7 @@ export function CalibracionBasculasPDF({
         <PdfFirmas
           signatures={[
             { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
-            { label: '', nombre: '', caption: 'Verifico: Responsable técnico', firma: firmaVerifico ?? null },
+            { label: '', nombre: '', caption: 'Verificó: Responsable técnico', firma: firmaVerifico ?? null },
           ]}
         />
       </PaginaEstandar>

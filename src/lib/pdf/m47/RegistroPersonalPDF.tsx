@@ -2,12 +2,13 @@
 // Registro de Personal — A4 horizontal, tabla de trabajadores con 3 grupos de columnas.
 
 import { Document } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { Leyenda } from '@/lib/pdf/disenoNuevo/Leyenda'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -58,10 +59,7 @@ function fmtFecha(iso: string | null): string {
 }
 
 function fmtFechaCorta(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 // ── Anchos de columna (relativos; la tabla se escala al ancho útil de la hoja) ─
@@ -84,7 +82,7 @@ export function RegistroPersonalPDF({
   orgNombre, rancho, fechaPDF, trabajadores, documentos, capacitaciones,
   codigoClave, terminoSitio = 'Instalación', firmaRealizo, firmaVerifico,
 }: RegistroPersonalPDFProps) {
-  const emision   = new Date().toLocaleDateString('es-MX')
+  const emision   = fechaEmisionHoy()
   const codigoFmt = codigoFormato('F-FRUS-ADM-04', codigoClave)
 
   const nDocs = documentos.length
@@ -116,7 +114,7 @@ export function RegistroPersonalPDF({
     { texto: '', ancho: COL_NO },
     { texto: 'Datos personales del trabajador', ancho: COL_PUESTO + COL_NOMBRE + COL_DIR + COL_TCASA + COL_CEL + COL_FNAC },
     { texto: 'Contacto de emergencia', ancho: COL_EM_NOM + COL_EM_PAR + COL_EM_TEL },
-    ...(nDocs > 0 ? [{ texto: 'Documentacion personal', ancho: wDocs }] : []),
+    ...(nDocs > 0 ? [{ texto: 'Documentación personal', ancho: wDocs }] : []),
     ...(nCaps > 0 ? [{ texto: 'Capacitaciones', ancho: wCaps }] : []),
     { texto: 'Observaciones', ancho: COL_OBS },
   ]
@@ -125,7 +123,7 @@ export function RegistroPersonalPDF({
   const legendEntradas = []
   if (nDocs > 0) {
     legendEntradas.push({
-      titulo: 'Documentacion',
+      titulo: 'Documentación',
       items: documentos.map((d, i) => ({ codigo: `D${i + 1}`, label: d.nombre })),
     })
   }
@@ -186,7 +184,7 @@ export function RegistroPersonalPDF({
           <PdfFirmas
             signatures={[
               { label: '', nombre: '', caption: 'Responsable de Recursos Humanos', firma: firmaRealizo ?? null },
-              { label: '', nombre: '', caption: 'Jefe de la instalacion', firma: firmaVerifico ?? null },
+              { label: '', nombre: '', caption: 'Jefe de la instalación', firma: firmaVerifico ?? null },
             ]}
           />
         </Seccion>

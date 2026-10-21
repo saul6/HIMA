@@ -6,6 +6,7 @@ import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface M40LineaPDF {
   orden: number
@@ -32,10 +33,7 @@ export interface M40RegistroDataPDF {
 }
 
 function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 const t = (v: string | null | undefined): string => v ?? '—'
@@ -45,7 +43,7 @@ const COLS: ColumnaDato[] = [
   { texto: 'No.', ancho: 22, align: 'center' },
   { texto: 'Cuarto Pre-frio', ancho: 90 },
   { texto: 'Fruta', ancho: 90 },
-  { texto: 'Presentacion', ancho: 80 },
+  { texto: 'Presentación', ancho: 80 },
   { texto: 'Tarimas', ancho: 40, align: 'center' },
   { texto: 'Restos', ancho: 250 },
   { texto: 'E. Hora', ancho: 45, align: 'center' },
@@ -72,7 +70,7 @@ export function EntradasSalidasPreFrioPDF({
         subtitulo={`${d.instalacion}${d.empresa ? ` | ${d.empresa}` : ''} | ${fmtFecha(d.fecha)}`}
         codigoFmt={codigoFmt}
         folio={d.folio ?? '—'}
-        emision={d.fecha}
+        emision={fmtFecha(d.fecha)}
         etiquetaEmision="Fecha"
         camposDatos={[]}
       >
@@ -91,7 +89,7 @@ export function EntradasSalidasPreFrioPDF({
 
         <PdfFirmas
           signatures={[
-            { label: 'Responsable de la instalacion', nombre: firmaRealizo?.firmante ?? '', caption: 'Firma del responsable', firma: firmaRealizo ?? null },
+            { label: 'Responsable de la instalación', nombre: firmaRealizo?.firmante ?? '', caption: 'Firma del responsable', firma: firmaRealizo ?? null },
             { label: 'Responsable de la empresa', nombre: firmaVerifico?.firmante ?? '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
           ]}
         />

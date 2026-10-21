@@ -5,6 +5,7 @@ import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface GestionResiduosRow {
   fecha: string
@@ -29,10 +30,7 @@ interface Props {
 }
 
 function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 // Anchos relativos de columna (la tabla se escala al ancho útil de la hoja)
@@ -40,7 +38,7 @@ const COLS: ColumnaDato[] = [
   { texto: 'Fecha', ancho: 70 },
   { texto: 'Fuente de residuo', ancho: 140 },
   { texto: 'Descripción', ancho: 190 },
-  { texto: 'Clasificacion', ancho: 110 },
+  { texto: 'Clasificación', ancho: 110 },
   { texto: 'Destino final', ancho: 140 },
   { texto: 'Cantidad', ancho: 70, align: 'center' },
   { texto: 'Realizó', ancho: 82 },

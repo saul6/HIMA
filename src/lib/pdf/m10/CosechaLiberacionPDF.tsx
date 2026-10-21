@@ -4,11 +4,12 @@
 // CosechaLiberacionConsolidadoPDF: documento multi-página.
 
 import { Document, View } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -58,14 +59,14 @@ const COLS: ColumnaDato[] = [
   { texto: 'Marca y\nEmbalaje', ancho: 54 },
   { texto: 'Destino\nFinal', ancho: 58 },
   { texto: 'Fruta\nProc. Kg', ancho: 40, align: 'center' },
-  { texto: 'Encargado de la\nLiberacion', ancho: 70 },
+  { texto: 'Encargado de la\nLiberación', ancho: 70 },
   { texto: 'Verif.\nSemanal', ancho: 36, align: 'center' },
   { texto: 'Observaciones\n(Hora inicio y final)', ancho: 214 },
 ]
 
 function formatFechaPDF(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
+    return fechaPdf(iso, {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     })
   } catch { return iso }
@@ -91,9 +92,9 @@ export function CosechaLiberacionPagina({
   folio, codigoClave = 'MXA', terminoSitio = 'Rancho',
   firmaRealizo, firmaVerifico,
 }: CosechaLiberacionPaginaProps) {
-  const emision = new Date().toLocaleDateString('es-MX')
+  const emision = fechaEmisionHoy()
   const codigoFmt = `${codigoClave}-F-SC-SIG`
-  const folioDisplay = folio ?? fecha
+  const folioDisplay = folio ?? fechaPdf(fecha)
 
   return (
     <PaginaEstandar
@@ -117,7 +118,7 @@ export function CosechaLiberacionPagina({
           fuenteEnc={6}
           vacio="Sin liberaciones registradas"
           filas={liberaciones.map((lib) => [
-            fecha,
+            fechaPdf(fecha),
             lib.sector ?? '—',
             lib.cantidad_bandejas != null ? String(lib.cantidad_bandejas) : '—',
             siNoCelda(lib.lote_liberado),

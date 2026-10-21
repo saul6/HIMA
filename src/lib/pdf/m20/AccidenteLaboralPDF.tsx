@@ -3,7 +3,7 @@
 // No Unicode: checklist (X) / ( ). Dos firmas en blanco.
 
 import { Document } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { Checklist } from '@/lib/pdf/disenoNuevo/Checklist'
 import { SiNoTexto } from '@/lib/pdf/disenoNuevo/SiNoTexto'
@@ -11,6 +11,7 @@ import { Fotos } from '@/lib/pdf/disenoNuevo/Fotos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -57,7 +58,7 @@ export interface AccidenteLaboralConsolidadoPDFProps {
 
 function formatFechaPDF(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
+    return fechaPdf(iso, {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     })
   } catch { return iso }
@@ -95,7 +96,7 @@ export function AccidenteLaboralPagina({
   firmaRealizo,
   firmaVerifico,
 }: AccidenteLaboralPaginaProps) {
-  const emision   = new Date().toLocaleDateString('es-MX')
+  const emision   = fechaEmisionHoy()
   const codigoFmt = codigoFormato('F-FRUS-CAL-15', codigoClave)
 
   return (
@@ -131,12 +132,13 @@ export function AccidenteLaboralPagina({
       </Seccion>
 
       <Seccion titulo="6. PRODUCTO INVOLUCRADO">
-        <SiNoTexto valor={productoInvolucrado} texto={productoInvolucrado && disposicionProducto ? `Disposicion: ${disposicionProducto}` : ''} />
+        <SiNoTexto valor={productoInvolucrado} texto={productoInvolucrado && disposicionProducto ? `Disposición: ${disposicionProducto}` : ''} />
       </Seccion>
 
       {dataUris.length > 0 && (
         <Seccion titulo="7. EVIDENCIA FOTOGRÁFICA">
-          <Fotos uris={dataUris} />
+          {/* Una columna, completas y con "Foto n de N"; altura máxima para que quepan ~3 por página */}
+          <Fotos uris={dataUris} ancho={230} altoMax={200} />
         </Seccion>
       )}
 

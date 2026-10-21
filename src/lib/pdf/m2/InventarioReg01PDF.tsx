@@ -1,6 +1,7 @@
 import { Document, View, Text } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { InventarioMovimiento } from '@/types/database.types'
 
@@ -41,8 +42,8 @@ export function InventarioReg01PDF({
   desde,
   hasta,
 }: InventarioReg01PDFProps) {
-  const emision = new Date().toLocaleDateString('es-MX')
-  const rango = desde && hasta ? ` | ${desde} al ${hasta}` : ''
+  const emision = fechaEmisionHoy()
+  const rango = desde && hasta ? ` | ${fechaPdf(desde)} al ${fechaPdf(hasta)}` : ''
 
   return (
     <Document
@@ -81,7 +82,7 @@ export function InventarioReg01PDF({
                 const entrada =
                   m.tipo === 'entrada' ? fmtN(m.cantidad) : m.tipo === 'ajuste' ? `Aj. +${fmtN(m.cantidad)}` : ''
                 const salida = m.tipo === 'salida' ? fmtN(m.cantidad) : ''
-                return [v(m.fecha), entrada, salida, fmtN(m.balance)]
+                return [fechaPdf(m.fecha) || '—', entrada, salida, fmtN(m.balance)]
               })}
             />
           </Seccion>

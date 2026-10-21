@@ -4,6 +4,7 @@ import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface VerificacionRoedorFilaPDF {
   id: string
@@ -38,7 +39,7 @@ const COL = {
 
 function formatFecha(f: string) {
   try {
-    return new Date(f + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
+    return fechaPdf(f, { day: '2-digit', month: 'short', year: 'numeric' })
   } catch { return f }
 }
 
@@ -72,7 +73,7 @@ const GRUPOS = [
 ]
 
 export function VerificacionRoedoresPagina({ rancho, orgNombre, filas, firmaRealizo, firmaVerifico }: VerificacionRoedoresPDFProps) {
-  const folio = filas[0]?.fecha ?? '—'
+  const folio = fechaPdf(filas[0]?.fecha) || '—'
   return (
     <PaginaEstandar
       titulo="VERIFICACIÓN DE TRAMPAS PARA ROEDORES"
@@ -105,7 +106,7 @@ export function VerificacionRoedoresPagina({ rancho, orgNombre, filas, firmaReal
       />
 
       <Text style={{ fontSize: 6, color: PC.textSub, fontFamily: 'Helvetica-Oblique', marginBottom: 6 }}>
-        El formato debe llenarse en cada verificacion y este formato debe mantenerse en cada trampa muestreada.
+        El formato debe llenarse en cada verificación y este formato debe mantenerse en cada trampa muestreada.
       </Text>
 
       <PdfFirmas

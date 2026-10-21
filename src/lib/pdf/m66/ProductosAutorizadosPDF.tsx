@@ -1,9 +1,10 @@
 import { Document } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface ProductoAutorizadoRow {
   cultivo: string
@@ -40,15 +41,12 @@ const COLS: ColumnaDato[] = [
 ]
 
 function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 export function ProductosAutorizadosPDF({ orgNombre, productos, codigoClave, cultivoFiltro, fecha, firmaRealizo, firmaVerifico }: Props) {
   const codigoFmt = codigoFormato('M66-PROD-AUT', codigoClave)
-  const fechaDisplay = fecha ? fmtFecha(fecha) : new Date().toLocaleDateString('es-MX')
+  const fechaDisplay = fecha ? fmtFecha(fecha) : fechaEmisionHoy()
 
   // Agrupar por cultivo
   const cultivosUnicos = [...new Set(productos.map(p => p.cultivo))].sort()
@@ -66,7 +64,7 @@ export function ProductosAutorizadosPDF({ orgNombre, productos, codigoClave, cul
         camposDatos={[
           { icono: 'usuario', etiqueta: 'Organización', valor: orgNombre },
           { etiqueta: 'Cultivo', valor: cultivoFiltro ?? 'Todos' },
-          { icono: 'calendario', etiqueta: 'Fecha de emision', valor: fechaDisplay },
+          { icono: 'calendario', etiqueta: 'Fecha de emisión', valor: fechaDisplay },
         ]}
       >
         {cultivosUnicos.map((cultivo) => (
@@ -91,7 +89,7 @@ export function ProductosAutorizadosPDF({ orgNombre, productos, codigoClave, cul
         <PdfFirmas
           signatures={[
             { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
-            { label: '', nombre: '', caption: 'Verifico: Responsable de Inocuidad', firma: firmaVerifico ?? null },
+            { label: '', nombre: '', caption: 'Verificó: Responsable de Inocuidad', firma: firmaVerifico ?? null },
           ]}
         />
       </PaginaEstandar>

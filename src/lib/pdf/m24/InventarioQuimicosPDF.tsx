@@ -3,7 +3,7 @@
 // PdfPageFrame + PdfHeader + tabla de movimientos + 3 firmas.
 
 import { Document, View } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
@@ -68,7 +68,7 @@ export function InventarioQuimicosPagina({
   consolidado, desde, hasta, codigoClave, terminoSitio = 'Instalación',
   firmaRealizo, firmaVerifico,
 }: InventarioQuimicosProps) {
-  const emision = new Date().toLocaleDateString('es-MX')
+  const emision = fechaEmisionHoy()
   const codigoFmt = codigoFormato('F-FRUS-SAN-02', codigoClave ?? '')
 
   const filas = calcSaldo(movimientos)

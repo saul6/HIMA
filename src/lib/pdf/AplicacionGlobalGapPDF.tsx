@@ -1,11 +1,12 @@
 import { Document, View } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { Checklist } from '@/lib/pdf/disenoNuevo/Checklist'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import type { AplicacionPDFProps } from './AplicacionPDF'
 import { formatFenologia } from '@/lib/fenologia'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -18,7 +19,7 @@ const valNum = (v: number | null | undefined, fallback = '—') =>
 // ── Columnas de productos GlobalG.A.P. ───────────────────────────────────────
 
 const PRODUCT_COLS_GG: ColumnaDato[] = [
-  { texto: 'Justificacion / Plaga', ancho: 100, align: 'left' },
+  { texto: 'Justificación / Plaga', ancho: 100, align: 'left' },
   { texto: 'Nombre Comercial', ancho: 110, align: 'left' },
   { texto: 'Ingrediente Activo', ancho: 110, align: 'left' },
   { texto: 'No. RSCO/COFEPRIS', ancho: 90, align: 'left' },
@@ -40,7 +41,7 @@ export function AplicacionGlobalGapPDF({
 }: AplicacionPDFProps) {
   const productorNombre = operario.nombre_completo || operarioEmail || '—'
   const folio = ap.id.slice(0, 8).toUpperCase()
-  const emision = new Date().toLocaleDateString('es-MX')
+  const emision = fechaEmisionHoy()
 
   const tieneObservaciones = Boolean(ap.observaciones)
   const numFirmas = tieneObservaciones ? 7 : 6
@@ -69,8 +70,8 @@ export function AplicacionGlobalGapPDF({
           { icono: 'codigo', etiqueta: 'Código de huerto', valor: val(rancho.codigo) },
           { etiqueta: 'Variedad', valor: val(ap.variedad) },
           { etiqueta: 'Etapa fenológica', valor: formatFenologia(ap.fenologia ?? undefined) },
-          { icono: 'calendario', etiqueta: 'Fecha de aplicación', valor: val(ap.fecha_aplicacion) },
-          { icono: 'calendario', etiqueta: 'Próxima cosecha', valor: val(ap.proxima_cosecha) },
+          { icono: 'calendario', etiqueta: 'Fecha de aplicación', valor: val(ap.fecha_aplicacion ? fechaPdf(ap.fecha_aplicacion) : null) },
+          { icono: 'calendario', etiqueta: 'Próxima cosecha', valor: val(ap.proxima_cosecha ? fechaPdf(ap.proxima_cosecha) : null) },
           { etiqueta: 'Hora inicio', valor: val(ap.hora_inicio) },
           { etiqueta: 'Hora fin', valor: val(ap.hora_fin) },
         ]}

@@ -16,6 +16,7 @@ import {
 import {
   planificarIncidencias, COL_EVIDENCIA, PAD_CELDA, FOTO_W, GAP_FOTOS, type BloquePlan,
 } from './planificarIncidencias'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -98,7 +99,7 @@ const s = StyleSheet.create({
 
 function formatFechaPDF(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
+    return fechaPdf(iso, {
       day: '2-digit', month: 'short', year: 'numeric',
     })
   } catch { return iso }
@@ -206,9 +207,9 @@ export function ReporteIncidenciasPagina({
       <PdfFirmas
         signatures={[
           {
-            label: 'Realizo el recorrido',
+            label: 'Realizó el recorrido',
             nombre: auditorNombre ?? '',
-            caption: 'Realizo - Firma',
+            caption: 'Realizó - Firma',
             firma: firmaRealizo ?? null,
           },
           {

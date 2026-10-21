@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
+import { partirParaAncho } from '@/lib/pdf/disenoNuevo/medirTexto'
 
 // Archivo requerido: public/images/logo-los-gemelos.png
 // Sin ese archivo el PDF falla al generar (Image no puede cargar la URL).
@@ -44,7 +44,7 @@ const s = StyleSheet.create({
   // ── Header ───────────────────────────────────────────────────────────────
   headerRow: {
     flexDirection: 'row',
-    height: 52,
+    minHeight: 52,
     borderBottomWidth: 1,
     borderBottomColor: BD,
     borderBottomStyle: 'solid',
@@ -125,19 +125,19 @@ export function EtiquetaLPTPDF({ d }: { d: EtiquetaLPTData }) {
             </View>
             <View style={s.titleCell}>
               <Text style={s.titleText}>Etiqueta de trazabilidad</Text>
-              <Text style={s.subtitleText} hyphenationCallback={partirPalabraLarga}>{d.orgNombre}</Text>
+              <Text style={s.subtitleText} hyphenationCallback={partirParaAncho(190, 7.5)}>{d.orgNombre}</Text>
             </View>
           </View>
 
           {/* Fila 1: Producto | Presentacion | Turno */}
-          <View style={[s.row, { height: 36 }]}>
+          <View style={[s.row, { minHeight: 36 }]}>
             <View style={s.cell}>
               <Text style={s.cLabel}>PRODUCTO</Text>
-              <Text style={s.cVal} hyphenationCallback={partirPalabraLarga}>{d.producto}</Text>
+              <Text style={s.cVal} hyphenationCallback={partirParaAncho(80, 8, true)}>{d.producto}</Text>
             </View>
             <View style={s.cell}>
-              <Text style={s.cLabel}>PRESENTACION</Text>
-              <Text style={s.cValSm} hyphenationCallback={partirPalabraLarga}>{d.presentacion ?? 'Caja / segun cliente'}</Text>
+              <Text style={s.cLabel}>PRESENTACIÓN</Text>
+              <Text style={s.cValSm} hyphenationCallback={partirParaAncho(80, 6.5, true)}>{d.presentacion ?? 'Caja / segun cliente'}</Text>
             </View>
             <View style={s.cellLast}>
               <Text style={s.cLabel}>TURNO</Text>
@@ -146,7 +146,7 @@ export function EtiquetaLPTPDF({ d }: { d: EtiquetaLPTData }) {
           </View>
 
           {/* Fila 2: Fecha empaque | LR/LC | Proveedor */}
-          <View style={[s.row, { height: 36 }]}>
+          <View style={[s.row, { minHeight: 36 }]}>
             <View style={s.cell}>
               <Text style={s.cLabel}>FECHA DE EMPAQUE</Text>
               <Text style={s.cVal}>{ff(d.fechaEmpaque)}</Text>
@@ -169,13 +169,13 @@ export function EtiquetaLPTPDF({ d }: { d: EtiquetaLPTData }) {
             </View>
             <View style={s.clienteCell}>
               <Text style={s.cLabel}>CLIENTE / DESTINO</Text>
-              <Text style={[s.cValSm, { fontSize: 7 }]} hyphenationCallback={partirPalabraLarga}>{d.clienteDestino}</Text>
+              <Text style={[s.cValSm, { fontSize: 7 }]} hyphenationCallback={partirParaAncho(96, 7, true)}>{d.clienteDestino}</Text>
             </View>
           </View>
 
           {/* Seccion QR */}
           <View style={s.qrSection}>
-            <Text style={s.qrSectionLabel}>CODIGO VISUAL DEL LOTE</Text>
+            <Text style={s.qrSectionLabel}>CÓDIGO VISUAL DEL LOTE</Text>
             <Image src={d.qrDataUrl} style={s.qrImg} />
             <Text style={s.qrCode}>{d.lptCodigo}</Text>
           </View>

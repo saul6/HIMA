@@ -65,7 +65,7 @@ export function ConsumoEnergiaPDF({ rancho, orgNombre, desde, hasta, registros, 
     <Document>
       <PaginaEstandar
         titulo="CONSUMO DE COMBUSTIBLE Y ENERGÍA"
-        subtitulo={`Registro de energia | ${rancho}`}
+        subtitulo={`Registro de energía | ${rancho}`}
         codigoFmt="M60"
         folio={periodo}
         emision={periodo}

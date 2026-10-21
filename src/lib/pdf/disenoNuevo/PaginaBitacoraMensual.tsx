@@ -3,7 +3,7 @@
 // y firmas. Cada módulo solo aporta su título, su código y su área; la cuadrícula del formato
 // oficial (una columna por día) no cambia.
 import { View, Text } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from './PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from './PaginaEstandar'
 import { FranjaDatos } from './Franja'
 import { TablaDatos, type ColumnaDato, type CeldaDato } from './TablaDatos'
 import { PdfFirmas } from './PdfFirmas'
@@ -74,18 +74,18 @@ const celda = { borderRightWidth: LINEA, borderRightColor: PC.border, borderBott
 const fila = { flexDirection: 'row', borderLeftWidth: LINEA, borderLeftColor: PC.border } as const
 
 const COLS_CONC: ColumnaDato[] = [
-  { texto: 'Dia', ancho: 20, align: 'center' },
+  { texto: 'Día', ancho: 20, align: 'center' },
   { texto: 'Conc. Cloro (ppm)', ancho: 60, align: 'center' },
   { texto: 'Ajuste Cloro', ancho: 60, align: 'center' },
   { texto: 'Conc. Ac. Per. (ppm)', ancho: 65, align: 'center' },
   { texto: 'Ajuste Ac. Per.', ancho: 60, align: 'center' },
   { texto: 'Realizó', ancho: 100, align: 'center' },
-  { texto: 'Aprobo', ancho: 100, align: 'center' },
+  { texto: 'Aprobó', ancho: 100, align: 'center' },
 ]
 const COLS_PERSONAL: ColumnaDato[] = [
-  { texto: 'Dia', ancho: 30, align: 'center' },
+  { texto: 'Día', ancho: 30, align: 'center' },
   { texto: 'Realizó', ancho: 250, align: 'center' },
-  { texto: 'Aprobo', ancho: 250, align: 'center' },
+  { texto: 'Aprobó', ancho: 250, align: 'center' },
 ]
 
 export function PaginaBitacoraMensual({
@@ -97,7 +97,7 @@ export function PaginaBitacoraMensual({
       <Text style={{ fontSize: 6, color: PC.textSub }}>{nota}</Text>
     </View>
   ) : null
-  const emision = new Date().toLocaleDateString('es-MX')
+  const emision = fechaEmisionHoy()
   const numDias = new Date(anio, mes, 0).getDate()
   const days = Array.from({ length: numDias }, (_, i) => i + 1)
   const dW = Math.floor((PAGE_W - ITEM_COL_W) / Math.max(numDias, 1))
@@ -203,7 +203,7 @@ export function PaginaBitacoraMensual({
           <PdfFirmas
             signatures={[
               { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
-              { label: '', nombre: '', caption: 'Aprobo', firma: firmaVerifico ?? null },
+              { label: '', nombre: '', caption: 'Aprobó', firma: firmaVerifico ?? null },
               { label: '', nombre: '', caption: 'Responsable de Inocuidad — Firma' },
             ]}
           />

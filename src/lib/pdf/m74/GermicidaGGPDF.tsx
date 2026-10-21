@@ -5,6 +5,7 @@ import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface GermicidaGGFilaPDF {
   id: string
@@ -48,7 +49,7 @@ const COL = {
 
 function formatFecha(f: string) {
   try {
-    return new Date(f + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
+    return fechaPdf(f, { day: '2-digit', month: 'short', year: 'numeric' })
   } catch { return f }
 }
 
@@ -80,7 +81,7 @@ const GRUPOS = [
 ]
 
 export function GermicidaGGPagina({ rancho, orgNombre, filas, firmaRealizo, firmaVerifico }: GermicidaGGPDFProps) {
-  const folio = filas[0]?.fecha ?? '—'
+  const folio = fechaPdf(filas[0]?.fecha) || '—'
   const producto = filas[0]?.producto ?? null
 
   return (
@@ -99,7 +100,7 @@ export function GermicidaGGPagina({ rancho, orgNombre, filas, firmaRealizo, firm
       ]}
     >
       <Text style={{ fontSize: 6, color: PC.textSub, fontFamily: 'Helvetica-Oblique', marginBottom: 4 }}>
-        Se debe llevar la verificacion de la sanitizacion diariamente y/o cada que haya cosecha, especificando la hora de monitoreo y las ppm (Lavado de manos 1.5-3.0 ppm / Agua de desinfeccion de herramienta, cubetas 100-200 ppm).
+        Se debe llevar la verificación de la sanitización diariamente y/o cada que haya cosecha, especificando la hora de monitoreo y las ppm (Lavado de manos 1.5-3.0 ppm / Agua de desinfección de herramienta, cubetas 100-200 ppm).
       </Text>
 
       <TablaDatos

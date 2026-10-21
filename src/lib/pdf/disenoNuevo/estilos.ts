@@ -12,3 +12,9 @@ export const estiloPagina = {
   paddingRight: 40,
   backgroundColor: PC.white,
 } as const
+
+/**
+ * react-pdf trata `flexShrink: 0` como 1 (`value || 1`) y, si una página se llena de más, Yoga comprime las cajas
+ * y el texto se encima. Un valor casi cero evita que las cajas se encojan.
+ */
+export const SIN_ENCOGER = { flexShrink: 0.001 } as const

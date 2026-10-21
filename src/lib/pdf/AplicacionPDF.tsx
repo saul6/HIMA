@@ -1,11 +1,12 @@
 import { Document, View } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { Checklist } from '@/lib/pdf/disenoNuevo/Checklist'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import type { Aplicacion, AplicacionProducto, CatalogoProducto, Rancho, Profile } from '@/types/database.types'
 import { formatFenologia } from '@/lib/fenologia'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 type ProductoConCatalogo = AplicacionProducto & {
   catalogo_productos: CatalogoProducto
@@ -75,7 +76,7 @@ export function AplicacionPDF({
 }: AplicacionPDFProps) {
   const productorNombre = operario.nombre_completo || operarioEmail || '—'
   const folio = ap.id.slice(0, 8).toUpperCase()
-  const emision = new Date().toLocaleDateString('es-MX')
+  const emision = fechaEmisionHoy()
   const codigoFmt = `${codigoClave}-F-SC-SIG`
 
   const labelSitio = terminoSitio === 'Rancho' ? 'Rancho / Huerto' : terminoSitio
@@ -114,8 +115,8 @@ export function AplicacionPDF({
         <Seccion titulo="2. FECHAS, HORARIOS Y CONDICIONES DE APLICACIÓN">
           <FranjaDatos
             campos={[
-              { icono: 'calendario', etiqueta: 'Fecha recomendación asesor', valor: val(ap.fecha_recomendacion) },
-              { icono: 'calendario', etiqueta: 'Fecha real de aplicación', valor: val(ap.fecha_aplicacion) },
+              { icono: 'calendario', etiqueta: 'Fecha recomendación asesor', valor: val(ap.fecha_recomendacion ? fechaPdf(ap.fecha_recomendacion) : null) },
+              { icono: 'calendario', etiqueta: 'Fecha real de aplicación', valor: val(ap.fecha_aplicacion ? fechaPdf(ap.fecha_aplicacion) : null) },
               { etiqueta: 'Hora inicio', valor: val(ap.hora_inicio) },
               { etiqueta: 'Hora fin', valor: val(ap.hora_fin) },
               { etiqueta: 'Tipo de aplicación', valor: val(ap.tipo_aplicacion) },

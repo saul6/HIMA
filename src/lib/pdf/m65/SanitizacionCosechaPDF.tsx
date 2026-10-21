@@ -6,6 +6,7 @@ import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface SanitizacionCosechaRow {
   fecha: string
@@ -34,10 +35,7 @@ interface Props {
 }
 
 function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 // Anchos relativos de columna (la tabla se escala al ancho útil de la hoja)
@@ -63,7 +61,7 @@ export function SanitizacionCosechaPDF({ rows, orgNombre, desde, hasta, codigoCl
     <Document>
       <PaginaEstandar
         titulo="SANITIZACIÓN DE HERRAMIENTAS EN COSECHA"
-        subtitulo={"Registro de sanitizacion de herramientas de cosecha"}
+        subtitulo={"Registro de sanitización de herramientas de cosecha"}
         codigoFmt={codigoFmt}
         folio={periodo}
         emision={periodo}
@@ -106,7 +104,7 @@ export function SanitizacionCosechaPDF({ rows, orgNombre, desde, hasta, codigoCl
         <PdfFirmas
           signatures={[
             { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
-            { label: '', nombre: '', caption: 'Verifico: Responsable de Inocuidad', firma: firmaVerifico ?? null },
+            { label: '', nombre: '', caption: 'Verificó: Responsable de Inocuidad', firma: firmaVerifico ?? null },
           ]}
         />
       </PaginaEstandar>

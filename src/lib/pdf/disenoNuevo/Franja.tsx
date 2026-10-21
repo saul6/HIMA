@@ -3,8 +3,9 @@
 // los demás conservan la misma sangría de la etiqueta.
 import { View, Text } from '@react-pdf/renderer'
 import { PC } from '@/lib/pdf/components/tokens'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
+import { alturaTexto, partirParaAncho, ALTO_UTIL_PAGINA, FRACCION_MAX_BLOQUE } from './medirTexto'
 import { Icono, type IconoNombre } from './Icono'
+import { SIN_ENCOGER } from './estilos'
 
 export interface CampoFranja {
   etiqueta: string
@@ -15,8 +16,11 @@ export interface CampoFranja {
 }
 
 const SANGRIA_ICONO = 14  // ancho del icono (10) + separación (4)
+/** Ancho útil de la hoja vertical (A4 con márgenes de 40 pt): el más angosto, para partir palabras sin riesgo. */
+const ANCHO_VERTICAL = 595.28 - 80
+const anchoValorDe = (anchoTotal: number, porRenglon: number) => (anchoTotal - 20) / porRenglon - 16
 
-export function DatoFranja({ icono, etiqueta, valor, colorValor, primero }: CampoFranja & { primero?: boolean }) {
+export function DatoFranja({ icono, etiqueta, valor, colorValor, primero, anchoValor = 100 }: CampoFranja & { primero?: boolean; anchoValor?: number }) {
   return (
     <View
       style={{
@@ -33,7 +37,7 @@ export function DatoFranja({ icono, etiqueta, valor, colorValor, primero }: Camp
           <Text style={{ fontSize: 7, color: PC.textSub, marginLeft: icono ? 4 : SANGRIA_ICONO }}>{etiqueta}</Text>
         </View>
       ) : null}
-      <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 9, color: colorValor ?? PC.m13Navy }} hyphenationCallback={partirPalabraLarga}>
+      <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 9, color: colorValor ?? PC.m13Navy }} hyphenationCallback={partirParaAncho(anchoValor, 9, true)}>
         {valor}
       </Text>
     </View>
@@ -41,15 +45,18 @@ export function DatoFranja({ icono, etiqueta, valor, colorValor, primero }: Camp
 }
 
 /** `porRenglon`: 4 en vertical; en horizontal puede ser 5–6 si caben sin apretar. */
-export function FranjaDatos({ campos, porRenglon = 4, margenInferior = 16 }: { campos: CampoFranja[]; porRenglon?: number; margenInferior?: number }) {
+export function FranjaDatos({ campos, porRenglon = 4, margenInferior = 16, anchoTotal = ANCHO_VERTICAL }: { campos: CampoFranja[]; porRenglon?: number; margenInferior?: number; anchoTotal?: number }) {
+  const anchoValor = anchoValorDe(anchoTotal, porRenglon)
+  const maxBloque = (anchoTotal > ANCHO_VERTICAL + 1 ? ALTO_UTIL_PAGINA.landscape : ALTO_UTIL_PAGINA.portrait) * FRACCION_MAX_BLOQUE
+  const altoRenglon = (fila: CampoFranja[]) => Math.max(...fila.map((c) => 10 + alturaTexto(c.valor ?? '', anchoValor, 9, true))) + 16
   const filas: CampoFranja[][] = []
   for (let i = 0; i < campos.length; i += porRenglon) filas.push(campos.slice(i, i + porRenglon))
-  const caja = { backgroundColor: PC.m13Fondo, borderRadius: 6, padding: 10, marginBottom: margenInferior } as const
+  const caja = { backgroundColor: PC.m13Fondo, borderRadius: 6, padding: 10, marginBottom: margenInferior, ...SIN_ENCOGER } as const
 
   if (filas.length <= 1) {
     return (
       <View style={{ flexDirection: 'row', ...caja }}>
-        {campos.map((c, i) => <DatoFranja key={i} primero={i === 0} {...c} />)}
+        {campos.map((c, i) => <DatoFranja key={i} primero={i === 0} anchoValor={anchoValor} {...c} />)}
       </View>
     )
   }
@@ -58,16 +65,17 @@ export function FranjaDatos({ campos, porRenglon = 4, margenInferior = 16 }: { c
       {filas.map((fila, r) => (
         <View
           key={r}
-          wrap={false}
+          {...(altoRenglon(fila) <= maxBloque ? { wrap: false } : {})}
           style={{
             flexDirection: 'row',
+            ...SIN_ENCOGER,
             marginTop: r === 0 ? 0 : 8,
             paddingTop: r === 0 ? 0 : 8,
             borderTopWidth: r === 0 ? 0 : 0.75,
             borderTopColor: PC.border,
           }}
         >
-          {fila.map((c, i) => <DatoFranja key={i} primero={i === 0} {...c} />)}
+          {fila.map((c, i) => <DatoFranja key={i} primero={i === 0} anchoValor={anchoValor} {...c} />)}
           {/* relleno para que las columnas del último renglón queden alineadas */}
           {Array.from({ length: porRenglon - fila.length }, (_, k) => (
             <View key={`v${k}`} style={{ flex: 1, paddingLeft: 10, paddingRight: 6 }} />

@@ -8,6 +8,7 @@
 import { Document } from '@react-pdf/renderer'
 import { PaginaMatrizMensual } from '@/lib/pdf/disenoNuevo/PaginaMatrizMensual'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -60,7 +61,7 @@ export function VerificacionInsumosPagina({
       subtitulo={`Bitácora mensual | ${instalacion}`}
       codigoFmt={`${codigoClave}-F-SC-SIG`}
       folio={folio ?? mesLabel}
-      emision={new Date().toLocaleDateString('es-MX')}
+      emision={fechaEmisionHoy()}
       porRenglon={5}
       campos={[
         { icono: 'ubicacion', etiqueta: terminoSitio, valor: instalacion },

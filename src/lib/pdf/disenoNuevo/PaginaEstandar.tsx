@@ -9,7 +9,7 @@ import { FranjaDatos, type CampoFranja } from './Franja'
 import { TituloSeccion } from './TituloSeccion'
 import { MarcaDeAgua } from './MarcaDeAgua'
 import { Pie } from './Pie'
-import { estiloPagina } from './estilos'
+import { estiloPagina, SIN_ENCOGER } from './estilos'
 import { hoyMX } from '@/lib/fecha'
 
 /** Fecha de generación del PDF (hoy en México) como dd/mm/aaaa. */
@@ -47,7 +47,7 @@ interface Props {
 /** Sección con título (barra menta); el título no se queda solo al final de una página. */
 export function Seccion({ titulo, children }: { titulo: string; children?: ReactNode }) {
   return (
-    <View style={{ marginTop: 4 }}>
+    <View style={{ marginTop: 4, ...SIN_ENCOGER }}>
       <View minPresenceAhead={50}>
         <TituloSeccion texto={titulo} />
       </View>
@@ -68,7 +68,7 @@ export function PaginaEstandar({
       <View
         fixed
         style={{}}
-        render={({ subPageNumber }) => (subPageNumber > 1 ? <EncabezadoCompacto titulo={titulo} folio={detalleCompacto ? undefined : folio} detalle={detalleCompacto} columnas={columnasCompactas} /> : <View />)}
+        render={({ subPageNumber }) => (subPageNumber !== 1 ? <EncabezadoCompacto titulo={titulo} folio={detalleCompacto ? undefined : folio} detalle={detalleCompacto} columnas={columnasCompactas} /> : <View />)}
       />
 
       <Pie codigo={pendienteSync ? `${codigoFmt}  |  Pendiente de sincronizar` : codigoFmt} />
@@ -78,6 +78,7 @@ export function PaginaEstandar({
       {tituloDatos ? <TituloSeccion texto={tituloDatos} /> : null}
       <FranjaDatos
         porRenglon={porRenglon}
+        anchoTotal={orientacion === 'landscape' ? 841.89 - 80 : 595.28 - 80}
         campos={[
           ...(trio ? camposTrio({ codigoFmt, folio, emision, etiquetaEmision, camposDatos, sinFolio }) : []),
           ...camposDatos,

@@ -4,6 +4,7 @@ import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface ControlHerramientasRow {
   fecha: string
@@ -31,10 +32,7 @@ interface Props {
 }
 
 function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 // Anchos relativos de columna (la tabla se escala al ancho útil de la hoja)
@@ -60,7 +58,7 @@ export function ControlHerramientasPDF({ rows, orgNombre, desde, hasta, codigoCl
     <Document>
       <PaginaEstandar
         titulo="CONTROL DE HERRAMIENTAS"
-        subtitulo={"Registro de entrega y devolucion de herramientas"}
+        subtitulo={"Registro de entrega y devolución de herramientas"}
         codigoFmt={codigoFmt}
         folio={periodo}
         emision={periodo}
@@ -84,7 +82,7 @@ export function ControlHerramientasPDF({ rows, orgNombre, desde, hasta, codigoCl
         <PdfFirmas
           signatures={[
             { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
-            { label: '', nombre: '', caption: 'Verifico: Responsable de Inocuidad', firma: firmaVerifico ?? null },
+            { label: '', nombre: '', caption: 'Verificó: Responsable de Inocuidad', firma: firmaVerifico ?? null },
           ]}
         />
       </PaginaEstandar>

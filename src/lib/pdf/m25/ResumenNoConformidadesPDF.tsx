@@ -3,12 +3,13 @@
 // Encabezado fijo repetido (TopBar + logo + meta), PdfSectionBanner, PdfFooter.
 
 import { Document, View, Text } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import { partirPalabraLarga } from '@/lib/pdf/components/texto'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -42,7 +43,7 @@ const NOTE_DEFAULT =
 
 function formatFechaPDF(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
+    return fechaPdf(iso, {
       year: 'numeric', month: 'long', day: 'numeric',
     })
   } catch { return iso }
@@ -69,7 +70,7 @@ export function ResumenNoConformidadesPDF({
   notaPlazo = NOTE_DEFAULT,
   terminoSitio = 'Instalación',
 }: ResumenNoConformidadesPDFProps) {
-  const emision = new Date().toLocaleDateString('es-MX')
+  const emision = fechaEmisionHoy()
   const fechaFormateada = formatFechaPDF(fecha)
 
   return (

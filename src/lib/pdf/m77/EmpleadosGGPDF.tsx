@@ -5,6 +5,7 @@ import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface EmpleadoGGFilaPDF {
   id: string
@@ -37,7 +38,7 @@ const COL = {
 
 function formatFecha(iso: string | null): string {
   if (!iso) return '—'
-  try { return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) }
+  try { return fechaPdf(iso, { day: '2-digit', month: 'short', year: 'numeric' }) }
   catch { return iso }
 }
 

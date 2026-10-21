@@ -2,13 +2,16 @@
 // Plan de Acciones Correctivas — A4 landscape, multi-página.
 // Encabezado fijo (TopBar + logo + meta), PdfFooter. Diagrama Ishikawa SVG.
 
+import { Fragment } from 'react'
 import { Document, View, Text, Svg, Line, Rect, Path, G } from '@react-pdf/renderer'
-import { PaginaEstandar } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TituloSeccion } from '@/lib/pdf/disenoNuevo/TituloSeccion'
 import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { Fotos } from '@/lib/pdf/disenoNuevo/Fotos'
 import { PC } from '@/lib/pdf/components/tokens'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
+import { partirParaAncho } from '@/lib/pdf/disenoNuevo/medirTexto'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
+import { SIN_ENCOGER } from '@/lib/pdf/disenoNuevo/estilos'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -47,10 +50,7 @@ function fmt(s: string | null | undefined): string {
 
 function fmtFecha(iso: string | null | undefined): string {
   if (!iso) return '—'
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 function svgLineas(text: string, maxChars: number, maxLines: number): string[] {
@@ -106,14 +106,7 @@ function AccionesTabla({ acciones }: { acciones: AccionPDFFila[] }) {
       columnas={COLS}
       filas={acciones.map((a) => [
         fmtFecha(a.fecha_deteccion),
-        {
-          nodo: (
-            <>
-              <Text style={{ fontSize: 7, color: PC.m13Navy, fontFamily: 'Helvetica-Bold', marginBottom: 2 }}>{a.codigo_pregunta}</Text>
-              <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{fmt(a.no_conformidad)}</Text>
-            </>
-          ),
-        },
+        { texto: fmt(a.no_conformidad), prefijo: a.codigo_pregunta },
         fmt(a.causa),
         fmt(a.accion_correctiva),
         fmt(a.accion_preventiva),
@@ -135,37 +128,43 @@ function SubtituloFicha({ texto }: { texto: string }) {
   )
 }
 
+// Ancho del texto de una ficha: hoja horizontal (762) menos el relleno de la ficha (8 + 8) y el borde.
+const ANCHO_FICHA = 842 - 80 - 18
+const PARTIR_FICHA = (fuente: number, negrita = false) => partirParaAncho(ANCHO_FICHA, fuente, negrita)
+
 function FichaNC({ accion }: { accion: AccionPDFFila }) {
   return (
-    <View style={{ marginBottom: 14, borderWidth: 0.5, borderColor: PC.border, borderRadius: 6, overflow: 'hidden' }}>
-      <View wrap={false}>
+    <>
+      <View wrap={false} style={SIN_ENCOGER}>
         <SubtituloFicha texto="No conformidad observada." />
         <View style={{ padding: 8 }}>
-          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, marginBottom: 3 }} hyphenationCallback={partirPalabraLarga}>{accion.codigo_pregunta}</Text>
-          <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }} hyphenationCallback={partirPalabraLarga}>{fmt(accion.no_conformidad)}</Text>
+          <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, marginBottom: 3 }} hyphenationCallback={PARTIR_FICHA(7, true)}>{accion.codigo_pregunta}</Text>
+          <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }} hyphenationCallback={PARTIR_FICHA(8)}>{fmt(accion.no_conformidad)}</Text>
         </View>
       </View>
-      <View wrap={false}>
+      <View wrap={false} style={SIN_ENCOGER}>
         <SubtituloFicha texto="Acción correctiva." />
         <View style={{ padding: 8 }}>
-          <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }} hyphenationCallback={partirPalabraLarga}>{fmt(accion.accion_correctiva)}</Text>
+          <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }} hyphenationCallback={PARTIR_FICHA(8)}>{fmt(accion.accion_correctiva)}</Text>
         </View>
       </View>
-      <SubtituloFicha texto="Evidencia." />
-      <View style={{ padding: 8 }}>
+      <View minPresenceAhead={90} style={SIN_ENCOGER}>
+        <SubtituloFicha texto="Evidencia." />
+      </View>
+      <View style={{ padding: 8, marginBottom: 14, ...SIN_ENCOGER }}>
         {accion.fotos.length === 0 ? (
-          <Text style={{ fontSize: 7.5, color: PC.textSub }}>Sin evidencia fotografica.</Text>
+          <Text style={{ fontSize: 7.5, color: PC.textSub }}>Sin evidencia fotográfica.</Text>
         ) : (
           <Fotos
             uris={accion.fotos.map((f) => f.dataUri)}
             pies={accion.fotos.map((f) => ({
-              titulo: f.tipo === 'no_conformidad' ? 'No conformidad' : 'Evidencia de correccion',
+              titulo: f.tipo === 'no_conformidad' ? 'No conformidad' : 'Evidencia de corrección',
               leyenda: f.leyenda,
             }))}
           />
         )}
       </View>
-    </View>
+    </>
   )
 }
 
@@ -174,7 +173,7 @@ function IshikawaDiagram({ nc, ishikawa }: { nc: string; ishikawa: Record<string
   return (
     <View style={{ marginBottom: 14 }} wrap={false}>
       <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, textTransform: 'uppercase', marginBottom: 6, borderBottomWidth: 1, borderBottomColor: PC.border, paddingBottom: 3 }}>
-        Analisis de causa — Diagrama de Ishikawa
+        Análisis de causa — Diagrama de Ishikawa
       </Text>
       <Svg viewBox={`0 0 ${ISH_W} ${ISH_H}`} style={{ width: ISH_W, height: ISH_H }}>
         {/* Eje principal */}
@@ -237,7 +236,7 @@ export function AccionesCorrectivasPDF({
   acciones,
   terminoSitio = 'Instalación',
 }: AccionesCorrectivasPDFProps) {
-  const emision = new Date().toLocaleDateString('es-MX')
+  const emision = fechaEmisionHoy()
 
   return (
     <Document
@@ -267,8 +266,8 @@ export function AccionesCorrectivasPDF({
         {/* Nota */}
         <View wrap={false} style={{ padding: 8, borderRadius: 6, marginBottom: 14, backgroundColor: PC.m13Fondo }}>
           <Text style={{ fontSize: 7.5, color: PC.textSub, lineHeight: 1.4 }}>
-            Las no-conformidades deben atenderse en un maximo de 30 dias naturales a partir de la fecha de deteccion.
-            Conserve evidencia documental del cierre de cada accion correctiva.
+            Las no-conformidades deben atenderse en un máximo de 30 días naturales a partir de la fecha de detección.
+            Conserve evidencia documental del cierre de cada acción correctiva.
           </Text>
         </View>
 
@@ -284,7 +283,7 @@ export function AccionesCorrectivasPDF({
         {acciones.map((a, i) => {
           const hasIsh = a.ishikawa && Object.values(a.ishikawa).some((v) => v?.trim())
           return (
-            <View key={i}>
+            <Fragment key={i}>
               <FichaNC accion={a} />
               {hasIsh && (
                 <IshikawaDiagram
@@ -292,7 +291,7 @@ export function AccionesCorrectivasPDF({
                   ishikawa={a.ishikawa!}
                 />
               )}
-            </View>
+            </Fragment>
           )
         })}
       </PaginaEstandar>

@@ -4,11 +4,12 @@
 // VidrioPlasticoConsolidadoPDF: documento multi-página.
 
 import { Document } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface VidrioPlasticoPDFProps {
   folio: string
@@ -53,7 +54,7 @@ const ESTADO_COLOR: Record<string, string> = {
 
 function formatFechaPDF(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
+    return fechaPdf(iso, {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     })
   } catch {
@@ -68,7 +69,7 @@ export function VidrioPlasticoPagina({
   codigoClave = 'MXA', terminoSitio = 'Rancho',
   firmaRealizo, firmaVerifico,
 }: VidrioPlasticoPDFProps) {
-  const emision = new Date().toLocaleDateString('es-MX')
+  const emision = fechaEmisionHoy()
   const codigoFmt = `${codigoClave}-F-SC-SIG`
 
   return (

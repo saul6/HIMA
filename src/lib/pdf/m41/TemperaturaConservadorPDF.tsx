@@ -7,6 +7,7 @@ import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface M41LecturaPDF {
   hora: number
@@ -24,10 +25,7 @@ export interface M41RegistroDataPDF {
 }
 
 function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 const t = (v: number | null | undefined): string => v != null ? String(v) : ''
@@ -76,7 +74,7 @@ export function TemperaturaConservadorPDF({
       >
         <Seccion titulo="2. LECTURAS DE TEMPERATURA">
           <Text style={{ fontSize: 6.5, color: PC.textSub, marginBottom: 4, fontFamily: 'Helvetica-Oblique' }}>
-            Instruccion: revisar temperatura al iniciar turno y cada 2 horas.
+            Instrucción: revisar temperatura al iniciar turno y cada 2 horas.
           </Text>
           <TablaDatos
             columnas={COLS}
@@ -90,7 +88,7 @@ export function TemperaturaConservadorPDF({
 
         <PdfFirmas
           signatures={[
-            { label: '', nombre: '', caption: 'Responsable de la instalacion', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Responsable de la instalación', firma: firmaRealizo ?? null },
             { label: '', nombre: '', caption: 'Responsable de la empresa', firma: firmaVerifico ?? null },
           ]}
         />

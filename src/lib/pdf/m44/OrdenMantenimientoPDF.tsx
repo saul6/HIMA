@@ -3,13 +3,14 @@
 // No Unicode: checkboxes (X) / espacio. Dos firmas en blanco.
 
 import { Document } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { Checklist } from '@/lib/pdf/disenoNuevo/Checklist'
 import { SiNoTexto } from '@/lib/pdf/disenoNuevo/SiNoTexto'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -47,10 +48,7 @@ const PRIORIDAD_LABELS: Record<string, string> = {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
@@ -62,7 +60,7 @@ export function OrdenMantenimientoPDF({
   entrega_mtto, recibe, codigoClave, terminoSitio = 'Instalación',
   firmaRealizo, firmaVerifico,
 }: OrdenMantenimientoPDFProps) {
-  const emision   = new Date().toLocaleDateString('es-MX')
+  const emision   = fechaEmisionHoy()
   const codigoFmt = codigoFormato('F-FRUS-MTT-01', codigoClave)
 
   return (
@@ -106,7 +104,7 @@ export function OrdenMantenimientoPDF({
 
         <Seccion titulo="CONDICIONES DE ENTREGA">
           <SiNoTexto valor={equipo_produccion} texto={'¿Se reparó un equipo de producción?'} />
-          <SiNoTexto fallaSiNo valor={lavado_sanitizado} texto={'¿El equipo fue lavado y sanitizado después de la reparacion?'} />
+          <SiNoTexto fallaSiNo valor={lavado_sanitizado} texto={'¿El equipo fue lavado y sanitizado después de la reparación?'} />
         </Seccion>
 
         {observaciones ? (

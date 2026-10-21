@@ -1,7 +1,7 @@
 // PATRÓN INOCUIDAD — PDF M43 (diseño nuevo: lib/pdf/disenoNuevo)
 // Inspección de Almacén de Material de Empaque — A4 landscape, matriz mensual (C / NC / N/A).
 import { Document, View, Text } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { estiloColumnaCompacta } from '@/lib/pdf/disenoNuevo/Encabezado'
@@ -87,7 +87,7 @@ export function InspeccionAlmacenEmpaquePagina({
   codigoClave, terminoSitio = 'Instalación',
   firmaRealizo, firmaVerifico,
 }: InspeccionAlmacenEmpaquePaginaProps) {
-  const emision  = new Date().toLocaleDateString('es-MX')
+  const emision  = fechaEmisionHoy()
   const codigoFmt = codigoFormato('F-FRUS-PRO-08', codigoClave)
   const todosLosDias    = diasDelMes(mesDate)
   const dW              = dayColW(todosLosDias.length)
@@ -169,7 +169,7 @@ export function InspeccionAlmacenEmpaquePagina({
           <View style={{ backgroundColor: PC.m13Fondo, borderRadius: 6, padding: 8, marginBottom: 8 }}>
             {accionesEntries.map(([diaNum, texto]) => (
               <View key={diaNum} style={{ flexDirection: 'row', marginBottom: 2, alignItems: 'flex-start' }}>
-                <Text style={{ fontSize: 6.5, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, width: 32 }}>Dia {diaNum}:</Text>
+                <Text style={{ fontSize: 6.5, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, width: 32 }}>Día {diaNum}:</Text>
                 <Text style={{ fontSize: 6.5, color: PC.fieldValue, flex: 1 }} hyphenationCallback={partirPalabraLarga}>{texto}</Text>
               </View>
             ))}

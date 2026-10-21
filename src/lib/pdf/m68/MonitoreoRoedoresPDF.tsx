@@ -5,6 +5,7 @@ import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface M68MatrizRow {
   criterio_numero: number
@@ -28,10 +29,7 @@ export interface MonitoreoRoedoresPDFProps {
 const CRITERIO_COL_W = 200
 
 function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 export function MonitoreoRoedoresPage({
@@ -48,7 +46,7 @@ export function MonitoreoRoedoresPage({
 }: MonitoreoRoedoresPDFProps) {
   const trampaColW = Math.floor((ANCHO_UTIL.landscape - CRITERIO_COL_W) / num_trampas)
   const columnas: ColumnaDato[] = [
-    { texto: 'Criterio de evaluacion', ancho: CRITERIO_COL_W },
+    { texto: 'Criterio de evaluación', ancho: CRITERIO_COL_W },
     ...Array.from({ length: num_trampas }, (_, i): ColumnaDato => ({ texto: `T${i + 1}`, ancho: trampaColW, align: 'center' })),
   ]
 

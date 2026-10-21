@@ -4,8 +4,9 @@
 
 import { View, Text, Image } from '@react-pdf/renderer'
 import { PC } from '@/lib/pdf/components/tokens'
+import { SIN_ENCOGER } from './estilos'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
+import { alturaTexto, partirParaAncho, ALTO_UTIL_PAGINA } from './medirTexto'
 
 interface SignatureItem {
   label: string
@@ -22,6 +23,9 @@ interface Props {
 }
 
 const sinGuion = (word: string) => [word]
+/** Ancho aproximado del nombre de cada firma: hasta tres bloques en una hoja vertical (el caso más angosto). */
+const ANCHO_NOMBRE = 140
+const partirNombre = partirParaAncho(ANCHO_NOMBRE, 9, true)
 const AVISO_DESACTUALIZADA = 'Firma digital desactualizada: el registro se modificó después de firmarse'
 
 const linea = { borderTopWidth: 0.75, borderTopColor: PC.m13Navy, marginTop: 14, paddingTop: 4 } as const
@@ -38,17 +42,21 @@ export function PdfFirmas({ signatures: signaturesProp, enterado: enteradoProp, 
     ? signaturesProp
     : signaturesProp
         .filter((s, i) => i === idxUnica || !s.firma?.unica)
-        .map((s, i) => (i === idxUnica ? { ...s, caption: 'Realizó y verifico - Firma' } : s))
+        .map((s, i) => (i === idxUnica ? { ...s, caption: 'Realizó y verificó - Firma' } : s))
+
+  // Un nombre larguísimo (hasta 2000 letras en algunos campos) agranda el bloque; si no cabe en media hoja se deja partir.
+  const altoNombres = Math.max(0, ...signatures.map((sig) => (sig.firma && sig.firma.estado === 'vigente' && sig.firma.png ? 0 : alturaTexto(sig.nombre ?? '', ANCHO_NOMBRE, 9, true))))
+  const partible = altoNombres + 80 > ALTO_UTIL_PAGINA.landscape * 0.5
 
   return (
-    <View wrap={false} style={{ flexDirection: 'row', marginTop: 20 }}>
+    <View {...(partible ? {} : { wrap: false })} style={{ flexDirection: 'row', marginTop: 20, ...SIN_ENCOGER }}>
       {signatures.map((sig, i) => {
         const firma = sig.firma
         const tieneDigital = firma && firma.estado === 'vigente' && firma.png
         const desactualizada = firma && firma.estado === 'desactualizada'
         return (
           <View key={i} style={{ ...ancho, marginRight: i < signatures.length - 1 || enterado ? 16 : 0 }}>
-            <View style={{ height: alto }}>
+            <View style={{ minHeight: alto }}>
               {tieneDigital ? (
                 <Image src={firma.png} style={{ height: alto, objectFit: 'contain' }} />
               ) : (
@@ -56,7 +64,7 @@ export function PdfFirmas({ signatures: signaturesProp, enterado: enteradoProp, 
                   <Text style={{ fontSize: 7, color: PC.textSub }}>{sig.label}</Text>
                   <Text
                     style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, marginTop: 2 }}
-                    hyphenationCallback={partirPalabraLarga}
+                    hyphenationCallback={partirNombre}
                   >
                     {sig.nombre}
                   </Text>
@@ -91,11 +99,11 @@ export function PdfFirmas({ signatures: signaturesProp, enterado: enteradoProp, 
             <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.m13Navy }}>Enterado (Encargado)</Text>
             {enteradoDigital ? (
               <>
-                <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, marginTop: 2 }}>
+                <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, marginTop: 2 }} hyphenationCallback={partirNombre}>
                   {enterado.firmante}
                 </Text>
-                <Text style={{ fontSize: 7, color: PC.textSub }}>{enterado.cargo}</Text>
-                <Text style={{ fontSize: 6, color: PC.footerGray, marginTop: 2 }}>
+                <Text style={{ fontSize: 7, color: PC.textSub }} hyphenationCallback={partirParaAncho(ANCHO_NOMBRE, 7)}>{enterado.cargo}</Text>
+                <Text style={{ fontSize: 6, color: PC.footerGray, marginTop: 2 }} hyphenationCallback={partirParaAncho(ANCHO_NOMBRE, 6)}>
                   {`Capturada por ${enterado.capturadoPor} - ${enterado.fecha}`}
                 </Text>
               </>

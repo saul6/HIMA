@@ -7,6 +7,7 @@ import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import { partirPalabraLarga } from '@/lib/pdf/components/texto'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface NotaTrazabilidadPDFProps {
   folio: string | null
@@ -47,10 +48,7 @@ export interface NotaTrazabilidadConsolidadaRow {
 }
 
 function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 const PRESENTACIONES = ['Caja', 'Tote', 'Granel', 'Otro'] as const
@@ -89,7 +87,7 @@ export function NotaTrazabilidadPage({
         ...(orgNombre ? [{ icono: 'usuario' as const, etiqueta: 'Organización', valor: orgNombre }] : []),
       ]}
     >
-      <Seccion titulo="PRESENTACION">
+      <Seccion titulo="PRESENTACIÓN">
         <Checklist
           items={PRESENTACIONES.map((p) => ({
             label: p === 'Otro' ? `OTRO: ${presentacion === 'Otro' ? (otro_presentacion ?? '') : ''}` : p.toUpperCase(),
@@ -155,7 +153,7 @@ const COLS_CONSOLIDADO: ColumnaDato[] = [
   { texto: 'Rancho', ancho: 80 },
   { texto: 'Sector', ancho: 50 },
   { texto: 'Cultivo', ancho: 60 },
-  { texto: 'Presentacion', ancho: 50 },
+  { texto: 'Presentación', ancho: 50 },
   { texto: 'Peso Bruto', ancho: 45, align: 'center' },
   { texto: 'Peso Neto', ancho: 45, align: 'center' },
   { texto: 'Total', ancho: 55 },

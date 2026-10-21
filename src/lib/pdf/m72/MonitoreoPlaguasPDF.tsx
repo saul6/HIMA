@@ -4,6 +4,7 @@ import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface M72OrganismoPDF {
   id: string
@@ -39,7 +40,7 @@ const COL_ORG_MIN = 38
 
 function formatFecha(f: string) {
   try {
-    return new Date(f + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })
+    return fechaPdf(f, { day: '2-digit', month: 'long', year: 'numeric' })
   } catch { return f }
 }
 
@@ -102,8 +103,8 @@ export function MonitoreoPlaguasPagina({
       titulo="MONITOREO DE PLAGAS Y ENFERMEDADES"
       subtitulo={`REG-21 · Global G.A.P. v6 | ${rancho}`}
       codigoFmt="REG-21"
-      folio={fecha}
-      emision={fecha}
+      folio={fechaPdf(fecha)}
+      emision={fechaPdf(fecha)}
       etiquetaEmision="Fecha"
       tituloDatos="DATOS GENERALES"
       porRenglon={3}

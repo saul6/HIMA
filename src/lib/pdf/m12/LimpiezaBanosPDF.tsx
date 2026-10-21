@@ -4,11 +4,12 @@
 // LimpiezaBanosConsolidadoPDF: documento multi-página, uno por jornada.
 
 import { Document } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -58,7 +59,7 @@ const siNoCelda = (v: boolean) => ({ texto: v ? 'Si' : 'No', color: v ? PC.m13Na
 
 function formatFechaPDF(iso: string): string {
   try {
-    return new Date(iso + 'T12:00:00').toLocaleDateString('es-MX', {
+    return fechaPdf(iso, {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     })
   } catch { return iso }
@@ -72,7 +73,7 @@ export function LimpiezaBanosPagina({
   rancho, ranchoCodigo, fecha, banos, terminoSitio = 'Rancho',
   firmaRealizo, firmaVerifico,
 }: LimpiezaBanosPaginaProps) {
-  const emision = new Date().toLocaleDateString('es-MX')
+  const emision = fechaEmisionHoy()
 
   return (
     <PaginaEstandar

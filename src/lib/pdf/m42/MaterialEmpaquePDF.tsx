@@ -6,7 +6,9 @@ import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import { partirParaAncho } from '@/lib/pdf/disenoNuevo/medirTexto'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface M42MovimientoPDF {
   orgNombre: string
@@ -36,10 +38,7 @@ export interface M42MovimientoPDF {
 }
 
 function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 const sn = (v: boolean) => v ? 'Si' : 'No'
@@ -64,7 +63,7 @@ function ChecklistBlock({ d, tipo }: { d: M42MovimientoPDF; tipo: 'mat' | 'tr' }
   const titulo  = tipo === 'mat' ? 'Condición del material' : 'Condición del transporte'
 
   return (
-    <View wrap={false} style={{ flex: 1, backgroundColor: PC.m13Fondo, borderRadius: 6, padding: 8 }}>
+    <View wrap={false} style={{ backgroundColor: PC.m13Fondo, borderRadius: 6, padding: 8 }}>
       <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, marginBottom: 4 }}>{titulo}</Text>
       {([
         ['Integro', integro],
@@ -80,7 +79,7 @@ function ChecklistBlock({ d, tipo }: { d: M42MovimientoPDF; tipo: 'mat' | 'tr' }
       ))}
       {otros ? (
         <View style={{ marginTop: 3 }}>
-          <Text style={{ fontSize: 7, color: PC.textSub }}>Otros: {otros}</Text>
+          <Text style={{ fontSize: 7, color: PC.textSub }} hyphenationCallback={partirParaAncho(330, 7)}>Otros: {otros}</Text>
         </View>
       ) : null}
     </View>
@@ -104,7 +103,7 @@ export function MaterialEmpaquePDF({
         subtitulo={`${d.instalacion}${d.empresa ? ` | ${d.empresa}` : ''} | ${fmtFecha(d.fecha)}`}
         codigoFmt={codigoFmt}
         folio={d.folio ?? '—'}
-        emision={d.fecha}
+        emision={fmtFecha(d.fecha)}
         etiquetaEmision="Fecha"
         camposDatos={[]}
       >
@@ -125,7 +124,7 @@ export function MaterialEmpaquePDF({
 
         <PdfFirmas
           signatures={[
-            { label: 'Responsable de la instalacion', nombre: firmaRealizo?.firmante ?? '', caption: 'Firma del responsable', firma: firmaRealizo ?? null },
+            { label: 'Responsable de la instalación', nombre: firmaRealizo?.firmante ?? '', caption: 'Firma del responsable', firma: firmaRealizo ?? null },
             { label: 'Responsable de la empresa', nombre: firmaVerifico?.firmante ?? '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
           ]}
         />

@@ -34,7 +34,7 @@ export interface InspeccionAlmacenEmpaqueGGPaginaProps {
 
 // Acciones tomadas: día y texto (anchos relativos)
 const COLS_ACCIONES: ColumnaDato[] = [
-  { texto: 'Dia', ancho: 40 },
+  { texto: 'Día', ancho: 40 },
   { texto: 'Acción tomada', ancho: 700 },
 ]
 

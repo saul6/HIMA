@@ -12,9 +12,10 @@ import { LOGO_MADY_PDF } from '@/lib/pdf/assets/logoMadyPdf'
 import { ISOTIPO_MARCA_AGUA } from '@/lib/pdf/disenoNuevo/isotipoMarcaAgua'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
+import { partirParaAncho } from '@/lib/pdf/disenoNuevo/medirTexto'
 import { codigoFormato } from '@/lib/codigoFormato'
 import type { FirmaParaPdf, FirmaEnteradoParaPdf } from '@/hooks/useFirmasRegistro'
+import { SIN_ENCOGER } from '@/lib/pdf/disenoNuevo/estilos'
 
 // ── Tipos (forma de chk_visita_reporte) ───────────────────────────────────────
 
@@ -164,23 +165,10 @@ function Icono({ nombre, size = 10, color = PC.m13Navy }: { nombre: IconoNombre;
 
 // ── Estimación de alturas (conservadora, para repartir páginas) ───────────────
 
-const CAP_P1 = 495      // 595 - 40 - 56
 const CAP_RESTO = 445   // descuenta el encabezado compacto de las páginas 2+
 const lineas = (texto: string, ancho: number, tam: number) => {
   const porLinea = Math.max(1, Math.floor((ancho - 10) / (tam * 0.5)))
   return texto.split('\n').reduce((n, l) => n + Math.max(1, Math.ceil(l.length / porLinea)), 0)
-}
-
-class Cursor {
-  y = 0
-  pagina = 1
-  private cap() { return this.pagina === 1 ? CAP_P1 : CAP_RESTO }
-  /** Suma h; devuelve true si hubo que saltar de página (y queda en h). */
-  avanzar(h: number): boolean {
-    if (this.y + h > this.cap()) { this.pagina++; this.y = h; return true }
-    this.y += h
-    return false
-  }
 }
 
 // ── Piezas ────────────────────────────────────────────────────────────────────
@@ -200,7 +188,7 @@ function DatoFranja({ icono, etiqueta, valor, primero }: { icono: IconoNombre; e
         <Icono nombre={icono} />
         <Text style={{ fontSize: 7, color: PC.textSub, marginLeft: 4 }}>{etiqueta}</Text>
       </View>
-      <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 9, color: PC.m13Navy }} hyphenationCallback={partirPalabraLarga}>
+      <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 9, color: PC.m13Navy }} hyphenationCallback={partirParaAncho(160, 9, true)}>
         {valor}
       </Text>
     </View>
@@ -313,9 +301,9 @@ function CeldaObs({ item, width }: { item: ReporteVisitaItem; width: number }) {
   const notas = notasTexto(item)
   return (
     <View style={{ ...s.td, width }}>
-      {obs ? <Text style={s.obs} hyphenationCallback={partirPalabraLarga}>{obs}</Text> : null}
+      {obs ? <Text style={s.obs} hyphenationCallback={partirParaAncho(width - 10, 8)}>{obs}</Text> : null}
       {notas.map((n, i) => (
-        <Text key={i} style={s.nota} hyphenationCallback={partirPalabraLarga}>{`- ${n}`}</Text>
+        <Text key={i} style={s.nota} hyphenationCallback={partirParaAncho(width - 10, 7)}>{`- ${n}`}</Text>
       ))}
     </View>
   )
@@ -338,25 +326,25 @@ function alturaObs(i: ReporteVisitaItem, ancho: number): number {
   return (obs ? lineas(obs, ancho, 8) * 10.8 : 0) + notas.reduce((n, t) => n + lineas(`- ${t}`, ancho, 7) * 9.6, 0)
 }
 
-function FilaFormato({ item, codigoClave }: { item: ReporteVisitaItem; codigoClave: string }) {
+function FilaFormato({ item, codigoClave, partible }: { item: ReporteVisitaItem; codigoClave: string; partible?: boolean }) {
   const codigo = item.codigo_formato ? codigoFormato(item.codigo_formato, codigoClave) : ''
   return (
-    <View wrap={false} style={s.fila}>
-      <Text style={{ ...s.td, width: 90 }} hyphenationCallback={partirPalabraLarga}>{item.area ?? ''}</Text>
-      <Text style={{ ...s.td, width: 80 }} hyphenationCallback={partirPalabraLarga}>{codigo}</Text>
-      <Text style={{ ...s.td, width: 170, fontFamily: 'Helvetica-Bold' }} hyphenationCallback={partirPalabraLarga}>{item.nombre}</Text>
-      <Text style={{ ...s.td, width: 105 }} hyphenationCallback={partirPalabraLarga}>{item.responsable ?? ''}</Text>
+    <View {...(partible ? {} : { wrap: false })} style={s.fila}>
+      <Text style={{ ...s.td, width: 90 }} hyphenationCallback={partirParaAncho(78, 8)}>{item.area ?? ''}</Text>
+      <Text style={{ ...s.td, width: 80 }} hyphenationCallback={partirParaAncho(68, 8)}>{codigo}</Text>
+      <Text style={{ ...s.td, width: 170, fontFamily: 'Helvetica-Bold' }} hyphenationCallback={partirParaAncho(158, 8, true)}>{item.nombre}</Text>
+      <Text style={{ ...s.td, width: 105 }} hyphenationCallback={partirParaAncho(93, 8)}>{item.responsable ?? ''}</Text>
       <CeldaEstado estado={item.revision?.estado ?? null} ancho={75} />
       <CeldaObs item={item} width={OBS_ANCHO} />
     </View>
   )
 }
 
-function FilaDocumento({ item, fechaVisita }: { item: ReporteVisitaItem; fechaVisita: string }) {
+function FilaDocumento({ item, fechaVisita, partible }: { item: ReporteVisitaItem; fechaVisita: string; partible?: boolean }) {
   const vencido = !!item.vence_el && item.vence_el.slice(0, 10) < fechaVisita.slice(0, 10)
   return (
-    <View wrap={false} style={s.fila}>
-      <Text style={{ ...s.td, width: 230, fontFamily: 'Helvetica-Bold' }} hyphenationCallback={partirPalabraLarga}>{item.nombre}</Text>
+    <View {...(partible ? {} : { wrap: false })} style={s.fila}>
+      <Text style={{ ...s.td, width: 230, fontFamily: 'Helvetica-Bold' }} hyphenationCallback={partirParaAncho(218, 8, true)}>{item.nombre}</Text>
       <View style={{ width: 95, ...s.td }}>
         <Text>{item.vence_el ? fechaLarga(item.vence_el, true) : 'Sin vencimiento'}</Text>
         {vencido && <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 7, color: C_ROJO, marginTop: 1 }}>Vencido</Text>}
@@ -367,38 +355,53 @@ function FilaDocumento({ item, fechaVisita }: { item: ReporteVisitaItem; fechaVi
   )
 }
 
+/** Altura estimada de una fila de la tabla de formatos. */
+const alturaFormato = (i: ReporteVisitaItem) => Math.max(
+  8 + lineas(i.nombre, 170, 8) * 10.8,
+  8 + lineas(i.area ?? '', 90, 8) * 10.8,
+  8 + lineas(i.responsable ?? '', 105, 8) * 10.8,
+  8 + alturaObs(i, OBS_ANCHO),
+  22,
+)
+/** Altura estimada de una fila de la tabla de documentos. */
+const alturaDocumento = (i: ReporteVisitaItem) => Math.max(
+  8 + lineas(i.nombre, 230, 8) * 10.8,
+  8 + alturaObs(i, OBS_DOCS_ANCHO),
+  26,
+)
+
 function ultimaRevision(i: ReporteVisitaItem): string {
   const r = i.revision_anterior
   if (!r) return 'Sin revisiones'
   return `Última revisión: ${fechaLarga(r.revisado_en, true)} (${estadoInfo(r.estado).label})`
 }
 
-/** Tabla con encabezado repetido en cada página nueva (según el cursor estimado). */
+/**
+ * Tabla con encabezado repetido en cada página (encabezado fijo). El título, el encabezado y la primera fila
+ * viajan juntos: una caja de alto cero con `minPresenceAhead` antes del título manda todo a la hoja siguiente si
+ * no caben.
+ */
 function Tabla({
-  titulo, cols, filas, alturas, cursor,
+  titulo, cols, filas, alturas,
 }: {
   titulo: string
   cols: Col[]
   filas: ReactNode[]
   alturas: number[]
-  cursor: Cursor
 }) {
-  const H_TITULO = 22
-  const H_ENC = 22
-  const out: ReactNode[] = []
-  // Título + encabezado + primera fila viajan juntos
-  const salto = cursor.avanzar(H_TITULO + H_ENC + (alturas[0] ?? 0))
-  out.push(<TituloSeccion key="t" texto={titulo} salto={salto} />)
-  out.push(<EncabezadoTabla key="e" cols={cols} />)
-  filas.forEach((f, i) => {
-    if (i > 0 && cursor.avanzar(alturas[i])) {
-      cursor.y += H_ENC
-      out.push(<EncabezadoTabla key={`e${i}`} cols={cols} salto />)
-    }
-    out.push(f)
-  })
-  cursor.avanzar(14)
-  return <View style={{ marginBottom: 14 }}>{out}</View>
+  const primera = Math.min(alturas[0] ?? 22, CAP_RESTO * 0.5)
+  return (
+    <>
+      <View minPresenceAhead={22 + 22 + primera} style={{ height: 0 }} />
+      <TituloSeccion texto={titulo} />
+      <View style={{ marginBottom: 14, ...SIN_ENCOGER }}>
+        <View fixed style={SIN_ENCOGER}>
+          <EncabezadoTabla cols={cols} />
+        </View>
+        {filas}
+      </View>
+    </>
+  )
 }
 
 // ── Página ────────────────────────────────────────────────────────────────────
@@ -424,26 +427,12 @@ export function ChecklistVisitaPDF({
   const reprog = visita.reprogramaciones ?? []
   const nota = visita.nota_cierre?.trim()
 
-  // Altura estimada de la parte alta de la página 1 (conservadora)
-  const cursor = new Cursor()
-  cursor.avanzar(
-    88 + 66 + 22 + (pildoras.length ? 24 : 0) +
-    (nota ? lineas(nota, ANCHO, 8) * 11 + 6 : 0) + reprog.length * 12 + 16,
-  )
-
   const tablaFormatos = formatos.length > 0 && (
     <Tabla
       titulo="FORMATOS REVISADOS"
       cols={COLS_FORMATOS}
-      cursor={cursor}
-      filas={formatos.map((i) => <FilaFormato key={i.id} item={i} codigoClave={codigoClave} />)}
-      alturas={formatos.map((i) => Math.max(
-        8 + lineas(i.nombre, 170, 8) * 10.8,
-        8 + lineas(i.area ?? '', 90, 8) * 10.8,
-        8 + lineas(i.responsable ?? '', 105, 8) * 10.8,
-        8 + alturaObs(i, OBS_ANCHO),
-        22,
-      ))}
+      filas={formatos.map((i) => <FilaFormato key={i.id} item={i} codigoClave={codigoClave} partible={alturaFormato(i) > CAP_RESTO * 0.85} />)}
+      alturas={formatos.map(alturaFormato)}
     />
   )
 
@@ -451,13 +440,8 @@ export function ChecklistVisitaPDF({
     <Tabla
       titulo="DOCUMENTOS"
       cols={COLS_DOCS}
-      cursor={cursor}
-      filas={documentos.map((i) => <FilaDocumento key={i.id} item={i} fechaVisita={visita.fecha} />)}
-      alturas={documentos.map((i) => Math.max(
-        8 + lineas(i.nombre, 230, 8) * 10.8,
-        8 + alturaObs(i, OBS_DOCS_ANCHO),
-        26,
-      ))}
+      filas={documentos.map((i) => <FilaDocumento key={i.id} item={i} fechaVisita={visita.fecha} partible={alturaDocumento(i) > CAP_RESTO * 0.85} />)}
+      alturas={documentos.map(alturaDocumento)}
     />
   )
 
@@ -469,12 +453,11 @@ export function ChecklistVisitaPDF({
     <Tabla
       titulo="SIN REVISAR EN ESTA VISITA"
       cols={[{ titulo: 'FORMATO Y ÚLTIMA REVISIÓN', resto: ANCHO }]}
-      cursor={cursor}
       filas={pares.map((par, idx) => (
         <View key={idx} wrap={false} style={s.fila}>
           {par.map((i) => (
             <View key={i.id} style={{ width: MITAD, ...s.td }}>
-              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 8 }} hyphenationCallback={partirPalabraLarga}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 8 }} hyphenationCallback={partirParaAncho(MITAD - 16, 8, true)}>
                 {[i.codigo_formato ? codigoFormato(i.codigo_formato, codigoClave) : null, i.nombre].filter(Boolean).join(' · ')}
               </Text>
               <Text style={s.nota}>{ultimaRevision(i)}</Text>
@@ -501,7 +484,7 @@ export function ChecklistVisitaPDF({
         <Marca />
         <View
           fixed
-          render={({ subPageNumber }) => (subPageNumber > 1 ? <EncabezadoCompacto subtitulo={subtitulo} /> : <View />)}
+          render={({ subPageNumber }) => (subPageNumber !== 1 ? <EncabezadoCompacto subtitulo={subtitulo} /> : <View />)}
         />
         <Pie />
 
@@ -510,7 +493,7 @@ export function ChecklistVisitaPDF({
           <View style={{ flex: 1, paddingRight: 12 }}>
             <View style={{ width: 28, height: 3, backgroundColor: PC.m13Menta, marginBottom: 8 }} />
             <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 20, color: PC.m13Navy }}>CHECKLIST DE DOCUMENTOS</Text>
-            <Text style={{ fontSize: 8, color: PC.textSub, marginTop: 4 }} hyphenationCallback={partirPalabraLarga}>
+            <Text style={{ fontSize: 8, color: PC.textSub, marginTop: 4 }} hyphenationCallback={partirParaAncho(590, 8)}>
               Reporte de visita{enCurso ? <Text style={{ fontFamily: 'Helvetica-Bold' }}> · en curso</Text> : ''} · {nombreSitio}
             </Text>
           </View>
@@ -546,12 +529,12 @@ export function ChecklistVisitaPDF({
             </View>
           )}
           {nota ? (
-            <Text style={{ fontSize: 8, lineHeight: 1.4 }} hyphenationCallback={partirPalabraLarga}>
+            <Text style={{ fontSize: 8, lineHeight: 1.4 }} hyphenationCallback={partirParaAncho(ANCHO - 4, 8)}>
               <Text style={{ fontFamily: 'Helvetica-Bold', color: PC.m13Navy }}>Observación general: </Text>{nota}
             </Text>
           ) : null}
           {reprog.map((r, i) => (
-            <Text key={i} style={{ fontSize: 7.5, color: PC.textSub, marginTop: 2 }} hyphenationCallback={partirPalabraLarga}>
+            <Text key={i} style={{ fontSize: 7.5, color: PC.textSub, marginTop: 2 }} hyphenationCallback={partirParaAncho(ANCHO - 4, 7.5)}>
               {`Reprogramada: ${fechaLarga(r.fecha_anterior)} al ${fechaLarga(r.fecha_nueva)}${r.motivo ? ` · ${r.motivo}` : ''}`}
             </Text>
           ))}

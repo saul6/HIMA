@@ -6,6 +6,7 @@ import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface M39LineaPDF {
   orden: number
@@ -29,10 +30,7 @@ export interface M39RecepcionDataPDF {
 }
 
 function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 const t = (v: string | null | undefined): string => v ?? '—'
@@ -119,7 +117,7 @@ export function RecepcionFrutaPDF({ d, codigoClave }: { d: M39RecepcionDataPDF; 
 
         <PdfFirmas
           signatures={[
-            { label: '', nombre: '', caption: 'Responsable de la instalacion' },
+            { label: '', nombre: '', caption: 'Responsable de la instalación' },
             { label: '', nombre: '', caption: 'Responsable de la empresa' },
           ]}
         />

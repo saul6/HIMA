@@ -7,6 +7,7 @@ import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 import { partirPalabraLarga } from '@/lib/pdf/components/texto'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface M38LineaPDF {
   orden: number
@@ -52,10 +53,7 @@ export interface M38ManifiestoDataPDF {
 }
 
 function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 const t = (v: string | null | undefined): string => v ?? '—'
@@ -70,7 +68,7 @@ const COLS_TARIMAS: ColumnaDato[] = [
   { texto: 'No.', ancho: 20, align: 'center' },
   { texto: 'Tarima', ancho: 38 },
   { texto: 'Producto', ancho: 150 },
-  { texto: 'Presentacion', ancho: 60 },
+  { texto: 'Presentación', ancho: 60 },
   { texto: 'Cajas', ancho: 28, align: 'center' },
   { texto: 'T. Sup.', ancho: 34, align: 'center' },
   { texto: 'T. Med.', ancho: 34, align: 'center' },
@@ -122,7 +120,7 @@ export function ManifiestoEmbarquePDF({
         subtitulo={`Embarque | ${d.instalacion} | ${fmtFecha(d.fecha)}`}
         codigoFmt={codigoFmt}
         folio={d.folio ?? '—'}
-        emision={d.fecha}
+        emision={fmtFecha(d.fecha)}
         etiquetaEmision="Fecha"
         tituloDatos="DATOS DEL EMBARQUE"
         camposDatos={[
@@ -202,7 +200,7 @@ export function ManifiestoEmbarquePDF({
                 <FilaCondicion label="Flejado" valor={bm(d.tar_flejado)} malo={bm(d.tar_flejado) === 'Malo'} />
                 <FilaCondicion label="Limpieza" valor={bm(d.tar_limpieza)} malo={bm(d.tar_limpieza) === 'Malo'} />
                 <FilaCondicion label="Condición de la tarima" valor={bm(d.tar_condicion)} malo={bm(d.tar_condicion) === 'Malo'} />
-                <FilaCondicion label="Distribucion embarque" valor={bm(d.tar_distribucion)} malo={bm(d.tar_distribucion) === 'Malo'} />
+                <FilaCondicion label="Distribución embarque" valor={bm(d.tar_distribucion)} malo={bm(d.tar_distribucion) === 'Malo'} />
               </View>
             </Seccion>
           </View>
@@ -211,7 +209,7 @@ export function ManifiestoEmbarquePDF({
         {/* Firmas */}
         <PdfFirmas
           signatures={[
-            { label: 'Responsable de la instalacion', nombre: firmaRealizo?.firmante ?? '', caption: 'Firma del responsable', firma: firmaRealizo ?? null },
+            { label: 'Responsable de la instalación', nombre: firmaRealizo?.firmante ?? '', caption: 'Firma del responsable', firma: firmaRealizo ?? null },
             { label: 'Responsable de la empresa', nombre: firmaVerifico?.firmante ?? '', caption: 'Responsable de Inocuidad — Firma', firma: firmaVerifico ?? null },
             { label: 'Firma del chofer', nombre: '', caption: 'Firma del conductor' },
           ]}

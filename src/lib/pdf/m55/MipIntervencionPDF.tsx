@@ -5,6 +5,7 @@ import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 export interface MipIntervencionItemRow {
   numero: number | null
@@ -31,10 +32,7 @@ export interface MipIntervencionPDFProps {
 }
 
 function fmtFecha(iso: string): string {
-  try {
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return iso }
+  return fechaPdf(iso)
 }
 
 // Marca de la técnica ("X"): es una selección, no un valor negativo
@@ -83,7 +81,7 @@ export function MipIntervencionPDFPage({
     >
       {observaciones ? <FranjaDatos campos={[{ etiqueta: 'Observaciones', valor: observaciones }]} /> : null}
 
-      <Seccion titulo="2. MATRIZ DE TECNICAS DE INTERVENCION">
+      <Seccion titulo="2. MATRIZ DE TÉCNICAS DE INTERVENCIÓN">
         <TablaDatos
           columnas={COLS}
           fuente={8}

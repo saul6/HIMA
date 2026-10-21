@@ -2,13 +2,14 @@
 // Bitácora de Rondines de Vigilancia — A4 vertical, tabla de rondas por área.
 
 import { Document } from '@react-pdf/renderer'
-import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
+import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -48,10 +49,7 @@ interface Props {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function fmtFecha(f: string): string {
-  try {
-    const [y, m, d] = f.split('-')
-    return `${d}/${m}/${y}`
-  } catch { return f }
+  return fechaPdf(f)
 }
 
 // ── RondinesVigilanciaPDF ─────────────────────────────────────────────────────
@@ -61,7 +59,7 @@ export function RondinesVigilanciaPDF({
   items, rondas, resultados, codigoClave, terminoSitio = 'Instalación',
   firmaRealizo, firmaVerifico,
 }: Props) {
-  const emision   = new Date().toLocaleDateString('es-MX')
+  const emision   = fechaEmisionHoy()
   const codigoFmt = codigoFormato('F-FRUS-ADM-07', codigoClave)
 
   const areas = Array.from(new Set(items.map((i) => i.area)))
