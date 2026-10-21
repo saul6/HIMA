@@ -1,21 +1,43 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
+import { mensajeErrorBd } from '@/lib/erroresBd'
+
+export type FirmaEstado = 'firmado' | 'falta_verifico' | 'sin_firma'
+export type TipoActividad = 'registro' | 'jornada' | 'dia'
+export type FiltroSolo = 'correccion' | 'sin_verificar' | 'sin_firma'
 
 export interface ActividadItem {
-  id: string
+  clave: string
+  modulo: string
+  modulo_nombre: string
+  ruta: string
   tabla: string
-  moduloLabel: string
+  tipo: TipoActividad
+  registro_id: string
+  ids: string[]
   rancho_id: string | null
-  rancho_nombre: string
+  rancho_nombre: string | null
   fecha: string
+  creado_en: string
+  hora_exacta: boolean
   creado_por: string | null
-  creado_por_nombre: string
+  creado_por_nombre: string | null
   requiere_correccion: boolean
   comentario_correccion: string | null
-  marcado_por: string | null
+  marcado_por_nombre: string | null
   marcado_en: string | null
-  created_at: string
+  puede_marcar: boolean
+  firma: FirmaEstado
+}
+
+export interface ResumenActividad {
+  total: number
+  hoy: number
+  semana: number
+  sin_verificar: number
+  sin_firma: number
+  por_corregir: number
 }
 
 export interface EmpleadoBasico {
@@ -23,101 +45,80 @@ export interface EmpleadoBasico {
   nombre_completo: string
 }
 
-export const MODULO_LABELS: Record<string, string> = {
-  aplicaciones: 'Aplicación Foliar',
-  m6_botiquin: 'Botiquín',
-  m7_vidrio_plastico: 'Vidrio y Plástico',
-  m8_fertilizacion: 'Fertilización',
-  m10_cosecha_liberacion: 'Cosecha y Liberación',
-  m12_limpieza_banos: 'Limpieza de Baños',
+export interface FiltrosActividad {
+  desde: string
+  hasta: string
+  usuario: string
+  modulo: string
+  rancho: string
+  solo: FiltroSolo | ''
 }
 
-const TABLAS = Object.keys(MODULO_LABELS)
-
-const BASE_SELECT = '*, ranchos(nombre), creador:profiles!creado_por(nombre_completo)'
-
-function getFechaDisplay(row: any, tabla: string): string {
-  if (tabla === 'm6_botiquin') return row.fecha_verificacion ?? row.created_at
-  if (tabla === 'aplicaciones') return row.fecha_aplicacion ?? row.created_at
-  return row.fecha ?? row.created_at
+interface RespuestaActividad {
+  resumen?: ResumenActividad
+  total_filtrado?: number
+  truncado?: boolean
+  items?: ActividadItem[]
 }
 
-function normalizarFila(row: any, tabla: string): ActividadItem {
-  return {
-    id: row.id,
-    tabla,
-    moduloLabel: MODULO_LABELS[tabla] ?? tabla,
-    rancho_id: row.rancho_id ?? null,
-    rancho_nombre: row.ranchos?.nombre ?? '—',
-    fecha: getFechaDisplay(row, tabla),
-    creado_por: row.creado_por ?? null,
-    creado_por_nombre: row.creador?.nombre_completo ?? '—',
-    requiere_correccion: row.requiere_correccion ?? false,
-    comentario_correccion: row.comentario_correccion ?? null,
-    marcado_por: row.marcado_por ?? null,
-    marcado_en: row.marcado_en ?? null,
-    created_at: row.created_at,
-  }
+const RESUMEN_VACIO: ResumenActividad = {
+  total: 0, hoy: 0, semana: 0, sin_verificar: 0, sin_firma: 0, por_corregir: 0,
 }
 
-export function useActividadEquipo() {
+export function useActividadEquipo(filtros: FiltrosActividad) {
   const { profile } = useAuthContext()
   const [items, setItems] = useState<ActividadItem[]>([])
+  const [resumen, setResumen] = useState<ResumenActividad>(RESUMEN_VACIO)
+  const [totalFiltrado, setTotalFiltrado] = useState(0)
+  const [truncado, setTruncado] = useState(false)
   const [empleados, setEmpleados] = useState<EmpleadoBasico[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const { desde, hasta, usuario, modulo, rancho, solo } = filtros
+  const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
+
   const cargar = useCallback(async () => {
-    if (!profile?.org_id || profile.rol !== 'admin_org') {
+    if (!profile?.org_id || !esAdmin) {
       setLoading(false)
       return
     }
     setLoading(true)
     setError(null)
     try {
-      const [empResult, ...tablaResults] = await Promise.all([
+      const [empResult, actResult] = await Promise.all([
         supabase
           .from('profiles')
           .select('id, nombre_completo')
           .eq('org_id', profile.org_id)
           .eq('activo', true),
-        ...TABLAS.map((tabla) =>
-          (supabase
-            .from(tabla as any)
-            .select(BASE_SELECT)
-            .eq('org_id', profile.org_id!)
-            .order('created_at', { ascending: false })
-            .limit(50)) as any
-        ),
+        supabase.rpc('actividad_equipo', {
+          p_desde: desde,
+          p_hasta: hasta,
+          p_usuario: usuario || null,
+          p_modulo: modulo || null,
+          p_rancho: rancho || null,
+          p_solo: solo || null,
+        }),
       ])
-
       if (empResult.error) throw empResult.error
+      if (actResult.error) throw actResult.error
       setEmpleados(empResult.data ?? [])
-
-      const todos: ActividadItem[] = []
-      TABLAS.forEach((tabla, i) => {
-        const result = tablaResults[i]
-        if (result.error) {
-          console.warn(`[actividad] error en ${tabla}:`, result.error.message)
-          return
-        }
-        ;(result.data ?? []).forEach((row: any) => {
-          todos.push(normalizarFila(row, tabla))
-        })
-      })
-
-      todos.sort((a, b) => b.created_at.localeCompare(a.created_at))
-      setItems(todos)
+      const r = (actResult.data ?? {}) as RespuestaActividad
+      setItems(r.items ?? [])
+      setResumen(r.resumen ?? RESUMEN_VACIO)
+      setTotalFiltrado(r.total_filtrado ?? (r.items?.length ?? 0))
+      setTruncado(!!r.truncado)
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al cargar actividad del equipo')
+      setError(mensajeErrorBd(e, 'Error al cargar la actividad del equipo'))
     } finally {
       setLoading(false)
     }
-  }, [profile?.org_id, profile?.rol])
+  }, [profile?.org_id, esAdmin, desde, hasta, usuario, modulo, rancho, solo])
 
   useEffect(() => {
     cargar()
   }, [cargar])
 
-  return { items, empleados, loading, error, refetch: cargar }
+  return { items, resumen, totalFiltrado, truncado, empleados, loading, error, refetch: cargar }
 }

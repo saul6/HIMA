@@ -1612,6 +1612,26 @@ export type Database = {
         Args: { p_tabla: string; p_registro_id: string; p_requiere: boolean; p_comentario: string }
         Returns: void
       }
+      marcar_correccion_varios: {
+        Args: { p_tabla: string; p_ids: string[]; p_requiere: boolean; p_comentario: string }
+        Returns: number
+      }
+      actividad_equipo: {
+        Args: {
+          p_desde: string
+          p_hasta: string
+          p_usuario?: string | null
+          p_modulo?: string | null
+          p_rancho?: string | null
+          p_solo?: string | null
+          p_limite?: number
+        }
+        Returns: unknown
+      }
+      mis_correcciones_pendientes: {
+        Args: Record<never, never>
+        Returns: unknown
+      }
       get_mis_modulos: {
         Args: Record<never, never>
         Returns: {

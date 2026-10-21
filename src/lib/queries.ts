@@ -30,15 +30,27 @@ export async function getOrganizacion(orgId: string): Promise<Organizacion> {
   return data
 }
 
+/** `ids` con más de un elemento (jornadas) marca todas las filas; con uno usa el RPC individual. */
 export async function marcarCorreccion(
   tabla: string,
-  registroId: string,
+  ids: string | string[],
   requiere: boolean,
   comentario: string,
 ): Promise<void> {
+  const lista = Array.isArray(ids) ? ids : [ids]
+  if (lista.length > 1) {
+    const { error } = await supabase.rpc('marcar_correccion_varios', {
+      p_tabla: tabla,
+      p_ids: lista,
+      p_requiere: requiere,
+      p_comentario: comentario,
+    })
+    if (error) throw error
+    return
+  }
   const { error } = await supabase.rpc('marcar_correccion', {
     p_tabla: tabla,
-    p_registro_id: registroId,
+    p_registro_id: lista[0],
     p_requiere: requiere,
     p_comentario: comentario,
   })

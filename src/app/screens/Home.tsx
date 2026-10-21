@@ -857,9 +857,9 @@ export function Home() {
             </div>
             <div className="bg-card divide-y divide-border">
               {correcciones.slice(0, 3).map(item => (
-                <div key={`${item.tabla}-${item.id}`} className="px-4 py-3">
+                <div key={item.clave} className="px-4 py-3">
                   <p className="text-xs text-muted-foreground mb-0.5">
-                    {item.moduloLabel} · {item.rancho_nombre}
+                    {item.modulo_nombre}{item.rancho_nombre ? ` · ${item.rancho_nombre}` : ''}
                   </p>
                   <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
                     {item.comentario_correccion ?? 'Revisa este registro'}
