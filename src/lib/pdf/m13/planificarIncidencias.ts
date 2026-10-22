@@ -4,6 +4,7 @@
 // Función pura, sin react-pdf.
 
 import { dimensionesDeDataUri } from '@/lib/pdf/disenoNuevo/dimensionesImagen'
+import { lineasTexto } from '@/lib/pdf/disenoNuevo/medirTexto'
 
 export const COL_EVIDENCIA = 206          // 40 % de los 515 pt útiles (A4 con 40 pt de margen)
 export const PAD_CELDA = 8
@@ -35,6 +36,7 @@ export interface BloquePlan {
   continua: boolean                       // segundo bloque o posterior de una incidencia partida
   conTexto: boolean                       // false en los bloques "continúa"
   noPartir: boolean                       // wrap={false} solo si cabe en una página
+  texto?: string                          // renglones ya repartidos (solo si el texto se partió entre páginas)
 }
 
 function altoFotos(fotos: FotoPlan[], escala: number): number {
@@ -59,53 +61,85 @@ function aFotosPlan(dataUris: string[]): FotoPlan[] {
   })
 }
 
+const ANCHO_TEXTO = 288                    // columna de texto: 515 - 206 - barra 2.5 - rellenos 8 + 10
+const MARGEN_TARJETA = 8                  // marginBottom de la tarjeta
+const HOLGURA = 12                        // la estimación de alturas nunca debe quedarse corta
+/** Si lo que queda de la hoja es más que esta fracción de la hoja, la tarjeta empieza ahí y se parte (no salta entera). */
+export const FRACCION_PARTIR = 0.35
+const ALTO_HOJA_UTIL = 842 - 104 - 56     // alto útil de una hoja 2+ sin holgura
+
+/** Alto aproximado de lo que ocupa la página 1 antes de la primera tarjeta (encabezado, franja, título y encabezado de tabla). */
+export function altoUsadoPagina1(auditorNombre: string | null | undefined): number {
+  const lineas = lineasTexto(auditorNombre ?? '-', 100, 8, true).length
+  return 206 + 11 * Math.max(0, lineas - 1)
+}
+
 export function planificarIncidencias(
   incidencias: { orden: number; descripcion: string; dataUris: string[] }[],
+  usadoPagina1 = 220,
 ): BloquePlan[] {
   const bloques: BloquePlan[] = []
+  // Espacio que queda en la hoja actual (la 1 trae menos: encabezado completo, franja y título)
+  let restante = 842 - 56 - usadoPagina1 - HOLGURA - MARGEN_TARJETA
+  restante = Math.min(restante, ALTO_DISPONIBLE)
+  const nuevaHoja = () => { restante = ALTO_DISPONIBLE }
 
   for (const inc of incidencias) {
-    const fotos = aFotosPlan(inc.dataUris)
-    const hTexto = altoTexto(inc.descripcion)
-    const base = { orden: inc.orden, descripcion: inc.descripcion }
+    let fotos = aFotosPlan(inc.dataUris)
 
-    // 1) Cabe completa a tamaño normal
-    if (altoFotos(fotos, 1) <= ALTO_DISPONIBLE) {
-      bloques.push({ ...base, key: `${inc.orden}-0`, fotos, escala: 1, continua: false, conTexto: true, noPartir: hTexto <= ALTO_DISPONIBLE })
-      continue
+    // Escala de las fotos: normal, reducida hasta 55 % para que quepan en una hoja, o 55 % y a partir en varias
+    let escala = 1
+    if (altoFotos(fotos, 1) > ALTO_DISPONIBLE) {
+      const fijo = GAP_FOTOS * (fotos.length - 1) + PAD_CELDA * 2 + 2
+      const sumaRatios = fotos.reduce((a, f) => a + f.ratio, 0)
+      const ajuste = (ALTO_DISPONIBLE - fijo) / (FOTO_W * sumaRatios)
+      escala = ajuste >= ESCALA_MIN ? ajuste : ESCALA_MIN
     }
 
-    // 2) Reducir las fotos por igual (mínimo 55 %) hasta que quepan
-    const fijo = GAP_FOTOS * (fotos.length - 1) + PAD_CELDA * 2 + 2
-    const sumaRatios = fotos.reduce((a, f) => a + f.ratio, 0)
-    const escalaAjuste = (ALTO_DISPONIBLE - fijo) / (FOTO_W * sumaRatios)
-    if (escalaAjuste >= ESCALA_MIN) {
-      bloques.push({ ...base, key: `${inc.orden}-0`, fotos, escala: escalaAjuste, continua: false, conTexto: true, noPartir: hTexto <= ALTO_DISPONIBLE })
-      continue
-    }
+    let lineas = lineasTexto(inc.descripcion, ANCHO_TEXTO, 9)
+    const textoEntero = inc.descripcion
+    let parte = 0
+    let partido = false
+    while (fotos.length > 0 || lineas.length > 0 || parte === 0) {
+      const hFotos = (n: number) => altoFotos(fotos.slice(0, n), escala)
+      const hTexto = (n: number) => ALTO_PILDORA + n * LINEA_TEXTO + PAD_CELDA * 2 + 2
+      const hTodo = Math.max(hFotos(fotos.length), hTexto(lineas.length))
 
-    // 3) Ni así cabe: partir entre fotos (a 55 %), repitiendo la píldora "(continúa)"
-    const grupos: FotoPlan[][] = []
-    let actual: FotoPlan[] = []
-    for (const f of fotos) {
-      if (actual.length > 0 && altoFotos([...actual, f], ESCALA_MIN) > ALTO_DISPONIBLE) {
-        grupos.push(actual)
-        actual = []
+      let nFotos = fotos.length
+      let nLineas = lineas.length
+      if (hTodo > restante) {
+        // No cabe entera: si lo que queda es poco, salta a la hoja siguiente; si es mucho, se parte aquí
+        if (restante <= FRACCION_PARTIR * ALTO_HOJA_UTIL && restante < ALTO_DISPONIBLE) { nuevaHoja(); continue }
+        nFotos = 0
+        while (nFotos < fotos.length && hFotos(nFotos + 1) <= restante) nFotos++
+        nLineas = Math.max(0, Math.min(lineas.length, Math.floor((restante - ALTO_PILDORA - PAD_CELDA * 2 - 2) / LINEA_TEXTO)))
+        if (nFotos === 0 && nLineas === 0) { nuevaHoja(); continue }
       }
-      actual.push(f)
-    }
-    if (actual.length > 0) grupos.push(actual)
-    grupos.forEach((g, gi) => {
+
+      const parteFotos = fotos.slice(0, nFotos)
+      const parteLineas = lineas.slice(0, nLineas)
+      const resto = nFotos < fotos.length || nLineas < lineas.length
+      if (resto) partido = true
+      const h = Math.max(parteFotos.length ? altoFotos(parteFotos, escala) : 0, hTexto(parteLineas.length))
       bloques.push({
-        ...base,
-        key: `${inc.orden}-${gi}`,
-        fotos: g,
-        escala: ESCALA_MIN,
-        continua: gi > 0,
-        conTexto: gi === 0,
-        noPartir: gi > 0 || hTexto <= ALTO_DISPONIBLE,
+        key: `${inc.orden}-${parte}`,
+        orden: inc.orden,
+        descripcion: inc.descripcion,
+        fotos: parteFotos,
+        escala,
+        continua: parte > 0,
+        conTexto: parte === 0 || parteLineas.length > 0,
+        noPartir: true,
+        texto: partido || parte > 0 ? parteLineas.join('\n') : textoEntero,
       })
-    })
+      restante -= h + MARGEN_TARJETA
+      fotos = fotos.slice(nFotos)
+      lineas = lineas.slice(nLineas)
+      parte++
+      if (resto) nuevaHoja()
+      if (parte > 200) break
+    }
+    if (restante < 0) nuevaHoja()
   }
 
   return bloques

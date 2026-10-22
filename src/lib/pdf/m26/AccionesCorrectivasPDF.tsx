@@ -142,7 +142,7 @@ function FichaNC({ accion }: { accion: AccionPDFFila }) {
           <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }} hyphenationCallback={PARTIR_FICHA(8)}>{fmt(accion.no_conformidad)}</Text>
         </View>
       </View>
-      <View wrap={false} style={SIN_ENCOGER}>
+      <View wrap={false} minPresenceAhead={60} style={SIN_ENCOGER}>
         <SubtituloFicha texto="Acción correctiva." />
         <View style={{ padding: 8 }}>
           <Text style={{ fontSize: 8, color: PC.fieldValue, lineHeight: 1.4 }} hyphenationCallback={PARTIR_FICHA(8)}>{fmt(accion.accion_correctiva)}</Text>

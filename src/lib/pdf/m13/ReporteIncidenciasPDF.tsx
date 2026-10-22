@@ -8,13 +8,13 @@
 import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
 import { PC } from '@/lib/pdf/components/tokens'
 import type { FirmaParaPdf, FirmaEnteradoParaPdf } from '@/hooks/useFirmasRegistro'
-import { partirPalabraLarga } from '@/lib/pdf/components/texto'
+import { partirParaAncho } from '@/lib/pdf/disenoNuevo/medirTexto'
 import {
   EncabezadoPrimeraPagina, EncabezadoCompacto, estiloColumnaCompacta, FranjaDatos, TituloSeccion,
   EncabezadoTabla, MarcaDeAgua, Pie, PdfFirmas, estiloPagina,
 } from '@/lib/pdf/disenoNuevo'
 import {
-  planificarIncidencias, COL_EVIDENCIA, PAD_CELDA, FOTO_W, GAP_FOTOS, type BloquePlan,
+  planificarIncidencias, altoUsadoPagina1, COL_EVIDENCIA, PAD_CELDA, FOTO_W, GAP_FOTOS, type BloquePlan,
 } from './planificarIncidencias'
 import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
@@ -124,7 +124,7 @@ function Tarjeta({ b }: { b: BloquePlan }) {
         <View style={s.contenidoIncidencia}>
           <Text style={s.pildora}>{b.continua ? `Incidencia ${b.orden} (continúa)` : `Incidencia ${b.orden}`}</Text>
           {b.conTexto && (
-            <Text style={s.descripcion} hyphenationCallback={partirPalabraLarga}>{b.descripcion}</Text>
+            <Text style={s.descripcion} hyphenationCallback={partirParaAncho(288, 9)}>{b.texto ?? b.descripcion}</Text>
           )}
         </View>
       </View>
@@ -150,7 +150,7 @@ export function ReporteIncidenciasPagina({
 }: ReporteIncidenciasPDFProps) {
   const fechaFormateada = formatFechaPDF(fecha)
   const codigoFmt = `${codigoClave}-F-SC-SIG`
-  const bloques = planificarIncidencias(incidencias)
+  const bloques = planificarIncidencias(incidencias, altoUsadoPagina1(auditorNombre))
 
   return (
     <Page size="A4" style={s.page}>
