@@ -44,7 +44,7 @@ const s = StyleSheet.create({
   // ── Header ───────────────────────────────────────────────────────────────
   headerRow: {
     flexDirection: 'row',
-    minHeight: 52,
+    height: 52,
     borderBottomWidth: 1,
     borderBottomColor: BD,
     borderBottomStyle: 'solid',
@@ -83,7 +83,7 @@ const s = StyleSheet.create({
   // ── Fila LPT ─────────────────────────────────────────────────────────────
   lptRow: {
     flexDirection: 'row',
-    height: 52,
+    minHeight: 52,
     borderBottomWidth: 1,
     borderBottomColor: BD,
     borderBottomStyle: 'solid',
