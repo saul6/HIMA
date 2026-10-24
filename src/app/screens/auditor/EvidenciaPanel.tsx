@@ -92,7 +92,7 @@ export function EvidenciaPanel({
 
   // Upload form
   const [uploadFiles, setUploadFiles] = useState<File[]>([])
-  const [, setProgresoSubida] = useState<{ hechas: number; total: number } | null>(null)
+  const [progresoSubida, setProgresoSubida] = useState<{ hechas: number; total: number } | null>(null)
   const [uploadTipo, setUploadTipo] = useState<AudEvidenciaTipo>('documento_procedimiento')
   const [uploadCodigo, setUploadCodigo] = useState('')
   const [subiendo, setSubiendo] = useState(false)
@@ -424,6 +424,9 @@ export function EvidenciaPanel({
               <Boton tamano="sm" onClick={handleSubirExterno} cargando={subiendo} disabled={uploadFiles.length === 0} className="w-full">
                 {uploadFiles.length > 1 ? `Subir ${uploadFiles.length} evidencias` : 'Subir evidencia'}
               </Boton>
+              <p role="status" className="text-small min-h-4 -mt-1" style={{ color: 'var(--muted-foreground)' }}>
+                {subiendo ? `Subiendo ${progresoSubida ? Math.min(progresoSubida.hechas + 1, progresoSubida.total) : 1} de ${progresoSubida?.total ?? uploadFiles.length}…` : ''}
+              </p>
             </div>
           )}
 
