@@ -518,7 +518,7 @@ export function AuditorInstalacionDetalle() {
                       className="self-start text-caption font-semibold h-7 px-3 rounded-lg disabled:opacity-50 flex items-center gap-1"
                       style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)', border: '1px solid var(--border)' }}
                     >
-                      {cargandoPerfiles ? <Loader size={10} className="animate-spin" /> : null}
+                      {cargandoPerfiles ? <Loader size={10} className="animate-spin motion-reduce:animate-none" /> : null}
                       Cargar usuarios de esta org
                     </button>
                   )}
@@ -532,10 +532,7 @@ export function AuditorInstalacionDetalle() {
                 Productor responsable <span style={{ color: 'var(--agro-red)' }}>*</span>
               </p>
               {cargandoPerfiles ? (
-                <div className="flex items-center gap-2 py-2">
-                  <Loader size={13} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
-                  <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Cargando usuarios…</span>
-                </div>
+                <Skeleton className="h-11 w-full rounded-lg" aria-busy="true" aria-label="Cargando usuarios" />
               ) : perfiles.length > 0 ? (
                 <select
                   value={productorId}
@@ -616,10 +613,7 @@ export function AuditorInstalacionDetalle() {
           {/* Botón vincular */}
           <div className="px-4 pb-6 pt-3 flex-shrink-0 border-t border-border">
             <Boton onClick={handleVincular} cargando={vinculando} disabled={!confirmado} className="w-full">
-              {vinculando
-                ? <><Loader size={15} className="animate-spin" /> Vinculando…</>
-                : <><Building2 size={15} /> Vincular expediente a M.A.D.Y.</>
-              }
+              <Building2 size={15} /> Vincular expediente a M.A.D.Y.
             </Boton>
           </div>
         </div>

@@ -953,7 +953,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                           } catch { /* handled */ }
                           finally { setAplicandoSugerenciaC(false) }
                         }} className="flex-1">
-                        {aplicandoSugerenciaC ? <><Loader size={10} className="animate-spin" /> Aplicando…</> : 'Confirmar'}
+                        Confirmar
                       </Boton>
                       <button
                         onClick={() => setSugerenciaCId(null)}
@@ -1023,7 +1023,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   style={{ backgroundColor: 'var(--agro-info-text)', color: '#fff' }}
                 >
                   {confirmandoRevision
-                    ? <><Loader size={10} className="animate-spin" /> Confirmando…</>
+                    ? <><Loader size={10} className="animate-spin motion-reduce:animate-none" /> Confirmando…</>
                     : 'Confirmar respuesta anterior'}
                 </button>
               )}
@@ -1197,9 +1197,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                           } catch { /* handled */ }
                           finally { setAplicandoReglaId(null) }
                         }} className="flex-1">
-                        {aplicandoReglaId === regla.id
-                          ? <><Loader size={11} className="animate-spin" /> Aplicando…</>
-                          : 'Confirmar N/A en dependientes'}
+                        Confirmar N/A en dependientes
                       </Boton>
                       {reglaConflictos && reglaConflictos.length > 0 && (
                         <button
@@ -1311,9 +1309,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                               } catch { /* handled */ }
                               finally { setRetirandoEnCurso(false) }
                             }} className="flex-1">
-                            {retirandoEnCurso
-                              ? <><Loader size={10} className="animate-spin" /> Retirando…</>
-                              : 'Confirmar retiro'}
+                            Confirmar retiro
                           </Boton>
                           <button
                             onClick={() => { setRetirandoReglaId(null); setMotivoRetiro('') }}
@@ -1402,7 +1398,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     className="flex items-center gap-1 text-caption font-medium px-2 py-0.5 rounded disabled:opacity-50"
                     style={{ backgroundColor: 'rgba(0,0,0,0.07)', color: 'var(--agro-info-text)' }}
                   >
-                    {quitandoAjuste ? <Loader size={10} className="animate-spin" /> : <X size={10} />}
+                    {quitandoAjuste ? <Loader size={10} className="animate-spin motion-reduce:animate-none" /> : <X size={10} />}
                     Quitar
                   </button>
                 )}
@@ -1546,7 +1542,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               </div>
               <div className="flex gap-2">
                 <Boton tamano="sm" onClick={handleConfirmarAjuste} cargando={enviandoAjuste} disabled={!puedeConfirmar} className="flex-1">
-                  {enviandoAjuste ? <><Loader size={11} className="animate-spin" /> Guardando…</> : 'Confirmar'}
+                  Confirmar
                 </Boton>
                 <button
                   onClick={() => setAjusteOpen(false)}
@@ -1633,7 +1629,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                               try { await handleConfirmarHerencia(h.valor_id) }
                               finally { setHerenciaAcciones(prev => { const n = new Map(prev); n.delete(esq.id); return n }) }
                             }}>
-                            {ejec === 'cargando' ? <><Loader size={10} className="animate-spin" />…</> : 'Confirmar dato'}
+                            Confirmar dato
                           </Boton>
                           <button
                             disabled={!!ejec}
@@ -1709,7 +1705,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                                 try { await handleResolverHerencia(h.valor_id, 'propuesto') }
                                 finally { setHerenciaAcciones(prev => { const n = new Map(prev); n.delete(esq.id); return n }) }
                               }}>
-                              {ejec === 'cargando' ? <><Loader size={10} className="animate-spin" />…</> : 'Confirmar nuevo'}
+                              Confirmar nuevo
                             </Boton>
                             <button
                               disabled={!!ejec}
@@ -1758,7 +1754,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                               className="h-7 px-2.5 rounded-lg text-caption font-semibold disabled:opacity-50 flex items-center gap-1"
                               style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                             >
-                              {ejec === 'cargando' ? <><Loader size={10} className="animate-spin" />…</> : 'Conservar este'}
+                              {ejec === 'cargando' ? <><Loader size={10} className="animate-spin motion-reduce:animate-none" />…</> : 'Conservar este'}
                             </button>
                             <Boton disabled={!!ejec} onClick={async () => {
                                 setHerenciaAcciones(prev => new Map(prev).set(esq.id, 'cargando'))
@@ -1836,7 +1832,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           <div className="flex items-center gap-2 min-h-[18px]">
             {saveStatus === 'saving' && (
               <>
-                <Loader size={12} className="animate-spin flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+                <Loader size={12} className="animate-spin flex-shrink-0 motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
                 <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Guardando…</span>
               </>
             )}

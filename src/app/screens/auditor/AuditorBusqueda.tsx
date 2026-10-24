@@ -152,7 +152,7 @@ export function AuditorBusqueda() {
                 <div className="flex items-center justify-center py-10">
                   <Loader2
                     size={18}
-                    className="animate-spin"
+                    className="animate-spin motion-reduce:animate-none"
                     style={{ color: 'var(--muted-foreground)' }}
                   />
                 </div>

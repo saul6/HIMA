@@ -10,6 +10,7 @@ import type {
   AudEvidenciaEntityType, AudEvidenciaTipo, AudEvidenciaSnapshot,
 } from '@/types/database.types'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Skeleton } from '@/app/components/ui/skeleton'
 import { fechaCorta } from '@/lib/formato'
 
 const TIPO_LABELS: Record<AudEvidenciaTipo, string> = {
@@ -91,7 +92,7 @@ export function EvidenciaPanel({
 
   // Upload form
   const [uploadFiles, setUploadFiles] = useState<File[]>([])
-  const [progresoSubida, setProgresoSubida] = useState<{ hechas: number; total: number } | null>(null)
+  const [, setProgresoSubida] = useState<{ hechas: number; total: number } | null>(null)
   const [uploadTipo, setUploadTipo] = useState<AudEvidenciaTipo>('documento_procedimiento')
   const [uploadCodigo, setUploadCodigo] = useState('')
   const [subiendo, setSubiendo] = useState(false)
@@ -336,7 +337,7 @@ export function EvidenciaPanel({
           <Paperclip size={14} className="flex-shrink-0" style={{ color: hook.usos.length > 0 ? 'var(--primary)' : 'var(--muted-foreground)' }} />
           <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
             {hook.cargando && abierto
-              ? 'Cargando evidencias…'
+              ? <Skeleton className="h-3.5 w-24 inline-block align-middle" />
               : `Evidencias${hook.usos.length > 0 ? ` (${hook.usos.length})` : ''}`
             }
           </span>
@@ -421,18 +422,16 @@ export function EvidenciaPanel({
                 )}
               </div>
               <Boton tamano="sm" onClick={handleSubirExterno} cargando={subiendo} disabled={uploadFiles.length === 0} className="w-full">
-                {subiendo
-                  ? <><Loader size={12} className="animate-spin" />Subiendo {progresoSubida ? `${progresoSubida.hechas}/${progresoSubida.total}` : '…'}</>
-                  : uploadFiles.length > 1 ? `Subir ${uploadFiles.length} evidencias` : 'Subir evidencia'}
+                {uploadFiles.length > 1 ? `Subir ${uploadFiles.length} evidencias` : 'Subir evidencia'}
               </Boton>
             </div>
           )}
 
           {/* Lista de evidencias vinculadas */}
           {hook.cargando ? (
-            <div className="flex items-center gap-2 px-4 py-4">
-              <Loader size={13} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
-              <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Cargando…</span>
+            <div className="flex flex-col gap-2 px-4 py-4" aria-busy="true" aria-label="Cargando evidencias">
+              <Skeleton className="h-12 w-full rounded-lg" />
+              <Skeleton className="h-12 w-full rounded-lg" />
             </div>
           ) : hook.usos.length === 0 ? (
             <p className="text-xs px-4 py-3" style={{ color: 'var(--muted-foreground)' }}>Sin evidencias vinculadas.</p>
@@ -503,7 +502,7 @@ export function EvidenciaPanel({
                           style={{ color: 'var(--agro-danger-text)' }}
                         >
                           {quitandoId === uso.id
-                            ? <Loader size={10} className="animate-spin" />
+                            ? <Loader size={10} className="animate-spin motion-reduce:animate-none" />
                             : <Trash2 size={10} />
                           }
                           Quitar vínculo
@@ -540,7 +539,7 @@ export function EvidenciaPanel({
                   Evidencia sugerida
                 </p>
                 {sugeridasCargando && (
-                  <Loader size={11} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+                  <Loader size={11} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
                 )}
               </div>
 
@@ -660,10 +659,7 @@ export function EvidenciaPanel({
                           )}
                           {canLink && (
                             <Boton onClick={() => handleRelacionar(reg)} cargando={!!gwRelacionandoId} className="ml-auto">
-                              {gwRelacionandoId === reg.source_record_id
-                                ? <Loader size={10} className="animate-spin" />
-                                : <Link2 size={10} />
-                              }
+                              <Link2 size={10} />
                               Relacionar
                             </Boton>
                           )}
@@ -730,18 +726,15 @@ export function EvidenciaPanel({
                   style={{ ...inputBase, height: '2.25rem', flex: 1, width: 'auto' }}
                 />
                 <Boton tamano="sm" onClick={() => handleBuscar()} cargando={gwCargando} className="flex-shrink-0">
-                  {gwCargando
-                    ? <Loader size={12} className="animate-spin" />
-                    : 'Buscar'
-                  }
+                  Buscar
                 </Boton>
               </div>
 
               {/* Resultados */}
               {gwCargando ? (
-                <div className="flex items-center gap-2 py-2">
-                  <Loader size={12} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
-                  <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Buscando registros…</span>
+                <div className="flex flex-col gap-2 py-2" aria-busy="true" aria-label="Buscando registros">
+                  <Skeleton className="h-12 w-full rounded-lg" />
+                  <Skeleton className="h-12 w-full rounded-lg" />
                 </div>
               ) : gwRegistros.length === 0 ? (
                 <p className="text-caption py-2 text-center" style={{ color: 'var(--muted-foreground)' }}>
@@ -792,10 +785,7 @@ export function EvidenciaPanel({
                         )}
                         {canLink && (
                           <Boton onClick={() => handleRelacionar(reg)} cargando={!!gwRelacionandoId} className="ml-auto">
-                            {gwRelacionandoId === reg.source_record_id
-                              ? <Loader size={10} className="animate-spin" />
-                              : <Link2 size={10} />
-                            }
+                            <Link2 size={10} />
                             Relacionar
                           </Boton>
                         )}

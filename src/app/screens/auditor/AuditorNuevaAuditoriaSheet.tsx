@@ -365,8 +365,8 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
       {/* Pie fijo */}
       <div className="px-4 pt-3 pb-4 border-t border-border flex-shrink-0">
         {paso === 1 ? (
-          <Boton onClick={handleSiguiente} disabled={cargandoModulos} className="w-full">
-            {cargandoModulos ? 'Cargando…' : 'Siguiente'}
+          <Boton onClick={handleSiguiente} cargando={cargandoModulos} className="w-full">
+            Siguiente
           </Boton>
         ) : (
           <div className="flex gap-2">

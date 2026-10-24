@@ -24,6 +24,7 @@ import type { CapturaPreguntaRef, AjusteInfo } from './CapturaPreguntaAuditoria'
 import { traducirErrorBd } from '@/lib/erroresBd'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Skeleton } from '@/app/components/ui/skeleton'
+import { FormularioSkeleton } from '@/app/components/FormularioSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { fechaCorta, fechaHora, formatoPct } from '@/lib/formato'
@@ -271,7 +272,7 @@ function PanelM9({
         </p>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        {cargando && <Loader size={12} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />}
+        {cargando && <Loader size={12} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />}
         <span className="text-xs font-bold" style={{ color: 'var(--muted-foreground)' }}>
           {calculo.resueltas}/{calculo.total}
         </span>
@@ -350,7 +351,7 @@ function PanelValidacion({
       >
         <div className="flex items-center gap-2 min-w-0 flex-wrap">
           {validando ? (
-            <Loader size={14} className="animate-spin flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+            <Loader size={14} className="animate-spin flex-shrink-0 motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
           ) : reviewLoadError ? (
             <XCircle size={15} className="flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
           ) : (
@@ -403,7 +404,7 @@ function PanelValidacion({
         <div className="border-t border-border">
           {validando ? (
             <div className="flex items-center justify-center gap-2 py-6">
-              <Loader size={14} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+              <Loader size={14} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
               <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Analizando respuestas…</span>
             </div>
           ) : reviewLoadError ? (
@@ -620,11 +621,11 @@ function PanelScoring({
           </span>
           {/* COR-08: indicadores de estado en el header */}
           {scoringEstado === 'cargando' && (
-            <Loader size={12} className="animate-spin flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+            <Loader size={12} className="animate-spin flex-shrink-0 motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
           )}
           {scoringEstado === 'desactualizado' && (
             <span className="flex items-center gap-1 text-caption flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
-              <Loader size={10} className="animate-spin" /> Actualizando…
+              <Loader size={10} className="animate-spin motion-reduce:animate-none" /> Actualizando…
             </span>
           )}
           {scoringEstado === 'error' && calculo && (
@@ -916,7 +917,9 @@ function PanelHallazgos({
         <div className="flex items-center gap-2">
           <Flag size={15} className="flex-shrink-0" style={{ color: hallazgos.length > 0 ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }} />
           <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
-            {cargando ? 'Cargando hallazgos…' : `${hallazgos.length} hallazgo${hallazgos.length !== 1 ? 's' : ''}`}
+            {cargando
+              ? <Skeleton className="h-3.5 w-24 inline-block align-middle" />
+              : `${hallazgos.length} hallazgo${hallazgos.length !== 1 ? 's' : ''}`}
           </span>
         </div>
         {abierto
@@ -928,9 +931,16 @@ function PanelHallazgos({
       {abierto && (
         <div className="border-t border-border">
           {hallazgos.length === 0 ? (
-            <p className="text-xs px-4 py-4" style={{ color: 'var(--muted-foreground)' }}>
-              {cargando ? 'Cargando…' : 'Sin hallazgos registrados.'}
-            </p>
+            cargando ? (
+              <div className="px-4 py-4 flex flex-col gap-2" aria-busy="true" aria-label="Cargando hallazgos">
+                <Skeleton className="h-3.5 w-3/4" />
+                <Skeleton className="h-3.5 w-1/2" />
+              </div>
+            ) : (
+              <p className="text-xs px-4 py-4" style={{ color: 'var(--muted-foreground)' }}>
+                Sin hallazgos registrados.
+              </p>
+            )
           ) : (
             <div className="flex flex-col divide-y" style={{ borderColor: 'var(--border)' }}>
               {hallazgos.map(h => {
@@ -1813,7 +1823,7 @@ export function AuditorEjecucion() {
               const nError = values.filter(s => s === 'error').length
               if (hayGuardando) return (
                 <div className="flex items-center gap-1.5 text-caption px-3 py-1.5 rounded-lg self-start" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
-                  <Loader size={11} className="animate-spin" /> Guardando…
+                  <Loader size={11} className="animate-spin motion-reduce:animate-none" /> Guardando…
                 </div>
               )
               if (hayErrorGuardado) return (
@@ -1861,10 +1871,7 @@ export function AuditorEjecucion() {
             {/* Botón descargar reporte PDF */}
             {auditoria && allPreguntas.length > 0 && (
               <Boton onClick={handleDescargarPDF} cargando={descargando} className="w-full">
-                {descargando
-                  ? <><Loader size={15} className="animate-spin" /> Generando PDF…</>
-                  : <><Download size={15} /> Descargar reporte PDF</>
-                }
+                <Download size={15} /> Descargar reporte PDF
               </Boton>
             )}
 
@@ -2082,7 +2089,7 @@ export function AuditorEjecucion() {
                     style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                   >
                     {validando
-                      ? <><Loader size={15} className="animate-spin" />Validando…</>
+                      ? <><Loader size={15} className="animate-spin motion-reduce:animate-none" />Validando…</>
                       : <><ShieldCheck size={15} />Validar</>
                     }
                   </button>
@@ -2163,7 +2170,7 @@ export function AuditorEjecucion() {
           </div>
           <div className="px-4 pb-6 pt-3 flex-shrink-0 border-t border-border">
             <Boton onClick={handleGuardarHallazgo} cargando={guardandoHallazgo} disabled={!formHallazgoDesc.trim()} className="w-full">
-              {guardandoHallazgo ? <><Loader size={15} className="animate-spin" /> Guardando…</> : 'Registrar hallazgo'}
+              Registrar hallazgo
             </Boton>
           </div>
         </div>
@@ -2187,9 +2194,8 @@ export function AuditorEjecucion() {
           </div>
 
           {cargandoAccion ? (
-            <div className="flex-1 flex items-center justify-center gap-2">
-              <Loader size={16} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
-              <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Cargando…</span>
+            <div className="flex-1 px-4 py-4">
+              <FormularioSkeleton campos={4} />
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
@@ -2274,10 +2280,8 @@ export function AuditorEjecucion() {
                   className="flex items-center justify-center gap-2 w-full h-10 rounded-xl text-sm font-medium disabled:opacity-50"
                   style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                 >
-                  {cargandoHistorial
-                    ? <><Loader size={14} className="animate-spin" /> Cargando historial…</>
-                    : <><History size={14} /> Ver historial de versiones ({accionActual.current_version})</>
-                  }
+                  {cargandoHistorial ? <Loader size={14} className="animate-spin motion-reduce:animate-none" /> : <History size={14} />}
+                  Ver historial de versiones ({accionActual.current_version})
                 </button>
               )}
 
@@ -2316,7 +2320,7 @@ export function AuditorEjecucion() {
                       style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                     >
                       {validandoAzzule
-                        ? <><Loader size={13} className="animate-spin" />Validando…</>
+                        ? <><Loader size={13} className="animate-spin motion-reduce:animate-none" />Validando…</>
                         : <><ShieldCheck size={13} />Validar para Azzule</>
                       }
                     </button>
@@ -2433,7 +2437,7 @@ export function AuditorEjecucion() {
                           </div>
                         ))}
                         <Boton tamano="sm" onClick={handleRegistrarResultado} cargando={guardandoResultado} className="w-full">
-                          {guardandoResultado ? <><Loader size={12} className="animate-spin" />Guardando…</> : 'Registrar resultado'}
+                          Registrar resultado
                         </Boton>
                       </div>
                     )}
@@ -2461,8 +2465,9 @@ export function AuditorEjecucion() {
                     {historialExternoVisible && (
                       <div className="border-t" style={{ borderColor: 'var(--border)' }}>
                         {cargandoHistorialExterno ? (
-                          <div className="flex items-center justify-center gap-2 py-4">
-                            <Loader size={14} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+                          <div className="px-3 py-3 flex flex-col gap-2" aria-busy="true" aria-label="Cargando seguimiento">
+                            <Skeleton className="h-3.5 w-3/4" />
+                            <Skeleton className="h-3.5 w-1/2" />
                           </div>
                         ) : historialExterno.length === 0 ? (
                           <p className="text-xs px-3 py-3" style={{ color: 'var(--muted-foreground)' }}>
@@ -2504,7 +2509,7 @@ export function AuditorEjecucion() {
           {!cargandoAccion && canWriteAC && (
             <div className="px-4 pb-6 pt-3 flex-shrink-0 border-t border-border">
               <Boton onClick={handleGuardarAccion} cargando={guardandoAccion} className="w-full">
-                {guardandoAccion ? <><Loader size={15} className="animate-spin" /> Guardando…</> : (accionActual ? 'Actualizar acción' : 'Crear acción correctiva')}
+                {accionActual ? 'Actualizar acción' : 'Crear acción correctiva'}
               </Boton>
             </div>
           )}
@@ -2581,9 +2586,9 @@ export function AuditorEjecucion() {
                 Vinculadas ({incVinculadas.length})
               </TituloSeccion>
               {cargandoIncVinc ? (
-                <div className="flex items-center gap-2 py-2">
-                  <Loader size={13} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
-                  <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Cargando…</span>
+                <div className="flex flex-col gap-2 py-2" aria-busy="true" aria-label="Cargando antecedentes">
+                  <Skeleton className="h-14 w-full rounded-lg" />
+                  <Skeleton className="h-14 w-full rounded-lg" />
                 </div>
               ) : incVinculadas.length === 0 ? (
                 <p className="text-xs py-1" style={{ color: 'var(--muted-foreground)' }}>Sin antecedentes vinculados.</p>
@@ -2630,7 +2635,7 @@ export function AuditorEjecucion() {
                             style={{ color: 'var(--agro-danger-text)' }}
                           >
                             {incQuitandoId === v.id
-                              ? <Loader size={10} className="animate-spin" />
+                              ? <Loader size={10} className="animate-spin motion-reduce:animate-none" />
                               : <XCircle size={10} />
                             }
                             Quitar
@@ -2683,13 +2688,13 @@ export function AuditorEjecucion() {
                   style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                 />
                 <Boton tamano="sm" onClick={handleBuscarIncidencias} cargando={incBuscando} className="flex-shrink-0">
-                  {incBuscando ? <Loader size={12} className="animate-spin" /> : 'Buscar'}
+                  Buscar
                 </Boton>
               </div>
 
               {incBuscando ? (
                 <div className="flex items-center gap-2 py-1">
-                  <Loader size={12} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+                  <Loader size={12} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
                   <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Buscando incidencias…</span>
                 </div>
               ) : incResultados.length === 0 ? (
@@ -2717,10 +2722,7 @@ export function AuditorEjecucion() {
                       </div>
                       <p className="text-caption leading-snug" style={{ color: 'var(--foreground)' }}>{inc.descripcion}</p>
                       <Boton onClick={() => handleRelacionarIncidencia(inc)} cargando={!!incRelacionandoId} className="self-end">
-                        {incRelacionandoId === inc.incidencia_id
-                          ? <Loader size={10} className="animate-spin" />
-                          : <Link2 size={10} />
-                        }
+                        <Link2 size={10} />
                         Relacionar
                       </Boton>
                     </div>

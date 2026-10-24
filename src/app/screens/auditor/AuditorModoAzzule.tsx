@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import type { AudHallazgo, AudAccionCorrectivaCAPA, AudHallazgoClasificacion } from '@/types/database.types'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -46,7 +47,6 @@ export function AuditorModoAzzule() {
   const instalacionNombreNav = state?.instalacionNombreNav ?? ''
 
   const [loading, setLoading] = useState(true)
-  const [loadingMsg, setLoadingMsg] = useState('Cargando hallazgos…')
   const [items, setItems] = useState<AzzuleItem[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [marcando, setMarcando] = useState(false)
@@ -60,14 +60,12 @@ export function AuditorModoAzzule() {
   async function loadItems() {
     setLoading(true)
     try {
-      setLoadingMsg('Cargando hallazgos…')
       const { data: hallazgos, error: hErr } = await tbl('aud_hallazgos')
         .select('*')
         .eq('auditoria_id', auditoriaId)
       if (hErr) throw hErr
       if (!hallazgos?.length) { setItems([]); return }
 
-      setLoadingMsg('Cargando acciones correctivas…')
       const { data: acciones, error: aErr } = await tbl('aud_acciones_correctivas')
         .select('*')
         .in('hallazgo_id', (hallazgos as AudHallazgo[]).map(h => h.id))
@@ -192,9 +190,8 @@ export function AuditorModoAzzule() {
 
       <main className="flex-1 px-4 py-4 flex flex-col gap-4">
         {loading ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-16">
-            <Loader size={20} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{loadingMsg}</p>
+          <div aria-busy="true" aria-label="Cargando hallazgos">
+            <ListaSkeleton rows={3} />
           </div>
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
@@ -303,7 +300,7 @@ export function AuditorModoAzzule() {
                 }
               >
                 {marcando
-                  ? <><Loader size={15} className="animate-spin" />Marcando…</>
+                  ? <><Loader size={15} className="animate-spin motion-reduce:animate-none" />Marcando…</>
                   : current.marcada
                     ? <><CheckCircle size={15} />Cargada en Azzule</>
                     : 'Marcar como cargada'

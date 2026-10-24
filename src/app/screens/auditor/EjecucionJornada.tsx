@@ -799,7 +799,7 @@ export function EjecucionJornada() {
                       className="flex-1 h-8 rounded-lg text-xs font-semibold flex items-center justify-center"
                       style={{ backgroundColor: 'var(--agro-info-text)', color: '#fff' }}
                     >
-                      {retirando ? <Loader size={12} className="animate-spin" /> : 'Confirmar'}
+                      {retirando ? <Loader size={12} className="animate-spin motion-reduce:animate-none" /> : 'Confirmar'}
                     </button>
                     <button
                       onClick={() => setConfirmRetirar(null)}
@@ -840,7 +840,7 @@ export function EjecucionJornada() {
                     className="flex-1 h-8 rounded-lg text-xs font-semibold flex items-center justify-center"
                     style={{ backgroundColor: 'var(--agro-danger-text)', color: '#fff' }}
                   >
-                    {terminando ? <Loader size={12} className="animate-spin" /> : 'Terminar jornada'}
+                    {terminando ? <Loader size={12} className="animate-spin motion-reduce:animate-none" /> : 'Terminar jornada'}
                   </button>
                   <button
                     onClick={() => setConfirmTerminar(false)}

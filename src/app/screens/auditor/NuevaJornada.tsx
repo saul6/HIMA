@@ -175,7 +175,7 @@ export function NuevaJornada() {
             Selecciona las operaciones a incluir en la jornada
           </p>
         </div>
-        {cargandoCandidatas && <Loader size={16} className="animate-spin flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />}
+        {cargandoCandidatas && <Loader size={16} className="animate-spin flex-shrink-0 motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />}
         {!cargandoCandidatas && (
           <button
             onClick={cargarCandidatas}
@@ -285,10 +285,7 @@ export function NuevaJornada() {
             }}
           />
           <Boton onClick={handleCrear} cargando={creando} className="w-full">
-            {creando
-              ? <><Loader size={15} className="animate-spin" />Creando…</>
-              : <><Plus size={15} />Comenzar con {seleccionados.size} {seleccionados.size === 1 ? 'operación' : 'operaciones'} de {nProductores} {nProductores === 1 ? 'productor' : 'productores'}</>
-            }
+            <Plus size={15} />Comenzar con {seleccionados.size} {seleccionados.size === 1 ? 'operación' : 'operaciones'} de {nProductores} {nProductores === 1 ? 'productor' : 'productores'}
           </Boton>
         </div>
         </Portal>

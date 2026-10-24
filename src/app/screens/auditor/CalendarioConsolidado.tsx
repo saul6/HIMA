@@ -206,7 +206,7 @@ export function CalendarioConsolidado() {
           aria-label="Actualizar"
         >
           {cargando
-            ? <Loader size={15} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+            ? <Loader size={15} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
             : <RefreshCw size={15} style={{ color: 'var(--muted-foreground)' }} />
           }
         </button>
