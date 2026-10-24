@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import type { AudHallazgo, AudAccionCorrectivaCAPA, AudHallazgoClasificacion } from '@/types/database.types'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -173,12 +174,7 @@ export function AuditorModoAzzule() {
             )}
           </div>
           {!loading && items.length > 0 && (
-            <span
-              className="text-caption font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-              style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
-            >
-              {currentIndex + 1} / {items.length}
-            </span>
+            <Etiqueta>{currentIndex + 1} / {items.length}</Etiqueta>
           )}
         </div>
         <div className="px-4 pb-2.5">

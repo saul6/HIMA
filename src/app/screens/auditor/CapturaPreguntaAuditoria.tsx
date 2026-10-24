@@ -22,6 +22,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { traducirErrorBd, mensajeErrorBd } from '@/lib/erroresBd'
 import { guardarBorradorAuditor, cargarBorradorAuditor, borrarBorradorAuditor, claveBorradorAuditor } from '@/lib/idb/auditorBorradorStore'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { fechaCorta } from '@/lib/formato'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
@@ -830,29 +831,13 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               {pregunta.question_id}
             </span>
             {pregunta.tipo === 'information_gathering' && (
-              <span
-                className="text-caption font-semibold flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
-                style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
-              >
-                Informativa
-              </span>
+              <Etiqueta tono="menta" className="mt-0.5">Informativa</Etiqueta>
             )}
             {pregunta.trigger_falla_automatica !== 'ninguno' && (
-              <span
-                className="text-caption font-semibold flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
-                style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
-              >
-                Falla automática
-              </span>
+              <Etiqueta tono="error" className="mt-0.5">Falla automática</Etiqueta>
             )}
             {reincidencia?.reincidente && (
-              <span
-                className="text-caption font-semibold flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
-                title={reincidencia.mensaje}
-                style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
-              >
-                Reincidente
-              </span>
+              <Etiqueta tono="sky" className="mt-0.5" title={reincidencia.mensaje}>Reincidente</Etiqueta>
             )}
             <p className="text-sm flex-1 min-w-0" style={{ color: 'var(--foreground)', lineHeight: '1.45' }}>
               {pregunta.texto}

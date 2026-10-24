@@ -10,6 +10,7 @@ import type {
   AudEvidenciaEntityType, AudEvidenciaTipo, AudEvidenciaSnapshot,
 } from '@/types/database.types'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { fechaCorta } from '@/lib/formato'
 
@@ -625,12 +626,7 @@ export function EvidenciaPanel({
                             {relLabel}
                           </span>
                           {reg.preferred && (
-                            <span
-                              className="text-caption px-1.5 py-0.5 rounded-full"
-                              style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
-                            >
-                              ● Sugerido
-                            </span>
+                            <Etiqueta>Sugerido</Etiqueta>
                           )}
                           <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                             {fechaCorta(reg.record_date)}

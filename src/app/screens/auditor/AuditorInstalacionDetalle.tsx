@@ -14,6 +14,8 @@ import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { traducirErrorBd } from '@/lib/erroresBd'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { estadoAuditoria } from './estados'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { fechaCorta } from '@/lib/formato'
 import { DUR, EASE_OUT } from '@/lib/motion'
@@ -43,17 +45,6 @@ interface AuditoriaItem {
 interface ProfileItem {
   id: string
   nombre_completo: string | null
-}
-
-const ESTADO_LABELS: Record<string, string> = {
-  en_proceso: 'En proceso',
-  preliminar: 'Preliminar',
-  cerrada:    'Cerrada',
-}
-const ESTADO_STYLE: Record<string, { bg: string; color: string }> = {
-  en_proceso: { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
-  preliminar: { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
-  cerrada:    { bg: 'var(--muted)',              color: 'var(--muted-foreground)'  },
 }
 
 const inputSt: React.CSSProperties = {
@@ -361,7 +352,7 @@ export function AuditorInstalacionDetalle() {
             ) : (
               <div className="flex flex-col gap-2">
                 {auditorias.map((a, index) => {
-                  const style = ESTADO_STYLE[a.estado] ?? ESTADO_STYLE.cerrada
+                  const estado = estadoAuditoria(a.estado)
                   return (
                     <motion.button
                       key={a.id}
@@ -384,12 +375,7 @@ export function AuditorInstalacionDetalle() {
                           {formatFecha(a.fecha)}
                         </p>
                       </div>
-                      <span
-                        className="text-caption font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: style.bg, color: style.color }}
-                      >
-                        {ESTADO_LABELS[a.estado] ?? a.estado}
-                      </span>
+                      <Etiqueta tono={estado.tono}>{estado.texto}</Etiqueta>
                     </motion.button>
                   )
                 })}

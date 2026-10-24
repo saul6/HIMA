@@ -18,6 +18,7 @@ import { AuditorBusqueda } from './AuditorBusqueda'
 import { Fab } from '@/app/components/Fab'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
+import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { DUR, EASE_OUT } from '@/lib/motion'
 
@@ -80,18 +81,18 @@ const FILTRO_LABELS: Record<string, string> = {
   CERRAR_HALLAZGO: 'Cerrar hallazgo',
 }
 
-function accionChipStyle(code: string): React.CSSProperties {
+function accionTono(code: string): TonoEtiqueta {
   switch (code) {
     case 'CORREGIR_AC':
-      return { backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }
+      return 'error'
     case 'CREAR_ACCION_CORRECTIVA':
     case 'COMPLETAR_AC':
-      return { backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }
+      return 'sky'
     case 'VALIDAR_PARA_AZZULE':
     case 'ABRIR_MODO_AZZULE':
-      return { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
+      return 'menta'
     default:
-      return { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }
+      return 'neutral'
   }
 }
 
@@ -149,21 +150,12 @@ function WorkQueueCard({
         </div>
         <div className="flex flex-wrap gap-1.5 items-center">
           {vencida && (
-            <span
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-caption font-semibold"
-              style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
-            >
-              <AlertCircle size={10} />
-              Vencida
-            </span>
+            <Etiqueta tono="error" icono={<AlertCircle size={10} />}>Vencida</Etiqueta>
           )}
           {item.next_action_code !== 'SIN_ACCION' && (
-            <span
-              className="inline-flex items-center px-2 py-0.5 rounded-full text-caption font-medium"
-              style={accionChipStyle(item.next_action_code)}
-            >
+            <Etiqueta tono={accionTono(item.next_action_code)}>
               {ACCION_LABELS[item.next_action_code] ?? item.next_action_code}
-            </span>
+            </Etiqueta>
           )}
           {orgNombre && (
             <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>

@@ -7,6 +7,8 @@ import type { JornadaCandidataFila } from '@/hooks/useAuditorJornada'
 import { hoyMX } from '@/lib/fecha'
 import { Portal } from '@/app/components/Portal'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { estadoAuditoria } from './estados'
 import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
 
 const MODULO_LABELS: Record<number, string> = {
@@ -59,27 +61,9 @@ function FilaOperacion({
             </span>
           </span>
           <span className="mt-1 flex flex-wrap gap-1.5">
-            <span
-              className="inline-flex items-center px-1.5 py-0.5 rounded text-caption font-medium"
-              style={{
-                backgroundColor: fila.estado === 'en_proceso' ? 'var(--agro-info-fill)' : 'var(--muted)',
-                color: fila.estado === 'en_proceso' ? 'var(--agro-info-text)' : 'var(--muted-foreground)',
-              }}
-            >
-              {fila.estado === 'en_proceso' ? 'En proceso' : fila.estado}
-            </span>
-            {fila.efimera && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-caption"
-                style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
-                Instalación no vinculada
-              </span>
-            )}
-            {fila.en_jornada_abierta && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-caption"
-                style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
-                Ya en jornada abierta
-              </span>
-            )}
+            <Etiqueta tono={estadoAuditoria(fila.estado).tono}>{estadoAuditoria(fila.estado).texto}</Etiqueta>
+            {fila.efimera && <Etiqueta>Instalación no vinculada</Etiqueta>}
+            {fila.en_jornada_abierta && <Etiqueta tono="sky">Ya en jornada abierta</Etiqueta>}
           </span>
         </>
       }

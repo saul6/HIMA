@@ -9,6 +9,8 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { estadoAuditoria } from './estados'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { DUR, EASE_OUT } from '@/lib/motion'
 
@@ -23,20 +25,6 @@ function entrada(index: number, reducedMotion: boolean | null) {
   }
 }
 
-const ESTADO_LABELS: Record<string, string> = {
-  en_proceso:  'En proceso',
-  preliminar:  'Preliminar',
-  completada:  'Completada',
-  cerrada:     'Cerrada',
-}
-
-const ESTADO_STYLE: Record<string, { bg: string; color: string }> = {
-  en_proceso:  { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
-  preliminar:  { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
-  completada:  { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
-  cerrada:     { bg: 'var(--muted)',              color: 'var(--muted-foreground)'  },
-}
-
 function formatFecha(fecha: string) {
   const [y, m, d] = fecha.split('-')
   return `${d}/${m}/${y}`
@@ -45,7 +33,7 @@ function formatFecha(fecha: string) {
 function AuditoriaCard({
   a, index, reducedMotion, onClick,
 }: { a: AuditorAuditoriaItem; index: number; reducedMotion: boolean | null; onClick: () => void }) {
-  const style = ESTADO_STYLE[a.estado] ?? ESTADO_STYLE.cerrada
+  const estado = estadoAuditoria(a.estado)
   return (
     <motion.button
       {...entrada(index, reducedMotion)}
@@ -62,12 +50,7 @@ function AuditoriaCard({
             {a.rancho_nombre} · {formatFecha(a.fecha)}
           </p>
         </div>
-        <span
-          className="text-caption font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-          style={{ backgroundColor: style.bg, color: style.color }}
-        >
-          {ESTADO_LABELS[a.estado] ?? a.estado}
-        </span>
+        <Etiqueta tono={estado.tono}>{estado.texto}</Etiqueta>
       </div>
     </motion.button>
   )

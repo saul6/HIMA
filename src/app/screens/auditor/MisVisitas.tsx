@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { DUR, EASE_OUT } from '@/lib/motion'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,23 +36,13 @@ function formatRango(inicio: string, fin: string): string {
 
 function ChipVisita() {
   return (
-    <span
-      className="text-caption font-semibold px-2 py-0.5 rounded-full"
-      style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
-    >
-      Visita
-    </span>
+    <Etiqueta tono="menta">Visita</Etiqueta>
   )
 }
 
 function ChipAviso() {
   return (
-    <span
-      className="text-caption font-semibold px-2 py-0.5 rounded-full"
-      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
-    >
-      Se elimina — descarga tu reporte
-    </span>
+    <Etiqueta tono="sky">Se elimina — descarga tu reporte</Etiqueta>
   )
 }
 

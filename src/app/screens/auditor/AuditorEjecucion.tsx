@@ -25,6 +25,7 @@ import type { CapturaPreguntaRef, AjusteInfo } from './CapturaPreguntaAuditoria'
 import { traducirErrorBd } from '@/lib/erroresBd'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { estadoAuditoria, estadoHallazgo } from './estados'
 import { DUR, EASE_OUT } from '@/lib/motion'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { FormularioSkeleton } from '@/app/components/FormularioSkeleton'
@@ -161,15 +162,6 @@ const CLASIFICACION_CONFIG: Record<AudHallazgoClasificacion, { label: string; to
   observacion: { label: 'Observación', tono: 'neutral' },
 }
 
-const HALL_ESTADO_CONFIG: Record<AudHallazgoEstado, { label: string; bg: string; color: string }> = {
-  OPEN:                   { label: 'Abierto',        bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  },
-  PLAN_ACCEPTED:          { label: 'Plan aceptado',  bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
-  IMPLEMENTED:            { label: 'Implementado',   bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
-  EFFECTIVENESS_PENDING:  { label: 'Eficacia pend.', bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
-  CLOSED:                 { label: 'Cerrado',        bg: 'var(--muted)',             color: 'var(--muted-foreground)'  },
-  REOPENED:               { label: 'Reabierto',      bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  },
-}
-
 const INTERNAL_STATUS_LABELS: Record<AudInternalStatus, string> = {
   REGISTERED:        'Registrado',
   PREPARING:         'Preparando respuesta',
@@ -201,17 +193,13 @@ const OBSERVED_STATUS_LABELS: Record<AudExternalObservedStatus, string> = {
   cerrada:             'Cerrada',
 }
 
-const ESTADO_LABELS: Record<string, string> = {
-  en_proceso:  'En proceso',
-  preliminar:  'Preliminar',
-  completada:  'Completada',
-  cerrada:     'Cerrada',
-}
-const ESTADO_STYLE: Record<string, { bg: string; color: string }> = {
-  en_proceso:  { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
-  preliminar:  { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
-  completada:  { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
-  cerrada:     { bg: 'var(--muted)',              color: 'var(--muted-foreground)'  },
+const HALL_ESTADOS: AudHallazgoEstado[] = ['OPEN', 'PLAN_ACCEPTED', 'IMPLEMENTED', 'EFFECTIVENESS_PENDING', 'CLOSED', 'REOPENED']
+
+const SEV_TONO: Record<Severidad, TonoEtiqueta> = {
+  BLOCKER: 'error',
+  REQUIRED: 'sky',
+  WARNING: 'sky',
+  INFO: 'menta',
 }
 
 function formatFecha(f: string) {
@@ -384,13 +372,9 @@ function PanelValidacion({
                 if (!count) return null
                 const cfg = SEV_CONFIG[sev]
                 return (
-                  <span
-                    key={sev}
-                    className="text-caption font-bold px-1.5 py-0.5 rounded-full"
-                    style={{ backgroundColor: cfg.bg, color: cfg.color }}
-                  >
+                  <Etiqueta key={sev} tono={SEV_TONO[sev]} className="font-bold">
                     {count} {cfg.label.slice(0, 3)}
-                  </span>
+                  </Etiqueta>
                 )
               })}
             </div>
@@ -815,9 +799,7 @@ function PanelScoring({
                       {m.nombre || m.modulo}
                     </p>
                     {m.falla_automatica && (
-                      <span className="text-caption font-bold px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
-                        Falla
-                      </span>
+                      <Etiqueta tono="error" className="font-bold">Falla</Etiqueta>
                     )}
                   </div>
                   <div className="flex gap-3 flex-wrap">
@@ -948,16 +930,13 @@ function PanelHallazgos({
             <div className="flex flex-col divide-y" style={{ borderColor: 'var(--border)' }}>
               {hallazgos.map(h => {
                 const clasConfig = CLASIFICACION_CONFIG[h.clasificacion]
-                const estConfig = HALL_ESTADO_CONFIG[h.estado]
+                const estConfig = estadoHallazgo(h.estado)
                 const preg = preguntas.find(p => p.id === h.pregunta_id)
                 return (
                   <div key={h.id} className="px-4 py-3 flex flex-col gap-2">
                     <div className="flex items-start gap-2 flex-wrap">
                       <Etiqueta tono={clasConfig.tono} className={clasConfig.tono === 'rojo' ? 'font-bold dark:text-primary-foreground' : 'font-bold'}>{clasConfig.label}</Etiqueta>
-                      <span className="text-caption font-semibold px-1.5 py-0.5 rounded flex-shrink-0"
-                            style={{ backgroundColor: estConfig.bg, color: estConfig.color }}>
-                        {estConfig.label}
-                      </span>
+                      <Etiqueta tono={estConfig.tono}>{estConfig.texto}</Etiqueta>
                     </div>
                     <p className="text-body leading-snug" style={{ color: 'var(--foreground)' }}>
                       {h.descripcion}
@@ -983,8 +962,8 @@ function PanelHallazgos({
                           color: 'var(--foreground)',
                         }}
                       >
-                        {(Object.keys(HALL_ESTADO_CONFIG) as AudHallazgoEstado[]).map(est => (
-                          <option key={est} value={est}>{HALL_ESTADO_CONFIG[est].label}</option>
+                        {HALL_ESTADOS.map(est => (
+                          <option key={est} value={est}>{estadoHallazgo(est).texto}</option>
                         ))}
                       </select>
                       {canWriteAC && (
@@ -1454,7 +1433,7 @@ export function AuditorEjecucion() {
 
   const allPreguntas = modulosData.flatMap(m => m.preguntas)
 
-  const estadoStyle = ESTADO_STYLE[auditoria?.estado ?? ''] ?? ESTADO_STYLE.cerrada
+  const estadoAud = estadoAuditoria(auditoria?.estado)
 
   const backTarget = instalacionId
     ? `/auditor/instalacion/${instalacionId}`
@@ -1840,12 +1819,7 @@ export function AuditorEjecucion() {
           )}
         </div>
         {auditoria && (
-          <span
-            className="text-caption font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-            style={{ backgroundColor: estadoStyle.bg, color: estadoStyle.color }}
-          >
-            {ESTADO_LABELS[auditoria.estado] ?? auditoria.estado}
-          </span>
+          <Etiqueta tono={estadoAud.tono}>{estadoAud.texto}</Etiqueta>
         )}
       </header>
 
@@ -2004,16 +1978,14 @@ export function AuditorEjecucion() {
                             >
                               {h.criterion_code}
                             </span>
-                            <span
-                              className="text-caption font-semibold px-1.5 py-0.5 rounded"
-                              style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
-                            >
-                              {h.n_hallazgos} NC
-                            </span>
+                            <Etiqueta tono="error">{h.n_hallazgos} NC</Etiqueta>
                             {h.ultimo_detectado && (
                               <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                                último: {formatFecha(h.ultimo_detectado)}{h.ultimo_estado ? ` (${h.ultimo_estado})` : ''}
+                                último: {formatFecha(h.ultimo_detectado)}
                               </span>
+                            )}
+                            {h.ultimo_estado && (
+                              <Etiqueta tono={estadoHallazgo(h.ultimo_estado).tono}>{estadoHallazgo(h.ultimo_estado).texto}</Etiqueta>
                             )}
                           </div>
                           {pregMatch && (

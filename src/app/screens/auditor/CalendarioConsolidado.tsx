@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { useCalendario, type EventoCalendario } from '@/hooks/useCalendario'
 import { DUR, EASE_OUT } from '@/lib/motion'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { estadoAgenda } from './estados'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -78,12 +80,7 @@ function EventoItem({
           {tipoLabel}
         </span>
         {evento.estado && (
-          <span
-            className="text-caption px-2 py-0.5 rounded-full leading-none"
-            style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
-          >
-            {evento.estado}
-          </span>
+          <Etiqueta tono={estadoAgenda(evento.estado).tono}>{estadoAgenda(evento.estado).texto}</Etiqueta>
         )}
       </div>
       <p className="text-sm font-medium leading-snug" style={{ color: 'var(--foreground)' }}>
