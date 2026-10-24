@@ -9,6 +9,7 @@ import {
   Flag, Plus, History, ClipboardList, Copy, Paperclip, Link2,
   BarChart2, AlertOctagon, Pencil, X,
 } from 'lucide-react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorAuditoria } from '@/hooks/useAuditorAuditoria'
@@ -23,6 +24,8 @@ import { CapturaPreguntaAuditoria } from './CapturaPreguntaAuditoria'
 import type { CapturaPreguntaRef, AjusteInfo } from './CapturaPreguntaAuditoria'
 import { traducirErrorBd } from '@/lib/erroresBd'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { DUR, EASE_OUT } from '@/lib/motion'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { FormularioSkeleton } from '@/app/components/FormularioSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
@@ -1023,6 +1026,65 @@ function PanelHallazgos({
 
 // ── Pantalla principal ────────────────────────────────────────────────────────
 
+// Indicador global de guardado: fila de alto fijo (no empuja el contenido).
+// Guardando… → Guardado (1.5 s) → nada; el error se queda hasta que se resuelva.
+function IndicadorGuardado({ savingMap }: { savingMap: Record<string, SaveStatus> }) {
+  const reducirMovimiento = useReducedMotion()
+  const values = Object.values(savingMap)
+  const hayGuardando = values.some(s => s === 'saving')
+  const nError = values.filter(s => s === 'error').length
+  const huboGuardandoRef = useRef(false)
+  const [mostrarGuardado, setMostrarGuardado] = useState(false)
+
+  useEffect(() => {
+    if (hayGuardando) {
+      huboGuardandoRef.current = true
+      setMostrarGuardado(false)
+      return
+    }
+    if (nError > 0 || !huboGuardandoRef.current) return
+    huboGuardandoRef.current = false
+    setMostrarGuardado(true)
+    const id = setTimeout(() => setMostrarGuardado(false), 1500)
+    return () => clearTimeout(id)
+  }, [hayGuardando, nError])
+
+  const estado = hayGuardando ? 'guardando' : nError > 0 ? 'error' : mostrarGuardado ? 'guardado' : null
+  const transicion = { duration: reducirMovimiento ? 0 : DUR.rapido, ease: EASE_OUT }
+
+  return (
+    <div className="h-6 flex items-center">
+      <AnimatePresence mode="wait" initial={false}>
+        {estado && (
+          <motion.div
+            key={estado}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={transicion}
+          >
+            {estado === 'guardando' && (
+              <Etiqueta role="status" icono={<Loader size={11} className="animate-spin motion-reduce:animate-none" />}>
+                Guardando…
+              </Etiqueta>
+            )}
+            {estado === 'guardado' && (
+              <Etiqueta role="status" tono="menta" icono={<CheckCircle size={11} />}>
+                Guardado
+              </Etiqueta>
+            )}
+            {estado === 'error' && (
+              <Etiqueta role="alert" tono="error" icono={<XCircle size={11} />}>
+                Error al guardar ({nError})
+              </Etiqueta>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 export function AuditorEjecucion() {
   const { auditoriaId } = useParams<{ auditoriaId: string }>()
   const navigate = useNavigate()
@@ -1816,23 +1878,7 @@ export function AuditorEjecucion() {
         ) : (
           <>
             {/* indicador global de guardado (via savingMap) */}
-            {(() => {
-              const values = Object.values(savingMap)
-              const hayGuardando = values.some(s => s === 'saving')
-              const hayErrorGuardado = values.some(s => s === 'error')
-              const nError = values.filter(s => s === 'error').length
-              if (hayGuardando) return (
-                <div className="flex items-center gap-1.5 text-caption px-3 py-1.5 rounded-lg self-start" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
-                  <Loader size={11} className="animate-spin motion-reduce:animate-none" /> Guardando…
-                </div>
-              )
-              if (hayErrorGuardado) return (
-                <div className="flex items-center gap-1.5 text-caption px-3 py-1.5 rounded-lg self-start" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
-                  <XCircle size={11} /> Error al guardar ({nError})
-                </div>
-              )
-              return null
-            })()}
+            <IndicadorGuardado savingMap={savingMap} />
 
             {/* COR-07: banners de error de carga */}
             {esquemaCargaEstado === 'error' && (
