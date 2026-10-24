@@ -1020,7 +1020,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   }}
                   disabled={confirmandoRevision}
                   className="self-start h-7 px-3 rounded-lg text-caption font-semibold flex items-center gap-1 disabled:opacity-50"
-                  style={{ backgroundColor: 'var(--agro-info-text)', color: '#fff' }}
+                  style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', border: '1px solid var(--agro-info-text)' }}
                 >
                   {confirmandoRevision
                     ? <><Loader size={10} className="animate-spin motion-reduce:animate-none" /> Confirmando…</>
@@ -1086,7 +1086,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                         style={
                           expandida
                             ? { backgroundColor: 'var(--muted)', color: 'var(--foreground)' }
-                            : { backgroundColor: 'var(--primary)', color: '#fff' }
+                            : { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }
                         }
                       >
                         {expandida ? 'Cancelar' : 'Aplicar'}
@@ -1219,7 +1219,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                             finally { setAplicandoReglaId(null) }
                           }}
                           className="flex-shrink-0 h-8 px-3 rounded-lg text-caption font-semibold flex items-center gap-1 disabled:opacity-50"
-                          style={{ backgroundColor: 'var(--agro-info-text)', color: '#fff' }}
+                          style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', border: '1px solid var(--agro-info-text)' }}
                         >
                           Confirmar de todos modos
                         </button>
@@ -1382,7 +1382,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   <span
                     className="text-caption px-1.5 py-0.5 rounded"
                     style={{
-                      backgroundColor: 'rgba(0,0,0,0.07)',
+                      backgroundColor: 'var(--muted)',
                       color: ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-text)' : 'var(--agro-info-text)',
                     }}
                   >
@@ -1396,7 +1396,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     onClick={handleQuitarAjuste}
                     disabled={quitandoAjuste}
                     className="flex items-center gap-1 text-caption font-medium px-2 py-0.5 rounded disabled:opacity-50"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.07)', color: 'var(--agro-info-text)' }}
+                    style={{ backgroundColor: 'var(--muted)', color: 'var(--agro-info-text)' }}
                   >
                     {quitandoAjuste ? <Loader size={10} className="animate-spin motion-reduce:animate-none" /> : <X size={10} />}
                     Quitar

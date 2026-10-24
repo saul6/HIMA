@@ -59,41 +59,41 @@ function OperacionChip({ op, activa, onClick }: {
         minWidth: 160,
         backgroundColor: activa ? 'var(--primary)' : 'var(--card)',
         borderColor: activa ? 'var(--primary)' : 'var(--border)',
-        color: activa ? '#fff' : 'var(--foreground)',
+        color: activa ? 'var(--primary-foreground)' : 'var(--foreground)',
       }}
     >
       <p className="text-caption font-semibold leading-tight truncate max-w-[140px]">
         {op.productor}
       </p>
-      <p className="text-caption leading-tight truncate max-w-[140px]" style={{ color: activa ? 'rgba(255,255,255,.8)' : 'var(--muted-foreground)' }}>
+      <p className="text-caption leading-tight truncate max-w-[140px]" style={{ color: activa ? 'color-mix(in srgb, var(--primary-foreground) 80%, transparent)' : 'var(--muted-foreground)' }}>
         {op.operacion}
       </p>
       <div className="flex items-center gap-1.5 mt-0.5">
         <div
           className="flex-1 h-1 rounded-full overflow-hidden"
-          style={{ backgroundColor: activa ? 'rgba(255,255,255,.3)' : 'var(--muted)' }}
+          style={{ backgroundColor: activa ? 'color-mix(in srgb, var(--primary-foreground) 30%, transparent)' : 'var(--muted)' }}
         >
           <div
             className="h-full rounded-full"
-            style={{ width: `${pct}%`, backgroundColor: activa ? '#fff' : 'var(--primary)' }}
+            style={{ width: `${pct}%`, backgroundColor: activa ? 'var(--primary-foreground)' : 'var(--primary)' }}
           />
         </div>
-        <span className="text-caption font-mono" style={{ color: activa ? 'rgba(255,255,255,.8)' : 'var(--muted-foreground)' }}>
+        <span className="text-caption font-mono" style={{ color: activa ? 'color-mix(in srgb, var(--primary-foreground) 80%, transparent)' : 'var(--muted-foreground)' }}>
           {op.conteo.resueltas ?? 0}/{op.conteo.total}
         </span>
         {op.herencia_pendiente > 0 && (
-          <span className="text-caption font-bold" style={{ color: activa ? 'rgba(255,255,255,.9)' : 'var(--agro-menta)' }}>
+          <span className="text-caption font-bold" style={{ color: activa ? 'var(--primary-foreground)' : 'var(--agro-menta)' }}>
             {op.herencia_pendiente}H
           </span>
         )}
         {op.issues_abiertos > 0 && (
-          <span className="text-caption font-bold" style={{ color: activa ? 'rgba(255,255,255,.9)' : 'var(--agro-danger-text)' }}>
+          <span className="text-caption font-bold" style={{ color: activa ? 'var(--primary-foreground)' : 'var(--agro-danger-text)' }}>
             {op.issues_abiertos}R
           </span>
         )}
       </div>
       {!op.disponible && op.motivo && (
-        <p className="text-caption" style={{ color: activa ? 'rgba(255,255,255,.7)' : 'var(--muted-foreground)' }}>
+        <p className="text-caption" style={{ color: activa ? 'color-mix(in srgb, var(--primary-foreground) 80%, transparent)' : 'var(--muted-foreground)' }}>
           {op.motivo}
         </p>
       )}
@@ -797,7 +797,7 @@ export function EjecucionJornada() {
                       onClick={() => handleRetirar(auditoriaActiva)}
                       disabled={retirando}
                       className="flex-1 h-8 rounded-lg text-xs font-semibold flex items-center justify-center"
-                      style={{ backgroundColor: 'var(--agro-info-text)', color: '#fff' }}
+                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', border: '1px solid var(--agro-info-text)' }}
                     >
                       {retirando ? <Loader size={12} className="animate-spin motion-reduce:animate-none" /> : 'Confirmar'}
                     </button>
@@ -838,7 +838,7 @@ export function EjecucionJornada() {
                     onClick={handleTerminar}
                     disabled={terminando}
                     className="flex-1 h-8 rounded-lg text-xs font-semibold flex items-center justify-center"
-                    style={{ backgroundColor: 'var(--agro-danger-text)', color: '#fff' }}
+                    style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', border: '1px solid var(--agro-danger-text)' }}
                   >
                     {terminando ? <Loader size={12} className="animate-spin motion-reduce:animate-none" /> : 'Terminar jornada'}
                   </button>

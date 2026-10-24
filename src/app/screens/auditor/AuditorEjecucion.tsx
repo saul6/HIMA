@@ -24,7 +24,7 @@ import { CapturaPreguntaAuditoria } from './CapturaPreguntaAuditoria'
 import type { CapturaPreguntaRef, AjusteInfo } from './CapturaPreguntaAuditoria'
 import { traducirErrorBd } from '@/lib/erroresBd'
 import { Boton } from '@/app/components/ui-mady/Boton'
-import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { DUR, EASE_OUT } from '@/lib/motion'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { FormularioSkeleton } from '@/app/components/FormularioSkeleton'
@@ -154,11 +154,11 @@ const SEV_CONFIG: Record<Severidad, { label: string; bg: string; color: string }
   INFO:     { label: 'Info',       bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
 }
 
-const CLASIFICACION_CONFIG: Record<AudHallazgoClasificacion, { label: string; bg: string; color: string }> = {
-  menor:       { label: 'Menor',       bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
-  mayor:       { label: 'Mayor',       bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)'  },
-  critico:     { label: 'Crítico',     bg: 'var(--agro-red)',          color: '#fff'                     },
-  observacion: { label: 'Observación', bg: 'var(--muted)',             color: 'var(--muted-foreground)'  },
+const CLASIFICACION_CONFIG: Record<AudHallazgoClasificacion, { label: string; tono: TonoEtiqueta }> = {
+  menor:       { label: 'Menor',       tono: 'sky'     },
+  mayor:       { label: 'Mayor',       tono: 'error'   },
+  critico:     { label: 'Crítico',     tono: 'rojo'    },
+  observacion: { label: 'Observación', tono: 'neutral' },
 }
 
 const HALL_ESTADO_CONFIG: Record<AudHallazgoEstado, { label: string; bg: string; color: string }> = {
@@ -953,10 +953,7 @@ function PanelHallazgos({
                 return (
                   <div key={h.id} className="px-4 py-3 flex flex-col gap-2">
                     <div className="flex items-start gap-2 flex-wrap">
-                      <span className="text-caption font-bold px-1.5 py-0.5 rounded flex-shrink-0"
-                            style={{ backgroundColor: clasConfig.bg, color: clasConfig.color }}>
-                        {clasConfig.label}
-                      </span>
+                      <Etiqueta tono={clasConfig.tono} className={clasConfig.tono === 'rojo' ? 'font-bold dark:text-primary-foreground' : 'font-bold'}>{clasConfig.label}</Etiqueta>
                       <span className="text-caption font-semibold px-1.5 py-0.5 rounded flex-shrink-0"
                             style={{ backgroundColor: estConfig.bg, color: estConfig.color }}>
                         {estConfig.label}
@@ -1891,7 +1888,7 @@ export function AuditorEjecucion() {
                 <button
                   onClick={refetch}
                   className="text-caption font-semibold px-2 py-1 rounded flex-shrink-0"
-                  style={{ backgroundColor: 'rgba(0,0,0,0.1)', color: 'var(--agro-danger-text)' }}
+                  style={{ backgroundColor: 'var(--muted)', color: 'var(--agro-danger-text)' }}
                 >
                   Reintentar
                 </button>
@@ -1907,7 +1904,7 @@ export function AuditorEjecucion() {
                 <button
                   onClick={refetch}
                   className="text-caption font-semibold px-2 py-1 rounded flex-shrink-0"
-                  style={{ backgroundColor: 'rgba(0,0,0,0.1)', color: 'var(--agro-info-text)' }}
+                  style={{ backgroundColor: 'var(--muted)', color: 'var(--agro-info-text)' }}
                 >
                   Reintentar
                 </button>
@@ -2044,10 +2041,10 @@ export function AuditorEjecucion() {
                   className="rounded-t-xl px-4 py-2.5 flex items-center gap-2 mb-0"
                   style={{ backgroundColor: 'var(--primary)' }}
                 >
-                  <p className="text-xs font-bold flex-1" style={{ color: '#fff' }}>
+                  <p className="text-xs font-bold flex-1" style={{ color: 'var(--primary-foreground)' }}>
                     {modulo.modulo_nombre}
                   </p>
-                  <span className="text-caption" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                  <span className="text-caption" style={{ color: 'color-mix(in srgb, var(--primary-foreground) 80%, transparent)' }}>
                     {modulo.preguntas.length} preguntas
                   </span>
                 </div>

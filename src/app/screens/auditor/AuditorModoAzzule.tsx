@@ -248,7 +248,7 @@ export function AuditorModoAzzule() {
                   className="flex items-center gap-1.5 text-caption font-semibold h-7 px-2.5 rounded-lg transition-colors"
                   style={copied
                     ? { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
-                    : { backgroundColor: 'var(--primary)', color: '#fff' }
+                    : { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }
                   }
                 >
                   {copied

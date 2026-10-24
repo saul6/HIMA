@@ -1,3 +1,5 @@
+import { Check } from 'lucide-react'
+
 interface ModuloItem { id: string; nombre: string }
 
 interface Props {
@@ -34,10 +36,10 @@ export function ModulosSelectorStep({ modulos, seleccionados, onToggle }: Props)
               style={{
                 backgroundColor: sel ? 'var(--primary)' : 'transparent',
                 borderColor: sel ? 'var(--primary)' : 'var(--muted-foreground)',
-                color: '#fff',
+                color: 'var(--primary-foreground)',
               }}
             >
-              {sel ? '✓' : ''}
+              {sel ? <Check size={12} aria-hidden /> : null}
             </div>
             <p className="text-sm flex-1" style={{ color: 'var(--foreground)', fontWeight: sel ? 600 : 400 }}>
               {m.nombre}
