@@ -10,6 +10,8 @@ import { ModulosSelectorStep } from './ModulosSelectorStep'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { SPRING_SUAVE, DUR, EASE_OUT } from '@/lib/motion'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Skeleton } from '@/app/components/ui/skeleton'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -56,6 +58,7 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
   const [modulos, setModulos] = useState<ModuloItem[]>([])
   const [versionId, setVersionId] = useState<string | null>(null)
   const [cargandoModulos, setCargandoModulos] = useState(false)
+  const mostrarSkeleton = useMostrarCarga(cargandoModulos, modulos.length > 0)
   const [modulosSel, setModulosSel] = useState<Set<string>>(new Set())
   const [guardando, setGuardando] = useState(false)
 
@@ -335,9 +338,16 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
           </p>
 
           {cargandoModulos ? (
-            <p className="text-sm text-center py-8" style={{ color: 'var(--muted-foreground)' }}>
-              Cargando catálogo…
-            </p>
+            mostrarSkeleton ? (
+              <div className="flex flex-col gap-2" aria-busy="true" aria-label="Cargando catálogo">
+                {[0, 1, 2, 3].map(i => (
+                  <div key={i} className="flex items-center gap-3 rounded-xl border border-border p-3">
+                    <Skeleton className="size-5 rounded-md flex-shrink-0" />
+                    <Skeleton className="h-3.5 w-2/3" />
+                  </div>
+                ))}
+              </div>
+            ) : null
           ) : (
             <ModulosSelectorStep
               modulos={modulos}

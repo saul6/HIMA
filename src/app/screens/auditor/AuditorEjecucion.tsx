@@ -23,6 +23,8 @@ import { CapturaPreguntaAuditoria } from './CapturaPreguntaAuditoria'
 import type { CapturaPreguntaRef, AjusteInfo } from './CapturaPreguntaAuditoria'
 import { traducirErrorBd } from '@/lib/erroresBd'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Skeleton } from '@/app/components/ui/skeleton'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { fechaCorta, fechaHora, formatoPct } from '@/lib/formato'
 
@@ -1033,6 +1035,7 @@ export function AuditorEjecucion() {
     herenciaMap, recargarHerencia,
     cambiarEstado, refetch,
   } = hook
+  const mostrarSkeleton = useMostrarCarga(cargando, modulosData.length > 0)
 
   const herenciaOriginSetRef = useRef<Set<string>>(new Set())
   const recargarHerenciaRef = useRef(recargarHerencia)
@@ -1754,7 +1757,9 @@ export function AuditorEjecucion() {
         </button>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold truncate" style={{ color: 'var(--foreground)' }}>
-            {auditoria ? (auditoria.modulos.map(m => m.nombre).join(' · ') || 'Auditoría') : 'Cargando…'}
+            {auditoria
+              ? (auditoria.modulos.map(m => m.nombre).join(' · ') || 'Auditoría')
+              : <Skeleton className="h-4 w-40" />}
           </p>
           {auditoria && (
             <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
@@ -1777,9 +1782,23 @@ export function AuditorEjecucion() {
 
       <main className="flex-1 px-4 py-4 flex flex-col gap-4">
         {cargando ? (
-          <p className="text-sm text-center py-16" style={{ color: 'var(--muted-foreground)' }}>
-            Cargando catálogo…
-          </p>
+          mostrarSkeleton ? (
+            <div className="flex flex-col gap-4" aria-busy="true" aria-label="Cargando auditoría">
+              <Skeleton className="h-9 w-full rounded-lg" />
+              {[0, 1, 2].map(i => (
+                <div key={i} className="bg-card rounded-xl p-4 border border-border flex flex-col gap-3">
+                  <Skeleton className="h-4 w-16 rounded-full" />
+                  <div className="flex flex-col gap-2">
+                    <Skeleton className="h-3.5 w-full" />
+                    <Skeleton className="h-3.5 w-2/3" />
+                  </div>
+                  <div className="grid grid-cols-5 gap-2">
+                    {[0, 1, 2, 3, 4].map(j => <Skeleton key={j} className="h-11 rounded-lg" />)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null
         ) : errorMsg ? (
           <p className="text-sm text-center py-16" style={{ color: 'var(--agro-danger-text)' }}>
             {errorMsg}
