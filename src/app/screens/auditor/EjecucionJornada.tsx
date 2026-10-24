@@ -20,11 +20,6 @@ import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatFecha(f: string) {
-  const [y, m, d] = f.split('-')
-  return `${parseInt(d, 10)} ${['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'][parseInt(m, 10)]} ${y}`
-}
-
 function avancePct(conteo: JornadaConteo): number {
   if (!conteo.total) return 0
   return Math.round(((conteo.resueltas ?? 0) / conteo.total) * 100)
@@ -540,8 +535,8 @@ export function EjecucionJornada() {
           </button>
 
           <div className="flex-1 min-w-0">
-            <p className="text-caption font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
-              {terminada ? 'Jornada terminada' : 'Jornada'} · {formatFecha(detalle.jornada.fecha)}
+            <p className="text-caption font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+              {terminada ? 'Jornada terminada' : 'Jornada'} · {fechaCorta(detalle.jornada.fecha)}
             </p>
             <p className="text-sm font-semibold truncate" style={{ color: 'var(--foreground)' }}>
               {detalle.jornada.nombre}
@@ -632,7 +627,8 @@ export function EjecucionJornada() {
             </div>
           </div>
 
-          {/* Tabs por módulo */}
+          {/* Filtro por módulo: solo si la jornada tiene más de uno */}
+          {modulos.length > 1 && (
           <div className="px-4 pt-3">
             <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
               {modulos.map(m => (
@@ -646,11 +642,12 @@ export function EjecucionJornada() {
                     color: moduloActivo === m ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
                   }}
                 >
-                  {m}
+                  Módulo {m}
                 </button>
               ))}
             </div>
           </div>
+          )}
 
           {/* Filtros */}
           <div className="px-4 pt-2 pb-1 flex gap-1.5">

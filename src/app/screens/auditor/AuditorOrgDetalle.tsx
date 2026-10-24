@@ -1,6 +1,7 @@
 import { useParams, useNavigate, useLocation, Navigate, Outlet } from 'react-router'
 import { ChevronLeft, Plus, MapPin, ClipboardCheck } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
+import { fechaCorta } from '@/lib/formato'
 import { useAuditorOrg } from '@/hooks/useAuditorOrg'
 import type { AuditorAuditoriaItem } from '@/hooks/useAuditorOrg'
 import { Fab } from '@/app/components/Fab'
@@ -25,11 +26,6 @@ function entrada(index: number, reducedMotion: boolean | null) {
   }
 }
 
-function formatFecha(fecha: string) {
-  const [y, m, d] = fecha.split('-')
-  return `${d}/${m}/${y}`
-}
-
 function AuditoriaCard({
   a, index, reducedMotion, onClick,
 }: { a: AuditorAuditoriaItem; index: number; reducedMotion: boolean | null; onClick: () => void }) {
@@ -47,7 +43,7 @@ function AuditoriaCard({
             {a.modulos.length > 0 ? a.modulos.join(' · ') : 'Auditoría PrimusGFS'}
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-            {a.rancho_nombre} · {formatFecha(a.fecha)}
+            {a.rancho_nombre} · {fechaCorta(a.fecha)}
           </p>
         </div>
         <Etiqueta tono={estado.tono}>{estado.texto}</Etiqueta>

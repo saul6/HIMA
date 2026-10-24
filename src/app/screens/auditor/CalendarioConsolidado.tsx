@@ -266,7 +266,7 @@ export function CalendarioConsolidado() {
           {eventosPorDia.map(([dayIso, evs]) => (
             <section key={dayIso}>
               <p
-                className="text-caption font-semibold uppercase tracking-wide mb-2"
+                className="text-caption font-semibold mb-2"
                 style={{ color: 'var(--muted-foreground)' }}
               >
                 {formatDayHeader(dayIso)}

@@ -207,7 +207,7 @@ export function AuditorModoAzzule() {
             {/* NC header */}
             <div className="rounded-xl px-4 py-3 flex flex-col gap-2" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="flex items-center justify-between">
-                <span className="text-caption font-bold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
+                <span className="text-caption font-bold" style={{ color: 'var(--muted-foreground)' }}>
                   NC {currentIndex + 1} de {items.length}
                 </span>
                 <span

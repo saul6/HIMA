@@ -1,6 +1,6 @@
 import {
   useState, useRef, useEffect, forwardRef, useImperativeHandle,
-  useCallback,
+  useCallback, useId,
 } from 'react'
 import {
   CheckCircle, AlertCircle, Loader, AlertTriangle,
@@ -149,14 +149,16 @@ function CampoEsquema({
     fontSize: '0.8125rem',
     outline: 'none',
   }
+  const campoId = useId()
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>
+      <label htmlFor={campoId} className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>
         {esquema.etiqueta ?? esquema.campo_clave}
         {esquema.requerido && <span style={{ color: 'var(--agro-red)' }}> *</span>}
       </label>
       {esquema.tipo === 'seleccion' && esquema.opciones ? (
         <select
+          id={campoId}
           value={value}
           onChange={e => onChange(e.target.value)}
           onBlur={onBlur}
@@ -168,6 +170,7 @@ function CampoEsquema({
         </select>
       ) : esquema.tipo === 'fecha' || esquema.tipo_campo === 'number' ? (
         <input
+          id={campoId}
           type={esquema.tipo === 'fecha' ? 'date' : 'number'}
           value={value}
           onChange={e => onChange(e.target.value)}
@@ -178,6 +181,7 @@ function CampoEsquema({
         />
       ) : (
         <TextareaContador
+          id={campoId}
           limite={limiteTexto('aud_instancia_valores', 'valor_texto')!}
           rows={2}
           value={value}

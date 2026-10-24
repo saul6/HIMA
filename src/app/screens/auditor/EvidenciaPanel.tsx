@@ -449,7 +449,7 @@ export function EvidenciaPanel({
                   <div key={uso.id} className="px-4 py-3 flex flex-col gap-1.5">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
-                        className="text-caption font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
+                        className="text-caption font-bold px-1.5 py-0.5 rounded-full"
                         style={esAsset
                           ? { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }
                           : { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
@@ -614,7 +614,7 @@ export function EvidenciaPanel({
                       >
                         <div className="flex items-center gap-2 flex-wrap">
                           <span
-                            className="text-caption font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
+                            className="text-caption font-bold px-1.5 py-0.5 rounded-full"
                             style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                           >
                             M.A.D.Y · {reg.source_module_code.toUpperCase()}
@@ -749,7 +749,7 @@ export function EvidenciaPanel({
                     >
                       <div className="flex items-center gap-2 flex-wrap">
                         <span
-                          className="text-caption font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
+                          className="text-caption font-bold px-1.5 py-0.5 rounded-full"
                           style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                         >
                           Origen: M.A.D.Y · {reg.source_module_code.toUpperCase()}

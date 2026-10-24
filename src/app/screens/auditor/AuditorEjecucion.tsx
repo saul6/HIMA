@@ -202,11 +202,6 @@ const SEV_TONO: Record<Severidad, TonoEtiqueta> = {
   INFO: 'menta',
 }
 
-function formatFecha(f: string) {
-  const [y, m, d] = f.split('-')
-  return `${d}/${m}/${y}`
-}
-
 // ── Tarjeta de pregunta (eliminada — ahora usa CapturaPreguntaAuditoria) ─────
 
 // ── Panel MIP / Módulo 9 cualitativo ─────────────────────────────────────────
@@ -429,7 +424,7 @@ function PanelValidacion({
                       className="px-4 py-1.5"
                       style={{ backgroundColor: cfg.bg }}
                     >
-                      <span className="text-caption font-semibold uppercase tracking-wide" style={{ color: cfg.color }}>
+                      <span className="text-caption font-semibold" style={{ color: cfg.color }}>
                         {cfg.label} · {grupo.length}
                       </span>
                     </div>
@@ -1812,8 +1807,8 @@ export function AuditorEjecucion() {
           {auditoria && (
             <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
               {auditoria.instalacion_id
-                ? `${auditoria.instalacion_nombre ?? 'Instalación'} · ${formatFecha(auditoria.fecha)}`
-                : `${auditoria.productor_nombre} · ${auditoria.rancho_nombre} · ${formatFecha(auditoria.fecha)}`
+                ? `${auditoria.instalacion_nombre ?? 'Instalación'} · ${fechaCorta(auditoria.fecha)}`
+                : `${auditoria.productor_nombre} · ${auditoria.rancho_nombre} · ${fechaCorta(auditoria.fecha)}`
               }
             </p>
           )}
@@ -1981,7 +1976,7 @@ export function AuditorEjecucion() {
                             <Etiqueta tono="error">{h.n_hallazgos} NC</Etiqueta>
                             {h.ultimo_detectado && (
                               <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                                último: {formatFecha(h.ultimo_detectado)}
+                                último: {fechaCorta(h.ultimo_detectado)}
                               </span>
                             )}
                             {h.ultimo_estado && (
@@ -2216,7 +2211,7 @@ export function AuditorEjecucion() {
             <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
               {/* Estado interno M.A.D.Y */}
               <div className="rounded-xl p-3 flex flex-col gap-2" style={{ backgroundColor: 'var(--muted)' }}>
-                <p className="text-caption font-bold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>Estado interno — M.A.D.Y</p>
+                <p className="text-caption font-bold" style={{ color: 'var(--muted-foreground)' }}>Estado interno — M.A.D.Y</p>
                 <select
                   value={formAccion.internal_status ?? 'REGISTERED'}
                   onChange={e => setFormAccion(prev => ({ ...prev, internal_status: e.target.value as AudInternalStatus }))}
@@ -2231,7 +2226,7 @@ export function AuditorEjecucion() {
 
               {/* Estado externo Azzule / organismo */}
               <div className="rounded-xl p-3 flex flex-col gap-2" style={{ border: '1.5px solid var(--border)' }}>
-                <p className="text-caption font-bold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>Estado externo — Azzule / organismo</p>
+                <p className="text-caption font-bold" style={{ color: 'var(--muted-foreground)' }}>Estado externo — Azzule / organismo</p>
                 <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Registra manualmente lo que ocurrió fuera del sistema.</p>
                 <select
                   value={formAccion.external_status ?? 'NOT_TRACKED'}
@@ -2355,7 +2350,7 @@ export function AuditorEjecucion() {
                         return (
                           <div key={sev} className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
                             <div className="px-3 py-1.5" style={{ backgroundColor: cfg.bg }}>
-                              <span className="text-caption font-bold uppercase tracking-wide" style={{ color: cfg.color }}>
+                              <span className="text-caption font-bold" style={{ color: cfg.color }}>
                                 {cfg.label} · {grupo.length}
                               </span>
                             </div>
@@ -2620,7 +2615,7 @@ export function AuditorEjecucion() {
                       >
                         <div className="flex items-center gap-2 flex-wrap">
                           <span
-                            className="text-caption font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
+                            className="text-caption font-bold px-1.5 py-0.5 rounded-full"
                             style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
                           >
                             {v.relation_type === 'ANTECEDENTE' ? 'Antecedente' : 'Evidencia'}
@@ -2726,7 +2721,7 @@ export function AuditorEjecucion() {
                     >
                       <div className="flex items-center gap-2 flex-wrap">
                         <span
-                          className="text-caption font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide"
+                          className="text-caption font-bold px-1.5 py-0.5 rounded-full"
                           style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                         >
                           M13

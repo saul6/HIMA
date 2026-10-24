@@ -59,11 +59,6 @@ const inputSt: React.CSSProperties = {
   outline: 'none',
 }
 
-function formatFecha(fecha: string) {
-  const [y, m, d] = fecha.split('-')
-  return `${d}/${m}/${y}`
-}
-
 export function AuditorInstalacionDetalle() {
   const { instalacionId } = useParams<{ instalacionId: string }>()
   const navigate = useNavigate()
@@ -372,7 +367,7 @@ export function AuditorInstalacionDetalle() {
                           {a.modulos.length > 0 ? a.modulos.join(' · ') : 'Auditoría PrimusGFS'}
                         </p>
                         <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                          {formatFecha(a.fecha)}
+                          {fechaCorta(a.fecha)}
                         </p>
                       </div>
                       <Etiqueta tono={estado.tono}>{estado.texto}</Etiqueta>

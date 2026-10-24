@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { ChevronLeft, Plus, AlertCircle, Loader, RefreshCw, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuditorJornada } from '@/hooks/useAuditorJornada'
+import { fechaCorta } from '@/lib/formato'
 import type { JornadaCandidataFila } from '@/hooks/useAuditorJornada'
 import { hoyMX } from '@/lib/fecha'
 import { Portal } from '@/app/components/Portal'
@@ -13,11 +14,6 @@ import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
 
 const MODULO_LABELS: Record<number, string> = {
   1: 'M1', 2: 'M2', 3: 'M3', 4: 'M4', 5: 'M5', 6: 'M6', 7: 'M7',
-}
-
-function formatFecha(f: string) {
-  const [y, m, d] = f.split('-')
-  return `${parseInt(d, 10)} ${['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'][parseInt(m, 10)]} ${y}`
 }
 
 function FilaOperacion({
@@ -57,7 +53,7 @@ function FilaOperacion({
               </span>
             )}
             <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-              · {formatFecha(fila.fecha)}
+              · {fechaCorta(fila.fecha)}
             </span>
           </span>
           <span className="mt-1 flex flex-wrap gap-1.5">
@@ -211,7 +207,7 @@ export function NuevaJornada() {
               className="px-4 py-2"
               style={{ backgroundColor: 'var(--muted)' }}
             >
-              <p className="text-caption font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
+              <p className="text-caption font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                 {productor}
               </p>
             </div>

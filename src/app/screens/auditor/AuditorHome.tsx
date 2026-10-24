@@ -291,7 +291,7 @@ export function AuditorHome() {
                 <PlayCircle size={18} style={{ color: 'var(--agro-success-text)' }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-caption font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
+                <p className="text-caption font-semibold" style={{ color: 'var(--primary)' }}>
                   Continuar trabajo
                 </p>
                 <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>
