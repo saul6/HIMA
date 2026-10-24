@@ -6,6 +6,7 @@ import {
   CheckCircle, AlertCircle, Loader, AlertTriangle,
   BarChart2, Pencil, X, Flag, Plus, History, Paperclip, XCircle,
 } from 'lucide-react'
+import { motion, useReducedMotion } from 'motion/react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuditorAuditoria, GuardadoIncompleto } from '@/hooks/useAuditorAuditoria'
@@ -22,6 +23,9 @@ import { traducirErrorBd, mensajeErrorBd } from '@/lib/erroresBd'
 import { guardarBorradorAuditor, cargarBorradorAuditor, borrarBorradorAuditor, claveBorradorAuditor } from '@/lib/idb/auditorBorradorStore'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { fechaCorta } from '@/lib/formato'
+import { Skeleton } from '@/app/components/ui/skeleton'
+import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { DUR, EASE_OUT } from '@/lib/motion'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -183,6 +187,30 @@ function CampoEsquema({
           style={{ ...base, minHeight: '2.25rem', resize: 'vertical' }}
         />
       )}
+    </div>
+  )
+}
+
+// Silueta de la tarjeta de captura: chip de id, 2 líneas de pregunta, 5 respuestas y 2 campos.
+function CapturaSkeleton() {
+  return (
+    <div
+      className="rounded-xl border border-border bg-card px-4 py-4 flex flex-col gap-3"
+      aria-busy="true"
+      aria-label="Cargando pregunta"
+    >
+      <div className="flex items-start gap-2">
+        <Skeleton className="h-5 w-14 rounded flex-shrink-0" />
+        <div className="flex-1 flex flex-col gap-2">
+          <Skeleton className="h-3.5 w-full" />
+          <Skeleton className="h-3.5 w-2/3" />
+        </div>
+      </div>
+      <div className="grid grid-cols-5 gap-2">
+        {[0, 1, 2, 3, 4].map(i => <Skeleton key={i} className="h-11 rounded-lg" />)}
+      </div>
+      <Skeleton className="h-11 w-full rounded-lg" />
+      <Skeleton className="h-11 w-full rounded-lg" />
     </div>
   )
 }
@@ -574,13 +602,15 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
     // ── EvidenciaPanel state ──────────────────────────────────────────────────
     const [evidenciaOpen, setEvidenciaOpen] = useState(false)
 
+    // ── Carga visual ──────────────────────────────────────────────────────────
+    const mostrarSkeleton = useMostrarCarga(cargando, modulosData.length > 0)
+    const reducirMovimiento = useReducedMotion()
+    // Fundido solo si esta captura nació cargando (primera aparición del contenido)
+    const nacioCargandoRef = useRef(cargando)
+
     // ── Render guards ─────────────────────────────────────────────────────────
     if (cargando) {
-      return (
-        <div className="flex items-center justify-center py-12">
-          <Loader size={20} className="animate-spin" style={{ color: 'var(--muted-foreground)' }} />
-        </div>
-      )
+      return mostrarSkeleton ? <CapturaSkeleton /> : null
     }
 
     if (errorMsg) {
@@ -779,7 +809,14 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
-      <div id={`preg-${preguntaId}`} className="flex flex-col gap-4" style={{ scrollMarginTop: "5rem" }}>
+      <motion.div
+        id={`preg-${preguntaId}`}
+        className="flex flex-col gap-4"
+        style={{ scrollMarginTop: "5rem" }}
+        initial={nacioCargandoRef.current && !reducirMovimiento ? { opacity: 0 } : false}
+        animate={{ opacity: 1 }}
+        transition={{ duration: DUR.rapido, ease: EASE_OUT }}
+      >
         <div
           className="rounded-xl border border-border bg-card px-4 py-4 flex flex-col gap-3"
           style={falla ? { borderColor: 'var(--agro-red)', borderWidth: '1.5px' } : undefined}
@@ -1895,7 +1932,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
             </div>
           </BottomSheet>
         )}
-      </div>
+      </motion.div>
     )
   },
 )
