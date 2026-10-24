@@ -57,10 +57,10 @@ function OperacionChip({ op, activa, onClick }: {
         color: activa ? 'var(--primary-foreground)' : 'var(--foreground)',
       }}
     >
-      <p className="text-caption font-semibold leading-tight truncate max-w-[140px]">
+      <p className="text-small font-semibold leading-tight truncate max-w-[140px]">
         {op.productor}
       </p>
-      <p className="text-caption leading-tight truncate max-w-[140px]" style={{ color: activa ? 'color-mix(in srgb, var(--primary-foreground) 80%, transparent)' : 'var(--muted-foreground)' }}>
+      <p className="text-small leading-tight truncate max-w-[140px]" style={{ color: activa ? 'color-mix(in srgb, var(--primary-foreground) 80%, transparent)' : 'var(--muted-foreground)' }}>
         {op.operacion}
       </p>
       <div className="flex items-center gap-1.5 mt-0.5">
@@ -82,7 +82,7 @@ function OperacionChip({ op, activa, onClick }: {
           </span>
         )}
         {op.issues_abiertos > 0 && (
-          <span className="text-caption font-bold" style={{ color: activa ? 'var(--primary-foreground)' : 'var(--agro-danger-text)' }}>
+          <span className="text-small font-bold" style={{ color: activa ? 'var(--primary-foreground)' : 'var(--agro-danger-text)' }}>
             {op.issues_abiertos}R
           </span>
         )}
@@ -194,7 +194,7 @@ function PendientesPanel({
                 </div>
                 <button
                   onClick={() => onAbrir(op.auditoria_id)}
-                  className="flex items-center gap-1 text-caption font-semibold px-2 py-1 rounded-lg"
+                  className="flex items-center gap-1 text-small font-semibold px-2 py-1 rounded-lg"
                   style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
                 >
                   <ExternalLink size={10} />
@@ -235,7 +235,7 @@ function PendientesPanel({
               {op.issues_abiertos > 0 && (
                 <div className="rounded-xl px-3 py-2 flex items-center justify-between"
                   style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-info-text)' }}>
-                  <p className="text-caption" style={{ color: 'var(--agro-info-text)' }}>
+                  <p className="text-small" style={{ color: 'var(--agro-info-text)' }}>
                     {op.issues_abiertos} {op.issues_abiertos === 1 ? 'issue de revisión abierto' : 'issues de revisión abiertos'}
                   </p>
                   <button
@@ -546,7 +546,7 @@ export function EjecucionJornada() {
           {/* Pendientes badge */}
           <button
             onClick={() => setPanelPendientes(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-caption font-semibold flex-shrink-0"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-small font-semibold flex-shrink-0"
             style={{
               backgroundColor: totalPendientes > 0 ? 'var(--agro-info-fill)' : 'var(--muted)',
               color: totalPendientes > 0 ? 'var(--agro-info-text)' : 'var(--muted-foreground)',
@@ -588,7 +588,7 @@ export function EjecucionJornada() {
         {sinConexion && (
           <div className="flex items-center gap-2 px-4 py-2 border-t" style={{ backgroundColor: 'var(--agro-info-fill)', borderColor: 'var(--agro-info-text)' }}>
             <WifiOff size={13} style={{ color: 'var(--agro-info-text)' }} />
-            <p className="text-caption font-medium" style={{ color: 'var(--agro-info-text)' }}>
+            <p className="text-small font-medium" style={{ color: 'var(--agro-info-text)' }}>
               Sin conexión: los cambios no guardados se perderán si cierras la página.
             </p>
           </div>
@@ -600,7 +600,7 @@ export function EjecucionJornada() {
         <div className="mx-4 mt-3 rounded-xl px-3 py-2.5 flex items-center gap-2 border"
           style={{ backgroundColor: 'var(--agro-danger-fill)', borderColor: 'var(--agro-danger-text)' }}>
           <AlertCircle size={14} className="flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
-          <p className="text-caption flex-1" style={{ color: 'var(--agro-danger-text)' }}>{saveError}</p>
+          <p className="text-small flex-1" style={{ color: 'var(--agro-danger-text)' }}>{saveError}</p>
           <button aria-label="Cerrar" onClick={() => setSaveError(null)} className="flex-shrink-0">
             <XCircle size={14} style={{ color: 'var(--agro-danger-text)' }} />
           </button>
@@ -636,7 +636,7 @@ export function EjecucionJornada() {
                   key={m}
                   onClick={() => setModuloActivo(m)}
                   aria-pressed={moduloActivo === m}
-                  className="flex-shrink-0 px-2.5 py-1 rounded-lg text-caption font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                  className="flex-shrink-0 px-2.5 py-1 rounded-lg text-small font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                   style={{
                     backgroundColor: moduloActivo === m ? 'var(--accent)' : 'var(--muted)',
                     color: moduloActivo === m ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
@@ -655,7 +655,7 @@ export function EjecucionJornada() {
               <button
                 key={f}
                 onClick={() => setFiltro(f)}
-                className="flex-shrink-0 text-caption font-medium px-2 py-0.5 rounded"
+                className="flex-shrink-0 text-small font-medium px-2 py-0.5 rounded"
                 style={{
                   backgroundColor: filtro === f ? 'var(--foreground)' : 'var(--muted)',
                   color: filtro === f ? 'var(--card)' : 'var(--muted-foreground)',

@@ -390,7 +390,7 @@ export function AuditorHome() {
             <TituloSeccion as="p" className="mb-0">Captura por bloque</TituloSeccion>
             <button
               onClick={() => navigate('/auditor/jornada/nueva')}
-              className="flex items-center gap-1 text-caption font-semibold px-2.5 py-1 rounded-lg transition-colors hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="flex items-center gap-1 text-small font-semibold px-2.5 py-1 rounded-lg transition-colors hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               style={{ border: '1px solid var(--ring)', color: 'var(--foreground)', transitionDuration: 'var(--motion-fast)' }}
             >
               <Layers size={11} />
@@ -446,7 +446,7 @@ export function AuditorHome() {
             {filtro && (
               <button
                 onClick={() => setFiltro(null)}
-                className="text-caption font-semibold px-2.5 py-0.5 rounded-md"
+                className="text-small font-semibold px-2.5 py-0.5 rounded-md"
                 style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
               >
                 Ver todos

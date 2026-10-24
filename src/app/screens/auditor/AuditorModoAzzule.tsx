@@ -241,7 +241,7 @@ export function AuditorModoAzzule() {
                 <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>Respuesta lista</span>
                 <button
                   onClick={handleCopiar}
-                  className="flex items-center gap-1.5 text-caption font-semibold h-7 px-2.5 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 text-small font-semibold h-7 px-2.5 rounded-lg transition-colors"
                   style={copied
                     ? { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
                     : { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }

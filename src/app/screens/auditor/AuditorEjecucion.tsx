@@ -263,7 +263,7 @@ function PanelM9({
           {calculo.resueltas}/{calculo.total}
         </span>
         <span
-          className="flex items-center gap-1 text-caption font-semibold px-2 py-1 rounded-lg"
+          className="flex items-center gap-1 text-small font-semibold px-2 py-1 rounded-lg"
           style={{ backgroundColor: cfg.bg, color: cfg.color }}
         >
           {cfg.icon}
@@ -399,7 +399,7 @@ function PanelValidacion({
               </div>
               <button
                 onClick={onReintentar}
-                className="text-caption font-semibold px-3 py-1.5 rounded-lg"
+                className="text-small font-semibold px-3 py-1.5 rounded-lg"
                 style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', border: '1px solid var(--agro-red)' }}
               >
                 Reintentar
@@ -441,7 +441,7 @@ function PanelValidacion({
                           {issue.pregunta_id && (
                             <button
                               onClick={() => scrollToPreg(issue.pregunta_id!)}
-                              className="text-caption font-semibold px-2 py-1 rounded-lg transition-colors hover:opacity-80"
+                              className="text-small font-semibold px-2 py-1 rounded-lg transition-colors hover:opacity-80"
                               style={{ backgroundColor: 'var(--accent)', color: 'var(--primary)' }}
                             >
                               → Ir a pregunta
@@ -478,14 +478,14 @@ function PanelValidacion({
                             <div className="flex gap-2">
                               <button
                                 onClick={onConfirmarDescarte}
-                                className="flex-1 h-7 rounded-lg text-caption font-semibold transition-colors hover:opacity-80"
+                                className="flex-1 h-7 rounded-lg text-small font-semibold transition-colors hover:opacity-80"
                                 style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                               >
                                 Confirmar descarte
                               </button>
                               <button
                                 onClick={onCancelarDescarte}
-                                className="h-7 px-3 rounded-lg text-caption transition-colors hover:bg-muted"
+                                className="h-7 px-3 rounded-lg text-small transition-colors hover:bg-muted"
                                 style={{ color: 'var(--muted-foreground)' }}
                               >
                                 Cancelar
@@ -611,12 +611,12 @@ function PanelScoring({
             </span>
           )}
           {scoringEstado === 'error' && calculo && (
-            <span className="text-caption flex-shrink-0" style={{ color: 'var(--agro-info-text)' }}>
+            <span className="text-small flex-shrink-0" style={{ color: 'var(--agro-info-text)' }}>
               Cálculo anterior (no actualizado)
             </span>
           )}
           {scoringEstado === 'error' && !calculo && (
-            <span className="text-caption flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }}>
+            <span className="text-small flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }}>
               No se pudo calcular
             </span>
           )}
@@ -642,10 +642,10 @@ function PanelScoring({
             >
               <AlertOctagon size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
               <div className="flex flex-col gap-0.5">
-                <p className="text-caption font-bold" style={{ color: 'var(--agro-danger-text)' }}>
+                <p className="text-small font-bold" style={{ color: 'var(--agro-danger-text)' }}>
                   Fallo automático detectado · módulo afectado 0% efectivo
                 </p>
-                <p className="text-caption" style={{ color: 'var(--agro-danger-text)' }}>
+                <p className="text-small" style={{ color: 'var(--agro-danger-text)' }}>
                   Resultado aritmético bruto: {calculo.resultado_bruto}% (antes de aplicar el cero)
                 </p>
               </div>
@@ -655,7 +655,7 @@ function PanelScoring({
           {calculo && estado === 'BLOCKED_MISSING_MAX' && (
             <>
               <div className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
-                <p className="text-caption font-medium" style={{ color: 'var(--foreground)' }}>
+                <p className="text-small font-medium" style={{ color: 'var(--foreground)' }}>
                   Puntuación integral no disponible — faltan máximos verificados
                 </p>
                 <p className="text-caption mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
@@ -710,7 +710,7 @@ function PanelScoring({
                   )}
                   {(calculo.conteo.revision_pendiente ?? 0) > 0 && (
                     <div className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
-                      <p className="text-caption" style={{ color: 'var(--agro-info-text)' }}>Revisión pendiente</p>
+                      <p className="text-small" style={{ color: 'var(--agro-info-text)' }}>Revisión pendiente</p>
                       <p className="text-sm font-bold" style={{ color: 'var(--agro-info-text)' }}>{calculo.conteo.revision_pendiente}</p>
                     </div>
                   )}
@@ -721,7 +721,7 @@ function PanelScoring({
 
           {calculo && estado === 'INTERNAL_COMPLETE' && (
             <div className="rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--muted)' }}>
-              <p className="text-caption font-semibold" style={{ color: 'var(--foreground)' }}>
+              <p className="text-small font-semibold" style={{ color: 'var(--foreground)' }}>
                 Resultado aritmético interno: {calculo.resultado_bruto}%
               </p>
             </div>
@@ -730,10 +730,10 @@ function PanelScoring({
           {calculo && estado === 'REQUIRES_VALIDATION' && (
             <>
               <div className="rounded-lg px-3 py-2 flex flex-col gap-1" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
-                <p className="text-caption font-bold" style={{ color: 'var(--agro-info-text)' }}>
+                <p className="text-small font-bold" style={{ color: 'var(--agro-info-text)' }}>
                   Revisión de puntuación requerida
                 </p>
-                <p className="text-caption" style={{ color: 'var(--agro-info-text)' }}>
+                <p className="text-small" style={{ color: 'var(--agro-info-text)' }}>
                   Resultado normativo: {calculo.resultado_bruto}%
                   {(calculo.ajustes_en_conflicto ?? 0) > 0 && (
                     <span className="font-semibold"> · {calculo.ajustes_en_conflicto} ajuste{calculo.ajustes_en_conflicto !== 1 ? 's' : ''} en conflicto</span>
@@ -790,7 +790,7 @@ function PanelScoring({
               {calculo.por_modulo.map(m => (
                 <div key={m.modulo} className="rounded-lg px-3 py-2 flex flex-col gap-0.5" style={{ backgroundColor: 'var(--muted)' }}>
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-caption font-semibold truncate flex-1" style={{ color: 'var(--foreground)' }}>
+                    <p className="text-small font-semibold truncate flex-1" style={{ color: 'var(--foreground)' }}>
                       {m.nombre || m.modulo}
                     </p>
                     {m.falla_automatica && (
@@ -802,7 +802,7 @@ function PanelScoring({
                       Bruto: <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{formatoPct(m.resultado_bruto)}</span>
                     </span>
                     {m.falla_automatica && (
-                      <span className="text-caption" style={{ color: 'var(--agro-danger-text)' }}>
+                      <span className="text-small" style={{ color: 'var(--agro-danger-text)' }}>
                         Efectivo: <span className="font-bold">0%</span>
                       </span>
                     )}
@@ -825,12 +825,12 @@ function PanelScoring({
           {/* COR-08: estado error con botón reintentar */}
           {scoringEstado === 'error' && !calculo && (
             <div className="flex flex-col gap-2 pt-3">
-              <p className="text-caption" style={{ color: 'var(--agro-danger-text)' }}>
+              <p className="text-small" style={{ color: 'var(--agro-danger-text)' }}>
                 No se pudo calcular el puntaje.
               </p>
               <button
                 onClick={() => setReintento(v => v + 1)}
-                className="self-start text-caption font-semibold px-3 py-1.5 rounded-lg"
+                className="self-start text-small font-semibold px-3 py-1.5 rounded-lg"
                 style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
               >
                 Reintentar
@@ -841,13 +841,13 @@ function PanelScoring({
             <div className="flex flex-col gap-2 pt-3">
               <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
                 <AlertCircle size={13} style={{ color: 'var(--agro-info-text)' }} />
-                <p className="text-caption" style={{ color: 'var(--agro-info-text)' }}>
+                <p className="text-small" style={{ color: 'var(--agro-info-text)' }}>
                   Mostrando cálculo anterior — no refleja los últimos cambios.
                 </p>
               </div>
               <button
                 onClick={() => setReintento(v => v + 1)}
-                className="self-start text-caption font-semibold px-3 py-1.5 rounded-lg"
+                className="self-start text-small font-semibold px-3 py-1.5 rounded-lg"
                 style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
               >
                 Reintentar
@@ -950,7 +950,7 @@ function PanelHallazgos({
                         value={h.estado}
                         onChange={e => onEstadoChange(h.id, e.target.value as AudHallazgoEstado)}
                         disabled={!canWriteNC}
-                        className="text-caption h-7 rounded-lg px-2 disabled:opacity-50"
+                        className="text-small h-7 rounded-lg px-2 disabled:opacity-50"
                         style={{
                           border: '1px solid var(--border)',
                           backgroundColor: canWriteNC ? 'var(--input-background)' : 'var(--muted)',
@@ -969,7 +969,7 @@ function PanelHallazgos({
                       )}
                       <button
                         onClick={() => onVerEvidencias(h)}
-                        className="flex items-center gap-1 text-caption font-semibold h-7 px-2 rounded-lg"
+                        className="flex items-center gap-1 text-small font-semibold h-7 px-2 rounded-lg"
                         style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                       >
                         <Paperclip size={11} />
@@ -977,7 +977,7 @@ function PanelHallazgos({
                       </button>
                       <button
                         onClick={() => onVerIncidencias(h)}
-                        className="flex items-center gap-1 text-caption font-semibold h-7 px-2 rounded-lg"
+                        className="flex items-center gap-1 text-small font-semibold h-7 px-2 rounded-lg"
                         style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                       >
                         <Link2 size={11} />
@@ -1852,11 +1852,11 @@ export function AuditorEjecucion() {
                 <XCircle size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
                 <div className="flex-1">
                   <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>No se pudieron cargar los campos de comentario</p>
-                  <p className="text-caption mt-0.5" style={{ color: 'var(--agro-danger-text)' }}>Reintenta antes de continuar.</p>
+                  <p className="text-small mt-0.5" style={{ color: 'var(--agro-danger-text)' }}>Reintenta antes de continuar.</p>
                 </div>
                 <button
                   onClick={refetch}
-                  className="text-caption font-semibold px-2 py-1 rounded flex-shrink-0"
+                  className="text-small font-semibold px-2 py-1 rounded flex-shrink-0"
                   style={{ backgroundColor: 'var(--muted)', color: 'var(--agro-danger-text)' }}
                 >
                   Reintentar
@@ -1868,11 +1868,11 @@ export function AuditorEjecucion() {
                 <AlertCircle size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
                 <div className="flex-1">
                   <p className="text-xs font-semibold" style={{ color: 'var(--agro-info-text)' }}>No se pudieron cargar las observaciones guardadas</p>
-                  <p className="text-caption mt-0.5" style={{ color: 'var(--agro-info-text)' }}>Es posible que algunas observaciones no se muestren.</p>
+                  <p className="text-small mt-0.5" style={{ color: 'var(--agro-info-text)' }}>Es posible que algunas observaciones no se muestren.</p>
                 </div>
                 <button
                   onClick={refetch}
-                  className="text-caption font-semibold px-2 py-1 rounded flex-shrink-0"
+                  className="text-small font-semibold px-2 py-1 rounded flex-shrink-0"
                   style={{ backgroundColor: 'var(--muted)', color: 'var(--agro-info-text)' }}
                 >
                   Reintentar
@@ -2496,7 +2496,7 @@ export function AuditorEjecucion() {
                                   </span>
                                 </div>
                                 {ewr.official_decision && (
-                                  <p className="text-caption" style={{ color: 'var(--foreground)' }}>{ewr.official_decision}</p>
+                                  <p className="text-body" style={{ color: 'var(--foreground)' }}>{ewr.official_decision}</p>
                                 )}
                                 {ewr.official_comment && (
                                   <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>{ewr.official_comment}</p>
@@ -2632,7 +2632,7 @@ export function AuditorEjecucion() {
                             href="/inocuidad/incidencias"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-caption h-6 px-2 rounded"
+                            className="flex items-center gap-1 text-small h-6 px-2 rounded"
                             style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
                           >
                             <AlertTriangle size={10} />
@@ -2641,7 +2641,7 @@ export function AuditorEjecucion() {
                           <button
                             onClick={() => handleQuitarIncidencia(v.id)}
                             disabled={incQuitandoId === v.id}
-                            className="flex items-center gap-1 text-caption h-6 px-2 rounded disabled:opacity-50 ml-auto"
+                            className="flex items-center gap-1 text-small h-6 px-2 rounded disabled:opacity-50 ml-auto"
                             style={{ color: 'var(--agro-danger-text)' }}
                           >
                             {incQuitandoId === v.id
@@ -2730,7 +2730,7 @@ export function AuditorEjecucion() {
                           {fechaCorta(inc.fecha)}
                         </span>
                       </div>
-                      <p className="text-caption leading-snug" style={{ color: 'var(--foreground)' }}>{inc.descripcion}</p>
+                      <p className="text-body leading-snug" style={{ color: 'var(--foreground)' }}>{inc.descripcion}</p>
                       <Boton onClick={() => handleRelacionarIncidencia(inc)} cargando={!!incRelacionandoId} className="self-end">
                         <Link2 size={10} />
                         Relacionar

@@ -416,7 +416,7 @@ export function AuditorInstalacionDetalle() {
                 <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
                   Acción permanente e irreversible
                 </p>
-                <p className="text-caption mt-0.5 leading-relaxed" style={{ color: 'var(--agro-danger-text)' }}>
+                <p className="text-small mt-0.5 leading-relaxed" style={{ color: 'var(--agro-danger-text)' }}>
                   El expediente completo (auditorías, NC, acciones correctivas, evidencias y snapshots) se transfiere a la organización productora destino. No se crea un sitio duplicado. Esta acción no puede deshacerse desde el front.
                 </p>
               </div>
@@ -496,7 +496,7 @@ export function AuditorInstalacionDetalle() {
                     <button
                       onClick={() => cargarPerfiles(orgManualId.trim())}
                       disabled={cargandoPerfiles}
-                      className="self-start text-caption font-semibold h-7 px-3 rounded-lg disabled:opacity-50 flex items-center gap-1"
+                      className="self-start text-small font-semibold h-7 px-3 rounded-lg disabled:opacity-50 flex items-center gap-1"
                       style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)', border: '1px solid var(--border)' }}
                     >
                       {cargandoPerfiles ? <Loader size={10} className="animate-spin motion-reduce:animate-none" /> : null}

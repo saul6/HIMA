@@ -88,7 +88,7 @@ function EventoCard({
         {!esHecho && (
           <button
             onClick={() => onMarcarHecho(evento.id)}
-            className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="relative before:absolute before:-inset-2 w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Marcar como hecho"
             style={{ border: '1px solid var(--border)' }}
           >

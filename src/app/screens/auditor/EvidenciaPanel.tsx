@@ -363,7 +363,7 @@ export function EvidenciaPanel({
               {canLink && (
                 <button
                   onClick={() => { setShowGateway(v => !v); setShowFallback(true); setShowUpload(false) }}
-                  className="flex items-center gap-1 text-caption font-semibold h-7 px-3 rounded-lg"
+                  className="flex items-center gap-1 text-small font-semibold h-7 px-3 rounded-lg"
                   style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                 >
                   <Database size={10} />
@@ -377,7 +377,7 @@ export function EvidenciaPanel({
           {showUpload && (
             <div className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="flex items-center justify-between pt-3">
-                <p className="text-caption font-semibold" style={{ color: 'var(--foreground)' }}>Subir evidencia externa</p>
+                <p className="text-small font-semibold" style={{ color: 'var(--foreground)' }}>Subir evidencia externa</p>
                 <button aria-label="Cerrar" onClick={() => setShowUpload(false)}><X size={14} style={{ color: 'var(--muted-foreground)' }} /></button>
               </div>
               <div className="flex flex-col gap-1">
@@ -491,7 +491,7 @@ export function EvidenciaPanel({
                       {!esAsset && snap && (
                         <button
                           onClick={() => setViewSnap(viewSnap?.id === snap.id ? null : snap)}
-                          className="flex items-center gap-1 text-caption font-semibold h-6 px-2 rounded"
+                          className="flex items-center gap-1 text-small font-semibold h-6 px-2 rounded"
                           style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)', border: '1px solid var(--border)' }}
                         >
                           <Database size={10} />
@@ -502,7 +502,7 @@ export function EvidenciaPanel({
                         <button
                           onClick={() => handleQuitar(uso.id)}
                           disabled={quitandoId === uso.id}
-                          className="flex items-center gap-1 text-caption h-6 px-2 rounded disabled:opacity-50 ml-auto"
+                          className="flex items-center gap-1 text-small h-6 px-2 rounded disabled:opacity-50 ml-auto"
                           style={{ color: 'var(--agro-danger-text)' }}
                         >
                           {quitandoId === uso.id
@@ -539,7 +539,7 @@ export function EvidenciaPanel({
             <div className="border-t border-border flex flex-col gap-0">
               {/* Header */}
               <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-                <p className="text-caption font-semibold" style={{ color: 'var(--foreground)' }}>
+                <p className="text-small font-semibold" style={{ color: 'var(--foreground)' }}>
                   Evidencia sugerida
                 </p>
                 {sugeridasCargando && (
@@ -637,7 +637,7 @@ export function EvidenciaPanel({
                             </span>
                           )}
                         </div>
-                        <p className="text-caption font-semibold leading-tight" style={{ color: 'var(--foreground)' }}>
+                        <p className="text-small font-semibold leading-tight" style={{ color: 'var(--foreground)' }}>
                           {reg.title}
                         </p>
                         {reg.human_summary && (
@@ -649,7 +649,7 @@ export function EvidenciaPanel({
                           {reg.source_route && (
                             <button
                               onClick={() => window.open(reg.source_route!, '_blank')}
-                              className="flex items-center gap-1 text-caption h-6 px-2 rounded"
+                              className="flex items-center gap-1 text-small h-6 px-2 rounded"
                               style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
                             >
                               <ExternalLink size={10} />
@@ -675,7 +675,7 @@ export function EvidenciaPanel({
           {showGateway && (
             <div className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="flex items-center justify-between pt-3">
-                <p className="text-caption font-semibold" style={{ color: 'var(--foreground)' }}>Buscar en otro módulo</p>
+                <p className="text-small font-semibold" style={{ color: 'var(--foreground)' }}>Buscar en otro módulo</p>
                 <button aria-label="Cerrar" onClick={() => setShowGateway(false)}>
                   <X size={14} style={{ color: 'var(--muted-foreground)' }} />
                 </button>
@@ -763,7 +763,7 @@ export function EvidenciaPanel({
                           </span>
                         )}
                       </div>
-                      <p className="text-caption font-semibold leading-tight" style={{ color: 'var(--foreground)' }}>
+                      <p className="text-small font-semibold leading-tight" style={{ color: 'var(--foreground)' }}>
                         {reg.title}
                       </p>
                       {reg.human_summary && (
@@ -775,7 +775,7 @@ export function EvidenciaPanel({
                         {reg.source_route && (
                           <button
                             onClick={() => window.open(reg.source_route!, '_blank')}
-                            className="flex items-center gap-1 text-caption h-6 px-2 rounded"
+                            className="flex items-center gap-1 text-small h-6 px-2 rounded"
                             style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
                           >
                             <ExternalLink size={10} />
