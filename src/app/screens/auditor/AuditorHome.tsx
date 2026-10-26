@@ -10,6 +10,7 @@ import { useAuditorAsignaciones } from '@/hooks/useAuditorAsignaciones'
 import { useAuditorJornada } from '@/hooks/useAuditorJornada'
 import { supabase } from '@/lib/supabase'
 import { hoyMX } from '@/lib/fecha'
+import { fechaCorta } from '@/lib/formato'
 import { useLastWorkspace } from '@/hooks/useContinuarTrabajo'
 import { ahora, ms, emitirEvento, markResume } from '@/lib/telemetria'
 import { AuditorNuevaAuditoriaSheet } from './AuditorNuevaAuditoriaSheet'
@@ -144,6 +145,13 @@ function WorkQueueCard({
       />
     </motion.div>
   )
+}
+
+/** "N operaciones · fecha"; si el conteo no es un número, solo la fecha. */
+function subtituloJornada(operaciones: number | null | undefined, fecha: string | null | undefined): string {
+  const f = fechaCorta(fecha)
+  if (typeof operaciones !== 'number') return f
+  return `${operaciones} ${operaciones === 1 ? 'operación' : 'operaciones'} · ${f}`
 }
 
 export function AuditorHome() {
@@ -443,7 +451,7 @@ export function AuditorHome() {
                   onClick={() => navigate(`/auditor/jornada/${j.jornada_id}`)}
                   icono={<Layers aria-hidden="true" size={15} />}
                   titulo={j.nombre}
-                  subtitulo={`${j.operaciones.length} ${j.operaciones.length === 1 ? 'operación' : 'operaciones'} · ${j.fecha.split('-').reverse().join('/')}`}
+                  subtitulo={subtituloJornada(j.operaciones, j.fecha)}
                 />
               ))}
             </div>

@@ -24,7 +24,8 @@ export interface JornadaResumen {
   fecha: string
   estado: 'abierta' | 'terminada'
   contexto: JornadaContexto | null
-  operaciones: { auditoria_id: string; productor: string; operacion: string }[]
+  /** Conteo de operaciones no retiradas (el detalle trae el arreglo: `JornadaDetalle.operaciones`). */
+  operaciones: number
 }
 
 export interface JornadaContexto {
