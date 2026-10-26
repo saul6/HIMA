@@ -331,7 +331,6 @@ export function EvidenciaPanel({
     color: 'var(--foreground)',
     padding: '0.375rem 0.625rem',
     fontSize: '0.8125rem',
-    outline: 'none',
     width: '100%',
   }
 
@@ -342,7 +341,7 @@ export function EvidenciaPanel({
         onClick={() => setAbierto(v => !v)}
         aria-expanded={abierto}
         aria-controls={cuerpoId}
-        className="w-full flex items-center justify-between px-4 py-3 text-left"
+        className="w-full flex items-center justify-between px-4 py-3 text-left focus-visible:outline-offset-[-2px]"
       >
         <div className="flex items-center gap-2">
           <Paperclip aria-hidden="true" size={14} className="flex-shrink-0" style={{ color: hook.usos.length > 0 ? 'var(--primary)' : 'var(--muted-foreground)' }} />

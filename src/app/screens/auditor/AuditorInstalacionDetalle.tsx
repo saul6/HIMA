@@ -58,7 +58,6 @@ const inputSt: React.CSSProperties = {
   color: 'var(--foreground)',
   padding: '0 0.75rem',
   fontSize: '0.875rem',
-  outline: 'none',
 }
 
 export function AuditorInstalacionDetalle() {

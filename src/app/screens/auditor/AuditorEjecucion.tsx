@@ -429,7 +429,7 @@ function PanelValidacion({
         onClick={() => setAbierto(v => !v)}
         aria-expanded={abierto}
         aria-controls={idCuerpo}
-        className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left"
+        className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left focus-visible:outline-offset-[-2px]"
       >
         <div className="flex items-center gap-2 min-w-0 flex-wrap">
           {validando ? (
@@ -669,7 +669,7 @@ function PanelScoring({
         onClick={() => setAbierto(v => !v)}
         aria-expanded={abierto}
         aria-controls={idCuerpo}
-        className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left"
+        className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left focus-visible:outline-offset-[-2px]"
       >
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <BarChart2 aria-hidden="true"
@@ -964,7 +964,7 @@ function PanelHallazgos({
         onClick={() => setAbierto(v => !v)}
         aria-expanded={abierto}
         aria-controls={idCuerpo}
-        className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left"
+        className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left focus-visible:outline-offset-[-2px]"
       >
         <div className="flex items-center gap-2">
           <Flag aria-hidden="true" size={15} className="flex-shrink-0" style={{ color: hallazgos.length > 0 ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }} />
@@ -1992,7 +1992,7 @@ export function AuditorEjecucion() {
                   onClick={() => setPanelAntecedentesAbierto(v => !v)}
                   aria-expanded={panelAntecedentesAbierto}
                   aria-controls="panel-antecedentes-cuerpo"
-                  className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left"
+                  className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left focus-visible:outline-offset-[-2px]"
                 >
                   <div className="flex items-center gap-2">
                     <History aria-hidden="true" size={15} className="flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
@@ -2463,7 +2463,7 @@ export function AuditorEjecucion() {
                       onClick={() => setSheetRegistrarResultado(v => !v)}
                       aria-expanded={sheetRegistrarResultado}
                       aria-controls="panel-registrar-resultado"
-                      className="w-full flex items-center justify-between px-3 py-2.5 text-left"
+                      className="w-full flex items-center justify-between px-3 py-2.5 text-left focus-visible:outline-offset-[-2px]"
                     >
                       <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>Registrar resultado de Azzule</span>
                       {sheetRegistrarResultado
@@ -2546,7 +2546,9 @@ export function AuditorEjecucion() {
                         setHistorialExternoVisible(next)
                         if (next && historialExterno.length === 0) cargarHistorialExternoFn(accionActual.id)
                       }}
-                      className="w-full flex items-center justify-between px-3 py-2.5 text-left"
+                      aria-expanded={historialExternoVisible}
+                      aria-controls="panel-historial-externo"
+                      className="w-full flex items-center justify-between px-3 py-2.5 text-left focus-visible:outline-offset-[-2px]"
                     >
                       <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
                         Historial de seguimiento externo
@@ -2557,7 +2559,7 @@ export function AuditorEjecucion() {
                       }
                     </button>
                     {historialExternoVisible && (
-                      <div className="border-t" style={{ borderColor: 'var(--border)' }}>
+                      <div id="panel-historial-externo" className="border-t" style={{ borderColor: 'var(--border)' }}>
                         {cargandoHistorialExterno ? (
                           <div className="px-3 py-3 flex flex-col gap-2" aria-busy="true" aria-label="Cargando seguimiento">
                             <Skeleton className="h-3.5 w-3/4" />

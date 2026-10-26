@@ -151,7 +151,6 @@ export function NuevaAuditoriaPgfsForm({ onClose }: { onClose: () => void }) {
     color: 'var(--foreground)',
     padding: '0 0.75rem',
     fontSize: '0.875rem',
-    outline: 'none',
   }
 
   return (

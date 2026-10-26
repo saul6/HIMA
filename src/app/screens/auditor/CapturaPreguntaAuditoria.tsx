@@ -148,7 +148,6 @@ function CampoEsquema({
     color: 'var(--foreground)',
     padding: '0.375rem 0.625rem',
     fontSize: '0.8125rem',
-    outline: 'none',
   }
   const campoId = useId()
   return (
