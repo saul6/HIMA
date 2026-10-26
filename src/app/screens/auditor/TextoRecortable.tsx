@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { animate, useReducedMotion } from 'motion/react'
 import { cn } from '@/app/components/ui/utils'
+import { DUR, EASE_OUT } from '@/lib/motion'
 
 const CLAMP: Record<number, string> = {
   2: 'line-clamp-2',
@@ -27,6 +29,16 @@ export function TextoRecortable({ children, lineas = 3, className }: TextoRecort
   const ref = useRef<HTMLParagraphElement>(null)
   const [abierto, setAbierto] = useState(false)
   const [desborda, setDesborda] = useState(false)
+  const reducedMotion = useReducedMotion()
+  const abiertoPrevio = useRef(abierto)
+
+  // Fundido del texto al expandir o recoger (solo opacity; la altura cambia sin animar).
+  useEffect(() => {
+    if (abiertoPrevio.current === abierto) return
+    abiertoPrevio.current = abierto
+    if (reducedMotion || !ref.current) return
+    animate(ref.current, { opacity: [0.4, 1] }, { duration: DUR.rapido, ease: EASE_OUT })
+  }, [abierto, reducedMotion])
 
   useEffect(() => {
     const el = ref.current

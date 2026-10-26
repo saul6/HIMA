@@ -29,8 +29,8 @@ import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { estadoAuditoria, estadoHallazgo } from './estados'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Skeleton } from '@/app/components/ui/skeleton'
-import { motion } from 'motion/react'
-import { useEntradaPantalla } from './motionAuditor'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
+import { useEntradaPantalla, useFundidoPlegable, avisoMotion } from './motionAuditor'
 import { FormularioSkeleton } from '@/app/components/FormularioSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
@@ -246,6 +246,7 @@ function BloqueAuditoria({
 }) {
   const id = useId()
   const [abierto, setAbierto] = useState(true)
+  const fundido = useFundidoPlegable(abierto)
   const ref = useRef<HTMLElement>(null)
 
   useEffect(() => {
@@ -278,9 +279,9 @@ function BloqueAuditoria({
         </span>
         <ChevronPlegable abierto={abierto} />
       </button>
-      <div id={id} hidden={!abierto}>
+      <motion.div id={id} hidden={!abierto} {...fundido}>
         <div className="flex flex-col gap-2 mt-2">{children}</div>
-      </div>
+      </motion.div>
     </section>
   )
 }
@@ -385,6 +386,7 @@ function PanelValidacion({
   const tieneBlockers = !reviewLoadError && issues.some(i => i.severidad === 'BLOCKER')
   // Plegado con su resumen de una línea; con bloqueantes abiertos (o si la revisión falló) empieza desplegado.
   const [abierto, setAbierto] = useState(tieneBlockers || reviewLoadError)
+  const fundido = useFundidoPlegable(abierto)
   useEffect(() => {
     if (tieneBlockers || reviewLoadError) setAbierto(true)
   }, [tieneBlockers, reviewLoadError])
@@ -467,7 +469,7 @@ function PanelValidacion({
       </button>
 
       {/* Cuerpo: plegar solo lo oculta */}
-      <div id={idCuerpo} hidden={!abierto}>
+      <motion.div id={idCuerpo} hidden={!abierto} {...fundido}>
         <div className="border-t border-border">
           {validando ? (
             <div className="flex items-center justify-center gap-2 py-6">
@@ -576,7 +578,7 @@ function PanelValidacion({
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }
@@ -597,6 +599,7 @@ function PanelScoring({
   const [scoringEstado, setScoringEstado] = useState<ScoringEstado>('cargando')
   const idCuerpo = useId()
   const [abierto, setAbierto]  = useState(false)
+  const fundido = useFundidoPlegable(abierto)
   const ultimaVersionRef = useRef<number>(0)
   // Versión interna para reintentar sin incrementar la externa
   const [reintento, setReintento] = useState(0)
@@ -693,7 +696,7 @@ function PanelScoring({
         <ChevronPlegable abierto={abierto} />
       </button>
 
-      <div id={idCuerpo} hidden={!abierto}>
+      <motion.div id={idCuerpo} hidden={!abierto} {...fundido}>
         <div className="border-t border-border px-4 pb-4 flex flex-col gap-3">
           {/* Etiqueta invariante */}
           <p className="text-caption pt-3 italic" style={{ color: 'var(--muted-foreground)' }}>
@@ -918,7 +921,7 @@ function PanelScoring({
             </p>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }
@@ -941,6 +944,7 @@ function PanelHallazgos({
 }) {
   const idCuerpo = useId()
   const [abierto, setAbierto] = useState(true)
+  const fundido = useFundidoPlegable(abierto)
 
   function scrollToPreg(pregId: string) {
     irAPregunta(pregId)
@@ -966,7 +970,7 @@ function PanelHallazgos({
         <ChevronPlegable abierto={abierto} />
       </button>
 
-      <div id={idCuerpo} hidden={!abierto}>
+      <motion.div id={idCuerpo} hidden={!abierto} {...fundido}>
         <div className="border-t border-border">
           {hallazgos.length === 0 ? (
             cargando ? (
@@ -1038,7 +1042,7 @@ function PanelHallazgos({
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }
@@ -1090,7 +1094,7 @@ function IndicadorGuardado({ savingMap }: { savingMap: Record<string, SaveStatus
         tono="menta"
         title="Guardado"
         icono={<CheckCircle size={11} />}
-        className={`transition-opacity duration-300 motion-reduce:transition-none${guardado === 'saliendo' ? ' opacity-0' : ''}`}
+        className={`transition-opacity duration-[var(--motion-base)] ease-[var(--ease-out)] motion-reduce:transition-none${guardado === 'saliendo' ? ' opacity-0' : ''}`}
       >
         <span className="sr-only sm:not-sr-only">Guardado</span>
       </Etiqueta>
@@ -1158,6 +1162,8 @@ export function AuditorEjecucion() {
   const [reincidenciaMap, setReincidenciaMap] = useState<Map<string, ReincidenciaResult>>(new Map())
   const [historialCriterios, setHistorialCriterios] = useState<HistorialCriterio[]>([])
   const [panelAntecedentesAbierto, setPanelAntecedentesAbierto] = useState(false)
+  const fundidoAntecedentes = useFundidoPlegable(panelAntecedentesAbierto)
+  const reducedMotion = useReducedMotion()
   const loadedReincidenciaRef = useRef<Set<string>>(new Set())
 
   // — Hallazgos y CAPA —
@@ -1881,8 +1887,9 @@ export function AuditorEjecucion() {
         ) : (
           <motion.div className="flex flex-col gap-4" {...ent(0)}>
             {/* COR-07: banners de error de carga */}
+            <AnimatePresence initial={false}>
             {esquemaCargaEstado === 'error' && (
-              <div className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
+              <motion.div key="err-esquema" {...avisoMotion(reducedMotion)} className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
                 <XCircle size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
                 <div className="flex-1">
                   <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>No se pudieron cargar los campos de comentario</p>
@@ -1891,10 +1898,10 @@ export function AuditorEjecucion() {
                 <Boton variante="secundario" tamano="sm" onClick={refetch} className="flex-shrink-0">
                   Reintentar
                 </Boton>
-              </div>
+              </motion.div>
             )}
             {obsCargaEstado === 'error' && (
-              <div className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
+              <motion.div key="err-obs" {...avisoMotion(reducedMotion)} className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
                 <AlertCircle size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
                 <div className="flex-1">
                   <p className="text-xs font-semibold" style={{ color: 'var(--agro-info-text)' }}>No se pudieron cargar las observaciones guardadas</p>
@@ -1903,8 +1910,9 @@ export function AuditorEjecucion() {
                 <Boton variante="secundario" tamano="sm" onClick={refetch} className="flex-shrink-0">
                   Reintentar
                 </Boton>
-              </div>
+              </motion.div>
             )}
+            </AnimatePresence>
 
             {/* Scoring en vivo */}
             {!cerrada && allPreguntas.length > 0 && (
@@ -1976,7 +1984,7 @@ export function AuditorEjecucion() {
                   </div>
                   <ChevronPlegable abierto={panelAntecedentesAbierto} />
                 </button>
-                <div id="panel-antecedentes-cuerpo" hidden={!panelAntecedentesAbierto}>
+                <motion.div id="panel-antecedentes-cuerpo" hidden={!panelAntecedentesAbierto} {...fundidoAntecedentes}>
                   <div className="border-t border-border">
                     <p className="text-caption px-4 pt-3 pb-1" style={{ color: 'var(--muted-foreground)' }}>
                       Criterios con historial de NC en este sitio. Informativo — no determina cumplimiento.
@@ -2015,7 +2023,7 @@ export function AuditorEjecucion() {
                       )
                     })}
                   </div>
-                </div>
+                </motion.div>
               </div>
             )}
 

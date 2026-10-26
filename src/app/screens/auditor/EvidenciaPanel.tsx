@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { Paperclip, Upload, Database, ExternalLink, Trash2, ChevronDown, ChevronUp, Loader, X, Link2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { motion, useReducedMotion } from 'motion/react'
+import { fundidoEntrada } from './motionAuditor'
 import { supabase } from '@/lib/supabase'
 import { useEvidencia } from '@/hooks/useEvidencia'
 import { getSignedUrlEvidencia } from '@/lib/storage/audEvidenciaStorage'
@@ -80,6 +82,7 @@ export function EvidenciaPanel({
   preguntaId, criterionCode, ranchoId,
 }: Props) {
   const hook = useEvidencia(entityType, entityId)
+  const reducedMotion = useReducedMotion()
   const { can, cargando: cargandoPermisos } = useMisPermisos()
   const canLink      = cargandoPermisos || can('evidence.link')
   const canUpload    = cargandoPermisos || can('evidence.upload')
@@ -350,7 +353,7 @@ export function EvidenciaPanel({
       </button>
 
       {abierto && (
-        <div className="border-t border-border flex flex-col">
+        <motion.div {...fundidoEntrada(reducedMotion)} className="border-t border-border flex flex-col">
           {/* Botones de acción */}
           {!cerrada && (canUpload || canLink) && (
             <div className="px-4 py-3 flex gap-2 flex-wrap border-t border-border">
@@ -795,7 +798,7 @@ export function EvidenciaPanel({
               )}
             </div>
           )}
-        </div>
+        </motion.div>
       )}
     </div>
   )

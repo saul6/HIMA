@@ -20,9 +20,9 @@ import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { fechaCorta, formatoPct } from '@/lib/formato'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
-import { motion, useAnimate, useReducedMotion } from 'motion/react'
+import { motion, AnimatePresence, useAnimate, useReducedMotion } from 'motion/react'
 import { DUR, EASE_OUT } from '@/lib/motion'
-import { useEntradaPantalla } from './motionAuditor'
+import { useEntradaPantalla, avisoMotion, fundidoEntrada } from './motionAuditor'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -574,26 +574,30 @@ export function EjecucionJornada() {
       />
 
       {/* Sin conexión */}
+      <AnimatePresence initial={false}>
       {sinConexion && (
-        <div className="flex items-center gap-2 px-4 py-2 border-b" style={{ backgroundColor: 'var(--agro-info-fill)', borderColor: 'var(--agro-info-text)' }}>
+        <motion.div key="sin-conexion" {...avisoMotion(reducedMotion)} className="flex items-center gap-2 px-4 py-2 border-b" style={{ backgroundColor: 'var(--agro-info-fill)', borderColor: 'var(--agro-info-text)' }}>
           <WifiOff size={13} style={{ color: 'var(--agro-info-text)' }} />
           <p className="text-small font-medium" style={{ color: 'var(--agro-info-text)' }}>
             Sin conexión: los cambios no guardados se perderán si cierras la página.
           </p>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* ── Error de guardado ── */}
+      <AnimatePresence initial={false}>
       {saveError && (
-        <div className="mx-4 mt-3 rounded-xl px-3 py-2.5 flex items-center gap-2 border"
+        <motion.div key="error-guardado" {...avisoMotion(reducedMotion)} className="mx-4 mt-3 rounded-xl px-3 py-2.5 flex items-center gap-2 border"
           style={{ backgroundColor: 'var(--agro-danger-fill)', borderColor: 'var(--agro-danger-text)' }}>
           <AlertCircle size={14} className="flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
           <p className="text-small flex-1" style={{ color: 'var(--agro-danger-text)' }}>{saveError}</p>
           <button aria-label="Cerrar" onClick={() => setSaveError(null)} className="flex-shrink-0">
             <XCircle size={14} style={{ color: 'var(--agro-danger-text)' }} />
           </button>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       <motion.main className="flex-1 flex flex-col md:flex-row md:min-h-0 pb-32 md:pb-8" {...ent(0)}>
 
@@ -769,7 +773,7 @@ export function EjecucionJornada() {
             {/* Quitar operación activa */}
             {auditoriaActiva && (
               confirmRetirar === auditoriaActiva ? (
-                <div className="rounded-xl border px-4 py-3 flex flex-col gap-2"
+                <motion.div {...fundidoEntrada(reducedMotion)} className="rounded-xl border px-4 py-3 flex flex-col gap-2"
                   style={{ backgroundColor: 'var(--agro-info-fill)', borderColor: 'var(--agro-info-text)' }}>
                   <p className="text-xs font-medium" style={{ color: 'var(--agro-info-text)' }}>
                     ¿Quitar "{operacionActiva?.operacion}"? La auditoría no se modifica.
@@ -791,7 +795,7 @@ export function EjecucionJornada() {
                       Cancelar
                     </button>
                   </div>
-                </div>
+                </motion.div>
               ) : (
                 <button
                   onClick={() => setConfirmRetirar(auditoriaActiva)}
@@ -810,7 +814,7 @@ export function EjecucionJornada() {
 
             {/* Terminar jornada */}
             {confirmTerminar ? (
-              <div className="rounded-xl border px-4 py-3 flex flex-col gap-2"
+              <motion.div {...fundidoEntrada(reducedMotion)} className="rounded-xl border px-4 py-3 flex flex-col gap-2"
                 style={{ backgroundColor: 'var(--agro-danger-fill)', borderColor: 'var(--agro-danger-text)' }}>
                 <p className="text-xs font-medium" style={{ color: 'var(--agro-danger-text)' }}>
                   ¿Terminar la jornada? Las auditorías no se cierran; puedes seguir editándolas individualmente.
@@ -832,7 +836,7 @@ export function EjecucionJornada() {
                     Cancelar
                   </button>
                 </div>
-              </div>
+              </motion.div>
             ) : (
               <button
                 onClick={() => setConfirmTerminar(true)}
