@@ -71,7 +71,7 @@ export function NuevaInstalacionForm({ onClose }: { onClose: () => void }) {
           <h2 className="text-base font-semibold">Nueva instalación</h2>
           <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Para auditar sin cuenta M.A.D.Y</p>
         </div>
-        <button onClick={onClose} aria-label="Cerrar"><X className="w-5 h-5" /></button>
+        <button onClick={onClose} aria-label="Cerrar" className="relative before:absolute before:content-[''] before:-inset-3"><X className="w-5 h-5" /></button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4 flex flex-col gap-5">

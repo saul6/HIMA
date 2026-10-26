@@ -490,7 +490,7 @@ function PanelValidacion({
                   No se pudo verificar las validaciones. Reintenta antes de continuar.
                 </span>
               </div>
-              <Boton variante="secundario" tamano="sm" onClick={onReintentar}>
+              <Boton variante="secundario" onClick={onReintentar}>
                 Reintentar
               </Boton>
             </div>
@@ -528,12 +528,12 @@ function PanelValidacion({
                         </p>
                         <div className="flex items-center gap-2 flex-wrap">
                           {issue.pregunta_id && (
-                            <Boton variante="secundario" tamano="sm" onClick={() => scrollToPreg(issue.pregunta_id!)}>
+                            <Boton variante="secundario" onClick={() => scrollToPreg(issue.pregunta_id!)}>
                               → Ir a pregunta
                             </Boton>
                           )}
                           {descartandoId !== issue.id && (
-                            <Boton variante="secundario" tamano="sm" onClick={() => onDescartarClick(issue.id)}>
+                            <Boton variante="secundario" onClick={() => onDescartarClick(issue.id)}>
                               Descartar
                             </Boton>
                           )}
@@ -558,10 +558,10 @@ function PanelValidacion({
                               }}
                             />
                             <div className="flex gap-2">
-                              <Boton variante="secundario" tamano="sm" onClick={onConfirmarDescarte} className="flex-1">
+                              <Boton variante="secundario" onClick={onConfirmarDescarte} className="flex-1">
                                 Confirmar descarte
                               </Boton>
-                              <Boton variante="secundario" tamano="sm" onClick={onCancelarDescarte}>
+                              <Boton variante="secundario" onClick={onCancelarDescarte}>
                                 Cancelar
                               </Boton>
                             </div>
@@ -904,7 +904,7 @@ function PanelScoring({
               <p className="text-small" style={{ color: 'var(--agro-danger-text)' }}>
                 No se pudo calcular el puntaje.
               </p>
-              <Boton variante="secundario" tamano="sm" onClick={() => setReintento(v => v + 1)} className="self-start">
+              <Boton variante="secundario" onClick={() => setReintento(v => v + 1)} className="self-start">
                 Reintentar
               </Boton>
             </div>
@@ -917,7 +917,7 @@ function PanelScoring({
                   Mostrando cálculo anterior — no refleja los últimos cambios.
                 </p>
               </div>
-              <Boton variante="secundario" tamano="sm" onClick={() => setReintento(v => v + 1)} className="self-start">
+              <Boton variante="secundario" onClick={() => setReintento(v => v + 1)} className="self-start">
                 Reintentar
               </Boton>
             </div>
@@ -1006,7 +1006,7 @@ function PanelHallazgos({
                     {preg && (
                       <button
                         onClick={() => scrollToPreg(preg.id)}
-                        className="self-start text-caption font-medium px-2 py-0.5 rounded"
+                        className="self-start text-caption font-medium px-2 py-0.5 rounded relative before:absolute before:content-[''] before:-inset-y-3 before:-inset-x-1"
                         style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)' }}
                       >
                         → {preg.question_id}
@@ -1018,7 +1018,7 @@ function PanelHallazgos({
                         value={h.estado}
                         onChange={e => onEstadoChange(h.id, e.target.value as AudHallazgoEstado)}
                         disabled={!canWriteNC}
-                        className="text-small h-7 rounded-lg px-2 disabled:opacity-50"
+                        className="text-small h-11 rounded-lg px-2 disabled:opacity-50"
                         style={{
                           border: '1px solid var(--border)',
                           backgroundColor: canWriteNC ? 'var(--input-background)' : 'var(--muted)',
@@ -1913,7 +1913,7 @@ export function AuditorEjecucion() {
                   <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>No se pudieron cargar los campos de comentario</p>
                   <p className="text-small mt-0.5" style={{ color: 'var(--agro-danger-text)' }}>Reintenta antes de continuar.</p>
                 </div>
-                <Boton variante="secundario" tamano="sm" onClick={refetch} className="flex-shrink-0">
+                <Boton variante="secundario" onClick={refetch} className="flex-shrink-0">
                   Reintentar
                 </Boton>
               </motion.div>
@@ -1925,7 +1925,7 @@ export function AuditorEjecucion() {
                   <p className="text-xs font-semibold" style={{ color: 'var(--agro-info-text)' }}>No se pudieron cargar las observaciones guardadas</p>
                   <p className="text-small mt-0.5" style={{ color: 'var(--agro-info-text)' }}>Es posible que algunas observaciones no se muestren.</p>
                 </div>
-                <Boton variante="secundario" tamano="sm" onClick={refetch} className="flex-shrink-0">
+                <Boton variante="secundario" onClick={refetch} className="flex-shrink-0">
                   Reintentar
                 </Boton>
               </motion.div>
@@ -2031,7 +2031,7 @@ export function AuditorEjecucion() {
                           {pregMatch && (
                             <button
                               onClick={() => irAPregunta(pregMatch.id)}
-                              className="self-start text-caption font-medium px-2 py-0.5 rounded"
+                              className="self-start text-caption font-medium px-2 py-0.5 rounded relative before:absolute before:content-[''] before:-inset-y-3 before:-inset-x-1"
                               style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)' }}
                             >
                               → Ir a criterio {pregMatch.question_id}
@@ -2219,7 +2219,7 @@ export function AuditorEjecucion() {
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
             <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Registrar hallazgo</h2>
-            <button aria-label="Cerrar" onClick={() => setSheetHallazgo(null)} className="text-muted-foreground">
+            <button aria-label="Cerrar" onClick={() => setSheetHallazgo(null)} className="text-muted-foreground relative before:absolute before:content-[''] before:-inset-3">
               <XCircle size={20} />
             </button>
           </div>
@@ -2282,7 +2282,7 @@ export function AuditorEjecucion() {
                 </p>
               )}
             </div>
-            <button aria-label="Cerrar" onClick={() => { setSheetAccion(null); setAccionActual(null); setFormAccion({}) }} className="text-muted-foreground ml-2 flex-shrink-0">
+            <button aria-label="Cerrar" onClick={() => { setSheetAccion(null); setAccionActual(null); setFormAccion({}) }} className="text-muted-foreground ml-2 flex-shrink-0 relative before:absolute before:content-[''] before:-inset-3">
               <XCircle size={20} />
             </button>
           </div>
@@ -2528,7 +2528,7 @@ export function AuditorEjecucion() {
                             )}
                           </Campo>
                         ))}
-                        <Boton tamano="sm" onClick={handleRegistrarResultado} cargando={guardandoResultado} className="w-full">
+                        <Boton onClick={handleRegistrarResultado} cargando={guardandoResultado} className="w-full">
                           Registrar resultado
                         </Boton>
                       </div>
@@ -2613,7 +2613,7 @@ export function AuditorEjecucion() {
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
             <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Historial de versiones</h2>
-            <button aria-label="Cerrar" onClick={() => setSheetHistorial(null)} className="text-muted-foreground">
+            <button aria-label="Cerrar" onClick={() => setSheetHistorial(null)} className="text-muted-foreground relative before:absolute before:content-[''] before:-inset-3">
               <XCircle size={20} />
             </button>
           </div>
@@ -2666,7 +2666,7 @@ export function AuditorEjecucion() {
                 </p>
               )}
             </div>
-            <button aria-label="Cerrar" onClick={() => setSheetIncidenciasHallazgo(null)} className="text-muted-foreground ml-2 flex-shrink-0">
+            <button aria-label="Cerrar" onClick={() => setSheetIncidenciasHallazgo(null)} className="text-muted-foreground ml-2 flex-shrink-0 relative before:absolute before:content-[''] before:-inset-3">
               <XCircle size={20} />
             </button>
           </div>
@@ -2714,7 +2714,7 @@ export function AuditorEjecucion() {
                             href="/inocuidad/incidencias"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-small h-6 px-2 rounded"
+                            className="flex items-center gap-1 text-small h-6 px-2 rounded relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                             style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
                           >
                             <AlertTriangle size={10} />
@@ -2723,7 +2723,7 @@ export function AuditorEjecucion() {
                           <button
                             onClick={() => handleQuitarIncidencia(v.id)}
                             disabled={incQuitandoId === v.id}
-                            className="flex items-center gap-1 text-small h-6 px-2 rounded disabled:opacity-50 ml-auto"
+                            className="flex items-center gap-1 text-small h-6 px-2 rounded disabled:opacity-50 ml-auto relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                             style={{ color: 'var(--agro-danger-text)' }}
                           >
                             {incQuitandoId === v.id
@@ -2779,10 +2779,10 @@ export function AuditorEjecucion() {
                   onChange={e => setIncSearch(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') handleBuscarIncidencias() }}
                   placeholder="Buscar por descripción…"
-                  className="h-9 rounded-lg px-3 text-xs flex-1"
+                  className="h-11 rounded-lg px-3 text-xs flex-1"
                   style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                 />
-                <Boton tamano="sm" onClick={handleBuscarIncidencias} cargando={incBuscando} className="flex-shrink-0">
+                <Boton onClick={handleBuscarIncidencias} cargando={incBuscando} className="flex-shrink-0">
                   Buscar
                 </Boton>
               </div>
@@ -2841,7 +2841,7 @@ export function AuditorEjecucion() {
                 </p>
               )}
             </div>
-            <button aria-label="Cerrar" onClick={() => setSheetEvidenciaHallazgo(null)} className="text-muted-foreground ml-2 flex-shrink-0">
+            <button aria-label="Cerrar" onClick={() => setSheetEvidenciaHallazgo(null)} className="text-muted-foreground ml-2 flex-shrink-0 relative before:absolute before:content-[''] before:-inset-3">
               <XCircle size={20} />
             </button>
           </div>

@@ -867,7 +867,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     onClick={() => !bloqueado && handleRespuesta(preguntaId, opt.value)}
                     disabled={bloqueado}
                     title={opt.label}
-                    className="flex-1 min-w-0 h-10 rounded-lg text-xs font-bold border transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] disabled:opacity-50"
+                    className="flex-1 min-w-0 h-11 rounded-lg text-xs font-bold border transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] disabled:opacity-50"
                     style={
                       active
                         ? { backgroundColor: opt.activeStyle.bg, color: opt.activeStyle.color, borderColor: 'transparent' }
@@ -908,7 +908,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     </Boton>
                     <button
                       onClick={() => setSugerenciaCId(null)}
-                      className="h-7 px-3 rounded-lg text-small"
+                      className="h-7 px-3 rounded-lg text-small relative before:absolute before:content-[''] before:-inset-y-2 before:-inset-x-1"
                       style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                     >
                       No
@@ -948,7 +948,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                       </Boton>
                       <button
                         onClick={() => setSugerenciaCId(null)}
-                        className="flex-1 h-7 rounded-lg text-small"
+                        className="flex-1 h-7 rounded-lg text-small relative before:absolute before:content-[''] before:-inset-y-2"
                         style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                       >
                         Cancelar
@@ -1010,7 +1010,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     finally { setConfirmandoRevision(false) }
                   }}
                   disabled={confirmandoRevision}
-                  className="self-start h-7 px-3 rounded-lg text-small font-semibold flex items-center gap-1 disabled:opacity-50"
+                  className="self-start h-7 px-3 rounded-lg text-small font-semibold flex items-center gap-1 disabled:opacity-50 relative before:absolute before:content-[''] before:-inset-y-2 before:-inset-x-1"
                   style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', border: '1px solid var(--agro-info-text)' }}
                 >
                   {confirmandoRevision
@@ -1054,7 +1054,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     estaAplicada ? (
                       <button
                         onClick={() => { setRetirandoReglaId(regla.id); setMotivoRetiro(''); retirarEventIdRef.current = null; setRetiroResultado(null) }}
-                        className="flex-shrink-0 h-6 px-2 rounded text-small font-medium"
+                        className="flex-shrink-0 h-6 px-2 rounded text-small font-medium relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                         style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                       >
                         Retirar
@@ -1073,7 +1073,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                             setReglaFaltantes(null)
                           }
                         }}
-                        className="flex-shrink-0 h-6 px-2 rounded text-small font-semibold"
+                        className="flex-shrink-0 h-6 px-2 rounded text-small font-semibold relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                         style={
                           expandida
                             ? { backgroundColor: 'var(--muted)', color: 'var(--foreground)' }
@@ -1170,7 +1170,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     )}
 
                     <div className="flex gap-2">
-                      <Boton tamano="sm" cargando={!!aplicandoReglaId} disabled={!reglaExplicacion.trim()} onClick={async () => {
+                      <Boton cargando={!!aplicandoReglaId} disabled={!reglaExplicacion.trim()} onClick={async () => {
                           if (!reglaExplicacion.trim()) return
                           if (!reglaEventIdRef.current) reglaEventIdRef.current = crypto.randomUUID()
                           setAplicandoReglaId(regla.id)
@@ -1212,7 +1212,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                             } catch { /* handled */ }
                             finally { setAplicandoReglaId(null) }
                           }}
-                          className="flex-shrink-0 h-8 px-3 rounded-lg text-small font-semibold flex items-center gap-1 disabled:opacity-50"
+                          className="flex-shrink-0 h-8 px-3 rounded-lg text-small font-semibold flex items-center gap-1 disabled:opacity-50 relative before:absolute before:content-[''] before:-inset-y-1.5 before:-inset-x-1"
                           style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', border: '1px solid var(--agro-info-text)' }}
                         >
                           Confirmar de todos modos
@@ -1267,7 +1267,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                         )}
                         <button
                           onClick={() => { setRetirandoReglaId(null); setRetiroResultado(null) }}
-                          className="self-start h-6 px-2 rounded text-small"
+                          className="self-start h-6 px-2 rounded text-small relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                           style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                         >
                           Cerrar
@@ -1308,7 +1308,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                           </Boton>
                           <button
                             onClick={() => { setRetirandoReglaId(null); setMotivoRetiro('') }}
-                            className="flex-1 h-7 rounded-lg text-small"
+                            className="flex-1 h-7 rounded-lg text-small relative before:absolute before:content-[''] before:-inset-y-2"
                             style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                           >
                             Cancelar
@@ -1390,7 +1390,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   <button
                     onClick={handleQuitarAjuste}
                     disabled={quitandoAjuste}
-                    className="flex items-center gap-1 text-small font-medium px-2 py-0.5 rounded disabled:opacity-50"
+                    className="flex items-center gap-1 text-small font-medium px-2 py-0.5 rounded disabled:opacity-50 relative before:absolute before:content-[''] before:-inset-y-3 before:-inset-x-1"
                     style={{ backgroundColor: 'var(--muted)', color: 'var(--agro-info-text)' }}
                   >
                     {quitandoAjuste ? <Loader size={10} className="animate-spin motion-reduce:animate-none" /> : <X size={10} />}
@@ -1464,7 +1464,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 <p className="text-small font-semibold" style={{ color: 'var(--foreground)' }}>
                   Ajuste manual de puntuación
                 </p>
-                <button aria-label="Cerrar" onClick={() => setAjusteOpen(false)} style={{ color: 'var(--muted-foreground)' }}>
+                <button className="relative before:absolute before:content-[''] before:-inset-[15px]" aria-label="Cerrar" onClick={() => setAjusteOpen(false)} style={{ color: 'var(--muted-foreground)' }}>
                   <X size={14} />
                 </button>
               </div>
@@ -1533,7 +1533,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 )}
               </Campo>
               <div className="flex gap-2">
-                <Boton tamano="sm" onClick={handleConfirmarAjuste} cargando={enviandoAjuste} disabled={!puedeConfirmar} className="flex-1">
+                <Boton onClick={handleConfirmarAjuste} cargando={enviandoAjuste} disabled={!puedeConfirmar} className="flex-1">
                   Confirmar
                 </Boton>
                 <button
@@ -1626,7 +1626,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                           <button
                             disabled={!!ejec}
                             onClick={() => setEscribiendoOtro(prev => new Set(prev).add(esq.id))}
-                            className="h-7 px-2.5 rounded-lg text-small font-medium disabled:opacity-50"
+                            className="h-7 px-2.5 rounded-lg text-small font-medium disabled:opacity-50 relative before:absolute before:content-[''] before:-inset-y-2 before:-inset-x-1"
                             style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                           >
                             Escribir otro dato
@@ -1638,7 +1638,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                               try { await handleRechazarHerencia(h.valor_id) }
                               finally { setHerenciaAcciones(prev => { const n = new Map(prev); n.delete(esq.id); return n }) }
                             }}
-                            className="h-7 px-2.5 rounded-lg text-small disabled:opacity-50"
+                            className="h-7 px-2.5 rounded-lg text-small disabled:opacity-50 relative before:absolute before:content-[''] before:-inset-y-2 before:-inset-x-1"
                             style={{ color: 'var(--agro-danger-text)', border: '1px solid var(--agro-danger-text)' }}
                           >
                             Rechazar
@@ -1702,7 +1702,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                             <button
                               disabled={!!ejec}
                               onClick={() => setEscribiendoOtro(prev => new Set(prev).add(esq.id))}
-                              className="h-7 px-2.5 rounded-lg text-small font-medium disabled:opacity-50"
+                              className="h-7 px-2.5 rounded-lg text-small font-medium disabled:opacity-50 relative before:absolute before:content-[''] before:-inset-y-2 before:-inset-x-1"
                               style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                             >
                               Escribir otro dato
@@ -1743,7 +1743,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                                 try { await handleResolverHerencia(h.valor_id, 'propio') }
                                 finally { setHerenciaAcciones(prev => { const n = new Map(prev); n.delete(esq.id); return n }) }
                               }}
-                              className="h-7 px-2.5 rounded-lg text-small font-semibold disabled:opacity-50 flex items-center gap-1"
+                              className="h-7 px-2.5 rounded-lg text-small font-semibold disabled:opacity-50 flex items-center gap-1 relative before:absolute before:content-[''] before:-inset-y-2 before:-inset-x-1"
                               style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                             >
                               {ejec === 'cargando' ? <><Loader size={10} className="animate-spin motion-reduce:animate-none" />…</> : 'Conservar este'}
@@ -1842,7 +1842,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 <button
                   type="button"
                   onClick={reintentarGuardado}
-                  className="text-small font-semibold px-2 py-1 rounded-lg flex-shrink-0"
+                  className="text-small font-semibold px-2 py-1 rounded-lg flex-shrink-0 relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                   style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
                 >
                   Reintentar
@@ -1858,7 +1858,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               {(hallazgosCount ?? 0) > 0 && (
                 <button
                   onClick={onVerHallazgos}
-                  className="flex items-center gap-1 text-small font-semibold px-2 py-1 rounded-lg"
+                  className="flex items-center gap-1 text-small font-semibold px-2 py-1 rounded-lg relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                   style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
                 >
                   <Flag size={10} />
@@ -1869,7 +1869,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 <button
                   onClick={onRegistrarHallazgo}
                   disabled={!instanciaId}
-                  className="flex items-center gap-1 text-small font-medium px-2 py-1 rounded-lg disabled:opacity-40"
+                  className="flex items-center gap-1 text-small font-medium px-2 py-1 rounded-lg disabled:opacity-40 relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                   style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                 >
                   <Plus size={10} />
@@ -1883,7 +1883,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           {instanciaId && (
             <button
               onClick={() => setEvidenciaOpen(true)}
-              className="self-start flex items-center gap-1.5 text-small font-medium px-2 py-1 rounded-lg"
+              className="self-start flex items-center gap-1.5 text-small font-medium px-2 py-1 rounded-lg relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
               style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', border: '1px solid var(--border)' }}
             >
               <Paperclip size={12} />

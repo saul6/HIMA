@@ -395,7 +395,7 @@ export function AuditorInstalacionDetalle() {
                 {instalacion?.nombre}
               </p>
             </div>
-            <button aria-label="Cerrar" onClick={() => setSheetVincular(false)} className="text-muted-foreground ml-2 flex-shrink-0">
+            <button aria-label="Cerrar" onClick={() => setSheetVincular(false)} className="text-muted-foreground ml-2 flex-shrink-0 relative before:absolute before:content-[''] before:-inset-3">
               <XCircle size={20} />
             </button>
           </div>
@@ -492,7 +492,7 @@ export function AuditorInstalacionDetalle() {
                         <button
                           onClick={() => cargarPerfiles(orgManualId.trim())}
                           disabled={cargandoPerfiles}
-                          className="self-start text-small font-semibold h-7 px-3 rounded-lg disabled:opacity-50 flex items-center gap-1"
+                          className="self-start text-small font-semibold h-7 px-3 rounded-lg disabled:opacity-50 flex items-center gap-1 relative before:absolute before:content-[''] before:-inset-y-2 before:-inset-x-1"
                           style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)', border: '1px solid var(--border)' }}
                         >
                           {cargandoPerfiles ? <Loader size={10} className="animate-spin motion-reduce:animate-none" /> : null}

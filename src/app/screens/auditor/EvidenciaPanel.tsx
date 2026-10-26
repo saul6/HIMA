@@ -360,7 +360,7 @@ export function EvidenciaPanel({
           {!cerrada && (canUpload || canLink) && (
             <div className="px-4 py-3 flex gap-2 flex-wrap border-t border-border">
               {canUpload && (
-                <Boton tamano="sm" onClick={() => { setShowUpload(v => !v); setShowGateway(false) }}>
+                <Boton onClick={() => { setShowUpload(v => !v); setShowGateway(false) }}>
                   <Upload size={12} />
                   Subir evidencia
                 </Boton>
@@ -368,7 +368,7 @@ export function EvidenciaPanel({
               {canLink && (
                 <button
                   onClick={() => { setShowGateway(v => !v); setShowFallback(true); setShowUpload(false) }}
-                  className="flex items-center gap-1 text-small font-semibold h-7 px-3 rounded-lg"
+                  className="flex items-center gap-1 text-small font-semibold h-7 px-3 rounded-lg relative before:absolute before:content-[''] before:-inset-y-2 before:-inset-x-1"
                   style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                 >
                   <Database size={10} />
@@ -383,7 +383,7 @@ export function EvidenciaPanel({
             <div className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="flex items-center justify-between pt-3">
                 <p className="text-small font-semibold" style={{ color: 'var(--foreground)' }}>Subir evidencia externa</p>
-                <button aria-label="Cerrar" onClick={() => setShowUpload(false)}><X size={14} style={{ color: 'var(--muted-foreground)' }} /></button>
+                <button className="relative before:absolute before:content-[''] before:-inset-[15px]" aria-label="Cerrar" onClick={() => setShowUpload(false)}><X size={14} style={{ color: 'var(--muted-foreground)' }} /></button>
               </div>
               <Campo etiqueta="Tipo" className="gap-1" claseEtiqueta="text-caption font-medium">
                 {({ id }) => (
@@ -430,7 +430,7 @@ export function EvidenciaPanel({
                   </ul>
                 )}
               </div>
-              <Boton tamano="sm" onClick={handleSubirExterno} cargando={subiendo} disabled={uploadFiles.length === 0} className="w-full">
+              <Boton onClick={handleSubirExterno} cargando={subiendo} disabled={uploadFiles.length === 0} className="w-full">
                 {uploadFiles.length > 1 ? `Subir ${uploadFiles.length} evidencias` : 'Subir evidencia'}
               </Boton>
               <p role="status" className="text-small min-h-4 -mt-1" style={{ color: 'var(--muted-foreground)' }}>
@@ -499,7 +499,7 @@ export function EvidenciaPanel({
                       {!esAsset && snap && (
                         <button
                           onClick={() => setViewSnap(viewSnap?.id === snap.id ? null : snap)}
-                          className="flex items-center gap-1 text-small font-semibold h-6 px-2 rounded"
+                          className="flex items-center gap-1 text-small font-semibold h-6 px-2 rounded relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                           style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)', border: '1px solid var(--border)' }}
                         >
                           <Database size={10} />
@@ -510,7 +510,7 @@ export function EvidenciaPanel({
                         <button
                           onClick={() => handleQuitar(uso.id)}
                           disabled={quitandoId === uso.id}
-                          className="flex items-center gap-1 text-small h-6 px-2 rounded disabled:opacity-50 ml-auto"
+                          className="flex items-center gap-1 text-small h-6 px-2 rounded disabled:opacity-50 ml-auto relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                           style={{ color: 'var(--agro-danger-text)' }}
                         >
                           {quitandoId === uso.id
@@ -570,7 +570,7 @@ export function EvidenciaPanel({
                           setShowGateway(true)
                           handleBuscar(chip.capability)
                         }}
-                        className="text-caption font-semibold px-2 py-0.5 rounded-full flex items-center gap-1"
+                        className="text-caption font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 relative before:absolute before:content-[''] before:-inset-y-3 before:-inset-x-1"
                         style={isHigh
                           ? { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
                           : isMed
@@ -657,7 +657,7 @@ export function EvidenciaPanel({
                           {reg.source_route && (
                             <button
                               onClick={() => window.open(reg.source_route!, '_blank')}
-                              className="flex items-center gap-1 text-small h-6 px-2 rounded"
+                              className="flex items-center gap-1 text-small h-6 px-2 rounded relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                               style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
                             >
                               <ExternalLink size={10} />
@@ -684,7 +684,7 @@ export function EvidenciaPanel({
             <div className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="flex items-center justify-between pt-3">
                 <p className="text-small font-semibold" style={{ color: 'var(--foreground)' }}>Buscar en otro módulo</p>
-                <button aria-label="Cerrar" onClick={() => setShowGateway(false)}>
+                <button className="relative before:absolute before:content-[''] before:-inset-[15px]" aria-label="Cerrar" onClick={() => setShowGateway(false)}>
                   <X size={14} style={{ color: 'var(--muted-foreground)' }} />
                 </button>
               </div>
@@ -734,9 +734,9 @@ export function EvidenciaPanel({
                   onChange={e => setGwSearch(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') handleBuscar() }}
                   placeholder="Buscar por texto…"
-                  style={{ ...inputBase, height: '2.25rem', flex: 1, width: 'auto' }}
+                  style={{ ...inputBase, height: '2.75rem', flex: 1, width: 'auto' }}
                 />
-                <Boton tamano="sm" onClick={() => handleBuscar()} cargando={gwCargando} className="flex-shrink-0">
+                <Boton onClick={() => handleBuscar()} cargando={gwCargando} className="flex-shrink-0">
                   Buscar
                 </Boton>
               </div>
@@ -787,7 +787,7 @@ export function EvidenciaPanel({
                         {reg.source_route && (
                           <button
                             onClick={() => window.open(reg.source_route!, '_blank')}
-                            className="flex items-center gap-1 text-small h-6 px-2 rounded"
+                            className="flex items-center gap-1 text-small h-6 px-2 rounded relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                             style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
                           >
                             <ExternalLink size={10} />

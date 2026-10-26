@@ -227,7 +227,6 @@ export function AuditorModoAzzule() {
                 <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>Respuesta lista</span>
                 <Boton
                   variante="secundario"
-                  tamano="sm"
                   onClick={handleCopiar}
                   className={copied ? 'border-transparent bg-agro-success-fill text-agro-success-text hover:bg-agro-success-fill' : undefined}
                 >

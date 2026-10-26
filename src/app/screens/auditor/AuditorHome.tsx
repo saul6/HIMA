@@ -322,7 +322,7 @@ export function AuditorHome() {
               {filtro ? (FILTRO_LABELS[filtro] ?? 'Filtrado') : 'Cola de trabajo'}
             </TituloSeccion>
             {filtro && (
-              <Boton variante="secundario" tamano="sm" onClick={() => setFiltro(null)}>
+              <Boton variante="secundario" onClick={() => setFiltro(null)}>
                 Ver todos
               </Boton>
             )}
@@ -430,7 +430,7 @@ export function AuditorHome() {
         <section className="order-4">
           <div className="flex items-center justify-between mb-2.5">
             <TituloSeccion as="p" className="mb-0">Captura por bloque</TituloSeccion>
-            <Boton variante="secundario" tamano="sm" onClick={() => navigate('/auditor/jornada/nueva')}>
+            <Boton variante="secundario" onClick={() => navigate('/auditor/jornada/nueva')}>
               <Layers size={13} />
               Auditar por bloque
             </Boton>

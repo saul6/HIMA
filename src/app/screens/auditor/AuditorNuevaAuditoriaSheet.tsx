@@ -187,7 +187,7 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
             {paso === 1 ? 'Paso 1 de 2 · Instalación a auditar' : 'Paso 2 de 2 · Módulos a evaluar'}
           </p>
         </div>
-        <button onClick={onClose} aria-label="Cerrar"><X className="w-5 h-5" /></button>
+        <button onClick={onClose} aria-label="Cerrar" className="relative before:absolute before:content-[''] before:-inset-3"><X className="w-5 h-5" /></button>
       </div>
 
       {/* Indicador de pasos */}

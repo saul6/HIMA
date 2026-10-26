@@ -163,7 +163,7 @@ export function NuevaJornada() {
           <div className="mx-4 mt-4 rounded-xl border border-dashed border-border p-4 flex items-center gap-3">
             <AlertCircle size={16} style={{ color: 'var(--agro-danger-text)' }} />
             <p className="text-sm flex-1" style={{ color: 'var(--muted-foreground)' }}>{errorCandidatas}</p>
-            <Boton variante="secundario" tamano="sm" onClick={cargarCandidatas}>
+            <Boton variante="secundario" onClick={cargarCandidatas}>
               Reintentar
             </Boton>
           </div>

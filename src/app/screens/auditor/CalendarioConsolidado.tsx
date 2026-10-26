@@ -176,7 +176,7 @@ export function CalendarioConsolidado() {
       <div className="flex items-center gap-2">
         <button
           onClick={() => setMesOffset(o => o - 1)}
-          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative before:absolute before:content-[''] before:-inset-1.5"
           style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
           aria-label="Mes anterior"
         >
@@ -187,7 +187,7 @@ export function CalendarioConsolidado() {
         </p>
         <button
           onClick={() => setMesOffset(o => o + 1)}
-          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative before:absolute before:content-[''] before:-inset-1.5"
           style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
           aria-label="Mes siguiente"
         >
@@ -196,7 +196,7 @@ export function CalendarioConsolidado() {
         <button
           onClick={recargar}
           disabled={cargando}
-          className="w-8 h-8 rounded-lg flex items-center justify-center disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="w-8 h-8 rounded-lg flex items-center justify-center disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative before:absolute before:content-[''] before:-inset-1.5"
           aria-label="Actualizar"
         >
           {cargando
@@ -216,7 +216,7 @@ export function CalendarioConsolidado() {
               <button
                 key={t.event_type}
                 onClick={() => toggleTipo(t.event_type)}
-                className="text-small font-semibold px-2.5 py-1 rounded-full transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="text-small font-semibold px-2.5 py-1 rounded-full transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                 style={activo
                   ? { backgroundColor: cfg.textVar, color: 'var(--card)' }
                   : { backgroundColor: cfg.fillVar, color: cfg.textVar, border: '1px solid transparent' }
@@ -229,7 +229,7 @@ export function CalendarioConsolidado() {
           {tiposActivos.size > 0 && (
             <button
               onClick={() => setTiposActivos(new Set())}
-              className="text-caption px-2.5 py-1 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="text-caption px-2.5 py-1 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
               style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
             >
               Limpiar

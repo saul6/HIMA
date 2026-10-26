@@ -204,7 +204,7 @@ function PendientesPanel({
                 </div>
                 <button
                   onClick={() => onAbrir(op.auditoria_id)}
-                  className="flex items-center gap-1 text-small font-semibold px-2 py-1 rounded-lg"
+                  className="flex items-center gap-1 text-small font-semibold px-2 py-1 rounded-lg relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                   style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
                 >
                   <ExternalLink size={10} />
@@ -556,7 +556,6 @@ export function EjecucionJornada() {
           <>
             <Boton
               variante="secundario"
-              tamano="sm"
               onClick={() => setPanelPendientes(true)}
               aria-label={`Pendientes (${totalPendientes})`}
             >
@@ -592,7 +591,7 @@ export function EjecucionJornada() {
           style={{ backgroundColor: 'var(--agro-danger-fill)', borderColor: 'var(--agro-danger-text)' }}>
           <AlertCircle size={14} className="flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
           <p className="text-small flex-1" style={{ color: 'var(--agro-danger-text)' }}>{saveError}</p>
-          <button aria-label="Cerrar" onClick={() => setSaveError(null)} className="flex-shrink-0">
+          <button aria-label="Cerrar" onClick={() => setSaveError(null)} className="flex-shrink-0 relative before:absolute before:content-[''] before:-inset-[15px]">
             <XCircle size={14} style={{ color: 'var(--agro-danger-text)' }} />
           </button>
         </motion.div>
@@ -632,13 +631,13 @@ export function EjecucionJornada() {
           {/* Filtro por módulo: solo si la jornada tiene más de uno */}
           {modulos.length > 1 && (
           <div className="px-4 pt-3">
-            <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
+            <div className="flex gap-1.5 overflow-x-auto pt-2.5 pb-3.5 -mt-2.5 -mb-2.5 -mx-4 px-4 scrollbar-none">
               {modulos.map(m => (
                 <button
                   key={m}
                   onClick={() => setModuloActivo(m)}
                   aria-pressed={moduloActivo === m}
-                  className="flex-shrink-0 px-2.5 py-1 rounded-lg text-small font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                  className="flex-shrink-0 px-2.5 py-1 rounded-lg text-small font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                   style={{
                     backgroundColor: moduloActivo === m ? 'var(--accent)' : 'var(--muted)',
                     color: moduloActivo === m ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
@@ -657,7 +656,7 @@ export function EjecucionJornada() {
               <button
                 key={f}
                 onClick={() => setFiltro(f)}
-                className="flex-shrink-0 text-small font-medium px-2 py-0.5 rounded"
+                className="flex-shrink-0 text-small font-medium px-2 py-0.5 rounded relative before:absolute before:content-[''] before:-inset-y-3 before:-inset-x-1"
                 style={{
                   backgroundColor: filtro === f ? 'var(--foreground)' : 'var(--muted)',
                   color: filtro === f ? 'var(--card)' : 'var(--muted-foreground)',
@@ -782,14 +781,14 @@ export function EjecucionJornada() {
                     <button
                       onClick={() => handleRetirar(auditoriaActiva)}
                       disabled={retirando}
-                      className="flex-1 h-8 rounded-lg text-xs font-semibold flex items-center justify-center"
+                      className="flex-1 h-8 rounded-lg text-xs font-semibold flex items-center justify-center relative before:absolute before:content-[''] before:-inset-y-1.5"
                       style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', border: '1px solid var(--agro-info-text)' }}
                     >
                       {retirando ? <Loader size={12} className="animate-spin motion-reduce:animate-none" /> : 'Confirmar'}
                     </button>
                     <button
                       onClick={() => setConfirmRetirar(null)}
-                      className="flex-1 h-8 rounded-lg text-xs font-semibold"
+                      className="flex-1 h-8 rounded-lg text-xs font-semibold relative before:absolute before:content-[''] before:-inset-y-1.5"
                       style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                     >
                       Cancelar
@@ -823,14 +822,14 @@ export function EjecucionJornada() {
                   <button
                     onClick={handleTerminar}
                     disabled={terminando}
-                    className="flex-1 h-8 rounded-lg text-xs font-semibold flex items-center justify-center"
+                    className="flex-1 h-8 rounded-lg text-xs font-semibold flex items-center justify-center relative before:absolute before:content-[''] before:-inset-y-1.5"
                     style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', border: '1px solid var(--agro-danger-text)' }}
                   >
                     {terminando ? <Loader size={12} className="animate-spin motion-reduce:animate-none" /> : 'Terminar jornada'}
                   </button>
                   <button
                     onClick={() => setConfirmTerminar(false)}
-                    className="flex-1 h-8 rounded-lg text-xs font-semibold"
+                    className="flex-1 h-8 rounded-lg text-xs font-semibold relative before:absolute before:content-[''] before:-inset-y-1.5"
                     style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                   >
                     Cancelar

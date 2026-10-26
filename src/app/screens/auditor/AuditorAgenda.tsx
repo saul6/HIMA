@@ -60,7 +60,7 @@ export function AuditorAgenda() {
                 aria-controls={`panel-${id}`}
                 onClick={() => setTab(id)}
                 onKeyDown={handleTabKeyDown}
-                className="relative flex-1 py-1.5 rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="relative flex-1 py-1.5 rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary before:absolute before:content-[''] before:-inset-y-1.5"
                 style={{
                   color: tab === id ? 'var(--foreground)' : 'var(--muted-foreground)',
                   transitionDuration: 'var(--motion-fast)',
