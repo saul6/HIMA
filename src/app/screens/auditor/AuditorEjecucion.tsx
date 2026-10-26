@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useId, type ReactNode } from 'react'
 import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
 import { guardarLastWorkspace } from '@/hooks/useContinuarTrabajo'
 import { ahora, ms, segundos, emitirEvento, consumeResumeMetrics } from '@/lib/telemetria'
@@ -205,6 +205,84 @@ const SEV_TONO: Record<Severidad, TonoEtiqueta> = {
 
 // ── Tarjeta de pregunta (eliminada — ahora usa CapturaPreguntaAuditoria) ─────
 
+// ── Plegables: chevron que rota y salto a pregunta ───────────────────────────
+
+/** Chevron de los encabezados plegables: solo `transform`, con la duración rápida del tema. */
+function ChevronPlegable({ abierto }: { abierto: boolean }) {
+  return (
+    <ChevronDown
+      size={14}
+      aria-hidden="true"
+      className={`flex-shrink-0 transition-transform duration-[var(--motion-fast)] ease-[var(--ease-out)] motion-reduce:transition-none${abierto ? ' rotate-180' : ''}`}
+      style={{ color: 'var(--muted-foreground)' }}
+    />
+  )
+}
+
+/** Lleva a una pregunta; si su bloque está plegado, lo despliega antes del scroll. */
+function irAPregunta(pregId: string) {
+  const el = document.getElementById(`preg-${pregId}`)
+  if (!el) return
+  const bloque = el.closest<HTMLElement>('[data-bloque-plegado="true"]')
+  if (bloque) {
+    bloque.dispatchEvent(new CustomEvent('desplegar-bloque'))
+    requestAnimationFrame(() => requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' })))
+    return
+  }
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
+
+/** Bloque de preguntas plegable. Plegar oculta (`hidden`), no desmonta: las capturas conservan su borrador y su guardado. */
+function BloqueAuditoria({
+  codigo, nombre, total, respondidas, children,
+}: {
+  codigo: string
+  nombre: string
+  total: number
+  respondidas: number
+  children: ReactNode
+}) {
+  const id = useId()
+  const [abierto, setAbierto] = useState(true)
+  const ref = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const desplegar = () => setAbierto(true)
+    el.addEventListener('desplegar-bloque', desplegar)
+    return () => el.removeEventListener('desplegar-bloque', desplegar)
+  }, [])
+
+  return (
+    <section ref={ref} data-bloque-plegado={!abierto} className="mb-3">
+      <button
+        type="button"
+        onClick={() => setAbierto(v => !v)}
+        aria-expanded={abierto}
+        aria-controls={id}
+        className="w-full min-h-11 px-3 py-2 rounded-lg bg-muted flex items-center gap-2 text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      >
+        <span
+          className="text-caption font-mono px-1.5 py-0.5 rounded flex-shrink-0 bg-border text-muted-foreground"
+        >
+          {codigo}
+        </span>
+        <span className="flex-1 min-w-0">
+          <span className="block text-xs font-semibold text-foreground">{nombre}</span>
+          <span className="block text-caption text-muted-foreground">
+            {total} {total === 1 ? 'pregunta' : 'preguntas'} · {respondidas} de {total} respondidas
+          </span>
+        </span>
+        <ChevronPlegable abierto={abierto} />
+      </button>
+      <div id={id} hidden={!abierto}>
+        <div className="flex flex-col gap-2 mt-2">{children}</div>
+      </div>
+    </section>
+  )
+}
+
 // ── Panel MIP / Módulo 9 cualitativo ─────────────────────────────────────────
 
 function PanelM9({
@@ -300,9 +378,14 @@ function PanelValidacion({
   onConfirmarDescarte: () => void
   onMotivoChange: (v: string) => void
 }) {
-  const [abierto, setAbierto] = useState(true)
+  const idCuerpo = useId()
   const [herenciaCursorIdx, setHerenciaCursorIdx] = useState(0)
   const tieneBlockers = !reviewLoadError && issues.some(i => i.severidad === 'BLOCKER')
+  // Plegado con su resumen de una línea; con bloqueantes abiertos (o si la revisión falló) empieza desplegado.
+  const [abierto, setAbierto] = useState(tieneBlockers || reviewLoadError)
+  useEffect(() => {
+    if (tieneBlockers || reviewLoadError) setAbierto(true)
+  }, [tieneBlockers, reviewLoadError])
 
   const herenciaIssues = issues.filter(i =>
     i.estado === 'OPEN' &&
@@ -310,8 +393,7 @@ function PanelValidacion({
   )
 
   function scrollToPreg(pregId: string) {
-    const el = document.getElementById(`preg-${pregId}`)
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    irAPregunta(pregId)
   }
 
   function navSiguienteHerencia() {
@@ -333,8 +415,11 @@ function PanelValidacion({
     >
       {/* Header colapsable */}
       <button
+        type="button"
         onClick={() => setAbierto(v => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left"
+        aria-expanded={abierto}
+        aria-controls={idCuerpo}
+        className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left"
       >
         <div className="flex items-center gap-2 min-w-0 flex-wrap">
           {validando ? (
@@ -376,14 +461,11 @@ function PanelValidacion({
             </div>
           )}
         </div>
-        {abierto
-          ? <ChevronUp size={14} style={{ color: 'var(--muted-foreground)' }} />
-          : <ChevronDown size={14} style={{ color: 'var(--muted-foreground)' }} />
-        }
+        <ChevronPlegable abierto={abierto} />
       </button>
 
-      {/* Cuerpo */}
-      {abierto && (
+      {/* Cuerpo: plegar solo lo oculta */}
+      <div id={idCuerpo} hidden={!abierto}>
         <div className="border-t border-border">
           {validando ? (
             <div className="flex items-center justify-center gap-2 py-6">
@@ -492,7 +574,7 @@ function PanelValidacion({
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   )
 }
@@ -511,6 +593,7 @@ function PanelScoring({
 }) {
   const [calculo, setCalculo]  = useState<CalculoPuntaje | null>(null)
   const [scoringEstado, setScoringEstado] = useState<ScoringEstado>('cargando')
+  const idCuerpo = useId()
   const [abierto, setAbierto]  = useState(false)
   const ultimaVersionRef = useRef<number>(0)
   // Versión interna para reintentar sin incrementar la externa
@@ -570,8 +653,11 @@ function PanelScoring({
     <div className="rounded-xl border border-border overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
       {/* Cabecera */}
       <button
+        type="button"
         onClick={() => setAbierto(v => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left"
+        aria-expanded={abierto}
+        aria-controls={idCuerpo}
+        className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left"
       >
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <BarChart2
@@ -602,13 +688,10 @@ function PanelScoring({
             </span>
           )}
         </div>
-        {abierto
-          ? <ChevronUp size={14} style={{ color: 'var(--muted-foreground)' }} />
-          : <ChevronDown size={14} style={{ color: 'var(--muted-foreground)' }} />
-        }
+        <ChevronPlegable abierto={abierto} />
       </button>
 
-      {abierto && (
+      <div id={idCuerpo} hidden={!abierto}>
         <div className="border-t border-border px-4 pb-4 flex flex-col gap-3">
           {/* Etiqueta invariante */}
           <p className="text-caption pt-3 italic" style={{ color: 'var(--muted-foreground)' }}>
@@ -833,7 +916,7 @@ function PanelScoring({
             </p>
           )}
         </div>
-      )}
+      </div>
     </div>
   )
 }
@@ -854,18 +937,21 @@ function PanelHallazgos({
   canWriteNC: boolean
   canWriteAC: boolean
 }) {
+  const idCuerpo = useId()
   const [abierto, setAbierto] = useState(true)
 
   function scrollToPreg(pregId: string) {
-    const el = document.getElementById(`preg-${pregId}`)
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    irAPregunta(pregId)
   }
 
   return (
     <div className="rounded-xl border border-border overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
       <button
+        type="button"
         onClick={() => setAbierto(v => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left"
+        aria-expanded={abierto}
+        aria-controls={idCuerpo}
+        className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left"
       >
         <div className="flex items-center gap-2">
           <Flag size={15} className="flex-shrink-0" style={{ color: hallazgos.length > 0 ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }} />
@@ -875,13 +961,10 @@ function PanelHallazgos({
               : `${hallazgos.length} hallazgo${hallazgos.length !== 1 ? 's' : ''}`}
           </span>
         </div>
-        {abierto
-          ? <ChevronUp size={14} style={{ color: 'var(--muted-foreground)' }} />
-          : <ChevronDown size={14} style={{ color: 'var(--muted-foreground)' }} />
-        }
+        <ChevronPlegable abierto={abierto} />
       </button>
 
-      {abierto && (
+      <div id={idCuerpo} hidden={!abierto}>
         <div className="border-t border-border">
           {hallazgos.length === 0 ? (
             cargando ? (
@@ -953,7 +1036,7 @@ function PanelHallazgos({
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   )
 }
@@ -1876,8 +1959,11 @@ export function AuditorEjecucion() {
             {historialCriterios.length > 0 && (
               <div className="rounded-xl border border-border overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
                 <button
+                  type="button"
                   onClick={() => setPanelAntecedentesAbierto(v => !v)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-left"
+                  aria-expanded={panelAntecedentesAbierto}
+                  aria-controls="panel-antecedentes-cuerpo"
+                  className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left"
                 >
                   <div className="flex items-center gap-2">
                     <History size={15} className="flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
@@ -1885,12 +1971,9 @@ export function AuditorEjecucion() {
                       Antecedentes ({historialCriterios.length} criterio{historialCriterios.length !== 1 ? 's' : ''} con NC)
                     </span>
                   </div>
-                  {panelAntecedentesAbierto
-                    ? <ChevronUp size={14} style={{ color: 'var(--muted-foreground)' }} />
-                    : <ChevronDown size={14} style={{ color: 'var(--muted-foreground)' }} />
-                  }
+                  <ChevronPlegable abierto={panelAntecedentesAbierto} />
                 </button>
-                {panelAntecedentesAbierto && (
+                <div id="panel-antecedentes-cuerpo" hidden={!panelAntecedentesAbierto}>
                   <div className="border-t border-border">
                     <p className="text-caption px-4 pt-3 pb-1" style={{ color: 'var(--muted-foreground)' }}>
                       Criterios con historial de NC en este sitio. Informativo — no determina cumplimiento.
@@ -1918,7 +2001,7 @@ export function AuditorEjecucion() {
                           </div>
                           {pregMatch && (
                             <button
-                              onClick={() => document.getElementById(`preg-${pregMatch.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                              onClick={() => irAPregunta(pregMatch.id)}
                               className="self-start text-caption font-medium px-2 py-0.5 rounded"
                               style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)' }}
                             >
@@ -1929,7 +2012,7 @@ export function AuditorEjecucion() {
                       )
                     })}
                   </div>
-                )}
+                </div>
               </div>
             )}
 
@@ -1955,45 +2038,45 @@ export function AuditorEjecucion() {
             )}
 
             {/* Módulos → Bloques → Preguntas */}
-            {modulosData.map(modulo => (
+            {modulosData.map(modulo => {
+              const respondidasModulo = modulo.preguntas.filter(p => respuestasMap.get(p.id)).length
+              const totalModulo = modulo.preguntas.length
+              return (
               <div key={modulo.modulo_id}>
-                {/* Banner de módulo */}
-                <div
-                  className="rounded-t-xl px-4 py-2.5 flex items-center gap-2 mb-0"
-                  style={{ backgroundColor: 'var(--primary)' }}
-                >
-                  <p className="text-xs font-bold flex-1" style={{ color: 'var(--primary-foreground)' }}>
-                    {modulo.modulo_nombre}
-                  </p>
-                  <span className="text-caption" style={{ color: 'color-mix(in srgb, var(--primary-foreground) 80%, transparent)' }}>
-                    {modulo.preguntas.length} preguntas
-                  </span>
+                {/* Encabezado de módulo con avance */}
+                <div className="rounded-xl border border-border bg-card px-4 py-3 mb-3 flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <TituloSeccion as="h2" className="mb-0 flex-1 min-w-0">{modulo.modulo_nombre}</TituloSeccion>
+                    <Etiqueta tono="neutral">{totalModulo} {totalModulo === 1 ? 'pregunta' : 'preguntas'}</Etiqueta>
+                  </div>
+                  <p className="text-small text-muted-foreground">{respondidasModulo} de {totalModulo} respondidas</p>
+                  <div
+                    role="progressbar"
+                    aria-label={`Avance de ${modulo.modulo_nombre}`}
+                    aria-valuemin={0}
+                    aria-valuenow={respondidasModulo}
+                    aria-valuemax={totalModulo}
+                    className="h-1.5 rounded-full bg-muted overflow-hidden"
+                  >
+                    <div
+                      className="h-full rounded-full bg-primary"
+                      style={{ width: `${totalModulo > 0 ? Math.round((respondidasModulo / totalModulo) * 100) : 0}%` }}
+                    />
+                  </div>
                 </div>
 
                 {modulo.bloques.map(bloque => {
                   const pregBloque = modulo.preguntas.filter(p => p.bloque_id === bloque.id)
                   if (pregBloque.length === 0) return null
                   return (
-                    <section key={bloque.id} className="mb-3">
-                      <div
-                        className="px-4 py-2.5 flex items-center gap-2 mb-2"
-                        style={{ backgroundColor: 'var(--muted)' }}
-                      >
-                        <span
-                          className="text-caption font-mono px-1.5 py-0.5 rounded"
-                          style={{ backgroundColor: 'var(--border)', color: 'var(--muted-foreground)' }}
-                        >
-                          {bloque.codigo}
-                        </span>
-                        <p className="text-xs font-semibold flex-1" style={{ color: 'var(--foreground)' }}>
-                          {bloque.nombre}
-                        </p>
-                        <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                          {pregBloque.length} preg.
-                        </span>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        {pregBloque.map(preg => (
+                    <BloqueAuditoria
+                      key={bloque.id}
+                      codigo={bloque.codigo}
+                      nombre={bloque.nombre}
+                      total={pregBloque.length}
+                      respondidas={pregBloque.filter(p => respuestasMap.get(p.id)).length}
+                    >
+                      {pregBloque.map(preg => (
                           <CapturaPreguntaAuditoria
                             key={preg.id}
                             ref={getCapturaRef(preg.id)}
@@ -2033,13 +2116,13 @@ export function AuditorEjecucion() {
                               panelHallazgosRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                             }}
                           />
-                        ))}
-                      </div>
-                    </section>
+                      ))}
+                    </BloqueAuditoria>
                   )
                 })}
               </div>
-            ))}
+              )
+            })}
 
             {cerrada && (
               <div className="rounded-xl px-4 py-3 text-center mt-2" style={{ backgroundColor: 'var(--muted)' }}>
