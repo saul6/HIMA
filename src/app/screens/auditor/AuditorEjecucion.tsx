@@ -36,6 +36,7 @@ import { FormularioSkeleton } from '@/app/components/FormularioSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { fechaCorta, fechaHora, formatoPct } from '@/lib/formato'
+import { Campo } from '@/app/components/ui-mady/Campo'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -540,6 +541,7 @@ function PanelValidacion({
                         {descartandoId === issue.id && (
                           <div className="flex flex-col gap-1.5 mt-0.5">
                             <input
+                              aria-label="Motivo del descarte (opcional)"
                               type="text"
                               value={motivoDescarte}
                               onChange={e => onMotivoChange(e.target.value)}
@@ -1012,6 +1014,7 @@ function PanelHallazgos({
                     )}
                     <div className="flex items-center gap-2 flex-wrap">
                       <select
+                        aria-label="Estado del hallazgo"
                         value={h.estado}
                         onChange={e => onEstadoChange(h.id, e.target.value as AudHallazgoEstado)}
                         disabled={!canWriteNC}
@@ -2221,41 +2224,43 @@ export function AuditorEjecucion() {
             </button>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>
-                Clasificación
-              </label>
-              <select
-                value={formHallazgoClas}
-                onChange={e => setFormHallazgoClas(e.target.value as AudHallazgoClasificacion)}
-                className="h-10 rounded-xl px-3 text-sm"
-                style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
-              >
-                <option value="menor">Menor</option>
-                <option value="mayor">Mayor</option>
-                <option value="critico">Crítico</option>
-                <option value="observacion">Observación</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>
-                Descripción <span style={{ color: 'var(--agro-red)' }}>*</span>
-              </label>
-              <textarea
-                value={formHallazgoDesc}
-                onChange={e => setFormHallazgoDesc(e.target.value)}
-                rows={4}
-                placeholder="Describe el hallazgo encontrado…"
-                className="resize-none text-sm"
-                style={{
-                  borderRadius: 'var(--radius)',
-                  border: '1px solid var(--border)',
-                  backgroundColor: 'var(--input-background)',
-                  color: 'var(--foreground)',
-                  padding: '0.5rem 0.75rem',
-                }}
-              />
-            </div>
+            <Campo etiqueta="Clasificación" className="gap-1" claseEtiqueta="text-caption font-medium">
+              {({ id }) => (
+                <select id={id}
+                  value={formHallazgoClas}
+                  onChange={e => setFormHallazgoClas(e.target.value as AudHallazgoClasificacion)}
+                  className="h-10 rounded-xl px-3 text-sm"
+                  style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                >
+                  <option value="menor">Menor</option>
+                  <option value="mayor">Mayor</option>
+                  <option value="critico">Crítico</option>
+                  <option value="observacion">Observación</option>
+                </select>
+              )}
+            </Campo>
+            <Campo
+              etiqueta={<>Descripción <span aria-hidden="true" style={{ color: 'var(--agro-red)' }}>*</span><span className="sr-only"> obligatorio</span></>}
+              className="gap-1"
+              claseEtiqueta="text-caption font-medium"
+            >
+              {({ id }) => (
+                <textarea id={id}
+                  value={formHallazgoDesc}
+                  onChange={e => setFormHallazgoDesc(e.target.value)}
+                  rows={4}
+                  placeholder="Describe el hallazgo encontrado…"
+                  className="resize-none text-sm"
+                  style={{
+                    borderRadius: 'var(--radius)',
+                    border: '1px solid var(--border)',
+                    backgroundColor: 'var(--input-background)',
+                    color: 'var(--foreground)',
+                    padding: '0.5rem 0.75rem',
+                  }}
+                />
+              )}
+            </Campo>
           </div>
           <div className="px-4 pb-6 pt-3 flex-shrink-0 border-t border-border">
             <Boton onClick={handleGuardarHallazgo} cargando={guardandoHallazgo} disabled={!formHallazgoDesc.trim()} className="w-full">
@@ -2292,6 +2297,7 @@ export function AuditorEjecucion() {
               <div className="rounded-xl p-3 flex flex-col gap-2" style={{ backgroundColor: 'var(--muted)' }}>
                 <p className="text-caption font-bold" style={{ color: 'var(--muted-foreground)' }}>Estado interno — M.A.D.Y</p>
                 <select
+                  aria-label="Estado interno"
                   value={formAccion.internal_status ?? 'REGISTERED'}
                   onChange={e => setFormAccion(prev => ({ ...prev, internal_status: e.target.value as AudInternalStatus }))}
                   className="h-10 rounded-xl px-3 text-sm w-full"
@@ -2308,6 +2314,7 @@ export function AuditorEjecucion() {
                 <p className="text-caption font-bold" style={{ color: 'var(--muted-foreground)' }}>Estado externo — Azzule / organismo</p>
                 <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Registra manualmente lo que ocurrió fuera del sistema.</p>
                 <select
+                  aria-label="Estado externo"
                   value={formAccion.external_status ?? 'NOT_TRACKED'}
                   onChange={e => setFormAccion(prev => ({ ...prev, external_status: e.target.value as AudExternalStatus }))}
                   className="h-10 rounded-xl px-3 text-sm w-full"
@@ -2320,17 +2327,18 @@ export function AuditorEjecucion() {
               </div>
 
               {/* Contraparte externa */}
-              <div className="flex flex-col gap-1">
-                <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Contraparte externa (sin usuario MADY)</label>
-                <input
-                  type="text"
-                  value={formAccion.owner_external_party ?? ''}
-                  onChange={e => setFormAccion(prev => ({ ...prev, owner_external_party: e.target.value || null }))}
-                  placeholder="Nombre de la persona u organismo responsable"
-                  className="h-10 rounded-xl px-3 text-sm"
-                  style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
-                />
-              </div>
+              <Campo etiqueta="Contraparte externa (sin usuario MADY)" className="gap-1" claseEtiqueta="text-caption font-medium">
+                {({ id }) => (
+                  <input id={id}
+                    type="text"
+                    value={formAccion.owner_external_party ?? ''}
+                    onChange={e => setFormAccion(prev => ({ ...prev, owner_external_party: e.target.value || null }))}
+                    placeholder="Nombre de la persona u organismo responsable"
+                    className="h-10 rounded-xl px-3 text-sm"
+                    style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                  />
+                )}
+              </Campo>
 
               {/* Campos narrativos */}
               {([
@@ -2343,22 +2351,23 @@ export function AuditorEjecucion() {
                 ['respuesta_organizacion', 'Respuesta de la organización'],
                 ['comentario_accion',      'Comentario de la acción'],
               ] as [keyof AudAccionCorrectivaCAPA, string][]).map(([campo, etiqueta]) => (
-                <div key={campo} className="flex flex-col gap-1">
-                  <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>{etiqueta}</label>
-                  <textarea
-                    value={(formAccion[campo] as string) ?? ''}
-                    onChange={e => setFormAccion(prev => ({ ...prev, [campo]: e.target.value || null }))}
-                    rows={2}
-                    className="resize-none text-sm"
-                    style={{
-                      borderRadius: 'var(--radius)',
-                      border: '1px solid var(--border)',
-                      backgroundColor: 'var(--input-background)',
-                      color: 'var(--foreground)',
-                      padding: '0.5rem 0.75rem',
-                    }}
-                  />
-                </div>
+                <Campo etiqueta={etiqueta} className="gap-1" key={campo} claseEtiqueta="text-caption font-medium">
+                  {({ id }) => (
+                    <textarea id={id}
+                      value={(formAccion[campo] as string) ?? ''}
+                      onChange={e => setFormAccion(prev => ({ ...prev, [campo]: e.target.value || null }))}
+                      rows={2}
+                      className="resize-none text-sm"
+                      style={{
+                        borderRadius: 'var(--radius)',
+                        border: '1px solid var(--border)',
+                        backgroundColor: 'var(--input-background)',
+                        color: 'var(--foreground)',
+                        padding: '0.5rem 0.75rem',
+                      }}
+                    />
+                  )}
+                </Campo>
               ))}
 
               {/* Ver historial */}
@@ -2465,55 +2474,59 @@ export function AuditorEjecucion() {
                         <p className="text-caption pt-2" style={{ color: 'var(--muted-foreground)' }}>
                           Cada registro es una nueva observación — no sobrescribe el anterior.
                         </p>
-                        <div className="flex flex-col gap-1">
-                          <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Estado observado *</label>
-                          <select
-                            value={formResultado.observed_status}
-                            onChange={e => setFormResultado(p => ({ ...p, observed_status: e.target.value as AudExternalObservedStatus }))}
-                            className="h-9 rounded-lg px-2 text-xs"
-                            style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
-                          >
-                            {(Object.keys(OBSERVED_STATUS_LABELS) as AudExternalObservedStatus[]).map(k => (
-                              <option key={k} value={k}>{OBSERVED_STATUS_LABELS[k]}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Fecha observada</label>
-                          <input
-                            type="date"
-                            value={formResultado.observed_at}
-                            onChange={e => setFormResultado(p => ({ ...p, observed_at: e.target.value }))}
-                            className="h-9 rounded-lg px-2 text-xs"
-                            style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>ID auditoría Azzule</label>
-                          <input
-                            type="text"
-                            value={formResultado.external_audit_id}
-                            onChange={e => setFormResultado(p => ({ ...p, external_audit_id: e.target.value }))}
-                            placeholder="Ej. AZZ-2024-00123"
-                            className="h-9 rounded-lg px-2 text-xs"
-                            style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
-                          />
-                        </div>
+                        <Campo etiqueta="Estado observado" requerido className="gap-1" claseEtiqueta="text-caption font-medium">
+                          {({ id }) => (
+                            <select id={id}
+                              value={formResultado.observed_status}
+                              onChange={e => setFormResultado(p => ({ ...p, observed_status: e.target.value as AudExternalObservedStatus }))}
+                              className="h-9 rounded-lg px-2 text-xs"
+                              style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                            >
+                              {(Object.keys(OBSERVED_STATUS_LABELS) as AudExternalObservedStatus[]).map(k => (
+                                <option key={k} value={k}>{OBSERVED_STATUS_LABELS[k]}</option>
+                              ))}
+                            </select>
+                          )}
+                        </Campo>
+                        <Campo etiqueta="Fecha observada" className="gap-1" claseEtiqueta="text-caption font-medium">
+                          {({ id }) => (
+                            <input id={id}
+                              type="date"
+                              value={formResultado.observed_at}
+                              onChange={e => setFormResultado(p => ({ ...p, observed_at: e.target.value }))}
+                              className="h-9 rounded-lg px-2 text-xs"
+                              style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                            />
+                          )}
+                        </Campo>
+                        <Campo etiqueta="ID auditoría Azzule" className="gap-1" claseEtiqueta="text-caption font-medium">
+                          {({ id }) => (
+                            <input id={id}
+                              type="text"
+                              value={formResultado.external_audit_id}
+                              onChange={e => setFormResultado(p => ({ ...p, external_audit_id: e.target.value }))}
+                              placeholder="Ej. AZZ-2024-00123"
+                              className="h-9 rounded-lg px-2 text-xs"
+                              style={{ border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)' }}
+                            />
+                          )}
+                        </Campo>
                         {([
                           ['official_decision',     'Decisión oficial'],
                           ['official_new_response', 'Nueva respuesta oficial'],
                           ['official_comment',      'Comentario'],
                         ] as [keyof typeof formResultado, string][]).map(([campo, label]) => (
-                          <div key={campo} className="flex flex-col gap-1">
-                            <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>{label}</label>
-                            <textarea
-                              value={formResultado[campo]}
-                              onChange={e => setFormResultado(p => ({ ...p, [campo]: e.target.value }))}
-                              rows={2}
-                              className="resize-none text-xs"
-                              style={{ borderRadius: 'var(--radius)', border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)', padding: '0.375rem 0.625rem' }}
-                            />
-                          </div>
+                          <Campo etiqueta={label} className="gap-1" key={campo} claseEtiqueta="text-caption font-medium">
+                            {({ id }) => (
+                              <textarea id={id}
+                                value={formResultado[campo]}
+                                onChange={e => setFormResultado(p => ({ ...p, [campo]: e.target.value }))}
+                                rows={2}
+                                className="resize-none text-xs"
+                                style={{ borderRadius: 'var(--radius)', border: '1px solid var(--border)', backgroundColor: 'var(--input-background)', color: 'var(--foreground)', padding: '0.375rem 0.625rem' }}
+                              />
+                            )}
+                          </Campo>
                         ))}
                         <Boton tamano="sm" onClick={handleRegistrarResultado} cargando={guardandoResultado} className="w-full">
                           Registrar resultado
@@ -2734,30 +2747,33 @@ export function AuditorEjecucion() {
               </TituloSeccion>
 
               <div className="flex gap-2">
-                <div className="flex flex-col gap-1 flex-1">
-                  <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Desde</label>
-                  <input
-                    type="date"
-                    value={incDesde}
-                    onChange={e => setIncDesde(e.target.value)}
-                    className="h-9 rounded-lg px-2 text-xs"
-                    style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
-                  />
-                </div>
-                <div className="flex flex-col gap-1 flex-1">
-                  <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Hasta</label>
-                  <input
-                    type="date"
-                    value={incHasta}
-                    onChange={e => setIncHasta(e.target.value)}
-                    className="h-9 rounded-lg px-2 text-xs"
-                    style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
-                  />
-                </div>
+                <Campo etiqueta="Desde" className="gap-1 flex-1" claseEtiqueta="text-caption font-medium">
+                  {({ id }) => (
+                    <input id={id}
+                      type="date"
+                      value={incDesde}
+                      onChange={e => setIncDesde(e.target.value)}
+                      className="h-9 rounded-lg px-2 text-xs"
+                      style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                    />
+                  )}
+                </Campo>
+                <Campo etiqueta="Hasta" className="gap-1 flex-1" claseEtiqueta="text-caption font-medium">
+                  {({ id }) => (
+                    <input id={id}
+                      type="date"
+                      value={incHasta}
+                      onChange={e => setIncHasta(e.target.value)}
+                      className="h-9 rounded-lg px-2 text-xs"
+                      style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                    />
+                  )}
+                </Campo>
               </div>
 
               <div className="flex gap-2">
                 <input
+                  aria-label="Buscar por descripción"
                   type="text"
                   value={incSearch}
                   onChange={e => setIncSearch(e.target.value)}

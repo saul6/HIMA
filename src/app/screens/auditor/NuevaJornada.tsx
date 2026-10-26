@@ -240,6 +240,7 @@ export function NuevaJornada() {
         >
           {/* Nombre (opcional) */}
           <input
+            aria-label="Nombre de la jornada (opcional)"
             type="text"
             value={nombre}
             onChange={e => setNombre(e.target.value)}

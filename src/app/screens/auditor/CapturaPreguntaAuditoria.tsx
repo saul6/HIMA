@@ -22,6 +22,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { traducirErrorBd, mensajeErrorBd } from '@/lib/erroresBd'
 import { guardarBorradorAuditor, cargarBorradorAuditor, borrarBorradorAuditor, claveBorradorAuditor } from '@/lib/idb/auditorBorradorStore'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Campo } from '@/app/components/ui-mady/Campo'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { fechaCorta } from '@/lib/formato'
 import { Skeleton } from '@/app/components/ui/skeleton'
@@ -916,6 +917,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 ) : (
                   <div className="flex flex-col gap-2">
                     <textarea
+                      aria-label="Explicación obligatoria"
                       value={sugerenciaCExplicacion}
                       onChange={e => setSugerenciaCExplicacion(e.target.value)}
                       rows={2}
@@ -1128,25 +1130,28 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                         )}
                       </div>
                     )}
-                    <div className="flex flex-col gap-1">
-                      <label className="text-small font-medium" style={{ color: 'var(--foreground)' }}>
-                        Explicación <span style={{ color: 'var(--agro-red)' }}>*</span>
-                      </label>
-                      <textarea
-                        value={reglaExplicacion}
-                        onChange={e => setReglaExplicacion(e.target.value)}
-                        rows={2}
-                        placeholder="Obligatoria — describe el motivo de esta N/A por rama…"
-                        className="resize-none text-body"
-                        style={{
-                          borderRadius: 'var(--radius)',
-                          border: '1px solid var(--border)',
-                          backgroundColor: 'var(--input-background)',
-                          color: 'var(--foreground)',
-                          padding: '0.375rem 0.625rem',
-                        }}
-                      />
-                    </div>
+                    <Campo
+                      etiqueta={<>Explicación <span aria-hidden="true" style={{ color: 'var(--agro-red)' }}>*</span><span className="sr-only"> obligatorio</span></>}
+                      className="gap-1"
+                      claseEtiqueta="text-small font-medium text-foreground"
+                    >
+                      {({ id }) => (
+                          <textarea id={id}
+                            value={reglaExplicacion}
+                            onChange={e => setReglaExplicacion(e.target.value)}
+                            rows={2}
+                            placeholder="Obligatoria — describe el motivo de esta N/A por rama…"
+                            className="resize-none text-body"
+                            style={{
+                              borderRadius: 'var(--radius)',
+                              border: '1px solid var(--border)',
+                              backgroundColor: 'var(--input-background)',
+                              color: 'var(--foreground)',
+                              padding: '0.375rem 0.625rem',
+                            }}
+                          />
+                      )}
+                    </Campo>
 
                     {reglaConflictos && reglaConflictos.length > 0 && (
                       <div
@@ -1270,10 +1275,11 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                       </div>
                     ) : (
                       <>
-                        <label className="text-small font-medium" style={{ color: 'var(--foreground)' }}>
+                        <label htmlFor={`retiro-motivo-${regla.id}`} className="text-small font-medium" style={{ color: 'var(--foreground)' }}>
                           Motivo del retiro (opcional)
                         </label>
                         <textarea
+                          id={`retiro-motivo-${regla.id}`}
                           value={motivoRetiro}
                           onChange={e => setMotivoRetiro(e.target.value)}
                           rows={2}
@@ -1463,72 +1469,69 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                 </button>
               </div>
               <div className="flex gap-3">
-                <div className="flex flex-col gap-1 flex-1">
-                  <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>
-                    Puntos otorgados
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={matrizMax}
-                    step={1}
-                    value={puntosInput}
-                    onChange={e => handlePuntosChange(e.target.value)}
-                    className="h-9 rounded-lg px-2 text-sm text-center"
-                    style={{
-                      border: `1px solid ${errorPuntos ? 'var(--agro-red)' : 'var(--border-control)'}`,
-                      backgroundColor: 'var(--input-background)',
-                      color: 'var(--foreground)',
-                    }}
-                  />
-                </div>
-                <div className="flex flex-col gap-1 flex-1">
-                  <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>
-                    Descuento
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={matrizMax}
-                    step={1}
-                    value={descuentoInput}
-                    onChange={e => handleDescuentoChange(e.target.value)}
-                    className="h-9 rounded-lg px-2 text-sm text-center"
-                    style={{
-                      border: `1px solid ${errorPuntos ? 'var(--agro-red)' : 'var(--border-control)'}`,
-                      backgroundColor: 'var(--input-background)',
-                      color: 'var(--foreground)',
-                    }}
-                  />
-                </div>
+                <Campo etiqueta="Puntos otorgados" className="gap-1 flex-1" claseEtiqueta="text-caption font-medium">
+                  {({ id }) => (
+                      <input id={id}
+                        type="number"
+                        min={0}
+                        max={matrizMax}
+                        step={1}
+                        value={puntosInput}
+                        onChange={e => handlePuntosChange(e.target.value)}
+                        className="h-9 rounded-lg px-2 text-sm text-center"
+                        style={{
+                          border: `1px solid ${errorPuntos ? 'var(--agro-red)' : 'var(--border-control)'}`,
+                          backgroundColor: 'var(--input-background)',
+                          color: 'var(--foreground)',
+                        }}
+                      />
+                  )}
+                </Campo>
+                <Campo etiqueta="Descuento" className="gap-1 flex-1" claseEtiqueta="text-caption font-medium">
+                  {({ id }) => (
+                      <input id={id}
+                        type="number"
+                        min={0}
+                        max={matrizMax}
+                        step={1}
+                        value={descuentoInput}
+                        onChange={e => handleDescuentoChange(e.target.value)}
+                        className="h-9 rounded-lg px-2 text-sm text-center"
+                        style={{
+                          border: `1px solid ${errorPuntos ? 'var(--agro-red)' : 'var(--border-control)'}`,
+                          backgroundColor: 'var(--input-background)',
+                          color: 'var(--foreground)',
+                        }}
+                      />
+                  )}
+                </Campo>
               </div>
               {errorPuntos && (
                 <p className="text-small" style={{ color: 'var(--agro-danger-text)' }}>{errorPuntos}</p>
               )}
-              <div className="flex flex-col gap-1">
-                <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>
-                  Motivo del ajuste{difiere && <span style={{ color: 'var(--agro-red)' }}> *</span>}
-                </label>
-                <textarea
-                  value={motivoInput}
-                  onChange={e => setMotivoInput(e.target.value)}
-                  rows={2}
-                  placeholder={difiere ? 'Requerido cuando el valor difiere de la sugerencia…' : 'Opcional cuando coincide con la matriz…'}
-                  className="resize-none text-body"
-                  style={{
-                    borderRadius: 'var(--radius)',
-                    border: `1px solid ${difiere && !motivoValido ? 'var(--agro-red)' : 'var(--border-control)'}`,
-                    backgroundColor: 'var(--input-background)',
-                    color: 'var(--foreground)',
-                    padding: '0.375rem 0.625rem',
-                  }}
-                />
-                {difiere && !motivoValido && (
-                  <p className="text-small" style={{ color: 'var(--agro-danger-text)' }}>
-                    El motivo es obligatorio cuando el valor difiere de la sugerencia.
-                  </p>
+              <Campo
+                etiqueta={<>Motivo del ajuste{difiere && <><span aria-hidden="true" style={{ color: 'var(--agro-red)' }}> *</span><span className="sr-only"> obligatorio</span></>}</>}
+                className="gap-1"
+                claseEtiqueta="text-caption font-medium"
+                error={difiere && !motivoValido ? 'El motivo es obligatorio cuando el valor difiere de la sugerencia.' : undefined}
+              >
+                {({ id, describedBy, invalid }) => (
+                  <textarea id={id} aria-describedby={describedBy} aria-invalid={invalid}
+                    value={motivoInput}
+                    onChange={e => setMotivoInput(e.target.value)}
+                    rows={2}
+                    placeholder={difiere ? 'Requerido cuando el valor difiere de la sugerencia…' : 'Opcional cuando coincide con la matriz…'}
+                    className="resize-none text-body"
+                    style={{
+                      borderRadius: 'var(--radius)',
+                      border: `1px solid ${difiere && !motivoValido ? 'var(--agro-red)' : 'var(--border-control)'}`,
+                      backgroundColor: 'var(--input-background)',
+                      color: 'var(--foreground)',
+                      padding: '0.375rem 0.625rem',
+                    }}
+                  />
                 )}
-              </div>
+              </Campo>
               <div className="flex gap-2">
                 <Boton tamano="sm" onClick={handleConfirmarAjuste} cargando={enviandoAjuste} disabled={!puedeConfirmar} className="flex-1">
                   Confirmar
@@ -1788,27 +1791,26 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           )}
 
           {/* ── Observación ── */}
-          <div className="flex flex-col gap-1">
-            <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>
-              Observación del auditor
-            </label>
-            <TextareaContador limite={limiteTexto('aud_observaciones', 'observacion')}
-              value={observacion}
-              onChange={e => handleObservacion(preguntaId, e.target.value)}
-              onBlur={() => scheduleBlurSave(preguntaId)}
-              disabled={bloqueado}
-              rows={3}
-              placeholder="Observaciones del auditor…"
-              className="resize-none text-body"
-              style={{
-                borderRadius: 'var(--radius)',
-                border: '1px solid var(--border)',
-                backgroundColor: bloqueado ? 'var(--muted)' : 'var(--input-background)',
-                color: 'var(--foreground)',
-                padding: '0.375rem 0.625rem',
-              }}
-            />
-          </div>
+          <Campo etiqueta="Observación del auditor" className="gap-1" claseEtiqueta="text-caption font-medium">
+            {({ id }) => (
+              <TextareaContador id={id} limite={limiteTexto('aud_observaciones', 'observacion')}
+                value={observacion}
+                onChange={e => handleObservacion(preguntaId, e.target.value)}
+                onBlur={() => scheduleBlurSave(preguntaId)}
+                disabled={bloqueado}
+                rows={3}
+                placeholder="Observaciones del auditor…"
+                className="resize-none text-body"
+                style={{
+                  borderRadius: 'var(--radius)',
+                  border: '1px solid var(--border)',
+                  backgroundColor: bloqueado ? 'var(--muted)' : 'var(--input-background)',
+                  color: 'var(--foreground)',
+                  padding: '0.375rem 0.625rem',
+                }}
+              />
+            )}
+          </Campo>
 
           {/* ── Info mínima ── */}
           {pregunta.info_minima && (

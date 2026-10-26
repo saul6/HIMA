@@ -20,6 +20,7 @@ import { estadoAuditoria } from './estados'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { fechaCorta } from '@/lib/formato'
 import { useEntradaPantalla } from './motionAuditor'
+import { Campo } from '@/app/components/ui-mady/Campo'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -448,57 +449,59 @@ export function AuditorInstalacionDetalle() {
               </div>
 
               {modoOrg === 'asignada' ? (
-                <div className="flex flex-col gap-1">
-                  <label className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                    Selecciona la organización
-                  </label>
-                  <select
-                    value={orgSelId}
-                    onChange={e => {
-                      const id = e.target.value
-                      const org = orgsAsignadas.find(o => o.org_id === id)
-                      handleSelOrg(id, org?.nombre ?? '')
-                    }}
-                    style={{ ...inputSt, height: '2.5rem' }}
-                  >
-                    <option value="">— Elige una organización —</option>
-                    {orgsAsignadas.map(o => (
-                      <option key={o.org_id} value={o.org_id}>{o.nombre}</option>
-                    ))}
-                  </select>
-                  {orgsAsignadas.length === 0 && (
-                    <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                      No tienes organizaciones asignadas. Usa "Ingresar ID" si ya tienes el UUID de la org.
-                    </p>
+                <Campo etiqueta="Selecciona la organización" className="gap-1" claseEtiqueta="text-caption">
+                  {({ id }) => (
+                    <>
+                      <select id={id}
+                        value={orgSelId}
+                        onChange={e => {
+                          const id = e.target.value
+                          const org = orgsAsignadas.find(o => o.org_id === id)
+                          handleSelOrg(id, org?.nombre ?? '')
+                        }}
+                        style={{ ...inputSt, height: '2.5rem' }}
+                      >
+                        <option value="">— Elige una organización —</option>
+                        {orgsAsignadas.map(o => (
+                          <option key={o.org_id} value={o.org_id}>{o.nombre}</option>
+                        ))}
+                      </select>
+                      {orgsAsignadas.length === 0 && (
+                        <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
+                          No tienes organizaciones asignadas. Usa "Ingresar ID" si ya tienes el UUID de la org.
+                        </p>
+                      )}
+                    </>
                   )}
-                </div>
+                </Campo>
               ) : (
-                <div className="flex flex-col gap-1">
-                  <label className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                    ID de organización (UUID)
-                  </label>
-                  <input
-                    type="text"
-                    value={orgManualId}
-                    onChange={e => setOrgManualId(e.target.value)}
-                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                    style={inputSt}
-                  />
-                  <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                    El admin de la organización puede obtenerlo en Ajustes de su cuenta.
-                  </p>
-                  {orgManualId.trim().length > 10 && (
-                    <button
-                      onClick={() => cargarPerfiles(orgManualId.trim())}
-                      disabled={cargandoPerfiles}
-                      className="self-start text-small font-semibold h-7 px-3 rounded-lg disabled:opacity-50 flex items-center gap-1"
-                      style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)', border: '1px solid var(--border)' }}
-                    >
-                      {cargandoPerfiles ? <Loader size={10} className="animate-spin motion-reduce:animate-none" /> : null}
-                      Cargar usuarios de esta org
-                    </button>
+                <Campo etiqueta="ID de organización (UUID)" className="gap-1" claseEtiqueta="text-caption">
+                  {({ id }) => (
+                    <>
+                      <input id={id}
+                        type="text"
+                        value={orgManualId}
+                        onChange={e => setOrgManualId(e.target.value)}
+                        placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                        style={inputSt}
+                      />
+                      <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
+                        El admin de la organización puede obtenerlo en Ajustes de su cuenta.
+                      </p>
+                      {orgManualId.trim().length > 10 && (
+                        <button
+                          onClick={() => cargarPerfiles(orgManualId.trim())}
+                          disabled={cargandoPerfiles}
+                          className="self-start text-small font-semibold h-7 px-3 rounded-lg disabled:opacity-50 flex items-center gap-1"
+                          style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)', border: '1px solid var(--border)' }}
+                        >
+                          {cargandoPerfiles ? <Loader size={10} className="animate-spin motion-reduce:animate-none" /> : null}
+                          Cargar usuarios de esta org
+                        </button>
+                      )}
+                    </>
                   )}
-                </div>
+                </Campo>
               )}
             </div>
 
@@ -511,6 +514,7 @@ export function AuditorInstalacionDetalle() {
                 <Skeleton className="h-11 w-full rounded-lg" aria-busy="true" aria-label="Cargando usuarios" />
               ) : perfiles.length > 0 ? (
                 <select
+                  aria-label="Productor responsable"
                   value={productorId}
                   onChange={e => setProductorId(e.target.value)}
                   style={{ ...inputSt, height: '2.5rem' }}
@@ -523,21 +527,22 @@ export function AuditorInstalacionDetalle() {
                   ))}
                 </select>
               ) : (
-                <div className="flex flex-col gap-1">
-                  <label className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                    ID de perfil (UUID) del productor
-                  </label>
-                  <input
-                    type="text"
-                    value={productorManualId}
-                    onChange={e => setProductorManualId(e.target.value)}
-                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                    style={inputSt}
-                  />
-                  <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                    El productor puede consultar su ID de perfil en Ajustes de M.A.D.Y.
-                  </p>
-                </div>
+                <Campo etiqueta="ID de perfil (UUID) del productor" className="gap-1" claseEtiqueta="text-caption">
+                  {({ id }) => (
+                    <>
+                      <input id={id}
+                        type="text"
+                        value={productorManualId}
+                        onChange={e => setProductorManualId(e.target.value)}
+                        placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                        style={inputSt}
+                      />
+                      <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
+                        El productor puede consultar su ID de perfil en Ajustes de M.A.D.Y.
+                      </p>
+                    </>
+                  )}
+                </Campo>
               )}
             </div>
 
@@ -546,26 +551,28 @@ export function AuditorInstalacionDetalle() {
               <p className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
                 Opcionales (para el rancho que se creará)
               </p>
-              <div className="flex flex-col gap-1">
-                <label className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Código de rancho</label>
-                <input
-                  type="text"
-                  value={ranchoCodigo}
-                  onChange={e => setRanchoCodigo(e.target.value)}
-                  placeholder="Ej. EXT-001 (se genera automáticamente si se deja vacío)"
-                  style={inputSt}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Cultivo / Producto</label>
-                <input
-                  type="text"
-                  value={ranchoCultivo}
-                  onChange={e => setRanchoCultivo(e.target.value)}
-                  placeholder={instalacion?.cultivo_producto ?? 'Ej. Tomate, Zarzamora…'}
-                  style={inputSt}
-                />
-              </div>
+              <Campo etiqueta="Código de rancho" className="gap-1" claseEtiqueta="text-caption">
+                {({ id }) => (
+                  <input id={id}
+                    type="text"
+                    value={ranchoCodigo}
+                    onChange={e => setRanchoCodigo(e.target.value)}
+                    placeholder="Ej. EXT-001 (se genera automáticamente si se deja vacío)"
+                    style={inputSt}
+                  />
+                )}
+              </Campo>
+              <Campo etiqueta="Cultivo / Producto" className="gap-1" claseEtiqueta="text-caption">
+                {({ id }) => (
+                  <input id={id}
+                    type="text"
+                    value={ranchoCultivo}
+                    onChange={e => setRanchoCultivo(e.target.value)}
+                    placeholder={instalacion?.cultivo_producto ?? 'Ej. Tomate, Zarzamora…'}
+                    style={inputSt}
+                  />
+                )}
+              </Campo>
             </div>
 
             {/* Confirmación */}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useId } from 'react'
 import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
@@ -10,6 +10,7 @@ import { Boton } from '@/app/components/ui-mady/Boton'
 import { FormularioSkeleton } from '@/app/components/FormularioSkeleton'
 import { motion } from 'motion/react'
 import { useEntradaPantalla } from './motionAuditor'
+import { Campo } from '@/app/components/ui-mady/Campo'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -28,6 +29,7 @@ const inputSt: React.CSSProperties = {
 }
 
 export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) {
+  const modulosLabelId = useId()
   const { instalacionId } = useParams<{ instalacionId: string }>()
   const navigate = useNavigate()
   const location = useLocation()
@@ -155,56 +157,52 @@ export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) 
           <FormularioSkeleton />
         ) : (
           <motion.div className="flex flex-col gap-5" {...ent(0)}>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-            Fecha *
-          </label>
-          <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} style={inputSt} />
-        </div>
+        <Campo etiqueta="Fecha" requerido className="gap-1.5">
+          {({ id }) => (
+            <input id={id} type="date" value={fecha} onChange={e => setFecha(e.target.value)} style={inputSt} />
+          )}
+        </Campo>
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-            Tipo de operación
-          </label>
-          <input
-            type="text"
-            value={tipoOperacion}
-            onChange={e => setTipoOperacion(e.target.value)}
-            placeholder="Ej. Granja, Empaque…"
-            style={inputSt}
-          />
-        </div>
+        <Campo etiqueta="Tipo de operación" className="gap-1.5">
+          {({ id }) => (
+            <input id={id}
+              type="text"
+              value={tipoOperacion}
+              onChange={e => setTipoOperacion(e.target.value)}
+              placeholder="Ej. Granja, Empaque…"
+              style={inputSt}
+            />
+          )}
+        </Campo>
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-            Producto
-          </label>
-          <input
-            type="text"
-            value={producto}
-            onChange={e => setProducto(e.target.value)}
-            placeholder="Ej. Tomate, Zarzamora…"
-            style={inputSt}
-          />
-        </div>
+        <Campo etiqueta="Producto" className="gap-1.5">
+          {({ id }) => (
+            <input id={id}
+              type="text"
+              value={producto}
+              onChange={e => setProducto(e.target.value)}
+              placeholder="Ej. Tomate, Zarzamora…"
+              style={inputSt}
+            />
+          )}
+        </Campo>
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-            Periodo
-          </label>
-          <input
-            type="text"
-            value={periodo}
-            onChange={e => setPeriodo(e.target.value)}
-            placeholder="Ej. Temporada 2026"
-            style={inputSt}
-          />
-        </div>
+        <Campo etiqueta="Periodo" className="gap-1.5">
+          {({ id }) => (
+            <input id={id}
+              type="text"
+              value={periodo}
+              onChange={e => setPeriodo(e.target.value)}
+              placeholder="Ej. Temporada 2026"
+              style={inputSt}
+            />
+          )}
+        </Campo>
 
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-            Módulos PrimusGFS a evaluar *
-          </label>
+        <div role="group" aria-labelledby={modulosLabelId} className="flex flex-col gap-2">
+          <span id={modulosLabelId} className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+            Módulos PrimusGFS a evaluar <span aria-hidden="true">*</span><span className="sr-only"> obligatorio</span>
+          </span>
           <ModulosSelectorStep
             modulos={modulos}
             seleccionados={modulosSel}

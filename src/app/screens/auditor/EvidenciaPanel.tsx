@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useId } from 'react'
 import { Paperclip, Upload, Database, ExternalLink, Trash2, ChevronDown, ChevronUp, Loader, X, Link2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion, useReducedMotion } from 'motion/react'
@@ -15,6 +15,7 @@ import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { fechaCorta } from '@/lib/formato'
+import { Campo } from '@/app/components/ui-mady/Campo'
 
 const TIPO_LABELS: Record<AudEvidenciaTipo, string> = {
   documento_procedimiento: 'Documento / Procedimiento',
@@ -82,6 +83,7 @@ export function EvidenciaPanel({
   preguntaId, criterionCode, ranchoId,
 }: Props) {
   const hook = useEvidencia(entityType, entityId)
+  const archivosId = useId()
   const reducedMotion = useReducedMotion()
   const { can, cargando: cargandoPermisos } = useMisPermisos()
   const canLink      = cargandoPermisos || can('evidence.link')
@@ -383,33 +385,36 @@ export function EvidenciaPanel({
                 <p className="text-small font-semibold" style={{ color: 'var(--foreground)' }}>Subir evidencia externa</p>
                 <button aria-label="Cerrar" onClick={() => setShowUpload(false)}><X size={14} style={{ color: 'var(--muted-foreground)' }} /></button>
               </div>
+              <Campo etiqueta="Tipo" className="gap-1" claseEtiqueta="text-caption font-medium">
+                {({ id }) => (
+                  <select id={id}
+                    value={uploadTipo}
+                    onChange={e => setUploadTipo(e.target.value as AudEvidenciaTipo)}
+                    style={{ ...inputBase, height: '2.25rem' }}
+                  >
+                    {(Object.keys(TIPO_LABELS) as AudEvidenciaTipo[]).map(k => (
+                      <option key={k} value={k}>{TIPO_LABELS[k]}</option>
+                    ))}
+                  </select>
+                )}
+              </Campo>
+              <Campo etiqueta="Código de documento (opcional)" className="gap-1" claseEtiqueta="text-caption font-medium">
+                {({ id }) => (
+                  <input id={id}
+                    type="text"
+                    value={uploadCodigo}
+                    onChange={e => setUploadCodigo(e.target.value)}
+                    placeholder="Ej. F-FRUS-CAL-07"
+                    style={{ ...inputBase, height: '2.25rem' }}
+                  />
+                )}
+              </Campo>
               <div className="flex flex-col gap-1">
-                <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Tipo</label>
-                <select
-                  value={uploadTipo}
-                  onChange={e => setUploadTipo(e.target.value as AudEvidenciaTipo)}
-                  style={{ ...inputBase, height: '2.25rem' }}
-                >
-                  {(Object.keys(TIPO_LABELS) as AudEvidenciaTipo[]).map(k => (
-                    <option key={k} value={k}>{TIPO_LABELS[k]}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Código de documento (opcional)</label>
-                <input
-                  type="text"
-                  value={uploadCodigo}
-                  onChange={e => setUploadCodigo(e.target.value)}
-                  placeholder="Ej. F-FRUS-CAL-07"
-                  style={{ ...inputBase, height: '2.25rem' }}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>
-                  Archivos <span style={{ color: 'var(--agro-red)' }}>*</span> (puedes elegir varios)
+                <label htmlFor={archivosId} className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>
+                  Archivos <span aria-hidden="true" style={{ color: 'var(--agro-red)' }}>*</span><span className="sr-only"> obligatorio</span> (puedes elegir varios)
                 </label>
                 <input
+                  id={archivosId}
                   type="file"
                   multiple
                   accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.csv,.txt"
@@ -684,42 +689,46 @@ export function EvidenciaPanel({
                 </button>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Tipo de registro</label>
-                <select
-                  value={gwCapacidad}
-                  onChange={e => { setGwCapacidad(e.target.value); handleBuscar(e.target.value) }}
-                  style={{ ...inputBase, height: '2.25rem' }}
-                >
-                  {gwCapacidades.map(c => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
-                  ))}
-                </select>
-              </div>
+              <Campo etiqueta="Tipo de registro" className="gap-1" claseEtiqueta="text-caption font-medium">
+                {({ id }) => (
+                  <select id={id}
+                    value={gwCapacidad}
+                    onChange={e => { setGwCapacidad(e.target.value); handleBuscar(e.target.value) }}
+                    style={{ ...inputBase, height: '2.25rem' }}
+                  >
+                    {gwCapacidades.map(c => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
+                )}
+              </Campo>
 
               <div className="flex gap-2">
-                <div className="flex flex-col gap-1 flex-1">
-                  <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Desde</label>
-                  <input
-                    type="date"
-                    value={gwDesde}
-                    onChange={e => setGwDesde(e.target.value)}
-                    style={{ ...inputBase, height: '2.25rem' }}
-                  />
-                </div>
-                <div className="flex flex-col gap-1 flex-1">
-                  <label className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>Hasta</label>
-                  <input
-                    type="date"
-                    value={gwHasta}
-                    onChange={e => setGwHasta(e.target.value)}
-                    style={{ ...inputBase, height: '2.25rem' }}
-                  />
-                </div>
+                <Campo etiqueta="Desde" className="gap-1 flex-1" claseEtiqueta="text-caption font-medium">
+                  {({ id }) => (
+                    <input id={id}
+                      type="date"
+                      value={gwDesde}
+                      onChange={e => setGwDesde(e.target.value)}
+                      style={{ ...inputBase, height: '2.25rem' }}
+                    />
+                  )}
+                </Campo>
+                <Campo etiqueta="Hasta" className="gap-1 flex-1" claseEtiqueta="text-caption font-medium">
+                  {({ id }) => (
+                    <input id={id}
+                      type="date"
+                      value={gwHasta}
+                      onChange={e => setGwHasta(e.target.value)}
+                      style={{ ...inputBase, height: '2.25rem' }}
+                    />
+                  )}
+                </Campo>
               </div>
 
               <div className="flex gap-2">
                 <input
+                  aria-label="Buscar por texto"
                   type="text"
                   value={gwSearch}
                   onChange={e => setGwSearch(e.target.value)}

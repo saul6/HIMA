@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useId } from 'react'
 import { useNavigate } from 'react-router'
 import { X } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
@@ -12,6 +12,7 @@ import { SPRING_SUAVE, DUR, EASE_OUT } from '@/lib/motion'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { Campo } from '@/app/components/ui-mady/Campo'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -37,6 +38,8 @@ const inputSt: React.CSSProperties = {
 }
 
 export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
+  const idInicio = useId()
+  const idFin = useId()
   const { profile } = useAuthContext()
   const navigate = useNavigate()
   const hoy = hoyMX()
@@ -230,68 +233,65 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
           >
             {paso === 1 ? (
               <>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-              Nombre *
-            </label>
-            <input
-              type="text"
-              value={nombre}
-              onChange={e => setNombre(e.target.value)}
-              placeholder="Nombre de la instalación"
-              style={inputSt}
-              autoFocus
-            />
-          </div>
+          <Campo etiqueta="Nombre" requerido className="gap-1.5">
+            {({ id }) => (
+              <input id={id}
+                type="text"
+                value={nombre}
+                onChange={e => setNombre(e.target.value)}
+                placeholder="Nombre de la instalación"
+                style={inputSt}
+                autoFocus
+              />
+            )}
+          </Campo>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-              Ubicación
-            </label>
-            <input
-              type="text"
-              value={ubicacion}
-              onChange={e => setUbicacion(e.target.value)}
-              placeholder="Ciudad, estado o dirección"
-              style={inputSt}
-            />
-          </div>
+          <Campo etiqueta="Ubicación" className="gap-1.5">
+            {({ id }) => (
+              <input id={id}
+                type="text"
+                value={ubicacion}
+                onChange={e => setUbicacion(e.target.value)}
+                placeholder="Ciudad, estado o dirección"
+                style={inputSt}
+              />
+            )}
+          </Campo>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-              Cultivo / Producto
-            </label>
-            <input
-              type="text"
-              value={cultivoProducto}
-              onChange={e => setCultivoProducto(e.target.value)}
-              placeholder="Ej. Tomate, Zarzamora…"
-              style={inputSt}
-            />
-          </div>
+          <Campo etiqueta="Cultivo / Producto" className="gap-1.5">
+            {({ id }) => (
+              <input id={id}
+                type="text"
+                value={cultivoProducto}
+                onChange={e => setCultivoProducto(e.target.value)}
+                placeholder="Ej. Tomate, Zarzamora…"
+                style={inputSt}
+              />
+            )}
+          </Campo>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-              Tipo de operación
-            </label>
-            <input
-              type="text"
-              value={tipoOperacion}
-              onChange={e => setTipoOperacion(e.target.value)}
-              placeholder="Granja · Invernadero · Empaque · Cuarto Frío…"
-              style={inputSt}
-            />
-          </div>
+          <Campo etiqueta="Tipo de operación" className="gap-1.5">
+            {({ id }) => (
+              <input id={id}
+                type="text"
+                value={tipoOperacion}
+                onChange={e => setTipoOperacion(e.target.value)}
+                placeholder="Granja · Invernadero · Empaque · Cuarto Frío…"
+                style={inputSt}
+              />
+            )}
+          </Campo>
 
           {/* Rango de visita */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-              Fecha de visita *
-            </label>
+          <fieldset className="flex flex-col gap-1.5 border-0 p-0 m-0 min-w-0">
+            <legend className="text-xs font-semibold p-0 mb-1.5" style={{ color: 'var(--muted-foreground)' }}>
+              Fecha de visita <span aria-hidden="true">*</span><span className="sr-only"> obligatoria</span>
+            </legend>
             <div className="flex gap-2">
               <div className="flex-1 flex flex-col gap-1">
-                <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Inicio</span>
+                <label htmlFor={idInicio} className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Inicio</label>
                 <input
+                  id={idInicio}
                   type="date"
                   value={fechaInicio}
                   onChange={e => {
@@ -302,8 +302,9 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
                 />
               </div>
               <div className="flex-1 flex flex-col gap-1">
-                <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Fin</span>
+                <label htmlFor={idFin} className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Fin</label>
                 <input
+                  id={idFin}
                   type="date"
                   value={fechaFin}
                   min={fechaInicio}
@@ -315,20 +316,19 @@ export function AuditorNuevaAuditoriaSheet({ onClose, onCreated }: Props) {
             <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
               Si la visita es de un solo día, deja inicio y fin iguales.
             </p>
-          </div>
+          </fieldset>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-              Contacto (opcional)
-            </label>
-            <input
-              type="text"
-              value={contacto}
-              onChange={e => setContacto(e.target.value)}
-              placeholder="Nombre o teléfono del responsable"
-              style={inputSt}
-            />
-          </div>
+          <Campo etiqueta="Contacto (opcional)" className="gap-1.5">
+            {({ id }) => (
+              <input id={id}
+                type="text"
+                value={contacto}
+                onChange={e => setContacto(e.target.value)}
+                placeholder="Nombre o teléfono del responsable"
+                style={inputSt}
+              />
+            )}
+          </Campo>
 
               </>
             ) : (

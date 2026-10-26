@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Campo } from '@/app/components/ui-mady/Campo'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -74,71 +75,66 @@ export function NuevaInstalacionForm({ onClose }: { onClose: () => void }) {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4 flex flex-col gap-5">
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-        Nombre *
-      </label>
-      <input
-        type="text"
-        value={nombre}
-        onChange={e => setNombre(e.target.value)}
-        placeholder="Nombre de la instalación"
-        style={inputSt}
-        autoFocus
-      />
-    </div>
+    <Campo etiqueta="Nombre" requerido className="gap-1.5">
+      {({ id }) => (
+        <input id={id}
+          type="text"
+          value={nombre}
+          onChange={e => setNombre(e.target.value)}
+          placeholder="Nombre de la instalación"
+          style={inputSt}
+          autoFocus
+        />
+      )}
+    </Campo>
 
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-        Ubicación
-      </label>
-      <input
-        type="text"
-        value={ubicacion}
-        onChange={e => setUbicacion(e.target.value)}
-        placeholder="Ciudad, estado o dirección"
-        style={inputSt}
-      />
-    </div>
+    <Campo etiqueta="Ubicación" className="gap-1.5">
+      {({ id }) => (
+        <input id={id}
+          type="text"
+          value={ubicacion}
+          onChange={e => setUbicacion(e.target.value)}
+          placeholder="Ciudad, estado o dirección"
+          style={inputSt}
+        />
+      )}
+    </Campo>
 
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-        Cultivo / Producto
-      </label>
-      <input
-        type="text"
-        value={cultivoProducto}
-        onChange={e => setCultivoProducto(e.target.value)}
-        placeholder="Ej. Tomate, Zarzamora, Carne bovina…"
-        style={inputSt}
-      />
-    </div>
+    <Campo etiqueta="Cultivo / Producto" className="gap-1.5">
+      {({ id }) => (
+        <input id={id}
+          type="text"
+          value={cultivoProducto}
+          onChange={e => setCultivoProducto(e.target.value)}
+          placeholder="Ej. Tomate, Zarzamora, Carne bovina…"
+          style={inputSt}
+        />
+      )}
+    </Campo>
 
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-        Tipo de operación
-      </label>
-      <input
-        type="text"
-        value={tipoOperacion}
-        onChange={e => setTipoOperacion(e.target.value)}
-        placeholder="Ej. Granja, Invernadero, Empaque, Cuarto Frío…"
-        style={inputSt}
-      />
-    </div>
+    <Campo etiqueta="Tipo de operación" className="gap-1.5">
+      {({ id }) => (
+        <input id={id}
+          type="text"
+          value={tipoOperacion}
+          onChange={e => setTipoOperacion(e.target.value)}
+          placeholder="Ej. Granja, Invernadero, Empaque, Cuarto Frío…"
+          style={inputSt}
+        />
+      )}
+    </Campo>
 
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-        Contacto (opcional)
-      </label>
-      <input
-        type="text"
-        value={contacto}
-        onChange={e => setContacto(e.target.value)}
-        placeholder="Nombre o teléfono del responsable"
-        style={inputSt}
-      />
-    </div>
+    <Campo etiqueta="Contacto (opcional)" className="gap-1.5">
+      {({ id }) => (
+        <input id={id}
+          type="text"
+          value={contacto}
+          onChange={e => setContacto(e.target.value)}
+          placeholder="Nombre o teléfono del responsable"
+          style={inputSt}
+        />
+      )}
+    </Campo>
 
       </div>
 
