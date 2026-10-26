@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import { supabase } from '@/lib/supabase'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { useCalendario, type EventoCalendario } from '@/hooks/useCalendario'
-import { DUR, EASE_OUT } from '@/lib/motion'
+import { entrada } from './motionAuditor'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { estadoAgenda } from './estados'
 
@@ -61,16 +61,12 @@ function EventoItem({
   const interactivo = !!onNavegar
 
   return (
-    <motion.button
-      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-      animate={{
-        opacity: 1, y: 0,
-        transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
-      }}
+    <motion.div {...entrada(index, reducedMotion)}>
+    <button
       onClick={onNavegar ?? undefined}
       disabled={!interactivo}
-      className={`w-full text-left rounded-xl border border-border px-4 py-3 flex flex-col gap-1.5 disabled:cursor-default transition-colors ${interactivo ? 'hover:bg-muted' : ''}`}
-      style={{ backgroundColor: 'var(--card)', transitionDuration: 'var(--motion-fast)' }}
+      className={`w-full text-left rounded-xl border border-border px-4 py-3 flex flex-col gap-1.5 disabled:cursor-default ${interactivo ? 'hover-lift' : ''}`}
+      style={{ backgroundColor: 'var(--card)' }}
     >
       <div className="flex items-center gap-1.5 flex-wrap">
         <span
@@ -97,7 +93,8 @@ function EventoItem({
           Ver detalle →
         </p>
       )}
-    </motion.button>
+    </button>
+    </motion.div>
   )
 }
 

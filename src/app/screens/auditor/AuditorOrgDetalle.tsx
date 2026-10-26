@@ -22,11 +22,10 @@ function AuditoriaCard({
 }: { a: AuditorAuditoriaItem; index: number; reducedMotion: boolean | null; onClick: () => void }) {
   const estado = estadoAuditoria(a.estado)
   return (
-    <motion.button
-      {...entrada(index, reducedMotion)}
+    <motion.div {...entrada(index, reducedMotion)}>
+    <button
       onClick={onClick}
-      className="w-full text-left bg-card rounded-xl border border-border p-4 flex flex-col gap-1.5 hover:bg-muted active:opacity-70 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-      style={{ transitionDuration: 'var(--motion-fast)' }}
+      className="hover-lift w-full text-left bg-card rounded-xl border border-border p-4 flex flex-col gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -40,7 +39,8 @@ function AuditoriaCard({
         <Etiqueta tono={estado.tono}>{estado.texto}</Etiqueta>
         <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       </div>
-    </motion.button>
+    </button>
+    </motion.div>
   )
 }
 

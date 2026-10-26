@@ -35,11 +35,12 @@ export function FilaNavegable({
       type="button"
       onClick={onClick}
       className={cn(
-        'group flex min-h-14 w-full items-center gap-3 rounded-xl border bg-card p-3 text-left transition hover:bg-muted active:opacity-70',
+        'group flex min-h-14 w-full items-center gap-3 rounded-xl border bg-card p-3 text-left',
         'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
         BORDE[tono],
+        // La elevación cambia el color del borde: no en las filas con borde de énfasis.
+        tono === 'normal' && 'hover-lift',
       )}
-      style={{ transitionDuration: 'var(--motion-fast)' }}
     >
       {icono && (
         <span

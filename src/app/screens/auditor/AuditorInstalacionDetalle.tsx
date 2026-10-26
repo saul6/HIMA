@@ -347,14 +347,12 @@ export function AuditorInstalacionDetalle() {
                 {auditorias.map((a, index) => {
                   const estado = estadoAuditoria(a.estado)
                   return (
-                    <motion.button
-                      key={a.id}
-                      {...ent(index)}
+                    <motion.div key={a.id} {...ent(index)}>
+                    <button
                       onClick={() => navigate(`/auditor/auditoria/${a.id}`, {
                         state: { instalacionId, instalacionNombre: instalacion?.nombre }
                       })}
-                      className="w-full text-left bg-card rounded-xl border border-border p-4 flex items-start justify-between gap-2 hover:bg-muted active:opacity-70 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                      style={{ transitionDuration: 'var(--motion-fast)' }}
+                      className="hover-lift w-full text-left bg-card rounded-xl border border-border p-4 flex items-start justify-between gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold truncate" style={{ color: 'var(--foreground)' }}>
@@ -366,7 +364,8 @@ export function AuditorInstalacionDetalle() {
                       </div>
                       <Etiqueta tono={estado.tono}>{estado.texto}</Etiqueta>
                       <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                    </motion.button>
+                    </button>
+                    </motion.div>
                   )
                 })}
               </div>
