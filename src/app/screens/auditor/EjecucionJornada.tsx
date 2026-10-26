@@ -516,9 +516,9 @@ export function EjecucionJornada() {
   const terminada = detalle.jornada.estado === 'terminada'
 
   return (
-    // Desde lg el área de contenido del Layout deja 4rem para su barra superior (lg:h-16): la
+    // Desde md el área de contenido del Layout deja 3.5rem (4rem desde lg) para su barra superior: la
     // pantalla ocupa el resto y cada panel se desplaza por separado.
-    <div className="flex flex-col min-h-screen lg:min-h-0 lg:h-[calc(100dvh-4rem)]" style={{ backgroundColor: 'var(--background)' }}>
+    <div className="flex flex-col min-h-screen md:min-h-0 md:h-[calc(100dvh-3.5rem)] lg:h-[calc(100dvh-4rem)]" style={{ backgroundColor: 'var(--background)' }}>
 
       {/* ── Encabezado fijo ── */}
       <ModuloHeader
@@ -569,15 +569,15 @@ export function EjecucionJornada() {
         </div>
       )}
 
-      <main className="flex-1 flex flex-col lg:flex-row lg:min-h-0 pb-32 md:pb-8">
+      <main className="flex-1 flex flex-col md:flex-row md:min-h-0 pb-32 md:pb-8">
 
         {/* ── Panel izquierdo: selector de operación + navigator de preguntas ── */}
-        <div className="lg:w-72 lg:border-r lg:border-border flex-shrink-0 flex flex-col lg:min-h-0">
+        <div className="md:w-64 lg:w-72 md:border-r md:border-border flex-shrink-0 flex flex-col md:min-h-0">
 
           {/* Selector de operación (mobile: scroll horizontal; desktop: lista vertical) */}
           <div className="px-4 pt-3 pb-2">
             <TituloSeccion as="p" className="mb-2">Operaciones</TituloSeccion>
-            <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none lg:flex-col lg:overflow-visible lg:pb-0">
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none md:flex-col md:overflow-visible md:pb-0">
               {detalle.operaciones.map(op => (
                 <OperacionChip
                   key={op.auditoria_id}
@@ -639,7 +639,7 @@ export function EjecucionJornada() {
           </div>
 
           {/* Lista de preguntas */}
-          <div className="flex-1 overflow-y-auto border-t border-border lg:min-h-0">
+          <div className="flex-1 overflow-y-auto border-t border-border md:min-h-0">
             {preguntasFiltradas.length === 0 ? (
               <EstadoVacio icono={ClipboardList} titulo="Sin preguntas con este filtro." />
             ) : (
@@ -657,7 +657,7 @@ export function EjecucionJornada() {
         </div>
 
         {/* ── Panel derecho: formulario de captura ── */}
-        <div className="flex-1 px-4 pt-4 flex flex-col gap-3 lg:min-h-0 lg:overflow-y-auto">
+        <div className="flex-1 px-4 pt-4 flex flex-col gap-3 md:min-h-0 md:overflow-y-auto">
 
           {/* Aviso: pregunta no en cuestionario */}
           {preguntaNoEnCuestionario && operacionActiva && (

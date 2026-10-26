@@ -16,7 +16,6 @@ import { AuditorNuevaAuditoriaSheet } from './AuditorNuevaAuditoriaSheet'
 import { AuditorCampana } from './AuditorCampana'
 import { AuditorBusqueda } from './AuditorBusqueda'
 import { Fab } from '@/app/components/Fab'
-import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { FilaNavegable } from './FilaNavegable'
@@ -237,19 +236,21 @@ export function AuditorHome() {
     <div className="flex flex-col min-h-screen pb-24" style={{ backgroundColor: 'var(--background)' }}>
 
       {/* Celular: saludo, calendario y campana; en escritorio no hay segundo header (lo da el Layout) */}
-      <EncabezadoPantalla
-        titulo={`Hola, ${profile?.nombre_completo?.split(' ')[0] ?? '—'}`}
-        subtitulo="Auditores · M.A.D.Y"
-        alRegresar={() => navigate('/auditor')}
-        accionesMovil={(
-          <>
+      <h1 className="sr-only hidden md:block">{`Hola, ${profile?.nombre_completo?.split(' ')[0] ?? '—'}`}</h1>
+      <header className="md:hidden sticky top-0 z-20 bg-card border-b border-border px-4 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-foreground truncate font-semibold">{`Hola, ${profile?.nombre_completo?.split(' ')[0] ?? '—'}`}</p>
+            <p className="text-xs text-muted-foreground">Auditores · M.A.D.Y</p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Boton variante="icono" onClick={() => navigate('/auditor/agenda?tab=calendario')} aria-label="Calendario">
               <Calendar size={16} style={{ color: 'var(--muted-foreground)' }} />
             </Boton>
             <AuditorCampana />
-          </>
-        )}
-      />
+          </div>
+        </div>
+      </header>
 
       <main className="flex-1 w-full px-4 py-4 flex flex-col gap-5 lg:grid lg:grid-cols-3 lg:items-start lg:gap-x-6 lg:max-w-6xl lg:mx-auto">
 

@@ -57,7 +57,7 @@ function getPageTitle(pathname: string, nombreModulo?: string): string {
   if (pathname.startsWith('/inocuidad/')) {
     return nombreModulo ?? tituloDesdeSlug(pathname.replace('/inocuidad/', ''))
   }
-  if (pathname === '/auditor') return 'Mis organizaciones'
+  if (pathname === '/auditor') return 'Inicio'
   if (pathname === '/auditor/agenda') return 'Agenda'
   if (pathname === '/auditor/instalacion/nueva') return 'Mis organizaciones'
   if (pathname === '/auditor/jornada/nueva') return 'Auditar por bloque'
