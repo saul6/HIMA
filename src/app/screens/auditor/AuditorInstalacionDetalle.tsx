@@ -302,7 +302,7 @@ export function AuditorInstalacionDetalle() {
           {instalacion?.linked_org_id && (
             <section
               className="rounded-xl px-4 py-3 flex items-start gap-3"
-              style={{ backgroundColor: 'var(--agro-success-fill)', borderLeft: '3px solid var(--agro-success-text)' }}
+              style={{ backgroundColor: 'var(--agro-success-fill)', border: '1px solid color-mix(in srgb, var(--agro-success-text) 35%, transparent)' }}
             >
               <CheckCircle2 size={16} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-success-text)' }} />
               <div className="flex-1 min-w-0">
@@ -404,12 +404,13 @@ export function AuditorInstalacionDetalle() {
           <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-5">
             {/* Aviso de acción permanente */}
             <div
+              role="alert"
               className="rounded-xl px-4 py-3 flex items-start gap-3"
-              style={{ backgroundColor: 'var(--agro-danger-fill)', borderLeft: '3px solid var(--agro-red)' }}
+              style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}
             >
-              <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
+              <AlertTriangle size={18} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
+                <p className="text-xs font-bold" style={{ color: 'var(--agro-danger-text)' }}>
                   Acción permanente e irreversible
                 </p>
                 <p className="text-small mt-0.5 leading-relaxed" style={{ color: 'var(--agro-danger-text)' }}>
