@@ -398,13 +398,9 @@ function PanelValidacion({
                   No se pudo verificar las validaciones. Reintenta antes de continuar.
                 </span>
               </div>
-              <button
-                onClick={onReintentar}
-                className="text-small font-semibold px-3 py-1.5 rounded-lg"
-                style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', border: '1px solid var(--agro-red)' }}
-              >
+              <Boton variante="secundario" tamano="sm" onClick={onReintentar}>
                 Reintentar
-              </button>
+              </Boton>
             </div>
           ) : issues.length === 0 ? (
             <div className="flex items-center gap-2 px-4 py-4">
@@ -440,22 +436,14 @@ function PanelValidacion({
                         </p>
                         <div className="flex items-center gap-2 flex-wrap">
                           {issue.pregunta_id && (
-                            <button
-                              onClick={() => scrollToPreg(issue.pregunta_id!)}
-                              className="text-small font-semibold px-2 py-1 rounded-lg transition-colors hover:opacity-80"
-                              style={{ backgroundColor: 'var(--accent)', color: 'var(--primary)' }}
-                            >
+                            <Boton variante="secundario" tamano="sm" onClick={() => scrollToPreg(issue.pregunta_id!)}>
                               → Ir a pregunta
-                            </button>
+                            </Boton>
                           )}
                           {descartandoId !== issue.id && (
-                            <button
-                              onClick={() => onDescartarClick(issue.id)}
-                              className="text-caption px-2 py-1 rounded-lg transition-colors hover:bg-muted"
-                              style={{ color: 'var(--muted-foreground)', border: '1px solid var(--border)' }}
-                            >
+                            <Boton variante="secundario" tamano="sm" onClick={() => onDescartarClick(issue.id)}>
                               Descartar
-                            </button>
+                            </Boton>
                           )}
                         </div>
                         {descartandoId === issue.id && (
@@ -477,20 +465,12 @@ function PanelValidacion({
                               }}
                             />
                             <div className="flex gap-2">
-                              <button
-                                onClick={onConfirmarDescarte}
-                                className="flex-1 h-7 rounded-lg text-small font-semibold transition-colors hover:opacity-80"
-                                style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-                              >
+                              <Boton variante="secundario" tamano="sm" onClick={onConfirmarDescarte} className="flex-1">
                                 Confirmar descarte
-                              </button>
-                              <button
-                                onClick={onCancelarDescarte}
-                                className="h-7 px-3 rounded-lg text-small transition-colors hover:bg-muted"
-                                style={{ color: 'var(--muted-foreground)' }}
-                              >
+                              </Boton>
+                              <Boton variante="secundario" tamano="sm" onClick={onCancelarDescarte}>
                                 Cancelar
-                              </button>
+                              </Boton>
                             </div>
                           </div>
                         )}
@@ -504,7 +484,7 @@ function PanelValidacion({
                   <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
                     {herenciaIssues.length} herencia{herenciaIssues.length !== 1 ? 's' : ''} pendiente{herenciaIssues.length !== 1 ? 's' : ''}
                   </span>
-                  <Boton onClick={navSiguienteHerencia}>
+                  <Boton variante="secundario" onClick={navSiguienteHerencia}>
                     Siguiente pendiente →
                   </Boton>
                 </div>
@@ -829,13 +809,9 @@ function PanelScoring({
               <p className="text-small" style={{ color: 'var(--agro-danger-text)' }}>
                 No se pudo calcular el puntaje.
               </p>
-              <button
-                onClick={() => setReintento(v => v + 1)}
-                className="self-start text-small font-semibold px-3 py-1.5 rounded-lg"
-                style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-              >
+              <Boton variante="secundario" tamano="sm" onClick={() => setReintento(v => v + 1)} className="self-start">
                 Reintentar
-              </button>
+              </Boton>
             </div>
           )}
           {scoringEstado === 'error' && calculo && (
@@ -846,13 +822,9 @@ function PanelScoring({
                   Mostrando cálculo anterior — no refleja los últimos cambios.
                 </p>
               </div>
-              <button
-                onClick={() => setReintento(v => v + 1)}
-                className="self-start text-small font-semibold px-3 py-1.5 rounded-lg"
-                style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-              >
+              <Boton variante="secundario" tamano="sm" onClick={() => setReintento(v => v + 1)} className="self-start">
                 Reintentar
-              </button>
+              </Boton>
             </div>
           )}
           {!calculo && scoringEstado !== 'error' && !cargando && (
@@ -961,27 +933,19 @@ function PanelHallazgos({
                         ))}
                       </select>
                       {canWriteAC && (
-                        <Boton onClick={() => onVerAccion(h)}>
-                          <ClipboardList size={11} />
+                        <Boton variante="secundario" onClick={() => onVerAccion(h)}>
+                          <ClipboardList size={13} />
                           Acción correctiva
                         </Boton>
                       )}
-                      <button
-                        onClick={() => onVerEvidencias(h)}
-                        className="flex items-center gap-1 text-small font-semibold h-7 px-2 rounded-lg"
-                        style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-                      >
-                        <Paperclip size={11} />
+                      <Boton variante="secundario" className="h-11" onClick={() => onVerEvidencias(h)}>
+                        <Paperclip size={13} />
                         Evidencias
-                      </button>
-                      <button
-                        onClick={() => onVerIncidencias(h)}
-                        className="flex items-center gap-1 text-small font-semibold h-7 px-2 rounded-lg"
-                        style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-                      >
-                        <Link2 size={11} />
+                      </Boton>
+                      <Boton variante="secundario" className="h-11" onClick={() => onVerIncidencias(h)}>
+                        <Link2 size={13} />
                         Antecedentes M13
-                      </button>
+                      </Boton>
                     </div>
                   </div>
                 )
@@ -1783,8 +1747,11 @@ export function AuditorEjecucion() {
   // COR-07: deshabilitar Validar/Cerrar si hay error de carga de esquema
   const hayErrorCargaEsquema = esquemaCargaEstado === 'error' || obsCargaEstado === 'error'
 
+  // Barra de acciones al pie: sin auditoría cerrada, en todos los tamaños; cerrada, solo el PDF desde md.
+  const hayBarra = !cargando && !errorMsg && allPreguntas.length > 0 && (!!auditoria || !cerrada)
+
   return (
-    <div className="flex flex-col min-h-screen bg-background pb-8">
+    <div className={`flex flex-col min-h-screen bg-background ${!hayBarra ? 'pb-8' : cerrada ? 'pb-8 md:pb-0' : ''}`}>
       <ModuloHeader
         tituloFallback="Auditoría"
         forzarTitulo={auditoria ? (auditoria.modulos.map(m => m.nombre).join(' · ') || 'Auditoría') : undefined}
@@ -1835,13 +1802,9 @@ export function AuditorEjecucion() {
                   <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>No se pudieron cargar los campos de comentario</p>
                   <p className="text-small mt-0.5" style={{ color: 'var(--agro-danger-text)' }}>Reintenta antes de continuar.</p>
                 </div>
-                <button
-                  onClick={refetch}
-                  className="text-small font-semibold px-2 py-1 rounded flex-shrink-0"
-                  style={{ backgroundColor: 'var(--muted)', color: 'var(--agro-danger-text)' }}
-                >
+                <Boton variante="secundario" tamano="sm" onClick={refetch} className="flex-shrink-0">
                   Reintentar
-                </button>
+                </Boton>
               </div>
             )}
             {obsCargaEstado === 'error' && (
@@ -1851,21 +1814,10 @@ export function AuditorEjecucion() {
                   <p className="text-xs font-semibold" style={{ color: 'var(--agro-info-text)' }}>No se pudieron cargar las observaciones guardadas</p>
                   <p className="text-small mt-0.5" style={{ color: 'var(--agro-info-text)' }}>Es posible que algunas observaciones no se muestren.</p>
                 </div>
-                <button
-                  onClick={refetch}
-                  className="text-small font-semibold px-2 py-1 rounded flex-shrink-0"
-                  style={{ backgroundColor: 'var(--muted)', color: 'var(--agro-info-text)' }}
-                >
+                <Boton variante="secundario" tamano="sm" onClick={refetch} className="flex-shrink-0">
                   Reintentar
-                </button>
+                </Boton>
               </div>
-            )}
-
-            {/* Botón descargar reporte PDF */}
-            {auditoria && allPreguntas.length > 0 && (
-              <Boton onClick={handleDescargarPDF} cargando={descargando} className="w-full">
-                <Download size={15} /> Descargar reporte PDF
-              </Boton>
             )}
 
             {/* Scoring en vivo */}
@@ -1981,6 +1933,27 @@ export function AuditorEjecucion() {
               </div>
             )}
 
+            {/* Celular: PDF y Marcar preliminar bajo los paneles de resumen (en md+ viven en la barra al pie) */}
+            {((auditoria && allPreguntas.length > 0) || (!cerrada && !cargando && allPreguntas.length > 0 && auditoria?.estado !== 'preliminar')) && (
+              <div className="md:hidden flex flex-col gap-2">
+                {auditoria && allPreguntas.length > 0 && (
+                  <Boton variante="secundario" onClick={handleDescargarPDF} cargando={descargando} className="w-full">
+                    <Download size={15} /> Descargar reporte PDF
+                  </Boton>
+                )}
+                {!cerrada && !cargando && allPreguntas.length > 0 && auditoria?.estado !== 'preliminar' && (
+                  <Boton
+                    variante="secundario"
+                    onClick={() => handleCambiarEstado('preliminar')}
+                    disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
+                    className="w-full"
+                  >
+                    {cambiando ? 'Guardando…' : 'Marcar preliminar'}
+                  </Boton>
+                )}
+              </div>
+            )}
+
             {/* Módulos → Bloques → Preguntas */}
             {modulosData.map(modulo => (
               <div key={modulo.modulo_id}>
@@ -2068,40 +2041,6 @@ export function AuditorEjecucion() {
               </div>
             ))}
 
-            {/* Acciones de estado */}
-            {!cerrada && !cargando && allPreguntas.length > 0 && (
-              <div className="flex flex-col gap-2.5 mt-2">
-                {/* Botón Validar */}
-                {canAuditReview && (
-                  <button
-                    onClick={handleValidar}
-                    disabled={validando || cambiando || haySavePending || hayErrorCargaEsquema}
-                    className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
-                    style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-                  >
-                    {validando
-                      ? <><Loader size={15} className="animate-spin motion-reduce:animate-none" />Validando…</>
-                      : <><ShieldCheck size={15} />Validar</>
-                    }
-                  </button>
-                )}
-
-                {auditoria?.estado !== 'preliminar' && (
-                  <button
-                    onClick={() => handleCambiarEstado('preliminar')}
-                    disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
-                    className="w-full h-11 rounded-xl text-sm font-semibold disabled:opacity-50"
-                    style={{ backgroundColor: 'var(--card)', color: 'var(--primary)', border: '1.5px solid var(--primary)' }}
-                  >
-                    {cambiando ? 'Guardando…' : 'Marcar preliminar'}
-                  </button>
-                )}
-                <Boton onClick={() => handleCambiarEstado('cerrada')} disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema} className="w-full">
-                  {cambiando ? 'Cerrando…' : 'Cerrar auditoría'}
-                </Boton>
-              </div>
-            )}
-
             {cerrada && (
               <div className="rounded-xl px-4 py-3 text-center mt-2" style={{ backgroundColor: 'var(--muted)' }}>
                 <p className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
@@ -2112,6 +2051,54 @@ export function AuditorEjecucion() {
           </>
         )}
       </main>
+
+      {/* Barra de acciones al pie: sticky dentro del área con scroll del Layout, sin motion.
+          Celular: Validar y Cerrar (a la derecha del botón del menú); md+: PDF, Validar, Marcar preliminar y Cerrar. */}
+      {hayBarra && (
+        <div
+          className={`sticky bottom-0 z-10 border-t border-border bg-card pr-4 pl-[5.25rem] md:pl-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] items-center justify-end gap-2 ${cerrada ? 'hidden md:flex' : 'flex'}`}
+        >
+          {auditoria && allPreguntas.length > 0 && (
+            <Boton variante="secundario" onClick={handleDescargarPDF} cargando={descargando} className="hidden md:inline-flex">
+              <Download size={15} /> Descargar reporte PDF
+            </Boton>
+          )}
+          {!cerrada && allPreguntas.length > 0 && (
+            <>
+              {canAuditReview && (
+                <Boton
+                  variante="secundario"
+                  onClick={handleValidar}
+                  disabled={validando || cambiando || haySavePending || hayErrorCargaEsquema}
+                  className="px-3 md:px-4"
+                >
+                  {validando
+                    ? <><Loader size={15} className="animate-spin motion-reduce:animate-none" />Validando…</>
+                    : <><ShieldCheck size={15} />Validar</>
+                  }
+                </Boton>
+              )}
+              {auditoria?.estado !== 'preliminar' && (
+                <Boton
+                  variante="secundario"
+                  onClick={() => handleCambiarEstado('preliminar')}
+                  disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
+                  className="hidden md:inline-flex"
+                >
+                  {cambiando ? 'Guardando…' : 'Marcar preliminar'}
+                </Boton>
+              )}
+              <Boton
+                onClick={() => handleCambiarEstado('cerrada')}
+                disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
+                className="px-3 md:px-4"
+              >
+                {cambiando ? 'Cerrando…' : 'Cerrar auditoría'}
+              </Boton>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Sheet: Crear hallazgo */}
       <BottomSheet open={!!sheetHallazgo} onClose={() => setSheetHallazgo(null)}>
@@ -2265,15 +2252,10 @@ export function AuditorEjecucion() {
 
               {/* Ver historial */}
               {accionActual && (
-                <button
-                  onClick={handleVerHistorial}
-                  disabled={cargandoHistorial}
-                  className="flex items-center justify-center gap-2 w-full h-10 rounded-xl text-sm font-medium disabled:opacity-50"
-                  style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-                >
+                <Boton variante="secundario" onClick={handleVerHistorial} disabled={cargandoHistorial} className="w-full">
                   {cargandoHistorial ? <Loader size={14} className="animate-spin motion-reduce:animate-none" /> : <History size={14} />}
                   Ver historial de versiones ({accionActual.current_version})
-                </button>
+                </Boton>
               )}
 
               {/* Evidencias de la acción */}
@@ -2304,17 +2286,12 @@ export function AuditorEjecucion() {
 
                   {/* Botón Validar para Azzule */}
                   {canExternalStatus && (
-                    <button
-                      onClick={handleValidarAzzule}
-                      disabled={validandoAzzule || cerrada}
-                      className="w-full h-10 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-                      style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-                    >
+                    <Boton variante="secundario" onClick={handleValidarAzzule} disabled={validandoAzzule || cerrada} className="w-full">
                       {validandoAzzule
                         ? <><Loader size={13} className="animate-spin motion-reduce:animate-none" />Validando…</>
                         : <><ShieldCheck size={13} />Validar para Azzule</>
                       }
-                    </button>
+                    </Boton>
                   )}
 
                   {/* Resultados de validación */}
