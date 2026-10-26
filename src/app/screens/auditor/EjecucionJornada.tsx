@@ -16,6 +16,7 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { formatoPct } from '@/lib/formato'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
@@ -254,13 +255,7 @@ function PendientesPanel({
         })}
 
         {operaciones.every(op => op.conteo.pendientes === 0 && op.herencia_pendiente === 0 && op.issues_abiertos === 0) && (
-          <div className="flex flex-col items-center gap-2 py-6">
-            <CheckCircle size={24} style={{ color: 'var(--agro-success-text)' }} />
-            <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Sin pendientes</p>
-            <p className="text-xs text-center" style={{ color: 'var(--muted-foreground)' }}>
-              Todas las operaciones están al día.
-            </p>
-          </div>
+          <EstadoVacio icono={CheckCircle} titulo="Sin pendientes" ayuda="Todas las operaciones están al día." />
         )}
       </div>
     </BottomSheet>
@@ -499,19 +494,17 @@ export function EjecucionJornada() {
 
   if (errorCarga || !detalle) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen px-6 gap-4">
-        <AlertCircle size={28} style={{ color: 'var(--agro-danger-text)' }} />
-        <p className="text-sm text-center" style={{ color: 'var(--muted-foreground)' }}>
-          No se pudo cargar la jornada.
-        </p>
-        <button
-          onClick={cargar}
-          className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl"
-          style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
-        >
-          <RefreshCw size={14} />
-          Reintentar
-        </button>
+      <div className="flex flex-col items-center justify-center min-h-screen px-6">
+        <EstadoVacio
+          icono={AlertCircle}
+          titulo="No se pudo cargar la jornada."
+          accion={(
+            <Boton variante="secundario" onClick={cargar}>
+              <RefreshCw size={14} />
+              Reintentar
+            </Boton>
+          )}
+        />
       </div>
     )
   }
@@ -642,9 +635,7 @@ export function EjecucionJornada() {
           {/* Lista de preguntas */}
           <div className="flex-1 overflow-y-auto border-t border-border lg:max-h-[calc(100vh-280px)]">
             {preguntasFiltradas.length === 0 ? (
-              <p className="px-4 py-4 text-xs text-center" style={{ color: 'var(--muted-foreground)' }}>
-                Sin preguntas con este filtro.
-              </p>
+              <EstadoVacio icono={ClipboardList} titulo="Sin preguntas con este filtro." />
             ) : (
               preguntasFiltradas.map(p => (
                 <NavigatorPregunta
@@ -664,15 +655,11 @@ export function EjecucionJornada() {
 
           {/* Aviso: pregunta no en cuestionario */}
           {preguntaNoEnCuestionario && operacionActiva && (
-            <div className="rounded-xl border border-dashed border-border p-5 flex flex-col items-center gap-2">
-              <AlertCircle size={20} style={{ color: 'var(--muted-foreground)', opacity: 0.5 }} />
-              <p className="text-sm text-center" style={{ color: 'var(--foreground)' }}>
-                Esta pregunta no forma parte del cuestionario de <strong>{operacionActiva.operacion}</strong>.
-              </p>
-              <p className="text-xs text-center" style={{ color: 'var(--muted-foreground)' }}>
-                Selecciona otra operación que tenga esta pregunta o elige una pregunta distinta.
-              </p>
-            </div>
+            <EstadoVacio
+              icono={AlertCircle}
+              titulo={`Esta pregunta no forma parte del cuestionario de ${operacionActiva.operacion}.`}
+              ayuda="Selecciona otra operación que tenga esta pregunta o elige una pregunta distinta."
+            />
           )}
 
           {/* Captura */}
@@ -687,12 +674,7 @@ export function EjecucionJornada() {
 
           {/* Placeholder cuando no hay pregunta activa */}
           {!questionActiva && (
-            <div className="rounded-xl border border-dashed border-border p-8 flex flex-col items-center gap-2">
-              <ClipboardList size={28} style={{ color: 'var(--muted-foreground)', opacity: 0.4 }} />
-              <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-                Selecciona una pregunta
-              </p>
-            </div>
+            <EstadoVacio icono={ClipboardList} titulo="Selecciona una pregunta" />
           )}
 
           {/* ── Botones de acción ── */}
@@ -710,14 +692,10 @@ export function EjecucionJornada() {
 
               {/* Siguiente pregunta */}
               {sigPregunta && (
-                <button
-                  onClick={() => cambiarPregunta(sigPregunta.question_id)}
-                  className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 active:opacity-70 transition-opacity border border-border"
-                  style={{ backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
-                >
+                <Boton variante="secundario" onClick={() => cambiarPregunta(sigPregunta.question_id)} className="w-full">
                   <span>Siguiente pregunta</span>
                   <ChevronDown size={14} />
-                </button>
+                </Boton>
               )}
 
               {/* Abrir auditoría completa */}

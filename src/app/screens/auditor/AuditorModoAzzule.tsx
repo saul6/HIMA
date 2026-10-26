@@ -7,6 +7,7 @@ import type { AudHallazgo, AudAccionCorrectivaCAPA, AudHallazgoClasificacion } f
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -175,18 +176,16 @@ export function AuditorModoAzzule() {
             <ListaSkeleton rows={3} />
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-            <CheckCircle size={32} style={{ color: 'var(--agro-success-text)' }} />
-            <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-              No hay acciones listas para Azzule en este momento.
-            </p>
-            <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-              Completa los campos requeridos en cada acción y válida antes de continuar.
-            </p>
-            <Boton onClick={() => navigate(`/auditor/auditoria/${auditoriaId}`, { state: backState })} className="mt-2">
-              Volver a la auditoría
-            </Boton>
-          </div>
+          <EstadoVacio
+            icono={CheckCircle}
+            titulo="No hay acciones listas para Azzule en este momento."
+            ayuda="Completa los campos requeridos en cada acción y válida antes de continuar."
+            accion={(
+              <Boton variante="secundario" onClick={() => navigate(`/auditor/auditoria/${auditoriaId}`, { state: backState })}>
+                Volver a la auditoría
+              </Boton>
+            )}
+          />
         ) : current ? (
           <>
             {/* NC header */}
@@ -224,19 +223,17 @@ export function AuditorModoAzzule() {
             <div className="rounded-xl border border-border overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
               <div className="flex items-center justify-between px-4 py-3 border-b border-border">
                 <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>Respuesta lista</span>
-                <button
+                <Boton
+                  variante="secundario"
+                  tamano="sm"
                   onClick={handleCopiar}
-                  className="flex items-center gap-1.5 text-small font-semibold h-7 px-2.5 rounded-lg transition-colors"
-                  style={copied
-                    ? { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
-                    : { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }
-                  }
+                  className={copied ? 'border-transparent bg-agro-success-fill text-agro-success-text hover:bg-agro-success-fill' : undefined}
                 >
                   {copied
-                    ? <><CheckCircle size={11} />Copiado</>
-                    : <><Copy size={11} />Copiar</>
+                    ? <><CheckCircle size={13} />Copiado</>
+                    : <><Copy size={13} />Copiar</>
                   }
-                </button>
+                </Boton>
               </div>
               <div className="px-4 py-3">
                 {(() => {
@@ -271,14 +268,11 @@ export function AuditorModoAzzule() {
 
             {/* Acciones */}
             <div className="flex flex-col gap-2.5 mt-2">
-              <button
+              <Boton
+                variante="secundario"
                 onClick={handleMarcarCargada}
                 disabled={marcando || current.marcada}
-                className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
-                style={current.marcada
-                  ? { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
-                  : { backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }
-                }
+                className={current.marcada ? 'w-full border-transparent bg-agro-success-fill text-agro-success-text' : 'w-full'}
               >
                 {marcando
                   ? <><Loader size={15} className="animate-spin motion-reduce:animate-none" />Marcando…</>
@@ -286,7 +280,7 @@ export function AuditorModoAzzule() {
                     ? <><CheckCircle size={15} />Cargada en Azzule</>
                     : 'Marcar como cargada'
                 }
-              </button>
+              </Boton>
 
               {currentIndex < items.length - 1 ? (
                 <Boton onClick={handleSiguiente} className="w-full">

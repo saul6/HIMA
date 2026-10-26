@@ -322,14 +322,10 @@ export function AuditorInstalacionDetalle() {
 
           {/* Botón: vincular */}
           {instalacion && !instalacion.linked_org_id && (
-            <button
-              onClick={handleAbrirVincular}
-              className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
-              style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1.5px solid var(--border)' }}
-            >
+            <Boton variante="secundario" onClick={handleAbrirVincular} className="w-full">
               <Building2 size={16} />
               Vincular a organización M.A.D.Y.
-            </button>
+            </Boton>
           )}
 
           {/* Auditorías */}

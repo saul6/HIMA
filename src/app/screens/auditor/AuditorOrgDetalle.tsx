@@ -11,6 +11,7 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { estadoAuditoria } from './estados'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
@@ -94,9 +95,9 @@ export function AuditorOrgDetalle() {
       ) : error ? (
         <div className="flex flex-col items-center gap-2 py-16 px-4">
           <p className="text-sm text-center" style={{ color: 'var(--agro-danger-text)' }}>{error}</p>
-          <button onClick={refetch} className="text-xs underline" style={{ color: 'var(--primary)' }}>
+          <Boton variante="secundario" onClick={refetch}>
             Reintentar
-          </button>
+          </Boton>
         </div>
       ) : (
         <main className="flex-1 px-4 py-4 flex flex-col gap-6">
@@ -104,7 +105,7 @@ export function AuditorOrgDetalle() {
           <section>
             <TituloSeccion as="p">Instalaciones ({ranchos.length})</TituloSeccion>
             {ranchos.length === 0 ? (
-              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Sin instalaciones registradas.</p>
+              <EstadoVacio icono={MapPin} titulo="Sin instalaciones registradas." />
             ) : (
               <div className="flex flex-col gap-2">
                 {ranchos.map((r, index) => (

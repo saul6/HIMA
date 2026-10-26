@@ -9,6 +9,7 @@ import { hoyMX } from '@/lib/fecha'
 import { Portal } from '@/app/components/Portal'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { estadoAuditoria } from './estados'
 import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
@@ -158,29 +159,25 @@ export function NuevaJornada() {
           <div className="mx-4 mt-4 rounded-xl border border-dashed border-border p-4 flex items-center gap-3">
             <AlertCircle size={16} style={{ color: 'var(--agro-danger-text)' }} />
             <p className="text-sm flex-1" style={{ color: 'var(--muted-foreground)' }}>{errorCandidatas}</p>
-            <button onClick={cargarCandidatas} className="text-xs font-semibold" style={{ color: 'var(--primary)' }}>
+            <Boton variante="secundario" tamano="sm" onClick={cargarCandidatas}>
               Reintentar
-            </button>
+            </Boton>
           </div>
         )}
 
         {/* Vacío */}
         {!cargandoCandidatas && !errorCandidatas && candidatas.length === 0 && (
-          <div className="flex-1 flex flex-col items-center justify-center px-6 gap-3 py-12">
-            <Info size={28} style={{ color: 'var(--muted-foreground)', opacity: 0.4 }} />
-            <p className="text-sm font-medium text-center" style={{ color: 'var(--foreground)' }}>
-              Sin auditorías disponibles
-            </p>
-            <p className="text-xs text-center" style={{ color: 'var(--muted-foreground)' }}>
-              No hay auditorías abiertas a las que tengas acceso. Crea una desde el perfil del productor.
-            </p>
-            <button
-              onClick={() => navigate('/auditor')}
-              className="text-sm font-semibold px-4 py-2 rounded-lg mt-1"
-              style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
-            >
-              Ir al inicio
-            </button>
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
+            <EstadoVacio
+              icono={Info}
+              titulo="Sin auditorías disponibles"
+              ayuda="No hay auditorías abiertas a las que tengas acceso. Crea una desde el perfil del productor."
+              accion={(
+                <Boton variante="secundario" onClick={() => navigate('/auditor')}>
+                  Ir al inicio
+                </Boton>
+              )}
+            />
           </div>
         )}
 

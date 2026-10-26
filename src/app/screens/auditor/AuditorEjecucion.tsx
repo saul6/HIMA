@@ -24,6 +24,7 @@ import type { CapturaPreguntaRef, AjusteInfo } from './CapturaPreguntaAuditoria'
 import { traducirErrorBd } from '@/lib/erroresBd'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { estadoAuditoria, estadoHallazgo } from './estados'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Skeleton } from '@/app/components/ui/skeleton'
@@ -916,9 +917,7 @@ function PanelHallazgos({
                 <Skeleton className="h-3.5 w-1/2" />
               </div>
             ) : (
-              <p className="text-xs px-4 py-4" style={{ color: 'var(--muted-foreground)' }}>
-                Sin hallazgos registrados.
-              </p>
+              <EstadoVacio icono={Flag} titulo="Sin hallazgos registrados." />
             )
           ) : (
             <div className="flex flex-col divide-y" style={{ borderColor: 'var(--border)' }}>

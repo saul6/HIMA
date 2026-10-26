@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Navigate, Outlet } from 'react-router'
 import { motion, LayoutGroup, useReducedMotion } from 'motion/react'
 import {
-  Building2, ChevronRight,
+  Building2,
   AlertCircle, Calendar, CheckCircle2, RefreshCw, PlayCircle, Layers,
 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
@@ -18,6 +18,8 @@ import { AuditorBusqueda } from './AuditorBusqueda'
 import { Fab } from '@/app/components/Fab'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { FilaNavegable } from './FilaNavegable'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
@@ -131,41 +133,27 @@ function WorkQueueCard({
   const vencida = esVencida(item, hoy)
   return (
     <motion.div {...entrada(index, reducedMotion)}>
-      <button
+      <FilaNavegable
         onClick={onClick}
-        className="group w-full text-left bg-card rounded-xl border p-4 flex flex-col gap-2 hover:bg-muted active:opacity-70 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-        style={{
-          borderColor: vencida ? 'var(--agro-danger-text)' : 'var(--border)',
-          borderWidth: vencida ? '1.5px' : undefined,
-          transitionDuration: 'var(--motion-fast)',
-        }}
-      >
-        <div className="flex items-start gap-2">
-          <p className="flex-1 text-sm font-medium leading-snug line-clamp-2" style={{ color: 'var(--foreground)' }}>
-            {item.title}
-          </p>
-          <ChevronRight
-            size={15}
-            className="flex-shrink-0 mt-0.5 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
-            style={{ color: 'var(--muted-foreground)', transitionDuration: 'var(--motion-fast)' }}
-          />
-        </div>
-        <div className="flex flex-wrap gap-1.5 items-center">
-          {vencida && (
-            <Etiqueta tono="error" icono={<AlertCircle size={10} />}>Vencida</Etiqueta>
-          )}
-          {item.next_action_code !== 'SIN_ACCION' && (
-            <Etiqueta tono={accionTono(item.next_action_code)}>
-              {ACCION_LABELS[item.next_action_code] ?? item.next_action_code}
-            </Etiqueta>
-          )}
-          {orgNombre && (
-            <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-              {orgNombre}
-            </span>
-          )}
-        </div>
-      </button>
+        titulo={item.title}
+        lineasTitulo={2}
+        tono={vencida ? 'vencida' : 'normal'}
+        pie={(
+          <span className="flex flex-wrap items-center gap-1.5">
+            {vencida && (
+              <Etiqueta tono="error" icono={<AlertCircle size={10} />}>Vencida</Etiqueta>
+            )}
+            {item.next_action_code !== 'SIN_ACCION' && (
+              <Etiqueta tono={accionTono(item.next_action_code)}>
+                {ACCION_LABELS[item.next_action_code] ?? item.next_action_code}
+              </Etiqueta>
+            )}
+            {orgNombre && (
+              <span className="text-caption text-muted-foreground">{orgNombre}</span>
+            )}
+          </span>
+        )}
+      />
     </motion.div>
   )
 }
@@ -273,27 +261,13 @@ export function AuditorHome() {
         {/* ── Continuar trabajo ──────────────────────────────────────── */}
         {workspace && (
           <section>
-            <button
+            <FilaNavegable
               onClick={() => { markResume(clicksBeforeResumeRef.current); navigate(workspace.route) }}
-              className="w-full text-left bg-card rounded-xl p-4 flex items-center gap-3 hover:bg-muted active:opacity-70 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              style={{ border: '1.5px solid var(--primary)', transitionDuration: 'var(--motion-fast)' }}
-            >
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: 'var(--agro-success-fill)' }}
-              >
-                <PlayCircle size={18} style={{ color: 'var(--agro-success-text)' }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-caption font-semibold" style={{ color: 'var(--primary)' }}>
-                  Continuar trabajo
-                </p>
-                <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>
-                  {workspace.titulo}
-                </p>
-              </div>
-              <ChevronRight size={15} style={{ color: 'var(--muted-foreground)' }} />
-            </button>
+              tono="destacada"
+              icono={<PlayCircle size={18} />}
+              encima="Continuar trabajo"
+              titulo={workspace.titulo}
+            />
           </section>
         )}
 
@@ -354,25 +328,12 @@ export function AuditorHome() {
             <TituloSeccion as="p">Visitas de hoy</TituloSeccion>
             <div className="flex flex-col gap-2">
               {resumen.visitas_hoy.map(v => (
-                <button
+                <FilaNavegable
                   key={v.agenda_id}
                   onClick={() => navigate(`/auditor/auditoria/${v.auditoria_id}`)}
-                  className="w-full text-left bg-card rounded-xl border border-border p-3 flex items-center gap-3 hover:bg-muted active:opacity-70 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                >
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: 'var(--agro-success-fill)' }}
-                  >
-                    <Calendar size={15} style={{ color: 'var(--agro-success-text)' }} />
-                  </div>
-                  <p
-                    className="flex-1 text-sm font-medium truncate"
-                    style={{ color: 'var(--foreground)' }}
-                  >
-                    {v.titulo}
-                  </p>
-                  <ChevronRight size={15} style={{ color: 'var(--muted-foreground)' }} />
-                </button>
+                  icono={<Calendar size={15} />}
+                  titulo={v.titulo}
+                />
               ))}
             </div>
           </section>
@@ -382,52 +343,29 @@ export function AuditorHome() {
         <section>
           <div className="flex items-center justify-between mb-2.5">
             <TituloSeccion as="p" className="mb-0">Captura por bloque</TituloSeccion>
-            <button
-              onClick={() => navigate('/auditor/jornada/nueva')}
-              className="flex items-center gap-1 text-small font-semibold px-2.5 py-1 rounded-lg transition-colors hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              style={{ border: '1px solid var(--ring)', color: 'var(--foreground)', transitionDuration: 'var(--motion-fast)' }}
-            >
-              <Layers size={11} />
+            <Boton variante="secundario" tamano="sm" onClick={() => navigate('/auditor/jornada/nueva')}>
+              <Layers size={13} />
               Auditar por bloque
-            </button>
+            </Boton>
           </div>
           {jornadasAbiertas.length > 0 ? (
             <div className="flex flex-col gap-2">
               {jornadasAbiertas.map(j => (
-                <button
+                <FilaNavegable
                   key={j.jornada_id}
                   onClick={() => navigate(`/auditor/jornada/${j.jornada_id}`)}
-                  className="w-full text-left bg-card rounded-xl border border-border p-3 flex items-center gap-3 hover:bg-muted active:opacity-70 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                >
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: 'var(--agro-success-fill)' }}
-                  >
-                    <Layers size={15} style={{ color: 'var(--agro-success-text)' }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>
-                      {j.nombre}
-                    </p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                      {j.operaciones.length} {j.operaciones.length === 1 ? 'operación' : 'operaciones'}
-                      {' · '}{j.fecha.split('-').reverse().join('/')}
-                    </p>
-                  </div>
-                  <ChevronRight size={15} style={{ color: 'var(--muted-foreground)' }} />
-                </button>
+                  icono={<Layers size={15} />}
+                  titulo={j.nombre}
+                  subtitulo={`${j.operaciones.length} ${j.operaciones.length === 1 ? 'operación' : 'operaciones'} · ${j.fecha.split('-').reverse().join('/')}`}
+                />
               ))}
             </div>
           ) : (
-            <div
-              className="rounded-xl border border-dashed border-border p-4 flex items-center gap-3"
-              style={{ borderStyle: 'dashed' }}
-            >
-              <Layers size={16} style={{ color: 'var(--muted-foreground)', opacity: 0.5 }} />
-              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                Sin jornadas abiertas. Usa «Auditar por bloque» para iniciar una.
-              </p>
-            </div>
+            <EstadoVacio
+              icono={Layers}
+              titulo="Sin jornadas abiertas."
+              ayuda="Usa «Auditar por bloque» para iniciar una."
+            />
           )}
         </section>
 
@@ -438,13 +376,9 @@ export function AuditorHome() {
               {filtro ? (FILTRO_LABELS[filtro] ?? 'Filtrado') : 'Cola de trabajo'}
             </TituloSeccion>
             {filtro && (
-              <button
-                onClick={() => setFiltro(null)}
-                className="text-small font-semibold px-2.5 py-0.5 rounded-md"
-                style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
-              >
+              <Boton variante="secundario" tamano="sm" onClick={() => setFiltro(null)}>
                 Ver todos
-              </button>
+              </Boton>
             )}
           </div>
 
@@ -461,30 +395,22 @@ export function AuditorHome() {
               ))}
             </div>
           ) : errorDash ? (
-            <div className="rounded-xl border border-dashed border-border p-6 flex flex-col items-center gap-3">
-              <AlertCircle size={24} style={{ color: 'var(--muted-foreground)', opacity: 0.5 }} />
-              <p className="text-sm text-center" style={{ color: 'var(--muted-foreground)' }}>
-                No se pudo cargar la cola de trabajo.
-              </p>
-              <button
-                onClick={() => setRefreshKey(k => k + 1)}
-                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg"
-                style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
-              >
-                <RefreshCw size={12} />
-                Reintentar
-              </button>
-            </div>
+            <EstadoVacio
+              icono={AlertCircle}
+              titulo="No se pudo cargar la cola de trabajo."
+              accion={(
+                <Boton variante="secundario" onClick={() => setRefreshKey(k => k + 1)}>
+                  <RefreshCw size={14} />
+                  Reintentar
+                </Boton>
+              )}
+            />
           ) : colaFiltrada.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border p-8 flex flex-col items-center gap-2">
-              <CheckCircle2 size={28} style={{ color: 'var(--muted-foreground)', opacity: 0.4 }} />
-              <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-                Sin acciones pendientes
-              </p>
-              <p className="text-xs text-center" style={{ color: 'var(--muted-foreground)' }}>
-                {filtro ? 'Sin items con este filtro.' : '¡Todo al día!'}
-              </p>
-            </div>
+            <EstadoVacio
+              icono={CheckCircle2}
+              titulo="Sin acciones pendientes"
+              ayuda={filtro ? 'Sin items con este filtro.' : '¡Todo al día!'}
+            />
           ) : (
             <div className="flex flex-col gap-4">
               {itemsVencidos.length > 0 && (
@@ -541,28 +467,14 @@ export function AuditorHome() {
             <TituloSeccion as="p">Organizaciones</TituloSeccion>
             <div className="flex flex-col gap-2">
               {orgs.map(org => (
-                <button
+                <FilaNavegable
                   key={org.org_id}
                   onClick={() => navigate(`/auditor/org/${org.org_id}`, { state: { orgNombre: org.nombre } })}
-                  className="w-full text-left bg-card rounded-xl border border-border p-4 flex items-center gap-3 hover:bg-muted active:opacity-70 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                >
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: 'var(--muted)' }}
-                  >
-                    <Building2 size={16} style={{ color: 'var(--muted-foreground)' }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>
-                      {org.nombre}
-                    </p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                      {org.num_ranchos} {org.num_ranchos === 1 ? 'instalación' : 'instalaciones'}
-                      {org.tipo ? ` · ${org.tipo}` : ''}
-                    </p>
-                  </div>
-                  <ChevronRight size={15} style={{ color: 'var(--muted-foreground)' }} />
-                </button>
+                  icono={<Building2 size={16} />}
+                  iconoTono="neutro"
+                  titulo={org.nombre}
+                  subtitulo={`${org.num_ranchos} ${org.num_ranchos === 1 ? 'instalación' : 'instalaciones'}${org.tipo ? ` · ${org.tipo}` : ''}`}
+                />
               ))}
             </div>
           </section>
