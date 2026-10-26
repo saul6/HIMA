@@ -635,7 +635,7 @@ async function cargarTodo(orgId: string, desde: string, hasta: string): Promise<
       modulo: 'M26',
       rancho_id: null,
       rancho_nombre: '—',
-      fecha: h.detectado_en ?? r.created_at?.split('T')[0] ?? '',
+      fecha: (h.detectado_en as string | null)?.slice(0, 10) ?? r.created_at?.split('T')[0] ?? '',
       resumen: `${h.criterion_code ?? '—'}: ${(h.descripcion as string | null)?.slice(0, 80) ?? '—'}`,
       pdfRef: { tipo: 'M26', id: r.id },
     })

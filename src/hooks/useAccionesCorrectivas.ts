@@ -175,7 +175,8 @@ export async function fetchBandeja(orgId: string): Promise<NcBandejaItem[]> {
         causa: capa.causa_raiz ?? null,
         accion_correctiva: capa.correccion_inmediata ?? null,
         accion_preventiva: capa.accion_preventiva ?? null,
-        fecha_deteccion: h.detectado_en ?? null,
+        // Solo la parte de fecha, sin convertir zona: detectado_en es medianoche UTC y en CDMX caería un día antes
+        fecha_deteccion: h.detectado_en ? String(h.detectado_en).slice(0, 10) : null,
         fecha_cumplimiento: capa.due_at ?? null,
         realizo,
         verifico,
