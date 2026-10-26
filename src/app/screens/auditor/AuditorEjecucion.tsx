@@ -18,6 +18,7 @@ import { supabase } from '@/lib/supabase'
 import { useHallazgos } from '@/hooks/useHallazgos'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { EvidenciaPanel } from './EvidenciaPanel'
+import { TextoRecortable } from './TextoRecortable'
 import { useReglasRama } from '@/hooks/useReglasRama'
 import { CapturaPreguntaAuditoria } from './CapturaPreguntaAuditoria'
 import type { CapturaPreguntaRef, AjusteInfo } from './CapturaPreguntaAuditoria'
@@ -931,9 +932,9 @@ function PanelHallazgos({
                       <Etiqueta tono={clasConfig.tono} className={clasConfig.tono === 'rojo' ? 'font-bold dark:text-primary-foreground' : 'font-bold'}>{clasConfig.label}</Etiqueta>
                       <Etiqueta tono={estConfig.tono}>{estConfig.texto}</Etiqueta>
                     </div>
-                    <p className="text-body leading-snug" style={{ color: 'var(--foreground)' }}>
+                    <TextoRecortable className="text-body leading-snug text-foreground">
                       {h.descripcion}
-                    </p>
+                    </TextoRecortable>
                     {preg && (
                       <button
                         onClick={() => scrollToPreg(preg.id)}
@@ -2476,13 +2477,13 @@ export function AuditorEjecucion() {
                                   </span>
                                 </div>
                                 {ewr.official_decision && (
-                                  <p className="text-body" style={{ color: 'var(--foreground)' }}>{ewr.official_decision}</p>
+                                  <TextoRecortable className="text-body text-foreground">{ewr.official_decision}</TextoRecortable>
                                 )}
                                 {ewr.official_comment && (
-                                  <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>{ewr.official_comment}</p>
+                                  <TextoRecortable className="text-caption text-muted-foreground">{ewr.official_comment}</TextoRecortable>
                                 )}
                                 {ewr.source_note && (
-                                  <p className="text-caption italic" style={{ color: 'var(--muted-foreground)' }}>{ewr.source_note}</p>
+                                  <TextoRecortable className="text-caption italic text-muted-foreground">{ewr.source_note}</TextoRecortable>
                                 )}
                               </div>
                             ))}
@@ -2541,7 +2542,7 @@ export function AuditorEjecucion() {
                     return (
                       <div key={campo}>
                         <p className="text-caption font-medium" style={{ color: 'var(--muted-foreground)' }}>{etiqueta}</p>
-                        <p className="text-xs" style={{ color: 'var(--foreground)' }}>{val}</p>
+                        <TextoRecortable className="text-xs text-foreground">{val}</TextoRecortable>
                       </div>
                     )
                   })}
@@ -2606,7 +2607,7 @@ export function AuditorEjecucion() {
                             </span>
                           )}
                         </div>
-                        <p className="text-body leading-snug" style={{ color: 'var(--foreground)' }}>{desc}</p>
+                        <TextoRecortable className="text-body leading-snug text-foreground">{desc}</TextoRecortable>
                         <div className="flex items-center gap-2 mt-0.5">
                           <a
                             href="/inocuidad/incidencias"
@@ -2710,7 +2711,7 @@ export function AuditorEjecucion() {
                           {fechaCorta(inc.fecha)}
                         </span>
                       </div>
-                      <p className="text-body leading-snug" style={{ color: 'var(--foreground)' }}>{inc.descripcion}</p>
+                      <TextoRecortable className="text-body leading-snug text-foreground">{inc.descripcion}</TextoRecortable>
                       <Boton onClick={() => handleRelacionarIncidencia(inc)} cargando={!!incRelacionandoId} className="self-end">
                         <Link2 size={10} />
                         Relacionar
