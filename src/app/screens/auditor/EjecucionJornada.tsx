@@ -54,6 +54,7 @@ function OperacionChip({ op, activa, onClick }: {
   return (
     <button
       onClick={onClick}
+      aria-current={activa ? 'true' : undefined}
       disabled={!op.disponible}
       className="flex flex-col gap-1 px-3 py-2 rounded-xl border transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] flex-shrink-0 disabled:opacity-50 text-left"
       style={{
@@ -119,6 +120,7 @@ function NavigatorPregunta({ pregunta, activa, auditoriaActiva, onClick }: {
   return (
     <button
       onClick={onClick}
+      aria-current={activa ? 'step' : undefined}
       className="w-full text-left px-4 py-2.5 flex items-center gap-2.5 transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)]"
       style={{
         backgroundColor: activa ? 'var(--agro-success-fill)' : 'transparent',
@@ -207,7 +209,7 @@ function PendientesPanel({
                   className="flex items-center gap-1 text-small font-semibold px-2 py-1 rounded-lg relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                   style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
                 >
-                  <ExternalLink size={10} />
+                  <ExternalLink aria-hidden="true" size={10} />
                   Abrir auditoría
                 </button>
               </div>
@@ -530,7 +532,7 @@ export function EjecucionJornada() {
           titulo="No se pudo cargar la jornada."
           accion={(
             <Boton variante="secundario" onClick={cargar}>
-              <RefreshCw size={14} />
+              <RefreshCw aria-hidden="true" size={14} />
               Reintentar
             </Boton>
           )}
@@ -559,13 +561,13 @@ export function EjecucionJornada() {
               onClick={() => setPanelPendientes(true)}
               aria-label={`Pendientes (${totalPendientes})`}
             >
-              <ClipboardList size={14} />
+              <ClipboardList aria-hidden="true" size={14} />
               <span className="hidden sm:inline">Pendientes</span>
               <Etiqueta tono={totalPendientes > 0 ? 'sky' : 'neutral'}>{totalPendientes}</Etiqueta>
             </Boton>
             {!terminada && (
-              <Boton variante="icono" aria-label="Más opciones" onClick={() => setMenuAbierto(m => !m)}>
-                <MoreVertical size={16} style={{ color: 'var(--muted-foreground)' }} />
+              <Boton variante="icono" aria-label="Más opciones" aria-haspopup="dialog" aria-expanded={menuAbierto} onClick={() => setMenuAbierto(m => !m)}>
+                <MoreVertical aria-hidden="true" size={16} style={{ color: 'var(--muted-foreground)' }} />
               </Boton>
             )}
           </>
@@ -575,8 +577,8 @@ export function EjecucionJornada() {
       {/* Sin conexión */}
       <AnimatePresence initial={false}>
       {sinConexion && (
-        <motion.div key="sin-conexion" {...avisoMotion(reducedMotion)} className="flex items-center gap-2 px-4 py-2 border-b" style={{ backgroundColor: 'var(--agro-info-fill)', borderColor: 'var(--agro-info-text)' }}>
-          <WifiOff size={13} style={{ color: 'var(--agro-info-text)' }} />
+        <motion.div key="sin-conexion" role="status" {...avisoMotion(reducedMotion)} className="flex items-center gap-2 px-4 py-2 border-b" style={{ backgroundColor: 'var(--agro-info-fill)', borderColor: 'var(--agro-info-text)' }}>
+          <WifiOff aria-hidden="true" size={13} style={{ color: 'var(--agro-info-text)' }} />
           <p className="text-small font-medium" style={{ color: 'var(--agro-info-text)' }}>
             Sin conexión: los cambios no guardados se perderán si cierras la página.
           </p>
@@ -587,12 +589,12 @@ export function EjecucionJornada() {
       {/* ── Error de guardado ── */}
       <AnimatePresence initial={false}>
       {saveError && (
-        <motion.div key="error-guardado" {...avisoMotion(reducedMotion)} className="mx-4 mt-3 rounded-xl px-3 py-2.5 flex items-center gap-2 border"
+        <motion.div key="error-guardado" role="alert" {...avisoMotion(reducedMotion)} className="mx-4 mt-3 rounded-xl px-3 py-2.5 flex items-center gap-2 border"
           style={{ backgroundColor: 'var(--agro-danger-fill)', borderColor: 'var(--agro-danger-text)' }}>
-          <AlertCircle size={14} className="flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
+          <AlertCircle aria-hidden="true" size={14} className="flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
           <p className="text-small flex-1" style={{ color: 'var(--agro-danger-text)' }}>{saveError}</p>
           <button aria-label="Cerrar" onClick={() => setSaveError(null)} className="flex-shrink-0 relative before:absolute before:content-[''] before:-inset-[15px]">
-            <XCircle size={14} style={{ color: 'var(--agro-danger-text)' }} />
+            <XCircle aria-hidden="true" size={14} style={{ color: 'var(--agro-danger-text)' }} />
           </button>
         </motion.div>
       )}
@@ -731,7 +733,7 @@ export function EjecucionJornada() {
               {sigPregunta && (
                 <Boton variante="secundario" onClick={() => cambiarPregunta(sigPregunta.question_id)} className="w-full">
                   <span>Siguiente pregunta</span>
-                  <ChevronDown size={14} />
+                  <ChevronDown aria-hidden="true" size={14} />
                 </Boton>
               )}
 
@@ -742,7 +744,7 @@ export function EjecucionJornada() {
                   className="flex items-center justify-center gap-1.5 text-xs font-medium py-2"
                   style={{ color: 'var(--muted-foreground)' }}
                 >
-                  <ExternalLink size={12} />
+                  <ExternalLink aria-hidden="true" size={12} />
                   Abrir auditoría completa (validar, cerrar, PDF…)
                 </button>
               )}
@@ -763,7 +765,7 @@ export function EjecucionJornada() {
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-left active:opacity-70"
               style={{ backgroundColor: 'var(--muted)' }}
             >
-              <Plus size={16} style={{ color: 'var(--primary)' }} />
+              <Plus aria-hidden="true" size={16} style={{ color: 'var(--primary)' }} />
               <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
                 Agregar operación
               </span>
@@ -784,7 +786,7 @@ export function EjecucionJornada() {
                       className="flex-1 h-8 rounded-lg text-xs font-semibold flex items-center justify-center relative before:absolute before:content-[''] before:-inset-y-1.5"
                       style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', border: '1px solid var(--agro-info-text)' }}
                     >
-                      {retirando ? <Loader size={12} className="animate-spin motion-reduce:animate-none" /> : 'Confirmar'}
+                      {retirando ? <Loader aria-hidden="true" size={12} className="animate-spin motion-reduce:animate-none" /> : 'Confirmar'}
                     </button>
                     <button
                       onClick={() => setConfirmRetirar(null)}
@@ -801,7 +803,7 @@ export function EjecucionJornada() {
                   className="flex items-center gap-3 px-4 py-3 rounded-xl text-left active:opacity-70"
                   style={{ backgroundColor: 'var(--muted)' }}
                 >
-                  <Minus size={16} style={{ color: 'var(--muted-foreground)' }} />
+                  <Minus aria-hidden="true" size={16} style={{ color: 'var(--muted-foreground)' }} />
                   <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
                     Quitar "{operacionActiva?.operacion}" de la jornada
                   </span>
@@ -825,7 +827,7 @@ export function EjecucionJornada() {
                     className="flex-1 h-8 rounded-lg text-xs font-semibold flex items-center justify-center relative before:absolute before:content-[''] before:-inset-y-1.5"
                     style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', border: '1px solid var(--agro-danger-text)' }}
                   >
-                    {terminando ? <Loader size={12} className="animate-spin motion-reduce:animate-none" /> : 'Terminar jornada'}
+                    {terminando ? <Loader aria-hidden="true" size={12} className="animate-spin motion-reduce:animate-none" /> : 'Terminar jornada'}
                   </button>
                   <button
                     onClick={() => setConfirmTerminar(false)}
@@ -842,7 +844,7 @@ export function EjecucionJornada() {
                 className="flex items-center gap-3 px-4 py-3 rounded-xl text-left active:opacity-70"
                 style={{ backgroundColor: 'var(--muted)' }}
               >
-                <XCircle size={16} style={{ color: 'var(--agro-danger-text)' }} />
+                <XCircle aria-hidden="true" size={16} style={{ color: 'var(--agro-danger-text)' }} />
                 <span className="text-sm font-medium" style={{ color: 'var(--agro-danger-text)' }}>
                   Terminar jornada
                 </span>

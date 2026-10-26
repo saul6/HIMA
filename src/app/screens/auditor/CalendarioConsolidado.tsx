@@ -180,7 +180,7 @@ export function CalendarioConsolidado() {
           style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
           aria-label="Mes anterior"
         >
-          <ChevronLeft size={16} />
+          <ChevronLeft aria-hidden="true" size={16} />
         </button>
         <p className="flex-1 text-center text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
           {nombreMes} {año}
@@ -191,7 +191,7 @@ export function CalendarioConsolidado() {
           style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
           aria-label="Mes siguiente"
         >
-          <ChevronRight size={16} />
+          <ChevronRight aria-hidden="true" size={16} />
         </button>
         <button
           onClick={recargar}
@@ -200,8 +200,8 @@ export function CalendarioConsolidado() {
           aria-label="Actualizar"
         >
           {cargando
-            ? <Loader size={15} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
-            : <RefreshCw size={15} style={{ color: 'var(--muted-foreground)' }} />
+            ? <Loader aria-hidden="true" size={15} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
+            : <RefreshCw aria-hidden="true" size={15} style={{ color: 'var(--muted-foreground)' }} />
           }
         </button>
       </div>
@@ -250,7 +250,7 @@ export function CalendarioConsolidado() {
         </div>
       ) : eventosPorDia.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-          <CalendarDays size={32} style={{ color: 'var(--muted-foreground)', opacity: 0.4 }} />
+          <CalendarDays aria-hidden="true" size={32} style={{ color: 'var(--muted-foreground)', opacity: 0.4 }} />
           <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
             Sin eventos en {nombreMes.toLowerCase()}
           </p>

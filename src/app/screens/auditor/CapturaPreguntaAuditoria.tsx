@@ -622,7 +622,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
     if (errorMsg) {
       return (
         <div className="rounded-xl border border-dashed border-border p-6 flex flex-col items-center gap-2">
-          <AlertCircle size={20} style={{ color: 'var(--agro-danger-text)' }} />
+          <AlertCircle aria-hidden="true" size={20} style={{ color: 'var(--agro-danger-text)' }} />
           <p className="text-sm text-center" style={{ color: 'var(--muted-foreground)' }}>
             No se pudo cargar la auditoría.
           </p>
@@ -991,7 +991,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}
             >
               <div className="flex items-start gap-2">
-                <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+                <AlertTriangle aria-hidden="true" size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
                 <div className="flex flex-col gap-1 flex-1">
                   <p className="text-small font-semibold" style={{ color: 'var(--agro-info-text)' }}>
                     Reactivada tras retirar una regla
@@ -1014,7 +1014,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', border: '1px solid var(--agro-info-text)' }}
                 >
                   {confirmandoRevision
-                    ? <><Loader size={10} className="animate-spin motion-reduce:animate-none" /> Confirmando…</>
+                    ? <><Loader aria-hidden="true" size={10} className="animate-spin motion-reduce:animate-none" /> Confirmando…</>
                     : 'Confirmar respuesta anterior'}
                 </button>
               )}
@@ -1341,7 +1341,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
             const desc    = matrizDescuento ?? 0
             return (
               <div className="rounded-lg px-3 py-2 flex items-center gap-2" style={{ backgroundColor: bg }}>
-                <BarChart2 size={12} className="flex-shrink-0" style={{ color }} />
+                <BarChart2 aria-hidden="true" size={12} className="flex-shrink-0" style={{ color }} />
                 <p className="text-caption font-medium flex-1" style={{ color }}>
                   {matrizMax} posibles → {matrizObtenido} obtenidos
                   {desc > 0 && <span className="font-bold"> · −{desc} descuento</span>}
@@ -1361,7 +1361,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5">
-                  <Pencil
+                  <Pencil aria-hidden="true"
                     size={11}
                     style={{
                       color: ajuste.ajuste_estado === 'MANUAL_MATCHES_MATRIX' ? 'var(--agro-success-text)' : 'var(--agro-info-text)',
@@ -1393,7 +1393,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                     className="flex items-center gap-1 text-small font-medium px-2 py-0.5 rounded disabled:opacity-50 relative before:absolute before:content-[''] before:-inset-y-3 before:-inset-x-1"
                     style={{ backgroundColor: 'var(--muted)', color: 'var(--agro-info-text)' }}
                   >
-                    {quitandoAjuste ? <Loader size={10} className="animate-spin motion-reduce:animate-none" /> : <X size={10} />}
+                    {quitandoAjuste ? <Loader aria-hidden="true" size={10} className="animate-spin motion-reduce:animate-none" /> : <X aria-hidden="true" size={10} />}
                     Quitar
                   </button>
                 )}
@@ -1405,7 +1405,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               )}
               {ajusteWarning?.tipo === 'OTHER_CATEGORY' && ajusteWarning.clasificacion_sugerida && (
                 <div className="flex items-start gap-2 pt-0.5">
-                  <AlertCircle size={12} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+                  <AlertCircle aria-hidden="true" size={12} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
                   <div className="flex flex-col gap-1 flex-1">
                     <p className="text-small" style={{ color: 'var(--agro-info-text)' }}>{ajusteWarning.mensaje}</p>
                     {!cerrada && (
@@ -1437,7 +1437,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           {/* Aviso OTHER_CATEGORY cuando el chip de ajuste aún no aparece */}
           {!pregunta.es_cualitativa && ajuste?.puntos_manual == null && ajusteWarning && (
             <div className="rounded-lg px-3 py-2 flex items-start gap-2" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
-              <AlertCircle size={12} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+              <AlertCircle aria-hidden="true" size={12} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
               <p className="text-small" style={{ color: 'var(--agro-info-text)' }}>{ajusteWarning.mensaje}</p>
             </div>
           )}
@@ -1449,7 +1449,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               className="self-start flex items-center gap-1 text-small font-medium"
               style={{ color: 'var(--primary)' }}
             >
-              <Pencil size={10} />
+              <Pencil aria-hidden="true" size={10} />
               Ajustar puntuación
             </button>
           )}
@@ -1465,7 +1465,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   Ajuste manual de puntuación
                 </p>
                 <button className="relative before:absolute before:content-[''] before:-inset-[15px]" aria-label="Cerrar" onClick={() => setAjusteOpen(false)} style={{ color: 'var(--muted-foreground)' }}>
-                  <X size={14} />
+                  <X aria-hidden="true" size={14} />
                 </button>
               </div>
               <div className="flex gap-3">
@@ -1553,7 +1553,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               className="flex items-start gap-2 rounded-lg px-3 py-2"
               style={{ backgroundColor: 'var(--agro-info-fill)' }}
             >
-              <History size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+              <History aria-hidden="true" size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
               <p className="text-small" style={{ color: 'var(--agro-info-text)' }}>
                 {reincidencia.mensaje}
               </p>
@@ -1566,7 +1566,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               className="flex items-start gap-2 rounded-lg px-3 py-2"
               style={{ backgroundColor: 'var(--agro-info-fill)' }}
             >
-              <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+              <AlertTriangle aria-hidden="true" size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
               <p className="text-small font-medium" style={{ color: 'var(--agro-info-text)' }}>
                 Control de falla automática — revisar con el auditor certificado.
               </p>
@@ -1746,7 +1746,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                               className="h-7 px-2.5 rounded-lg text-small font-semibold disabled:opacity-50 flex items-center gap-1 relative before:absolute before:content-[''] before:-inset-y-2 before:-inset-x-1"
                               style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                             >
-                              {ejec === 'cargando' ? <><Loader size={10} className="animate-spin motion-reduce:animate-none" />…</> : 'Conservar este'}
+                              {ejec === 'cargando' ? <><Loader aria-hidden="true" size={10} className="animate-spin motion-reduce:animate-none" />…</> : 'Conservar este'}
                             </button>
                             <Boton disabled={!!ejec} onClick={async () => {
                                 setHerenciaAcciones(prev => new Map(prev).set(esq.id, 'cargando'))
@@ -1783,7 +1783,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               className="flex items-start gap-2 rounded-lg px-3 py-2"
               style={{ backgroundColor: 'var(--agro-info-fill)' }}
             >
-              <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+              <AlertTriangle aria-hidden="true" size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
               <p className="text-small font-medium" style={{ color: 'var(--agro-info-text)' }}>
                 Una no conformidad requiere observación del auditor.
               </p>
@@ -1823,20 +1823,20 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           <div className="flex items-center gap-2 min-h-[18px]">
             {saveStatus === 'saving' && (
               <>
-                <Loader size={12} className="animate-spin flex-shrink-0 motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
+                <Loader aria-hidden="true" size={12} className="animate-spin flex-shrink-0 motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
                 <span className="text-small" style={{ color: 'var(--muted-foreground)' }}>Guardando…</span>
               </>
             )}
             {saveStatus === 'saved' && (
               <>
-                <CheckCircle size={12} className="flex-shrink-0" style={{ color: 'var(--agro-success-text)' }} />
+                <CheckCircle aria-hidden="true" size={12} className="flex-shrink-0" style={{ color: 'var(--agro-success-text)' }} />
                 <span className="text-small" style={{ color: 'var(--agro-success-text)' }}>Guardado</span>
               </>
             )}
             {saveStatus === 'error' && (
               <div className="field-error-shake flex items-center gap-2 w-full">
                 <span className="flex items-center gap-1 text-small flex-1 min-w-0" style={{ color: 'var(--agro-danger-text)' }}>
-                  <XCircle size={12} className="flex-shrink-0" />
+                  <XCircle aria-hidden="true" size={12} className="flex-shrink-0" />
                   <span className="line-clamp-3">{saveMessage || 'No se pudo guardar. Reintenta.'}</span>
                 </span>
                 <button
@@ -1861,7 +1861,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   className="flex items-center gap-1 text-small font-semibold px-2 py-1 rounded-lg relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                   style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
                 >
-                  <Flag size={10} />
+                  <Flag aria-hidden="true" size={10} />
                   {hallazgosCount} hallazgo{(hallazgosCount ?? 0) !== 1 ? 's' : ''}
                 </button>
               )}
@@ -1872,7 +1872,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
                   className="flex items-center gap-1 text-small font-medium px-2 py-1 rounded-lg disabled:opacity-40 relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                   style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                 >
-                  <Plus size={10} />
+                  <Plus aria-hidden="true" size={10} />
                   {!instanciaId ? 'Guardando…' : 'Registrar hallazgo'}
                 </button>
               )}
@@ -1882,11 +1882,12 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
           {/* ── Botón de evidencia ── */}
           {instanciaId && (
             <button
+              aria-haspopup="dialog"
               onClick={() => setEvidenciaOpen(true)}
               className="self-start flex items-center gap-1.5 text-small font-medium px-2 py-1 rounded-lg relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
               style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)', border: '1px solid var(--border)' }}
             >
-              <Paperclip size={12} />
+              <Paperclip aria-hidden="true" size={12} />
               Evidencia
             </button>
           )}
@@ -1897,7 +1898,7 @@ export const CapturaPreguntaAuditoria = forwardRef<CapturaPreguntaRef, Props>(
               className="flex items-center gap-1.5 rounded-lg px-3 py-2"
               style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
             >
-              <AlertTriangle size={12} className="flex-shrink-0" />
+              <AlertTriangle aria-hidden="true" size={12} className="flex-shrink-0" />
               <span className="text-caption">Auditoría cerrada — solo lectura</span>
             </div>
           )}

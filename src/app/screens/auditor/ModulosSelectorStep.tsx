@@ -24,6 +24,8 @@ export function ModulosSelectorStep({ modulos, seleccionados, onToggle }: Props)
           <button
             key={m.id}
             type="button"
+            role="checkbox"
+            aria-checked={sel}
             onClick={() => onToggle(m.id)}
             className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)]"
             style={{

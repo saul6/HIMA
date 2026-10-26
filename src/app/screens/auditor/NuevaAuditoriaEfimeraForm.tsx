@@ -149,7 +149,7 @@ export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) 
           <h2 className="text-base font-semibold">Nueva auditoría PrimusGFS</h2>
           <p className="text-xs truncate" style={{ color: 'var(--muted-foreground)' }}>{instalacionNombre}</p>
         </div>
-        <button onClick={onClose} aria-label="Cerrar" className="relative before:absolute before:content-[''] before:-inset-3"><X className="w-5 h-5" /></button>
+        <button onClick={onClose} aria-label="Cerrar" className="relative before:absolute before:content-[''] before:-inset-3"><X aria-hidden="true" className="w-5 h-5" /></button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4 flex flex-col gap-5">

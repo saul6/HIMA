@@ -279,13 +279,13 @@ export function AuditorInstalacionDetalle() {
             <motion.section className="bg-card rounded-xl border border-border p-4 flex flex-col gap-2" {...ent(0)}>
               {instalacion.ubicacion && (
                 <div className="flex items-center gap-2">
-                  <MapPin size={13} style={{ color: 'var(--muted-foreground)' }} className="flex-shrink-0" />
+                  <MapPin aria-hidden="true" size={13} style={{ color: 'var(--muted-foreground)' }} className="flex-shrink-0" />
                   <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{instalacion.ubicacion}</p>
                 </div>
               )}
               {(instalacion.tipo_operacion || instalacion.cultivo_producto) && (
                 <div className="flex items-center gap-2">
-                  <Info size={13} style={{ color: 'var(--muted-foreground)' }} className="flex-shrink-0" />
+                  <Info aria-hidden="true" size={13} style={{ color: 'var(--muted-foreground)' }} className="flex-shrink-0" />
                   <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
                     {[instalacion.tipo_operacion, instalacion.cultivo_producto].filter(Boolean).join(' · ')}
                   </p>
@@ -306,7 +306,7 @@ export function AuditorInstalacionDetalle() {
               className="rounded-xl px-4 py-3 flex items-start gap-3"
               style={{ backgroundColor: 'var(--agro-success-fill)', border: '1px solid color-mix(in srgb, var(--agro-success-text) 35%, transparent)' }}
             >
-              <CheckCircle2 size={16} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-success-text)' }} />
+              <CheckCircle2 aria-hidden="true" size={16} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-success-text)' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold" style={{ color: 'var(--agro-success-text)' }}>
                   Vinculada a M.A.D.Y.{linkedOrgNombre ? ` · ${linkedOrgNombre}` : ''}
@@ -327,7 +327,7 @@ export function AuditorInstalacionDetalle() {
           {instalacion && !instalacion.linked_org_id && (
             <motion.div {...ent(2)}>
               <Boton variante="secundario" onClick={handleAbrirVincular} className="w-full">
-                <Building2 size={16} />
+                <Building2 aria-hidden="true" size={16} />
                 Vincular a organización M.A.D.Y.
               </Boton>
             </motion.div>
@@ -396,7 +396,7 @@ export function AuditorInstalacionDetalle() {
               </p>
             </div>
             <button aria-label="Cerrar" onClick={() => setSheetVincular(false)} className="text-muted-foreground ml-2 flex-shrink-0 relative before:absolute before:content-[''] before:-inset-3">
-              <XCircle size={20} />
+              <XCircle aria-hidden="true" size={20} />
             </button>
           </div>
 
@@ -407,7 +407,7 @@ export function AuditorInstalacionDetalle() {
               className="rounded-xl px-4 py-3 flex items-start gap-3"
               style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}
             >
-              <AlertTriangle size={18} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
+              <AlertTriangle aria-hidden="true" size={18} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold" style={{ color: 'var(--agro-danger-text)' }}>
                   Acción permanente e irreversible
@@ -495,7 +495,7 @@ export function AuditorInstalacionDetalle() {
                           className="self-start text-small font-semibold h-7 px-3 rounded-lg disabled:opacity-50 flex items-center gap-1 relative before:absolute before:content-[''] before:-inset-y-2 before:-inset-x-1"
                           style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)', border: '1px solid var(--border)' }}
                         >
-                          {cargandoPerfiles ? <Loader size={10} className="animate-spin motion-reduce:animate-none" /> : null}
+                          {cargandoPerfiles ? <Loader aria-hidden="true" size={10} className="animate-spin motion-reduce:animate-none" /> : null}
                           Cargar usuarios de esta org
                         </button>
                       )}
@@ -596,7 +596,7 @@ export function AuditorInstalacionDetalle() {
           {/* Botón vincular */}
           <div className="px-4 pb-6 pt-3 flex-shrink-0 border-t border-border">
             <Boton onClick={handleVincular} cargando={vinculando} disabled={!confirmado} className="w-full">
-              <Building2 size={15} /> Vincular expediente a M.A.D.Y.
+              <Building2 aria-hidden="true" size={15} /> Vincular expediente a M.A.D.Y.
             </Boton>
           </div>
         </div>

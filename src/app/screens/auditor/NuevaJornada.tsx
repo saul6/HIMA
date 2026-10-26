@@ -147,11 +147,11 @@ export function NuevaJornada() {
         onBack={() => navigate('/auditor')}
         acciones={cargandoCandidatas ? (
           <span className="flex size-11 items-center justify-center">
-            <Loader size={16} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
+            <Loader aria-hidden="true" size={16} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
           </span>
         ) : (
           <Boton variante="icono" onClick={cargarCandidatas} aria-label="Recargar">
-            <RefreshCw size={15} style={{ color: 'var(--muted-foreground)' }} />
+            <RefreshCw aria-hidden="true" size={15} style={{ color: 'var(--muted-foreground)' }} />
           </Boton>
         )}
       />
@@ -161,7 +161,7 @@ export function NuevaJornada() {
         {/* Error */}
         {errorCandidatas && (
           <div className="mx-4 mt-4 rounded-xl border border-dashed border-border p-4 flex items-center gap-3">
-            <AlertCircle size={16} style={{ color: 'var(--agro-danger-text)' }} />
+            <AlertCircle aria-hidden="true" size={16} style={{ color: 'var(--agro-danger-text)' }} />
             <p className="text-sm flex-1" style={{ color: 'var(--muted-foreground)' }}>{errorCandidatas}</p>
             <Boton variante="secundario" onClick={cargarCandidatas}>
               Reintentar
@@ -255,7 +255,7 @@ export function NuevaJornada() {
             }}
           />
           <Boton onClick={handleCrear} cargando={creando} className="w-full">
-            <Plus size={15} />Comenzar con {seleccionados.size} {seleccionados.size === 1 ? 'operación' : 'operaciones'} de {nProductores} {nProductores === 1 ? 'productor' : 'productores'}
+            <Plus aria-hidden="true" size={15} />Comenzar con {seleccionados.size} {seleccionados.size === 1 ? 'operación' : 'operaciones'} de {nProductores} {nProductores === 1 ? 'productor' : 'productores'}
           </Boton>
         </div>
         </Portal>

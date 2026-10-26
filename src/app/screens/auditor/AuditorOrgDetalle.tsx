@@ -107,7 +107,7 @@ export function AuditorOrgDetalle() {
                     {...entrada(index, reducedMotion)}
                     className="bg-muted rounded-lg px-4 py-3 flex items-center gap-3"
                   >
-                    <MapPin size={15} style={{ color: 'var(--muted-foreground)' }} className="flex-shrink-0" />
+                    <MapPin aria-hidden="true" size={15} style={{ color: 'var(--muted-foreground)' }} className="flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>{r.nombre}</p>
                       {(r.codigo || r.cultivo) && (

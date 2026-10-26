@@ -99,7 +99,7 @@ export function AuditorBusqueda() {
   return (
     <>
       <div className="relative w-full">
-        <Search
+        <Search aria-hidden="true"
           className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
           style={{ color: 'var(--muted-foreground)' }}
         />
@@ -150,7 +150,7 @@ export function AuditorBusqueda() {
               {/* Cargando */}
               {cargando && (
                 <div className="flex items-center justify-center py-10">
-                  <Loader2
+                  <Loader2 aria-hidden="true"
                     size={18}
                     className="animate-spin motion-reduce:animate-none"
                     style={{ color: 'var(--muted-foreground)' }}

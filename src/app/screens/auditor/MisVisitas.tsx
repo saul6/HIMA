@@ -92,7 +92,7 @@ function EventoCard({
             aria-label="Marcar como hecho"
             style={{ border: '1px solid var(--border)' }}
           >
-            <Check size={13} style={{ color: 'var(--muted-foreground)' }} />
+            <Check aria-hidden="true" size={13} style={{ color: 'var(--muted-foreground)' }} />
           </button>
         )}
       </div>
@@ -164,7 +164,7 @@ export function MisVisitas() {
         <TituloSeccion as="p">Próximos eventos</TituloSeccion>
         {pendientes.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border p-6 flex flex-col items-center gap-2">
-            <Calendar size={28} style={{ color: 'var(--muted-foreground)', opacity: 0.35 }} />
+            <Calendar aria-hidden="true" size={28} style={{ color: 'var(--muted-foreground)', opacity: 0.35 }} />
             <p className="text-xs text-center" style={{ color: 'var(--muted-foreground)' }}>
               Sin eventos pendientes.
               <br />Los avisos de borrado aparecen aquí solos.

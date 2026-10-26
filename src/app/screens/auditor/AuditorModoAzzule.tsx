@@ -213,7 +213,7 @@ export function AuditorModoAzzule() {
               </p>
               {current.marcada && (
                 <div className="flex items-center gap-1">
-                  <CheckCircle size={11} style={{ color: 'var(--agro-success-text)' }} />
+                  <CheckCircle aria-hidden="true" size={11} style={{ color: 'var(--agro-success-text)' }} />
                   <span className="text-caption font-semibold" style={{ color: 'var(--agro-success-text)' }}>
                     Enviada — verifica aceptación en Azzule Systems
                   </span>
@@ -231,8 +231,8 @@ export function AuditorModoAzzule() {
                   className={copied ? 'border-transparent bg-agro-success-fill text-agro-success-text hover:bg-agro-success-fill' : undefined}
                 >
                   {copied
-                    ? <><CheckCircle size={13} />Copiado</>
-                    : <><Copy size={13} />Copiar</>
+                    ? <><CheckCircle aria-hidden="true" size={13} />Copiado</>
+                    : <><Copy aria-hidden="true" size={13} />Copiar</>
                   }
                 </Boton>
               </div>
@@ -276,16 +276,16 @@ export function AuditorModoAzzule() {
                 className={current.marcada ? 'w-full border-transparent bg-agro-success-fill text-agro-success-text' : 'w-full'}
               >
                 {marcando
-                  ? <><Loader size={15} className="animate-spin motion-reduce:animate-none" />Marcando…</>
+                  ? <><Loader aria-hidden="true" size={15} className="animate-spin motion-reduce:animate-none" />Marcando…</>
                   : current.marcada
-                    ? <><CheckCircle size={15} />Cargada en Azzule</>
+                    ? <><CheckCircle aria-hidden="true" size={15} />Cargada en Azzule</>
                     : 'Marcar como cargada'
                 }
               </Boton>
 
               {currentIndex < items.length - 1 ? (
                 <Boton onClick={handleSiguiente} className="w-full">
-                  Siguiente <ArrowRight size={15} />
+                  Siguiente <ArrowRight aria-hidden="true" size={15} />
                 </Boton>
               ) : (
                 <Boton onClick={() => navigate(`/auditor/auditoria/${auditoriaId}`, { state: backState })} className="w-full">

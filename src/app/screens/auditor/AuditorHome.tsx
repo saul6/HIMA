@@ -129,7 +129,7 @@ function WorkQueueCard({
         pie={(
           <span className="flex flex-wrap items-center gap-1.5">
             {vencida && (
-              <Etiqueta tono="error" icono={<AlertCircle size={10} />}>Vencida</Etiqueta>
+              <Etiqueta tono="error" icono={<AlertCircle aria-hidden="true" size={10} />}>Vencida</Etiqueta>
             )}
             {item.next_action_code !== 'SIN_ACCION' && (
               <Etiqueta tono={accionTono(item.next_action_code)}>
@@ -234,7 +234,7 @@ export function AuditorHome() {
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <Boton variante="icono" onClick={() => navigate('/auditor/agenda?tab=calendario')} aria-label="Calendario">
-              <Calendar size={16} style={{ color: 'var(--muted-foreground)' }} />
+              <Calendar aria-hidden="true" size={16} style={{ color: 'var(--muted-foreground)' }} />
             </Boton>
             <AuditorCampana />
           </div>
@@ -257,7 +257,7 @@ export function AuditorHome() {
             <FilaNavegable
               onClick={() => { markResume(clicksBeforeResumeRef.current); navigate(workspace.route) }}
               tono="destacada"
-              icono={<PlayCircle size={18} />}
+              icono={<PlayCircle aria-hidden="true" size={18} />}
               encima="Continuar trabajo"
               titulo={workspace.titulo}
             />
@@ -346,7 +346,7 @@ export function AuditorHome() {
               titulo="No se pudo cargar la cola de trabajo."
               accion={(
                 <Boton variante="secundario" onClick={() => setRefreshKey(k => k + 1)}>
-                  <RefreshCw size={14} />
+                  <RefreshCw aria-hidden="true" size={14} />
                   Reintentar
                 </Boton>
               )}
@@ -366,7 +366,7 @@ export function AuditorHome() {
                     variante="subtitulo"
                     className="mb-0 flex items-center gap-1 text-agro-danger-text"
                   >
-                    <AlertCircle size={10} />
+                    <AlertCircle aria-hidden="true" size={10} />
                     Vencidas · {itemsVencidos.length}
                   </TituloSeccion>
                   {itemsVencidos.map((item, index) => (
@@ -418,7 +418,7 @@ export function AuditorHome() {
                 <FilaNavegable
                   key={v.agenda_id}
                   onClick={() => navigate(`/auditor/auditoria/${v.auditoria_id}`)}
-                  icono={<Calendar size={15} />}
+                  icono={<Calendar aria-hidden="true" size={15} />}
                   titulo={v.titulo}
                 />
               ))}
@@ -431,7 +431,7 @@ export function AuditorHome() {
           <div className="flex items-center justify-between mb-2.5">
             <TituloSeccion as="p" className="mb-0">Captura por bloque</TituloSeccion>
             <Boton variante="secundario" onClick={() => navigate('/auditor/jornada/nueva')}>
-              <Layers size={13} />
+              <Layers aria-hidden="true" size={13} />
               Auditar por bloque
             </Boton>
           </div>
@@ -441,7 +441,7 @@ export function AuditorHome() {
                 <FilaNavegable
                   key={j.jornada_id}
                   onClick={() => navigate(`/auditor/jornada/${j.jornada_id}`)}
-                  icono={<Layers size={15} />}
+                  icono={<Layers aria-hidden="true" size={15} />}
                   titulo={j.nombre}
                   subtitulo={`${j.operaciones.length} ${j.operaciones.length === 1 ? 'operación' : 'operaciones'} · ${j.fecha.split('-').reverse().join('/')}`}
                 />
@@ -465,7 +465,7 @@ export function AuditorHome() {
                 <FilaNavegable
                   key={org.org_id}
                   onClick={() => navigate(`/auditor/org/${org.org_id}`, { state: { orgNombre: org.nombre } })}
-                  icono={<Building2 size={16} />}
+                  icono={<Building2 aria-hidden="true" size={16} />}
                   iconoTono="neutro"
                   titulo={org.nombre}
                   subtitulo={`${org.num_ranchos} ${org.num_ranchos === 1 ? 'instalación' : 'instalaciones'}${org.tipo ? ` · ${org.tipo}` : ''}`}

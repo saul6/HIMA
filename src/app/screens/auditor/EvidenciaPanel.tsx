@@ -84,6 +84,9 @@ export function EvidenciaPanel({
 }: Props) {
   const hook = useEvidencia(entityType, entityId)
   const archivosId = useId()
+  const cuerpoId = useId()
+  const subirId = useId()
+  const gatewayId = useId()
   const reducedMotion = useReducedMotion()
   const { can, cargando: cargandoPermisos } = useMisPermisos()
   const canLink      = cargandoPermisos || can('evidence.link')
@@ -337,10 +340,12 @@ export function EvidenciaPanel({
       {/* Header colapsable */}
       <button
         onClick={() => setAbierto(v => !v)}
+        aria-expanded={abierto}
+        aria-controls={cuerpoId}
         className="w-full flex items-center justify-between px-4 py-3 text-left"
       >
         <div className="flex items-center gap-2">
-          <Paperclip size={14} className="flex-shrink-0" style={{ color: hook.usos.length > 0 ? 'var(--primary)' : 'var(--muted-foreground)' }} />
+          <Paperclip aria-hidden="true" size={14} className="flex-shrink-0" style={{ color: hook.usos.length > 0 ? 'var(--primary)' : 'var(--muted-foreground)' }} />
           <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
             {hook.cargando && abierto
               ? <Skeleton className="h-3.5 w-24 inline-block align-middle" />
@@ -349,29 +354,31 @@ export function EvidenciaPanel({
           </span>
         </div>
         {abierto
-          ? <ChevronUp size={14} style={{ color: 'var(--muted-foreground)' }} />
-          : <ChevronDown size={14} style={{ color: 'var(--muted-foreground)' }} />
+          ? <ChevronUp aria-hidden="true" size={14} style={{ color: 'var(--muted-foreground)' }} />
+          : <ChevronDown aria-hidden="true" size={14} style={{ color: 'var(--muted-foreground)' }} />
         }
       </button>
 
       {abierto && (
-        <motion.div {...fundidoEntrada(reducedMotion)} className="border-t border-border flex flex-col">
+        <motion.div id={cuerpoId} {...fundidoEntrada(reducedMotion)} className="border-t border-border flex flex-col">
           {/* Botones de acción */}
           {!cerrada && (canUpload || canLink) && (
             <div className="px-4 py-3 flex gap-2 flex-wrap border-t border-border">
               {canUpload && (
-                <Boton onClick={() => { setShowUpload(v => !v); setShowGateway(false) }}>
-                  <Upload size={12} />
+                <Boton aria-expanded={showUpload} aria-controls={subirId} onClick={() => { setShowUpload(v => !v); setShowGateway(false) }}>
+                  <Upload aria-hidden="true" size={12} />
                   Subir evidencia
                 </Boton>
               )}
               {canLink && (
                 <button
+                  aria-expanded={showGateway}
+                  aria-controls={gatewayId}
                   onClick={() => { setShowGateway(v => !v); setShowFallback(true); setShowUpload(false) }}
                   className="flex items-center gap-1 text-small font-semibold h-7 px-3 rounded-lg relative before:absolute before:content-[''] before:-inset-y-2 before:-inset-x-1"
                   style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                 >
-                  <Database size={10} />
+                  <Database aria-hidden="true" size={10} />
                   Buscar en otro módulo
                 </button>
               )}
@@ -380,10 +387,10 @@ export function EvidenciaPanel({
 
           {/* Formulario: subir evidencia externa */}
           {showUpload && (
-            <div className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
+            <div id={subirId} className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="flex items-center justify-between pt-3">
                 <p className="text-small font-semibold" style={{ color: 'var(--foreground)' }}>Subir evidencia externa</p>
-                <button className="relative before:absolute before:content-[''] before:-inset-[15px]" aria-label="Cerrar" onClick={() => setShowUpload(false)}><X size={14} style={{ color: 'var(--muted-foreground)' }} /></button>
+                <button className="relative before:absolute before:content-[''] before:-inset-[15px]" aria-label="Cerrar" onClick={() => setShowUpload(false)}><X aria-hidden="true" size={14} style={{ color: 'var(--muted-foreground)' }} /></button>
               </div>
               <Campo etiqueta="Tipo" className="gap-1" claseEtiqueta="text-caption font-medium">
                 {({ id }) => (
@@ -492,7 +499,7 @@ export function EvidenciaPanel({
                     <div className="flex items-center gap-2">
                       {esAsset && asset?.storage_path && (
                         <Boton onClick={() => handleAbrir(asset.storage_path!)}>
-                          <ExternalLink size={10} />
+                          <ExternalLink aria-hidden="true" size={10} />
                           Abrir
                         </Boton>
                       )}
@@ -502,7 +509,7 @@ export function EvidenciaPanel({
                           className="flex items-center gap-1 text-small font-semibold h-6 px-2 rounded relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                           style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)', border: '1px solid var(--border)' }}
                         >
-                          <Database size={10} />
+                          <Database aria-hidden="true" size={10} />
                           Ver JSON
                         </button>
                       )}
@@ -514,8 +521,8 @@ export function EvidenciaPanel({
                           style={{ color: 'var(--agro-danger-text)' }}
                         >
                           {quitandoId === uso.id
-                            ? <Loader size={10} className="animate-spin motion-reduce:animate-none" />
-                            : <Trash2 size={10} />
+                            ? <Loader aria-hidden="true" size={10} className="animate-spin motion-reduce:animate-none" />
+                            : <Trash2 aria-hidden="true" size={10} />
                           }
                           Quitar vínculo
                         </button>
@@ -551,7 +558,7 @@ export function EvidenciaPanel({
                   Evidencia sugerida
                 </p>
                 {sugeridasCargando && (
-                  <Loader size={11} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
+                  <Loader aria-hidden="true" size={11} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
                 )}
               </div>
 
@@ -660,13 +667,13 @@ export function EvidenciaPanel({
                               className="flex items-center gap-1 text-small h-6 px-2 rounded relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                               style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
                             >
-                              <ExternalLink size={10} />
+                              <ExternalLink aria-hidden="true" size={10} />
                               Ver en módulo
                             </button>
                           )}
                           {canLink && (
                             <Boton onClick={() => handleRelacionar(reg)} cargando={!!gwRelacionandoId} className="ml-auto">
-                              <Link2 size={10} />
+                              <Link2 aria-hidden="true" size={10} />
                               Relacionar
                             </Boton>
                           )}
@@ -681,11 +688,11 @@ export function EvidenciaPanel({
 
           {/* Gateway: Buscar en otro módulo */}
           {showGateway && (
-            <div className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
+            <div id={gatewayId} className="px-4 pb-4 flex flex-col gap-3 border-t border-border" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="flex items-center justify-between pt-3">
                 <p className="text-small font-semibold" style={{ color: 'var(--foreground)' }}>Buscar en otro módulo</p>
                 <button className="relative before:absolute before:content-[''] before:-inset-[15px]" aria-label="Cerrar" onClick={() => setShowGateway(false)}>
-                  <X size={14} style={{ color: 'var(--muted-foreground)' }} />
+                  <X aria-hidden="true" size={14} style={{ color: 'var(--muted-foreground)' }} />
                 </button>
               </div>
 
@@ -790,13 +797,13 @@ export function EvidenciaPanel({
                             className="flex items-center gap-1 text-small h-6 px-2 rounded relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                             style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
                           >
-                            <ExternalLink size={10} />
+                            <ExternalLink aria-hidden="true" size={10} />
                             Ver en módulo
                           </button>
                         )}
                         {canLink && (
                           <Boton onClick={() => handleRelacionar(reg)} cargando={!!gwRelacionandoId} className="ml-auto">
-                            <Link2 size={10} />
+                            <Link2 aria-hidden="true" size={10} />
                             Relacionar
                           </Boton>
                         )}

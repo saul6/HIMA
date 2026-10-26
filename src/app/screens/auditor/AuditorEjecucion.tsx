@@ -325,9 +325,9 @@ function PanelM9({
   if (!calculo || calculo.estado === 'SIN_M9') return null
 
   const estadoConfig = {
-    TOTAL_COMPLIANCE_REACHED:     { label: 'Total alcanzado', bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', icon: <CheckCircle size={12} /> },
-    TOTAL_COMPLIANCE_NOT_REACHED: { label: 'No alcanzado',   bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)',  icon: <AlertCircle size={12} /> },
-    PENDING_REVIEW:               { label: 'Pendiente',      bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', icon: <AlertCircle size={12} /> },
+    TOTAL_COMPLIANCE_REACHED:     { label: 'Total alcanzado', bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)', icon: <CheckCircle aria-hidden="true" size={12} /> },
+    TOTAL_COMPLIANCE_NOT_REACHED: { label: 'No alcanzado',   bg: 'var(--agro-danger-fill)',  color: 'var(--agro-danger-text)',  icon: <AlertCircle aria-hidden="true" size={12} /> },
+    PENDING_REVIEW:               { label: 'Pendiente',      bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)', icon: <AlertCircle aria-hidden="true" size={12} /> },
   }
 
   const cfg = estadoConfig[calculo.estado as keyof typeof estadoConfig] ?? estadoConfig.PENDING_REVIEW
@@ -346,7 +346,7 @@ function PanelM9({
         </p>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        {cargando && <Loader size={12} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />}
+        {cargando && <Loader aria-hidden="true" size={12} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />}
         <span className="text-xs font-bold" style={{ color: 'var(--muted-foreground)' }}>
           {calculo.resueltas}/{calculo.total}
         </span>
@@ -433,11 +433,11 @@ function PanelValidacion({
       >
         <div className="flex items-center gap-2 min-w-0 flex-wrap">
           {validando ? (
-            <Loader size={14} className="animate-spin flex-shrink-0 motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
+            <Loader aria-hidden="true" size={14} className="animate-spin flex-shrink-0 motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
           ) : reviewLoadError ? (
-            <XCircle size={15} className="flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
+            <XCircle aria-hidden="true" size={15} className="flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
           ) : (
-            <ShieldCheck
+            <ShieldCheck aria-hidden="true"
               size={15}
               className="flex-shrink-0"
               style={{ color: tieneBlockers ? 'var(--agro-danger-text)' : issues.length === 0 ? 'var(--agro-success-text)' : 'var(--agro-info-text)' }}
@@ -479,13 +479,13 @@ function PanelValidacion({
         <div className="border-t border-border">
           {validando ? (
             <div className="flex items-center justify-center gap-2 py-6">
-              <Loader size={14} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
+              <Loader aria-hidden="true" size={14} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
               <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Analizando respuestas…</span>
             </div>
           ) : reviewLoadError ? (
-            <div className="flex flex-col items-start gap-3 px-4 py-4">
+            <div role="alert" className="flex flex-col items-start gap-3 px-4 py-4">
               <div className="flex items-center gap-2">
-                <XCircle size={15} style={{ color: 'var(--agro-danger-text)' }} />
+                <XCircle aria-hidden="true" size={15} style={{ color: 'var(--agro-danger-text)' }} />
                 <span className="text-xs" style={{ color: 'var(--agro-danger-text)' }}>
                   No se pudo verificar las validaciones. Reintenta antes de continuar.
                 </span>
@@ -496,7 +496,7 @@ function PanelValidacion({
             </div>
           ) : issues.length === 0 ? (
             <div className="flex items-center gap-2 px-4 py-4">
-              <CheckCircle size={15} style={{ color: 'var(--agro-success-text)' }} />
+              <CheckCircle aria-hidden="true" size={15} style={{ color: 'var(--agro-success-text)' }} />
               <span className="text-xs" style={{ color: 'var(--agro-success-text)' }}>
                 Todas las validaciones pasaron correctamente.
               </span>
@@ -672,7 +672,7 @@ function PanelScoring({
         className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left"
       >
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <BarChart2
+          <BarChart2 aria-hidden="true"
             size={15}
             className="flex-shrink-0"
             style={{ color: fallaActiva ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }}
@@ -682,11 +682,11 @@ function PanelScoring({
           </span>
           {/* COR-08: indicadores de estado en el header */}
           {scoringEstado === 'cargando' && (
-            <Loader size={12} className="animate-spin flex-shrink-0 motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
+            <Loader aria-hidden="true" size={12} className="animate-spin flex-shrink-0 motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
           )}
           {scoringEstado === 'desactualizado' && (
             <span className="flex items-center gap-1 text-caption flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
-              <Loader size={10} className="animate-spin motion-reduce:animate-none" /> Actualizando…
+              <Loader aria-hidden="true" size={10} className="animate-spin motion-reduce:animate-none" /> Actualizando…
             </span>
           )}
           {scoringEstado === 'error' && calculo && (
@@ -716,7 +716,7 @@ function PanelScoring({
               className="flex items-start gap-2 rounded-lg px-3 py-2"
               style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}
             >
-              <AlertOctagon size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
+              <AlertOctagon aria-hidden="true" size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
               <div className="flex flex-col gap-0.5">
                 <p className="text-small font-bold" style={{ color: 'var(--agro-danger-text)' }}>
                   Fallo automático detectado · módulo afectado 0% efectivo
@@ -900,7 +900,7 @@ function PanelScoring({
 
           {/* COR-08: estado error con botón reintentar */}
           {scoringEstado === 'error' && !calculo && (
-            <div className="flex flex-col gap-2 pt-3">
+            <div role="alert" className="flex flex-col gap-2 pt-3">
               <p className="text-small" style={{ color: 'var(--agro-danger-text)' }}>
                 No se pudo calcular el puntaje.
               </p>
@@ -911,8 +911,8 @@ function PanelScoring({
           )}
           {scoringEstado === 'error' && calculo && (
             <div className="flex flex-col gap-2 pt-3">
-              <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
-                <AlertCircle size={13} style={{ color: 'var(--agro-info-text)' }} />
+              <div role="status" className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'var(--agro-info-fill)' }}>
+                <AlertCircle aria-hidden="true" size={13} style={{ color: 'var(--agro-info-text)' }} />
                 <p className="text-small" style={{ color: 'var(--agro-info-text)' }}>
                   Mostrando cálculo anterior — no refleja los últimos cambios.
                 </p>
@@ -967,7 +967,7 @@ function PanelHallazgos({
         className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left"
       >
         <div className="flex items-center gap-2">
-          <Flag size={15} className="flex-shrink-0" style={{ color: hallazgos.length > 0 ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }} />
+          <Flag aria-hidden="true" size={15} className="flex-shrink-0" style={{ color: hallazgos.length > 0 ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }} />
           <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
             {cargando
               ? <Skeleton className="h-3.5 w-24 inline-block align-middle" />
@@ -1030,17 +1030,17 @@ function PanelHallazgos({
                         ))}
                       </select>
                       {canWriteAC && (
-                        <Boton variante="secundario" onClick={() => onVerAccion(h)}>
-                          <ClipboardList size={13} />
+                        <Boton variante="secundario" aria-haspopup="dialog" onClick={() => onVerAccion(h)}>
+                          <ClipboardList aria-hidden="true" size={13} />
                           Acción correctiva
                         </Boton>
                       )}
-                      <Boton variante="secundario" className="h-11" onClick={() => onVerEvidencias(h)}>
-                        <Paperclip size={13} />
+                      <Boton variante="secundario" aria-haspopup="dialog" className="h-11" onClick={() => onVerEvidencias(h)}>
+                        <Paperclip aria-hidden="true" size={13} />
                         Evidencias
                       </Boton>
-                      <Boton variante="secundario" className="h-11" onClick={() => onVerIncidencias(h)}>
-                        <Link2 size={13} />
+                      <Boton variante="secundario" aria-haspopup="dialog" className="h-11" onClick={() => onVerIncidencias(h)}>
+                        <Link2 aria-hidden="true" size={13} />
                         Antecedentes M13
                       </Boton>
                     </div>
@@ -1083,14 +1083,14 @@ function IndicadorGuardado({ savingMap }: { savingMap: Record<string, SaveStatus
 
   if (hayGuardando) {
     return (
-      <Etiqueta role="status" title="Guardando…" icono={<Loader size={11} className="animate-spin motion-reduce:animate-none" />}>
+      <Etiqueta role="status" title="Guardando…" icono={<Loader aria-hidden="true" size={11} className="animate-spin motion-reduce:animate-none" />}>
         <span className="sr-only sm:not-sr-only">Guardando…</span>
       </Etiqueta>
     )
   }
   if (nError > 0) {
     return (
-      <Etiqueta role="alert" tono="error" title={`Error al guardar (${nError})`} icono={<XCircle size={11} />}>
+      <Etiqueta role="alert" tono="error" title={`Error al guardar (${nError})`} icono={<XCircle aria-hidden="true" size={11} />}>
         <span className="sr-only sm:not-sr-only">Error al guardar </span>({nError})
       </Etiqueta>
     )
@@ -1101,7 +1101,7 @@ function IndicadorGuardado({ savingMap }: { savingMap: Record<string, SaveStatus
         role="status"
         tono="menta"
         title="Guardado"
-        icono={<CheckCircle size={11} />}
+        icono={<CheckCircle aria-hidden="true" size={11} />}
         className={`transition-opacity duration-[var(--motion-base)] ease-[var(--ease-out)] motion-reduce:transition-none${guardado === 'saliendo' ? ' opacity-0' : ''}`}
       >
         <span className="sr-only sm:not-sr-only">Guardado</span>
@@ -1907,8 +1907,8 @@ export function AuditorEjecucion() {
             {/* COR-07: banners de error de carga */}
             <AnimatePresence initial={false}>
             {esquemaCargaEstado === 'error' && (
-              <motion.div key="err-esquema" {...avisoMotion(reducedMotion)} className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
-                <XCircle size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
+              <motion.div key="err-esquema" role="alert" {...avisoMotion(reducedMotion)} className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
+                <XCircle aria-hidden="true" size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
                 <div className="flex-1">
                   <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>No se pudieron cargar los campos de comentario</p>
                   <p className="text-small mt-0.5" style={{ color: 'var(--agro-danger-text)' }}>Reintenta antes de continuar.</p>
@@ -1919,8 +1919,8 @@ export function AuditorEjecucion() {
               </motion.div>
             )}
             {obsCargaEstado === 'error' && (
-              <motion.div key="err-obs" {...avisoMotion(reducedMotion)} className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
-                <AlertCircle size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+              <motion.div key="err-obs" role="status" {...avisoMotion(reducedMotion)} className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
+                <AlertCircle aria-hidden="true" size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
                 <div className="flex-1">
                   <p className="text-xs font-semibold" style={{ color: 'var(--agro-info-text)' }}>No se pudieron cargar las observaciones guardadas</p>
                   <p className="text-small mt-0.5" style={{ color: 'var(--agro-info-text)' }}>Es posible que algunas observaciones no se muestren.</p>
@@ -1995,7 +1995,7 @@ export function AuditorEjecucion() {
                   className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left"
                 >
                   <div className="flex items-center gap-2">
-                    <History size={15} className="flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
+                    <History aria-hidden="true" size={15} className="flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
                     <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
                       Antecedentes ({historialCriterios.length} criterio{historialCriterios.length !== 1 ? 's' : ''} con NC)
                     </span>
@@ -2050,7 +2050,7 @@ export function AuditorEjecucion() {
               <div className="md:hidden flex flex-col gap-2">
                 {auditoria && allPreguntas.length > 0 && (
                   <Boton variante="secundario" onClick={handleDescargarPDF} cargando={descargando} className="w-full">
-                    <Download size={15} /> Descargar reporte PDF
+                    <Download aria-hidden="true" size={15} /> Descargar reporte PDF
                   </Boton>
                 )}
                 {!cerrada && !cargando && allPreguntas.length > 0 && auditoria?.estado !== 'preliminar' && (
@@ -2172,7 +2172,7 @@ export function AuditorEjecucion() {
         >
           {auditoria && allPreguntas.length > 0 && (
             <Boton variante="secundario" onClick={handleDescargarPDF} cargando={descargando} className="hidden md:inline-flex">
-              <Download size={15} /> Descargar reporte PDF
+              <Download aria-hidden="true" size={15} /> Descargar reporte PDF
             </Boton>
           )}
           {!cerrada && allPreguntas.length > 0 && (
@@ -2185,8 +2185,8 @@ export function AuditorEjecucion() {
                   className="px-3 md:px-4"
                 >
                   {validando
-                    ? <><Loader size={15} className="animate-spin motion-reduce:animate-none" />Validando…</>
-                    : <><ShieldCheck size={15} />Validar</>
+                    ? <><Loader aria-hidden="true" size={15} className="animate-spin motion-reduce:animate-none" />Validando…</>
+                    : <><ShieldCheck aria-hidden="true" size={15} />Validar</>
                   }
                 </Boton>
               )}
@@ -2220,7 +2220,7 @@ export function AuditorEjecucion() {
           <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
             <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Registrar hallazgo</h2>
             <button aria-label="Cerrar" onClick={() => setSheetHallazgo(null)} className="text-muted-foreground relative before:absolute before:content-[''] before:-inset-3">
-              <XCircle size={20} />
+              <XCircle aria-hidden="true" size={20} />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
@@ -2283,7 +2283,7 @@ export function AuditorEjecucion() {
               )}
             </div>
             <button aria-label="Cerrar" onClick={() => { setSheetAccion(null); setAccionActual(null); setFormAccion({}) }} className="text-muted-foreground ml-2 flex-shrink-0 relative before:absolute before:content-[''] before:-inset-3">
-              <XCircle size={20} />
+              <XCircle aria-hidden="true" size={20} />
             </button>
           </div>
 
@@ -2372,8 +2372,8 @@ export function AuditorEjecucion() {
 
               {/* Ver historial */}
               {accionActual && (
-                <Boton variante="secundario" onClick={handleVerHistorial} disabled={cargandoHistorial} className="w-full">
-                  {cargandoHistorial ? <Loader size={14} className="animate-spin motion-reduce:animate-none" /> : <History size={14} />}
+                <Boton variante="secundario" aria-haspopup="dialog" onClick={handleVerHistorial} disabled={cargandoHistorial} className="w-full">
+                  {cargandoHistorial ? <Loader aria-hidden="true" size={14} className="animate-spin motion-reduce:animate-none" /> : <History aria-hidden="true" size={14} />}
                   Ver historial de versiones ({accionActual.current_version})
                 </Boton>
               )}
@@ -2408,8 +2408,8 @@ export function AuditorEjecucion() {
                   {canExternalStatus && (
                     <Boton variante="secundario" onClick={handleValidarAzzule} disabled={validandoAzzule || cerrada} className="w-full">
                       {validandoAzzule
-                        ? <><Loader size={13} className="animate-spin motion-reduce:animate-none" />Validando…</>
-                        : <><ShieldCheck size={13} />Validar para Azzule</>
+                        ? <><Loader aria-hidden="true" size={13} className="animate-spin motion-reduce:animate-none" />Validando…</>
+                        : <><ShieldCheck aria-hidden="true" size={13} />Validar para Azzule</>
                       }
                     </Boton>
                   )}
@@ -2461,16 +2461,18 @@ export function AuditorEjecucion() {
                   <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
                     <button
                       onClick={() => setSheetRegistrarResultado(v => !v)}
+                      aria-expanded={sheetRegistrarResultado}
+                      aria-controls="panel-registrar-resultado"
                       className="w-full flex items-center justify-between px-3 py-2.5 text-left"
                     >
                       <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>Registrar resultado de Azzule</span>
                       {sheetRegistrarResultado
-                        ? <ChevronUp size={14} style={{ color: 'var(--muted-foreground)' }} />
-                        : <ChevronDown size={14} style={{ color: 'var(--muted-foreground)' }} />
+                        ? <ChevronUp aria-hidden="true" size={14} style={{ color: 'var(--muted-foreground)' }} />
+                        : <ChevronDown aria-hidden="true" size={14} style={{ color: 'var(--muted-foreground)' }} />
                       }
                     </button>
                     {sheetRegistrarResultado && (
-                      <div className="px-3 pb-3 flex flex-col gap-3 border-t" style={{ borderColor: 'var(--border)' }}>
+                      <div id="panel-registrar-resultado" className="px-3 pb-3 flex flex-col gap-3 border-t" style={{ borderColor: 'var(--border)' }}>
                         <p className="text-caption pt-2" style={{ color: 'var(--muted-foreground)' }}>
                           Cada registro es una nueva observación — no sobrescribe el anterior.
                         </p>
@@ -2550,8 +2552,8 @@ export function AuditorEjecucion() {
                         Historial de seguimiento externo
                       </span>
                       {historialExternoVisible
-                        ? <ChevronUp size={14} style={{ color: 'var(--muted-foreground)' }} />
-                        : <ChevronDown size={14} style={{ color: 'var(--muted-foreground)' }} />
+                        ? <ChevronUp aria-hidden="true" size={14} style={{ color: 'var(--muted-foreground)' }} />
+                        : <ChevronDown aria-hidden="true" size={14} style={{ color: 'var(--muted-foreground)' }} />
                       }
                     </button>
                     {historialExternoVisible && (
@@ -2614,7 +2616,7 @@ export function AuditorEjecucion() {
           <div className="flex items-center justify-between px-4 py-4 border-b border-border flex-shrink-0">
             <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Historial de versiones</h2>
             <button aria-label="Cerrar" onClick={() => setSheetHistorial(null)} className="text-muted-foreground relative before:absolute before:content-[''] before:-inset-3">
-              <XCircle size={20} />
+              <XCircle aria-hidden="true" size={20} />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
@@ -2667,7 +2669,7 @@ export function AuditorEjecucion() {
               )}
             </div>
             <button aria-label="Cerrar" onClick={() => setSheetIncidenciasHallazgo(null)} className="text-muted-foreground ml-2 flex-shrink-0 relative before:absolute before:content-[''] before:-inset-3">
-              <XCircle size={20} />
+              <XCircle aria-hidden="true" size={20} />
             </button>
           </div>
 
@@ -2717,7 +2719,7 @@ export function AuditorEjecucion() {
                             className="flex items-center gap-1 text-small h-6 px-2 rounded relative before:absolute before:content-[''] before:-inset-y-2.5 before:-inset-x-1"
                             style={{ color: 'var(--primary)', border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
                           >
-                            <AlertTriangle size={10} />
+                            <AlertTriangle aria-hidden="true" size={10} />
                             Ver en M13
                           </a>
                           <button
@@ -2727,8 +2729,8 @@ export function AuditorEjecucion() {
                             style={{ color: 'var(--agro-danger-text)' }}
                           >
                             {incQuitandoId === v.id
-                              ? <Loader size={10} className="animate-spin motion-reduce:animate-none" />
-                              : <XCircle size={10} />
+                              ? <Loader aria-hidden="true" size={10} className="animate-spin motion-reduce:animate-none" />
+                              : <XCircle aria-hidden="true" size={10} />
                             }
                             Quitar
                           </button>
@@ -2789,7 +2791,7 @@ export function AuditorEjecucion() {
 
               {incBuscando ? (
                 <div className="flex items-center gap-2 py-1">
-                  <Loader size={12} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
+                  <Loader aria-hidden="true" size={12} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
                   <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Buscando incidencias…</span>
                 </div>
               ) : incResultados.length === 0 ? (
@@ -2817,7 +2819,7 @@ export function AuditorEjecucion() {
                       </div>
                       <TextoRecortable className="text-body leading-snug text-foreground">{inc.descripcion}</TextoRecortable>
                       <Boton onClick={() => handleRelacionarIncidencia(inc)} cargando={!!incRelacionandoId} className="self-end">
-                        <Link2 size={10} />
+                        <Link2 aria-hidden="true" size={10} />
                         Relacionar
                       </Boton>
                     </div>
@@ -2842,7 +2844,7 @@ export function AuditorEjecucion() {
               )}
             </div>
             <button aria-label="Cerrar" onClick={() => setSheetEvidenciaHallazgo(null)} className="text-muted-foreground ml-2 flex-shrink-0 relative before:absolute before:content-[''] before:-inset-3">
-              <XCircle size={20} />
+              <XCircle aria-hidden="true" size={20} />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-4">
