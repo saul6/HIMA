@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Navigate, Outlet } from 'react-router'
-import { ChevronLeft, Plus, ClipboardCheck, MapPin, Info, AlertTriangle, Loader, Building2, CheckCircle2, XCircle } from 'lucide-react'
+import { ClipboardCheck, MapPin, Info, AlertTriangle, Loader, Building2, CheckCircle2, XCircle } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { useAuditorAsignaciones } from '@/hooks/useAuditorAsignaciones'
 import { Fab } from '@/app/components/Fab'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { motion, useReducedMotion } from 'motion/react'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
@@ -246,22 +247,14 @@ export function AuditorInstalacionDetalle() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background pb-24">
-      <header className="sticky top-0 z-10 bg-card border-b border-border flex items-center gap-3 px-4 py-3">
-        <button aria-label="Volver" onClick={() => navigate('/auditor')} className="text-muted-foreground flex-shrink-0">
-          <ChevronLeft size={24} />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-semibold truncate" style={{ color: 'var(--foreground)' }}>
-            {instalacion?.nombre ?? 'Instalación'}
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-            {instalacion?.linked_org_id
-              ? `Vinculada a M.A.D.Y.${linkedOrgNombre ? ` · ${linkedOrgNombre}` : ''}`
-              : 'Instalación efímera'
-            }
-          </p>
-        </div>
-      </header>
+      <ModuloHeader
+        tituloFallback="Instalación"
+        forzarTitulo={instalacion?.nombre}
+        subtitulo={instalacion?.linked_org_id
+          ? `Vinculada a M.A.D.Y.${linkedOrgNombre ? ` · ${linkedOrgNombre}` : ''}`
+          : 'Instalación efímera'}
+        onBack={() => navigate('/auditor')}
+      />
 
       {cargando ? (
         mostrarSkeleton ? (

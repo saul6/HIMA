@@ -1,10 +1,11 @@
 import { useParams, useNavigate, useLocation, Navigate, Outlet } from 'react-router'
-import { ChevronLeft, Plus, MapPin, ClipboardCheck } from 'lucide-react'
+import { MapPin, ClipboardCheck } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { fechaCorta } from '@/lib/formato'
 import { useAuditorOrg } from '@/hooks/useAuditorOrg'
 import type { AuditorAuditoriaItem } from '@/hooks/useAuditorOrg'
 import { Fab } from '@/app/components/Fab'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { motion, useReducedMotion } from 'motion/react'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
@@ -61,7 +62,8 @@ export function AuditorOrgDetalle() {
   const reducedMotion = useReducedMotion()
   const mostrarSkeleton = useMostrarCarga(loading, ranchos.length > 0 || auditorias.length > 0)
 
-  const orgNombre: string = (location.state as { orgNombre?: string } | null)?.orgNombre ?? 'Empresa auditada'
+  const nombreEmpresa = (location.state as { orgNombre?: string } | null)?.orgNombre
+  const orgNombre: string = nombreEmpresa ?? 'Empresa auditada'
 
   if (profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin') {
     return <Navigate to="/" replace />
@@ -69,19 +71,12 @@ export function AuditorOrgDetalle() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background pb-24">
-      <header className="sticky top-0 z-10 bg-card border-b border-border flex items-center gap-3 px-4 py-3">
-        <button aria-label="Volver" onClick={() => navigate('/auditor')} className="text-muted-foreground flex-shrink-0">
-          <ChevronLeft size={24} />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-semibold truncate" style={{ color: 'var(--foreground)' }}>
-            {orgNombre}
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-            Instalaciones y auditorías
-          </p>
-        </div>
-      </header>
+      <ModuloHeader
+        tituloFallback="Empresa"
+        forzarTitulo={nombreEmpresa}
+        subtitulo="Instalaciones y auditorías"
+        onBack={() => navigate('/auditor')}
+      />
 
       {loading ? (
         mostrarSkeleton ? (

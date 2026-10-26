@@ -4,12 +4,11 @@ import { guardarLastWorkspace } from '@/hooks/useContinuarTrabajo'
 import { ahora, ms, segundos, emitirEvento, consumeResumeMetrics } from '@/lib/telemetria'
 import { useMisPermisos } from '@/hooks/useMisPermisos'
 import {
-  ChevronLeft, AlertTriangle, CheckCircle, Loader,
+  AlertTriangle, CheckCircle, Loader,
   XCircle, AlertCircle, ChevronDown, ChevronUp, Download, ShieldCheck,
   Flag, Plus, History, ClipboardList, Copy, Paperclip, Link2,
   BarChart2, AlertOctagon, Pencil, X,
 } from 'lucide-react'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditorAuditoria } from '@/hooks/useAuditorAuditoria'
@@ -26,7 +25,7 @@ import { traducirErrorBd } from '@/lib/erroresBd'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { estadoAuditoria, estadoHallazgo } from './estados'
-import { DUR, EASE_OUT } from '@/lib/motion'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { FormularioSkeleton } from '@/app/components/FormularioSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
@@ -997,63 +996,58 @@ function PanelHallazgos({
 
 // ── Pantalla principal ────────────────────────────────────────────────────────
 
-// Indicador global de guardado: fila de alto fijo (no empuja el contenido).
-// Guardando… → Guardado (1.5 s) → nada; el error se queda hasta que se resuelva.
+// Indicador global de guardado, en las acciones del header (no empuja el contenido).
+// Guardando… → Guardado (1.5 s, se desvanece) → nada; el error se queda hasta que se resuelva.
+// En celular solo el ícono (texto en sr-only); desde `sm` el texto. Sin motion: el header es sticky.
 function IndicadorGuardado({ savingMap }: { savingMap: Record<string, SaveStatus> }) {
-  const reducirMovimiento = useReducedMotion()
   const values = Object.values(savingMap)
   const hayGuardando = values.some(s => s === 'saving')
   const nError = values.filter(s => s === 'error').length
   const huboGuardandoRef = useRef(false)
-  const [mostrarGuardado, setMostrarGuardado] = useState(false)
+  const [guardado, setGuardado] = useState<'oculto' | 'visible' | 'saliendo'>('oculto')
 
   useEffect(() => {
     if (hayGuardando) {
       huboGuardandoRef.current = true
-      setMostrarGuardado(false)
+      setGuardado('oculto')
       return
     }
     if (nError > 0 || !huboGuardandoRef.current) return
     huboGuardandoRef.current = false
-    setMostrarGuardado(true)
-    const id = setTimeout(() => setMostrarGuardado(false), 1500)
-    return () => clearTimeout(id)
+    setGuardado('visible')
+    const idSale = setTimeout(() => setGuardado('saliendo'), 1500)
+    const idOculta = setTimeout(() => setGuardado('oculto'), 1800)
+    return () => { clearTimeout(idSale); clearTimeout(idOculta) }
   }, [hayGuardando, nError])
 
-  const estado = hayGuardando ? 'guardando' : nError > 0 ? 'error' : mostrarGuardado ? 'guardado' : null
-  const transicion = { duration: reducirMovimiento ? 0 : DUR.rapido, ease: EASE_OUT }
-
-  return (
-    <div className="h-6 flex items-center">
-      <AnimatePresence mode="wait" initial={false}>
-        {estado && (
-          <motion.div
-            key={estado}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={transicion}
-          >
-            {estado === 'guardando' && (
-              <Etiqueta role="status" icono={<Loader size={11} className="animate-spin motion-reduce:animate-none" />}>
-                Guardando…
-              </Etiqueta>
-            )}
-            {estado === 'guardado' && (
-              <Etiqueta role="status" tono="menta" icono={<CheckCircle size={11} />}>
-                Guardado
-              </Etiqueta>
-            )}
-            {estado === 'error' && (
-              <Etiqueta role="alert" tono="error" icono={<XCircle size={11} />}>
-                Error al guardar ({nError})
-              </Etiqueta>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
+  if (hayGuardando) {
+    return (
+      <Etiqueta role="status" title="Guardando…" icono={<Loader size={11} className="animate-spin motion-reduce:animate-none" />}>
+        <span className="sr-only sm:not-sr-only">Guardando…</span>
+      </Etiqueta>
+    )
+  }
+  if (nError > 0) {
+    return (
+      <Etiqueta role="alert" tono="error" title={`Error al guardar (${nError})`} icono={<XCircle size={11} />}>
+        <span className="sr-only sm:not-sr-only">Error al guardar </span>({nError})
+      </Etiqueta>
+    )
+  }
+  if (guardado !== 'oculto') {
+    return (
+      <Etiqueta
+        role="status"
+        tono="menta"
+        title="Guardado"
+        icono={<CheckCircle size={11} />}
+        className={`transition-opacity duration-300 motion-reduce:transition-none${guardado === 'saliendo' ? ' opacity-0' : ''}`}
+      >
+        <span className="sr-only sm:not-sr-only">Guardado</span>
+      </Etiqueta>
+    )
+  }
+  return null
 }
 
 export function AuditorEjecucion() {
@@ -1791,32 +1785,22 @@ export function AuditorEjecucion() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background pb-8">
-      <header className="sticky top-0 z-10 bg-card border-b border-border flex items-center gap-3 px-4 py-3">
-        <button aria-label="Volver"
-          onClick={() => navigate(backTarget, { state: backState })}
-          className="text-muted-foreground flex-shrink-0"
-        >
-          <ChevronLeft size={24} />
-        </button>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate" style={{ color: 'var(--foreground)' }}>
-            {auditoria
-              ? (auditoria.modulos.map(m => m.nombre).join(' · ') || 'Auditoría')
-              : <Skeleton className="h-4 w-40" />}
-          </p>
-          {auditoria && (
-            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-              {auditoria.instalacion_id
-                ? `${auditoria.instalacion_nombre ?? 'Instalación'} · ${fechaCorta(auditoria.fecha)}`
-                : `${auditoria.productor_nombre} · ${auditoria.rancho_nombre} · ${fechaCorta(auditoria.fecha)}`
-              }
-            </p>
-          )}
-        </div>
-        {auditoria && (
-          <Etiqueta tono={estadoAud.tono}>{estadoAud.texto}</Etiqueta>
+      <ModuloHeader
+        tituloFallback="Auditoría"
+        forzarTitulo={auditoria ? (auditoria.modulos.map(m => m.nombre).join(' · ') || 'Auditoría') : undefined}
+        subtitulo={auditoria
+          ? (auditoria.instalacion_id
+            ? `${auditoria.instalacion_nombre ?? 'Instalación'} · ${fechaCorta(auditoria.fecha)}`
+            : `${auditoria.productor_nombre} · ${auditoria.rancho_nombre} · ${fechaCorta(auditoria.fecha)}`)
+          : undefined}
+        onBack={() => navigate(backTarget, { state: backState })}
+        acciones={(
+          <>
+            {!cargando && !errorMsg && <IndicadorGuardado savingMap={savingMap} />}
+            {auditoria && <Etiqueta tono={estadoAud.tono}>{estadoAud.texto}</Etiqueta>}
+          </>
         )}
-      </header>
+      />
 
       <main className="flex-1 px-4 py-4 flex flex-col gap-4">
         {cargando ? (
@@ -1843,9 +1827,6 @@ export function AuditorEjecucion() {
           </p>
         ) : (
           <>
-            {/* indicador global de guardado (via savingMap) */}
-            <IndicadorGuardado savingMap={savingMap} />
-
             {/* COR-07: banners de error de carga */}
             {esquemaCargaEstado === 'error' && (
               <div className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>

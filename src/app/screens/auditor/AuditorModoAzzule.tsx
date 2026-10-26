@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router'
-import { ChevronLeft, Copy, CheckCircle, Loader, ArrowRight } from 'lucide-react'
+import { Copy, CheckCircle, Loader, ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import type { AudHallazgo, AudAccionCorrectivaCAPA, AudHallazgoClasificacion } from '@/types/database.types'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
@@ -158,33 +159,17 @@ export function AuditorModoAzzule() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-card border-b border-border flex flex-col">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <button aria-label="Volver"
-            onClick={() => navigate(`/auditor/auditoria/${auditoriaId}`, { state: backState })}
-            className="text-muted-foreground flex-shrink-0"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Modo Azzule</p>
-            {orgNombre && (
-              <p className="text-xs truncate" style={{ color: 'var(--muted-foreground)' }}>{orgNombre}</p>
-            )}
-          </div>
-          {!loading && items.length > 0 && (
-            <Etiqueta>{currentIndex + 1} / {items.length}</Etiqueta>
-          )}
-        </div>
-        <div className="px-4 pb-2.5">
-          <p className="text-caption italic" style={{ color: 'var(--muted-foreground)' }}>
-            M.A.D.Y organiza, valida y da seguimiento. No sustituye a PrimusGFS, Azzule Systems, al auditor autorizado ni al organismo de certificación.
-          </p>
-        </div>
-      </header>
+      <ModuloHeader
+        tituloFallback="Modo Azzule"
+        subtitulo={orgNombre || undefined}
+        onBack={() => navigate(`/auditor/auditoria/${auditoriaId}`, { state: backState })}
+        acciones={!loading && items.length > 0 ? <Etiqueta>{currentIndex + 1} / {items.length}</Etiqueta> : undefined}
+      />
 
       <main className="flex-1 px-4 py-4 flex flex-col gap-4">
+        <p className="text-caption italic" style={{ color: 'var(--muted-foreground)' }}>
+          M.A.D.Y organiza, valida y da seguimiento. No sustituye a PrimusGFS, Azzule Systems, al auditor autorizado ni al organismo de certificación.
+        </p>
         {loading ? (
           <div aria-busy="true" aria-label="Cargando hallazgos">
             <ListaSkeleton rows={3} />

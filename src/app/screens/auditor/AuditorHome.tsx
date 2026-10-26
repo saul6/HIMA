@@ -16,6 +16,8 @@ import { AuditorNuevaAuditoriaSheet } from './AuditorNuevaAuditoriaSheet'
 import { AuditorCampana } from './AuditorCampana'
 import { AuditorBusqueda } from './AuditorBusqueda'
 import { Fab } from '@/app/components/Fab'
+import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
+import { Boton } from '@/app/components/ui-mady/Boton'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
@@ -246,28 +248,20 @@ export function AuditorHome() {
   return (
     <div className="flex flex-col min-h-screen pb-24" style={{ backgroundColor: 'var(--background)' }}>
 
-      {/* Header — solo móvil; en escritorio lo da el header del Layout */}
-      <header
-        className="md:hidden sticky top-0 z-10 border-b border-border flex items-center gap-3 px-4 py-3"
-        style={{ backgroundColor: 'var(--card)' }}
-      >
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>
-            Hola, {profile?.nombre_completo?.split(' ')[0] ?? '—'}
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-            Auditores · M.A.D.Y
-          </p>
-        </div>
-        <button
-          onClick={() => navigate('/auditor/agenda?tab=calendario')}
-          className="w-8 h-8 rounded-lg flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          aria-label="Calendario"
-        >
-          <Calendar size={16} style={{ color: 'var(--muted-foreground)' }} />
-        </button>
-        <AuditorCampana />
-      </header>
+      {/* Celular: saludo, calendario y campana; en escritorio no hay segundo header (lo da el Layout) */}
+      <EncabezadoPantalla
+        titulo={`Hola, ${profile?.nombre_completo?.split(' ')[0] ?? '—'}`}
+        subtitulo="Auditores · M.A.D.Y"
+        alRegresar={() => navigate('/auditor')}
+        accionesMovil={(
+          <>
+            <Boton variante="icono" onClick={() => navigate('/auditor/agenda?tab=calendario')} aria-label="Calendario">
+              <Calendar size={16} style={{ color: 'var(--muted-foreground)' }} />
+            </Boton>
+            <AuditorCampana />
+          </>
+        )}
+      />
 
       <main className="flex-1 px-4 py-4 flex flex-col gap-5">
 

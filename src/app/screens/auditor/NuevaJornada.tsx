@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import { ChevronLeft, Plus, AlertCircle, Loader, RefreshCw, Info } from 'lucide-react'
+import { Plus, AlertCircle, Loader, RefreshCw, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuditorJornada } from '@/hooks/useAuditorJornada'
 import { fechaCorta } from '@/lib/formato'
 import type { JornadaCandidataFila } from '@/hooks/useAuditorJornada'
 import { hoyMX } from '@/lib/fecha'
 import { Portal } from '@/app/components/Portal'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { estadoAuditoria } from './estados'
@@ -135,37 +136,20 @@ export function NuevaJornada() {
   return (
     <div className="flex flex-col min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
 
-      {/* Header */}
-      <header
-        className="sticky top-0 z-10 border-b border-border flex items-center gap-3 px-4 py-3"
-        style={{ backgroundColor: 'var(--card)' }}
-      >
-        <button
-          onClick={() => navigate('/auditor')}
-          className="w-8 h-8 rounded-lg flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          aria-label="Volver"
-        >
-          <ChevronLeft size={18} style={{ color: 'var(--foreground)' }} />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>
-            Auditar por bloque
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-            Selecciona las operaciones a incluir en la jornada
-          </p>
-        </div>
-        {cargandoCandidatas && <Loader size={16} className="animate-spin flex-shrink-0 motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />}
-        {!cargandoCandidatas && (
-          <button
-            onClick={cargarCandidatas}
-            className="w-8 h-8 rounded-lg flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            aria-label="Recargar"
-          >
+      <ModuloHeader
+        tituloFallback="Auditar por bloque"
+        subtitulo="Selecciona las operaciones a incluir en la jornada"
+        onBack={() => navigate('/auditor')}
+        acciones={cargandoCandidatas ? (
+          <span className="flex size-11 items-center justify-center">
+            <Loader size={16} className="animate-spin motion-reduce:animate-none" style={{ color: 'var(--muted-foreground)' }} />
+          </span>
+        ) : (
+          <Boton variante="icono" onClick={cargarCandidatas} aria-label="Recargar">
             <RefreshCw size={15} style={{ color: 'var(--muted-foreground)' }} />
-          </button>
+          </Boton>
         )}
-      </header>
+      />
 
       <main className="flex-1 flex flex-col">
 

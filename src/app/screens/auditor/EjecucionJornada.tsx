@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import {
-  ChevronLeft, AlertCircle, Loader, RefreshCw,
+  AlertCircle, Loader, RefreshCw,
   ClipboardList, ChevronDown, CheckCircle, ExternalLink, MoreVertical,
   Plus, Minus, XCircle, WifiOff,
 } from 'lucide-react'
@@ -13,7 +13,9 @@ import type {
 import { CapturaPreguntaAuditoria } from './CapturaPreguntaAuditoria'
 import type { CapturaPreguntaRef } from './CapturaPreguntaAuditoria'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { formatoPct } from '@/lib/formato'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
@@ -520,80 +522,41 @@ export function EjecucionJornada() {
     <div className="flex flex-col min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
 
       {/* ── Encabezado fijo ── */}
-      <header
-        className="sticky top-0 z-20 border-b border-border"
-        style={{ backgroundColor: 'var(--card)' }}
-      >
-        {/* Fila principal */}
-        <div className="flex items-center gap-2 px-4 py-3">
-          <button
-            onClick={() => navigate('/auditor')}
-            className="w-8 h-8 rounded-lg flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex-shrink-0"
-            aria-label="Volver"
-          >
-            <ChevronLeft size={18} style={{ color: 'var(--foreground)' }} />
-          </button>
-
-          <div className="flex-1 min-w-0">
-            <p className="text-caption font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-              {terminada ? 'Jornada terminada' : 'Jornada'} · {fechaCorta(detalle.jornada.fecha)}
-            </p>
-            <p className="text-sm font-semibold truncate" style={{ color: 'var(--foreground)' }}>
-              {detalle.jornada.nombre}
-            </p>
-          </div>
-
-          {/* Pendientes badge */}
-          <button
-            onClick={() => setPanelPendientes(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-small font-semibold flex-shrink-0"
-            style={{
-              backgroundColor: totalPendientes > 0 ? 'var(--agro-info-fill)' : 'var(--muted)',
-              color: totalPendientes > 0 ? 'var(--agro-info-text)' : 'var(--muted-foreground)',
-            }}
-          >
-            <ClipboardList size={12} />
-            Pendientes ({totalPendientes})
-          </button>
-
-          {/* Menu jornada */}
-          {!terminada && (
-            <button aria-label="Más opciones"
-              onClick={() => setMenuAbierto(m => !m)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      <ModuloHeader
+        tituloFallback="Jornada"
+        forzarTitulo={detalle.jornada.nombre}
+        subtitulo={`${terminada ? 'Jornada terminada · ' : ''}${fechaCorta(detalle.jornada.fecha)}`}
+        onBack={() => navigate('/auditor')}
+        acciones={(
+          <>
+            <Boton
+              variante="secundario"
+              tamano="sm"
+              onClick={() => setPanelPendientes(true)}
+              aria-label={`Pendientes (${totalPendientes})`}
             >
-              <MoreVertical size={16} style={{ color: 'var(--muted-foreground)' }} />
-            </button>
-          )}
+              <ClipboardList size={14} />
+              <span className="hidden sm:inline">Pendientes</span>
+              <Etiqueta tono={totalPendientes > 0 ? 'sky' : 'neutral'}>{totalPendientes}</Etiqueta>
+            </Boton>
+            {!terminada && (
+              <Boton variante="icono" aria-label="Más opciones" onClick={() => setMenuAbierto(m => !m)}>
+                <MoreVertical size={16} style={{ color: 'var(--muted-foreground)' }} />
+              </Boton>
+            )}
+          </>
+        )}
+      />
+
+      {/* Sin conexión */}
+      {sinConexion && (
+        <div className="flex items-center gap-2 px-4 py-2 border-b" style={{ backgroundColor: 'var(--agro-info-fill)', borderColor: 'var(--agro-info-text)' }}>
+          <WifiOff size={13} style={{ color: 'var(--agro-info-text)' }} />
+          <p className="text-small font-medium" style={{ color: 'var(--agro-info-text)' }}>
+            Sin conexión: los cambios no guardados se perderán si cierras la página.
+          </p>
         </div>
-
-        {/* Subheader: operación activa */}
-        {operacionActiva && (
-          <div
-            className="px-4 py-2 border-t border-border flex items-center justify-between"
-            style={{ backgroundColor: 'var(--muted)' }}
-          >
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold truncate" style={{ color: 'var(--foreground)' }}>
-                {operacionActiva.productor} · {operacionActiva.operacion}
-              </p>
-              <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                {formatoPct(avancePct(operacionActiva.conteo))} completado · {operacionActiva.conteo.pendientes ?? 0} pendientes
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Sin conexión */}
-        {sinConexion && (
-          <div className="flex items-center gap-2 px-4 py-2 border-t" style={{ backgroundColor: 'var(--agro-info-fill)', borderColor: 'var(--agro-info-text)' }}>
-            <WifiOff size={13} style={{ color: 'var(--agro-info-text)' }} />
-            <p className="text-small font-medium" style={{ color: 'var(--agro-info-text)' }}>
-              Sin conexión: los cambios no guardados se perderán si cierras la página.
-            </p>
-          </div>
-        )}
-      </header>
+      )}
 
       {/* ── Error de guardado ── */}
       {saveError && (
@@ -625,6 +588,16 @@ export function EjecucionJornada() {
                 />
               ))}
             </div>
+            {operacionActiva && (
+              <div className="mt-2 min-w-0">
+                <p className="text-xs font-semibold truncate" style={{ color: 'var(--foreground)' }}>
+                  {operacionActiva.productor} · {operacionActiva.operacion}
+                </p>
+                <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
+                  {formatoPct(avancePct(operacionActiva.conteo))} completado · {operacionActiva.conteo.pendientes ?? 0} pendientes
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Filtro por módulo: solo si la jornada tiene más de uno */}
