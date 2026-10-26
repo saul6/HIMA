@@ -222,6 +222,9 @@ export function AccionesCorrectivas() {
     return a.ownerUserId === profile?.id || a.creadoPor === profile?.id
   }
   const soloLectura = !!selectedItem && !puedeEditarCapa(selectedItem)
+  // La BD solo deja editar el hallazgo a quien lo registró o al administrador
+  const puedeEditarHallazgo =
+    esAdmin || !selectedItem?.accion || selectedItem.accion.hallazgoCreadoPor === profile?.id
 
   function abrirSheet(item: NcBandejaItem) {
     setSelectedItem(item)
@@ -326,7 +329,7 @@ export function AccionesCorrectivas() {
         fecha_cumplimiento: fFechaCumplimiento || null,
         realizo: fRealizo.trim() || null,
         verifico: fverifico.trim() || null,
-        actualizarHallazgo: esAdmin || !selectedItem.accion || selectedItem.accion.hallazgoCreadoPor === profile?.id,
+        actualizarHallazgo: puedeEditarHallazgo,
       })
 
       for (const fp of fotosPendientes) {
@@ -634,12 +637,23 @@ export function AccionesCorrectivas() {
             <label className="text-xs text-muted-foreground font-semibold">
               FECHA DE DETECCIÓN
             </label>
-            <input
-              type="date"
-              value={fFechaDeteccion}
-              onChange={(e) => setFFechaDeteccion(e.target.value)}
-              className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
-            />
+            {puedeEditarHallazgo ? (
+              <input
+                type="date"
+                value={fFechaDeteccion}
+                onChange={(e) => setFFechaDeteccion(e.target.value)}
+                className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
+              />
+            ) : (
+              <>
+                <p className="w-full h-11 px-3 rounded-xl border border-border bg-muted text-sm flex items-center">
+                  {formatFecha(fFechaDeteccion)}
+                </p>
+                <p className="text-small text-muted-foreground">
+                  Solo quien registró el hallazgo o el administrador puede cambiar este dato
+                </p>
+              </>
+            )}
           </div>
 
           {/* No conformidad */}
@@ -647,13 +661,24 @@ export function AccionesCorrectivas() {
             <label className="text-xs text-muted-foreground font-semibold">
               NO CONFORMIDAD (incumplimiento observado)
             </label>
-            <textarea
-              value={fNoConformidad}
-              onChange={(e) => setFNoConformidad(e.target.value)}
-              rows={3}
-              placeholder="Describe el incumplimiento observado…"
-              className="w-full px-3 py-2.5 rounded-xl border border-border-control bg-input-background text-sm resize-none"
-            />
+            {puedeEditarHallazgo ? (
+              <textarea
+                value={fNoConformidad}
+                onChange={(e) => setFNoConformidad(e.target.value)}
+                rows={3}
+                placeholder="Describe el incumplimiento observado…"
+                className="w-full px-3 py-2.5 rounded-xl border border-border-control bg-input-background text-sm resize-none"
+              />
+            ) : (
+              <>
+                <p className="w-full px-3 py-2.5 rounded-xl border border-border bg-muted text-sm whitespace-pre-wrap">
+                  {fNoConformidad || '—'}
+                </p>
+                <p className="text-small text-muted-foreground">
+                  Solo quien registró el hallazgo o el administrador puede cambiar este dato
+                </p>
+              </>
+            )}
           </div>
 
           {/* Causa */}
