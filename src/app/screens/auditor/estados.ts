@@ -33,6 +33,8 @@ function resolver(mapa: Record<string, EstadoVisual>, nombre: string, valor: str
   const v = valor ?? ''
   const hallado = mapa[v]
   if (hallado) return hallado
+  // Vacío = aún cargando: estado neutro sin texto y sin aviso.
+  if (v === '') return { texto: '', tono: 'neutral' }
   const clave = `${nombre}:${v}`
   if (!avisados.has(clave)) {
     avisados.add(clave)
