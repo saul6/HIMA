@@ -1966,11 +1966,11 @@ export function AuditorEjecucion() {
           )}
         </main>
       ) : (
-        // Escritorio (xl+): navegador | preguntas, con el resumen arriba de las preguntas.
+        // Escritorio: xl = navegador | preguntas (resumen arriba); 2xl = navegador | preguntas | resumen.
         // Todo se dibuja una sola vez; el reacomodo es solo CSS (grid-template-areas), sin medir la pantalla en JS.
         <main
           ref={columnasRef}
-          className="flex-1 flex flex-col xl:grid xl:grid-cols-[18rem_minmax(0,1fr)] xl:grid-rows-[auto_1fr] xl:items-start xl:gap-x-6 xl:gap-y-4 xl:px-4 xl:pt-4 xl:[grid-template-areas:'nav_resumen'_'nav_centro']"
+          className="flex-1 flex flex-col xl:grid xl:grid-cols-[18rem_minmax(0,1fr)] xl:grid-rows-[auto_1fr] xl:items-start xl:gap-x-6 xl:gap-y-4 xl:px-4 xl:pt-4 xl:[grid-template-areas:'nav_resumen'_'nav_centro'] 2xl:grid-cols-[18rem_minmax(0,1fr)_20rem] 2xl:grid-rows-[1fr] 2xl:[grid-template-areas:'nav_centro_resumen']"
         >
           {/* Navegador de preguntas: solo escritorio, solo visual (llama a irAPregunta) */}
           <NavegadorAgrupado
@@ -1979,8 +1979,8 @@ export function AuditorEjecucion() {
             className="hidden xl:block xl:[grid-area:nav] xl:sticky xl:top-[calc(var(--alto-header,0px)+1rem)] xl:max-h-[calc(var(--alto-visible,100vh)-2rem)] xl:overflow-y-auto overscroll-contain rounded-xl border border-border bg-card"
           />
 
-          {/* Resumen: paneles de puntaje, MIP, validación, hallazgos y antecedentes. arriba de las preguntas. */}
-          <div className="px-4 pt-4 xl:p-0 xl:[grid-area:resumen] xl:w-full xl:max-w-3xl xl:justify-self-center">
+          {/* Resumen: paneles de puntaje, MIP, validación, hallazgos y antecedentes. xl: arriba de las preguntas; 2xl: columna derecha fija. */}
+          <div className="px-4 pt-4 xl:p-0 xl:[grid-area:resumen] xl:w-full xl:max-w-3xl xl:justify-self-center 2xl:max-w-none 2xl:justify-self-stretch 2xl:sticky 2xl:top-[calc(var(--alto-header,0px)+1rem)] 2xl:max-h-[calc(var(--alto-visible,100vh)-2rem)] 2xl:overflow-y-auto">
             <motion.div className="flex flex-col gap-4" {...ent(0)}>
               {/* COR-07: banners de error de carga */}
               <AnimatePresence initial={false}>
@@ -2127,7 +2127,7 @@ export function AuditorEjecucion() {
           </div>
 
           {/* Preguntas + barra de acciones al pie (sticky dentro de esta columna) */}
-          <div className="flex-1 min-w-0 flex flex-col xl:flex-none xl:[grid-area:centro] xl:self-stretch xl:w-full xl:max-w-3xl xl:justify-self-center">
+          <div className="flex-1 min-w-0 flex flex-col xl:flex-none xl:[grid-area:centro] xl:self-stretch xl:w-full xl:max-w-3xl xl:justify-self-center 2xl:max-w-none">
             <motion.div className="flex-1 px-4 pt-4 pb-4 xl:px-0 xl:pt-0 flex flex-col gap-4" {...ent(0)}>
               {/* Celular: PDF y Marcar preliminar bajo los paneles de resumen (en md+ viven en la barra al pie) */}
               {((auditoria && allPreguntas.length > 0) || (!cerrada && !cargando && allPreguntas.length > 0 && auditoria?.estado !== 'preliminar')) && (
