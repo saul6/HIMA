@@ -4,6 +4,9 @@ import {
   AlertTriangle, ClipboardCheck, CheckCircle,
 } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import { useContextoTarea } from '@/hooks/useContextoTarea'
+import { useRanchos } from '@/hooks/useRanchos'
+import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { FotoEvidencia } from '@/app/components/FotoEvidencia'
@@ -167,6 +170,11 @@ export function AccionesCorrectivas() {
   const { items, loading, error, refetch, guardarCapa, cerrarCapa, agregarFoto, eliminarFotoDb } =
     useAccionesCorrectivas()
 
+  const { ranchos } = useRanchos()
+  const { tareaId, limpiar } = useContextoTarea(ranchos)
+  const [tareaOrigen, setTareaOrigen] = useState<string | null>(null)
+  const [resaltadoId, setResaltadoId] = useState<string | null>(null)
+
   const { online } = useConexion()
   const asig = useAsignacionHallazgos(items)
   const [itemAsignar, setItemAsignar] = useState<NcBandejaItem | null>(null)
@@ -232,6 +240,27 @@ export function AccionesCorrectivas() {
     setLeyendaFotoNueva('')
     setSheetAbierto(true)
   }
+
+  // "Ir a la tarea" desde la Agenda: abre la acción correctiva ligada a la tarea
+  useEffect(() => {
+    if (!tareaId || loading) return
+    setTareaOrigen(tareaId)
+    const item = items.find((i) => i.accion?.tareaId === tareaId)
+    if (!item) {
+      toast.info('No encontramos la acción correctiva de esta tarea')
+      limpiar()
+      return
+    }
+    setFiltro('todas')
+    setResaltadoId(item.respuesta_id)
+    abrirSheet(item)
+    limpiar()
+    requestAnimationFrame(() => {
+      document.getElementById(`capa-${item.respuesta_id}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    })
+    setTimeout(() => setResaltadoId(null), 2500)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tareaId, loading, items])
 
   function abrirAsignar(item: NcBandejaItem) {
     if (!online) { toast.warning('Necesitas conexión para asignar un hallazgo'); return }
@@ -416,6 +445,8 @@ export function AccionesCorrectivas() {
         }
       />
 
+      <BannerTareaOrigen tareaId={tareaOrigen} />
+
       {/* Filter chips */}
       <div className="px-4 pt-4 pb-2 flex gap-2 flex-wrap">
         <FiltroPildoras<FiltroEstado>
@@ -458,9 +489,12 @@ export function AccionesCorrectivas() {
               return (
                 <div
                   key={item.respuesta_id}
+                  id={`capa-${item.respuesta_id}`}
                   className="rounded-xl border border-border p-4 bg-card"
                   style={
-                    isPendiente
+                    resaltadoId === item.respuesta_id
+                      ? { borderColor: 'var(--primary)', backgroundColor: 'var(--agro-info-fill)' }
+                      : isPendiente
                       ? {
                           borderColor: 'var(--agro-menta)',
                           backgroundColor: 'var(--agro-info-fill)',

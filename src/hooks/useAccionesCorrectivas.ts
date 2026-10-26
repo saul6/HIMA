@@ -31,6 +31,8 @@ export interface CapaBandeja {
   estado: 'abierta' | 'cerrada'
   /** Responsable asignado de la CAPA */
   ownerUserId: string | null
+  /** Tarea de la Agenda ligada a la asignación */
+  tareaId: string | null
   /** Quien creó la CAPA / el hallazgo (la BD limita la edición a ellos y al admin) */
   creadoPor: string | null
   hallazgoCreadoPor: string | null
@@ -129,7 +131,7 @@ export async function fetchBandeja(orgId: string): Promise<NcBandejaItem[]> {
     let capaList: any[] = [] // eslint-disable-line @typescript-eslint/no-explicit-any
     if (hallazgoIds.length > 0) {
       const { data: capas, error: cErr } = await tbl('aud_acciones_correctivas')
-        .select('id, hallazgo_id, causa_raiz, correccion_inmediata, accion_preventiva, comentario_accion, due_at, owner_user_id, creado_por')
+        .select('id, hallazgo_id, causa_raiz, correccion_inmediata, accion_preventiva, comentario_accion, due_at, owner_user_id, tarea_id, creado_por')
         .in('hallazgo_id', hallazgoIds)
         .eq('org_id', orgId)
       if (cErr) throw cErr
@@ -178,6 +180,7 @@ export async function fetchBandeja(orgId: string): Promise<NcBandejaItem[]> {
         verifico,
         estado: (h.estado as string) === 'CLOSED' ? 'cerrada' : 'abierta',
         ownerUserId: capa.owner_user_id ?? null,
+        tareaId: capa.tarea_id ?? null,
         creadoPor: capa.creado_por ?? null,
         hallazgoCreadoPor: h.creado_por ?? null,
         fotos: fotosMap.get(capa.id) ?? [],
