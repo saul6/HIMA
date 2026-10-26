@@ -1,7 +1,11 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   CheckCircle, Circle, Minus, XCircle, Link2, AlertTriangle, ClipboardList,
 } from 'lucide-react'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
+import { comportamientoScroll } from './motionAuditor'
+import { usePreguntaActiva } from './usePreguntaActiva'
 
 // Navegador de preguntas compartido (Jornada y Ejecución). Es puramente visual:
 // no consulta ni guarda nada; solo pinta lo que recibe y avisa con `onIr`.
@@ -47,6 +51,8 @@ export interface ItemNavegador {
   puntos?: PuntoNavegador[]
   /** Texto al margen derecho (p. ej. "No aplica en esta operación"). */
   nota?: string
+  /** Sin responder: la incluye el filtro "Pendientes" del navegador agrupado. */
+  pendiente?: boolean
 }
 
 /** Leyenda de los íconos de estado (solo visual: cada punto ya trae su texto para lectores de pantalla). */
@@ -139,5 +145,119 @@ export function NavegadorPreguntas({ items, activaId, onIr, textoVacio = 'Sin pr
         />
       ))}
     </>
+  )
+}
+
+// ── Navegador agrupado (Ejecución, escritorio) ───────────────────────────────
+// Módulo → bloque → pregunta, con avance "X de Y". La pregunta activa sale de lo que se ve en pantalla
+// (id `preg-<uuid>` de cada tarjeta) y se marca con `aria-current="step"`.
+
+export interface BloqueNavegador {
+  id: string
+  codigo: string
+  nombre: string
+  respondidas: number
+  total: number
+  items: ItemNavegador[]
+}
+
+export interface ModuloNavegador {
+  id: string
+  nombre: string
+  respondidas: number
+  total: number
+  bloques: BloqueNavegador[]
+}
+
+type FiltroNavegador = 'todas' | 'pendientes'
+
+export function NavegadorAgrupado({ modulos, onIr, className }: {
+  modulos: ModuloNavegador[]
+  onIr: (id: string) => void
+  className?: string
+}) {
+  const [filtro, setFiltro] = useState<FiltroNavegador>('todas')
+  const navRef = useRef<HTMLElement>(null)
+
+  const ids = useMemo(
+    () => modulos.flatMap(m => m.bloques.flatMap(b => b.items.map(i => i.id))),
+    [modulos],
+  )
+  const activaId = usePreguntaActiva(ids, navRef)
+
+  // Mantiene visible la fila activa dentro del propio navegador (sin mover la página).
+  useEffect(() => {
+    const nav = navRef.current
+    if (!nav || !activaId || nav.offsetParent === null) return
+    const fila = nav.querySelector<HTMLElement>(`[data-nav-id="${activaId}"]`)
+    if (!fila) return
+    const n = nav.getBoundingClientRect()
+    const f = fila.getBoundingClientRect()
+    if (f.top >= n.top && f.bottom <= n.bottom) return
+    nav.scrollTo({
+      top: nav.scrollTop + (f.top - n.top) - (n.height - f.height) / 2,
+      behavior: comportamientoScroll(),
+    })
+  }, [activaId])
+
+  const visibles = modulos
+    .map(m => ({
+      ...m,
+      bloques: m.bloques
+        .map(b => ({ ...b, items: filtro === 'pendientes' ? b.items.filter(i => i.pendiente) : b.items }))
+        .filter(b => b.items.length > 0),
+    }))
+    .filter(m => m.bloques.length > 0)
+
+  return (
+    <nav ref={navRef} aria-label="Preguntas de la auditoría" className={className}>
+      <div className="px-4 pt-3 pb-2 flex gap-1.5">
+        {(['todas', 'pendientes'] as const).map(f => (
+          <button
+            key={f}
+            type="button"
+            onClick={() => setFiltro(f)}
+            aria-pressed={filtro === f}
+            className="flex-shrink-0 text-small font-medium px-2 py-0.5 rounded relative before:absolute before:content-[''] before:-inset-y-3 before:-inset-x-1"
+            style={{
+              backgroundColor: filtro === f ? 'var(--foreground)' : 'var(--muted)',
+              color: filtro === f ? 'var(--card)' : 'var(--muted-foreground)',
+            }}
+          >
+            {f === 'todas' ? 'Todas' : 'Pendientes'}
+          </button>
+        ))}
+      </div>
+      <LeyendaEstados />
+      <div className="border-t border-border">
+        {visibles.length === 0 ? (
+          <EstadoVacio icono={ClipboardList} titulo="Sin preguntas con este filtro." />
+        ) : (
+          visibles.map(m => (
+            <section key={m.id} aria-label={m.nombre}>
+              <div className="px-4 pt-3 pb-1">
+                <TituloSeccion as="h2" className="mb-0">{m.nombre}</TituloSeccion>
+                <p className="text-caption text-muted-foreground">{m.respondidas} de {m.total} respondidas</p>
+              </div>
+              {m.bloques.map(b => (
+                <div key={b.id}>
+                  <p className="px-4 pt-2 pb-1 text-caption text-muted-foreground bg-muted">
+                    <span className="font-mono">{b.codigo}</span> · {b.nombre} · {b.respondidas} de {b.total}
+                  </p>
+                  {b.items.map(item => (
+                    <FilaNavegador
+                      key={item.id}
+                      item={item}
+                      activa={item.id === activaId}
+                      onClick={() => onIr(item.id)}
+                    />
+                  ))}
+                </div>
+              ))}
+            </section>
+          ))
+        )}
+      </div>
+    </nav>
   )
 }

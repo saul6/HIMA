@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useId, type ReactNode } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback, useId, type ReactNode } from 'react'
 import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
 import { guardarLastWorkspace } from '@/hooks/useContinuarTrabajo'
 import { ahora, ms, segundos, emitirEvento, consumeResumeMetrics } from '@/lib/telemetria'
@@ -37,6 +37,8 @@ import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { fechaCorta, fechaHora, formatoPct } from '@/lib/formato'
 import { Campo } from '@/app/components/ui-mady/Campo'
+import { NavegadorAgrupado, estadoDestino } from './NavegadorPreguntas'
+import type { ModuloNavegador } from './NavegadorPreguntas'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -1137,6 +1139,64 @@ export function AuditorEjecucion() {
   const mostrarSkeleton = useMostrarCarga(cargando, modulosData.length > 0)
   const ent = useEntradaPantalla(!cargando && !errorMsg)
 
+  // Escritorio (xl+): el navegador y la columna de resumen quedan fijos bajo el header sticky.
+  // Se publican como variables CSS en el contenedor: --alto-header (ModuloHeader, que no se edita) y
+  // --alto-visible (lo que queda visible del área con scroll del Layout debajo del header).
+  const raizRef = useRef<HTMLDivElement>(null)
+  const columnasRef = useRef<HTMLElement>(null)
+  const cargadaPantalla = !cargando && !errorMsg
+  useEffect(() => {
+    const columnas = columnasRef.current
+    const header = raizRef.current?.querySelector<HTMLElement>(':scope > header')
+    if (!columnas || !header) return
+    let scroll: HTMLElement | null = null
+    for (let el = columnas.parentElement; el; el = el.parentElement) {
+      const o = getComputedStyle(el).overflowY
+      if (o === 'auto' || o === 'scroll') { scroll = el; break }
+    }
+    const medir = () => {
+      const alto = header.getBoundingClientRect().height
+      const visible = (scroll?.clientHeight ?? window.innerHeight) - alto
+      columnas.style.setProperty('--alto-header', `${alto}px`)
+      columnas.style.setProperty('--alto-visible', `${visible}px`)
+    }
+    medir()
+    const observer = new ResizeObserver(medir)
+    observer.observe(header)
+    if (scroll) observer.observe(scroll)
+    return () => observer.disconnect()
+  }, [cargadaPantalla])
+
+  // Datos del navegador de escritorio: salen de lo que la pantalla ya tiene en memoria.
+  const modulosNavegador = useMemo<ModuloNavegador[]>(() => modulosData.map(modulo => ({
+    id: modulo.modulo_id,
+    nombre: modulo.modulo_nombre,
+    respondidas: modulo.preguntas.filter(p => respuestasMap.get(p.id)).length,
+    total: modulo.preguntas.length,
+    bloques: modulo.bloques
+      .map(bloque => {
+        const preguntas = modulo.preguntas.filter(p => p.bloque_id === bloque.id)
+        return {
+          id: bloque.id,
+          codigo: bloque.codigo,
+          nombre: bloque.nombre,
+          respondidas: preguntas.filter(p => respuestasMap.get(p.id)).length,
+          total: preguntas.length,
+          items: preguntas.map(p => {
+            const resp = respuestasMap.get(p.id) ?? null
+            return {
+              id: p.id,
+              codigo: p.question_id,
+              texto: p.texto,
+              estado: estadoDestino(resp, false),
+              pendiente: !resp,
+            }
+          }),
+        }
+      })
+      .filter(b => b.total > 0),
+  })), [modulosData, respuestasMap])
+
   const herenciaOriginSetRef = useRef<Set<string>>(new Set())
   const recargarHerenciaRef = useRef(recargarHerencia)
 
@@ -1861,7 +1921,7 @@ export function AuditorEjecucion() {
   const hayBarra = !cargando && !errorMsg && allPreguntas.length > 0 && (!!auditoria || !cerrada)
 
   return (
-    <div className={`flex flex-col min-h-screen bg-background ${!hayBarra ? 'pb-8' : cerrada ? 'pb-8 md:pb-0' : ''}`}>
+    <div ref={raizRef} className={`flex flex-col min-h-screen bg-background ${!hayBarra ? 'pb-8' : cerrada ? 'pb-8 md:pb-0' : ''}`}>
       <ModuloHeader
         tituloFallback="Auditoría"
         forzarTitulo={auditoria ? (auditoria.modulos.map(m => m.nombre).join(' · ') || 'Auditoría') : undefined}
@@ -1879,337 +1939,363 @@ export function AuditorEjecucion() {
         )}
       />
 
-      <main className="flex-1 px-4 py-4 flex flex-col gap-4">
-        {cargando ? (
-          mostrarSkeleton ? (
-            <div className="flex flex-col gap-4" aria-busy="true" aria-label="Cargando auditoría">
-              <Skeleton className="h-9 w-full rounded-lg" />
-              {[0, 1, 2].map(i => (
-                <div key={i} className="bg-card rounded-xl p-4 border border-border flex flex-col gap-3">
-                  <Skeleton className="h-4 w-16 rounded-full" />
-                  <div className="flex flex-col gap-2">
-                    <Skeleton className="h-3.5 w-full" />
-                    <Skeleton className="h-3.5 w-2/3" />
+      {cargando || errorMsg ? (
+        <main className="flex-1 px-4 py-4 flex flex-col gap-4">
+          {cargando ? (
+            mostrarSkeleton ? (
+              <div className="flex flex-col gap-4" aria-busy="true" aria-label="Cargando auditoría">
+                <Skeleton className="h-9 w-full rounded-lg" />
+                {[0, 1, 2].map(i => (
+                  <div key={i} className="bg-card rounded-xl p-4 border border-border flex flex-col gap-3">
+                    <Skeleton className="h-4 w-16 rounded-full" />
+                    <div className="flex flex-col gap-2">
+                      <Skeleton className="h-3.5 w-full" />
+                      <Skeleton className="h-3.5 w-2/3" />
+                    </div>
+                    <div className="grid grid-cols-5 gap-2">
+                      {[0, 1, 2, 3, 4].map(j => <Skeleton key={j} className="h-11 rounded-lg" />)}
+                    </div>
                   </div>
-                  <div className="grid grid-cols-5 gap-2">
-                    {[0, 1, 2, 3, 4].map(j => <Skeleton key={j} className="h-11 rounded-lg" />)}
+                ))}
+              </div>
+            ) : null
+          ) : (
+            <p className="text-sm text-center py-16" style={{ color: 'var(--agro-danger-text)' }}>
+              {errorMsg}
+            </p>
+          )}
+        </main>
+      ) : (
+        // Escritorio (xl+): navegador | preguntas, con el resumen arriba de las preguntas.
+        // Todo se dibuja una sola vez; el reacomodo es solo CSS (grid-template-areas), sin medir la pantalla en JS.
+        <main
+          ref={columnasRef}
+          className="flex-1 flex flex-col xl:grid xl:grid-cols-[18rem_minmax(0,1fr)] xl:grid-rows-[auto_1fr] xl:items-start xl:gap-x-6 xl:gap-y-4 xl:px-4 xl:pt-4 xl:[grid-template-areas:'nav_resumen'_'nav_centro']"
+        >
+          {/* Navegador de preguntas: solo escritorio, solo visual (llama a irAPregunta) */}
+          <NavegadorAgrupado
+            modulos={modulosNavegador}
+            onIr={irAPregunta}
+            className="hidden xl:block xl:[grid-area:nav] xl:sticky xl:top-[calc(var(--alto-header,0px)+1rem)] xl:max-h-[calc(var(--alto-visible,100vh)-2rem)] xl:overflow-y-auto overscroll-contain rounded-xl border border-border bg-card"
+          />
+
+          {/* Resumen: paneles de puntaje, MIP, validación, hallazgos y antecedentes. arriba de las preguntas. */}
+          <div className="px-4 pt-4 xl:p-0 xl:[grid-area:resumen] xl:w-full xl:max-w-3xl xl:justify-self-center">
+            <motion.div className="flex flex-col gap-4" {...ent(0)}>
+              {/* COR-07: banners de error de carga */}
+              <AnimatePresence initial={false}>
+              {esquemaCargaEstado === 'error' && (
+                <motion.div key="err-esquema" role="alert" {...avisoMotion(reducedMotion)} className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
+                  <XCircle aria-hidden="true" size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>No se pudieron cargar los campos de comentario</p>
+                    <p className="text-small mt-0.5" style={{ color: 'var(--agro-danger-text)' }}>Reintenta antes de continuar.</p>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : null
-        ) : errorMsg ? (
-          <p className="text-sm text-center py-16" style={{ color: 'var(--agro-danger-text)' }}>
-            {errorMsg}
-          </p>
-        ) : (
-          <motion.div className="flex flex-col gap-4" {...ent(0)}>
-            {/* COR-07: banners de error de carga */}
-            <AnimatePresence initial={false}>
-            {esquemaCargaEstado === 'error' && (
-              <motion.div key="err-esquema" role="alert" {...avisoMotion(reducedMotion)} className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
-                <XCircle aria-hidden="true" size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
-                <div className="flex-1">
-                  <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>No se pudieron cargar los campos de comentario</p>
-                  <p className="text-small mt-0.5" style={{ color: 'var(--agro-danger-text)' }}>Reintenta antes de continuar.</p>
-                </div>
-                <Boton variante="secundario" onClick={refetch} className="flex-shrink-0">
-                  Reintentar
-                </Boton>
-              </motion.div>
-            )}
-            {obsCargaEstado === 'error' && (
-              <motion.div key="err-obs" role="status" {...avisoMotion(reducedMotion)} className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
-                <AlertCircle aria-hidden="true" size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
-                <div className="flex-1">
-                  <p className="text-xs font-semibold" style={{ color: 'var(--agro-info-text)' }}>No se pudieron cargar las observaciones guardadas</p>
-                  <p className="text-small mt-0.5" style={{ color: 'var(--agro-info-text)' }}>Es posible que algunas observaciones no se muestren.</p>
-                </div>
-                <Boton variante="secundario" onClick={refetch} className="flex-shrink-0">
-                  Reintentar
-                </Boton>
-              </motion.div>
-            )}
-            </AnimatePresence>
-
-            {/* Scoring en vivo */}
-            {!cerrada && allPreguntas.length > 0 && (
-              <PanelScoring
-                auditoriaId={auditoriaId}
-                version={scoringVersion}
-              />
-            )}
-
-            {/* MIP · Módulo 9 cualitativo */}
-            {!cerrada && allPreguntas.length > 0 && (
-              <PanelM9
-                auditoriaId={auditoriaId}
-                version={scoringVersion}
-              />
-            )}
-
-            {/* Panel de validación */}
-            {panelValidacionVisible && !cerrada && canAuditReview && (
-              <PanelValidacion
-                issues={reviewIssues}
-                validando={validando}
-                reviewLoadError={reviewLoadError}
-                onReintentar={handleValidar}
-                descartandoId={descartandoId}
-                motivoDescarte={motivoDescarte}
-                onDescartarClick={id => { setDescartandoId(id); setMotivoDescarte('') }}
-                onCancelarDescarte={() => { setDescartandoId(null); setMotivoDescarte('') }}
-                onConfirmarDescarte={handleDescartar}
-                onMotivoChange={setMotivoDescarte}
-              />
-            )}
-
-            {/* Panel de hallazgos */}
-            <div ref={panelHallazgosRef}>
-              <PanelHallazgos
-                hallazgos={hallazgos}
-                preguntas={allPreguntas}
-                onVerAccion={handleAbrirAccion}
-                onVerEvidencias={h => setSheetEvidenciaHallazgo({ hallazgoId: h.id, descripcion: h.descripcion, preguntaId: h.pregunta_id ?? null, criterionCode: h.criterion_code ?? null })}
-                onVerIncidencias={handleAbrirIncidencias}
-                onEstadoChange={(id, estado) => {
-                  actualizarEstadoHallazgo(id, estado).catch(e => {
-                    console.error('[AuditorEjecucion] actualizarEstadoHallazgo', e)
-                    toast.error(/^Solo /.test(e?.message ?? '') ? e.message : 'No se pudo actualizar el estado. Reintenta.')
-                  })
-                }}
-                cargando={hallazgosHook.cargando}
-                canWriteNC={canWriteNC}
-                canWriteAC={canWriteAC}
-              />
-            </div>
-
-            {/* Panel de antecedentes (historial de NC por criterio en el sitio) */}
-            {historialCriterios.length > 0 && (
-              <div className="rounded-xl border border-border overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
-                <button
-                  type="button"
-                  onClick={() => setPanelAntecedentesAbierto(v => !v)}
-                  aria-expanded={panelAntecedentesAbierto}
-                  aria-controls="panel-antecedentes-cuerpo"
-                  className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left focus-visible:outline-offset-[-2px]"
-                >
-                  <div className="flex items-center gap-2">
-                    <History aria-hidden="true" size={15} className="flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
-                    <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
-                      Antecedentes ({historialCriterios.length} criterio{historialCriterios.length !== 1 ? 's' : ''} con NC)
-                    </span>
+                  <Boton variante="secundario" onClick={refetch} className="flex-shrink-0">
+                    Reintentar
+                  </Boton>
+                </motion.div>
+              )}
+              {obsCargaEstado === 'error' && (
+                <motion.div key="err-obs" role="status" {...avisoMotion(reducedMotion)} className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
+                  <AlertCircle aria-hidden="true" size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold" style={{ color: 'var(--agro-info-text)' }}>No se pudieron cargar las observaciones guardadas</p>
+                    <p className="text-small mt-0.5" style={{ color: 'var(--agro-info-text)' }}>Es posible que algunas observaciones no se muestren.</p>
                   </div>
-                  <ChevronPlegable abierto={panelAntecedentesAbierto} />
-                </button>
-                <motion.div id="panel-antecedentes-cuerpo" hidden={!panelAntecedentesAbierto} {...fundidoAntecedentes}>
-                  <div className="border-t border-border">
-                    <p className="text-caption px-4 pt-3 pb-1" style={{ color: 'var(--muted-foreground)' }}>
-                      Criterios con historial de NC en este sitio. Informativo — no determina cumplimiento.
-                    </p>
-                    {historialCriterios.map(h => {
-                      const pregMatch = allPreguntas.find(p => String(p.prompt_component_id) === String(h.criterion_code))
-                      return (
-                        <div key={h.criterion_code} className="px-4 py-3 flex flex-col gap-1.5 border-t border-border">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span
-                              className="text-caption font-mono px-1.5 py-0.5 rounded"
-                              style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
-                            >
-                              {h.criterion_code}
-                            </span>
-                            <Etiqueta tono="error">{h.n_hallazgos} NC</Etiqueta>
-                            {h.ultimo_detectado && (
-                              <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                                último: {fechaCorta(h.ultimo_detectado)}
+                  <Boton variante="secundario" onClick={refetch} className="flex-shrink-0">
+                    Reintentar
+                  </Boton>
+                </motion.div>
+              )}
+              </AnimatePresence>
+
+              {/* Scoring en vivo */}
+              {!cerrada && allPreguntas.length > 0 && (
+                <PanelScoring
+                  auditoriaId={auditoriaId}
+                  version={scoringVersion}
+                />
+              )}
+
+              {/* MIP · Módulo 9 cualitativo */}
+              {!cerrada && allPreguntas.length > 0 && (
+                <PanelM9
+                  auditoriaId={auditoriaId}
+                  version={scoringVersion}
+                />
+              )}
+
+              {/* Panel de validación */}
+              {panelValidacionVisible && !cerrada && canAuditReview && (
+                <PanelValidacion
+                  issues={reviewIssues}
+                  validando={validando}
+                  reviewLoadError={reviewLoadError}
+                  onReintentar={handleValidar}
+                  descartandoId={descartandoId}
+                  motivoDescarte={motivoDescarte}
+                  onDescartarClick={id => { setDescartandoId(id); setMotivoDescarte('') }}
+                  onCancelarDescarte={() => { setDescartandoId(null); setMotivoDescarte('') }}
+                  onConfirmarDescarte={handleDescartar}
+                  onMotivoChange={setMotivoDescarte}
+                />
+              )}
+
+              {/* Panel de hallazgos */}
+              <div ref={panelHallazgosRef}>
+                <PanelHallazgos
+                  hallazgos={hallazgos}
+                  preguntas={allPreguntas}
+                  onVerAccion={handleAbrirAccion}
+                  onVerEvidencias={h => setSheetEvidenciaHallazgo({ hallazgoId: h.id, descripcion: h.descripcion, preguntaId: h.pregunta_id ?? null, criterionCode: h.criterion_code ?? null })}
+                  onVerIncidencias={handleAbrirIncidencias}
+                  onEstadoChange={(id, estado) => {
+                    actualizarEstadoHallazgo(id, estado).catch(e => {
+                      console.error('[AuditorEjecucion] actualizarEstadoHallazgo', e)
+                      toast.error(/^Solo /.test(e?.message ?? '') ? e.message : 'No se pudo actualizar el estado. Reintenta.')
+                    })
+                  }}
+                  cargando={hallazgosHook.cargando}
+                  canWriteNC={canWriteNC}
+                  canWriteAC={canWriteAC}
+                />
+              </div>
+
+              {/* Panel de antecedentes (historial de NC por criterio en el sitio) */}
+              {historialCriterios.length > 0 && (
+                <div className="rounded-xl border border-border overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
+                  <button
+                    type="button"
+                    onClick={() => setPanelAntecedentesAbierto(v => !v)}
+                    aria-expanded={panelAntecedentesAbierto}
+                    aria-controls="panel-antecedentes-cuerpo"
+                    className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left focus-visible:outline-offset-[-2px]"
+                  >
+                    <div className="flex items-center gap-2">
+                      <History aria-hidden="true" size={15} className="flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
+                      <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
+                        Antecedentes ({historialCriterios.length} criterio{historialCriterios.length !== 1 ? 's' : ''} con NC)
+                      </span>
+                    </div>
+                    <ChevronPlegable abierto={panelAntecedentesAbierto} />
+                  </button>
+                  <motion.div id="panel-antecedentes-cuerpo" hidden={!panelAntecedentesAbierto} {...fundidoAntecedentes}>
+                    <div className="border-t border-border">
+                      <p className="text-caption px-4 pt-3 pb-1" style={{ color: 'var(--muted-foreground)' }}>
+                        Criterios con historial de NC en este sitio. Informativo — no determina cumplimiento.
+                      </p>
+                      {historialCriterios.map(h => {
+                        const pregMatch = allPreguntas.find(p => String(p.prompt_component_id) === String(h.criterion_code))
+                        return (
+                          <div key={h.criterion_code} className="px-4 py-3 flex flex-col gap-1.5 border-t border-border">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span
+                                className="text-caption font-mono px-1.5 py-0.5 rounded"
+                                style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                              >
+                                {h.criterion_code}
                               </span>
-                            )}
-                            {h.ultimo_estado && (
-                              <Etiqueta tono={estadoHallazgo(h.ultimo_estado).tono}>{estadoHallazgo(h.ultimo_estado).texto}</Etiqueta>
+                              <Etiqueta tono="error">{h.n_hallazgos} NC</Etiqueta>
+                              {h.ultimo_detectado && (
+                                <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
+                                  último: {fechaCorta(h.ultimo_detectado)}
+                                </span>
+                              )}
+                              {h.ultimo_estado && (
+                                <Etiqueta tono={estadoHallazgo(h.ultimo_estado).tono}>{estadoHallazgo(h.ultimo_estado).texto}</Etiqueta>
+                              )}
+                            </div>
+                            {pregMatch && (
+                              <button
+                                onClick={() => irAPregunta(pregMatch.id)}
+                                className="self-start text-caption font-medium px-2 py-0.5 rounded relative before:absolute before:content-[''] before:-inset-y-3 before:-inset-x-1"
+                                style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)' }}
+                              >
+                                → Ir a criterio {pregMatch.question_id}
+                              </button>
                             )}
                           </div>
-                          {pregMatch && (
-                            <button
-                              onClick={() => irAPregunta(pregMatch.id)}
-                              className="self-start text-caption font-medium px-2 py-0.5 rounded relative before:absolute before:content-[''] before:-inset-y-3 before:-inset-x-1"
-                              style={{ backgroundColor: 'var(--muted)', color: 'var(--primary)' }}
-                            >
-                              → Ir a criterio {pregMatch.question_id}
-                            </button>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </motion.div>
-              </div>
-            )}
-
-            {/* Celular: PDF y Marcar preliminar bajo los paneles de resumen (en md+ viven en la barra al pie) */}
-            {((auditoria && allPreguntas.length > 0) || (!cerrada && !cargando && allPreguntas.length > 0 && auditoria?.estado !== 'preliminar')) && (
-              <div className="md:hidden flex flex-col gap-2">
-                {auditoria && allPreguntas.length > 0 && (
-                  <Boton variante="secundario" onClick={handleDescargarPDF} cargando={descargando} className="w-full">
-                    <Download aria-hidden="true" size={15} /> Descargar reporte PDF
-                  </Boton>
-                )}
-                {!cerrada && !cargando && allPreguntas.length > 0 && auditoria?.estado !== 'preliminar' && (
-                  <Boton
-                    variante="secundario"
-                    onClick={() => handleCambiarEstado('preliminar')}
-                    disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
-                    className="w-full"
-                  >
-                    {cambiando ? 'Guardando…' : 'Marcar preliminar'}
-                  </Boton>
-                )}
-              </div>
-            )}
-
-            {/* Módulos → Bloques → Preguntas */}
-            {modulosData.map(modulo => {
-              const respondidasModulo = modulo.preguntas.filter(p => respuestasMap.get(p.id)).length
-              const totalModulo = modulo.preguntas.length
-              return (
-              <div key={modulo.modulo_id}>
-                {/* Encabezado de módulo con avance */}
-                <div className="rounded-xl border border-border bg-card px-4 py-3 mb-3 flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <TituloSeccion as="h2" className="mb-0 flex-1 min-w-0">{modulo.modulo_nombre}</TituloSeccion>
-                    <Etiqueta tono="neutral">{totalModulo} {totalModulo === 1 ? 'pregunta' : 'preguntas'}</Etiqueta>
-                  </div>
-                  <p className="text-small text-muted-foreground">{respondidasModulo} de {totalModulo} respondidas</p>
-                  <div
-                    role="progressbar"
-                    aria-label={`Avance de ${modulo.modulo_nombre}`}
-                    aria-valuemin={0}
-                    aria-valuenow={respondidasModulo}
-                    aria-valuemax={totalModulo}
-                    className="h-1.5 rounded-full bg-muted overflow-hidden"
-                  >
-                    <div
-                      className="h-full rounded-full bg-primary"
-                      style={{ width: `${totalModulo > 0 ? Math.round((respondidasModulo / totalModulo) * 100) : 0}%` }}
-                    />
-                  </div>
+                        )
+                      })}
+                    </div>
+                  </motion.div>
                 </div>
+              )}
 
-                {modulo.bloques.map(bloque => {
-                  const pregBloque = modulo.preguntas.filter(p => p.bloque_id === bloque.id)
-                  if (pregBloque.length === 0) return null
-                  return (
-                    <BloqueAuditoria
-                      key={bloque.id}
-                      codigo={bloque.codigo}
-                      nombre={bloque.nombre}
-                      total={pregBloque.length}
-                      respondidas={pregBloque.filter(p => respuestasMap.get(p.id)).length}
+            </motion.div>
+          </div>
+
+          {/* Preguntas + barra de acciones al pie (sticky dentro de esta columna) */}
+          <div className="flex-1 min-w-0 flex flex-col xl:flex-none xl:[grid-area:centro] xl:self-stretch xl:w-full xl:max-w-3xl xl:justify-self-center">
+            <motion.div className="flex-1 px-4 pt-4 pb-4 xl:px-0 xl:pt-0 flex flex-col gap-4" {...ent(0)}>
+              {/* Celular: PDF y Marcar preliminar bajo los paneles de resumen (en md+ viven en la barra al pie) */}
+              {((auditoria && allPreguntas.length > 0) || (!cerrada && !cargando && allPreguntas.length > 0 && auditoria?.estado !== 'preliminar')) && (
+                <div className="md:hidden flex flex-col gap-2">
+                  {auditoria && allPreguntas.length > 0 && (
+                    <Boton variante="secundario" onClick={handleDescargarPDF} cargando={descargando} className="w-full">
+                      <Download aria-hidden="true" size={15} /> Descargar reporte PDF
+                    </Boton>
+                  )}
+                  {!cerrada && !cargando && allPreguntas.length > 0 && auditoria?.estado !== 'preliminar' && (
+                    <Boton
+                      variante="secundario"
+                      onClick={() => handleCambiarEstado('preliminar')}
+                      disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
+                      className="w-full"
                     >
-                      {pregBloque.map(preg => (
-                          <CapturaPreguntaAuditoria
-                            key={preg.id}
-                            ref={getCapturaRef(preg.id)}
-                            auditoriaId={auditoriaId!}
-                            preguntaId={preg.id}
-                            sharedHook={hook}
-                            sharedReglas={reglasHook}
-                            onEstadoGuardado={status => setSavingMap(prev => ({ ...prev, [preg.id]: status }))}
-                            canWriteNC={canWriteNC}
-                            canAuditWrite={!cerrada && can('audit.write')}
-                            hallazgosCount={hallazgos.filter(h => h.pregunta_id === preg.id).length}
-                            reincidencia={reincidenciaMap.get(preg.id)}
-                            onRespuestaChanged={(_, resp) => {
-                              emitFirstEdit(preg.id)
-                              if (resp === 'no_conformidad' || resp === 'deficiencia_menor' || resp === 'deficiencia_mayor') {
-                                if (!preg.es_cualitativa) cargarReincidenciaForPreg(preg.id, String(preg.prompt_component_id))
-                              }
-                            }}
-                            onAjusteActualizado={handleAjusteActualizado}
-                            onScoringInvalidated={() => setScoringVersion(v => v + 1)}
-                            onAfterSave={pregId => {
-                              if (herenciaOriginSetRef.current.has(pregId)) {
-                                recargarHerenciaRef.current().catch(e => console.error('[AuditorEjecucion] onAfterSave recargarHerencia', e))
-                              }
-                            }}
-                            onRegistrarHallazgo={() => {
-                              const instId = instanciasMap.get(preg.id)
-                              if (!instId) {
-                                toast.info('Espera a que se guarde la respuesta')
-                                return
-                              }
-                              setFormHallazgoDesc('')
-                              setFormHallazgoClas('menor')
-                              setSheetHallazgo({ preguntaId: preg.id, instanciaId: instId })
-                            }}
-                            onVerHallazgos={() => {
-                              panelHallazgosRef.current?.scrollIntoView({ behavior: comportamientoScroll(), block: 'start' })
-                            }}
-                          />
-                      ))}
-                    </BloqueAuditoria>
-                  )
-                })}
-              </div>
-              )
-            })}
+                      {cambiando ? 'Guardando…' : 'Marcar preliminar'}
+                    </Boton>
+                  )}
+                </div>
+              )}
 
-            {cerrada && (
-              <div className="rounded-xl px-4 py-3 text-center mt-2" style={{ backgroundColor: 'var(--muted)' }}>
-                <p className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
-                  Auditoría cerrada — solo lectura
-                </p>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </main>
+              {/* Módulos → Bloques → Preguntas */}
+              {modulosData.map(modulo => {
+                const respondidasModulo = modulo.preguntas.filter(p => respuestasMap.get(p.id)).length
+                const totalModulo = modulo.preguntas.length
+                return (
+                <div key={modulo.modulo_id}>
+                  {/* Encabezado de módulo con avance */}
+                  <div className="rounded-xl border border-border bg-card px-4 py-3 mb-3 flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <TituloSeccion as="h2" className="mb-0 flex-1 min-w-0">{modulo.modulo_nombre}</TituloSeccion>
+                      <Etiqueta tono="neutral">{totalModulo} {totalModulo === 1 ? 'pregunta' : 'preguntas'}</Etiqueta>
+                    </div>
+                    <p className="text-small text-muted-foreground">{respondidasModulo} de {totalModulo} respondidas</p>
+                    <div
+                      role="progressbar"
+                      aria-label={`Avance de ${modulo.modulo_nombre}`}
+                      aria-valuemin={0}
+                      aria-valuenow={respondidasModulo}
+                      aria-valuemax={totalModulo}
+                      className="h-1.5 rounded-full bg-muted overflow-hidden"
+                    >
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{ width: `${totalModulo > 0 ? Math.round((respondidasModulo / totalModulo) * 100) : 0}%` }}
+                      />
+                    </div>
+                  </div>
 
-      {/* Barra de acciones al pie: sticky dentro del área con scroll del Layout, sin motion.
-          Celular: Validar y Cerrar (a la derecha del botón del menú); md+: PDF, Validar, Marcar preliminar y Cerrar. */}
-      {hayBarra && (
-        <div
-          className={`sticky bottom-0 z-10 border-t border-border bg-card pr-4 pl-[5.25rem] md:pl-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] items-center justify-end gap-2 ${cerrada ? 'hidden md:flex' : 'flex'}`}
-        >
-          {auditoria && allPreguntas.length > 0 && (
-            <Boton variante="secundario" onClick={handleDescargarPDF} cargando={descargando} className="hidden md:inline-flex">
-              <Download aria-hidden="true" size={15} /> Descargar reporte PDF
-            </Boton>
-          )}
-          {!cerrada && allPreguntas.length > 0 && (
-            <>
-              {canAuditReview && (
-                <Boton
-                  variante="secundario"
-                  onClick={handleValidar}
-                  disabled={validando || cambiando || haySavePending || hayErrorCargaEsquema}
-                  className="px-3 md:px-4"
-                >
-                  {validando
-                    ? <><Loader aria-hidden="true" size={15} className="animate-spin motion-reduce:animate-none" />Validando…</>
-                    : <><ShieldCheck aria-hidden="true" size={15} />Validar</>
-                  }
+                  {modulo.bloques.map(bloque => {
+                    const pregBloque = modulo.preguntas.filter(p => p.bloque_id === bloque.id)
+                    if (pregBloque.length === 0) return null
+                    return (
+                      <BloqueAuditoria
+                        key={bloque.id}
+                        codigo={bloque.codigo}
+                        nombre={bloque.nombre}
+                        total={pregBloque.length}
+                        respondidas={pregBloque.filter(p => respuestasMap.get(p.id)).length}
+                      >
+                        {pregBloque.map(preg => (
+                            <CapturaPreguntaAuditoria
+                              key={preg.id}
+                              ref={getCapturaRef(preg.id)}
+                              auditoriaId={auditoriaId!}
+                              preguntaId={preg.id}
+                              sharedHook={hook}
+                              sharedReglas={reglasHook}
+                              onEstadoGuardado={status => setSavingMap(prev => ({ ...prev, [preg.id]: status }))}
+                              canWriteNC={canWriteNC}
+                              canAuditWrite={!cerrada && can('audit.write')}
+                              hallazgosCount={hallazgos.filter(h => h.pregunta_id === preg.id).length}
+                              reincidencia={reincidenciaMap.get(preg.id)}
+                              onRespuestaChanged={(_, resp) => {
+                                emitFirstEdit(preg.id)
+                                if (resp === 'no_conformidad' || resp === 'deficiencia_menor' || resp === 'deficiencia_mayor') {
+                                  if (!preg.es_cualitativa) cargarReincidenciaForPreg(preg.id, String(preg.prompt_component_id))
+                                }
+                              }}
+                              onAjusteActualizado={handleAjusteActualizado}
+                              onScoringInvalidated={() => setScoringVersion(v => v + 1)}
+                              onAfterSave={pregId => {
+                                if (herenciaOriginSetRef.current.has(pregId)) {
+                                  recargarHerenciaRef.current().catch(e => console.error('[AuditorEjecucion] onAfterSave recargarHerencia', e))
+                                }
+                              }}
+                              onRegistrarHallazgo={() => {
+                                const instId = instanciasMap.get(preg.id)
+                                if (!instId) {
+                                  toast.info('Espera a que se guarde la respuesta')
+                                  return
+                                }
+                                setFormHallazgoDesc('')
+                                setFormHallazgoClas('menor')
+                                setSheetHallazgo({ preguntaId: preg.id, instanciaId: instId })
+                              }}
+                              onVerHallazgos={() => {
+                                panelHallazgosRef.current?.scrollIntoView({ behavior: comportamientoScroll(), block: 'start' })
+                              }}
+                            />
+                        ))}
+                      </BloqueAuditoria>
+                    )
+                  })}
+                </div>
+                )
+              })}
+
+              {cerrada && (
+                <div className="rounded-xl px-4 py-3 text-center mt-2" style={{ backgroundColor: 'var(--muted)' }}>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
+                    Auditoría cerrada — solo lectura
+                  </p>
+                </div>
+              )}
+
+            </motion.div>
+
+          {/* Barra de acciones al pie: sticky dentro del área con scroll del Layout, sin motion.
+              Celular: Validar y Cerrar (a la derecha del botón del menú); md+: PDF, Validar, Marcar preliminar y Cerrar. */}
+          {hayBarra && (
+            <div
+              className={`sticky bottom-0 z-10 border-t border-border bg-card pr-4 pl-[5.25rem] md:pl-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] items-center justify-end gap-2 ${cerrada ? 'hidden md:flex' : 'flex'}`}
+            >
+              {auditoria && allPreguntas.length > 0 && (
+                <Boton variante="secundario" onClick={handleDescargarPDF} cargando={descargando} className="hidden md:inline-flex">
+                  <Download aria-hidden="true" size={15} /> Descargar reporte PDF
                 </Boton>
               )}
-              {auditoria?.estado !== 'preliminar' && (
-                <Boton
-                  variante="secundario"
-                  onClick={() => handleCambiarEstado('preliminar')}
-                  disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
-                  className="hidden md:inline-flex"
-                >
-                  {cambiando ? 'Guardando…' : 'Marcar preliminar'}
-                </Boton>
+              {!cerrada && allPreguntas.length > 0 && (
+                <>
+                  {canAuditReview && (
+                    <Boton
+                      variante="secundario"
+                      onClick={handleValidar}
+                      disabled={validando || cambiando || haySavePending || hayErrorCargaEsquema}
+                      className="px-3 md:px-4"
+                    >
+                      {validando
+                        ? <><Loader aria-hidden="true" size={15} className="animate-spin motion-reduce:animate-none" />Validando…</>
+                        : <><ShieldCheck aria-hidden="true" size={15} />Validar</>
+                      }
+                    </Boton>
+                  )}
+                  {auditoria?.estado !== 'preliminar' && (
+                    <Boton
+                      variante="secundario"
+                      onClick={() => handleCambiarEstado('preliminar')}
+                      disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
+                      className="hidden md:inline-flex"
+                    >
+                      {cambiando ? 'Guardando…' : 'Marcar preliminar'}
+                    </Boton>
+                  )}
+                  <Boton
+                    onClick={() => handleCambiarEstado('cerrada')}
+                    disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
+                    className="px-3 md:px-4"
+                  >
+                    {cambiando ? 'Cerrando…' : 'Cerrar auditoría'}
+                  </Boton>
+                </>
               )}
-              <Boton
-                onClick={() => handleCambiarEstado('cerrada')}
-                disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
-                className="px-3 md:px-4"
-              >
-                {cambiando ? 'Cerrando…' : 'Cerrar auditoría'}
-              </Boton>
-            </>
+            </div>
           )}
-        </div>
+          </div>
+        </main>
       )}
 
       {confirmarElemento}
