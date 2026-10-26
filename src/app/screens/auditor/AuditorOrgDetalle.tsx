@@ -15,18 +15,7 @@ import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { estadoAuditoria } from './estados'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
-import { DUR, EASE_OUT } from '@/lib/motion'
-
-// Entrada escalonada (primeros 8) compartida por las listas de esta pantalla.
-function entrada(index: number, reducedMotion: boolean | null) {
-  return {
-    initial: reducedMotion ? (false as const) : { opacity: 0, y: 8 },
-    animate: {
-      opacity: 1, y: 0,
-      transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
-    },
-  }
-}
+import { entrada } from './motionAuditor'
 
 function AuditoriaCard({
   a, index, reducedMotion, onClick,

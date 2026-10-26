@@ -20,6 +20,8 @@ import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { fechaCorta, formatoPct } from '@/lib/formato'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { motion } from 'motion/react'
+import { useEntradaPantalla } from './motionAuditor'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -486,6 +488,8 @@ export function EjecucionJornada() {
     }
   }, [])
 
+  const ent = useEntradaPantalla(!cargando && !errorCarga && !!detalle)
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   if (cargando) {
@@ -569,7 +573,7 @@ export function EjecucionJornada() {
         </div>
       )}
 
-      <main className="flex-1 flex flex-col md:flex-row md:min-h-0 pb-32 md:pb-8">
+      <motion.main className="flex-1 flex flex-col md:flex-row md:min-h-0 pb-32 md:pb-8" {...ent(0)}>
 
         {/* ── Panel izquierdo: selector de operación + navigator de preguntas ── */}
         <div className="md:w-64 lg:w-72 md:border-r md:border-border flex-shrink-0 flex flex-col md:min-h-0">
@@ -719,7 +723,7 @@ export function EjecucionJornada() {
           )}
 
         </div>
-      </main>
+      </motion.main>
 
       {/* ── Menú de jornada ── */}
       {menuAbierto && (

@@ -7,6 +7,8 @@ import { fechaCorta } from '@/lib/formato'
 import type { JornadaCandidataFila } from '@/hooks/useAuditorJornada'
 import { hoyMX } from '@/lib/fecha'
 import { Portal } from '@/app/components/Portal'
+import { motion } from 'motion/react'
+import { useEntradaPantalla } from './motionAuditor'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
@@ -105,6 +107,8 @@ export function NuevaJornada() {
     })
   }
 
+  const ent = useEntradaPantalla(porProductor.length > 0)
+
   const nProductores = new Set(
     candidatas.filter(c => seleccionados.has(c.auditoria_id)).map(c => c.productor)
   ).size
@@ -181,7 +185,9 @@ export function NuevaJornada() {
           </div>
         )}
 
-        {/* Lista por productor */}
+        {/* Lista por productor: un solo fundido al llegar los datos (no una entrada por fila) */}
+        {porProductor.length > 0 && (
+        <motion.div {...ent(0)}>
         {porProductor.map(([productor, filas]) => (
           <div key={productor}>
             <div
@@ -202,6 +208,8 @@ export function NuevaJornada() {
             ))}
           </div>
         ))}
+        </motion.div>
+        )}
 
         {/* Enlace a nuevas auditorías */}
         {!cargandoCandidatas && candidatas.length > 0 && (

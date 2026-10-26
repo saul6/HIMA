@@ -23,7 +23,7 @@ import { Skeleton } from '@/app/components/ui/skeleton'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
-import { DUR, EASE_OUT } from '@/lib/motion'
+import { entrada } from './motionAuditor'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -101,17 +101,6 @@ function accionTono(code: string): TonoEtiqueta {
 
 function esVencida(item: WorkQueueItem, hoy: string): boolean {
   return item.priority === 1 || (!!item.due_at && item.due_at < hoy)
-}
-
-// Entrada escalonada compartida (solo los primeros 8; el resto aparece sin retraso).
-function entrada(index: number, reducedMotion: boolean | null) {
-  return {
-    initial: reducedMotion ? (false as const) : { opacity: 0, y: 8 },
-    animate: {
-      opacity: 1, y: 0,
-      transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
-    },
-  }
 }
 
 function WorkQueueCard({

@@ -9,6 +9,8 @@ import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { motion } from 'motion/react'
+import { useEntradaPantalla } from './motionAuditor'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -54,6 +56,7 @@ export function AuditorModoAzzule() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [marcando, setMarcando] = useState(false)
   const [copied, setCopied] = useState(false)
+  const ent = useEntradaPantalla(!loading && items.length > 0)
 
   useEffect(() => {
     if (!auditoriaId) return
@@ -186,7 +189,7 @@ export function AuditorModoAzzule() {
             )}
           />
         ) : current ? (
-          <>
+          <motion.div className="flex flex-col gap-4" {...ent(0)}>
             {/* NC header */}
             <div className="rounded-xl px-4 py-3 flex flex-col gap-2" style={{ backgroundColor: 'var(--muted)' }}>
               <div className="flex items-center justify-between">
@@ -291,7 +294,7 @@ export function AuditorModoAzzule() {
                 </Boton>
               )}
             </div>
-          </>
+          </motion.div>
         ) : null}
       </main>
     </div>

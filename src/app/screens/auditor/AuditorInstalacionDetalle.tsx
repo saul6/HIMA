@@ -8,7 +8,7 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { useAuditorAsignaciones } from '@/hooks/useAuditorAsignaciones'
 import { Fab } from '@/app/components/Fab'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
-import { motion, useReducedMotion } from 'motion/react'
+import { motion } from 'motion/react'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
@@ -19,7 +19,7 @@ import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { estadoAuditoria } from './estados'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { fechaCorta } from '@/lib/formato'
-import { DUR, EASE_OUT } from '@/lib/motion'
+import { useEntradaPantalla } from './motionAuditor'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -70,8 +70,8 @@ export function AuditorInstalacionDetalle() {
   const [linkedOrgNombre, setLinkedOrgNombre] = useState<string | null>(null)
   const [auditorias, setAuditorias] = useState<AuditoriaItem[]>([])
   const [cargando, setCargando] = useState(true)
-  const reducedMotion = useReducedMotion()
   const mostrarSkeleton = useMostrarCarga(cargando, instalacion !== null)
+  const ent = useEntradaPantalla(!cargando && !error)
   const [error, setError] = useState<string | null>(null)
 
   // — Sheet: vincular a org M.A.D.Y. —
@@ -275,7 +275,7 @@ export function AuditorInstalacionDetalle() {
          <div className="contents lg:flex lg:flex-col lg:gap-6">
           {/* Info de la instalación */}
           {instalacion && (instalacion.ubicacion || instalacion.tipo_operacion || instalacion.cultivo_producto || instalacion.contacto) && (
-            <section className="bg-card rounded-xl border border-border p-4 flex flex-col gap-2">
+            <motion.section className="bg-card rounded-xl border border-border p-4 flex flex-col gap-2" {...ent(0)}>
               {instalacion.ubicacion && (
                 <div className="flex items-center gap-2">
                   <MapPin size={13} style={{ color: 'var(--muted-foreground)' }} className="flex-shrink-0" />
@@ -295,12 +295,13 @@ export function AuditorInstalacionDetalle() {
                   Contacto: {instalacion.contacto}
                 </p>
               )}
-            </section>
+            </motion.section>
           )}
 
           {/* Banner: ya vinculada */}
           {instalacion?.linked_org_id && (
-            <section
+            <motion.section
+              {...ent(1)}
               className="rounded-xl px-4 py-3 flex items-start gap-3"
               style={{ backgroundColor: 'var(--agro-success-fill)', border: '1px solid color-mix(in srgb, var(--agro-success-text) 35%, transparent)' }}
             >
@@ -318,15 +319,17 @@ export function AuditorInstalacionDetalle() {
                   El expediente pertenece a la organización productora. Las auditorías siguen accesibles por tu asignación.
                 </p>
               </div>
-            </section>
+            </motion.section>
           )}
 
           {/* Botón: vincular */}
           {instalacion && !instalacion.linked_org_id && (
-            <Boton variante="secundario" onClick={handleAbrirVincular} className="w-full">
-              <Building2 size={16} />
-              Vincular a organización M.A.D.Y.
-            </Boton>
+            <motion.div {...ent(2)}>
+              <Boton variante="secundario" onClick={handleAbrirVincular} className="w-full">
+                <Building2 size={16} />
+                Vincular a organización M.A.D.Y.
+              </Boton>
+            </motion.div>
           )}
 
          </div>
@@ -346,11 +349,7 @@ export function AuditorInstalacionDetalle() {
                   return (
                     <motion.button
                       key={a.id}
-                      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-                      animate={{
-                        opacity: 1, y: 0,
-                        transition: { duration: DUR.base, ease: EASE_OUT, delay: Math.min(index, 7) * 0.03 },
-                      }}
+                      {...ent(index)}
                       onClick={() => navigate(`/auditor/auditoria/${a.id}`, {
                         state: { instalacionId, instalacionNombre: instalacion?.nombre }
                       })}

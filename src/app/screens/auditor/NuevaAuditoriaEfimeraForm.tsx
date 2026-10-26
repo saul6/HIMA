@@ -8,6 +8,8 @@ import { hoyMX } from '@/lib/fecha'
 import { ModulosSelectorStep } from './ModulosSelectorStep'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { FormularioSkeleton } from '@/app/components/FormularioSkeleton'
+import { motion } from 'motion/react'
+import { useEntradaPantalla } from './motionAuditor'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -45,6 +47,7 @@ export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) 
   const [periodo, setPeriodo] = useState('')
   const [modulosSel, setModulosSel] = useState<Set<string>>(new Set())
   const [guardando, setGuardando] = useState(false)
+  const ent = useEntradaPantalla(!cargando)
 
   if (profile !== null && profile.rol !== 'auditor' && profile.rol !== 'super_admin') {
     return <Navigate to="/" replace />
@@ -151,7 +154,7 @@ export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) 
         {cargando ? (
           <FormularioSkeleton />
         ) : (
-          <>
+          <motion.div className="flex flex-col gap-5" {...ent(0)}>
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold" style={{ color: 'var(--muted-foreground)' }}>
             Fecha *
@@ -209,7 +212,7 @@ export function NuevaAuditoriaEfimeraForm({ onClose }: { onClose: () => void }) 
           />
         </div>
 
-          </>
+          </motion.div>
         )}
       </div>
 

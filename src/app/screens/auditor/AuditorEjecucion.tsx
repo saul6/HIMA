@@ -29,6 +29,8 @@ import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { estadoAuditoria, estadoHallazgo } from './estados'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Skeleton } from '@/app/components/ui/skeleton'
+import { motion } from 'motion/react'
+import { useEntradaPantalla } from './motionAuditor'
 import { FormularioSkeleton } from '@/app/components/FormularioSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
@@ -1120,6 +1122,7 @@ export function AuditorEjecucion() {
     cambiarEstado, refetch,
   } = hook
   const mostrarSkeleton = useMostrarCarga(cargando, modulosData.length > 0)
+  const ent = useEntradaPantalla(!cargando && !errorMsg)
 
   const herenciaOriginSetRef = useRef<Set<string>>(new Set())
   const recargarHerenciaRef = useRef(recargarHerencia)
@@ -1876,7 +1879,7 @@ export function AuditorEjecucion() {
             {errorMsg}
           </p>
         ) : (
-          <>
+          <motion.div className="flex flex-col gap-4" {...ent(0)}>
             {/* COR-07: banners de error de carga */}
             {esquemaCargaEstado === 'error' && (
               <div className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
@@ -2131,7 +2134,7 @@ export function AuditorEjecucion() {
                 </p>
               </div>
             )}
-          </>
+          </motion.div>
         )}
       </main>
 
