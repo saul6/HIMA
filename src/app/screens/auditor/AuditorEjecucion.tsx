@@ -24,6 +24,7 @@ import { CapturaPreguntaAuditoria } from './CapturaPreguntaAuditoria'
 import type { CapturaPreguntaRef, AjusteInfo } from './CapturaPreguntaAuditoria'
 import { traducirErrorBd } from '@/lib/erroresBd'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { useConfirmar } from '@/app/components/ui-mady/ConfirmarSheet'
 import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { estadoAuditoria, estadoHallazgo } from './estados'
@@ -1112,6 +1113,7 @@ export function AuditorEjecucion() {
   const navigate = useNavigate()
   const location = useLocation()
   const { profile } = useAuthContext()
+  const { confirmar, confirmarElemento } = useConfirmar()
 
   const orgNombre: string       = (location.state as { orgNombre?: string }       | null)?.orgNombre       ?? ''
   const orgId: string | undefined  = (location.state as { orgId?: string }              | null)?.orgId
@@ -1444,10 +1446,19 @@ export function AuditorEjecucion() {
       setValidando(false)
     }
 
-    const msg = nuevoEstado === 'cerrada'
-      ? '¿Cerrar esta auditoría? No podrás editar las respuestas después. Descarga el reporte PDF si lo necesitas.'
-      : '¿Marcar esta auditoría como preliminar?'
-    if (!window.confirm(msg)) return
+    const confirmado = await confirmar(nuevoEstado === 'cerrada'
+      ? {
+          titulo: 'Cerrar auditoría',
+          descripcion: 'Ya no podrás editar respuestas ni hallazgos. Descarga el reporte PDF si lo necesitas.',
+          textoConfirmar: 'Cerrar auditoría',
+          tono: 'peligro',
+        }
+      : {
+          titulo: 'Marcar como preliminar',
+          descripcion: '¿Marcar esta auditoría como preliminar?',
+          textoConfirmar: 'Marcar como preliminar',
+        })
+    if (!confirmado) return
     setCambiando(true)
     try {
       await cambiarEstado(nuevoEstado)
@@ -2197,6 +2208,8 @@ export function AuditorEjecucion() {
           )}
         </div>
       )}
+
+      {confirmarElemento}
 
       {/* Sheet: Crear hallazgo */}
       <BottomSheet open={!!sheetHallazgo} onClose={() => setSheetHallazgo(null)}>
