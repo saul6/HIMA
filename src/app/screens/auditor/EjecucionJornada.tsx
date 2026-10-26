@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router'
 import {
   AlertCircle, Loader, RefreshCw,
   ClipboardList, ChevronDown, CheckCircle, ExternalLink, MoreVertical,
-  Plus, Minus, XCircle, WifiOff, Circle, Link2, AlertTriangle,
+  Plus, Minus, XCircle, WifiOff,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuditorJornada } from '@/hooks/useAuditorJornada'
@@ -22,6 +22,8 @@ import { fechaCorta, formatoPct } from '@/lib/formato'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { motion, AnimatePresence, useAnimate, useReducedMotion } from 'motion/react'
 import { DUR, EASE_OUT } from '@/lib/motion'
+import { NavegadorPreguntas, LeyendaEstados, estadoDestino } from './NavegadorPreguntas'
+import type { ItemNavegador } from './NavegadorPreguntas'
 import { useEntradaPantalla, avisoMotion, fundidoEntrada, comportamientoScroll } from './motionAuditor'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -32,30 +34,6 @@ function avancePct(conteo: JornadaConteo): number {
 }
 
 type SaveStatusLocal = 'idle' | 'saving' | 'saved' | 'error'
-
-// Estado de respuesta de los puntos del navigator: color + ícono + nombre,
-// para que el estado no dependa solo del color.
-interface EstadoDestino { nombre: string; Icono: typeof Circle; color: string }
-
-const ESTADOS_LEYENDA: EstadoDestino[] = [
-  { nombre: 'Cumple', Icono: CheckCircle, color: 'var(--agro-success-text)' },
-  { nombre: 'Deficiencia', Icono: AlertTriangle, color: 'var(--agro-info-text)' },
-  { nombre: 'No conformidad', Icono: XCircle, color: 'var(--agro-danger-text)' },
-  { nombre: 'No aplica', Icono: Minus, color: 'var(--muted-foreground)' },
-  { nombre: 'Por confirmar', Icono: Link2, color: 'var(--agro-menta)' },
-  { nombre: 'Sin responder', Icono: Circle, color: 'var(--muted-foreground)' },
-]
-
-function estadoDestino(resp: string | null, herencia: boolean): EstadoDestino {
-  if (herencia) return ESTADOS_LEYENDA[4]
-  if (!resp) return ESTADOS_LEYENDA[5]
-  if (resp === 'cumplimiento_total' || resp === 'excede_cumplimiento') return ESTADOS_LEYENDA[0]
-  if (resp === 'na') return ESTADOS_LEYENDA[3]
-  if (resp === 'no_conformidad') return ESTADOS_LEYENDA[2]
-  if (resp === 'deficiencia_menor') return { ...ESTADOS_LEYENDA[1], nombre: 'Deficiencia menor' }
-  if (resp === 'deficiencia_mayor') return { ...ESTADOS_LEYENDA[1], nombre: 'Deficiencia mayor' }
-  return ESTADOS_LEYENDA[1]
-}
 
 // ── Sub-componentes ───────────────────────────────────────────────────────────
 
@@ -116,73 +94,6 @@ function OperacionChip({ op, activa, onClick }: {
         <p className="text-caption" style={{ color: activa ? 'color-mix(in srgb, var(--primary-foreground) 80%, transparent)' : 'var(--muted-foreground)' }}>
           {op.motivo}
         </p>
-      )}
-    </button>
-  )
-}
-
-function NavigatorPregunta({ pregunta, activa, auditoriaActiva, operaciones, onClick }: {
-  pregunta: JornadaPregunta
-  activa: boolean
-  auditoriaActiva: string | null
-  operaciones: JornadaOperacionDetalle[]
-  onClick: () => void
-}) {
-  const destinoActivo = auditoriaActiva
-    ? pregunta.destinos.find(d => d.auditoria_id === auditoriaActiva)
-    : null
-  const estadoActivo = destinoActivo ? estadoDestino(destinoActivo.respuesta, destinoActivo.herencia_pendiente) : null
-
-  return (
-    <button
-      onClick={onClick}
-      aria-current={activa ? 'step' : undefined}
-      className="w-full text-left px-4 py-2.5 flex items-center gap-2.5 focus-visible:outline-offset-[-2px] transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)]"
-      style={{
-        backgroundColor: activa ? 'var(--agro-success-fill)' : 'transparent',
-        borderBottom: '1px solid var(--border)',
-      }}
-    >
-      {/* Estado del destino activo: ícono + color + nombre para lectores de pantalla */}
-      {estadoActivo ? (
-        <>
-          <estadoActivo.Icono size={12} aria-hidden="true" className="flex-shrink-0" style={{ color: estadoActivo.color }} />
-          <span className="sr-only">{estadoActivo.nombre}</span>
-        </>
-      ) : (
-        <Circle size={12} aria-hidden="true" className="flex-shrink-0 opacity-40" style={{ color: 'var(--muted-foreground)' }} />
-      )}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-caption font-mono flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
-            {pregunta.question_id}
-          </span>
-          <p className="text-xs truncate" style={{ color: 'var(--foreground)', lineHeight: 1.3 }}>
-            {pregunta.texto}
-          </p>
-        </div>
-        {/* Puntos por destino */}
-        {pregunta.destinos.length > 1 && (
-          <div className="flex gap-1 mt-0.5">
-            {pregunta.destinos.map(d => {
-              const est = estadoDestino(d.respuesta, d.herencia_pendiente)
-              const op = operaciones.find(o => o.auditoria_id === d.auditoria_id)
-              const nombreOp = op ? `${op.productor} · ${op.operacion}` : undefined
-              return (
-                <span key={d.auditoria_id} className="inline-flex" title={nombreOp}>
-                  <est.Icono size={10} aria-hidden="true" style={{ color: est.color }} />
-                  <span className="sr-only">{nombreOp ? `${nombreOp}: ${est.nombre}` : est.nombre}</span>
-                </span>
-              )
-            })}
-          </div>
-        )}
-      </div>
-      {/* No en esta op */}
-      {auditoriaActiva && !destinoActivo && (
-        <span className="text-caption max-w-24 flex-shrink-0 text-right leading-tight" style={{ color: 'var(--muted-foreground)' }}>
-          No aplica en esta operación
-        </span>
       )}
     </button>
   )
@@ -425,6 +336,28 @@ export function EjecucionJornada() {
     }
     return base
   }, [preguntas, moduloActivo, filtro, auditoriaActiva])
+
+  // Adapta las preguntas de la jornada al navegador común (solo presentación).
+  const itemsNavegador = useMemo<ItemNavegador[]>(() => preguntasFiltradas.map(p => {
+    const destinoActivo = auditoriaActiva
+      ? p.destinos.find(d => d.auditoria_id === auditoriaActiva)
+      : null
+    return {
+      id: p.question_id,
+      codigo: p.question_id,
+      texto: p.texto,
+      estado: destinoActivo ? estadoDestino(destinoActivo.respuesta, destinoActivo.herencia_pendiente) : null,
+      puntos: p.destinos.map(d => {
+        const op = detalle?.operaciones.find(o => o.auditoria_id === d.auditoria_id)
+        return {
+          id: d.auditoria_id,
+          estado: estadoDestino(d.respuesta, d.herencia_pendiente),
+          titulo: op ? `${op.productor} · ${op.operacion}` : undefined,
+        }
+      }),
+      nota: auditoriaActiva && !destinoActivo ? 'No aplica en esta operación' : undefined,
+    }
+  }), [preguntasFiltradas, auditoriaActiva, detalle?.operaciones])
 
   const operacionActiva = detalle?.operaciones.find(o => o.auditoria_id === auditoriaActiva) ?? null
   const questionActivaObj = preguntas.find(p => p.question_id === questionActiva) ?? null
@@ -688,32 +621,15 @@ export function EjecucionJornada() {
             ))}
           </div>
 
-          {/* Leyenda de los íconos de estado (solo visual: cada punto ya trae su texto para lectores de pantalla) */}
-          <p aria-hidden="true" className="px-4 pb-2 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-small text-muted-foreground">
-            {ESTADOS_LEYENDA.map(e => (
-              <span key={e.nombre} className="inline-flex items-center gap-1">
-                <e.Icono size={10} style={{ color: e.color }} />
-                {e.nombre}
-              </span>
-            ))}
-          </p>
+          <LeyendaEstados />
 
           {/* Lista de preguntas */}
           <div className="flex-1 overflow-y-auto border-t border-border md:min-h-0">
-            {preguntasFiltradas.length === 0 ? (
-              <EstadoVacio icono={ClipboardList} titulo="Sin preguntas con este filtro." />
-            ) : (
-              preguntasFiltradas.map(p => (
-                <NavigatorPregunta
-                  key={p.question_id}
-                  pregunta={p}
-                  activa={p.question_id === questionActiva}
-                  auditoriaActiva={auditoriaActiva}
-                  operaciones={detalle.operaciones}
-                  onClick={() => cambiarPregunta(p.question_id)}
-                />
-              ))
-            )}
+            <NavegadorPreguntas
+              items={itemsNavegador}
+              activaId={questionActiva}
+              onIr={cambiarPregunta}
+            />
           </div>
         </div>
 
