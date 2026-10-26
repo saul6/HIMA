@@ -22,7 +22,7 @@ import { fechaCorta, formatoPct } from '@/lib/formato'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { motion, AnimatePresence, useAnimate, useReducedMotion } from 'motion/react'
 import { DUR, EASE_OUT } from '@/lib/motion'
-import { useEntradaPantalla, avisoMotion, fundidoEntrada } from './motionAuditor'
+import { useEntradaPantalla, avisoMotion, fundidoEntrada, comportamientoScroll } from './motionAuditor'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -865,7 +865,7 @@ export function EjecucionJornada() {
             // Scroll al campo
             setTimeout(() => {
               const el = document.getElementById('captura-pregunta')
-              el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              el?.scrollIntoView({ behavior: comportamientoScroll(), block: 'start' })
             }, 100)
           }}
           onAbrir={audId => navigate(`/auditor/auditoria/${audId}`)}

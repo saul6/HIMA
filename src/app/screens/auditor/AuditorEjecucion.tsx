@@ -30,7 +30,7 @@ import { estadoAuditoria, estadoHallazgo } from './estados'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
-import { useEntradaPantalla, useFundidoPlegable, avisoMotion } from './motionAuditor'
+import { useEntradaPantalla, useFundidoPlegable, avisoMotion, comportamientoScroll, resaltarDestino } from './motionAuditor'
 import { FormularioSkeleton } from '@/app/components/FormularioSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
@@ -228,10 +228,14 @@ function irAPregunta(pregId: string) {
   const bloque = el.closest<HTMLElement>('[data-bloque-plegado="true"]')
   if (bloque) {
     bloque.dispatchEvent(new CustomEvent('desplegar-bloque'))
-    requestAnimationFrame(() => requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' })))
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: comportamientoScroll(), block: 'center' })
+      resaltarDestino(el)
+    }))
     return
   }
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  el.scrollIntoView({ behavior: comportamientoScroll(), block: 'center' })
+  resaltarDestino(el)
 }
 
 /** Bloque de preguntas plegable. Plegar oculta (`hidden`), no desmonta: las capturas conservan su borrador y su guardado. */
@@ -1464,7 +1468,7 @@ export function AuditorEjecucion() {
           setValidando(false)
         }
         toast.error(errMsg.split(': ').slice(1).join(': ') || 'No se pudo cerrar la auditoría. Revisa el panel de validación.')
-        setTimeout(() => document.getElementById('panel-validacion')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150)
+        setTimeout(() => document.getElementById('panel-validacion')?.scrollIntoView({ behavior: comportamientoScroll(), block: 'start' }), 150)
       } else if (errMsg.includes('AUDITORIA_CERRADA')) {
         toast.error(errMsg.split(': ').slice(1).join(': ') || 'La auditoría ya está cerrada.')
       } else {
@@ -2124,7 +2128,7 @@ export function AuditorEjecucion() {
                               setSheetHallazgo({ preguntaId: preg.id, instanciaId: instId })
                             }}
                             onVerHallazgos={() => {
-                              panelHallazgosRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                              panelHallazgosRef.current?.scrollIntoView({ behavior: comportamientoScroll(), block: 'start' })
                             }}
                           />
                       ))}

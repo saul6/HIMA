@@ -59,3 +59,32 @@ export function fundidoEntrada(reducedMotion: boolean | null) {
     transition: { duration: DUR.rapido, ease: EASE_OUT },
   }
 }
+
+// Scroll que respeta "reducir movimiento". Se evalúa al momento de hacer scroll, así sirve
+// igual dentro y fuera de componentes.
+export function comportamientoScroll(): ScrollBehavior {
+  const reducido = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  return reducido ? 'auto' : 'smooth'
+}
+
+// Resalte breve del destino tras un scroll ("Ir a pregunta", "Resolver"): anillo --ring que se desvanece en
+// ~600 ms. Usa la Web Animations API sobre el propio elemento: no deja temporizadores ni estado, y si el
+// elemento se desmonta la animación se va con él. Con movimiento reducido el anillo aparece y se quita
+// sin transición (se mantiene y desaparece de golpe).
+export function resaltarDestino(el: HTMLElement) {
+  const objetivo = (el.firstElementChild as HTMLElement | null) ?? el
+  if (typeof objetivo.animate !== 'function') return
+  const reducido = comportamientoScroll() === 'auto'
+  const anillo = { outlineStyle: 'solid', outlineWidth: '2px', outlineOffset: '2px' }
+  const keyframes: Keyframe[] = reducido
+    ? [
+        { ...anillo, outlineColor: 'var(--ring)', offset: 0 },
+        { ...anillo, outlineColor: 'var(--ring)', offset: 0.999 },
+        { ...anillo, outlineColor: 'transparent', offset: 1 },
+      ]
+    : [
+        { ...anillo, outlineColor: 'var(--ring)' },
+        { ...anillo, outlineColor: 'transparent' },
+      ]
+  objetivo.animate(keyframes, { duration: 600, delay: reducido ? 0 : 300, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' })
+}
