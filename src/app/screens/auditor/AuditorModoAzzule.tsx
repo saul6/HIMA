@@ -75,7 +75,6 @@ export function AuditorModoAzzule() {
       if (aErr) throw aErr
       if (!acciones?.length) { setItems([]); return }
 
-      setLoadingMsg('Validando para Azzule…')
       const validaciones = await Promise.all(
         (acciones as AudAccionCorrectivaCAPA[]).map(ac =>
           supabase.rpc('aud_lista_para_azzule', { p_accion_id: ac.id })
