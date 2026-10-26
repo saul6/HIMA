@@ -703,12 +703,34 @@ export function AccionesCorrectivas() {
             <label className="text-xs text-muted-foreground font-semibold">
               FECHA DE CUMPLIMIENTO
             </label>
-            <input
-              type="date"
-              value={fFechaCumplimiento}
-              onChange={(e) => setFFechaCumplimiento(e.target.value)}
-              className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
-            />
+            {selectedItem?.accion?.id ? (
+              <>
+                <p className="w-full h-11 px-3 rounded-xl border border-border bg-muted text-sm flex items-center">
+                  {formatFecha(selectedItem.accion.fecha_cumplimiento)}
+                </p>
+                <p className="text-small text-muted-foreground">
+                  La fecha límite se cambia desde{' '}
+                  {esAdmin && selectedItem.estado !== 'cerrada' ? (
+                    <button
+                      type="button"
+                      onClick={() => { const it = selectedItem; cerrarSheet(); abrirAsignar(it) }}
+                      className="text-primary underline font-semibold"
+                    >
+                      Editar asignación
+                    </button>
+                  ) : (
+                    <span className="font-semibold">Editar asignación</span>
+                  )}
+                </p>
+              </>
+            ) : (
+              <input
+                type="date"
+                value={fFechaCumplimiento}
+                onChange={(e) => setFFechaCumplimiento(e.target.value)}
+                className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
+              />
+            )}
           </div>
 
           {/* Realizó / Verificó */}

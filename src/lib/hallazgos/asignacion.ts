@@ -100,6 +100,11 @@ export function fechaMinimaAsignacion(hoy: string, fechaActual?: string | null):
   return fechaActual && fechaActual < hoy ? fechaActual : hoy
 }
 
+/** Fecha límite como la guarda la asignación: fin del día en CDMX (UTC-6, sin horario de verano). */
+export function finDelDiaCDMX(fecha: string | null | undefined): string | null {
+  return fecha ? `${fecha.slice(0, 10)}T23:59:59-06:00` : null
+}
+
 export function formatFechaLimite(iso: string | null | undefined): string {
   if (!iso) return ''
   try {

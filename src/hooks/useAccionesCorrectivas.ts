@@ -4,6 +4,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import { useOutbox } from '@/hooks/useOutbox'
 import { leerConCache } from '@/lib/offline/cacheLectura'
 import { SYNC_OK_EVENT } from '@/lib/offline/sync'
+import { finDelDiaCDMX } from '@/lib/hallazgos/asignacion'
 import type { AccionCorrectivaFoto } from '@/types/database.types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -300,7 +301,7 @@ export function useAccionesCorrectivas(habilitado = true) {
         accion_preventiva: params.accion_preventiva || null,
         internal_status: 'PREPARING',
         comentario_accion: comentario,
-        due_at: params.fecha_cumplimiento || null,
+        due_at: finDelDiaCDMX(params.fecha_cumplimiento),
         creado_por: profile.id,
       }).select('id').single()
       if (cErr) throw cErr
@@ -327,20 +328,20 @@ export function useAccionesCorrectivas(habilitado = true) {
         accion_preventiva: params.accion_preventiva || null,
         internal_status: 'PREPARING',
         comentario_accion: comentario,
-        due_at: params.fecha_cumplimiento || null,
+        due_at: finDelDiaCDMX(params.fecha_cumplimiento),
         creado_por: profile.id,
       }).select('id').single()
       if (cErr) throw cErr
       return { hallazgoId: params.hallazgoId, capaId: (c as any).id as string } // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
-    // Actualizar CAPA existente (el trigger versiona automáticamente)
+    // Actualizar CAPA existente (el trigger versiona automáticamente).
+    // due_at no se manda: la BD solo lo cambia desde la asignación.
     const { error: cErr } = await tbl('aud_acciones_correctivas').update({
       causa_raiz: params.causa || null,
       correccion_inmediata: params.accion_correctiva || null,
       accion_preventiva: params.accion_preventiva || null,
       comentario_accion: comentario,
-      due_at: params.fecha_cumplimiento || null,
     }).eq('id', params.capaId).eq('org_id', profile.org_id)
     if (cErr) throw cErr
 
