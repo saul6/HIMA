@@ -18,7 +18,7 @@ import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
-import { formatoPct } from '@/lib/formato'
+import { fechaCorta, formatoPct } from '@/lib/formato'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
