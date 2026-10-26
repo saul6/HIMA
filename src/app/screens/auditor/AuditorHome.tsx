@@ -251,16 +251,19 @@ export function AuditorHome() {
         )}
       />
 
-      <main className="flex-1 px-4 py-4 flex flex-col gap-5">
+      <main className="flex-1 w-full px-4 py-4 flex flex-col gap-5 lg:grid lg:grid-cols-3 lg:items-start lg:gap-x-6 lg:max-w-6xl lg:mx-auto">
 
         {/* Buscador — móvil (en escritorio vive en el header del Layout) */}
         <div className="md:hidden">
           <AuditorBusqueda />
         </div>
 
+        {/* Escritorio (lg): izquierda = trabajo (2/3); derecha = visitas, jornadas y organizaciones (1/3).
+            En celular y tableta los envoltorios desaparecen (contents) y `order` conserva el orden de siempre. */}
+        <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:gap-5">
         {/* ── Continuar trabajo ──────────────────────────────────────── */}
         {workspace && (
-          <section>
+          <section className="order-1">
             <FilaNavegable
               onClick={() => { markResume(clicksBeforeResumeRef.current); navigate(workspace.route) }}
               tono="destacada"
@@ -273,7 +276,7 @@ export function AuditorHome() {
 
         {/* ── Franja de resumen ──────────────────────────────────────── */}
         {loadingDash ? (
-          <section>
+          <section className="order-2">
             <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
               {[0, 1, 2, 3, 4].map(i => (
                 <div key={i} className="rounded-xl p-3 md:p-4 border border-border bg-card space-y-2">
@@ -284,7 +287,7 @@ export function AuditorHome() {
             </div>
           </section>
         ) : resumen && (
-          <section>
+          <section className="order-2">
             <LayoutGroup id="auditor-resumen">
               <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
                 <TarjetaContador
@@ -322,55 +325,8 @@ export function AuditorHome() {
           </section>
         )}
 
-        {/* ── Visitas de hoy ─────────────────────────────────────────── */}
-        {resumen && resumen.visitas_hoy.length > 0 && (
-          <section>
-            <TituloSeccion as="p">Visitas de hoy</TituloSeccion>
-            <div className="flex flex-col gap-2">
-              {resumen.visitas_hoy.map(v => (
-                <FilaNavegable
-                  key={v.agenda_id}
-                  onClick={() => navigate(`/auditor/auditoria/${v.auditoria_id}`)}
-                  icono={<Calendar size={15} />}
-                  titulo={v.titulo}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* ── Jornadas abiertas + Auditar por bloque ─────────────────── */}
-        <section>
-          <div className="flex items-center justify-between mb-2.5">
-            <TituloSeccion as="p" className="mb-0">Captura por bloque</TituloSeccion>
-            <Boton variante="secundario" tamano="sm" onClick={() => navigate('/auditor/jornada/nueva')}>
-              <Layers size={13} />
-              Auditar por bloque
-            </Boton>
-          </div>
-          {jornadasAbiertas.length > 0 ? (
-            <div className="flex flex-col gap-2">
-              {jornadasAbiertas.map(j => (
-                <FilaNavegable
-                  key={j.jornada_id}
-                  onClick={() => navigate(`/auditor/jornada/${j.jornada_id}`)}
-                  icono={<Layers size={15} />}
-                  titulo={j.nombre}
-                  subtitulo={`${j.operaciones.length} ${j.operaciones.length === 1 ? 'operación' : 'operaciones'} · ${j.fecha.split('-').reverse().join('/')}`}
-                />
-              ))}
-            </div>
-          ) : (
-            <EstadoVacio
-              icono={Layers}
-              titulo="Sin jornadas abiertas."
-              ayuda="Usa «Auditar por bloque» para iniciar una."
-            />
-          )}
-        </section>
-
         {/* ── Cola de trabajo ────────────────────────────────────────── */}
-        <section>
+        <section className="order-5">
           <div className="flex items-center justify-between mb-2.5">
             <TituloSeccion as="p" className="mb-0">
               {filtro ? (FILTRO_LABELS[filtro] ?? 'Filtrado') : 'Cola de trabajo'}
@@ -460,10 +416,59 @@ export function AuditorHome() {
             </div>
           )}
         </section>
+        </div>
+
+        <div className="contents lg:flex lg:flex-col lg:gap-5">
+        {/* ── Visitas de hoy ─────────────────────────────────────────── */}
+        {resumen && resumen.visitas_hoy.length > 0 && (
+          <section className="order-3">
+            <TituloSeccion as="p">Visitas de hoy</TituloSeccion>
+            <div className="flex flex-col gap-2">
+              {resumen.visitas_hoy.map(v => (
+                <FilaNavegable
+                  key={v.agenda_id}
+                  onClick={() => navigate(`/auditor/auditoria/${v.auditoria_id}`)}
+                  icono={<Calendar size={15} />}
+                  titulo={v.titulo}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── Jornadas abiertas + Auditar por bloque ─────────────────── */}
+        <section className="order-4">
+          <div className="flex items-center justify-between mb-2.5">
+            <TituloSeccion as="p" className="mb-0">Captura por bloque</TituloSeccion>
+            <Boton variante="secundario" tamano="sm" onClick={() => navigate('/auditor/jornada/nueva')}>
+              <Layers size={13} />
+              Auditar por bloque
+            </Boton>
+          </div>
+          {jornadasAbiertas.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              {jornadasAbiertas.map(j => (
+                <FilaNavegable
+                  key={j.jornada_id}
+                  onClick={() => navigate(`/auditor/jornada/${j.jornada_id}`)}
+                  icono={<Layers size={15} />}
+                  titulo={j.nombre}
+                  subtitulo={`${j.operaciones.length} ${j.operaciones.length === 1 ? 'operación' : 'operaciones'} · ${j.fecha.split('-').reverse().join('/')}`}
+                />
+              ))}
+            </div>
+          ) : (
+            <EstadoVacio
+              icono={Layers}
+              titulo="Sin jornadas abiertas."
+              ayuda="Usa «Auditar por bloque» para iniciar una."
+            />
+          )}
+        </section>
 
         {/* ── Organizaciones asignadas ───────────────────────────────── */}
         {!loadingOrgs && orgs.length > 0 && (
-          <section>
+          <section className="order-6">
             <TituloSeccion as="p">Organizaciones</TituloSeccion>
             <div className="flex flex-col gap-2">
               {orgs.map(org => (
@@ -479,6 +484,7 @@ export function AuditorHome() {
             </div>
           </section>
         )}
+        </div>
 
       </main>
 
