@@ -494,15 +494,17 @@ export function Layout() {
           })}
         </div>
 
-        {/* Campana */}
-        <div className="px-4 py-1.5 border-t border-border flex items-center gap-4">
-          {/* La caja de la campana (32px) se desplaza para que el ícono de 20px
-              quede en la misma columna que los de la lista. */}
-          <div className="-ml-1.5 mr-[-6px]">
-            <CampanaNotificaciones iconClassName="w-5 h-5" />
+        {/* Campana: el auditor ya la tiene en el encabezado de sus pantallas */}
+        {!esAuditor && (
+          <div className="px-4 py-1.5 border-t border-border flex items-center gap-4">
+            {/* La caja de la campana (32px) se desplaza para que el ícono de 20px
+                quede en la misma columna que los de la lista. */}
+            <div className="-ml-1.5 mr-[-6px]">
+              <CampanaNotificaciones iconClassName="w-5 h-5" />
+            </div>
+            <span className="text-sm" style={{ color: 'var(--foreground)' }}>Notificaciones</span>
           </div>
-          <span className="text-sm" style={{ color: 'var(--foreground)' }}>Notificaciones</span>
-        </div>
+        )}
 
         {/* Sincronización (solo si hay pendientes o sin conexión) */}
         {(!online || totalPendientes > 0) && (
