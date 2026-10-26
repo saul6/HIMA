@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation, Navigate, Outlet } from 'react-router'
-import { MapPin, ClipboardCheck } from 'lucide-react'
+import { MapPin, ClipboardCheck, ChevronRight } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { fechaCorta } from '@/lib/formato'
 import { useAuditorOrg } from '@/hooks/useAuditorOrg'
@@ -49,6 +49,7 @@ function AuditoriaCard({
           </p>
         </div>
         <Etiqueta tono={estado.tono}>{estado.texto}</Etiqueta>
+        <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       </div>
     </motion.button>
   )
@@ -100,10 +101,13 @@ export function AuditorOrgDetalle() {
           </Boton>
         </div>
       ) : (
-        <main className="flex-1 px-4 py-4 flex flex-col gap-6">
+        <main className="flex-1 w-full px-4 py-4 flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6 lg:max-w-5xl lg:mx-auto">
           {/* Instalaciones */}
           <section>
-            <TituloSeccion as="p">Instalaciones ({ranchos.length})</TituloSeccion>
+            <div className="flex items-center gap-2 mb-2.5">
+              <TituloSeccion as="p" className="mb-0">Instalaciones</TituloSeccion>
+              <Etiqueta tono="neutral">{ranchos.length}</Etiqueta>
+            </div>
             {ranchos.length === 0 ? (
               <EstadoVacio icono={MapPin} titulo="Sin instalaciones registradas." />
             ) : (
@@ -112,7 +116,7 @@ export function AuditorOrgDetalle() {
                   <motion.div
                     key={r.id}
                     {...entrada(index, reducedMotion)}
-                    className="bg-card rounded-xl border border-border px-4 py-3 flex items-center gap-3"
+                    className="bg-muted rounded-lg px-4 py-3 flex items-center gap-3"
                   >
                     <MapPin size={15} style={{ color: 'var(--muted-foreground)' }} className="flex-shrink-0" />
                     <div className="flex-1 min-w-0">
@@ -131,7 +135,10 @@ export function AuditorOrgDetalle() {
 
           {/* Auditorías */}
           <section>
-            <TituloSeccion as="p">Auditorías ({auditorias.length})</TituloSeccion>
+            <div className="flex items-center gap-2 mb-2.5">
+              <TituloSeccion as="p" className="mb-0">Auditorías</TituloSeccion>
+              <Etiqueta tono="neutral">{auditorias.length}</Etiqueta>
+            </div>
             {auditorias.length === 0 ? (
               <EstadoVacio icono={ClipboardCheck} titulo="Sin auditorías registradas" ayuda="Usa el botón + para crear la primera" />
             ) : (

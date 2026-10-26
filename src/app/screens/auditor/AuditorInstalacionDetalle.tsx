@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Navigate, Outlet } from 'react-router'
-import { ClipboardCheck, MapPin, Info, AlertTriangle, Loader, Building2, CheckCircle2, XCircle } from 'lucide-react'
+import { ClipboardCheck, ChevronRight, MapPin, Info, AlertTriangle, Loader, Building2, CheckCircle2, XCircle } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
@@ -271,7 +271,8 @@ export function AuditorInstalacionDetalle() {
           {error}
         </p>
       ) : (
-        <main className="flex-1 px-4 py-4 flex flex-col gap-6">
+        <main className="flex-1 w-full px-4 py-4 flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6 lg:max-w-5xl lg:mx-auto">
+         <div className="contents lg:flex lg:flex-col lg:gap-6">
           {/* Info de la instalación */}
           {instalacion && (instalacion.ubicacion || instalacion.tipo_operacion || instalacion.cultivo_producto || instalacion.contacto) && (
             <section className="bg-card rounded-xl border border-border p-4 flex flex-col gap-2">
@@ -328,9 +329,14 @@ export function AuditorInstalacionDetalle() {
             </Boton>
           )}
 
+         </div>
+
           {/* Auditorías */}
           <section>
-            <TituloSeccion as="p">Auditorías ({auditorias.length})</TituloSeccion>
+            <div className="flex items-center gap-2 mb-2.5">
+              <TituloSeccion as="p" className="mb-0">Auditorías</TituloSeccion>
+              <Etiqueta tono="neutral">{auditorias.length}</Etiqueta>
+            </div>
             {auditorias.length === 0 ? (
               <EstadoVacio icono={ClipboardCheck} titulo="Sin auditorías registradas" ayuda="Usa el botón + para crear la primera" />
             ) : (
@@ -360,6 +366,7 @@ export function AuditorInstalacionDetalle() {
                         </p>
                       </div>
                       <Etiqueta tono={estado.tono}>{estado.texto}</Etiqueta>
+                      <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                     </motion.button>
                   )
                 })}
