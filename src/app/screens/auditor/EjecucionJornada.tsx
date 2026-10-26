@@ -79,17 +79,21 @@ function OperacionChip({ op, activa, onClick }: {
         <span className="text-caption font-mono" style={{ color: activa ? 'color-mix(in srgb, var(--primary-foreground) 80%, transparent)' : 'var(--muted-foreground)' }}>
           {op.conteo.resueltas ?? 0}/{op.conteo.total}
         </span>
-        {op.herencia_pendiente > 0 && (
-          <span className="text-caption font-bold" style={{ color: activa ? 'var(--primary-foreground)' : 'var(--agro-menta)' }}>
-            {op.herencia_pendiente}H
-          </span>
-        )}
-        {op.issues_abiertos > 0 && (
-          <span className="text-small font-bold" style={{ color: activa ? 'var(--primary-foreground)' : 'var(--agro-danger-text)' }}>
-            {op.issues_abiertos}R
-          </span>
-        )}
       </div>
+      {(op.herencia_pendiente > 0 || op.issues_abiertos > 0) && (
+        <div className="flex flex-wrap items-center gap-x-2 text-caption font-semibold">
+          {op.herencia_pendiente > 0 && (
+            <span style={{ color: activa ? 'var(--primary-foreground)' : 'var(--agro-success-text)' }}>
+              {op.herencia_pendiente} por confirmar
+            </span>
+          )}
+          {op.issues_abiertos > 0 && (
+            <span style={{ color: activa ? 'var(--primary-foreground)' : 'var(--agro-danger-text)' }}>
+              {op.issues_abiertos} {op.issues_abiertos === 1 ? 'revisión' : 'revisiones'}
+            </span>
+          )}
+        </div>
+      )}
       {!op.disponible && op.motivo && (
         <p className="text-caption" style={{ color: activa ? 'color-mix(in srgb, var(--primary-foreground) 80%, transparent)' : 'var(--muted-foreground)' }}>
           {op.motivo}
@@ -152,8 +156,8 @@ function NavigatorPregunta({ pregunta, activa, auditoriaActiva, onClick }: {
       </div>
       {/* No en esta op */}
       {auditoriaActiva && !destinoActivo && (
-        <span className="text-caption flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
-          N/A en esta op.
+        <span className="text-caption max-w-24 flex-shrink-0 text-right leading-tight" style={{ color: 'var(--muted-foreground)' }}>
+          No aplica en esta operación
         </span>
       )}
     </button>
@@ -239,7 +243,7 @@ function PendientesPanel({
                 <div className="rounded-xl px-3 py-2 flex items-center justify-between"
                   style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-info-text)' }}>
                   <p className="text-small" style={{ color: 'var(--agro-info-text)' }}>
-                    {op.issues_abiertos} {op.issues_abiertos === 1 ? 'issue de revisión abierto' : 'issues de revisión abiertos'}
+                    {op.issues_abiertos} {op.issues_abiertos === 1 ? 'observación de revisión abierta' : 'observaciones de revisión abiertas'}
                   </p>
                   <button
                     onClick={() => onAbrir(op.auditoria_id)}
@@ -512,7 +516,9 @@ export function EjecucionJornada() {
   const terminada = detalle.jornada.estado === 'terminada'
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
+    // Desde lg el área de contenido del Layout deja 4rem para su barra superior (lg:h-16): la
+    // pantalla ocupa el resto y cada panel se desplaza por separado.
+    <div className="flex flex-col min-h-screen lg:min-h-0 lg:h-[calc(100dvh-4rem)]" style={{ backgroundColor: 'var(--background)' }}>
 
       {/* ── Encabezado fijo ── */}
       <ModuloHeader
@@ -563,10 +569,10 @@ export function EjecucionJornada() {
         </div>
       )}
 
-      <main className="flex-1 flex flex-col lg:flex-row pb-32">
+      <main className="flex-1 flex flex-col lg:flex-row lg:min-h-0 pb-32 md:pb-8">
 
         {/* ── Panel izquierdo: selector de operación + navigator de preguntas ── */}
-        <div className="lg:w-72 lg:border-r lg:border-border flex-shrink-0 flex flex-col">
+        <div className="lg:w-72 lg:border-r lg:border-border flex-shrink-0 flex flex-col lg:min-h-0">
 
           {/* Selector de operación (mobile: scroll horizontal; desktop: lista vertical) */}
           <div className="px-4 pt-3 pb-2">
@@ -633,7 +639,7 @@ export function EjecucionJornada() {
           </div>
 
           {/* Lista de preguntas */}
-          <div className="flex-1 overflow-y-auto border-t border-border lg:max-h-[calc(100vh-280px)]">
+          <div className="flex-1 overflow-y-auto border-t border-border lg:min-h-0">
             {preguntasFiltradas.length === 0 ? (
               <EstadoVacio icono={ClipboardList} titulo="Sin preguntas con este filtro." />
             ) : (
@@ -651,7 +657,7 @@ export function EjecucionJornada() {
         </div>
 
         {/* ── Panel derecho: formulario de captura ── */}
-        <div className="flex-1 px-4 pt-4 flex flex-col gap-3">
+        <div className="flex-1 px-4 pt-4 flex flex-col gap-3 lg:min-h-0 lg:overflow-y-auto">
 
           {/* Aviso: pregunta no en cuestionario */}
           {preguntaNoEnCuestionario && operacionActiva && (
