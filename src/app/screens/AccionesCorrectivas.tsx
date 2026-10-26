@@ -350,7 +350,11 @@ export function AccionesCorrectivas() {
     } catch (e: unknown) {
       // Los errores de Supabase son objetos con message (no Error): así llegan los mensajes de la BD
       const msg = (e as { message?: string } | null)?.message
-      toast.error(msg || 'Error al guardar')
+      if (msg?.includes('FECHA_CUMPLIMIENTO_FUTURA')) {
+        toast.warning('La fecha de cumplimiento no puede ser posterior a hoy')
+      } else {
+        toast.error(msg || 'Error al guardar')
+      }
     } finally {
       setGuardando(false)
     }
@@ -526,6 +530,11 @@ export function AccionesCorrectivas() {
                     <p className="text-xs text-muted-foreground">
                       {item.rancho_nombre} · {formatFecha(item.fecha_auditoria)}
                     </p>
+                    {item.accion?.fecha_cumplimiento && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Cumplida: {formatFecha(item.accion.fecha_cumplimiento)}
+                      </p>
+                    )}
                   </button>
                   {esModuloAsignable(item.modulo) && (() => {
                     const est = asig.estados[item.respuesta_id]
@@ -723,39 +732,44 @@ export function AccionesCorrectivas() {
             />
           </div>
 
-          {/* Fecha cumplimiento */}
+          {/* Fecha límite (solo lectura: la fija el admin al asignar) */}
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground font-semibold">
+              FECHA LÍMITE
+            </label>
+            <p className="w-full h-11 px-3 rounded-xl border border-border bg-muted text-sm flex items-center">
+              {selectedItem?.accion?.fecha_limite ? formatFecha(selectedItem.accion.fecha_limite) : 'Sin asignar'}
+            </p>
+            <p className="text-small text-muted-foreground">
+              Se cambia desde{' '}
+              {selectedItem && esAdmin && selectedItem.estado !== 'cerrada' && esModuloAsignable(selectedItem.modulo) ? (
+                <button
+                  type="button"
+                  onClick={() => { const it = selectedItem; cerrarSheet(); abrirAsignar(it) }}
+                  className="text-primary underline font-semibold"
+                >
+                  Editar asignación
+                </button>
+              ) : (
+                <span className="font-semibold">Editar asignación</span>
+              )}
+            </p>
+          </div>
+
+          {/* Fecha de cumplimiento (la captura el responsable) */}
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground font-semibold">
               FECHA DE CUMPLIMIENTO
             </label>
-            {selectedItem?.accion?.id ? (
-              <>
-                <p className="w-full h-11 px-3 rounded-xl border border-border bg-muted text-sm flex items-center">
-                  {formatFecha(selectedItem.accion.fecha_cumplimiento)}
-                </p>
-                <p className="text-small text-muted-foreground">
-                  La fecha límite se cambia desde{' '}
-                  {esAdmin && selectedItem.estado !== 'cerrada' ? (
-                    <button
-                      type="button"
-                      onClick={() => { const it = selectedItem; cerrarSheet(); abrirAsignar(it) }}
-                      className="text-primary underline font-semibold"
-                    >
-                      Editar asignación
-                    </button>
-                  ) : (
-                    <span className="font-semibold">Editar asignación</span>
-                  )}
-                </p>
-              </>
-            ) : (
-              <input
-                type="date"
-                value={fFechaCumplimiento}
-                onChange={(e) => setFFechaCumplimiento(e.target.value)}
-                className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
-              />
-            )}
+            <input
+              type="date"
+              value={fFechaCumplimiento}
+              max={hoyMX()}
+              disabled={soloLectura}
+              onChange={(e) => setFFechaCumplimiento(e.target.value)}
+              className="w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm"
+            />
+            <p className="text-small text-muted-foreground">Día en que se completó la acción</p>
           </div>
 
           {/* Realizó / Verificó */}

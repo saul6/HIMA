@@ -45,6 +45,7 @@ export function traducirErrorBd(msg: string): string | null {
   if (msg.includes('TEXTO_MUY_LARGO')) return 'Un campo de texto excede el máximo de caracteres permitido'
   const fotos = msg.match(/FOTOS_MAXIMO:?\s*([^\n"]*)/)
   if (fotos) return fotos[1].trim() || 'Se superó el máximo de fotos permitido'
+  if (msg.includes('FECHA_CUMPLIMIENTO_FUTURA')) return 'La fecha de cumplimiento no puede ser posterior a hoy'
   return null
 }
 

@@ -4,7 +4,6 @@ import { useAuthContext } from '@/context/AuthContext'
 import { useOutbox } from '@/hooks/useOutbox'
 import { leerConCache } from '@/lib/offline/cacheLectura'
 import { SYNC_OK_EVENT } from '@/lib/offline/sync'
-import { finDelDiaCDMX } from '@/lib/hallazgos/asignacion'
 import type { AccionCorrectivaFoto } from '@/types/database.types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,6 +25,9 @@ export interface CapaBandeja {
   accion_correctiva: string | null
   accion_preventiva: string | null
   fecha_deteccion: string | null
+  /** due_at tal cual (timestamptz, fin del día CDMX): la fija el admin al asignar */
+  fecha_limite: string | null
+  /** cumplido_en (YYYY-MM-DD): día real en que el responsable terminó la acción */
   fecha_cumplimiento: string | null
   realizo: string | null
   verifico: string | null
@@ -132,7 +134,7 @@ export async function fetchBandeja(orgId: string): Promise<NcBandejaItem[]> {
     let capaList: any[] = [] // eslint-disable-line @typescript-eslint/no-explicit-any
     if (hallazgoIds.length > 0) {
       const { data: capas, error: cErr } = await tbl('aud_acciones_correctivas')
-        .select('id, hallazgo_id, causa_raiz, correccion_inmediata, accion_preventiva, comentario_accion, due_at, owner_user_id, tarea_id, creado_por')
+        .select('id, hallazgo_id, causa_raiz, correccion_inmediata, accion_preventiva, comentario_accion, due_at, cumplido_en, owner_user_id, tarea_id, creado_por')
         .in('hallazgo_id', hallazgoIds)
         .eq('org_id', orgId)
       if (cErr) throw cErr
@@ -177,7 +179,8 @@ export async function fetchBandeja(orgId: string): Promise<NcBandejaItem[]> {
         accion_preventiva: capa.accion_preventiva ?? null,
         // Solo la parte de fecha, sin convertir zona: detectado_en es medianoche UTC y en CDMX caería un día antes
         fecha_deteccion: h.detectado_en ? String(h.detectado_en).slice(0, 10) : null,
-        fecha_cumplimiento: capa.due_at ?? null,
+        fecha_limite: capa.due_at ?? null,
+        fecha_cumplimiento: capa.cumplido_en ?? null,
         realizo,
         verifico,
         estado: (h.estado as string) === 'CLOSED' ? 'cerrada' : 'abierta',
@@ -302,7 +305,7 @@ export function useAccionesCorrectivas(habilitado = true) {
         accion_preventiva: params.accion_preventiva || null,
         internal_status: 'PREPARING',
         comentario_accion: comentario,
-        due_at: finDelDiaCDMX(params.fecha_cumplimiento),
+        cumplido_en: params.fecha_cumplimiento || null,
         creado_por: profile.id,
       }).select('id').single()
       if (cErr) throw cErr
@@ -329,7 +332,7 @@ export function useAccionesCorrectivas(habilitado = true) {
         accion_preventiva: params.accion_preventiva || null,
         internal_status: 'PREPARING',
         comentario_accion: comentario,
-        due_at: finDelDiaCDMX(params.fecha_cumplimiento),
+        cumplido_en: params.fecha_cumplimiento || null,
         creado_por: profile.id,
       }).select('id').single()
       if (cErr) throw cErr
@@ -337,12 +340,13 @@ export function useAccionesCorrectivas(habilitado = true) {
     }
 
     // Actualizar CAPA existente (el trigger versiona automáticamente).
-    // due_at no se manda: la BD solo lo cambia desde la asignación.
+    // due_at no se manda: la BD solo lo cambia desde la asignación. cumplido_en lo captura el responsable.
     const { error: cErr } = await tbl('aud_acciones_correctivas').update({
       causa_raiz: params.causa || null,
       correccion_inmediata: params.accion_correctiva || null,
       accion_preventiva: params.accion_preventiva || null,
       comentario_accion: comentario,
+      cumplido_en: params.fecha_cumplimiento || null,
     }).eq('id', params.capaId).eq('org_id', profile.org_id)
     if (cErr) throw cErr
 

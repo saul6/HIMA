@@ -2034,6 +2034,8 @@ export interface AudAccionCorrectivaCAPA {
   respuesta_organizacion: string | null
   comentario_accion: string | null
   due_at: string | null
+  /** Día real en que el responsable cumplió la acción (YYYY-MM-DD) */
+  cumplido_en: string | null
   ready_for_external_at: string | null
   submitted_external_at: string | null
   closed_at: string | null
