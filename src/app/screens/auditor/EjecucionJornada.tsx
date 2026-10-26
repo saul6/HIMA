@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import {
   AlertCircle, Loader, RefreshCw,
@@ -20,7 +20,8 @@ import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { fechaCorta, formatoPct } from '@/lib/formato'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
-import { motion } from 'motion/react'
+import { motion, useAnimate, useReducedMotion } from 'motion/react'
+import { DUR, EASE_OUT } from '@/lib/motion'
 import { useEntradaPantalla } from './motionAuditor'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -118,7 +119,7 @@ function NavigatorPregunta({ pregunta, activa, auditoriaActiva, onClick }: {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left px-4 py-2.5 flex items-center gap-2.5 active:opacity-70 transition-opacity"
+      className="w-full text-left px-4 py-2.5 flex items-center gap-2.5 transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)]"
       style={{
         backgroundColor: activa ? 'var(--agro-success-fill)' : 'transparent',
         borderBottom: '1px solid var(--border)',
@@ -490,6 +491,27 @@ export function EjecucionJornada() {
 
   const ent = useEntradaPantalla(!cargando && !errorCarga && !!detalle)
 
+  // Fundido del panel de captura al cambiar de PREGUNTA (misma operación), con un desplazamiento mínimo
+  // en la dirección del cambio. Sin `key` nuevo ni `exit`: anima el contenedor ya montado. Al cambiar de
+  // operación la captura se vuelve a montar y entra con su propio fundido (CapturaPreguntaAuditoria).
+  const reducedMotion = useReducedMotion()
+  const [capturaScope, animarCaptura] = useAnimate()
+  const prevNavRef = useRef<{ q: string | null; idx: number; aud: string | null; cambioOpEn: number }>({
+    q: questionActiva, idx: -1, aud: auditoriaActiva, cambioOpEn: 0,
+  })
+  useLayoutEffect(() => {
+    const prev = prevNavRef.current
+    const idx = preguntasFiltradas.findIndex(p => p.question_id === questionActiva)
+    const cambioOp = prev.aud !== auditoriaActiva
+    prevNavRef.current = { q: questionActiva, idx, aud: auditoriaActiva, cambioOpEn: cambioOp ? performance.now() : prev.cambioOpEn }
+    if (reducedMotion || cambioOp || prev.q === questionActiva || prev.q === null || questionActiva === null) return
+    if (performance.now() - prev.cambioOpEn < 600) return // la captura recién se montó: ya entra con su fundido
+    const el = capturaScope.current
+    if (!el) return
+    const dir = prev.idx >= 0 && idx >= 0 && idx < prev.idx ? -1 : 1
+    animarCaptura(el, { opacity: [0, 1], x: [dir * 6, 0] }, { duration: DUR.rapido, ease: EASE_OUT })
+  }, [questionActiva, auditoriaActiva]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   if (cargando) {
@@ -674,12 +696,14 @@ export function EjecucionJornada() {
 
           {/* Captura */}
           {!preguntaNoEnCuestionario && preguntaIdActivo && auditoriaActiva && (
-            <CapturaPreguntaAuditoria
-              key={auditoriaActiva}
-              ref={capturaRef}
-              auditoriaId={auditoriaActiva}
-              preguntaId={preguntaIdActivo}
-            />
+            <div ref={capturaScope}>
+              <CapturaPreguntaAuditoria
+                key={auditoriaActiva}
+                ref={capturaRef}
+                auditoriaId={auditoriaActiva}
+                preguntaId={preguntaIdActivo}
+              />
+            </div>
           )}
 
           {/* Placeholder cuando no hay pregunta activa */}
