@@ -59,8 +59,13 @@ function getPageTitle(pathname: string, nombreModulo?: string): string {
   }
   if (pathname === '/auditor') return 'Mis organizaciones'
   if (pathname === '/auditor/agenda') return 'Agenda'
-  if (pathname.match(/^\/auditor\/auditoria\//)) return 'Ejecución'
-  if (pathname.match(/^\/auditor\/org\//)) return 'Empresa auditada'
+  if (pathname === '/auditor/instalacion/nueva') return 'Mis organizaciones'
+  if (pathname === '/auditor/jornada/nueva') return 'Auditar por bloque'
+  if (pathname.startsWith('/auditor/jornada/')) return 'Jornada'
+  if (pathname.startsWith('/auditor/instalacion/')) return 'Instalación'
+  if (pathname.match(/^\/auditor\/auditoria\/[^/]+\/azzule$/)) return 'Modo Azzule'
+  if (pathname.startsWith('/auditor/auditoria/')) return 'Auditoría'
+  if (pathname.startsWith('/auditor/org/')) return 'Empresa'
   return 'M.A.D.Y'
 }
 
