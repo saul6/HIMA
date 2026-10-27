@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { AlertTriangle, Undo2 } from 'lucide-react'
+import { AlertTriangle, FileDown, Undo2 } from 'lucide-react'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
@@ -11,6 +11,7 @@ import { nomina, type useNomCalculo, type useNomPrestamos } from '@/hooks/useNom
 import { avisarErrorNomina } from '@/lib/nomina/errores'
 import { etiquetaMetodo, fechaCorta, formatoMoneda, r2 } from '@/lib/nomina/formato'
 import { fechaHora } from '@/lib/formato'
+import { generarVoucherPDF } from '@/lib/pdf/m81/generarVoucherPDF'
 import { AjusteSheet, PagoSheet, ReversionSheet } from './SheetsDinero'
 import { CLASE_INPUT, MotivoSheet, leerNumero } from './ui'
 import type { CtxSemana } from './contexto'
@@ -119,6 +120,7 @@ export function CorteTab({ ctx, calculo, prestamos, ajustes, onIrActividad, onCa
   const { confirmar, confirmarElemento } = useConfirmar()
   const [sheet, setSheet] = useState<Sheet>(null)
   const [aprobando, setAprobando] = useState(false)
+  const [generandoPdf, setGenerandoPdf] = useState(false)
   // La llave de aprobación cambia solo cuando cambia el cálculo que se está viendo.
   const llaveAprobar = useRef<{ hash: string; llave: string } | null>(null)
 
@@ -164,6 +166,18 @@ export function CorteTab({ ctx, calculo, prestamos, ajustes, onIrActividad, onCa
       }
     } finally {
       setAprobando(false)
+    }
+  }
+
+  async function descargarVoucher(corteId: string) {
+    setGenerandoPdf(true)
+    try {
+      await generarVoucherPDF(corteId)
+      await calculo.recargar()
+    } catch (e) {
+      avisarErrorNomina(e, 'No se pudo generar el voucher')
+    } finally {
+      setGenerandoPdf(false)
     }
   }
 
@@ -273,6 +287,10 @@ export function CorteTab({ ctx, calculo, prestamos, ajustes, onIrActividad, onCa
         </div>
         <p className="text-xs text-muted-foreground">Aprobado el {fechaHora(corte.aprobado_en)}</p>
       </div>
+
+      <Boton variante="secundario" className="w-full" cargando={generandoPdf} disabled={offline} onClick={() => void descargarVoucher(corte.id)}>
+        <FileDown className="size-4" /> Voucher PDF
+      </Boton>
 
       {snap && <Lineas lineas={snap.lineas} moneda={moneda} />}
       {snap && (

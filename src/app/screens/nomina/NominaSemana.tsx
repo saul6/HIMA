@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
-import { ChevronLeft, ChevronRight, Users, BookOpen, History } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Users, BookOpen, History, Printer } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
@@ -8,6 +8,8 @@ import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { useNomSemana } from '@/hooks/useNomina'
+import { avisarErrorNomina } from '@/lib/nomina/errores'
+import { generarVouchersSemanaPDF } from '@/lib/pdf/m81/generarVoucherPDF'
 import { useConexion } from '@/hooks/useConexion'
 import { hoyMX } from '@/lib/fecha'
 import { formatoMoneda, lunesDe, rangoSemana, sumarDias } from '@/lib/nomina/formato'
@@ -40,6 +42,19 @@ export function NominaSemana() {
   const esEstaSemana = lunes === lunesDe(hoy)
 
   const trabajadores = useMemo(() => semana?.trabajadores ?? [], [semana])
+  const [imprimiendo, setImprimiendo] = useState(false)
+  const cortesAprobados = trabajadores.flatMap(t => (t.estado === 'aprobado' && t.corte_id ? [t.corte_id] : []))
+
+  async function imprimirVouchers() {
+    setImprimiendo(true)
+    try {
+      await generarVouchersSemanaPDF(cortesAprobados, lunes)
+    } catch (e) {
+      avisarErrorNomina(e, 'No se pudieron generar los vouchers')
+    } finally {
+      setImprimiendo(false)
+    }
+  }
 
   return (
     <div className="min-h-full pb-safe-nav">
@@ -163,6 +178,11 @@ export function NominaSemana() {
               )
             })}
           </div>
+        )}
+        {cortesAprobados.length > 0 && (
+          <Boton variante="secundario" className="w-full" cargando={imprimiendo} disabled={offline} onClick={() => void imprimirVouchers()}>
+            <Printer className="size-4" /> Imprimir vouchers de la semana
+          </Boton>
         )}
       </div>
     </div>
