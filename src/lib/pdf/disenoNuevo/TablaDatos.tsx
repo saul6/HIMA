@@ -62,6 +62,8 @@ const PAD = 4
 /** Títulos de columna que son texto libre: sus textos largos pasan a un bloque a lo ancho (ver TextoLargo). */
 const LARGO_POR_TITULO = /observ|descrip|comentari|otros|restos|resultado|ben[eé]fic|acci[oó]n|detalle|notas?|motivo|leyenda|correcci|hallazgo|causa|actividad|uso/i
 const esColumnaLarga = (c: ColumnaDato) => c.largo ?? LARGO_POR_TITULO.test(c.texto)
+/** Una columna que no se identifica como texto libre solo pasa a bloque cuando su texto es claramente un párrafo. */
+const UMBRAL_SIN_TITULO = 300
 
 /** Reparte `anchoTotal` según `ancho` relativo, respetando los mínimos (fechas y palabras del encabezado). */
 export function repartirAnchos(columnas: ColumnaDato[], anchoTotal: number, fuente: number, fuenteEnc: number): number[] {
@@ -176,11 +178,12 @@ export function TablaDatos({
   // Columnas `largo`: el texto que pasa del umbral sale de la celda (queda un resumen) y va debajo de su renglón.
   const largos: Record<number, { etiqueta: string; texto: string }[]> = {}
   const filas = filasEntrada.map((f, r) => {
-    if (!Array.isArray(f) || !columnas.some(esColumnaLarga)) return f
+    if (!Array.isArray(f)) return f
     return f.map((celda, i) => {
-      if (!columnas[i] || !esColumnaLarga(columnas[i]) || celda != null && typeof celda === 'object') return celda
+      if (!columnas[i] || celda != null && typeof celda === 'object') return celda
       const str = celda == null ? '' : String(celda)
-      if (!esTextoLargo(str, w[i] - 2 * PAD, fuente)) return celda
+      const largo = esColumnaLarga(columnas[i]) ? esTextoLargo(str, w[i] - 2 * PAD, fuente) : str.length > UMBRAL_SIN_TITULO
+      if (!largo) return celda
       ;(largos[r] ??= []).push({ etiqueta: columnas[i].texto, texto: str })
       return resumenTexto(str, w[i] - 2 * PAD, fuente)
     })
