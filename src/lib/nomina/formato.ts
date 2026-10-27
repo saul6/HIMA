@@ -15,6 +15,41 @@ export function formatoMoneda(monto: number | null | undefined, moneda = 'MXN'):
 export const r2 = (n: number) => parseFloat(n.toFixed(2))
 export const r4 = (n: number) => parseFloat(n.toFixed(4))
 
+/**
+ * Lector estricto de números tecleados. NaN si está vacío o es ambiguo/inválido.
+ * - Con coma y punto: las comas son miles en grupos de 3 ('1,250.50' sí; '1,25.50' no).
+ * - Solo comas: miles si son grupos de 3 ('1,250' = 1250); si es una coma con `decimalesComa`
+ *   dígitos es decimal ('1250,5' = 1250.5); otro caso, inválido.
+ * - Sin negativos, notación científica ni más de `maxDecimales`.
+ */
+function leerEstricto(texto: string, maxDecimales: number, decimalesComa: number[]): number {
+  const t = texto.replace(/[\s$]/g, '')
+  if (t === '' || /[^0-9.,]/.test(t)) return NaN
+  let normal: string
+  if (t.includes(',') && t.includes('.')) {
+    if (!/^\d{1,3}(,\d{3})+\.\d+$/.test(t)) return NaN
+    normal = t.replace(/,/g, '')
+  } else if (t.includes(',')) {
+    if (/^\d{1,3}(,\d{3})+$/.test(t)) normal = t.replace(/,/g, '')
+    else {
+      const m = /^(\d+),(\d+)$/.exec(t)
+      if (!m || !decimalesComa.includes(m[2].length)) return NaN
+      normal = `${m[1]}.${m[2]}`
+    }
+  } else {
+    if (!/^(\d+(\.\d+)?|\.\d+)$/.test(t)) return NaN
+    normal = t
+  }
+  const dec = normal.split('.')[1]
+  if (dec && dec.length > maxDecimales) return NaN
+  return Number(normal)
+}
+
+/** Monto en pesos: hasta 2 decimales. */
+export const leerMonto = (texto: string) => leerEstricto(texto, 2, [1, 2])
+/** Cantidad de una actividad: hasta 4 decimales. */
+export const leerCantidad = (texto: string) => leerEstricto(texto, 4, [1, 2, 4])
+
 function aUtc(f: string): Date {
   const [y, m, d] = f.split('-').map(Number)
   return new Date(Date.UTC(y, m - 1, d))
@@ -63,3 +98,8 @@ export const METODOS_PAGO: { valor: string; etiqueta: string }[] = [
 ]
 export const etiquetaMetodo = (m: string | null | undefined) =>
   METODOS_PAGO.find(x => x.valor === m)?.etiqueta ?? (m ?? '')
+
+
+export function etiquetaOrigenPrestamo(origen: string | null | undefined): string {
+  return origen === 'exceso_anticipo' ? 'Excedente de anticipo' : 'Préstamo'
+}

@@ -6,8 +6,8 @@ import {
 } from '@/hooks/useNomina'
 import { hoyMX } from '@/lib/fecha'
 import { avisarErrorNomina } from '@/lib/nomina/errores'
-import { r2, sumarDias } from '@/lib/nomina/formato'
-import { CampoSeleccion, CampoTexto, CampoTextoLargo, CuerpoSheet, leerNumero } from './ui'
+import { leerMonto, r2, sumarDias } from '@/lib/nomina/formato'
+import { CampoMonto, CampoSeleccion, CampoTexto, CampoTextoLargo, CuerpoSheet } from './ui'
 import type {
   ModalidadPago, NomActividadCatalogo, NomPerfilPago, NomTrabajador,
 } from '@/types/nomina.types'
@@ -121,7 +121,7 @@ export function PerfilPagoSheet({ trabajadorId, ultima, onClose, onGuardado }: {
   const [desde, setDesde] = useState(minimo && minimo > hoy ? minimo : hoy)
   const [motivo, setMotivo] = useState('')
   const [guardando, setGuardando] = useState(false)
-  const m = leerNumero(monto)
+  const m = leerMonto(monto)
   const pideMonto = modalidad !== 'ninguna'
 
   async function guardar() {
@@ -157,7 +157,7 @@ export function PerfilPagoSheet({ trabajadorId, ultima, onClose, onGuardado }: {
           requerido
           opciones={(Object.keys(ETIQUETA_MODALIDAD) as ModalidadPago[]).map(k => ({ valor: k, etiqueta: ETIQUETA_MODALIDAD[k] }))}
         />
-        {pideMonto && <CampoTexto etiqueta={etiquetaMonto} tipo="number" valor={monto} onChange={setMonto} requerido />}
+        {pideMonto && <CampoMonto etiqueta={etiquetaMonto} valor={monto} onChange={setMonto} requerido />}
         <CampoTexto etiqueta="Desde" tipo="date" valor={desde} onChange={setDesde} min={minimo} requerido />
         <CampoTextoLargo etiqueta="Motivo" valor={motivo} onChange={setMotivo} />
       </CuerpoSheet>
@@ -182,7 +182,7 @@ export function TarifaSheet({ trabajadorId, actividades, actividadId, quitar = f
   const [desde, setDesde] = useState(hoyMX())
   const [motivo, setMotivo] = useState('')
   const [guardando, setGuardando] = useState(false)
-  const m = leerNumero(monto)
+  const m = leerMonto(monto)
   const personal = trabajadorId !== null
 
   async function guardar() {
@@ -220,7 +220,7 @@ export function TarifaSheet({ trabajadorId, actividades, actividadId, quitar = f
           opciones={actividades.filter(a => a.modo === 'cantidad' && (!a.archivada || a.id === actividadId))
             .map(a => ({ valor: a.id, etiqueta: a.nombre }))}
         />
-        {!quitar && <CampoTexto etiqueta="Monto por unidad" tipo="number" valor={monto} onChange={setMonto} requerido />}
+        {!quitar && <CampoMonto etiqueta="Monto por unidad" valor={monto} onChange={setMonto} requerido />}
         <CampoTexto etiqueta={quitar ? 'Sin tarifa desde' : 'Vigente desde'} tipo="date" valor={desde} onChange={setDesde} requerido />
         <CampoTextoLargo etiqueta="Motivo" valor={motivo} onChange={setMotivo} />
         {personal && !quitar && (

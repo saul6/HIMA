@@ -4,8 +4,8 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { nomina } from '@/hooks/useNomina'
 import { hoyMX } from '@/lib/fecha'
 import { avisarErrorNomina } from '@/lib/nomina/errores'
-import { METODOS_PAGO, formatoMoneda, r2 } from '@/lib/nomina/formato'
-import { CampoSeleccion, CampoTexto, CampoTextoLargo, CuerpoSheet, leerNumero, useLlave } from './ui'
+import { METODOS_PAGO, formatoMoneda, leerMonto, r2 } from '@/lib/nomina/formato'
+import { CampoMonto, CampoSeleccion, CampoTexto, CampoTextoLargo, CuerpoSheet, useLlave } from './ui'
 import type { CtxSemana } from './contexto'
 import type { NomConcepto } from '@/types/nomina.types'
 
@@ -22,7 +22,7 @@ export function MovimientoSheet({ ctx, conceptos, onClose }: {
   const [motivo, setMotivo] = useState('')
   const [fecha, setFecha] = useState(ctx.max >= ctx.min ? ctx.max : ctx.min)
   const [guardando, setGuardando] = useState(false)
-  const m = leerNumero(monto)
+  const m = leerMonto(monto)
 
   async function guardar() {
     setGuardando(true)
@@ -57,7 +57,7 @@ export function MovimientoSheet({ ctx, conceptos, onClose }: {
           requerido
           opciones={disponibles.map(c => ({ valor: c.id, etiqueta: c.nombre }))}
         />
-        <CampoTexto etiqueta="Monto" tipo="number" valor={monto} onChange={setMonto} requerido />
+        <CampoMonto etiqueta="Monto" valor={monto} onChange={setMonto} requerido />
         <CampoTexto etiqueta="Fecha" tipo="date" valor={fecha} onChange={setFecha} min={ctx.min} max={ctx.max} requerido />
         <CampoTextoLargo etiqueta="Motivo" valor={motivo} onChange={setMotivo} requerido />
       </CuerpoSheet>
@@ -73,7 +73,7 @@ export function AnticipoSheet({ ctx, onClose }: { ctx: CtxSemana; onClose: () =>
   const [fechaPago, setFechaPago] = useState(hoyMX())
   const [referencia, setReferencia] = useState('')
   const [guardando, setGuardando] = useState(false)
-  const m = leerNumero(monto)
+  const m = leerMonto(monto)
 
   async function guardar() {
     setGuardando(true)
@@ -96,7 +96,7 @@ export function AnticipoSheet({ ctx, onClose }: { ctx: CtxSemana; onClose: () =>
   return (
     <BottomSheet open onClose={onClose} height="85%" title="Registrar anticipo">
       <CuerpoSheet textoGuardar="Registrar anticipo" onGuardar={guardar} cargando={guardando} deshabilitado={!(m > 0) || !fechaPago}>
-        <CampoTexto etiqueta="Monto" tipo="number" valor={monto} onChange={setMonto} requerido />
+        <CampoMonto etiqueta="Monto" valor={monto} onChange={setMonto} requerido />
         <CampoSeleccion etiqueta="Método" valor={metodo} onChange={setMetodo} opciones={METODOS_PAGO} requerido />
         <CampoTexto etiqueta="Fecha de pago" tipo="date" valor={fechaPago} onChange={setFechaPago} max={hoyMX()} requerido />
         <CampoTexto etiqueta="Referencia" valor={referencia} onChange={setReferencia} maxLength={80} />
@@ -118,7 +118,7 @@ export function PagoSheet({ ctx, corteId, pendiente, onClose }: {
   const [fechaPago, setFechaPago] = useState(hoyMX())
   const [referencia, setReferencia] = useState('')
   const [guardando, setGuardando] = useState(false)
-  const m = leerNumero(monto)
+  const m = leerMonto(monto)
   const excede = m > pendiente + 0.001
 
   async function guardar() {
@@ -142,9 +142,8 @@ export function PagoSheet({ ctx, corteId, pendiente, onClose }: {
     <BottomSheet open onClose={onClose} height="85%" title="Registrar pago">
       <CuerpoSheet textoGuardar="Registrar pago" onGuardar={guardar} cargando={guardando} deshabilitado={!(m > 0) || excede || !fechaPago}>
         <p className="text-sm text-muted-foreground">Pendiente: {formatoMoneda(pendiente, ctx.moneda)}</p>
-        <CampoTexto
+        <CampoMonto
           etiqueta="Monto"
-          tipo="number"
           valor={monto}
           onChange={setMonto}
           requerido
@@ -169,7 +168,7 @@ export function ReversionSheet({ ctx, pagoId, maximo, onClose }: {
   const [monto, setMonto] = useState(String(maximo))
   const [motivo, setMotivo] = useState('')
   const [guardando, setGuardando] = useState(false)
-  const m = leerNumero(monto)
+  const m = leerMonto(monto)
   const excede = m > maximo + 0.001
 
   async function guardar() {
@@ -191,9 +190,8 @@ export function ReversionSheet({ ctx, pagoId, maximo, onClose }: {
     <BottomSheet open onClose={onClose} height="85%" title="Revertir pago">
       <CuerpoSheet textoGuardar="Revertir" onGuardar={guardar} cargando={guardando} deshabilitado={!(m > 0) || excede || motivo.trim().length < 3}>
         <p className="text-sm text-muted-foreground">Máximo a revertir: {formatoMoneda(maximo, ctx.moneda)}</p>
-        <CampoTexto
+        <CampoMonto
           etiqueta="Monto"
-          tipo="number"
           valor={monto}
           onChange={setMonto}
           requerido
@@ -212,7 +210,7 @@ export function AjusteSheet({ ctx, corteId, onClose }: { ctx: CtxSemana; corteId
   const [monto, setMonto] = useState('')
   const [motivo, setMotivo] = useState('')
   const [guardando, setGuardando] = useState(false)
-  const m = leerNumero(monto)
+  const m = leerMonto(monto)
 
   async function guardar() {
     setGuardando(true)
@@ -243,7 +241,7 @@ export function AjusteSheet({ ctx, corteId, onClose }: { ctx: CtxSemana; corteId
           ]}
           requerido
         />
-        <CampoTexto etiqueta="Monto" tipo="number" valor={monto} onChange={setMonto} requerido />
+        <CampoMonto etiqueta="Monto" valor={monto} onChange={setMonto} requerido />
         <CampoTextoLargo etiqueta="Motivo (mínimo 5 caracteres)" valor={motivo} onChange={setMotivo} requerido />
       </CuerpoSheet>
     </BottomSheet>

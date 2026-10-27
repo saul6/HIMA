@@ -16,7 +16,7 @@ import { useConexion } from '@/hooks/useConexion'
 import { hoyMX } from '@/lib/fecha'
 import { avisarErrorNomina } from '@/lib/nomina/errores'
 import { fechaCorta, formatoMoneda } from '@/lib/nomina/formato'
-import { CampoSeleccion, CampoTexto, CuerpoSheet, leerNumero } from './ui'
+import { CampoSeleccion, CampoTexto, CuerpoSheet } from './ui'
 import { TarifaSheet } from './SheetsCatalogos'
 import type { ModoActividad, NomActividadCatalogo, NomConcepto, NomTarifa, TipoConcepto } from '@/types/nomina.types'
 
@@ -209,7 +209,7 @@ function ActividadCatalogoSheet({ item, onClose, onGuardado }: {
   async function enviar(sobre: { modo: ModoActividad; archivada: boolean }) {
     setGuardando(true)
     try {
-      const n = leerNumero(orden)
+      const n = Number(orden.trim().replace(',', '.'))
       await nomina.guardarActividadCatalogo({
         id: item?.id ?? null,
         nombre: nombre.trim(),

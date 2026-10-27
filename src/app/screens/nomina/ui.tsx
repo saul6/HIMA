@@ -4,18 +4,12 @@ import { Campo } from '@/app/components/ui-mady/Campo'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { useConexion } from '@/hooks/useConexion'
 import { avisarErrorNomina } from '@/lib/nomina/errores'
+import { formatoMoneda, leerCantidad, leerMonto } from '@/lib/nomina/formato'
 
 export const CLASE_INPUT =
   'w-full h-11 px-3 rounded-xl border border-border-control bg-input-background text-sm disabled:bg-muted disabled:text-muted-foreground'
 export const CLASE_TEXTAREA =
   'w-full px-3 py-2.5 rounded-xl border border-border-control bg-input-background text-sm resize-none'
-
-/** Número tecleado ('1,250.50' no; '1250,5' sí). NaN si está vacío o inválido. */
-export function leerNumero(texto: string): number {
-  const t = texto.trim().replace(',', '.')
-  if (t === '') return NaN
-  return Number(t)
-}
 
 /** Llave de idempotencia: se crea al montar el formulario, se reutiliza en reintentos y se renueva tras guardar. */
 export function useLlave() {
@@ -58,6 +52,40 @@ export function CampoTexto(props: {
         />
       )}
     </Campo>
+  )
+}
+
+/** Campo de dinero (o cantidad): valida con el lector estricto y muestra lo que se registrará. */
+export function CampoMonto(props: {
+  etiqueta: string
+  valor: string
+  onChange: (v: string) => void
+  cantidad?: boolean
+  requerido?: boolean
+  opcional?: boolean
+  moneda?: string
+  error?: ReactNode
+  placeholder?: string
+}) {
+  const vacio = props.valor.trim() === ''
+  const n = props.cantidad ? leerCantidad(props.valor) : leerMonto(props.valor)
+  const invalido = !vacio && Number.isNaN(n)
+  const aviso = props.cantidad ? 'Escribe la cantidad como 2 o 2.5' : 'Escribe el monto como 1250 o 1,250.50'
+  const error = invalido ? aviso : props.error
+  const ayuda = !vacio && !invalido && !error
+    ? `Se registrará: ${props.cantidad ? n : formatoMoneda(n, props.moneda)}`
+    : undefined
+  return (
+    <CampoTexto
+      etiqueta={props.etiqueta}
+      valor={props.valor}
+      onChange={props.onChange}
+      inputMode="decimal"
+      requerido={props.requerido}
+      placeholder={props.placeholder}
+      error={error}
+      ayuda={ayuda}
+    />
   )
 }
 

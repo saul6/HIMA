@@ -5,8 +5,8 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { nomina } from '@/hooks/useNomina'
 import { avisarErrorNomina } from '@/lib/nomina/errores'
-import { r2, r4 } from '@/lib/nomina/formato'
-import { CLASE_INPUT, CampoSeleccion, CampoTexto, CampoTextoLargo, CuerpoSheet, leerNumero, useLlave } from './ui'
+import { leerCantidad, leerMonto, r2, r4 } from '@/lib/nomina/formato'
+import { CLASE_INPUT, CampoMonto, CampoSeleccion, CampoTexto, CampoTextoLargo, CuerpoSheet, useLlave } from './ui'
 import type { CtxSemana } from './contexto'
 import type { NomActividad, NomActividadCatalogo } from '@/types/nomina.types'
 
@@ -68,8 +68,8 @@ export function ActividadSheet({ ctx, catalogo, ranchos, editar, inicial, onClos
     return [...porCat.entries()].sort((x, y) => x[0].localeCompare(y[0], 'es'))
   }, [catalogo, busqueda, actividadId])
 
-  const cant = leerNumero(cantidad)
-  const imp = leerNumero(importe)
+  const cant = leerCantidad(cantidad)
+  const imp = leerMonto(importe)
   const incompleto =
     !seleccionada ||
     (modo !== 'importe_pactado' && !(cant > 0)) ||
@@ -170,9 +170,9 @@ export function ActividadSheet({ ctx, catalogo, ranchos, editar, inicial, onClos
         </div>
 
         {seleccionada && modo !== 'importe_pactado' && (
-          <CampoTexto
+          <CampoMonto
+            cantidad
             etiqueta={`Cantidad${seleccionada.unidad ? ` (${seleccionada.unidad})` : ''}`}
-            tipo="number"
             valor={cantidad}
             onChange={setCantidad}
             requerido
@@ -188,9 +188,8 @@ export function ActividadSheet({ ctx, catalogo, ranchos, editar, inicial, onClos
 
         {pideImporte && (
           <>
-            <CampoTexto
+            <CampoMonto
               etiqueta={modo === 'importe_pactado' ? 'Importe pactado' : 'Importe especial (total del evento)'}
-              tipo="number"
               valor={importe}
               onChange={setImporte}
               requerido

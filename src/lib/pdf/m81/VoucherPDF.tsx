@@ -7,7 +7,7 @@ import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 import { PC } from '@/lib/pdf/components/tokens'
-import { etiquetaMetodo, formatoMoneda } from '@/lib/nomina/formato'
+import { etiquetaMetodo, etiquetaOrigenPrestamo, formatoMoneda } from '@/lib/nomina/formato'
 import type { LineaCorte, NomPagoFila, VoucherData } from '@/types/nomina.types'
 
 const ANCHO = ANCHO_UTIL.portrait
@@ -129,7 +129,7 @@ export function VoucherPagina({ voucher: v }: VoucherPDFProps) {
             columnas={[{ texto: 'Origen', ancho: 400, align: 'left' }, { texto: 'Saldo', ancho: 100, align: 'right' }]}
             anchoTotal={ANCHO}
             filas={v.prestamos_activos.map((p) => [
-              p.origen,
+              etiquetaOrigenPrestamo(p.origen),
               { texto: formatoMoneda(p.saldo, moneda), color: PC.negativo, negrita: true },
             ])}
           />

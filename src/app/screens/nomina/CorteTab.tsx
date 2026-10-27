@@ -9,11 +9,11 @@ import { useConfirmar } from '@/app/components/ui-mady/ConfirmarSheet'
 import { useConexion } from '@/hooks/useConexion'
 import { nomina, type useNomCalculo, type useNomPrestamos } from '@/hooks/useNomina'
 import { avisarErrorNomina } from '@/lib/nomina/errores'
-import { etiquetaMetodo, fechaCorta, formatoMoneda, r2 } from '@/lib/nomina/formato'
+import { etiquetaMetodo, etiquetaOrigenPrestamo, fechaCorta, formatoMoneda, leerMonto, r2 } from '@/lib/nomina/formato'
 import { fechaHora } from '@/lib/formato'
 import { generarVoucherPDF } from '@/lib/pdf/m81/generarVoucherPDF'
 import { AjusteSheet, PagoSheet, ReversionSheet } from './SheetsDinero'
-import { CLASE_INPUT, MotivoSheet, leerNumero } from './ui'
+import { CLASE_INPUT, MotivoSheet } from './ui'
 import type { CtxSemana } from './contexto'
 import type {
   CalculoCorte, CorteAprobado, LineaCorte, NomAjuste, NomPagoFila, OrigenTarifa, PagoResumen, TipoLinea,
@@ -276,7 +276,13 @@ export function CorteTab({ ctx, calculo, prestamos, ajustes, onIrActividad, onCa
   const noRevertido = (p: NomPagoFila) =>
     r2(Number(p.monto) - pagos.filter(x => x.tipo === 'reversion' && x.revierte_pago_id === p.id).reduce((s, x) => s + Number(x.monto), 0))
   const ajustesCorte = ajustes.filter(a => a.corte_origen_id === corte.id)
-  const sinPagos = !pagos.some(p => p.tipo === 'pago' || p.tipo === 'anticipo')
+  // Misma regla que el servidor: solo impide anular el dinero pagado al corte sin revertir.
+  const suma = (xs: NomPagoFila[]) => r2(xs.reduce((s, x) => s + Number(x.monto), 0))
+  const revertidoDe = (tipo: 'pago' | 'anticipo') =>
+    suma(pagos.filter(x => x.tipo === 'reversion' && pagos.some(p => p.id === x.revierte_pago_id && p.tipo === tipo)))
+  const pagadoNeto = r2(suma(pagos.filter(p => p.tipo === 'pago')) - revertidoDe('pago'))
+  const anticiposNeto = r2(suma(pagos.filter(p => p.tipo === 'anticipo')) - revertidoDe('anticipo'))
+  const sePuedeAnular = pagadoNeto <= 0
 
   return (
     <div className="space-y-5">
@@ -381,7 +387,7 @@ export function CorteTab({ ctx, calculo, prestamos, ajustes, onIrActividad, onCa
 
       <PrestamosSeccion ctx={ctx} prestamos={prestamos} onCambio={onCambio} />
 
-      {sinPagos ? (
+      {sePuedeAnular ? (
         <Boton variante="secundario" className="w-full" disabled={offline} onClick={() => setSheet({ tipo: 'anular-corte', corteId: corte.id })}>
           Anular corte
         </Boton>
@@ -395,7 +401,11 @@ export function CorteTab({ ctx, calculo, prestamos, ajustes, onIrActividad, onCa
       {sheet?.tipo === 'anular-corte' && (
         <MotivoSheet
           titulo="Anular corte"
-          descripcion="El corte volverá a borrador y podrás editar la semana."
+          descripcion={[
+            'El corte volverá a borrador y podrás editar la semana.',
+            anticiposNeto > 0 ? `Los anticipos de la semana (total ${formatoMoneda(anticiposNeto, moneda)}) volverán a quedar pendientes de aplicar.` : null,
+            (snap?.exceso_anticipo ?? 0) > 0 ? 'El préstamo por excedente se cancelará.' : null,
+          ].filter(Boolean).join(' ')}
           textoConfirmar="Anular corte"
           onClose={() => setSheet(null)}
           onConfirmar={async motivo => {
@@ -450,7 +460,8 @@ function FilaPrestamo({ prestamo, moneda, deshabilitado, onGuardado }: {
 }) {
   const [cuota, setCuota] = useState(prestamo.cuota_semanal != null ? String(prestamo.cuota_semanal) : '')
   const [guardando, setGuardando] = useState(false)
-  const valor = leerNumero(cuota)
+  const valor = leerMonto(cuota)
+  const cuotaInvalida = cuota.trim() !== '' && !(valor > 0)
   const cambio = (cuota.trim() === '' ? null : valor) !== (prestamo.cuota_semanal ?? null)
 
   async function guardar() {
@@ -469,7 +480,7 @@ function FilaPrestamo({ prestamo, moneda, deshabilitado, onGuardado }: {
   return (
     <div className="rounded-xl border border-border bg-card p-3 space-y-2">
       <div className="flex justify-between text-sm">
-        <span className="text-muted-foreground">Saldo</span>
+        <span className="text-muted-foreground">{etiquetaOrigenPrestamo(prestamo.origen)} · Saldo</span>
         <span className="font-semibold tabular-nums text-agro-danger-text">{formatoMoneda(prestamo.saldo, moneda)}</span>
       </div>
       <div className="flex items-end gap-2">
@@ -483,12 +494,18 @@ function FilaPrestamo({ prestamo, moneda, deshabilitado, onGuardado }: {
             onChange={e => setCuota(e.target.value)}
             className={CLASE_INPUT}
           />
+          {cuotaInvalida && (
+            <p role="alert" className="text-small text-agro-danger-text">Escribe el monto como 1250 o 1,250.50</p>
+          )}
+          {cuota.trim() !== '' && !cuotaInvalida && (
+            <p className="text-small text-muted-foreground">Se registrará: {formatoMoneda(valor, moneda)}</p>
+          )}
         </div>
         <Boton
           tamano="md"
           variante="secundario"
           cargando={guardando}
-          disabled={deshabilitado || !cambio || (cuota.trim() !== '' && !(valor > 0))}
+          disabled={deshabilitado || !cambio || cuotaInvalida}
           onClick={() => void guardar()}
         >
           Guardar
