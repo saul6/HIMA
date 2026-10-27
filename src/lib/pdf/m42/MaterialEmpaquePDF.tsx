@@ -6,7 +6,7 @@ import { TablaDatos, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
-import { partirParaAncho } from '@/lib/pdf/disenoNuevo/medirTexto'
+import { TextoLargo } from '@/lib/pdf/disenoNuevo/TextoLargo'
 import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 
@@ -45,7 +45,7 @@ const sn = (v: boolean) => v ? 'Si' : 'No'
 const nn = (v: number | null | undefined) => v != null ? String(v) : '—'
 
 const COLS: ColumnaDato[] = [
-  { texto: 'Descripción del material', ancho: 180 },
+  { texto: 'Descripción del material', ancho: 180, largo: true },
   { texto: 'Entrada', ancho: 60, align: 'center' },
   { texto: 'Salida', ancho: 60, align: 'center' },
   { texto: 'Total', ancho: 60, align: 'center' },
@@ -59,7 +59,6 @@ function ChecklistBlock({ d, tipo }: { d: M42MovimientoPDF; tipo: 'mat' | 'tr' }
   const limpio  = tipo === 'mat' ? d.mat_limpio     : d.tr_limpio
   const olores  = tipo === 'mat' ? d.mat_libre_olores : d.tr_libre_olores
   const plagas  = tipo === 'mat' ? d.mat_libre_plagas : d.tr_libre_plagas
-  const otros   = tipo === 'mat' ? d.mat_otros      : d.tr_otros
   const titulo  = tipo === 'mat' ? 'Condición del material' : 'Condición del transporte'
 
   return (
@@ -77,11 +76,6 @@ function ChecklistBlock({ d, tipo }: { d: M42MovimientoPDF; tipo: 'mat' | 'tr' }
           <Text style={{ fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: val ? PC.m13Navy : PC.negativo }}>{sn(val)}</Text>
         </View>
       ))}
-      {otros ? (
-        <View style={{ marginTop: 3 }}>
-          <Text style={{ fontSize: 7, color: PC.textSub }} hyphenationCallback={partirParaAncho(330, 7)}>Otros: {otros}</Text>
-        </View>
-      ) : null}
     </View>
   )
 }
@@ -119,6 +113,9 @@ export function MaterialEmpaquePDF({
           <View style={{ flex: 1, marginRight: 16 }}><ChecklistBlock d={d} tipo="mat" /></View>
           <View style={{ flex: 1 }}><ChecklistBlock d={d} tipo="tr" /></View>
         </View>
+        {/* "Otros" de cada condición: texto libre largo, a todo el ancho y partible (kit TextoLargo) */}
+        {d.mat_otros ? <TextoLargo etiqueta="Condición del material — Otros" texto={d.mat_otros} /> : null}
+        {d.tr_otros ? <TextoLargo etiqueta="Condición del transporte — Otros" texto={d.tr_otros} /> : null}
 
         {d.observaciones ? <FranjaDatos campos={[{ etiqueta: 'Observaciones', valor: d.observaciones }]} /> : null}
 
