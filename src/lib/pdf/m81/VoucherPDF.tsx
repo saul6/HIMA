@@ -57,8 +57,7 @@ function firmaVoucherAParaPdf(f: FirmaVoucher | null | undefined): FirmaParaPdf 
 /** Caption con el nombre del firmante y, si aplica, cómo se capturó (la imagen no lleva nombre). */
 function captionFirma(base: string, f: FirmaVoucher | null | undefined): string {
   if (!f || !f.firma_png) return base
-  return [base, f.firmante, f.metodo === 'dispositivo' ? 'Firma capturada en dispositivo' : null].filter(Boolean).join('
-')
+  return [base, f.firmante, f.metodo === 'dispositivo' ? 'Firma capturada en dispositivo' : null].filter(Boolean).join('\n')
 }
 
 export interface VoucherPDFProps {
