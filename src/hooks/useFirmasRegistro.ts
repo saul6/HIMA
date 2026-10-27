@@ -73,7 +73,7 @@ export function esFirmaUnica(reg: FirmasDeRegistro | undefined | null): boolean 
 
 // ── Helpers de formateo ───────────────────────────────────────────────────────
 
-function formatFirmaFecha(isoStr: string): string {
+export function formatFirmaFecha(isoStr: string): string {
   try {
     const d = new Date(isoStr)
     const dia = String(d.getDate()).padStart(2, '0')

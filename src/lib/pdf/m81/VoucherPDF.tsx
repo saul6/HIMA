@@ -8,7 +8,8 @@ import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 import { PC } from '@/lib/pdf/components/tokens'
 import { etiquetaMetodo, etiquetaOrigenPrestamo, formatoMoneda } from '@/lib/nomina/formato'
-import type { LineaCorte, NomPagoFila, VoucherData } from '@/types/nomina.types'
+import { formatFirmaFecha, type FirmaParaPdf } from '@/hooks/useFirmasRegistro'
+import type { FirmaVoucher, LineaCorte, NomPagoFila, VoucherData } from '@/types/nomina.types'
 
 const ANCHO = ANCHO_UTIL.portrait
 
@@ -39,6 +40,25 @@ function filasLineas(lineas: LineaCorte[], moneda: string, signo: '' | '-') {
     [l.formula, l.origen_tarifa ? ORIGEN[l.origen_tarifa] : null].filter(Boolean).join(' - '),
     `${signo}${formatoMoneda(Math.abs(l.monto), moneda)}`,
   ])
+}
+
+/** Firma del voucher al formato de PdfFirmas; sin firma digital, la línea queda en blanco. */
+function firmaVoucherAParaPdf(f: FirmaVoucher | null | undefined): FirmaParaPdf | null {
+  if (!f || !f.firma_png) return null
+  return {
+    png: f.firma_png,
+    firmante: f.firmante,
+    fecha: formatFirmaFecha(f.firmado_en),
+    sello: (f.sello ?? '').slice(0, 12),
+    estado: 'vigente',
+  }
+}
+
+/** Caption con el nombre del firmante y, si aplica, cómo se capturó (la imagen no lleva nombre). */
+function captionFirma(base: string, f: FirmaVoucher | null | undefined): string {
+  if (!f || !f.firma_png) return base
+  return [base, f.firmante, f.metodo === 'dispositivo' ? 'Firma capturada en dispositivo' : null].filter(Boolean).join('
+')
 }
 
 export interface VoucherPDFProps {
@@ -152,8 +172,8 @@ export function VoucherPagina({ voucher: v }: VoucherPDFProps) {
       <Seccion titulo="FIRMAS">
         <PdfFirmas
           signatures={[
-            { label: '', nombre: '', caption: 'Entregó - Firma', firma: null },
-            { label: '', nombre: '', caption: 'Recibí - Firma', firma: null },
+            { label: '', nombre: '', caption: captionFirma('Entregó - Firma', v.firmas?.entrego), firma: firmaVoucherAParaPdf(v.firmas?.entrego) },
+            { label: '', nombre: '', caption: captionFirma('Recibí - Firma', v.firmas?.recibio), firma: firmaVoucherAParaPdf(v.firmas?.recibio) },
           ]}
         />
       </Seccion>
