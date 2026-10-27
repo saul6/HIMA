@@ -76,7 +76,7 @@ export function RecepcionFrutaAlmacenPDF({
 
   return (
     <Document
-      title={`Recepcion Diaria de Fruta ${fechaLabel}`}
+      title={`Recepción Diaria de Fruta ${fechaLabel}`}
       author="M.A.D.Y."
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"

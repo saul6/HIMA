@@ -591,7 +591,7 @@ export function AuditoriaPagina({
       {/* ── Nota final / aviso legal ─────────────────────────────────────── */}
       <View style={{ marginTop: 20, borderTopWidth: 1, borderTopColor: PC.border, borderTopStyle: 'solid', paddingTop: 6 }}>
         <Text style={{ fontSize: 6, color: PC.textSub, textAlign: 'center' }} hyphenationCallback={partirPalabraLarga}>
-          {notaFinal ?? 'INFORME INTERNO DE PREPARACION. M.A.D.Y. no certifica, no sustituye al auditor autorizado ni al organismo de certificacion.'}
+          {notaFinal ?? 'INFORME INTERNO DE PREPARACIÓN. M.A.D.Y. no certifica, no sustituye al auditor autorizado ni al organismo de certificación.'}
         </Text>
       </View>
 

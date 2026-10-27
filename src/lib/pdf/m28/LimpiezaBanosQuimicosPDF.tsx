@@ -72,7 +72,7 @@ export function LimpiezaBanosQuimicosPagina({
 export function LimpiezaBanosQuimicosPDF(props: LimpiezaBanosQuimicosPaginaProps) {
   return (
     <Document
-      title={`Limpieza Banos Quimicos ${mesNombre(props.anio, props.mes)}`}
+      title={`Limpieza Baños Químicos ${mesNombre(props.anio, props.mes)}`}
       author="M.A.D.Y."
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"

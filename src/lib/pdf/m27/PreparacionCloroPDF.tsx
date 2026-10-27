@@ -126,11 +126,11 @@ export function PreparacionCloroPagina({
 export function PreparacionCloroPDF(props: PreparacionCloroPaginaProps) {
   return (
     <Document
-      title={`Preparacion de Cloro ${props.rancho} ${props.desde}`}
+      title={`Preparación de Cloro ${props.rancho} ${props.desde}`}
       author="M.A.D.Y."
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
-      subject={`Preparacion de Cloro a 200 ppm — ${codigoFormato('F-FRUS-SAN-03', props.codigoClave)}`}
+      subject={`Preparación de Cloro a 200 ppm — ${codigoFormato('F-FRUS-SAN-03', props.codigoClave)}`}
       keywords="MADY, inocuidad, cloro, preparacion, desinfeccion"
     >
       <PreparacionCloroPagina {...props} />

@@ -69,7 +69,7 @@ export function LimpiezaRecepcionPagina({
 
 export function LimpiezaRecepcionPDF(props: LimpiezaRecepcionPaginaProps) {
   return (
-    <Document title={`Limpieza Recepcion ${mesNombre(props.anio, props.mes)}`} author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject={`Bitácora de Limpieza del Área de Recepción — ${props.instalacion}`} keywords="MADY, inocuidad, limpieza, recepcion">
+    <Document title={`Limpieza Recepción ${mesNombre(props.anio, props.mes)}`} author="M.A.D.Y." creator="M.A.D.Y. Inocuidad Inteligente" producer="M.A.D.Y. Inocuidad Inteligente" subject={`Bitácora de Limpieza del Área de Recepción — ${props.instalacion}`} keywords="MADY, inocuidad, limpieza, recepcion">
       <LimpiezaRecepcionPagina {...props} />
     </Document>
   )

@@ -130,7 +130,7 @@ export function InventarioQuimicosPagina({
 export function InventarioQuimicosPDF(props: InventarioQuimicosProps) {
   return (
     <Document
-      title={`Inventario Quimicos ${props.quimicoNombre}`}
+      title={`Inventario Químicos ${props.quimicoNombre}`}
       author="M.A.D.Y."
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"

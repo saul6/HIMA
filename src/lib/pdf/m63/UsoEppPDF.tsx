@@ -40,7 +40,7 @@ function okLabel(val: boolean): string {
   return val ? 'Bueno' : 'Dañado'
 }
 
-// Bueno normal; Danado en rojo suave (el texto no cambia)
+// Bueno normal; Dañado en rojo suave (el texto no cambia)
 const okCelda = (v: boolean) => (v ? okLabel(v) : { texto: okLabel(v), color: PC.negativo, negrita: true })
 
 // Anchos relativos de columna (la tabla se escala al ancho útil de la hoja)

@@ -153,7 +153,7 @@ export function CosechaLiberacionPagina({
 export function CosechaLiberacionPDF(props: CosechaLiberacionPaginaProps) {
   return (
     <Document
-      title={`Cosecha y Liberacion ${props.fecha}`}
+      title={`Cosecha y Liberación ${props.fecha}`}
       author="M.A.D.Y."
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
@@ -172,7 +172,7 @@ export function CosechaLiberacionConsolidadoPDF({
 }: CosechaLiberacionConsolidadoPDFProps) {
   return (
     <Document
-      title={`Cosecha y Liberacion Consolidado ${ranchoNombre} ${desde} ${hasta}`}
+      title={`Cosecha y Liberación Consolidado ${ranchoNombre} ${desde} ${hasta}`}
       author="M.A.D.Y."
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"

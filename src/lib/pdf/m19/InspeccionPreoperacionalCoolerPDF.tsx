@@ -89,7 +89,7 @@ export function InspeccionPreoperacionalCoolerPagina({
 export function InspeccionPreoperacionalCoolerPDF(props: InspeccionPreoperacionalCoolerPaginaProps) {
   return (
     <Document
-      title={`Inspeccion Pre-operacional ${props.mesLabel}`}
+      title={`Inspección Pre-operacional ${props.mesLabel}`}
       author="M.A.D.Y."
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
@@ -108,7 +108,7 @@ export function InspeccionPreoperacionalCoolerConsolidadoPDF({
 }: InspeccionPreoperacionalCoolerConsolidadoPDFProps) {
   return (
     <Document
-      title={`Inspeccion Pre-operacional Consolidada ${instalacionNombre} ${desde} ${hasta}`}
+      title={`Inspección Pre-operacional Consolidada ${instalacionNombre} ${desde} ${hasta}`}
       author="M.A.D.Y."
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"

@@ -275,14 +275,14 @@ export async function generarAuditorReportePDF({ auditoria }: GenerarParams): Pr
   const ranchoNombre = esInstalacion
     ? (auditoria.instalacion_nombre ?? '—')
     : (auditoria.rancho_nombre ?? '—')
-  const terminoSitio = esInstalacion ? 'Instalacion' : 'Rancho'
+  const terminoSitio = esInstalacion ? 'Instalación' : 'Rancho'
 
   // 8. Una AuditoriaPaginaProps por módulo
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pages = modulosApl.map((am: any) => {
     const mid: string = am.modulo_norma_id
     const modNorma = am.aud_modulos_norma
-    const titulo = `Modulo ${modNorma?.numero ?? '?'} - ${modNorma?.nombre ?? '—'}`
+    const titulo = `Módulo ${modNorma?.numero ?? '?'} - ${modNorma?.nombre ?? '—'}`
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const bloques: any[] = allBloques.filter((b: any) => b.modulo_norma_id === mid)

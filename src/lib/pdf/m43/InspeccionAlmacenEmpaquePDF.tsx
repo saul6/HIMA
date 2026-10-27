@@ -193,7 +193,7 @@ export function InspeccionAlmacenEmpaquePagina({
 export function InspeccionAlmacenEmpaquePDF(props: InspeccionAlmacenEmpaquePaginaProps) {
   return (
     <Document
-      title={`Inspeccion Almacen Empaque — ${props.instalacion} ${props.mesLabel}`}
+      title={`Inspección Almacén Empaque — ${props.instalacion} ${props.mesLabel}`}
       author="M.A.D.Y."
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
@@ -208,7 +208,7 @@ export function InspeccionAlmacenEmpaqueConsolidadoPDF({
 }: InspeccionAlmacenEmpaqueConsolidadoPDFProps) {
   return (
     <Document
-      title={`Inspeccion Almacen Empaque — ${instalacionNombre} ${desde} a ${hasta}`}
+      title={`Inspección Almacén Empaque — ${instalacionNombre} ${desde} a ${hasta}`}
       author="M.A.D.Y."
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"

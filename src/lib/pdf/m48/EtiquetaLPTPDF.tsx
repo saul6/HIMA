@@ -137,7 +137,7 @@ export function EtiquetaLPTPDF({ d }: { d: EtiquetaLPTData }) {
             </View>
             <View style={s.cell}>
               <Text style={s.cLabel}>PRESENTACIÓN</Text>
-              <Text style={s.cValSm} hyphenationCallback={partirParaAncho(80, 6.5, true)}>{d.presentacion ?? 'Caja / segun cliente'}</Text>
+              <Text style={s.cValSm} hyphenationCallback={partirParaAncho(80, 6.5, true)}>{d.presentacion ?? 'Caja / según cliente'}</Text>
             </View>
             <View style={s.cellLast}>
               <Text style={s.cLabel}>TURNO</Text>

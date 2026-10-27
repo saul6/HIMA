@@ -95,7 +95,7 @@ export function VerificacionInsumosPagina({
 export function VerificacionInsumosPDF(props: VerificacionInsumosPaginaProps) {
   return (
     <Document
-      title={`Verificacion de Insumos ${props.mesLabel}`}
+      title={`Verificación de Insumos ${props.mesLabel}`}
       author="M.A.D.Y."
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
@@ -114,7 +114,7 @@ export function VerificacionInsumosConsolidadoPDF({
 }: VerificacionInsumosConsolidadoPDFProps) {
   return (
     <Document
-      title={`Verificacion de Insumos Consolidada ${instalacionNombre} ${desde} ${hasta}`}
+      title={`Verificación de Insumos Consolidada ${instalacionNombre} ${desde} ${hasta}`}
       author="M.A.D.Y."
       creator="M.A.D.Y. Inocuidad Inteligente"
       producer="M.A.D.Y. Inocuidad Inteligente"
