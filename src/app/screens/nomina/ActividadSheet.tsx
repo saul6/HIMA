@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { useNavigate } from 'react-router'
 import { Search, X } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
+import { Boton } from '@/app/components/ui-mady/Boton'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
-import { nomina } from '@/hooks/useNomina'
+import { nomina, useNomTarifas } from '@/hooks/useNomina'
 import { avisarErrorNomina } from '@/lib/nomina/errores'
 import { leerCantidad, leerMonto, r2, r4 } from '@/lib/nomina/formato'
 import { CLASE_INPUT, CampoMonto, CampoSeleccion, CampoTexto, CampoTextoLargo, CuerpoSheet, useLlave } from './ui'
@@ -36,7 +39,9 @@ const AYUDA_MODO: Record<string, string> = {
 }
 
 export function ActividadSheet({ ctx, catalogo, ranchos, editar, inicial, onClose }: Props) {
+  const navigate = useNavigate()
   const { llave, renovar } = useLlave()
+  const { datos: tarifas } = useNomTarifas()
   const fechaInicial = editar?.fecha ?? (ctx.max >= ctx.min ? ctx.max : ctx.min)
   const [fecha, setFecha] = useState(fechaInicial)
   const [actividadId, setActividadId] = useState(editar?.actividad_id ?? inicial?.actividadId ?? '')
@@ -52,6 +57,16 @@ export function ActividadSheet({ ctx, catalogo, ranchos, editar, inicial, onClos
   const seleccionada = catalogo.find(a => a.id === actividadId) ?? null
   const modo = seleccionada?.modo
   const pideImporte = modo === 'importe_pactado' || (modo === 'cantidad' && especial)
+
+  const hayActivas = catalogo.some(a => !a.archivada)
+  // Tarifa general o personal vigente en la fecha de la actividad.
+  const conTarifa = useMemo(() => new Set(
+    tarifas
+      .filter(t => (t.trabajador_id === null || t.trabajador_id === ctx.trabajadorId)
+        && t.vigente_desde <= fecha && (t.vigente_hasta === null || t.vigente_hasta > fecha))
+      .map(t => t.actividad_id),
+  ), [tarifas, fecha, ctx.trabajadorId])
+  const sinTarifa = (a: NomActividadCatalogo) => a.modo === 'cantidad' && !conTarifa.has(a.id)
 
   const grupos = useMemo(() => {
     const q = normalizar(busqueda.trim())
@@ -147,7 +162,16 @@ export function ActividadSheet({ ctx, catalogo, ranchos, editar, inicial, onClos
                 />
               </div>
               <div className="max-h-52 overflow-y-auto rounded-xl border border-border">
-                {grupos.length === 0 && <p className="p-3 text-xs text-muted-foreground">Sin resultados</p>}
+                {grupos.length === 0 && !hayActivas && (
+                  <EstadoVacio
+                    titulo="Aún no hay actividades en el catálogo"
+                    ayuda="Crea las actividades y sus tarifas para poder capturar."
+                    accion={<Boton tamano="sm" onClick={() => navigate('/nomina/catalogo')}>Ir al catálogo</Boton>}
+                  />
+                )}
+                {grupos.length === 0 && hayActivas && (
+                  <p className="p-3 text-xs text-muted-foreground">Sin resultados para «{busqueda.trim()}»</p>
+                )}
                 {grupos.map(([cat, lista]) => (
                   <div key={cat}>
                     <p className="px-3 pt-2 pb-1 text-xs font-semibold text-muted-foreground">{cat}</p>
@@ -158,7 +182,10 @@ export function ActividadSheet({ ctx, catalogo, ranchos, editar, inicial, onClos
                         onClick={() => setActividadId(a.id)}
                         className="w-full flex items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted"
                       >
-                        <span className="truncate">{a.nombre}</span>
+                        <span className="min-w-0">
+                          <span className="block truncate">{a.nombre}</span>
+                          {sinTarifa(a) && <span className="block text-xs text-agro-danger-text">Sin tarifa: no se podrá aprobar</span>}
+                        </span>
                         {a.modo === 'informativa' && <Etiqueta tono="neutral">No suma</Etiqueta>}
                       </button>
                     ))}
