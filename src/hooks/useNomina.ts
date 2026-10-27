@@ -15,9 +15,8 @@ import type {
 async function rpc<T = unknown>(nombre: string, args: Record<string, unknown> = {}): Promise<T> {
   // Se quitan los undefined; los null sí se envían (significan "vacío" para la BD).
   const limpio = Object.fromEntries(Object.entries(args).filter(([, v]) => v !== undefined))
-  const { data, error } = await (supabase.rpc as unknown as (
-    n: string, a: Record<string, unknown>,
-  ) => Promise<{ data: unknown; error: { message: string } | null }>)(nombre, limpio)
+  // `as any`: las RPC nom_* no están en el tipo Database escrito a mano (y se conserva el `this` del cliente).
+  const { data, error } = await (supabase as any).rpc(nombre, limpio) as { data: unknown; error: { message: string } | null }
   if (error) throw crearErrorNomina(error)
   return data as T
 }
@@ -131,7 +130,7 @@ export const nomina = {
 type Fila = Record<string, unknown>
 
 async function leer<T>(tabla: string, org: string, ajustar?: (q: any) => any): Promise<T[]> {
-  let q: any = (supabase.from as unknown as (t: string) => any)(tabla).select('*').eq('org_id', org)
+  let q: any = (supabase as any).from(tabla).select('*').eq('org_id', org)
   if (ajustar) q = ajustar(q)
   const { data, error } = await q
   if (error) throw crearErrorNomina(error)
@@ -295,4 +294,16 @@ export function useNomUsuariosOrg() {
 export function useMisVouchers() {
   const { profile } = useAuthContext()
   return useCarga<MiVoucher[]>([], () => nomina.misVouchers(), [profile?.id], !!profile?.id)
+}
+
+/** Empleados de M77 de la org (opcional al dar de alta un trabajador). Si no hay acceso, queda vacío. */
+export function useNomEmpleadosM77() {
+  const { profile } = useAuthContext()
+  const org = profile?.org_id ?? null
+  return useCarga<{ id: string; nombre: string }[]>([], async () => {
+    const { data, error } = await (supabase as any).from('m77_empleados')
+      .select('id, nombre').eq('org_id', org!).order('nombre')
+    if (error) return []
+    return (data ?? []) as { id: string; nombre: string }[]
+  }, [org], !!org)
 }
