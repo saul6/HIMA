@@ -375,7 +375,7 @@ export function RegistroAccidentesLaborales() {
     for (const [idx, raw] of lote.entries()) {
       const toastId = toast.loading(`Optimizando foto ${idx + 1} de ${lote.length}…`)
       try {
-        const compressed = await comprimirImagen(raw, 5.5)
+        const compressed = await comprimirImagen(raw, 5.5, 'M20')
         if (compressed.size > MAX_FOTO_BYTES) {
           toast.error('La foto es muy grande, intenta con una de menor resolución', { id: toastId })
           continue

@@ -376,7 +376,7 @@ export function AccionesCorrectivas() {
     if (!file) return
     const toastId = toast.loading('Optimizando foto...')
     try {
-      const compressed = await comprimirImagen(file, 9)
+      const compressed = await comprimirImagen(file, 9, 'M26')
       toast.dismiss(toastId)
       const preview = URL.createObjectURL(compressed)
       setFotosPendientes((prev) => [

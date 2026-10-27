@@ -357,7 +357,7 @@ function DetalleSheet({
       if (!raw.type.startsWith('image/')) { toast.warning('Solo se permiten imágenes'); continue }
       if (raw.size > 10 * 1024 * 1024) { toast.warning('La imagen supera 10 MB'); continue }
       const toastId = toast.loading('Optimizando foto…')
-      const compressed = await comprimirImagen(raw, 9.5).finally(() => toast.dismiss(toastId))
+      const compressed = await comprimirImagen(raw, 9.5, 'AGENDA').finally(() => toast.dismiss(toastId))
       const uid = crypto.randomUUID()
       const preview = URL.createObjectURL(compressed)
       setFotosLocales(prev => [...prev, { uid, file: compressed, preview }])
