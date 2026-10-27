@@ -20,6 +20,8 @@ interface Props {
   enterado?: FirmaParaPdf['enterado']
   /** Líneas de firma de ancho fijo (más cortas) y firma más grande (M50). Apagado por defecto. */
   lineaCorta?: boolean
+  /** Imprime "Pendiente de firma" bajo la línea cuando no hay firma digital. Apagado por defecto (CLAUDE.md §9: la línea queda en blanco para firma a mano); hoy lo usa solo M39. */
+  pendienteSiFalta?: boolean
 }
 
 const sinGuion = (word: string) => [word]
@@ -30,7 +32,7 @@ const AVISO_DESACTUALIZADA = 'Firma digital desactualizada: el registro se modif
 
 const linea = { borderTopWidth: 0.75, borderTopColor: PC.m13Navy, marginTop: 14, paddingTop: 4 } as const
 
-export function PdfFirmas({ signatures: signaturesProp, enterado: enteradoProp, lineaCorta = false }: Props) {
+export function PdfFirmas({ signatures: signaturesProp, enterado: enteradoProp, lineaCorta = false, pendienteSiFalta = false }: Props) {
   const alto = lineaCorta ? 44 : 38
   const ancho = lineaCorta ? { width: 200 } : { flex: 1 }
   const enterado = enteradoProp ?? signaturesProp.map((s) => s.firma?.enterado).find(Boolean) ?? null
@@ -77,6 +79,9 @@ export function PdfFirmas({ signatures: signaturesProp, enterado: enteradoProp, 
                 <Text hyphenationCallback={sinGuion} style={{ fontSize: 6, color: PC.footerGray, marginTop: 2 }}>
                   {`Firmado digitalmente el ${firma.fecha}\nSello ${firma.sello}`}
                 </Text>
+              )}
+              {pendienteSiFalta && !tieneDigital && !desactualizada && (
+                <Text style={{ fontSize: 7, color: PC.footerGray, marginTop: 2 }}>Pendiente de firma</Text>
               )}
               {desactualizada && (
                 <Text style={{ fontSize: 7, color: PC.footerGray, marginTop: 2 }}>{AVISO_DESACTUALIZADA}</Text>

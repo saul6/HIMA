@@ -11,6 +11,7 @@ import { PC } from '@/lib/pdf/components/tokens'
 import { estiloNegativo } from './negativo'
 import { SIN_ENCOGER } from './estilos'
 import { alturaTexto, anchoTexto, lineasTexto, partirParaAncho, ALTO_UTIL_PAGINA, FRACCION_MAX_BLOQUE } from './medirTexto'
+import { TextoLargo, esTextoLargo, resumenTexto } from './TextoLargo'
 
 /** Ancho útil de una hoja A4 con márgenes de 40 pt. */
 export const ANCHO_UTIL = { landscape: 841.89 - 80, portrait: 595.28 - 80 } as const
@@ -24,6 +25,8 @@ export interface ColumnaDato {
   negativo?: boolean
   /** Ancho mínimo en pt. Las columnas de fecha ("20/10/2026" en un renglón) y las palabras del encabezado lo calculan solas. */
   anchoMin?: number
+  /** true = texto libre largo: si pasa del umbral de TextoLargo, la celda queda con un resumen y el texto completo va en un bloque a lo ancho debajo de su renglón (etiqueta = el título de la columna). */
+  largo?: boolean
 }
 
 export type CeldaDato =
@@ -161,11 +164,23 @@ export function alturaPieza(pieza: Pieza, w: number[], fuente: number): number {
 }
 
 export function TablaDatos({
-  columnas, filas, anchoTotal = ANCHO_UTIL.landscape, vacio,
+  columnas, filas: filasEntrada, anchoTotal = ANCHO_UTIL.landscape, vacio,
   fuente = 8, fuenteEnc = 7, encabezadoSuperior, encabezadoFijo = true,
 }: Props) {
   const suma = columnas.reduce((a, c) => a + c.ancho, 0) || 1
   const w = repartirAnchos(columnas, anchoTotal, fuente, fuenteEnc)
+  // Columnas `largo`: el texto que pasa del umbral sale de la celda (queda un resumen) y va debajo de su renglón.
+  const largos: Record<number, { etiqueta: string; texto: string }[]> = {}
+  const filas = filasEntrada.map((f, r) => {
+    if (!Array.isArray(f) || !columnas.some((c) => c.largo)) return f
+    return f.map((celda, i) => {
+      if (!columnas[i]?.largo || celda != null && typeof celda === 'object') return celda
+      const str = celda == null ? '' : String(celda)
+      if (!esTextoLargo(str, w[i] - 2 * PAD, fuente)) return celda
+      ;(largos[r] ??= []).push({ etiqueta: columnas[i].texto, texto: str })
+      return resumenTexto(str, w[i] - 2 * PAD, fuente)
+    })
+  })
   const horizontal = anchoTotal > ANCHO_UTIL.portrait + 1
   const maxBloque = (horizontal ? ALTO_UTIL_PAGINA.landscape : ALTO_UTIL_PAGINA.portrait) * FRACCION_MAX_BLOQUE
   // Un encabezado más alto que ~un tercio de la hoja no se repite en cada página: react-pdf entraría en un ciclo
@@ -292,6 +307,9 @@ export function TablaDatos({
                       )
                     })}
                   </View>
+                ))}
+                {(largos[r] ?? []).map((b, k) => (
+                  <TextoLargo key={k} etiqueta={b.etiqueta} texto={b.texto} ancho={anchoTotal} fuente={fuente} conLinea />
                 ))}
               </Fragment>
             ) : (

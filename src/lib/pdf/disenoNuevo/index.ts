@@ -6,5 +6,6 @@ export { EncabezadoTabla, PAD_CELDA, type ColumnaTabla } from './EncabezadoTabla
 export { MarcaDeAgua } from './MarcaDeAgua'
 export { Pie } from './Pie'
 export { PdfFirmas } from './PdfFirmas'
+export { TextoLargo, esTextoLargo, resumenTexto, UMBRAL_CARACTERES, UMBRAL_RENGLONES } from './TextoLargo'
 export { esNegativo, estiloNegativo } from './negativo'
 export { estiloPagina } from './estilos'
