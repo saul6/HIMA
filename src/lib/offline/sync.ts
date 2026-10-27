@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { obtenerLotes, obtenerLote, actualizarLote, eliminarLote, obtenerAdjuntosLote } from './outbox'
 import type { LoteOutbox, OperacionSync } from './tipos'
+import { vaciarColaEventos } from '@/lib/diagnostico'
 import { setSincronizando } from './actualizacionSegura'
 import { mapeoGet, mapeoPut, mapeoLimpiar } from './db'
 import { mensajeRechazo, dependeDeRechazado, CODIGO_DEPENDE_RECHAZADO } from './motivosRechazo'
@@ -220,7 +221,10 @@ let intervalId: ReturnType<typeof setInterval> | null = null
 export function iniciarSyncLoop(userId: string): () => void {
   if (!userId) return () => {}
 
-  const intentarSync = () => procesarCola(userId)
+  const intentarSync = () => {
+    void vaciarColaEventos()
+    return procesarCola(userId)
+  }
 
   // Eventos que disparan sync
   window.addEventListener('online', intentarSync)
