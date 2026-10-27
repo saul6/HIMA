@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { ChevronLeft, ChevronRight, Users, BookOpen, History } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
@@ -30,7 +30,8 @@ export function NominaSemana() {
   const navigate = useNavigate()
   const { offline } = useConexion()
   const hoy = hoyMX()
-  const [lunes, setLunes] = useState(() => lunesDe(hoy))
+  const [params] = useSearchParams()
+  const [lunes, setLunes] = useState(() => lunesDe(params.get('fecha') || hoy))
   const { datos: semana, cargando, error, recargar } = useNomSemana(lunes)
 
   const moneda = semana?.moneda ?? 'MXN'
