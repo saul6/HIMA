@@ -228,9 +228,10 @@ export function iniciarSyncLoop(userId: string): () => void {
 
   // Eventos que disparan sync
   window.addEventListener('online', intentarSync)
-  document.addEventListener('visibilitychange', () => {
+  const alCambiarVisibilidad = () => {
     if (document.visibilityState === 'visible') intentarSync()
-  })
+  }
+  document.addEventListener('visibilitychange', alCambiarVisibilidad)
 
   // Sync periódico cada 60s si hay pendientes
   if (intervalId) clearInterval(intervalId)
@@ -244,6 +245,7 @@ export function iniciarSyncLoop(userId: string): () => void {
 
   return () => {
     window.removeEventListener('online', intentarSync)
+    document.removeEventListener('visibilitychange', alCambiarVisibilidad)
     if (intervalId) { clearInterval(intervalId); intervalId = null }
   }
 }
