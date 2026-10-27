@@ -76,15 +76,6 @@ const candadoSesion = async <R,>(nombre: string, espera: number, fn: () => Promi
   }
 }
 
-// Apps que se suspenden en segundo plano: pausar/reanudar la renovación automática del token.
-if (typeof document !== 'undefined') {
-  document.addEventListener('visibilitychange', () => {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    if (document.visibilityState === 'visible') void supabase.auth.startAutoRefresh()
-    else void supabase.auth.stopAutoRefresh()
-  })
-}
-
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     storageKey: 'agrocampo-auth',
