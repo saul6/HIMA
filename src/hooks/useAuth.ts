@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
-import { type User } from '@supabase/supabase-js'
+import { useState, useEffect, useRef } from 'react'
+import { type User, type Session } from '@supabase/supabase-js'
 import { supabase, initialAuthParams, marcarSesionCerrada } from '@/lib/supabase'
 import type { Profile, Productor } from '@/types/database.types'
 import { devLog } from '@/lib/log'
+import { registrarEvento } from '@/lib/diagnostico'
 import { cacheGet, cachePut, cacheClearUser } from '@/lib/offline/db'
 
 export interface AuthState {
@@ -174,6 +175,8 @@ export function useAuth(): UseAuthReturn {
     ...SIN_SESION,
     loading: true,
   })
+  const estadoRef = useRef(state)
+  estadoRef.current = state
 
   useEffect(() => {
     devLog('[auth] useAuth montado → iniciando estrategia mixta')
@@ -231,9 +234,10 @@ export function useAuth(): UseAuthReturn {
       }
 
       // Suscribirse a cambios futuros (login nuevo y logout)
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        devLog('[auth] onAuthStateChange event:', event, '| session:', session ? 'presente' : 'null')
-
+      // El callback NO puede esperar consultas de Supabase: auth-js lo ejecuta con su candado
+      // interno tomado y esas consultas piden la sesión (mismo candado) → bloqueo circular.
+      // Solo se difiere el trabajo con setTimeout para que corra fuera del candado.
+      const manejarEvento = async (event: string, session: Session | null) => {
         try {
           if (event === 'PASSWORD_RECOVERY') {
             if (session) {
@@ -242,36 +246,57 @@ export function useAuth(): UseAuthReturn {
             }
           }
           if (event === 'SIGNED_IN') marcarSesionCerrada(false)
-          if (event === 'SIGNED_IN' && session?.access_token !== initialSession?.access_token) {
-            // Solo para logins nuevos — la sesión de recarga ya fue manejada por getSession
-            const datosPerfil = await cargarDatosPerfil(session!.user.id)
-            if (datosPerfil.profile) guardarPerfilCache(session!.user.id, datosPerfil)
-            setState({ user: session!.user, ...datosPerfil, loading: false, isRecovery: false })
+          if (event === 'SIGNED_IN' && session && session.access_token !== initialSession?.access_token) {
+            const actual = estadoRef.current
+            const mismoUsuario = actual.user?.id === session.user.id
+            if (mismoUsuario && actual.profile) {
+              // Renovación de sesión (p. ej. al volver a la pestaña): no recargar el perfil
+              setState(prev => ({ ...prev, user: session.user, loading: false }))
+            } else {
+              registrarEvento('AUTH', 'evento_auth', { event, mismo_usuario: mismoUsuario, recarga_perfil: true }, actual.profile?.org_id)
+              const datosPerfil = await cargarDatosPerfil(session.user.id)
+              if (datosPerfil.profile) {
+                guardarPerfilCache(session.user.id, datosPerfil)
+                setState({ user: session.user, ...datosPerfil, loading: false, isRecovery: false })
+              } else {
+                // Falla de red: conservar el perfil previo o el cacheado
+                const cacheado = mismoUsuario && actual.profile ? null : await cargarPerfilCache(session.user.id)
+                setState(prev => ({
+                  ...prev,
+                  ...(cacheado ?? (mismoUsuario ? {} : datosPerfil)),
+                  user: session.user,
+                  loading: false,
+                  isRecovery: false,
+                }))
+              }
+            }
           }
           if (event === 'SIGNED_OUT') {
             // Limpiar caché del usuario anterior
-            if (initialSession?.user.id) {
-              cacheClearUser(initialSession.user.id).catch(() => {})
+            const idPrevio = estadoRef.current.user?.id ?? initialSession?.user.id
+            if (idPrevio) {
+              cacheClearUser(idPrevio).catch(() => {})
             }
             setState({ ...SIN_SESION, loading: false })
           }
         } catch (err) {
           console.error('[auth] error crítico en onAuthStateChange (salvavidas):', err)
-          setState({
-            user: session?.user ?? null,
-            profile: null,
-            productor: null,
-            asesorProfile: null,
-            responsableProfile: null,
-            offlineHabilitado: true,
+          setState(prev => ({
+            ...prev,
+            user: session?.user ?? prev.user,
             loading: false,
             error: err instanceof Error ? err.message : 'Error inesperado de autenticación',
             isRecovery: event === 'PASSWORD_RECOVERY',
-          })
+          }))
         } finally {
           authResolved = true
           clearTimeout(timeout)
         }
+      }
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        devLog('[auth] onAuthStateChange event:', event, '| session:', session ? 'presente' : 'null')
+        setTimeout(() => { void manejarEvento(event, session) }, 0)
       })
 
       subscriptionRef = subscription
