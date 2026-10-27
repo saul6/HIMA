@@ -3,6 +3,7 @@ import { registrarEvento } from '@/lib/diagnostico'
 
 const LADO_MAX = 1920
 const MP_MAX_SIN_REDUCCION = 50   // por encima de esto no se intenta decodificar el original completo
+const MB_MAX_SIN_REDUCCION = 15   // si no se pudo leer el tamaño en píxeles, límite por peso
 const BYTES_CABECERA = 256 * 1024
 
 export type MetodoOptimizacion = 'imagedecoder' | 'bitmap' | 'original'
@@ -13,6 +14,7 @@ export interface InfoOptimizacion {
   metodo: MetodoOptimizacion
   ms: number
   mbFinal: number
+  motivo?: string
 }
 
 export interface ResultadoOptimizacion {
@@ -198,7 +200,15 @@ export async function optimizarImagen(file: File, limiteMB = 5.5): Promise<Resul
   try {
     const pre = await prerreducir(file, dim)
     // Foto enorme y sin reducción previa: decodificarla completa mata la pestaña.
-    if (!pre && megapixeles !== null && megapixeles > MP_MAX_SIN_REDUCCION) return sinOptimizar()
+    // Si no se pudo leer el tamaño en píxeles, se decide por el peso del archivo.
+    if (!pre && (
+      (megapixeles !== null && megapixeles > MP_MAX_SIN_REDUCCION) ||
+      (megapixeles === null && file.size > MB_MAX_SIN_REDUCCION * 1048576)
+    )) {
+      const r = sinOptimizar()
+      r.info.motivo = 'muy_grande_sin_reduccion'
+      return r
+    }
     const fuente = pre?.file ?? file
     const metodo: MetodoOptimizacion = pre?.metodo ?? 'original'
 
