@@ -1,11 +1,169 @@
+import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
+import { ChevronLeft, ChevronRight, Users, BookOpen, History } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
+import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
+import { Boton } from '@/app/components/ui-mady/Boton'
+import { useNomSemana } from '@/hooks/useNomina'
+import { useConexion } from '@/hooks/useConexion'
+import { hoyMX } from '@/lib/fecha'
+import { formatoMoneda, lunesDe, rangoSemana, sumarDias } from '@/lib/nomina/formato'
+import type { SemanaTrabajador } from '@/types/nomina.types'
+
+export function estadoSemanaTrabajador(t: SemanaTrabajador): { texto: string; tono: TonoEtiqueta } {
+  if (t.estado === 'aprobado') {
+    switch (t.pago?.estado_pago) {
+      case 'pagado': return { texto: 'Pagado', tono: 'menta' }
+      case 'parcial': return { texto: 'Pago parcial', tono: 'sky' }
+      case 'sin_importe': return { texto: 'Sin importe', tono: 'neutral' }
+      default: return { texto: 'Aprobado', tono: 'sky' }
+    }
+  }
+  if ((t.bloqueos ?? 0) > 0) return { texto: 'Con pendientes', tono: 'rojo' }
+  return { texto: 'Borrador', tono: 'neutral' }
+}
 
 export function NominaSemana() {
+  const navigate = useNavigate()
+  const { offline } = useConexion()
+  const hoy = hoyMX()
+  const [lunes, setLunes] = useState(() => lunesDe(hoy))
+  const { datos: semana, cargando, error, recargar } = useNomSemana(lunes)
+
+  const moneda = semana?.moneda ?? 'MXN'
+  const lunesArranque = semana?.fecha_arranque ? lunesDe(semana.fecha_arranque) : null
+  const puedeAnterior = !lunesArranque || lunes > lunesArranque
+  const esEstaSemana = lunes === lunesDe(hoy)
+
+  const trabajadores = useMemo(() => semana?.trabajadores ?? [], [semana])
+
   return (
     <div className="min-h-full pb-safe-nav">
-      <ModuloHeader tituloFallback="Actividades y pagos" />
-      <EstadoVacio titulo="En construcción" />
+      <ModuloHeader
+        tituloFallback="Actividades y pagos"
+        acciones={
+          <>
+            <Boton variante="icono" aria-label="Trabajadores" onClick={() => navigate('/nomina/trabajadores')}>
+              <Users className="size-5" />
+            </Boton>
+            <Boton variante="icono" aria-label="Catálogo" onClick={() => navigate('/nomina/catalogo')}>
+              <BookOpen className="size-5" />
+            </Boton>
+            <Boton variante="icono" aria-label="Historial" onClick={() => navigate('/nomina/historial')}>
+              <History className="size-5" />
+            </Boton>
+          </>
+        }
+      />
+
+      <div className="px-4 py-4 space-y-4 max-w-3xl mx-auto">
+        {offline && (
+          <p className="rounded-xl bg-agro-info-fill text-agro-info-text text-xs px-3 py-2">
+            Sin conexión: este módulo requiere internet para consultar y guardar.
+          </p>
+        )}
+
+        <div className="flex items-center justify-between gap-2">
+          <Boton
+            variante="icono"
+            aria-label="Semana anterior"
+            disabled={!puedeAnterior}
+            onClick={() => setLunes(sumarDias(lunes, -7))}
+          >
+            <ChevronLeft className="size-5" />
+          </Boton>
+          <div className="text-center">
+            <p className="text-sm font-semibold text-foreground">{rangoSemana(lunes)}</p>
+            {!esEstaSemana && (
+              <button
+                type="button"
+                className="text-xs text-primary underline"
+                onClick={() => setLunes(lunesDe(hoy))}
+              >
+                Esta semana
+              </button>
+            )}
+          </div>
+          <Boton
+            variante="icono"
+            aria-label="Semana siguiente"
+            disabled={lunes >= lunesDe(hoy)}
+            onClick={() => setLunes(sumarDias(lunes, 7))}
+          >
+            <ChevronRight className="size-5" />
+          </Boton>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <TarjetaContador etiqueta="Aprobados" valor={semana?.totales.aprobados ?? null} />
+          <TarjetaContador etiqueta="Borradores" valor={semana?.totales.borradores ?? null} />
+          <TarjetaContador
+            etiqueta="Neto aprobado"
+            valor={semana ? semana.totales.neto_aprobado : null}
+            format={n => formatoMoneda(n, moneda)}
+          />
+          <TarjetaContador
+            etiqueta="Pendiente de pago"
+            valor={semana ? semana.totales.pendiente_pago : null}
+            format={n => formatoMoneda(n, moneda)}
+            tono={semana && semana.totales.pendiente_pago > 0 ? 'info' : 'normal'}
+          />
+        </div>
+
+        {error && (
+          <div className="rounded-xl bg-agro-danger-fill text-agro-danger-text text-sm px-3 py-3 space-y-2">
+            <p>{error}</p>
+            <Boton tamano="sm" variante="secundario" onClick={() => void recargar()}>Reintentar</Boton>
+          </div>
+        )}
+
+        {!error && !cargando && trabajadores.length === 0 && (
+          <EstadoVacio
+            icono={Users}
+            titulo="Aún no hay trabajadores"
+            ayuda="Da de alta a tu personal para capturar sus actividades y pagos."
+            accion={<Boton onClick={() => navigate('/nomina/trabajadores')}>Ir a Trabajadores</Boton>}
+          />
+        )}
+
+        {trabajadores.length > 0 && (
+          <div>
+            {trabajadores.map(t => {
+              const est = estadoSemanaTrabajador(t)
+              const aprobado = t.estado === 'aprobado'
+              const pendiente = aprobado ? t.pago?.pendiente ?? 0 : t.pendiente_estimado ?? 0
+              const exceso = aprobado ? t.pago?.exceso_anticipo ?? 0 : t.exceso_anticipo ?? 0
+              return (
+                <FilaRegistro
+                  key={t.trabajador_id}
+                  icono={null}
+                  titulo={t.nombre}
+                  subtitulo={t.codigo}
+                  lineas={
+                    <>
+                      <span className="block">
+                        {aprobado ? 'Neto' : 'Neto estimado'} {formatoMoneda(t.neto, moneda)}
+                        {pendiente > 0 && <> · Pendiente {formatoMoneda(pendiente, moneda)}</>}
+                      </span>
+                      {exceso > 0 && (
+                        <span className="block text-agro-danger-text font-semibold">
+                          Anticipo mayor al neto: {formatoMoneda(exceso, moneda)}
+                        </span>
+                      )}
+                    </>
+                  }
+                  derecha={<Etiqueta tono={est.tono}>{est.texto}</Etiqueta>}
+                  chevron
+                  to={`/nomina/semana/${t.trabajador_id}?fecha=${lunes}`}
+                />
+              )
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
