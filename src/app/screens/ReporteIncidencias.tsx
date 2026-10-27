@@ -23,9 +23,12 @@ import { generarReporteIncidenciasPDF } from '@/lib/pdf/m13/generarReporteIncide
 import { useOrganizacion } from '@/hooks/useOrganizacion'
 import { generarReporteIncidenciasConsolidadoPDF } from '@/lib/pdf/m13/generarReporteIncidenciasConsolidadoPDF'
 import {
-  guardarBorrador, cargarBorrador, borrarBorrador, limpiarBorradoresViejos,
-  type M13DraftData,
+  guardarCabecera, guardarIncidencia, guardarFoto, borrarFoto, borrarIncidencia,
+  cargarBorrador, existeBorrador, borrarBorrador, limpiarBorradoresViejos,
+  vaciarEscrituras, suscribirEstadoBorrador, pedirAlmacenamientoPersistente,
+  type M13IncidenciaReg,
 } from '@/lib/idb/m13DraftStore'
+import { useLockBorrador } from '@/hooks/useLockBorrador'
 import type { AdjuntoOutbox } from '@/lib/offline/tipos'
 import { registrarEvento } from '@/lib/diagnostico'
 import { useConexion } from '@/hooks/useConexion'
@@ -70,12 +73,18 @@ interface FotoLocal {
   intentos: number
   /** Solo en memoria: se está optimizando ahora mismo. */
   procesando?: boolean
+  /** Ya está en el servidor (fila y archivo). */
+  subida?: boolean
+  /** El borrador la mencionaba pero el archivo no está: hay que volver a agregarla. */
+  faltante?: boolean
 }
 
 interface IncidenciaLocal {
   uid: string
   descripcion: string
   fotos: FotoLocal[]
+  /** La fila de la incidencia ya está en el servidor. */
+  insertada?: boolean
 }
 
 interface ProgresoSubida {
@@ -86,6 +95,18 @@ interface ProgresoSubida {
 }
 
 const TIEMPO_PASO1_MS = 20_000
+const FOTOS_PARA_AVISO = 20
+const DEBOUNCE_BORRADOR_MS = 300
+
+/** Hay fotos optimizándose ahora mismo (lo leen la pantalla y sus tarjetas). */
+const estadoProc = { activo: false }
+
+/** Error de "ya existe" al reintentar un INSERT/subida que sí llegó al servidor. */
+function yaExiste(e: unknown): boolean {
+  const x = e as { code?: string; message?: string; statusCode?: string | number } | null
+  const m = String(x?.message ?? '').toLowerCase()
+  return x?.code === '23505' || String(x?.statusCode) === '409' || m.includes('already exists') || m.includes('duplicate')
+}
 
 function esErrorDeRed(e: unknown): boolean {
   const m = String((e as { message?: string } | null)?.message ?? e).toLowerCase()
@@ -164,6 +185,7 @@ function IncidenciaForm({
   onQuitarFoto,
   onProcesarFotos,
   onGuardarYa,
+  onBlurTexto,
 }: {
   inc: IncidenciaLocal
   index: number
@@ -173,6 +195,7 @@ function IncidenciaForm({
   onQuitarFoto: (incUid: string, fotoUid: string) => void
   onProcesarFotos: (incUid: string, fotoUids: string[]) => Promise<void>
   onGuardarYa: () => Promise<void>
+  onBlurTexto: () => void
 }) {
   const inputCamaraRef = useRef<HTMLInputElement>(null)
   const inputGaleriaRef = useRef<HTMLInputElement>(null)
@@ -257,6 +280,7 @@ function IncidenciaForm({
       <TextareaContador limite={limiteTexto('m13_incidencias', 'descripcion')}
         value={inc.descripcion}
         onChange={(e) => onChange({ descripcion: e.target.value })}
+        onBlur={onBlurTexto}
         placeholder="Describe la incidencia observada..."
         rows={3}
         className="w-full px-3 py-2 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
@@ -275,6 +299,24 @@ function IncidenciaForm({
         >
           <AlertTriangle className="w-3 h-3 flex-shrink-0" />
           Máximo de {MAX_FOTOS_INCIDENCIA} fotos por incidencia alcanzado. Agrega otra incidencia para subir más.
+        </div>
+      )}
+
+      {/* Fotos que el borrador mencionaba pero no se encontraron */}
+      {inc.fotos.some((f) => f.faltante) && (
+        <div
+          className="rounded-lg px-3 py-2 space-y-2 text-xs"
+          style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+        >
+          {inc.fotos.filter((f) => f.faltante).map((f) => (
+            <div key={f.uid} className="flex items-center gap-2">
+              <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+              <span className="flex-1 min-w-0">Falta una foto: vuelve a agregarla</span>
+              <button type="button" onClick={() => onQuitarFoto(inc.uid, f.uid)} className="font-semibold underline">
+                Quitar
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
@@ -309,10 +351,10 @@ function IncidenciaForm({
       )}
 
       {/* Previews */}
-      {inc.fotos.length > 0 && (
+      {inc.fotos.some((f) => !f.faltante) && (
         <div className="flex flex-wrap gap-2">
           <AnimatePresence initial={false}>
-            {inc.fotos.map((f) => (
+            {inc.fotos.filter((f) => !f.faltante).map((f) => (
               <motion.div
                 key={f.uid}
                 layout={!reducedMotion}
@@ -382,7 +424,7 @@ function IncidenciaForm({
                 if (document.visibilityState !== 'visible') return
                 document.removeEventListener('visibilitychange', alVolver)
                 setTimeout(() => {
-                  if (!procesandoRef.current) { try { sessionStorage.removeItem('m13:camara') } catch { /* ignore */ } }
+                  if (!estadoProc.activo) { try { sessionStorage.removeItem('m13:camara') } catch { /* ignore */ } }
                 }, 3000)
               }
               document.addEventListener('visibilitychange', alVolver)
@@ -468,18 +510,26 @@ export function ReporteIncidencias() {
 
   // Total de fotos en el formulario actual (computed, para el cap global)
   const totalFotos = incidencias.reduce((sum, inc) => sum + inc.fotos.length, 0)
+  const fotosPendientes = incidencias.reduce((sum, inc) => sum + inc.fotos.filter((f) => !f.subida).length, 0)
   const hayFotosSinOptimizar = incidencias.some((inc) => inc.fotos.some((f) => f.estado === 'original'))
 
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }))
 
-  // Draft local (IndexedDB) — clave única por usuario y organización
+  // Borrador local (IndexedDB) — clave única por usuario y organización.
+  // Cada incidencia y cada foto se guardan por separado en cuanto cambian.
   const draftKey = profile?.org_id && user?.id
     ? `draft:m13:${profile.org_id}:${user.id}`
     : null
   const [hayBorrador, setHayBorrador] = useState(false)
   const [confirmDraftVisible, setConfirmDraftVisible] = useState(false)
-  const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [estadoBorrador, setEstadoBorrador] = useState<'guardando' | 'guardado' | null>(null)
+  const [falloGuardado, setFalloGuardado] = useState(false)
+  // El reporte ya existe en el servidor (un intento anterior lo creó): se retoma, no se duplica.
+  const [reporteInsertado, setReporteInsertado] = useState(false)
+  const reporteIdRef = useRef<string | null>(null)
+  const reporteInsertadoRef = useRef(false)
+  // Tras confirmar el reporte el borrador ya no se escribe (evita resucitarlo).
+  const sinEscrituraRef = useRef(false)
+  const timersRef = useRef(new Map<string, ReturnType<typeof setTimeout>>())
 
   // Siempre refleja el último estado del formulario (incluye cambios aún no renderizados)
   const estadoRef = useRef({ ranchoId, fecha, auditorNombre, incidencias })
@@ -487,43 +537,113 @@ export function ReporteIncidencias() {
   const colaFotosRef = useRef<Promise<void>>(Promise.resolve())
   const [abrirBorradorPendiente, setAbrirBorradorPendiente] = useState(false)
 
-  function construirDraft(): M13DraftData {
+  // Una sola pestaña escribe el mismo borrador
+  const lock = useLockBorrador(draftKey, sheetAbierto, () => { void aplicarBorrador() })
+  const puedeEscribir = () => !!draftKey && !sinEscrituraRef.current && lock.esDuenoRef.current
+
+  function escribirCabeceraYa(): Promise<void> {
+    if (!puedeEscribir()) return Promise.resolve()
     const e = estadoRef.current
-    return {
-      savedAt: Date.now(),
+    setHayBorrador(true)
+    return guardarCabecera(draftKey!, {
       ranchoId: e.ranchoId,
       fecha: e.fecha,
       auditorNombre: e.auditorNombre,
-      incidencias: e.incidencias.map((inc) => ({
-        uid: inc.uid,
-        descripcion: inc.descripcion,
-        fotos: inc.fotos.map((f) => ({
-          uid: f.uid,
-          blob: f.file,
-          nombre: f.file.name,
-          tipo: f.file.type || 'image/jpeg',
-          estado: f.estado,
-          intentos: f.intentos,
-        })),
-      })),
+      ordenIncidencias: e.incidencias.map((i) => i.uid),
+    })
+  }
+
+  function regDeIncidencia(inc: IncidenciaLocal): M13IncidenciaReg {
+    return {
+      uid: inc.uid,
+      draftKey: draftKey!,
+      descripcion: inc.descripcion,
+      actualizadaEn: Date.now(),
+      insertada: inc.insertada,
+      fotos: inc.fotos.map((f) => ({ uid: f.uid, estado: f.estado, intentos: f.intentos, subida: f.subida })),
     }
   }
 
-  // Guarda el borrador ya (cancela el debounce pendiente)
-  async function guardarYa(): Promise<void> {
-    if (!draftKey) return
-    if (draftTimerRef.current) { clearTimeout(draftTimerRef.current); draftTimerRef.current = null }
-    try {
-      await guardarBorrador(draftKey, construirDraft())
-      setHayBorrador(true)
-    } catch { /* ignore */ }
+  function escribirIncidenciaYa(uid: string): Promise<void> {
+    if (!puedeEscribir()) return Promise.resolve()
+    const inc = estadoRef.current.incidencias.find((i) => i.uid === uid)
+    if (!inc) return Promise.resolve()
+    setHayBorrador(true)
+    return guardarIncidencia(regDeIncidencia(inc))
   }
+
+  function escribirFotoYa(incUid: string, f: FotoLocal): Promise<void> {
+    if (!puedeEscribir() || f.faltante) return Promise.resolve()
+    return guardarFoto({
+      uid: f.uid,
+      draftKey: draftKey!,
+      incidenciaUid: incUid,
+      blob: f.file,
+      nombre: f.file.name,
+      tipo: f.file.type || 'image/jpeg',
+      guardadaEn: Date.now(),
+    })
+  }
+
+  // Escritura con debounce corto: 'cab' = cabecera; cualquier otra clave = uid de incidencia
+  function programar(clave: string) {
+    if (!puedeEscribir()) return
+    const t = timersRef.current.get(clave)
+    if (t) clearTimeout(t)
+    timersRef.current.set(clave, setTimeout(() => {
+      timersRef.current.delete(clave)
+      void (clave === 'cab' ? escribirCabeceraYa() : escribirIncidenciaYa(clave))
+    }, DEBOUNCE_BORRADOR_MS))
+  }
+
+  function cancelarPendientes() {
+    timersRef.current.forEach((t) => clearTimeout(t))
+    timersRef.current.clear()
+  }
+
+  // Pasa lo pendiente a escritura inmediata y espera a que termine
+  async function flushTodo(): Promise<void> {
+    const claves = [...timersRef.current.keys()]
+    cancelarPendientes()
+    await Promise.all(claves.map((c) => (c === 'cab' ? escribirCabeceraYa() : escribirIncidenciaYa(c))))
+    await vaciarEscrituras()
+  }
+
+  // Escribe TODO el formulario (cabecera + cada incidencia) y espera: se usa al tocar Guardar
+  async function guardarCompleto(): Promise<void> {
+    cancelarPendientes()
+    await escribirCabeceraYa()
+    await Promise.all(estadoRef.current.incidencias.map((i) => escribirIncidenciaYa(i.uid)))
+    await vaciarEscrituras()
+  }
+
+  const flushRef = useRef(flushTodo)
+  flushRef.current = flushTodo
+  lock.antesDeSoltar(() => flushRef.current())
+
+  async function guardarYa(): Promise<void> { await flushTodo() }
 
   // Cambia incidencias de forma síncrona sobre el último estado (sin cierres viejos)
   function mutarIncidencias(fn: (prev: IncidenciaLocal[]) => IncidenciaLocal[]) {
     const next = fn(estadoRef.current.incidencias)
     estadoRef.current = { ...estadoRef.current, incidencias: next }
     setIncidencias(next)
+  }
+
+  function cambiarRancho(v: string) {
+    estadoRef.current = { ...estadoRef.current, ranchoId: v }
+    setRanchoId(v)
+    programar('cab')
+  }
+  function cambiarFecha(v: string) {
+    estadoRef.current = { ...estadoRef.current, fecha: v }
+    setFecha(v)
+    programar('cab')
+  }
+  function cambiarAuditor(v: string) {
+    estadoRef.current = { ...estadoRef.current, auditorNombre: v }
+    setAuditorNombre(v)
+    programar('cab')
   }
 
   function actualizarFoto(incUid: string, fotoUid: string, patch: Partial<FotoLocal>) {
@@ -535,6 +655,10 @@ export function ReporteIncidencias() {
 
   function agregarFotos(incUid: string, fotos: FotoLocal[]) {
     mutarIncidencias((prev) => prev.map((inc) => inc.uid === incUid ? { ...inc, fotos: [...inc.fotos, ...fotos] } : inc))
+    // La foto original se escribe una sola vez, antes de procesarla
+    fotos.forEach((f) => { void escribirFotoYa(incUid, f) })
+    void escribirCabeceraYa()
+    void escribirIncidenciaYa(incUid)
   }
 
   function quitarFotoDe(incUid: string, fotoUid: string) {
@@ -543,17 +667,19 @@ export function ReporteIncidencias() {
     mutarIncidencias((prev) => prev.map((inc) => inc.uid === incUid
       ? { ...inc, fotos: inc.fotos.filter((f) => f.uid !== fotoUid) }
       : inc))
-    void guardarYa()
+    if (puedeEscribir()) void borrarFoto(fotoUid)
+    void escribirIncidenciaYa(incUid)
   }
 
   async function procesarUnaFoto(incUid: string, fotoUid: string) {
     const buscar = () => estadoRef.current.incidencias.find((i) => i.uid === incUid)?.fotos.find((f) => f.uid === fotoUid)
     const foto = buscar()
-    if (!foto || foto.estado === 'lista') return
+    if (!foto || foto.estado === 'lista' || foto.faltante) return
     registrarEvento('M13', 'foto_recibida', { mb: Math.round((foto.file.size / 1048576) * 10) / 10, intento: foto.intentos + 1 }, profile?.org_id)
     // Contar el intento y guardarlo ANTES de optimizar: si la página muere, queda marcado.
     actualizarFoto(incUid, fotoUid, { intentos: foto.intentos + 1, procesando: true })
-    await guardarYa()
+    void escribirIncidenciaYa(incUid)
+    await vaciarEscrituras()
     const res = await optimizarImagen(foto.file, 5.5)
     const actual = buscar()
     if (!actual) return   // la quitaron mientras se optimizaba
@@ -565,6 +691,9 @@ export function ReporteIncidencias() {
         estado: 'lista',
         procesando: false,
       })
+      // Se reemplaza solo esta foto
+      const optimizada = buscar()
+      if (optimizada) void escribirFotoYa(incUid, optimizada)
       registrarEvento('M13', 'foto_optimizada', { ...res.info }, profile?.org_id)
     } else if (actual.file.size <= 5.5 * 1048576) {
       // No se pudo optimizar pero ya cumple el límite del módulo: se acepta tal cual.
@@ -575,7 +704,8 @@ export function ReporteIncidencias() {
       registrarEvento('M13', 'foto_fallo', { ...res.info, mensaje: 'no se pudo optimizar' }, profile?.org_id)
       toast.warning('No se pudo optimizar la foto. Baja la resolución de la cámara (por ejemplo 12 MP) y vuelve a tomarla.', { duration: 8000 })
     }
-    await guardarYa()
+    void escribirIncidenciaYa(incUid)
+    await vaciarEscrituras()
   }
 
   // Optimiza fotos de una en una (cola global: nunca dos a la vez)
@@ -605,14 +735,44 @@ export function ReporteIncidencias() {
     return tarea
   }
 
-  // Inicialización: limpieza de borradores viejos + check de borrador existente
+  // Única señal visible: si el guardado en el teléfono falla tras los reintentos
+  useEffect(() => suscribirEstadoBorrador((ok, fallo) => {
+    if (ok) { setFalloGuardado(false); return }
+    setFalloGuardado(true)
+    const e = estadoRef.current
+    registrarEvento('M13', 'borrador_fallo', {
+      etapa: fallo?.etapa,
+      incidencias: e.incidencias.length,
+      fotos: e.incidencias.reduce((n, i) => n + i.fotos.length, 0),
+      nombre_error: fallo?.nombreError,
+      mensaje: fallo?.mensaje,
+    }, profile?.org_id)
+  }), [profile?.org_id])
+
+  // Lo pendiente se escribe de inmediato si la pestaña se oculta o se cierra
+  useEffect(() => {
+    const alOcultar = () => { if (document.visibilityState === 'hidden') void flushRef.current() }
+    const alCerrar = () => { void flushRef.current() }
+    document.addEventListener('visibilitychange', alOcultar)
+    window.addEventListener('pagehide', alCerrar)
+    return () => {
+      document.removeEventListener('visibilitychange', alOcultar)
+      window.removeEventListener('pagehide', alCerrar)
+    }
+  }, [])
+
+  // Inicialización: almacenamiento persistente, limpieza y check de borrador existente
   useEffect(() => {
     if (!draftKey) return
+    pedirAlmacenamientoPersistente()
     limpiarBorradoresViejos().catch(() => {})
-    cargarBorrador(draftKey)
+    cargarBorrador(draftKey, false)
       .then((draft) => {
         if (!draft) return
         setHayBorrador(true)
+        reporteIdRef.current = draft.cabecera.reporteServidorId ?? null
+        reporteInsertadoRef.current = !!draft.cabecera.reporteInsertado
+        setReporteInsertado(reporteInsertadoRef.current)
         // ¿La página murió con la cámara abierta o procesando una foto?
         let reinicio = false
         try {
@@ -621,13 +781,9 @@ export function ReporteIncidencias() {
         } catch { /* ignore */ }
         const fotoProblema = draft.incidencias
           .flatMap((i) => i.fotos)
-          .find((f) => f.estado === 'original' && (f.intentos ?? 0) >= 1)
+          .find((f) => f.ref.estado === 'original' && (f.ref.intentos ?? 0) >= 1)
         if (fotoProblema) {
-          registrarEvento('M13', 'reinicio_procesando_foto', {
-            mb: Math.round((fotoProblema.blob.size / 1048576) * 10) / 10,
-            intentos: fotoProblema.intentos ?? 0,
-            tipo: fotoProblema.tipo,
-          }, profile?.org_id)
+          registrarEvento('M13', 'reinicio_procesando_foto', { intentos: fotoProblema.ref.intentos ?? 0 }, profile?.org_id)
         }
         if (reinicio || fotoProblema) {
           toast.info('La app se reinició al procesar la foto. Recuperamos tu borrador.', { duration: 8000 })
@@ -644,28 +800,20 @@ export function ReporteIncidencias() {
     void handleContinuarBorrador()
   }, [abrirBorradorPendiente, draftKey])
 
-  // Autosave con debounce de 500 ms mientras el sheet está abierto
-  useEffect(() => {
-    if (!sheetAbierto || !draftKey) return
-    if (draftTimerRef.current) clearTimeout(draftTimerRef.current)
-    setEstadoBorrador('guardando')
-    draftTimerRef.current = setTimeout(() => {
-      draftTimerRef.current = null
-      guardarBorrador(draftKey, construirDraft())
-        .then(() => { setEstadoBorrador('guardado'); setHayBorrador(true) })
-        .catch(() => { setEstadoBorrador(null) })
-    }, 500)
-    return () => { if (draftTimerRef.current) clearTimeout(draftTimerRef.current) }
-  }, [sheetAbierto, ranchoId, fecha, auditorNombre, incidencias, draftKey])
-
   function abrirSheetFresco() {
+    cancelarPendientes()
+    sinEscrituraRef.current = false
+    reporteIdRef.current = null
+    reporteInsertadoRef.current = false
+    setReporteInsertado(false)
     setRanchoId(ranchoInicial ?? '')
     setFecha(hoy())
     setAuditorNombre('')
-    setIncidencias([nuevaIncidencia()])
+    const inicial = [nuevaIncidencia()]
+    estadoRef.current = { ranchoId: ranchoInicial ?? '', fecha: hoy(), auditorNombre: '', incidencias: inicial }
+    setIncidencias(inicial)
     setErrRancho(false)
     setProgreso(null)
-    setEstadoBorrador(null)
     setPendienteFirmaId(null)
     setPendienteReporteParaPDF(null)
     setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
@@ -674,6 +822,7 @@ export function ReporteIncidencias() {
 
   function handleCerrarSheet() {
     if (guardando) return
+    void flushTodo()
     setSheetAbierto(false)
     setSheetPaso('form')
     setPendienteFirmaId(null)
@@ -685,67 +834,123 @@ export function ReporteIncidencias() {
     abrirSheetFresco()
   }
 
+  // Arma el formulario desde cabecera + incidencias + fotos del teléfono
+  async function aplicarBorrador() {
+    if (!draftKey) return null
+    const draft = await cargarBorrador(draftKey)
+    if (!draft) return null
+    const incs: IncidenciaLocal[] = draft.incidencias.map(({ reg, fotos }) => ({
+      uid: reg.uid,
+      descripcion: reg.descripcion,
+      insertada: reg.insertada,
+      fotos: fotos.map(({ ref, reg: fr }): FotoLocal => fr
+        ? {
+            uid: ref.uid,
+            file: new File([fr.blob], fr.nombre, { type: fr.tipo }),
+            preview: URL.createObjectURL(fr.blob),
+            estado: ref.estado ?? 'lista',
+            intentos: ref.intentos ?? 0,
+            subida: ref.subida,
+          }
+        : {
+            uid: ref.uid,
+            file: new File([], 'faltante.jpg', { type: 'image/jpeg' }),
+            preview: '',
+            estado: 'lista',
+            intentos: 0,
+            subida: ref.subida,
+            faltante: !ref.subida,
+          }),
+    }))
+    const lista = incs.length > 0 ? incs : [nuevaIncidencia()]
+    const c = draft.cabecera
+    estadoRef.current = { ranchoId: c.ranchoId, fecha: c.fecha || hoy(), auditorNombre: c.auditorNombre, incidencias: lista }
+    setRanchoId(c.ranchoId)
+    setFecha(c.fecha || hoy())
+    setAuditorNombre(c.auditorNombre)
+    setIncidencias(lista)
+    reporteIdRef.current = c.reporteServidorId ?? null
+    reporteInsertadoRef.current = !!c.reporteInsertado
+    setReporteInsertado(reporteInsertadoRef.current)
+    return draft
+  }
+
   async function handleContinuarBorrador() {
     setConfirmDraftVisible(false)
     if (!draftKey) { abrirSheetFresco(); return }
     try {
-      const draft = await cargarBorrador(draftKey)
+      cancelarPendientes()
+      sinEscrituraRef.current = false
+      const draft = await aplicarBorrador()
       if (!draft) { abrirSheetFresco(); return }
-      setRanchoId(draft.ranchoId)
-      setFecha(draft.fecha)
-      setAuditorNombre(draft.auditorNombre)
-      setIncidencias(draft.incidencias.map((inc) => ({
-        uid: inc.uid,
-        descripcion: inc.descripcion,
-        fotos: inc.fotos.map((f) => ({
-          uid: f.uid,
-          file: new File([f.blob], f.nombre, { type: f.tipo }),
-          preview: URL.createObjectURL(f.blob),
-          estado: f.estado ?? 'lista',
-          intentos: f.intentos ?? 0,
-        })),
-      })))
       setErrRancho(false)
       setProgreso(null)
-      setEstadoBorrador('guardado')
       setPendienteFirmaId(null)
       setPendienteReporteParaPDF(null)
       setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
       setSheetAbierto(true)
       // Originales que nunca se intentaron: se procesan solas. Las de intentos >= 1
       // no (volverían a cerrar la página): esperan a que el usuario decida.
-      for (const inc of draft.incidencias) {
-        const pendientes = inc.fotos.filter((f) => f.estado === 'original' && (f.intentos ?? 0) === 0).map((f) => f.uid)
-        if (pendientes.length > 0) void procesarFotos(inc.uid, pendientes)
+      for (const { reg, fotos } of draft.incidencias) {
+        const pendientes = fotos.filter((f) => f.reg && f.ref.estado === 'original' && (f.ref.intentos ?? 0) === 0).map((f) => f.ref.uid)
+        if (pendientes.length > 0) void procesarFotos(reg.uid, pendientes)
       }
     } catch {
       abrirSheetFresco()
     }
   }
 
-  function handleDescartarBorrador() {
+  // Único borrado manual. Pide confirmación; si el reporte llegó a crearse en el
+  // servidor a medias, también se quita para no dejar un reporte incompleto.
+  async function handleDescartarBorrador() {
     setConfirmDraftVisible(false)
+    const ok = await confirmar({
+      titulo: '¿Descartar el borrador?',
+      descripcion: 'Se perderán las incidencias y fotos guardadas en este teléfono. No se puede deshacer.',
+      textoConfirmar: 'Descartar',
+      tono: 'peligro',
+    })
+    if (!ok) { setConfirmDraftVisible(true); return }
+    cancelarPendientes()
+    sinEscrituraRef.current = true
+    if (draftKey) {
+      try {
+        const id = reporteInsertadoRef.current ? reporteIdRef.current : null
+        if (id && online && profile?.org_id) {
+          const draft = await cargarBorrador(draftKey, false)
+          const paths = (draft?.incidencias ?? []).flatMap((i) =>
+            i.fotos.filter((f) => f.ref.subida).map((f) => `${profile.org_id}/${id}/${i.reg.uid}/${f.ref.uid}.jpg`))
+          if (paths.length > 0) await borrarFotos(paths)
+          await supabase.from('m13_reportes').delete().eq('id', id)
+        }
+      } catch { /* el servidor se limpia después; el borrador local sí se descarta */ }
+      await borrarBorrador(draftKey).catch(() => {})
+    }
     setHayBorrador(false)
-    if (draftKey) borrarBorrador(draftKey).catch(() => {})
     abrirSheetFresco()
   }
 
   function actualizarIncidencia(uid: string, upd: Partial<IncidenciaLocal>) {
-    setIncidencias((prev) =>
-      prev.map((inc) => (inc.uid === uid ? { ...inc, ...upd } : inc))
-    )
+    mutarIncidencias((prev) => prev.map((inc) => (inc.uid === uid ? { ...inc, ...upd } : inc)))
+    programar(uid)
+    programar('cab')
   }
 
   function quitarIncidencia(uid: string) {
-    setIncidencias((prev) => {
-      const quitada = prev.find((i) => i.uid === uid)
-      if (quitada) quitada.fotos.forEach((f) => URL.revokeObjectURL(f.preview))
-      return prev.filter((i) => i.uid !== uid)
-    })
+    const quitada = estadoRef.current.incidencias.find((i) => i.uid === uid)
+    quitada?.fotos.forEach((f) => URL.revokeObjectURL(f.preview))
+    const t = timersRef.current.get(uid)
+    if (t) { clearTimeout(t); timersRef.current.delete(uid) }
+    mutarIncidencias((prev) => prev.filter((i) => i.uid !== uid))
+    if (puedeEscribir()) void borrarIncidencia(uid)
+    void escribirCabeceraYa()
   }
 
   function agregarIncidencia() {
-    setIncidencias((prev) => [...prev, nuevaIncidencia()])
+    const nueva = nuevaIncidencia()
+    mutarIncidencias((prev) => [...prev, nueva])
+    void escribirCabeceraYa()
+    void escribirIncidenciaYa(nueva.uid)
   }
 
   // ── Validación ──────────────────────────────────────────────────────────────
@@ -755,6 +960,10 @@ export function ReporteIncidencias() {
     if (!profile?.org_id) { toast.error('Sin organización activa'); return false }
     if (incidencias.length === 0) {
       toast.error('Agrega al menos una incidencia')
+      return false
+    }
+    if (incidencias.some((inc) => inc.fotos.some((f) => f.faltante))) {
+      toast.warning('Falta una foto: vuelve a agregarla o quítala')
       return false
     }
     if (incidencias.some((inc) => inc.fotos.some((f) => f.estado === 'original'))) {
@@ -777,52 +986,74 @@ export function ReporteIncidencias() {
 
   // ── Guardar ─────────────────────────────────────────────────────────────────
 
+  // El reporte quedó confirmado (servidor u outbox): recién ahora se borra el borrador
+  async function borrarBorradorConfirmado() {
+    cancelarPendientes()
+    sinEscrituraRef.current = true
+    if (draftKey) {
+      try { await borrarBorrador(draftKey) } catch (e) {
+        registrarEvento('M13', 'borrador_fallo', { etapa: 'borrar', nombre_error: String((e as { name?: string })?.name ?? 'Error'), mensaje: String((e as { message?: string })?.message ?? e).slice(0, 200) }, profile?.org_id)
+      }
+    }
+    reporteIdRef.current = null
+    reporteInsertadoRef.current = false
+    setReporteInsertado(false)
+    setHayBorrador(false)
+  }
+
   async function guardarSinConexion(orgId: string, totalFotosASubir: number) {
     setGuardando(true)
     try {
-      const localReporteId = crypto.randomUUID()
+      // Si un intento anterior ya creó el reporte, se completa ese; si no, uno nuevo
+      const reporteYaCreado = reporteInsertadoRef.current && reporteIdRef.current
+      const localReporteId = reporteYaCreado ? reporteIdRef.current! : crypto.randomUUID()
       const rancho = ranchos.find(r => r.id === ranchoId)
       const adjuntosParaEncolar: Omit<AdjuntoOutbox, 'loteId'>[] = []
       const operaciones = []
 
-      operaciones.push({
-        tabla: 'm13_reportes',
-        tipo: 'insert' as const,
-        fila: {
-          id: localReporteId,
-          org_id: orgId,
-          rancho_id: ranchoId,
-          fecha,
-          auditor_nombre: auditorNombre.trim() || null,
-          realizado_por_id: profile!.id,
-        } as Record<string, unknown>,
-      })
-
-      for (let i = 0; i < incidencias.length; i++) {
-        const inc = incidencias[i]
-        const localIncId = crypto.randomUUID()
+      if (!reporteYaCreado) {
         operaciones.push({
-          tabla: 'm13_incidencias',
+          tabla: 'm13_reportes',
           tipo: 'insert' as const,
           fila: {
-            id: localIncId,
-            reporte_id: localReporteId,
+            id: localReporteId,
             org_id: orgId,
-            orden: i + 1,
-            descripcion: inc.descripcion.trim(),
+            rancho_id: ranchoId,
+            fecha,
+            auditor_nombre: auditorNombre.trim() || null,
+            realizado_por_id: profile!.id,
           } as Record<string, unknown>,
         })
+      }
+
+      let fotosEncoladas = 0
+      for (let i = 0; i < incidencias.length; i++) {
+        const inc = incidencias[i]
+        if (!inc.insertada) {
+          operaciones.push({
+            tabla: 'm13_incidencias',
+            tipo: 'insert' as const,
+            fila: {
+              id: inc.uid,
+              reporte_id: localReporteId,
+              org_id: orgId,
+              orden: i + 1,
+              descripcion: inc.descripcion.trim(),
+            } as Record<string, unknown>,
+          })
+        }
         for (let j = 0; j < inc.fotos.length; j++) {
           const foto = inc.fotos[j]
-          const fotoUid = crypto.randomUUID()
-          const path = `${orgId}/${localReporteId}/${localIncId}/${fotoUid}.jpg`
-          adjuntosParaEncolar.push({ uid: fotoUid, blob: foto.file, path, bucket: 'incidencias' })
+          if (foto.subida) continue
+          const path = `${orgId}/${localReporteId}/${inc.uid}/${foto.uid}.jpg`
+          adjuntosParaEncolar.push({ uid: foto.uid, blob: foto.file, path, bucket: 'incidencias' })
+          fotosEncoladas++
           operaciones.push({
             tabla: 'm13_incidencia_fotos',
             tipo: 'insert' as const,
             fila: {
-              id: fotoUid,
-              incidencia_id: localIncId,
+              id: foto.uid,
+              incidencia_id: inc.uid,
               org_id: orgId,
               storage_path: path,
               orden: j + 1,
@@ -833,13 +1064,14 @@ export function ReporteIncidencias() {
 
       const ok = await guardarOffline({
         descripcion: `Reporte de Incidencias · ${rancho?.nombre ?? ''} · ${fecha}`,
-        metadatos: { rancho_id: ranchoId, rancho_nombre: rancho?.nombre, fecha, incidencias_count: incidencias.length, fotos_count: totalFotosASubir },
+        metadatos: { rancho_id: ranchoId, rancho_nombre: rancho?.nombre, fecha, incidencias_count: incidencias.length, fotos_count: fotosEncoladas || totalFotosASubir },
         operaciones,
         adjuntos: adjuntosParaEncolar,
       })
       if (ok) {
+        // Lote y adjuntos quedaron escritos en el outbox: ya se puede borrar el borrador
+        await borrarBorradorConfirmado()
         if (tareaId) setRegistroGuardado(true)
-        if (draftKey) { borrarBorrador(draftKey).catch(() => {}); setHayBorrador(false) }
         handleCerrarSheet()
       }
       return
@@ -849,90 +1081,117 @@ export function ReporteIncidencias() {
     } finally {
       setGuardando(false)
     }
-  
   }
 
   async function handleGuardar() {
     if (!validarFormulario()) return
     if (!user?.id) { toast.error('Sin sesión activa'); return }
     const orgId = profile!.org_id!
-    const totalFotosASubir = incidencias.reduce((sum, inc) => sum + inc.fotos.length, 0)
+    const totalFotosASubir = incidencias.reduce((sum, inc) => sum + inc.fotos.filter((f) => !f.subida).length, 0)
+
+    // Primero se fuerza la escritura de todo en el teléfono; recién después se sube o se encola
+    setGuardando(true)
+    try { await guardarCompleto() } finally { setGuardando(false) }
 
     if (!online) {
       await guardarSinConexion(orgId, totalFotosASubir)
       return
     }
 
-    setGuardando(true)
-    setProgreso({ total: totalFotosASubir, procesadas: 0, fallidas: 0, fase: 'reporte' })
-    const inicioMs = Date.now()
-    registrarEvento('M13', 'guardar_inicio', { incidencias: incidencias.length, fotos: totalFotosASubir }, orgId)
+    if (totalFotosASubir > FOTOS_PARA_AVISO) {
+      const subirAhora = await confirmar({
+        titulo: 'Reporte con muchas fotos',
+        descripcion: `Son ${totalFotosASubir} fotos. Con señal débil puede tardar varios minutos. Puedes guardarlo sin conexión y se subirá solo.`,
+        textoConfirmar: 'Subir ahora',
+        textoCancelar: 'Guardar sin conexión',
+      })
+      if (!subirAhora) {
+        await guardarSinConexion(orgId, totalFotosASubir)
+        return
+      }
+    }
 
-    const pathsSubidos: string[] = []
-    let reporteId: string | null = null
+    setGuardando(true)
+    setProgreso({ total: totalFotosASubir, procesadas: 0, fallidas: 0, fase: reporteInsertadoRef.current ? 'fotos' : 'reporte' })
+    const inicioMs = Date.now()
+    registrarEvento('M13', 'guardar_inicio', { incidencias: incidencias.length, fotos: totalFotosASubir, retoma: reporteInsertadoRef.current }, orgId)
+
+    // Mismo id en cada reintento: si el reporte ya llegó al servidor no se duplica
+    const reporteId = reporteIdRef.current ?? crypto.randomUUID()
     // IDs de incidencias guardadas y fotos subidas por incidencia (para PDF automático)
-    const incidenciaIds: string[] = []
-    const fotosSubidasPorIncidencia: Array<Array<{ id: string; storage_path: string; orden: number }>> = []
+    const fotosSubidasPorIncidencia: Array<Array<{ id: string; storage_path: string; orden: number }>> = incidencias.map(() => [])
 
     try {
-      // PASO 1: INSERT reporte padre
+      // PASO 1: INSERT reporte padre (se omite si un intento anterior ya lo creó)
       // Si no responde en 20 s o falla por red, se ofrece guardar sin conexión (el borrador no se toca)
-      let reporteResp: Awaited<ReturnType<typeof insertarReporte>> | null = null
-      let temporizador: ReturnType<typeof setTimeout> | undefined
-      const insertarReporte = () => supabase
-        .from('m13_reportes')
-        .insert({
-          org_id: orgId,
-          rancho_id: ranchoId,
-          fecha,
-          auditor_nombre: auditorNombre.trim() || null,
-          realizado_por_id: profile!.id,
-        })
-        .select('id')
-        .single()
-      try {
-        reporteResp = await Promise.race([
-          insertarReporte(),
-          new Promise<never>((_, rej) => { temporizador = setTimeout(() => rej(new Error('TIMEOUT_RED: La conexión tardó demasiado')), TIEMPO_PASO1_MS) }),
-        ])
-      } catch (e) {
-        if (!esErrorDeRed(e)) throw e
-        registrarEvento('M13', 'guardar_paso1_timeout', { ms: Date.now() - inicioMs, mensaje: String((e as { message?: string })?.message ?? e).slice(0, 120) }, orgId)
-        setGuardando(false)
-        setProgreso(null)
-        const aceptar = await confirmar({
-          titulo: 'La conexión no está respondiendo',
-          descripcion: '¿Guardar sin conexión? Se subirá solo cuando vuelva la señal.',
-          textoConfirmar: 'Guardar sin conexión',
-        })
-        if (aceptar) await guardarSinConexion(orgId, totalFotosASubir)
-        return
-      } finally {
-        clearTimeout(temporizador)
-      }
-      const { data: reporteData, error: errReporte } = reporteResp!
-      if (errReporte) throw errReporte
-      if (!reporteData) throw new Error('No se pudo guardar el reporte')
-      reporteId = reporteData.id
-      setProgreso({ total: totalFotosASubir, procesadas: 0, fallidas: 0, fase: 'fotos' })
-
-      // PASO 2: INSERT todas las incidencias (texto, sin fotos — comentarios quedan guardados)
-      for (let i = 0; i < incidencias.length; i++) {
-        const inc = incidencias[i]
-        const { data: incData, error: errInc } = await supabase
-          .from('m13_incidencias')
+      if (!reporteInsertadoRef.current) {
+        reporteIdRef.current = reporteId
+        if (draftKey) await guardarCabecera(draftKey, { reporteServidorId: reporteId })
+        let reporteResp: Awaited<ReturnType<typeof insertarReporte>> | null = null
+        let temporizador: ReturnType<typeof setTimeout> | undefined
+        const insertarReporte = () => supabase
+          .from('m13_reportes')
           .insert({
-            reporte_id: reporteId,
+            id: reporteId,
             org_id: orgId,
-            orden: i + 1,
-            descripcion: inc.descripcion.trim(),
+            rancho_id: ranchoId,
+            fecha,
+            auditor_nombre: auditorNombre.trim() || null,
+            realizado_por_id: profile!.id,
           })
           .select('id')
           .single()
-        if (errInc) throw errInc
-        if (!incData) throw new Error('No se pudo guardar la incidencia')
-        incidenciaIds.push(incData.id)
-        fotosSubidasPorIncidencia.push([])
+        try {
+          reporteResp = await Promise.race([
+            insertarReporte(),
+            new Promise<never>((_, rej) => { temporizador = setTimeout(() => rej(new Error('TIMEOUT_RED: La conexión tardó demasiado')), TIEMPO_PASO1_MS) }),
+          ])
+        } catch (e) {
+          if (!esErrorDeRed(e)) throw e
+          registrarEvento('M13', 'guardar_paso1_timeout', { ms: Date.now() - inicioMs, mensaje: String((e as { message?: string })?.message ?? e).slice(0, 120) }, orgId)
+          setGuardando(false)
+          setProgreso(null)
+          const aceptar = await confirmar({
+            titulo: 'La conexión no está respondiendo',
+            descripcion: '¿Guardar sin conexión? Se subirá solo cuando vuelva la señal.',
+            textoConfirmar: 'Guardar sin conexión',
+          })
+          if (aceptar) await guardarSinConexion(orgId, totalFotosASubir)
+          return
+        } finally {
+          clearTimeout(temporizador)
+        }
+        const { error: errReporte } = reporteResp!
+        if (errReporte && !yaExiste(errReporte)) throw errReporte
+        reporteInsertadoRef.current = true
+        setReporteInsertado(true)
+        if (draftKey) await guardarCabecera(draftKey, { reporteServidorId: reporteId, reporteInsertado: true })
+      }
+      setProgreso({ total: totalFotosASubir, procesadas: 0, fallidas: 0, fase: 'fotos' })
+
+      // PASO 2: INSERT (o actualiza) todas las incidencias — texto sin fotos, los comentarios quedan guardados
+      for (let i = 0; i < incidencias.length; i++) {
+        const inc = incidencias[i]
+        if (inc.insertada) {
+          const { error: errUpd } = await supabase
+            .from('m13_incidencias')
+            .update({ orden: i + 1, descripcion: inc.descripcion.trim() })
+            .eq('id', inc.uid)
+          if (errUpd) throw errUpd
+        } else {
+          const { error: errInc } = await supabase
+            .from('m13_incidencias')
+            .insert({
+              id: inc.uid,
+              reporte_id: reporteId,
+              org_id: orgId,
+              orden: i + 1,
+              descripcion: inc.descripcion.trim(),
+            })
+          if (errInc && !yaExiste(errInc)) throw errInc
+          mutarIncidencias((prev) => prev.map((x) => x.uid === inc.uid ? { ...x, insertada: true } : x))
+          void escribirIncidenciaYa(inc.uid)
+        }
       }
 
       // PASO 3: Subir fotos secuencialmente con reintento (hasta MAX_REINTENTOS_FOTO por foto)
@@ -943,11 +1202,14 @@ export function ReporteIncidencias() {
 
       for (let i = 0; i < incidencias.length && !sesionExpirada; i++) {
         const inc = incidencias[i]
-        const incidenciaId = incidenciaIds[i]
 
         for (let j = 0; j < inc.fotos.length; j++) {
           const fotoLocal = inc.fotos[j]
-          const path = `${orgId}/${reporteId}/${incidenciaId}/${crypto.randomUUID()}.jpg`
+          const path = `${orgId}/${reporteId}/${inc.uid}/${fotoLocal.uid}.jpg`
+          if (fotoLocal.subida) {
+            fotosSubidasPorIncidencia[i].push({ id: fotoLocal.uid, storage_path: path, orden: j + 1 })
+            continue
+          }
           let subida = false
           let motivoFallo = 'error desconocido'
 
@@ -963,28 +1225,34 @@ export function ReporteIncidencias() {
                   `La foto ${j + 1} de la incidencia ${i + 1} es demasiado grande (${(archivoASubir.size / 1024 / 1024).toFixed(1)} MB). Usa una foto con menor resolución.`
                 )
               }
-              await subirFoto(path, archivoASubir)
-              const { data: fotoData, error: errFoto } = await supabase
+              try {
+                await subirFoto(path, archivoASubir)
+              } catch (e) {
+                if (!yaExiste(e)) throw e   // el archivo ya estaba arriba de un intento anterior
+              }
+              const { error: errFoto } = await supabase
                 .from('m13_incidencia_fotos')
                 .insert({
-                  incidencia_id: incidenciaId,
+                  id: fotoLocal.uid,
+                  incidencia_id: inc.uid,
                   org_id: orgId,
                   storage_path: path,
                   orden: j + 1,
                 })
-                .select('id')
-                .single()
-              if (errFoto) throw errFoto
-              if (!fotoData) throw new Error('No se pudo guardar la foto')
-              pathsSubidos.push(path)
-              fotosSubidasPorIncidencia[i].push({ id: fotoData.id, storage_path: path, orden: j + 1 })
+              if (errFoto && !yaExiste(errFoto)) throw errFoto
+              fotosSubidasPorIncidencia[i].push({ id: fotoLocal.uid, storage_path: path, orden: j + 1 })
+              mutarIncidencias((prev) => prev.map((x) => x.uid !== inc.uid ? x : {
+                ...x,
+                fotos: x.fotos.map((f) => f.uid === fotoLocal.uid ? { ...f, subida: true } : f),
+              }))
+              void escribirIncidenciaYa(inc.uid)
               subida = true
               break
             } catch (e) {
               console.error(`M13 foto ${j + 1} intento ${intento + 1}/${MAX_REINTENTOS_FOTO}:`, e)
               const msg = (e as { message?: string } | null)?.message ?? ''
               if (msg) motivoFallo = msg
-              // Detectar sesión expirada (401/JWT) — abortar subida sin rollback
+              // Detectar sesión expirada (401/JWT) — abortar subida
               if (msg.includes('401') || msg.includes('JWT') || msg.toLowerCase().includes('token')) {
                 sesionExpirada = true
                 break
@@ -1003,13 +1271,14 @@ export function ReporteIncidencias() {
         }
       }
 
-      // Sesión expirada durante la subida — el reporte y comentarios ya están guardados
+      await vaciarEscrituras()
+
+      // Sesión expirada durante la subida — el reporte y comentarios ya están guardados; el borrador se queda
       if (sesionExpirada) {
         toast.error(
-          'Tu sesión expiró durante la subida. El reporte y sus comentarios quedaron guardados. Vuelve a iniciar sesión para reintentar las fotos.',
+          'Tu sesión expiró durante la subida. Tu borrador sigue guardado: vuelve a iniciar sesión y toca "Terminar de subir".',
           { duration: 10000 }
         )
-        if (draftKey) { borrarBorrador(draftKey).catch(() => {}); setHayBorrador(false) }
         setSheetAbierto(false)
         await refetch()
         return
@@ -1017,25 +1286,27 @@ export function ReporteIncidencias() {
 
       registrarEvento('M13', 'guardar_fin', { ms: Date.now() - inicioMs, fallidas }, orgId)
 
-      // PASO 4: Resultado
-      if (fallidas === 0) {
-        toast.success('Reporte guardado correctamente')
-      } else {
+      // PASO 4: Resultado. Con fotos fallidas el reporte NO está confirmado: el borrador se queda
+      if (fallidas > 0) {
         toast.warning(
-          `Reporte guardado. ${fallidas} foto(s) no se pudieron subir (${detalleFallos.slice(0, 3).join('; ')}${detalleFallos.length > 3 ? '…' : ''}). El reporte y sus comentarios están guardados.`,
+          `${fallidas} foto(s) no se pudieron subir (${detalleFallos.slice(0, 3).join('; ')}${detalleFallos.length > 3 ? '…' : ''}). Tu borrador sigue guardado: toca "Terminar de subir" para reintentar.`,
           { duration: 12000 }
         )
+        await refetch()
+        return
       }
 
+      toast.success('Reporte guardado correctamente')
       if (tareaId) setRegistroGuardado(true)
       await refetch()
       await refetchFirmas()
-      if (draftKey) { borrarBorrador(draftKey).catch(() => {}); setHayBorrador(false) }
+      // Servidor confirmó reporte, todas sus incidencias y todas sus fotos: se borra el borrador
+      await borrarBorradorConfirmado()
 
       // PASO 5: Preparar para firma y PDF
       const ranchoInfo = ranchos.find((r) => r.id === ranchoId)
       const reporteParaPDF: M13ReporteConRancho = {
-        id: reporteId!,
+        id: reporteId,
         org_id: orgId,
         rancho_id: ranchoId,
         rancho_nombre: ranchoInfo?.nombre ?? '—',
@@ -1050,15 +1321,15 @@ export function ReporteIncidencias() {
         comentario_correccion: null,
         marcado_por: null,
         marcado_en: null,
-        incidencias: incidenciaIds.map((incId, i) => ({
-          id: incId,
+        incidencias: incidencias.map((inc, i) => ({
+          id: inc.uid,
           orden: i + 1,
-          descripcion: incidencias[i].descripcion.trim(),
+          descripcion: inc.descripcion.trim(),
           fotos: fotosSubidasPorIncidencia[i],
         })),
       }
       setPendienteReporteParaPDF(reporteParaPDF)
-      setPendienteFirmaId(reporteId!)
+      setPendienteFirmaId(reporteId)
       setSheetPaso('firma_decision')
 
     } catch (err: unknown) {
@@ -1066,18 +1337,9 @@ export function ReporteIncidencias() {
       if (mensaje.includes('FECHA_SOLO_HOY')) {
         toast.warning('Solo puedes registrar con la fecha de hoy')
       } else {
-        toast.error(mensaje, { duration: 7000 })
+        toast.error(`${mensaje}. Tu borrador sigue guardado.`, { duration: 7000 })
       }
-
-      // Rollback: borrar Storage + reporte (cascade limpia incidencias y fotos)
-      try {
-        if (pathsSubidos.length > 0) await borrarFotos(pathsSubidos)
-        if (reporteId) {
-          await supabase.from('m13_reportes').delete().eq('id', reporteId)
-        }
-      } catch {
-        // Rollback silencioso — el usuario ya recibió el error principal
-      }
+      // Sin rollback: lo ya subido se conserva y el reintento ("Terminar de subir") retoma desde ahí
     } finally {
       setGuardando(false)
       setProgreso(null)
@@ -1440,9 +1702,6 @@ export function ReporteIncidencias() {
                 <h2 className="text-base text-foreground font-semibold">
                   {sheetPaso === 'firma_decision' ? 'Firmar reporte' : sheetPaso === 'firma_gate' ? 'Registra tu firma' : 'Nuevo reporte'}
                 </h2>
-                {sheetPaso === 'form' && estadoBorrador === 'guardado' && (
-                  <span className="text-caption text-muted-foreground">Borrador guardado</span>
-                )}
               </div>
               <button aria-label="Cerrar"
                 onClick={handleCerrarSheet}
@@ -1472,6 +1731,19 @@ export function ReporteIncidencias() {
             )}
 
             {sheetPaso === 'form' && (<>
+            {!lock.esDueno && (
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-border text-sm flex-shrink-0" style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
+                <span className="flex-1 min-w-0">Este reporte está abierto en otra pestaña</span>
+                <button type="button" onClick={lock.usarAqui} className="font-semibold underline flex-shrink-0">Usar aquí</button>
+              </div>
+            )}
+            {falloGuardado && (
+              <div className="flex items-center gap-2 px-4 py-2 border-b border-border text-xs flex-shrink-0" role="alert" style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}>
+                <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                No se pudo guardar en el teléfono. No cierres esta pantalla.
+              </div>
+            )}
+            <fieldset disabled={!lock.esDueno} className="contents">
             {/* Campos scrollables */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
@@ -1482,7 +1754,7 @@ export function ReporteIncidencias() {
                 </label>
                 <select
                   value={ranchoId}
-                  onChange={(e) => { setRanchoId(e.target.value); setErrRancho(false) }}
+                  onChange={(e) => { cambiarRancho(e.target.value); setErrRancho(false) }}
                   className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
                     errRancho ? 'border-agro-red' : 'border-border-control'
                   } ${!ranchoId ? 'text-muted-foreground' : 'text-foreground'}`}
@@ -1505,7 +1777,7 @@ export function ReporteIncidencias() {
                   value={fecha}
                   min={puedeEditarFecha ? undefined : hoy()}
                   max={puedeEditarFecha ? undefined : hoy()}
-                  onChange={(e) => { if (puedeEditarFecha) setFecha(e.target.value) }}
+                  onChange={(e) => { if (puedeEditarFecha) cambiarFecha(e.target.value) }}
                   className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
@@ -1518,7 +1790,7 @@ export function ReporteIncidencias() {
                 <input maxLength={limiteTexto('m13_reportes', 'auditor_nombre')}
                   type="text"
                   value={auditorNombre}
-                  onChange={(e) => setAuditorNombre(e.target.value)}
+                  onChange={(e) => cambiarAuditor(e.target.value)}
                   placeholder={profile?.nombre_completo ?? 'Nombre del auditor'}
                   className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
@@ -1548,6 +1820,7 @@ export function ReporteIncidencias() {
                       onQuitarFoto={quitarFotoDe}
                       onProcesarFotos={procesarFotos}
                       onGuardarYa={guardarYa}
+                      onBlurTexto={() => { void flushTodo() }}
                     />
                   ))}
                 </div>
@@ -1609,6 +1882,8 @@ export function ReporteIncidencias() {
                       : 'Guardando...'
                     : hayFotosSinOptimizar
                       ? 'Hay fotos sin optimizar'
+                    : reporteInsertado
+                      ? `Terminar de subir (${fotosPendientes} foto${fotosPendientes !== 1 ? 's' : ''} pendiente${fotosPendientes !== 1 ? 's' : ''})`
                     : online
                       ? 'Guardar reporte'
                       : `Guardar sin conexión (${totalFotos} foto${totalFotos !== 1 ? 's' : ''})`
@@ -1616,6 +1891,7 @@ export function ReporteIncidencias() {
                 </button>
               </div>
             </div>
+            </fieldset>
             </>)}
       </BottomSheet>
     </div>
