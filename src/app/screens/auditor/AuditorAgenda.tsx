@@ -81,30 +81,33 @@ export function AuditorAgenda() {
         </LayoutGroup>
       </div>
 
-      <main
-        role="tabpanel"
-        id={`panel-${tab}`}
-        aria-labelledby={`tab-${tab}`}
-        className="flex-1 px-4 md:px-6 py-4 w-full"
-      >
-        <AnimatePresence mode="wait" initial={false} custom={dirTabRef.current}>
-          <motion.div
-            key={tab}
-            custom={dirTabRef.current}
-            variants={{
-              enter: (d: number) => (reducedMotion ? { opacity: 1 } : { opacity: 0, x: d * 24 }),
-              center: { opacity: 1, x: 0, transition: { duration: DUR.base, ease: EASE_OUT } },
-              exit: (d: number) => (reducedMotion
-                ? { opacity: 1 }
-                : { opacity: 0, x: d * -12, transition: { duration: 0.12, ease: EASE_OUT } }),
-            }}
-            initial="enter"
-            animate="center"
-            exit="exit"
-          >
-            {tab === 'calendario' ? <CalendarioConsolidado /> : <MisVisitas />}
-          </motion.div>
-        </AnimatePresence>
+      <main className="flex-1 px-4 md:px-6 py-4 w-full">
+        <div
+          role="tabpanel"
+          id={`panel-${tab}`}
+          aria-labelledby={`tab-${tab}`}
+          tabIndex={0}
+          className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          <AnimatePresence mode="wait" initial={false} custom={dirTabRef.current}>
+            <motion.div
+              key={tab}
+              custom={dirTabRef.current}
+              variants={{
+                enter: (d: number) => (reducedMotion ? { opacity: 1 } : { opacity: 0, x: d * 24 }),
+                center: { opacity: 1, x: 0, transition: { duration: DUR.base, ease: EASE_OUT } },
+                exit: (d: number) => (reducedMotion
+                  ? { opacity: 1 }
+                  : { opacity: 0, x: d * -12, transition: { duration: 0.12, ease: EASE_OUT } }),
+              }}
+              initial="enter"
+              animate="center"
+              exit="exit"
+            >
+              {tab === 'calendario' ? <CalendarioConsolidado /> : <MisVisitas />}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </main>
     </div>
   )
