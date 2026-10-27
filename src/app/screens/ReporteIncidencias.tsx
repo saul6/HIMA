@@ -43,6 +43,7 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { Portal } from '@/app/components/Portal'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto, MAX_FOTOS } from '@/lib/limitesTexto'
+import { useConfirmar } from '@/app/components/ui-mady/ConfirmarSheet'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { fechaCorta } from '@/lib/formato'
@@ -81,6 +82,14 @@ interface ProgresoSubida {
   total: number
   procesadas: number
   fallidas: number
+  fase?: 'reporte' | 'fotos'
+}
+
+const TIEMPO_PASO1_MS = 20_000
+
+function esErrorDeRed(e: unknown): boolean {
+  const m = String((e as { message?: string } | null)?.message ?? e).toLowerCase()
+  return m.includes('timeout_red') || m.includes('failed to fetch') || m.includes('networkerror') || m.includes('load failed') || m.includes('network request failed')
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -441,6 +450,7 @@ export function ReporteIncidencias() {
   const [errRancho, setErrRancho] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [progreso, setProgreso] = useState<ProgresoSubida | null>(null)
+  const { confirmar, confirmarElemento } = useConfirmar()
 
   // Sheet consolidado
   const [sheetConsolidadoAbierto, setSheetConsolidadoAbierto] = useState(false)
@@ -767,6 +777,81 @@ export function ReporteIncidencias() {
 
   // ── Guardar ─────────────────────────────────────────────────────────────────
 
+  async function guardarSinConexion(orgId: string, totalFotosASubir: number) {
+    setGuardando(true)
+    try {
+      const localReporteId = crypto.randomUUID()
+      const rancho = ranchos.find(r => r.id === ranchoId)
+      const adjuntosParaEncolar: Omit<AdjuntoOutbox, 'loteId'>[] = []
+      const operaciones = []
+
+      operaciones.push({
+        tabla: 'm13_reportes',
+        tipo: 'insert' as const,
+        fila: {
+          id: localReporteId,
+          org_id: orgId,
+          rancho_id: ranchoId,
+          fecha,
+          auditor_nombre: auditorNombre.trim() || null,
+          realizado_por_id: profile!.id,
+        } as Record<string, unknown>,
+      })
+
+      for (let i = 0; i < incidencias.length; i++) {
+        const inc = incidencias[i]
+        const localIncId = crypto.randomUUID()
+        operaciones.push({
+          tabla: 'm13_incidencias',
+          tipo: 'insert' as const,
+          fila: {
+            id: localIncId,
+            reporte_id: localReporteId,
+            org_id: orgId,
+            orden: i + 1,
+            descripcion: inc.descripcion.trim(),
+          } as Record<string, unknown>,
+        })
+        for (let j = 0; j < inc.fotos.length; j++) {
+          const foto = inc.fotos[j]
+          const fotoUid = crypto.randomUUID()
+          const path = `${orgId}/${localReporteId}/${localIncId}/${fotoUid}.jpg`
+          adjuntosParaEncolar.push({ uid: fotoUid, blob: foto.file, path, bucket: 'incidencias' })
+          operaciones.push({
+            tabla: 'm13_incidencia_fotos',
+            tipo: 'insert' as const,
+            fila: {
+              id: fotoUid,
+              incidencia_id: localIncId,
+              org_id: orgId,
+              storage_path: path,
+              orden: j + 1,
+            } as Record<string, unknown>,
+          })
+        }
+      }
+
+      const ok = await guardarOffline({
+        descripcion: `Reporte de Incidencias · ${rancho?.nombre ?? ''} · ${fecha}`,
+        metadatos: { rancho_id: ranchoId, rancho_nombre: rancho?.nombre, fecha, incidencias_count: incidencias.length, fotos_count: totalFotosASubir },
+        operaciones,
+        adjuntos: adjuntosParaEncolar,
+      })
+      if (ok) {
+        if (tareaId) setRegistroGuardado(true)
+        if (draftKey) { borrarBorrador(draftKey).catch(() => {}); setHayBorrador(false) }
+        handleCerrarSheet()
+      }
+      return
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'No se pudo guardar el reporte offline')
+      return
+    } finally {
+      setGuardando(false)
+    }
+  
+  }
+
   async function handleGuardar() {
     if (!validarFormulario()) return
     if (!user?.id) { toast.error('Sin sesión activa'); return }
@@ -774,81 +859,14 @@ export function ReporteIncidencias() {
     const totalFotosASubir = incidencias.reduce((sum, inc) => sum + inc.fotos.length, 0)
 
     if (!online) {
-      setGuardando(true)
-      try {
-        const localReporteId = crypto.randomUUID()
-        const rancho = ranchos.find(r => r.id === ranchoId)
-        const adjuntosParaEncolar: Omit<AdjuntoOutbox, 'loteId'>[] = []
-        const operaciones = []
-
-        operaciones.push({
-          tabla: 'm13_reportes',
-          tipo: 'insert' as const,
-          fila: {
-            id: localReporteId,
-            org_id: orgId,
-            rancho_id: ranchoId,
-            fecha,
-            auditor_nombre: auditorNombre.trim() || null,
-            realizado_por_id: profile!.id,
-          } as Record<string, unknown>,
-        })
-
-        for (let i = 0; i < incidencias.length; i++) {
-          const inc = incidencias[i]
-          const localIncId = crypto.randomUUID()
-          operaciones.push({
-            tabla: 'm13_incidencias',
-            tipo: 'insert' as const,
-            fila: {
-              id: localIncId,
-              reporte_id: localReporteId,
-              org_id: orgId,
-              orden: i + 1,
-              descripcion: inc.descripcion.trim(),
-            } as Record<string, unknown>,
-          })
-          for (let j = 0; j < inc.fotos.length; j++) {
-            const foto = inc.fotos[j]
-            const fotoUid = crypto.randomUUID()
-            const path = `${orgId}/${localReporteId}/${localIncId}/${fotoUid}.jpg`
-            adjuntosParaEncolar.push({ uid: fotoUid, blob: foto.file, path, bucket: 'incidencias' })
-            operaciones.push({
-              tabla: 'm13_incidencia_fotos',
-              tipo: 'insert' as const,
-              fila: {
-                id: fotoUid,
-                incidencia_id: localIncId,
-                org_id: orgId,
-                storage_path: path,
-                orden: j + 1,
-              } as Record<string, unknown>,
-            })
-          }
-        }
-
-        const ok = await guardarOffline({
-          descripcion: `Reporte de Incidencias · ${rancho?.nombre ?? ''} · ${fecha}`,
-          metadatos: { rancho_id: ranchoId, rancho_nombre: rancho?.nombre, fecha, incidencias_count: incidencias.length, fotos_count: totalFotosASubir },
-          operaciones,
-          adjuntos: adjuntosParaEncolar,
-        })
-        if (ok) {
-          if (tareaId) setRegistroGuardado(true)
-          if (draftKey) { borrarBorrador(draftKey).catch(() => {}); setHayBorrador(false) }
-          handleCerrarSheet()
-        }
-        return
-      } catch (err: unknown) {
-        toast.error(err instanceof Error ? err.message : 'No se pudo guardar el reporte offline')
-        return
-      } finally {
-        setGuardando(false)
-      }
+      await guardarSinConexion(orgId, totalFotosASubir)
+      return
     }
 
     setGuardando(true)
-    setProgreso({ total: totalFotosASubir, procesadas: 0, fallidas: 0 })
+    setProgreso({ total: totalFotosASubir, procesadas: 0, fallidas: 0, fase: 'reporte' })
+    const inicioMs = Date.now()
+    registrarEvento('M13', 'guardar_inicio', { incidencias: incidencias.length, fotos: totalFotosASubir }, orgId)
 
     const pathsSubidos: string[] = []
     let reporteId: string | null = null
@@ -858,7 +876,10 @@ export function ReporteIncidencias() {
 
     try {
       // PASO 1: INSERT reporte padre
-      const { data: reporteData, error: errReporte } = await supabase
+      // Si no responde en 20 s o falla por red, se ofrece guardar sin conexión (el borrador no se toca)
+      let reporteResp: Awaited<ReturnType<typeof insertarReporte>> | null = null
+      let temporizador: ReturnType<typeof setTimeout> | undefined
+      const insertarReporte = () => supabase
         .from('m13_reportes')
         .insert({
           org_id: orgId,
@@ -869,9 +890,31 @@ export function ReporteIncidencias() {
         })
         .select('id')
         .single()
+      try {
+        reporteResp = await Promise.race([
+          insertarReporte(),
+          new Promise<never>((_, rej) => { temporizador = setTimeout(() => rej(new Error('TIMEOUT_RED: La conexión tardó demasiado')), TIEMPO_PASO1_MS) }),
+        ])
+      } catch (e) {
+        if (!esErrorDeRed(e)) throw e
+        registrarEvento('M13', 'guardar_paso1_timeout', { ms: Date.now() - inicioMs, mensaje: String((e as { message?: string })?.message ?? e).slice(0, 120) }, orgId)
+        setGuardando(false)
+        setProgreso(null)
+        const aceptar = await confirmar({
+          titulo: 'La conexión no está respondiendo',
+          descripcion: '¿Guardar sin conexión? Se subirá solo cuando vuelva la señal.',
+          textoConfirmar: 'Guardar sin conexión',
+        })
+        if (aceptar) await guardarSinConexion(orgId, totalFotosASubir)
+        return
+      } finally {
+        clearTimeout(temporizador)
+      }
+      const { data: reporteData, error: errReporte } = reporteResp!
       if (errReporte) throw errReporte
       if (!reporteData) throw new Error('No se pudo guardar el reporte')
       reporteId = reporteData.id
+      setProgreso({ total: totalFotosASubir, procesadas: 0, fallidas: 0, fase: 'fotos' })
 
       // PASO 2: INSERT todas las incidencias (texto, sin fotos — comentarios quedan guardados)
       for (let i = 0; i < incidencias.length; i++) {
@@ -956,7 +999,7 @@ export function ReporteIncidencias() {
             detalleFallos.push(`Foto ${j + 1} de la incidencia ${i + 1}: ${motivoFallo}`)
           }
           procesadas++
-          setProgreso({ total: totalFotosASubir, procesadas, fallidas })
+          setProgreso({ total: totalFotosASubir, procesadas, fallidas, fase: 'fotos' })
         }
       }
 
@@ -971,6 +1014,8 @@ export function ReporteIncidencias() {
         await refetch()
         return
       }
+
+      registrarEvento('M13', 'guardar_fin', { ms: Date.now() - inicioMs, fallidas }, orgId)
 
       // PASO 4: Resultado
       if (fallidas === 0) {
@@ -1345,6 +1390,8 @@ export function ReporteIncidencias() {
             </div>
       </BottomSheet>
 
+      {confirmarElemento}
+
       {/* Diálogo confirmación borrador */}
       {confirmDraftVisible && (
         <Portal>
@@ -1523,9 +1570,11 @@ export function ReporteIncidencias() {
                 <div className="px-4 pt-3 pb-1 space-y-1.5">
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>
-                      {progreso.procesadas < progreso.total
-                        ? `Subiendo fotos...`
-                        : 'Finalizando...'}
+                      {progreso.fase === 'reporte'
+                        ? 'Guardando reporte…'
+                        : progreso.procesadas < progreso.total
+                          ? `Subiendo foto ${progreso.procesadas + 1} de ${progreso.total}`
+                          : 'Finalizando...'}
                     </span>
                     <span className="font-semibold">
                       {progreso.procesadas} / {progreso.total}
@@ -1554,7 +1603,9 @@ export function ReporteIncidencias() {
                   {!guardando && !online && !hayFotosSinOptimizar && <WifiOff className="w-4 h-4" />}
                   {guardando
                     ? progreso
-                      ? `Subiendo ${progreso.procesadas} / ${progreso.total} fotos...`
+                      ? progreso.fase === 'reporte'
+                        ? 'Guardando reporte…'
+                        : `Subiendo ${progreso.procesadas} / ${progreso.total} fotos...`
                       : 'Guardando...'
                     : hayFotosSinOptimizar
                       ? 'Hay fotos sin optimizar'
