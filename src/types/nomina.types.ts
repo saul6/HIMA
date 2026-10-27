@@ -249,7 +249,19 @@ export type RespuestaCalculo =
   | { aprobado: false; periodo_id: string | null; calculo: CalculoCorte }
   | { aprobado: true; periodo_id: string; corte: CorteAprobado }
 
+export interface FirmaVoucher {
+  firmante: string
+  firmado_en: string
+  sello: string
+  metodo: string | null
+  firma_png: string | null
+}
+
 export interface VoucherData {
+  voucher_id?: string
+  firmas?: { entrego: FirmaVoucher | null; recibio: FirmaVoucher | null }
+  puede_firmar_entrego?: boolean
+  puede_firmar_recibio?: boolean
   organizacion: string
   folio: string
   revision: number
@@ -273,6 +285,9 @@ export interface MiVoucher {
   fin: string
   neto: number
   pago: PagoResumen
+  revision?: number
+  firmado_entrego?: boolean
+  firmado_recibio?: boolean
 }
 
 // ───────────── Consolidado mensual (nom_consolidado_mensual / nom_consolidados) ─────────────

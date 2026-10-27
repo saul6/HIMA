@@ -12,6 +12,7 @@ import { avisarErrorNomina } from '@/lib/nomina/errores'
 import { etiquetaMetodo, etiquetaOrigenPrestamo, fechaCorta, formatoMoneda, leerMonto, r2 } from '@/lib/nomina/formato'
 import { fechaHora } from '@/lib/formato'
 import { generarVoucherPDF } from '@/lib/pdf/m81/generarVoucherPDF'
+import { FirmasVoucher } from './FirmasVoucher'
 import { AjusteSheet, PagoSheet, ReversionSheet } from './SheetsDinero'
 import { CLASE_INPUT, MotivoSheet } from './ui'
 import type { CtxSemana } from './contexto'
@@ -297,6 +298,8 @@ export function CorteTab({ ctx, calculo, prestamos, ajustes, onIrActividad, onCa
       <Boton variante="secundario" className="w-full" cargando={generandoPdf} disabled={offline} onClick={() => void descargarVoucher(corte.id)}>
         <FileDown className="size-4" /> Voucher PDF
       </Boton>
+
+      <FirmasVoucher corteId={corte.id} claveRecarga={`${pagos.length}-${corte.pago.entregado}`} />
 
       {snap && <Lineas lineas={snap.lineas} moneda={moneda} />}
       {snap && (

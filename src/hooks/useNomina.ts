@@ -123,6 +123,14 @@ export const nomina = {
   cancelarAjuste: (id: string, motivo: string) => rpc<unknown>('nom_cancelar_ajuste', { p_id: id, p_motivo: motivo }),
   voucher: (corte: string) => rpc<VoucherData>('nom_voucher', { p_corte: corte }),
   misVouchers: () => rpc<MiVoucher[]>('nom_mis_vouchers'),
+  firmarVoucher: (a: { corte: string; rol: 'entrego' | 'recibio'; revision: number; eventId: string }) =>
+    rpc<{ firma_id?: string; revision?: number; firmado_en?: string; sello?: string; repetida?: boolean }>('nom_firmar_voucher', {
+      p_corte: a.corte, p_rol: a.rol, p_revision: a.revision, p_event_id: a.eventId,
+    }),
+  firmarVoucherDispositivo: (a: { corte: string; revision: number; png: string; trazos: unknown; eventId: string }) =>
+    rpc<{ firma_id?: string; revision?: number; firmado_en?: string; sello?: string; repetida?: boolean }>('nom_firmar_voucher_dispositivo', {
+      p_corte: a.corte, p_revision: a.revision, p_firma_png: a.png, p_trazos: a.trazos, p_event_id: a.eventId,
+    }),
 
   // consolidado mensual (registro administrativo, no fiscal)
   consolidadoMensual: (mes: string) => rpc<ConsolidadoDatos>('nom_consolidado_mensual', { p_mes: mes }),
