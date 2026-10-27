@@ -37,6 +37,7 @@ const PATH_TITLES: Record<string, string> = {
   '/nomina/trabajadores': 'Trabajadores',
   '/nomina/catalogo': 'Catálogo',
   '/nomina/historial': 'Historial',
+  '/nomina/mensual': 'Consolidado mensual',
   '/mis-vouchers': 'Mis vouchers',
 }
 

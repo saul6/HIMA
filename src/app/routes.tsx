@@ -168,6 +168,7 @@ import { NominaTrabajadorDetalle } from "./screens/nomina/NominaTrabajadorDetall
 import { NominaCatalogo } from "./screens/nomina/NominaCatalogo"
 import { NominaHistorial } from "./screens/nomina/NominaHistorial"
 import { MisVouchers } from "./screens/nomina/MisVouchers"
+import { NominaMensual } from "./screens/nomina/NominaMensual"
 
 export const router = createBrowserRouter([
   {
@@ -249,6 +250,7 @@ export const router = createBrowserRouter([
                   { path: "trabajadores/:id", Component: NominaTrabajadorDetalle },
                   { path: "catalogo", Component: NominaCatalogo },
                   { path: "historial", Component: NominaHistorial },
+                  { path: "mensual", Component: NominaMensual },
                 ],
               },
               { path: "inocuidad/auditorias-primusgfs", Component: AuditoriasPrimusGFS },

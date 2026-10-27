@@ -274,3 +274,126 @@ export interface MiVoucher {
   neto: number
   pago: PagoResumen
 }
+
+// ───────────── Consolidado mensual (nom_consolidado_mensual / nom_consolidados) ─────────────
+
+export interface ConsolidadoSaldos { por_pagar: number; anticipos_sin_aplicar: number; prestamos: number }
+
+export interface ConsolidadoTrabajador {
+  trabajador_id: string
+  codigo: string
+  nombre: string
+  puesto: string | null
+  activo: boolean
+  inicial: ConsolidadoSaldos
+  reconocido: {
+    cortes: number; cortes_anulados: number; percepciones: number; reembolsos: number; deducciones: number
+    de_ellas_recuperacion_prestamo: number; neto: number
+  }
+  entregado: { pagos: number; anticipos: number; reversiones: number; total: number }
+  aplicado_a_cortes: number
+  traspaso_a_prestamo: number
+  prestamos: { otorgados: number; recuperados_y_ajustes: number }
+  final: ConsolidadoSaldos
+  sin_movimiento: boolean
+}
+
+export interface ConsolidadoMovimiento {
+  pago_id: string
+  codigo: string
+  nombre: string
+  tipo: string
+  tipo_original: string | null
+  monto: number
+  metodo: string | null
+  referencia: string | null
+  fecha_pago: string
+  registrado_en: string
+  folio_corte: string | null
+  semana_inicio: string | null
+  semana_fin: string | null
+  motivo: string | null
+}
+
+export interface ConsolidadoCorte {
+  folio: string
+  codigo: string
+  nombre: string
+  semana_inicio: string
+  semana_fin: string
+  evento: 'aprobado' | 'anulado'
+  fecha: string
+  percepciones: number
+  reembolsos: number
+  deducciones: number
+  neto: number
+  exceso_anticipo: number
+  motivo?: string | null
+}
+
+export interface ConsolidadoIncidencia {
+  codigo: string
+  bloquea: boolean
+  mensaje: string
+  detalle?: unknown
+}
+
+export interface ConsolidadoResumen {
+  trabajadores: number
+  percepciones: number
+  reembolsos: number
+  deducciones: number
+  neto_reconocido: number
+  entregado_pagos: number
+  entregado_anticipos: number
+  reversiones: number
+  entregado_total: number
+  aplicado_a_cortes: number
+  traspaso_a_prestamo: number
+  por_pagar_inicial: number
+  por_pagar_final: number
+  anticipos_sin_aplicar_final: number
+  prestamos_final: number
+}
+
+export interface ConsolidadoDatos {
+  organizacion: string
+  mes: string
+  desde: string
+  hasta: string
+  moneda: string
+  zona_horaria: string
+  base: string
+  as_of: string
+  fuentes_hash: string
+  preliminar: boolean
+  en_curso: boolean
+  resumen: ConsolidadoResumen
+  trabajadores: ConsolidadoTrabajador[]
+  movimientos: ConsolidadoMovimiento[]
+  cortes: ConsolidadoCorte[]
+  incidencias: ConsolidadoIncidencia[]
+}
+
+export type EstadoConsolidado = 'borrador' | 'finalizado' | 'sustituido'
+export type EntregaConsolidado = 'no_entregado' | 'entrega_registrada' | 'acuse_registrado'
+
+export interface ConsolidadoLista {
+  id: string
+  mes: string
+  revision: number
+  estado: EstadoConsolidado
+  preliminar: boolean
+  generado_en: string
+  generado_por: string | null
+  finalizado_en: string | null
+  entrega_estado: EntregaConsolidado
+  entregado_a: string | null
+  entregado_en: string | null
+  acuse_en: string | null
+  resumen: ConsolidadoResumen
+  fuentes_actualizadas: boolean
+}
+
+/** Revisión guardada: la lista más sus datos congelados. */
+export interface ConsolidadoGuardado extends ConsolidadoLista { datos: ConsolidadoDatos }

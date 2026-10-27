@@ -6,7 +6,7 @@ import { crearErrorNomina } from '@/lib/nomina/errores'
 import type {
   MiVoucher, NomActividad, NomActividadCatalogo, NomAjuste, NomAsistencia, NomConcepto, NomConfig,
   NomMovimiento, NomPagoFila, NomPerfilPago, NomPrestamo, NomPrestamoMov, NomTarifa, NomTrabajador,
-  RespuestaCalculo, SemanaResumen, VoucherData,
+  RespuestaCalculo, SemanaResumen, VoucherData, ConsolidadoDatos, ConsolidadoLista, ConsolidadoGuardado,
 } from '@/types/nomina.types'
 
 // ───────────── RPC (toda escritura pasa por aquí; nunca se manda org_id) ─────────────
@@ -123,6 +123,26 @@ export const nomina = {
   cancelarAjuste: (id: string, motivo: string) => rpc<unknown>('nom_cancelar_ajuste', { p_id: id, p_motivo: motivo }),
   voucher: (corte: string) => rpc<VoucherData>('nom_voucher', { p_corte: corte }),
   misVouchers: () => rpc<MiVoucher[]>('nom_mis_vouchers'),
+
+  // consolidado mensual (registro administrativo, no fiscal)
+  consolidadoMensual: (mes: string) => rpc<ConsolidadoDatos>('nom_consolidado_mensual', { p_mes: mes }),
+  generarConsolidado: (mes: string) =>
+    rpc<{ id: string; revision: number; repetido: boolean }>('nom_generar_consolidado', { p_mes: mes }),
+  finalizarConsolidado: (id: string, motivo: string | null) =>
+    rpc<{ id: string; revision: number; sustituye_id: string | null }>('nom_finalizar_consolidado', { p_id: id, p_motivo: motivo }),
+  registrarEntregaConsolidado: (a: {
+    id: string; entregadoA: string; entregadoEn: string; canal: string | null; acuseEn: string | null; nota: string | null
+  }) => rpc<unknown>('nom_registrar_entrega_consolidado', {
+    p_id: a.id, p_entregado_a: a.entregadoA, p_entregado_en: a.entregadoEn, p_canal: a.canal,
+    p_acuse_en: a.acuseEn, p_nota: a.nota,
+  }),
+  consolidadosLista: () => rpc<ConsolidadoLista[]>('nom_consolidados_lista'),
+  /** Revisión guardada con sus datos congelados (lectura RLS solo admin). */
+  async consolidadoGuardado(id: string): Promise<ConsolidadoGuardado> {
+    const { data, error } = await (supabase as any).from('nom_consolidados').select('*').eq('id', id).single()
+    if (error) throw crearErrorNomina(error)
+    return data as ConsolidadoGuardado
+  },
 }
 
 // ───────────── Lecturas directas de tablas (RLS: solo admin de la org) ─────────────
@@ -294,6 +314,20 @@ export function useNomUsuariosOrg() {
 export function useMisVouchers() {
   const { profile } = useAuthContext()
   return useCarga<MiVoucher[]>([], () => nomina.misVouchers(), [profile?.id], !!profile?.id)
+}
+
+/** Vista previa en vivo del mes (no guarda nada). */
+export function useNomConsolidadoMes(mes: string) {
+  const { profile } = useAuthContext()
+  const org = profile?.org_id ?? null
+  return useCarga<ConsolidadoDatos | null>(null, () => nomina.consolidadoMensual(mes), [mes, org], !!org && !!mes)
+}
+
+/** Todas las revisiones guardadas (se filtran por mes en pantalla). */
+export function useNomConsolidadosLista() {
+  const { profile } = useAuthContext()
+  const org = profile?.org_id ?? null
+  return useCarga<ConsolidadoLista[]>([], () => nomina.consolidadosLista(), [org], !!org)
 }
 
 /** Empleados de M77 de la org (opcional al dar de alta un trabajador). Si no hay acceso, queda vacío. */
