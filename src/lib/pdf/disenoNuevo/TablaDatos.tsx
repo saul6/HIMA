@@ -25,7 +25,7 @@ export interface ColumnaDato {
   negativo?: boolean
   /** Ancho mínimo en pt. Las columnas de fecha ("20/10/2026" en un renglón) y las palabras del encabezado lo calculan solas. */
   anchoMin?: number
-  /** true = texto libre largo: si pasa del umbral de TextoLargo, la celda queda con un resumen y el texto completo va en un bloque a lo ancho debajo de su renglón (etiqueta = el título de la columna). */
+  /** Por defecto lo decide el título de la columna (LARGO_POR_TITULO: observaciones, descripción, comentarios, otros...); false lo apaga. true = texto libre largo: si pasa del umbral de TextoLargo, la celda queda con un resumen y el texto completo va en un bloque a lo ancho debajo de su renglón (etiqueta = el título de la columna). */
   largo?: boolean
 }
 
@@ -58,6 +58,10 @@ interface Props {
 }
 
 const PAD = 4
+
+/** Títulos de columna que son texto libre: sus textos largos pasan a un bloque a lo ancho (ver TextoLargo). */
+const LARGO_POR_TITULO = /observ|descrip|comentari|otros|restos|resultado|ben[eé]fic|acci[oó]n|detalle|notas?|motivo|leyenda|correcci|hallazgo|causa|actividad|uso/i
+const esColumnaLarga = (c: ColumnaDato) => c.largo ?? LARGO_POR_TITULO.test(c.texto)
 
 /** Reparte `anchoTotal` según `ancho` relativo, respetando los mínimos (fechas y palabras del encabezado). */
 export function repartirAnchos(columnas: ColumnaDato[], anchoTotal: number, fuente: number, fuenteEnc: number): number[] {
@@ -172,9 +176,9 @@ export function TablaDatos({
   // Columnas `largo`: el texto que pasa del umbral sale de la celda (queda un resumen) y va debajo de su renglón.
   const largos: Record<number, { etiqueta: string; texto: string }[]> = {}
   const filas = filasEntrada.map((f, r) => {
-    if (!Array.isArray(f) || !columnas.some((c) => c.largo)) return f
+    if (!Array.isArray(f) || !columnas.some(esColumnaLarga)) return f
     return f.map((celda, i) => {
-      if (!columnas[i]?.largo || celda != null && typeof celda === 'object') return celda
+      if (!columnas[i] || !esColumnaLarga(columnas[i]) || celda != null && typeof celda === 'object') return celda
       const str = celda == null ? '' : String(celda)
       if (!esTextoLargo(str, w[i] - 2 * PAD, fuente)) return celda
       ;(largos[r] ??= []).push({ etiqueta: columnas[i].texto, texto: str })
