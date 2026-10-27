@@ -145,7 +145,7 @@ function ToggleItemM19({
       ? 'var(--agro-red)'
       : 'var(--switch-background)'
   const textColor = valor === 'NA' ? 'var(--muted-foreground)' : '#fff'
-  const displayLabel = valor === 'NA' ? 'N/A' : valor === 'NO' ? 'No' : 'Si'
+  const displayLabel = valor === 'NA' ? 'N/A' : valor === 'NO' ? 'No' : 'Sí'
 
   return (
     <div className="py-2.5 border-b border-border last:border-0">

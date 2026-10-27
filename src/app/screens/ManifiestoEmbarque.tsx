@@ -134,7 +134,7 @@ function ToggleSiNo({ value, onChange }: { value: boolean; onChange: (v: boolean
             fontSize: 12, fontWeight: value === v ? 700 : 400,
           }}
         >
-          {v ? 'Si' : 'No'}
+          {v ? 'Sí' : 'No'}
         </button>
       ))}
     </div>

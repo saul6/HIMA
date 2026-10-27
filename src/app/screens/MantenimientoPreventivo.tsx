@@ -159,7 +159,7 @@ function AccionToggle({
           backgroundColor: value ? 'var(--agro-success-fill)' : 'var(--muted)',
           color: value ? 'var(--agro-success-text)' : 'var(--muted-foreground)' }}
       >
-        {value ? 'Si' : 'No'}
+        {value ? 'Sí' : 'No'}
       </span>
       <span className="text-center leading-tight" style={{ fontSize: 9, color: 'var(--muted-foreground)', maxWidth: 36 }}>
         {label}

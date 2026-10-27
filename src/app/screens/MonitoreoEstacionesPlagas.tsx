@@ -351,7 +351,7 @@ function EstacionRevisionRow({
                         : 'bg-card text-muted-foreground transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-muted'
                     } ${op === 'No' ? 'border-l border-border' : ''}`}
                   >
-                    {op}
+                    {op === 'Si' ? 'Sí' : op}
                   </button>
                 ))}
               </div>

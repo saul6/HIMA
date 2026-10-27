@@ -416,7 +416,7 @@ export function ProductosAutorizados() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium mb-1">Concentracion</label>
+              <label className="block text-xs font-medium mb-1">Concentración</label>
               <input maxLength={limiteTexto('m66_productos_autorizados', 'concentracion')}
                 type="text"
                 className="w-full h-10 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm"

@@ -58,7 +58,7 @@ function colorRespuesta(v: Respuesta): string {
 }
 
 function labelRespuesta(v: Respuesta): string {
-  if (v === 'si') return 'Si'
+  if (v === 'si') return 'Sí'
   if (v === 'no') return 'No'
   return 'N/A'
 }

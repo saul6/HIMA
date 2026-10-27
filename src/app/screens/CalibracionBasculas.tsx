@@ -415,7 +415,7 @@ export function CalibracionBasculas() {
               onChange={e => setForm(f => ({ ...f, dentro_tolerancia: e.target.value as FormState['dentro_tolerancia'] }))}
             >
               <option value="">Selecciona...</option>
-              <option value="true">Si</option>
+              <option value="true">Sí</option>
               <option value="false">No</option>
             </select>
           </div>

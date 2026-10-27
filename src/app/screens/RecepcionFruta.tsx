@@ -146,7 +146,7 @@ function ToggleSiNo({ value, onChange }: { value: boolean; onChange: (v: boolean
             fontSize: 12, fontWeight: value === v ? 700 : 400,
           }}
         >
-          {v ? 'Si' : 'No'}
+          {v ? 'Sí' : 'No'}
         </button>
       ))}
     </div>
@@ -173,7 +173,7 @@ function ToggleTriEstado({ value, onChange }: { value: boolean | null; onChange:
               fontSize: 11, fontWeight: active ? 700 : 400,
             }}
           >
-            {v === null ? '—' : v ? 'Si' : 'No'}
+            {v === null ? '—' : v ? 'Sí' : 'No'}
           </button>
         )
       })}
@@ -292,9 +292,9 @@ export function RecepcionFruta() {
             if (!lrId) {
               lrId = crypto.randomUUID()
               const partes = [
-                l.limp_be !== null ? `BE:${l.limp_be ? 'Si' : 'No'}` : null,
-                l.limp_l  !== null ? `L:${l.limp_l  ? 'Si' : 'No'}` : null,
-                l.limp_lp !== null ? `LP:${l.limp_lp ? 'Si' : 'No'}` : null,
+                l.limp_be !== null ? `BE:${l.limp_be ? 'Sí' : 'No'}` : null,
+                l.limp_l  !== null ? `L:${l.limp_l  ? 'Sí' : 'No'}` : null,
+                l.limp_lp !== null ? `LP:${l.limp_lp ? 'Sí' : 'No'}` : null,
               ].filter(Boolean)
               ops.push(opInsert('m48_lotes_recepcion', {
                 id: lrId,
@@ -395,9 +395,9 @@ export function RecepcionFruta() {
                 // Línea nueva: crear LR en M48 — NO enviar codigo/consecutivo/id;
                 // el trigger los genera y los devuelve via .select()
                 const partes = [
-                  l.limp_be !== null ? `BE:${l.limp_be ? 'Si' : 'No'}` : null,
-                  l.limp_l  !== null ? `L:${l.limp_l  ? 'Si' : 'No'}` : null,
-                  l.limp_lp !== null ? `LP:${l.limp_lp ? 'Si' : 'No'}` : null,
+                  l.limp_be !== null ? `BE:${l.limp_be ? 'Sí' : 'No'}` : null,
+                  l.limp_l  !== null ? `L:${l.limp_l  ? 'Sí' : 'No'}` : null,
+                  l.limp_lp !== null ? `LP:${l.limp_lp ? 'Sí' : 'No'}` : null,
                 ].filter(Boolean)
                 const { data: lrData, error: lrErr } = await tbl('m48_lotes_recepcion')
                   .insert({

@@ -412,7 +412,7 @@ export function UsoEpp() {
                     <span className="text-sm font-medium">{label}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-medium" style={{ color: val ? 'var(--agro-success-text)' : 'var(--agro-info-text)' }}>
-                        {val ? 'Buen estado' : 'Danado'}
+                        {val ? 'Buen estado' : 'Dañado'}
                       </span>
                       <button
                         type="button"

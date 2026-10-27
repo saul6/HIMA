@@ -1279,7 +1279,7 @@ function TrazabilidadResultado({ nodo }: { nodo: TrazabilidadNodo }) {
         )}
         {tipo === 'LPT' && (
           <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-            <p>Presentacion: <span className="text-foreground">{registro.presentacion ?? '—'}</span></p>
+            <p>Presentación: <span className="text-foreground">{registro.presentacion ?? '—'}</span></p>
             <p>Fecha empaque: {registro.fecha_empaque?.split('-').reverse().join('/') ?? '—'} · Turno {registro.turno}</p>
             {registro.cant_empacada != null && <p>Empacado: {registro.cant_empacada}</p>}
           </div>
@@ -1412,7 +1412,7 @@ function EtiquetaContent({ d }: { d: PrintData }) {
       {/* Fila 1: Producto | Presentacion | Turno */}
       <div style={{ display: 'flex', flexDirection: 'row', height: '13mm', borderBottom: BD_HTML, flexShrink: 0 }}>
         <Cel label="PRODUCTO" value={d.producto} border />
-        <Cel label="PRESENTACION" value={d.presentacion ?? 'Caja / segun cliente'} border small />
+        <Cel label="PRESENTACIÓN" value={d.presentacion ?? 'Caja / según cliente'} border small />
         <Cel label="TURNO" value={`T${d.turno}`} />
       </div>
 
@@ -1437,7 +1437,7 @@ function EtiquetaContent({ d }: { d: PrintData }) {
 
       {/* Seccion QR */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3mm' }}>
-        <div style={{ fontSize: '6.5pt', fontWeight: 700, color: '#555', letterSpacing: '0.05em', marginBottom: '2mm' }}>CODIGO VISUAL DEL LOTE</div>
+        <div style={{ fontSize: '6.5pt', fontWeight: 700, color: '#555', letterSpacing: '0.05em', marginBottom: '2mm' }}>CÓDIGO VISUAL DEL LOTE</div>
         <img src={d.qrDataUrl} style={{ width: '58mm', height: '58mm' }} alt="" />
         <div style={{ fontSize: '7.5pt', fontWeight: 800, color: '#111', marginTop: '2mm', textAlign: 'center' }}>{d.lptCodigo}</div>
       </div>
