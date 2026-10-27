@@ -556,6 +556,10 @@ export function ReporteIncidencias() {
         procesando: false,
       })
       registrarEvento('M13', 'foto_optimizada', { ...res.info }, profile?.org_id)
+    } else if (actual.file.size <= 5.5 * 1048576) {
+      // No se pudo optimizar pero ya cumple el límite del módulo: se acepta tal cual.
+      actualizarFoto(incUid, fotoUid, { estado: 'lista', procesando: false })
+      registrarEvento('M13', 'foto_sin_optimizar_aceptada', { ...res.info }, profile?.org_id)
     } else {
       actualizarFoto(incUid, fotoUid, { procesando: false })
       registrarEvento('M13', 'foto_fallo', { ...res.info, mensaje: 'no se pudo optimizar' }, profile?.org_id)
