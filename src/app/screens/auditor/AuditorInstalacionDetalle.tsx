@@ -271,7 +271,7 @@ export function AuditorInstalacionDetalle() {
           {error}
         </p>
       ) : (
-        <main className="flex-1 w-full px-4 py-4 flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6 lg:max-w-5xl lg:mx-auto">
+        <main className="flex-1 w-full px-4 py-4 flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6 lg:max-w-5xl">
          <div className="contents lg:flex lg:flex-col lg:gap-6">
           {/* Info de la instalación */}
           {instalacion && (instalacion.ubicacion || instalacion.tipo_operacion || instalacion.cultivo_producto || instalacion.contacto) && (

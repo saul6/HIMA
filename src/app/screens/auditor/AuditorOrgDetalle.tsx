@@ -90,7 +90,7 @@ export function AuditorOrgDetalle() {
           </Boton>
         </div>
       ) : (
-        <main className="flex-1 w-full px-4 py-4 flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6 lg:max-w-5xl lg:mx-auto">
+        <main className="flex-1 w-full px-4 py-4 flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6 lg:max-w-5xl">
           {/* Instalaciones */}
           <section>
             <div className="flex items-center gap-2 mb-2.5">

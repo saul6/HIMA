@@ -249,7 +249,7 @@ export function AuditorHome() {
         </div>
       </header>
 
-      <main className="flex-1 w-full px-4 py-4 flex flex-col gap-5 lg:grid lg:grid-cols-3 lg:items-start lg:gap-x-6 lg:max-w-6xl lg:mx-auto">
+      <main className="flex-1 w-full px-4 py-4 flex flex-col gap-5 lg:grid lg:grid-cols-3 lg:items-start lg:gap-x-6 lg:max-w-6xl">
 
         {/* Buscador — móvil (en escritorio vive en el header del Layout) */}
         <div className="md:hidden">
