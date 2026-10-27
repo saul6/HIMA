@@ -103,3 +103,13 @@ export const etiquetaMetodo = (m: string | null | undefined) =>
 export function etiquetaOrigenPrestamo(origen: string | null | undefined): string {
   return origen === 'exceso_anticipo' ? 'Excedente de anticipo' : 'Préstamo'
 }
+
+/** Estado de pago en texto corto (sin depender de componentes de pantalla). */
+export function estadoPagoTexto(p: { estado_pago?: string } | undefined): string {
+  switch (p?.estado_pago) {
+    case 'pagado': return 'Pagado'
+    case 'parcial': return 'Pago parcial'
+    case 'sin_importe': return 'Sin importe'
+    default: return 'Pendiente de pago'
+  }
+}

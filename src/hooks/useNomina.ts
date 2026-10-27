@@ -318,10 +318,61 @@ export function useNomUsuariosOrg() {
   }, [org], !!org)
 }
 
-/** "Mis vouchers": vacío si el usuario no está ligado a un trabajador. */
-export function useMisVouchers() {
+// Caché compartida de "Mis vouchers": menú, Inicio y Perfil comparten una sola consulta.
+const TTL_MIS_VOUCHERS_MS = 30_000
+const cacheVouchers: { uid: string | null; ts: number; datos: MiVoucher[]; vuelo: Promise<MiVoucher[]> | null } =
+  { uid: null, ts: 0, datos: [], vuelo: null }
+const suscriptoresVouchers = new Set<(d: MiVoucher[]) => void>()
+
+async function pedirMisVouchers(uid: string, forzar: boolean): Promise<MiVoucher[]> {
+  if (cacheVouchers.uid !== uid) Object.assign(cacheVouchers, { uid, ts: 0, datos: [], vuelo: null })
+  if (!forzar && Date.now() - cacheVouchers.ts < TTL_MIS_VOUCHERS_MS) return cacheVouchers.datos
+  if (cacheVouchers.vuelo) return cacheVouchers.vuelo
+  const vuelo = nomina.misVouchers().then(d => {
+    const datos = d ?? []
+    if (cacheVouchers.uid === uid) {
+      Object.assign(cacheVouchers, { ts: Date.now(), datos })
+      suscriptoresVouchers.forEach(f => f(datos))
+    }
+    return datos
+  }).finally(() => { if (cacheVouchers.vuelo === vuelo) cacheVouchers.vuelo = null })
+  cacheVouchers.vuelo = vuelo
+  return vuelo
+}
+
+/** "Mis vouchers": vacío si el usuario no está ligado a un trabajador. Se refresca al volver a la app. */
+export function useMisVouchers(): Carga<MiVoucher[]> {
   const { profile } = useAuthContext()
-  return useCarga<MiVoucher[]>([], () => nomina.misVouchers(), [profile?.id], !!profile?.id)
+  const uid = profile?.id ?? null
+  const [datos, setDatos] = useState<MiVoucher[]>(() => (cacheVouchers.uid === uid ? cacheVouchers.datos : []))
+  const [cargando, setCargando] = useState(!!uid)
+  const [error, setError] = useState<string | null>(null)
+
+  const traer = useCallback(async (forzar: boolean) => {
+    if (!uid) { setDatos([]); setCargando(false); return }
+    try {
+      setDatos(await pedirMisVouchers(uid, forzar))
+      setError(null)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo cargar')
+    } finally {
+      setCargando(false)
+    }
+  }, [uid])
+
+  useEffect(() => {
+    void traer(false)
+    const alVolver = () => { if (document.visibilityState === 'visible') void traer(false) }
+    document.addEventListener('visibilitychange', alVolver)
+    suscriptoresVouchers.add(setDatos)
+    return () => {
+      document.removeEventListener('visibilitychange', alVolver)
+      suscriptoresVouchers.delete(setDatos)
+    }
+  }, [traer])
+
+  const recargar = useCallback(() => traer(true), [traer])
+  return { datos, cargando, error, recargar }
 }
 
 /** Vista previa en vivo del mes (no guarda nada). */

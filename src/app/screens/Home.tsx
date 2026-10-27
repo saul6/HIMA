@@ -6,7 +6,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import {
   TriangleAlert, Clock3,
   Users, AlertTriangle, ChevronRight, ClipboardList, BarChart2,
-  FileCheck, ShieldAlert, Search, Pin, X, Sun, Moon, Lock, ListChecks, WifiOff,
+  FileCheck, ShieldAlert, Search, Pin, X, Sun, Moon, Lock, ListChecks, WifiOff, Receipt,
 } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useFirmaContext } from '@/context/FirmaContext'
@@ -15,6 +15,8 @@ import { useHomeDashboard } from '@/hooks/useHomeDashboard'
 import { useDashboardResumen } from '@/hooks/useDashboardResumen'
 import { useCorreccionesPendientes } from '@/hooks/useCorreccionesPendientes'
 import { useAgendaResumen } from '@/hooks/useAgendaResumen'
+import { useMisVouchers } from '@/hooks/useNomina'
+import { estadoPagoTexto, formatoMoneda, rangoSemana } from '@/lib/nomina/formato'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useHomeSearch } from '@/context/HomeSearchContext'
 import { buscarPorInicio } from '@/lib/busquedaPorInicio'
@@ -509,6 +511,8 @@ export function Home() {
   const { resumen, loading: resumenLoading } = useDashboardResumen()
   const { items: correcciones, count: countCorrecciones } = useCorreccionesPendientes()
   const { resumen: agendaResumen } = useAgendaResumen()
+  const { datos: misVouchers } = useMisVouchers()
+  const voucherReciente = [...misVouchers].sort((a, b) => b.inicio.localeCompare(a.inicio))[0]
   const {
     modulos, loading: loadingModulos, error: errorModulos,
     refetch: refetchModulos, terminosSitio,
@@ -899,6 +903,28 @@ export function Home() {
                 </p>
               )}
               <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Agenda de tareas</p>
+            </div>
+            <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+          </Link>
+        )}
+
+        {/* Pago semanal del trabajador (solo si tiene vouchers) */}
+        {voucherReciente && !loading && (
+          <Link
+            to="/mis-vouchers"
+            className={`hover-lift flex items-center gap-3 rounded-xl p-3 border ${FOCUS_RING}`}
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+          >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--agro-success-fill)' }}>
+              <Receipt className="w-4 h-4" style={{ color: 'var(--agro-success-text)' }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+                Tu pago de la semana {rangoSemana(voucherReciente.inicio)}: {formatoMoneda(voucherReciente.neto)} · {estadoPagoTexto(voucherReciente.pago)}
+              </p>
+              {!voucherReciente.firmado_recibio && (
+                <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Falta tu firma de recibido</p>
+              )}
             </div>
             <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
           </Link>

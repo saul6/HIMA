@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useMatches, Link } from "react-router";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
-import { Home, PlusCircle, Package, History, Users, Search, Sun, Moon, ClipboardCheck, FileCheck2, X, Calendar, ListChecks, BarChart3, CloudUpload, WifiOff } from "lucide-react";
+import { Home, PlusCircle, Package, History, Users, Search, Sun, Moon, ClipboardCheck, FileCheck2, X, Calendar, ListChecks, BarChart3, CloudUpload, WifiOff, Receipt } from "lucide-react";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
 import { useHomeSearch } from "@/context/HomeSearchContext";
@@ -18,6 +18,7 @@ import { AuditorBusqueda } from "@/app/screens/auditor/AuditorBusqueda";
 import { CATEGORIA_MAP } from "@/lib/categoriasModulos";
 import { useConexion } from "@/hooks/useConexion";
 import { useOutbox } from "@/hooks/useOutbox";
+import { useMisVouchers } from "@/hooks/useNomina";
 import { AvisoVentana72h } from "@/app/components/AvisoVentana72h";
 import { DUR, EASE_OUT } from '@/lib/motion'
 
@@ -27,6 +28,7 @@ const PATH_TITLES: Record<string, string> = {
   '/inventario': 'Inventario',
   '/historial': 'Historial',
   '/equipo/actividad': 'Actividad',
+  '/mis-vouchers': 'Mis vouchers',
   '/inocuidad/agenda': 'Agenda',
   '/inocuidad/checklist': 'Checklist',
   '/inocuidad/auditorias-primusgfs': 'Auditorías',
@@ -116,6 +118,7 @@ export function Layout() {
 
   const { online } = useConexion();
   const { totalPendientes } = useOutbox();
+  const { datos: misVouchers } = useMisVouchers();
   const esAuditor = profile?.rol === 'auditor';
   const { nombre: orgNombre, cargando: orgCargando } = useOrgNombre(!esAuditor);
   const mostrarSkeletonOrg = useMostrarCarga(orgCargando, false);
@@ -132,6 +135,7 @@ export function Layout() {
   const mostrarAuditorias      = !esAuditor && ['admin_org', 'super_admin'].includes(profile?.rol ?? '');
   const mostrarAgendaTareas    = !esAuditor && !loadingModulos && modulos.some(m => m.clave === "agenda_tareas" && m.desbloqueado);
   const mostrarMetricas        = !esAuditor;
+  const mostrarVouchers        = !esAuditor && misVouchers.length > 0;
   const mostrarChecklist       = !esAuditor && ['admin_org', 'asesor_tecnico'].includes(profile?.rol ?? '') && !loadingModulos && modulos.some(m => m.codigo === 'M80' && m.desbloqueado);
 
   const homeItem = esAuditor
@@ -149,6 +153,7 @@ export function Layout() {
     ...(mostrarAuditorias      ? [{ path: "/inocuidad/auditorias-primusgfs", icon: ClipboardCheck, label: "Auditorías"       }] : []),
     ...(mostrarChecklist       ? [{ path: "/inocuidad/checklist",           icon: FileCheck2,     label: "Checklist"        }] : []),
     ...(mostrarMetricas        ? [{ path: "/metricas",                        icon: BarChart3,      label: "Métricas"         }] : []),
+    ...(mostrarVouchers        ? [{ path: "/mis-vouchers",                    icon: Receipt,        label: "Mis vouchers"     }] : []),
   ];
 
   // Opciones del menú del isotipo: Perfil se abre desde la fila del usuario.
