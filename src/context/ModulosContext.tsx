@@ -17,6 +17,8 @@ interface ModulosContextValue {
   modulos: ModuloVisible[]
   loading: boolean
   error: string | null
+  /** Ya terminó al menos un intento de carga de módulos (la lista vacía es real, no "aún cargando"). */
+  cargado: boolean
   refetch: () => Promise<void>
   terminosSitio: TerminosSitio
   desdeCache: boolean
@@ -31,7 +33,7 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
   const orgId  = profile?.org_id ?? undefined
 
   const {
-    modulos, loading: modulosLoading, error, refetch, clear,
+    modulos, loading: modulosLoading, error, cargado, refetch, clear,
     desdeCache, guardadoEn,
   } = useMisModulos(userId, orgId)
   const { termino, refetch: refetchTermino, clear: clearTermino } = useTerminoSitio(userId, orgId)
@@ -714,6 +716,7 @@ export function ModulosProvider({ children }: { children: ReactNode }) {
       modulos,
       loading: authLoading || modulosLoading,
       error,
+      cargado: !authLoading && cargado,
       refetch,
       terminosSitio: resolverTerminos(termino),
       desdeCache,

@@ -8,6 +8,7 @@ import { resolverIcono } from '@/app/components/iconos-modulos'
 import type { ModuloVisible } from '@/hooks/useMisModulos'
 import { MODULOS_OFFLINE, type CodigoOffline } from '@/lib/offline/modulosOffline'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { ErrorCargaModulos } from '@/app/components/ErrorCargaModulos'
 
 function UpsellPage({ modulo }: { modulo: ModuloVisible }) {
   const navigate = useNavigate()
@@ -126,18 +127,22 @@ function RequiereConexionPage({ modulo }: { modulo: ModuloVisible }) {
 }
 
 export function RequireModulo() {
-  const { modulos, loading } = useModulosContext()
+  const { modulos, loading, cargado, error, refetch } = useModulosContext()
   const { online } = useConexion()
   const location = useLocation()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (loading || modulos.length === 0) return
+    if (loading || !cargado || error) return
     if (!modulos.some(m => m.ruta === location.pathname)) {
       navigate('/', { replace: true })
       toast.warning('Módulo no disponible en tu plan')
     }
-  }, [loading, location.pathname, modulos, navigate])
+  }, [loading, cargado, error, location.pathname, modulos, navigate])
+
+  if (!loading && cargado && error && modulos.length === 0) {
+    return <ErrorCargaModulos onReintentar={() => { void refetch() }} />
+  }
 
   if (!loading && modulos.length > 0) {
     const modulo = modulos.find(m => m.ruta === location.pathname)

@@ -193,10 +193,10 @@ function useCarga<T>(inicial: T, fn: () => Promise<T>, deps: unknown[], activo =
 }
 
 /** ¿El usuario tiene M81 en su menú? (get_mis_modulos solo lo devuelve a admins de orgs habilitadas). */
-export function useTieneNomina(): { tiene: boolean; cargando: boolean } {
-  const { modulos, loading } = useModulosContext()
-  // Antes de la primera carga `modulos` viene vacío: se espera en vez de redirigir.
-  return { tiene: modulos.some(m => m.codigo === 'M81'), cargando: loading || modulos.length === 0 }
+export function useTieneNomina(): { tiene: boolean; cargando: boolean; error: string | null; refetch: () => Promise<void> } {
+  const { modulos, loading, cargado, error, refetch } = useModulosContext()
+  // `cargando` solo hasta el primer intento terminado; una lista vacía ya no cuenta como "cargando".
+  return { tiene: modulos.some(m => m.codigo === 'M81'), cargando: loading || !cargado, error, refetch }
 }
 
 export function useNomConfig() {

@@ -22,6 +22,8 @@ export function useMisModulos(userId?: string, orgId?: string) {
   const [modulos, setModulos] = useState<ModuloVisible[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // true cuando terminó al menos un intento de carga (con éxito o con error)
+  const [cargado, setCargado] = useState(false)
   const [desdeCache, setDesdeCache] = useState(false)
   const [guardadoEn, setGuardadoEn] = useState<number | null>(null)
 
@@ -57,15 +59,17 @@ export function useMisModulos(userId?: string, orgId?: string) {
       setGuardadoEn(null)
     } finally {
       setLoading(false)
+      setCargado(true)
     }
   }, [userId, orgId])
 
   const clear = useCallback(() => {
     setModulos([])
     setError(null)
+    setCargado(false)
     setDesdeCache(false)
     setGuardadoEn(null)
   }, [])
 
-  return { modulos, loading, error, refetch, clear, desdeCache, guardadoEn }
+  return { modulos, loading, error, cargado, refetch, clear, desdeCache, guardadoEn }
 }
