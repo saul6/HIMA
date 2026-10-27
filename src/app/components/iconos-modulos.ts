@@ -2,7 +2,7 @@ import {
   SprayCan, Boxes, Library, BriefcaseMedical, Wine, Sprout, Radar, Wheat,
   ClipboardCheck, Droplet, Droplets, Camera, ClipboardList, Users, Shield, ShieldCheck, Eye,
   Package, FileCheck, Factory, Bandage, Bug, FlaskConical, ListChecks, TestTubes,
-  Warehouse, UtensilsCrossed, Building2, Trees, PackageOpen, Snowflake, Truck, ArrowLeftRight, Thermometer, Wrench, Settings, LayoutGrid, type LucideIcon,
+  Warehouse, UtensilsCrossed, Building2, Trees, PackageOpen, Snowflake, Truck, ArrowLeftRight, Thermometer, Wrench, Settings, LayoutGrid, Wallet, type LucideIcon,
 } from 'lucide-react'
 
 const ICONOS: Record<string, LucideIcon> = {
@@ -48,6 +48,7 @@ const ICONOS: Record<string, LucideIcon> = {
   'wrench': Wrench,
   'settings': Settings,
   'layout-grid': LayoutGrid,
+  'wallet': Wallet,
 }
 
 export function resolverIcono(nombre: string): LucideIcon {

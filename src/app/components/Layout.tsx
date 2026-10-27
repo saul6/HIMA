@@ -33,6 +33,11 @@ const PATH_TITLES: Record<string, string> = {
   '/perfil': 'Perfil',
   '/perfil/mi-organizacion': 'Mi organización',
   '/metricas': 'Métricas',
+  '/nomina': 'Actividades y pagos',
+  '/nomina/trabajadores': 'Trabajadores',
+  '/nomina/catalogo': 'Catálogo',
+  '/nomina/historial': 'Historial',
+  '/mis-vouchers': 'Mis vouchers',
 }
 
 // Respaldo cuando el módulo aún no llega del catálogo: palabras del slug con su acento.
@@ -57,6 +62,8 @@ function getPageTitle(pathname: string, nombreModulo?: string): string {
   if (pathname.startsWith('/inocuidad/')) {
     return nombreModulo ?? tituloDesdeSlug(pathname.replace('/inocuidad/', ''))
   }
+  if (pathname.startsWith('/nomina/semana/')) return 'Semana del trabajador'
+  if (pathname.startsWith('/nomina/trabajadores/')) return 'Trabajador'
   if (pathname === '/auditor') return 'Inicio'
   if (pathname === '/auditor/agenda') return 'Agenda'
   if (pathname === '/auditor/instalacion/nueva') return 'Mis organizaciones'

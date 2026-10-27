@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { LogOut, Pencil, Check, X, ChevronRight, Building2, PenLine, Loader2 } from 'lucide-react'
+import { LogOut, Pencil, Check, X, ChevronRight, Building2, PenLine, Loader2, Receipt } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -15,6 +15,7 @@ import { isUpdateDisponible, UPDATE_DISPONIBLE_EVENT, ejecutarActualizacion } fr
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { fechaHora } from '@/lib/formato'
+import { useMisVouchers } from '@/hooks/useNomina'
 
 const ROL_LABEL: Record<string, string> = {
   super_admin: 'Super Admin',
@@ -36,6 +37,7 @@ export function Perfil() {
   const navigate = useNavigate()
   const { user, profile, signOut, refreshProfile } = useAuthContext()
   const { resolvedTheme } = useTheme()
+  const { datos: misVouchers } = useMisVouchers()
 
   const [editando, setEditando] = useState(false)
   const [nuevoNombre, setNuevoNombre] = useState(profile?.nombre_completo ?? '')
@@ -228,6 +230,23 @@ export function Perfil() {
               <p className="text-xs text-muted-foreground mt-0.5">
                 Gestionar ranchos y configuración
               </p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+          </button>
+        )}
+
+        {/* Mis vouchers — solo si el usuario está ligado a un trabajador con cortes aprobados */}
+        {misVouchers.length > 0 && (
+          <button
+            onClick={() => navigate('/mis-vouchers')}
+            className="w-full bg-card border border-border rounded-xl p-4 flex items-center gap-3 text-left hover:bg-muted transition-colors"
+          >
+            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Receipt className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-foreground text-sm font-semibold">Mis vouchers</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Pagos semanales aprobados</p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
           </button>

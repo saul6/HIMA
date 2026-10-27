@@ -6,4 +6,5 @@ export const CATEGORIA_MAP: Record<string, { label: string; orden: number; icono
   mantenimiento:  { label: 'Mantenimiento',              orden: 5, icono: 'settings'        },
   seguridad:      { label: 'Seguridad y personal',       orden: 6, icono: 'shield'          },
   gestion_campo:  { label: 'Gestión de campo',           orden: 7, icono: 'sprout'          },
+  administracion: { label: 'Administración',             orden: 8, icono: 'wallet'          },
 }

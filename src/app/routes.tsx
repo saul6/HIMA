@@ -160,6 +160,14 @@ import { AuditorModoAzzule } from "./screens/auditor/AuditorModoAzzule"
 import { NuevaJornada } from "./screens/auditor/NuevaJornada"
 import { EjecucionJornada } from "./screens/auditor/EjecucionJornada"
 import { Sincronizacion } from "./screens/Sincronizacion"
+import { RequireNomina } from "./components/RequireNomina"
+import { NominaSemana } from "./screens/nomina/NominaSemana"
+import { NominaTrabajadorSemana } from "./screens/nomina/NominaTrabajadorSemana"
+import { NominaTrabajadores } from "./screens/nomina/NominaTrabajadores"
+import { NominaTrabajadorDetalle } from "./screens/nomina/NominaTrabajadorDetalle"
+import { NominaCatalogo } from "./screens/nomina/NominaCatalogo"
+import { NominaHistorial } from "./screens/nomina/NominaHistorial"
+import { MisVouchers } from "./screens/nomina/MisVouchers"
 
 export const router = createBrowserRouter([
   {
@@ -230,6 +238,19 @@ export const router = createBrowserRouter([
               { path: "perfil/mi-organizacion", Component: MiOrganizacion },
               { path: "equipo/actividad", Component: ActividadEquipo },
               { path: "metricas", Component: Metricas },
+              { path: "mis-vouchers", Component: MisVouchers },
+              {
+                path: "nomina",
+                Component: RequireNomina,
+                children: [
+                  { index: true, Component: NominaSemana },
+                  { path: "semana/:trabajadorId", Component: NominaTrabajadorSemana },
+                  { path: "trabajadores", Component: NominaTrabajadores },
+                  { path: "trabajadores/:id", Component: NominaTrabajadorDetalle },
+                  { path: "catalogo", Component: NominaCatalogo },
+                  { path: "historial", Component: NominaHistorial },
+                ],
+              },
               { path: "inocuidad/auditorias-primusgfs", Component: AuditoriasPrimusGFS },
               { path: "inocuidad/auditorias-primusgfs/nueva", Component: NuevaAuditoriaPGFS },
               { path: "inocuidad/auditorias-primusgfs/:auditoriaId", Component: CapturaAuditoriaPGFS },
