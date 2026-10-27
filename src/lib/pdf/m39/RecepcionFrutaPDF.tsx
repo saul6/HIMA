@@ -7,6 +7,7 @@ import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { codigoFormato } from '@/lib/codigoFormato'
 import { PC } from '@/lib/pdf/components/tokens'
 import { fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
+import type { FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 
 export interface M39LineaPDF {
   orden: number
@@ -62,7 +63,12 @@ function CajaTotales({ titulo, filas }: { titulo: string; filas: readonly (reado
   )
 }
 
-export function RecepcionFrutaPDF({ d, codigoClave }: { d: M39RecepcionDataPDF; codigoClave: string }) {
+export function RecepcionFrutaPDF({ d, codigoClave, firmaRealizo, firmaVerifico }: {
+  d: M39RecepcionDataPDF
+  codigoClave: string
+  firmaRealizo?: FirmaParaPdf | null
+  firmaVerifico?: FirmaParaPdf | null
+}) {
   const sumAll = (field: keyof M39LineaPDF) =>
     d.lineas.reduce((acc, l) => acc + ((l[field] as number) ?? 0), 0)
   const sumAnden = (field: keyof M39LineaPDF) =>
@@ -116,9 +122,10 @@ export function RecepcionFrutaPDF({ d, codigoClave }: { d: M39RecepcionDataPDF; 
         {d.observaciones ? <FranjaDatos campos={[{ etiqueta: 'Observaciones', valor: d.observaciones }]} /> : null}
 
         <PdfFirmas
+          pendienteSiFalta
           signatures={[
-            { label: '', nombre: '', caption: 'Responsable de la instalación' },
-            { label: '', nombre: '', caption: 'Responsable de la empresa' },
+            { label: '', nombre: '', caption: 'Responsable de la instalación', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Responsable de la empresa', firma: firmaVerifico ?? null },
           ]}
         />
       </PaginaEstandar>

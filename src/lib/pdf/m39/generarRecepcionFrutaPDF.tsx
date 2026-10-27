@@ -95,6 +95,7 @@ async function cargarDatos(id: string, orgId: string): Promise<CargarResult> {
   return { esAlmacen: false, d }
 }
 
+// Firmas digitales del registro (M39), para las dos variantes
 async function firmasAlmacen(id: string) {
   const reg = (await obtenerFirmasParaPdf('M39', [id]))[id]
   return {
@@ -109,7 +110,7 @@ export async function generarRecepcionFrutaPDF(id: string, orgId: string, codigo
   if (result.esAlmacen) {
     blob = await pdf(<RecepcionFrutaAlmacenPDF d={result.d} codigoClave={codigoClave} {...(await firmasAlmacen(id))} />).toBlob()
   } else {
-    blob = await pdf(<RecepcionFrutaPDF d={result.d} codigoClave={codigoClave} />).toBlob()
+    blob = await pdf(<RecepcionFrutaPDF d={result.d} codigoClave={codigoClave} {...(await firmasAlmacen(id))} />).toBlob()
   }
   descargar(blob, nombrePdf('Recepcion_Fruta', result.d.fecha))
 }
@@ -119,5 +120,5 @@ export async function generarBlobRecepcionFruta(id: string, orgId: string, codig
   if (result.esAlmacen) {
     return pdf(<RecepcionFrutaAlmacenPDF d={result.d} codigoClave={codigoClave} {...(await firmasAlmacen(id))} />).toBlob()
   }
-  return pdf(<RecepcionFrutaPDF d={result.d} codigoClave={codigoClave} />).toBlob()
+  return pdf(<RecepcionFrutaPDF d={result.d} codigoClave={codigoClave} {...(await firmasAlmacen(id))} />).toBlob()
 }
