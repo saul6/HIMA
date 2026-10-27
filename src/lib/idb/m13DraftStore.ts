@@ -8,6 +8,10 @@ export interface M13FotoDraft {
   blob: Blob
   nombre: string
   tipo: string
+  /** Ausente = 'lista' (borradores anteriores). 'original' = aún sin optimizar. */
+  estado?: 'original' | 'lista'
+  /** Veces que se intentó optimizar; >= 1 en 'original' indica que la página murió procesándola. */
+  intentos?: number
 }
 
 export interface M13IncidenciaDraft {

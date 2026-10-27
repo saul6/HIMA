@@ -11,7 +11,7 @@ import { FotoEvidencia } from '@/app/components/FotoEvidencia'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { toast } from 'sonner'
-import { comprimirImagen, comprimirImagenesSecuencial } from '@/lib/fotos/comprimirImagen'
+import { comprimirImagen, optimizarImagen } from '@/lib/fotos/comprimirImagen'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -27,6 +27,7 @@ import {
   type M13DraftData,
 } from '@/lib/idb/m13DraftStore'
 import type { AdjuntoOutbox } from '@/lib/offline/tipos'
+import { registrarEvento } from '@/lib/diagnostico'
 import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
@@ -63,6 +64,11 @@ interface FotoLocal {
   uid: string
   file: File
   preview: string
+  /** 'original' = aún sin optimizar (no se puede guardar el reporte así). */
+  estado: 'original' | 'lista'
+  intentos: number
+  /** Solo en memoria: se está optimizando ahora mismo. */
+  procesando?: boolean
 }
 
 interface IncidenciaLocal {
@@ -145,11 +151,19 @@ function IncidenciaForm({
   index,
   onChange,
   onQuitar,
+  onAgregarFotos,
+  onQuitarFoto,
+  onProcesarFotos,
+  onGuardarYa,
 }: {
   inc: IncidenciaLocal
   index: number
   onChange: (upd: Partial<IncidenciaLocal>) => void
   onQuitar: () => void
+  onAgregarFotos: (incUid: string, fotos: FotoLocal[]) => void
+  onQuitarFoto: (incUid: string, fotoUid: string) => void
+  onProcesarFotos: (incUid: string, fotoUids: string[]) => Promise<void>
+  onGuardarYa: () => Promise<void>
 }) {
   const inputCamaraRef = useRef<HTMLInputElement>(null)
   const inputGaleriaRef = useRef<HTMLInputElement>(null)
@@ -161,11 +175,11 @@ function IncidenciaForm({
   }, [])
 
   async function handleFiles(files: FileList | null) {
-    try { sessionStorage.removeItem('m13:camara') } catch { /* ignore */ }
-    if (!files) return
+    if (!files) { try { sessionStorage.removeItem('m13:camara') } catch { /* ignore */ } return }
 
     const slotsRestantes = MAX_FOTOS_INCIDENCIA - inc.fotos.length
     if (slotsRestantes <= 0) {
+      try { sessionStorage.removeItem('m13:camara') } catch { /* ignore */ }
       toast.warning(
         `Máximo ${MAX_FOTOS_INCIDENCIA} fotos por incidencia. Agrega otra incidencia para subir más evidencia.`,
         { duration: 6000 }
@@ -187,30 +201,31 @@ function IncidenciaForm({
       )
     }
 
-    if (aAgregar.length === 0) return
-
-    const toastId = toast.loading(`Optimizando foto 1 de ${aAgregar.length}…`)
-    let comprimidas: File[]
-    try {
-      comprimidas = await comprimirImagenesSecuencial(aAgregar, 5.5, (n, total) => {
-        toast.loading(`Optimizando foto ${n} de ${total}…`, { id: toastId })
-      })
-    } finally {
-      toast.dismiss(toastId)
+    if (aAgregar.length === 0) {
+      try { sessionStorage.removeItem('m13:camara') } catch { /* ignore */ }
+      return
     }
-    const nuevas: FotoLocal[] = comprimidas.map((comprimido) => ({
-      uid: crypto.randomUUID(),
-      file: comprimido,
-      preview: URL.createObjectURL(comprimido),
-    }))
 
-    onChange({ fotos: [...inc.fotos, ...nuevas] })
+    // 1) La foto original entra al borrador ANTES de procesarla: si la página
+    //    muere optimizando, la foto sigue ahí.
+    try { sessionStorage.setItem('m13:camara', '1') } catch { /* ignore */ }
+    const nuevas: FotoLocal[] = aAgregar.map((f) => ({
+      uid: crypto.randomUUID(),
+      file: f,
+      preview: URL.createObjectURL(f),
+      estado: 'original',
+      intentos: 0,
+    }))
+    onAgregarFotos(inc.uid, nuevas)
+    await onGuardarYa()
+
+    // 2) Optimizar una por una.
+    await onProcesarFotos(inc.uid, nuevas.map((n) => n.uid))
   }
 
-  function quitarFoto(uid: string) {
-    const foto = inc.fotos.find((f) => f.uid === uid)
-    if (foto) URL.revokeObjectURL(foto.preview)
-    onChange({ fotos: inc.fotos.filter((f) => f.uid !== uid) })
+  function guardarAntesDeAbrir() {
+    // Lo escrito hasta ahora no puede depender del debounce de 500 ms.
+    void onGuardarYa()
   }
 
   return (
@@ -254,6 +269,36 @@ function IncidenciaForm({
         </div>
       )}
 
+      {/* Fotos que no se pudieron optimizar */}
+      {inc.fotos.some((f) => f.estado === 'original' && !f.procesando && f.intentos >= 1) && (
+        <div
+          className="rounded-lg px-3 py-2 space-y-2 text-xs"
+          style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+        >
+          {inc.fotos.filter((f) => f.estado === 'original' && !f.procesando && f.intentos >= 1).map((f) => (
+            <div key={f.uid} className="flex items-center gap-2">
+              <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+              <span className="flex-1 min-w-0">Foto muy grande para este teléfono</span>
+              <button
+                type="button"
+                onClick={() => { void onProcesarFotos(inc.uid, [f.uid]) }}
+                className="font-semibold underline"
+              >
+                Intentar de nuevo
+              </button>
+              <button
+                type="button"
+                onClick={() => onQuitarFoto(inc.uid, f.uid)}
+                className="font-semibold underline"
+              >
+                Quitar
+              </button>
+            </div>
+          ))}
+          <p>Baja la resolución de la cámara (por ejemplo 12 MP) y vuelve a tomarla.</p>
+        </div>
+      )}
+
       {/* Previews */}
       {inc.fotos.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -273,9 +318,14 @@ function IncidenciaForm({
                   alt="Preview"
                   className="w-16 h-16 object-cover rounded-lg border border-border"
                 />
+                {f.procesando && (
+                  <div className="absolute inset-0 rounded-lg bg-background/70 flex items-center justify-center">
+                    <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+                  </div>
+                )}
                 <button aria-label="Quitar"
                   type="button"
-                  onClick={() => quitarFoto(f.uid)}
+                  onClick={() => onQuitarFoto(inc.uid, f.uid)}
                   className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-agro-red text-white rounded-full flex items-center justify-center"
                 >
                   <X className="w-3 h-3" />
@@ -316,6 +366,17 @@ function IncidenciaForm({
             type="button"
             onClick={() => {
               try { sessionStorage.setItem('m13:camara', '1') } catch { /* ignore */ }
+              guardarAntesDeAbrir()
+              // Si el usuario cancela la cámara no llega ningún evento: al volver a
+              // la pestaña, si no llegó nada, se limpia la marca.
+              const alVolver = () => {
+                if (document.visibilityState !== 'visible') return
+                document.removeEventListener('visibilitychange', alVolver)
+                setTimeout(() => {
+                  if (!procesandoRef.current) { try { sessionStorage.removeItem('m13:camara') } catch { /* ignore */ } }
+                }, 3000)
+              }
+              document.addEventListener('visibilitychange', alVolver)
               inputCamaraRef.current?.click()
             }}
             className="flex-1 h-10 flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
@@ -325,7 +386,7 @@ function IncidenciaForm({
           </button>
           <button
             type="button"
-            onClick={() => inputGaleriaRef.current?.click()}
+            onClick={() => { guardarAntesDeAbrir(); inputGaleriaRef.current?.click() }}
             className="flex-1 h-10 flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
           >
             <Image className="w-4 h-4" />
@@ -397,6 +458,7 @@ export function ReporteIncidencias() {
 
   // Total de fotos en el formulario actual (computed, para el cap global)
   const totalFotos = incidencias.reduce((sum, inc) => sum + inc.fotos.length, 0)
+  const hayFotosSinOptimizar = incidencias.some((inc) => inc.fotos.some((f) => f.estado === 'original'))
 
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }))
 
@@ -409,6 +471,126 @@ export function ReporteIncidencias() {
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [estadoBorrador, setEstadoBorrador] = useState<'guardando' | 'guardado' | null>(null)
 
+  // Siempre refleja el último estado del formulario (incluye cambios aún no renderizados)
+  const estadoRef = useRef({ ranchoId, fecha, auditorNombre, incidencias })
+  estadoRef.current = { ranchoId, fecha, auditorNombre, incidencias }
+  const colaFotosRef = useRef<Promise<void>>(Promise.resolve())
+  const [abrirBorradorPendiente, setAbrirBorradorPendiente] = useState(false)
+
+  function construirDraft(): M13DraftData {
+    const e = estadoRef.current
+    return {
+      savedAt: Date.now(),
+      ranchoId: e.ranchoId,
+      fecha: e.fecha,
+      auditorNombre: e.auditorNombre,
+      incidencias: e.incidencias.map((inc) => ({
+        uid: inc.uid,
+        descripcion: inc.descripcion,
+        fotos: inc.fotos.map((f) => ({
+          uid: f.uid,
+          blob: f.file,
+          nombre: f.file.name,
+          tipo: f.file.type || 'image/jpeg',
+          estado: f.estado,
+          intentos: f.intentos,
+        })),
+      })),
+    }
+  }
+
+  // Guarda el borrador ya (cancela el debounce pendiente)
+  async function guardarYa(): Promise<void> {
+    if (!draftKey) return
+    if (draftTimerRef.current) { clearTimeout(draftTimerRef.current); draftTimerRef.current = null }
+    try {
+      await guardarBorrador(draftKey, construirDraft())
+      setHayBorrador(true)
+    } catch { /* ignore */ }
+  }
+
+  // Cambia incidencias de forma síncrona sobre el último estado (sin cierres viejos)
+  function mutarIncidencias(fn: (prev: IncidenciaLocal[]) => IncidenciaLocal[]) {
+    const next = fn(estadoRef.current.incidencias)
+    estadoRef.current = { ...estadoRef.current, incidencias: next }
+    setIncidencias(next)
+  }
+
+  function actualizarFoto(incUid: string, fotoUid: string, patch: Partial<FotoLocal>) {
+    mutarIncidencias((prev) => prev.map((inc) => inc.uid !== incUid ? inc : {
+      ...inc,
+      fotos: inc.fotos.map((f) => f.uid === fotoUid ? { ...f, ...patch } : f),
+    }))
+  }
+
+  function agregarFotos(incUid: string, fotos: FotoLocal[]) {
+    mutarIncidencias((prev) => prev.map((inc) => inc.uid === incUid ? { ...inc, fotos: [...inc.fotos, ...fotos] } : inc))
+  }
+
+  function quitarFotoDe(incUid: string, fotoUid: string) {
+    const foto = estadoRef.current.incidencias.find((i) => i.uid === incUid)?.fotos.find((f) => f.uid === fotoUid)
+    if (foto) URL.revokeObjectURL(foto.preview)
+    mutarIncidencias((prev) => prev.map((inc) => inc.uid === incUid
+      ? { ...inc, fotos: inc.fotos.filter((f) => f.uid !== fotoUid) }
+      : inc))
+    void guardarYa()
+  }
+
+  async function procesarUnaFoto(incUid: string, fotoUid: string) {
+    const buscar = () => estadoRef.current.incidencias.find((i) => i.uid === incUid)?.fotos.find((f) => f.uid === fotoUid)
+    const foto = buscar()
+    if (!foto || foto.estado === 'lista') return
+    registrarEvento('M13', 'foto_recibida', { mb: Math.round((foto.file.size / 1048576) * 10) / 10, intento: foto.intentos + 1 }, profile?.org_id)
+    // Contar el intento y guardarlo ANTES de optimizar: si la página muere, queda marcado.
+    actualizarFoto(incUid, fotoUid, { intentos: foto.intentos + 1, procesando: true })
+    await guardarYa()
+    const res = await optimizarImagen(foto.file, 5.5)
+    const actual = buscar()
+    if (!actual) return   // la quitaron mientras se optimizaba
+    if (res.optimizada) {
+      URL.revokeObjectURL(actual.preview)
+      actualizarFoto(incUid, fotoUid, {
+        file: res.file,
+        preview: URL.createObjectURL(res.file),
+        estado: 'lista',
+        procesando: false,
+      })
+      registrarEvento('M13', 'foto_optimizada', { ...res.info }, profile?.org_id)
+    } else {
+      actualizarFoto(incUid, fotoUid, { procesando: false })
+      registrarEvento('M13', 'foto_fallo', { ...res.info, mensaje: 'no se pudo optimizar' }, profile?.org_id)
+      toast.warning('No se pudo optimizar la foto. Baja la resolución de la cámara (por ejemplo 12 MP) y vuelve a tomarla.', { duration: 8000 })
+    }
+    await guardarYa()
+  }
+
+  // Optimiza fotos de una en una (cola global: nunca dos a la vez)
+  function procesarFotos(incUid: string, fotoUids: string[]): Promise<void> {
+    const tarea = colaFotosRef.current.then(async () => {
+      estadoProc.activo = true
+      const total = fotoUids.length
+      const toastId = toast.loading(`Optimizando foto 1 de ${total}…`)
+      try {
+        for (let i = 0; i < total; i++) {
+          toast.loading(`Optimizando foto ${i + 1} de ${total}…`, { id: toastId })
+          try {
+            await procesarUnaFoto(incUid, fotoUids[i])
+          } catch (e) {
+            registrarEvento('M13', 'foto_fallo', { mensaje: String((e as { message?: string } | null)?.message ?? e).slice(0, 200) }, profile?.org_id)
+            actualizarFoto(incUid, fotoUids[i], { procesando: false })
+          }
+        }
+      } finally {
+        toast.dismiss(toastId)
+        estadoProc.activo = false
+        // Marca de cámara: se limpia cuando todas quedaron listas o fallaron sin cerrar la página
+        try { sessionStorage.removeItem('m13:camara') } catch { /* ignore */ }
+      }
+    })
+    colaFotosRef.current = tarea.catch(() => {})
+    return tarea
+  }
+
   // Inicialización: limpieza de borradores viejos + check de borrador existente
   useEffect(() => {
     if (!draftKey) return
@@ -417,16 +599,36 @@ export function ReporteIncidencias() {
       .then((draft) => {
         if (!draft) return
         setHayBorrador(true)
-        // Si la cámara estaba abierta y la página se recargó, avisar una vez
+        // ¿La página murió con la cámara abierta o procesando una foto?
         let reinicio = false
         try {
           reinicio = sessionStorage.getItem('m13:camara') === '1'
           sessionStorage.removeItem('m13:camara')
         } catch { /* ignore */ }
-        if (reinicio) toast.info('La app se reinició al abrir la cámara. Recuperamos tu borrador.', { duration: 8000 })
+        const fotoProblema = draft.incidencias
+          .flatMap((i) => i.fotos)
+          .find((f) => f.estado === 'original' && (f.intentos ?? 0) >= 1)
+        if (fotoProblema) {
+          registrarEvento('M13', 'reinicio_procesando_foto', {
+            mb: Math.round((fotoProblema.blob.size / 1048576) * 10) / 10,
+            intentos: fotoProblema.intentos ?? 0,
+            tipo: fotoProblema.tipo,
+          }, profile?.org_id)
+        }
+        if (reinicio || fotoProblema) {
+          toast.info('La app se reinició al procesar la foto. Recuperamos tu borrador.', { duration: 8000 })
+          setAbrirBorradorPendiente(true)
+        }
       })
       .catch(() => {})
   }, [draftKey])
+
+  // Abre el borrador directamente tras un reinicio (sin esperar a que toque "+")
+  useEffect(() => {
+    if (!abrirBorradorPendiente || !draftKey) return
+    setAbrirBorradorPendiente(false)
+    void handleContinuarBorrador()
+  }, [abrirBorradorPendiente, draftKey])
 
   // Autosave con debounce de 500 ms mientras el sheet está abierto
   useEffect(() => {
@@ -434,23 +636,8 @@ export function ReporteIncidencias() {
     if (draftTimerRef.current) clearTimeout(draftTimerRef.current)
     setEstadoBorrador('guardando')
     draftTimerRef.current = setTimeout(() => {
-      const data: M13DraftData = {
-        savedAt: Date.now(),
-        ranchoId,
-        fecha,
-        auditorNombre,
-        incidencias: incidencias.map((inc) => ({
-          uid: inc.uid,
-          descripcion: inc.descripcion,
-          fotos: inc.fotos.map((f) => ({
-            uid: f.uid,
-            blob: f.file,
-            nombre: f.file.name,
-            tipo: f.file.type || 'image/jpeg',
-          })),
-        })),
-      }
-      guardarBorrador(draftKey, data)
+      draftTimerRef.current = null
+      guardarBorrador(draftKey, construirDraft())
         .then(() => { setEstadoBorrador('guardado'); setHayBorrador(true) })
         .catch(() => { setEstadoBorrador(null) })
     }, 500)
@@ -500,6 +687,8 @@ export function ReporteIncidencias() {
           uid: f.uid,
           file: new File([f.blob], f.nombre, { type: f.tipo }),
           preview: URL.createObjectURL(f.blob),
+          estado: f.estado ?? 'lista',
+          intentos: f.intentos ?? 0,
         })),
       })))
       setErrRancho(false)
@@ -509,6 +698,12 @@ export function ReporteIncidencias() {
       setPendienteReporteParaPDF(null)
       setSheetPaso(obligatoria && !tengoFirma ? 'firma_gate' : 'form')
       setSheetAbierto(true)
+      // Originales que nunca se intentaron: se procesan solas. Las de intentos >= 1
+      // no (volverían a cerrar la página): esperan a que el usuario decida.
+      for (const inc of draft.incidencias) {
+        const pendientes = inc.fotos.filter((f) => f.estado === 'original' && (f.intentos ?? 0) === 0).map((f) => f.uid)
+        if (pendientes.length > 0) void procesarFotos(inc.uid, pendientes)
+      }
     } catch {
       abrirSheetFresco()
     }
@@ -546,6 +741,10 @@ export function ReporteIncidencias() {
     if (!profile?.org_id) { toast.error('Sin organización activa'); return false }
     if (incidencias.length === 0) {
       toast.error('Agrega al menos una incidencia')
+      return false
+    }
+    if (incidencias.some((inc) => inc.fotos.some((f) => f.estado === 'original'))) {
+      toast.warning('Hay fotos sin optimizar')
       return false
     }
     for (let i = 0; i < incidencias.length; i++) {
@@ -1294,6 +1493,10 @@ export function ReporteIncidencias() {
                       index={idx}
                       onChange={(upd) => actualizarIncidencia(inc.uid, upd)}
                       onQuitar={() => quitarIncidencia(inc.uid)}
+                      onAgregarFotos={agregarFotos}
+                      onQuitarFoto={quitarFotoDe}
+                      onProcesarFotos={procesarFotos}
+                      onGuardarYa={guardarYa}
                     />
                   ))}
                 </div>
@@ -1344,11 +1547,13 @@ export function ReporteIncidencias() {
                   className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
                 >
                   {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {!guardando && !online && <WifiOff className="w-4 h-4" />}
+                  {!guardando && !online && !hayFotosSinOptimizar && <WifiOff className="w-4 h-4" />}
                   {guardando
                     ? progreso
                       ? `Subiendo ${progreso.procesadas} / ${progreso.total} fotos...`
                       : 'Guardando...'
+                    : hayFotosSinOptimizar
+                      ? 'Hay fotos sin optimizar'
                     : online
                       ? 'Guardar reporte'
                       : `Guardar sin conexión (${totalFotos} foto${totalFotos !== 1 ? 's' : ''})`
