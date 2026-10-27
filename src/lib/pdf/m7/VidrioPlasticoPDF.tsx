@@ -39,7 +39,7 @@ export interface VidrioPlasticoConsolidadoPDFProps {
 
 const COLS: ColumnaDato[] = [
   { texto: 'Área', ancho: 120, align: 'left' },
-  { texto: 'Material / Equipo', ancho: 213, align: 'left' },
+  { texto: 'Material / Equipo', ancho: 213, align: 'left', largo: true },
   { texto: 'Protegido', ancho: 80, align: 'center' },
   { texto: 'Estado', ancho: 100, align: 'center' },
   { texto: 'Observaciones', ancho: 250, align: 'left' },
