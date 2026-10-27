@@ -77,6 +77,7 @@ export function RecepcionFrutaPDF({ d, codigoClave, firmaRealizo, firmaVerifico 
   const t6 = sumAll('cant_6oz');  const t12 = sumAll('cant_12oz');  const t18 = sumAll('cant_18oz')
   const a6 = sumAnden('cant_6oz'); const a12 = sumAnden('cant_12oz'); const a18 = sumAnden('cant_18oz')
   const codigoFmt = codigoFormato('F-FRUS-PRO-02', codigoClave)
+  const obsLarga = (d.observaciones?.length ?? 0) > 400
 
   return (
     <Document>
@@ -113,7 +114,8 @@ export function RecepcionFrutaPDF({ d, codigoClave, firmaRealizo, firmaVerifico 
           />
         </Seccion>
 
-        {/* Bloques de totales */}
+        {/* Totales, observaciones cortas y firmas viajan juntos: las firmas nunca quedan solas en una hoja. */}
+        <View wrap={obsLarga} style={{ marginBottom: 0 }}>
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
           <CajaTotales titulo="Inventario total recepción del día" filas={[['6 oz', t6], ['12 oz', t12], ['18 oz', t18]]} />
           <CajaTotales titulo="Inventario total pase aduanal" filas={[['6 oz', a6], ['12 oz', a12], ['18 oz', a18]]} />
@@ -128,6 +130,7 @@ export function RecepcionFrutaPDF({ d, codigoClave, firmaRealizo, firmaVerifico 
             { label: '', nombre: '', caption: 'Responsable de la empresa', firma: firmaVerifico ?? null },
           ]}
         />
+        </View>
       </PaginaEstandar>
     </Document>
   )
