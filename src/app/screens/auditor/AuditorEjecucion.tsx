@@ -275,7 +275,7 @@ function BloqueAuditoria({
         className="w-full min-h-11 px-3 py-2 rounded-lg bg-muted flex items-center gap-2 text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
       >
         <span
-          className="text-caption font-mono px-1.5 py-0.5 rounded flex-shrink-0 bg-border text-muted-foreground"
+          className="text-caption font-mono px-1.5 py-0.5 rounded flex-shrink-0 bg-border text-foreground"
         >
           {codigo}
         </span>
