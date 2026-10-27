@@ -511,10 +511,9 @@ export function EjecucionJornada() {
             <Boton
               variante="secundario"
               onClick={() => setPanelPendientes(true)}
-              aria-label={`Pendientes (${totalPendientes})`}
             >
               <ClipboardList aria-hidden="true" size={14} />
-              <span className="hidden sm:inline">Pendientes</span>
+              <span className="sr-only sm:not-sr-only">Pendientes</span>
               <Etiqueta tono={totalPendientes > 0 ? 'sky' : 'neutral'}>{totalPendientes}</Etiqueta>
             </Boton>
             {!terminada && (
