@@ -85,19 +85,6 @@ function leerOrientacionExif(v: DataView, tiff: number, fin: number): number | n
   return null
 }
 
-// Transformaciones estándar de canvas para orientaciones EXIF 2..8 (w, h = tamaño sin rotar).
-function aplicarOrientacion(ctx: CanvasRenderingContext2D, o: number, w: number, h: number) {
-  switch (o) {
-    case 2: ctx.transform(-1, 0, 0, 1, w, 0); break
-    case 3: ctx.transform(-1, 0, 0, -1, w, h); break
-    case 4: ctx.transform(1, 0, 0, -1, 0, h); break
-    case 5: ctx.transform(0, 1, 1, 0, 0, 0); break
-    case 6: ctx.transform(0, 1, -1, 0, h, 0); break
-    case 7: ctx.transform(0, -1, -1, 0, h, w); break
-    case 8: ctx.transform(0, -1, 1, 0, 0, w); break
-  }
-}
-
 function liberarCanvas(canvas: HTMLCanvasElement) {
   canvas.width = 0
   canvas.height = 0
@@ -108,7 +95,9 @@ function canvasABlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
 }
 
 // a) ImageDecoder (WebCodecs): Chrome decodifica el JPEG ya reducido, sin cargar
-// la imagen completa. Requiere conocer las dimensiones (encabezado JPEG).
+// la imagen completa. Solo se usa con orientación EXIF 1 (o sin EXIF): no se
+// puede saber de forma fiable si el decodificador ya aplicó otras orientaciones,
+// así que esas van por createImageBitmap, que las aplica de forma documentada.
 async function reducirConImageDecoder(file: File, dim: DimensionesJpeg): Promise<Blob | null> {
   const ID = (globalThis as unknown as { ImageDecoder?: any }).ImageDecoder
   if (!ID) return null
@@ -116,44 +105,20 @@ async function reducirConImageDecoder(file: File, dim: DimensionesJpeg): Promise
   if (typeof ID.isTypeSupported === 'function' && !(await ID.isTypeSupported(tipo))) return null
 
   const escala = Math.min(1, LADO_MAX / Math.max(dim.width, dim.height))
-  const srcW = Math.max(1, Math.round(dim.width * escala))
-  const srcH = Math.max(1, Math.round(dim.height * escala))
-  const transpuesta = dim.orientacion >= 5
+  const w = Math.max(1, Math.round(dim.width * escala))
+  const h = Math.max(1, Math.round(dim.height * escala))
 
   let decoder: any = null
   let frame: any = null
   const canvas = document.createElement('canvas')
   try {
-    decoder = new ID({ data: file.stream(), type: tipo, desiredWidth: srcW, desiredHeight: srcH })
+    decoder = new ID({ data: file.stream(), type: tipo, desiredWidth: w, desiredHeight: h })
     frame = (await decoder.decode({ frameIndex: 0 })).image
-    const fw: number = frame.displayWidth
-    const fh: number = frame.displayHeight
-
-    // ¿El decodificador ya aplicó la orientación? Solo se puede saber en las
-    // transpuestas (5–8): el cuadro sale con ancho/alto invertidos respecto al SOF.
-    const yaOrientada = transpuesta ? (fw >= fh) !== (dim.width >= dim.height) : true
-    const rotarManual = !yaOrientada
-
-    let cw: number, ch: number
-    if (yaOrientada) {
-      // Tamaño final: el pedido, intercambiado si la orientación es transpuesta.
-      cw = transpuesta ? srcH : srcW
-      ch = transpuesta ? srcW : srcH
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return null
-      canvas.width = cw
-      canvas.height = ch
-      ctx.drawImage(frame, 0, 0, cw, ch)
-    } else {
-      cw = transpuesta ? srcH : srcW
-      ch = transpuesta ? srcW : srcH
-      canvas.width = cw
-      canvas.height = ch
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return null
-      if (rotarManual) aplicarOrientacion(ctx, dim.orientacion, srcW, srcH)
-      ctx.drawImage(frame, 0, 0, srcW, srcH)
-    }
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return null
+    canvas.width = w
+    canvas.height = h
+    ctx.drawImage(frame, 0, 0, w, h)
     const blob = await canvasABlob(canvas)
     return blob && blob.size > 0 ? blob : null
   } catch {
@@ -203,7 +168,7 @@ async function prerreducir(
   dim: DimensionesJpeg | null,
 ): Promise<{ file: File; metodo: MetodoOptimizacion } | null> {
   if (file.size <= 1.5 * 1024 * 1024) return { file, metodo: 'original' }
-  if (dim) {
+  if (dim && dim.orientacion === 1) {
     const blob = await reducirConImageDecoder(file, dim)
     if (blob) return { file: new File([blob], file.name, { type: 'image/jpeg' }), metodo: 'imagedecoder' }
   }
