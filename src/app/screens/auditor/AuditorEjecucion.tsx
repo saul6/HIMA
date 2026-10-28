@@ -1973,7 +1973,7 @@ export function AuditorEjecucion() {
         // Todo se dibuja una sola vez; el reacomodo es solo CSS (grid-template-areas), sin medir la pantalla en JS.
         <main
           ref={columnasRef}
-          className="flex-1 flex flex-col xl:grid xl:grid-cols-[18rem_minmax(0,1fr)] xl:grid-rows-[auto_1fr] xl:items-start xl:gap-x-6 xl:gap-y-4 xl:px-4 xl:pt-4 xl:[grid-template-areas:'nav_resumen'_'nav_centro'] min-[1480px]:grid-cols-[18rem_minmax(0,1fr)_20rem] min-[1480px]:grid-rows-[1fr] min-[1480px]:[grid-template-areas:'nav_centro_resumen']"
+          className="flex-1 flex flex-col xl:grid xl:items-start xl:gap-x-6 xl:gap-y-4 xl:px-4 xl:pt-4 xl:max-[1479px]:grid-cols-[18rem_minmax(0,1fr)] xl:max-[1479px]:grid-rows-[auto_1fr] xl:max-[1479px]:[grid-template-areas:'nav_resumen'_'nav_centro'] min-[1480px]:grid-cols-[18rem_minmax(0,1fr)_20rem] min-[1480px]:grid-rows-[1fr] min-[1480px]:[grid-template-areas:'nav_centro_resumen']"
         >
           {/* Navegador de preguntas: solo escritorio, solo visual (llama a irAPregunta) */}
           <NavegadorAgrupado
@@ -1983,7 +1983,7 @@ export function AuditorEjecucion() {
           />
 
           {/* Resumen: paneles de puntaje, MIP, validación, hallazgos y antecedentes. xl: arriba de las preguntas; desde 1480 px: columna derecha fija. */}
-          <div className="px-4 pt-4 xl:p-0 xl:[grid-area:resumen] xl:w-full xl:max-w-3xl xl:justify-self-start min-[1480px]:max-w-none min-[1480px]:justify-self-stretch min-[1480px]:sticky min-[1480px]:top-[calc(var(--alto-header,0px)+1rem)] min-[1480px]:max-h-[calc(var(--alto-visible,100vh)-2rem)] min-[1480px]:overflow-y-auto">
+          <div className="px-4 pt-4 xl:p-0 xl:[grid-area:resumen] xl:w-full xl:max-[1479px]:max-w-3xl xl:max-[1479px]:justify-self-start min-[1480px]:max-w-none min-[1480px]:justify-self-stretch min-[1480px]:sticky min-[1480px]:top-[calc(var(--alto-header,0px)+1rem)] min-[1480px]:max-h-[calc(var(--alto-visible,100vh)-2rem)] min-[1480px]:overflow-y-auto">
             <motion.div className="flex flex-col gap-4" {...ent(0)}>
               {/* COR-07: banners de error de carga */}
               <AnimatePresence initial={false}>
@@ -2130,7 +2130,7 @@ export function AuditorEjecucion() {
           </div>
 
           {/* Preguntas + barra de acciones al pie (sticky dentro de esta columna) */}
-          <div className="flex-1 min-w-0 flex flex-col xl:flex-none xl:[grid-area:centro] xl:self-stretch xl:w-full xl:max-w-3xl xl:justify-self-start min-[1480px]:max-w-4xl">
+          <div className="flex-1 min-w-0 flex flex-col xl:flex-none xl:[grid-area:centro] xl:self-stretch xl:w-full xl:max-[1479px]:max-w-3xl xl:justify-self-start min-[1480px]:max-w-4xl">
             <motion.div className="flex-1 px-4 pt-4 pb-4 xl:px-0 xl:pt-0 flex flex-col gap-4" {...ent(0)}>
               {/* Celular: PDF y Marcar preliminar bajo los paneles de resumen (en md+ viven en la barra al pie) */}
               {((auditoria && allPreguntas.length > 0) || (!cerrada && !cargando && allPreguntas.length > 0 && auditoria?.estado !== 'preliminar')) && (
