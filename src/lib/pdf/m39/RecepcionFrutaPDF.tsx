@@ -124,7 +124,6 @@ export function RecepcionFrutaPDF({ d, codigoClave, firmaRealizo, firmaVerifico 
         {d.observaciones ? <FranjaDatos campos={[{ etiqueta: 'Observaciones', valor: d.observaciones }]} /> : null}
 
         <PdfFirmas
-          pendienteSiFalta
           signatures={[
             { label: '', nombre: '', caption: 'Responsable de la instalación', firma: firmaRealizo ?? null },
             { label: '', nombre: '', caption: 'Responsable de la empresa', firma: firmaVerifico ?? null },

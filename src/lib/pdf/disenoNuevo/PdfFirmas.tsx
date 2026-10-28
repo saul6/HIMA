@@ -20,7 +20,7 @@ interface Props {
   enterado?: FirmaParaPdf['enterado']
   /** Líneas de firma de ancho fijo (más cortas) y firma más grande (M50). Apagado por defecto. */
   lineaCorta?: boolean
-  /** Imprime "Pendiente de firma" bajo la línea cuando no hay firma digital. Apagado por defecto (CLAUDE.md §9: la línea queda en blanco para firma a mano); hoy lo usa solo M39. */
+  /** Imprime "Pendiente de firma" bajo la línea cuando no hay firma digital. Apagado por defecto (CLAUDE.md §9: la línea queda en blanco para firma a mano). Ningún PDF lo usa hoy: queda para cuando Saúl decida. */
   pendienteSiFalta?: boolean
 }
 
