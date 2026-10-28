@@ -88,7 +88,7 @@ async function cargarDatosPerfilBase(
       .from('productores')
       .select('*')
       .eq('profile_id', userId)
-      .single()
+      .maybeSingle()
 
     devLog('[auth] productores result:', { productor, error: productorError?.message })
 

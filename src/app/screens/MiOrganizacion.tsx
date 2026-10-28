@@ -189,7 +189,7 @@ export function MiOrganizacion() {
       .from('productores')
       .select('id')
       .eq('profile_id', profile!.id)
-      .single()
+      .maybeSingle()
     if (existente?.id) return existente.id
     const { data: nuevo, error } = await supabase
       .from('productores')
