@@ -99,7 +99,7 @@ function FirmaDispositivoSheet({ voucher, corteId, onClose, onFirmado, onError }
 }
 
 /** Firmas del voucher de un corte aprobado: Entregó (admin) y Recibí (trabajador o en dispositivo). */
-export function FirmasVoucher({ corteId, claveRecarga }: { corteId: string; claveRecarga: string }) {
+export function FirmasVoucher({ corteId, claveRecarga, onVoucher }: { corteId: string; claveRecarga: string; onVoucher?: (v: VoucherData) => void }) {
   const { offline } = useConexion()
   const { profile } = useAuthContext()
   const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
@@ -112,12 +112,14 @@ export function FirmasVoucher({ corteId, claveRecarga }: { corteId: string; clav
 
   const cargar = useCallback(async () => {
     try {
-      setVoucher(await nomina.voucher(corteId))
+      const v = await nomina.voucher(corteId)
+      setVoucher(v)
+      onVoucher?.(v)
       setError(null)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudieron cargar las firmas')
     }
-  }, [corteId])
+  }, [corteId, onVoucher])
 
   useEffect(() => { void cargar() }, [cargar, claveRecarga])
 

@@ -18,7 +18,7 @@ import { LiberarComisionSheet } from './SheetsCuentas'
 import { CLASE_INPUT, MotivoSheet } from './ui'
 import type { CtxSemana } from './contexto'
 import type {
-  CalculoCorte, CorteAprobado, CuentasTrabajador, LineaCorte, NomAjuste, NomPagoFila, OrigenTarifa, PagoResumen, TipoLinea,
+  CalculoCorte, CorteAprobado, CuentasTrabajador, LineaCorte, NomAjuste, NomPagoFila, OrigenTarifa, PagoResumen, TipoLinea, VoucherData,
 } from '@/types/nomina.types'
 
 const ORIGEN: Record<OrigenTarifa, string> = {
@@ -108,8 +108,8 @@ function Totales({ t, moneda, extra, saldos }: {
       {extra}
       {saldos && (saldos.ahorro > 0 || saldos.comisiones > 0) && (
         <div className="border-t border-border mt-1 pt-1.5 space-y-1">
-          {saldos.ahorro > 0 && fila('Ahorro acumulado (no suma)', saldos.ahorro)}
-          {saldos.comisiones > 0 && fila('Comisiones por liberar (no suma)', saldos.comisiones)}
+          {saldos.ahorro > 0 && fila('Saldo actual de ahorro', saldos.ahorro)}
+          {saldos.comisiones > 0 && fila('Comisiones por liberar (actual)', saldos.comisiones)}
         </div>
       )}
     </div>
@@ -141,6 +141,7 @@ export function CorteTab({ ctx, calculo, prestamos, cuentas, ajustes, onIrActivi
   const { confirmar, confirmarElemento } = useConfirmar()
   const [sheet, setSheet] = useState<Sheet>(null)
   const [aprobando, setAprobando] = useState(false)
+  const [voucherRev, setVoucherRev] = useState<VoucherData | null>(null)
   const [generandoPdf, setGenerandoPdf] = useState(false)
   // La llave de aprobación cambia solo cuando cambia el cálculo que se está viendo.
   const llaveAprobar = useRef<{ hash: string; llave: string } | null>(null)
@@ -333,6 +334,13 @@ export function CorteTab({ ctx, calculo, prestamos, cuentas, ajustes, onIrActivi
   const pagadoNeto = r2(suma(pagos.filter(p => p.tipo === 'pago')) - revertidoDe('pago'))
   const anticiposNeto = r2(suma(pagos.filter(p => p.tipo === 'anticipo')) - revertidoDe('anticipo'))
   const sePuedeAnular = pagadoNeto <= 0
+  // Los saldos de pantalla son los actuales; el voucher guarda los de su fecha de emisión.
+  const saldosDistintos = voucherRev != null && (
+    r2(voucherRev.ahorro_saldo ?? 0) !== r2(cuentas?.ahorro.saldo ?? 0) ||
+    r2(voucherRev.comisiones_por_liberar ?? 0) !== r2(porLiberar) ||
+    JSON.stringify([...voucherRev.prestamos_activos].map(p => [p.id, r2(p.saldo)]).sort()) !==
+      JSON.stringify(prestamos.datos.filter(p => p.estado === 'activo').map(p => [p.id, r2(Number(p.saldo))]).sort())
+  )
 
   return (
     <div className="space-y-5">
@@ -348,7 +356,7 @@ export function CorteTab({ ctx, calculo, prestamos, cuentas, ajustes, onIrActivi
         <FileDown className="size-4" /> Voucher PDF
       </Boton>
 
-      <FirmasVoucher corteId={corte.id} claveRecarga={`${pagos.length}-${corte.pago.entregado}`} />
+      <FirmasVoucher corteId={corte.id} claveRecarga={`${pagos.length}-${corte.pago.entregado}`} onVoucher={setVoucherRev} />
 
       {snap && <Lineas lineas={snap.lineas} moneda={moneda} />}
       {snap && (
@@ -437,6 +445,10 @@ export function CorteTab({ ctx, calculo, prestamos, cuentas, ajustes, onIrActivi
           />
         ))}
       </section>
+
+      {saldosDistintos && voucherRev && voucherRev.voucher_id !== undefined && (
+        <p className="text-xs text-muted-foreground">El voucher R{voucherRev.revision} muestra los saldos a la fecha en que se emitió.</p>
+      )}
 
       {botonLiberar}
       <PrestamosSeccion ctx={ctx} prestamos={prestamos} cuentas={cuentas} onCambio={onCambio} />
@@ -551,7 +563,7 @@ function FilaDescuento({ prestamo, moneda, lunes, programado, deshabilitado, onG
   return (
     <div className="rounded-xl border border-border bg-card p-3 space-y-2">
       <div className="flex justify-between text-sm">
-        <span className="text-muted-foreground">{etiquetaOrigenPrestamo(prestamo.origen)} · Saldo</span>
+        <span className="text-muted-foreground">{etiquetaOrigenPrestamo(prestamo.origen)} · Saldo actual del préstamo</span>
         <span className="font-semibold tabular-nums text-agro-danger-text">{formatoMoneda(prestamo.saldo, moneda)}</span>
       </div>
       <div className="flex items-end gap-2">
@@ -606,7 +618,7 @@ function FilaPrestamo({ prestamo, moneda, deshabilitado, onGuardado }: {
   return (
     <div className="rounded-xl border border-border bg-card p-3 space-y-2">
       <div className="flex justify-between text-sm">
-        <span className="text-muted-foreground">{etiquetaOrigenPrestamo(prestamo.origen)} · Saldo</span>
+        <span className="text-muted-foreground">{etiquetaOrigenPrestamo(prestamo.origen)} · Saldo actual del préstamo</span>
         <span className="font-semibold tabular-nums text-agro-danger-text">{formatoMoneda(prestamo.saldo, moneda)}</span>
       </div>
       <div className="flex items-end gap-2">
