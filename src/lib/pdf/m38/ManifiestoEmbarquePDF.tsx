@@ -64,6 +64,17 @@ const bm = (v: string): string => v === 'bueno' ? 'Bueno' : 'Malo'
 const ANCHO_DERECHA = 195
 const GAP = 12
 
+/**
+ * Las firmas nunca quedan solas en una hoja. El cuerpo son dos columnas que se parten entre hojas y las firmas van debajo,
+ * así que react-pdf no puede jalar el último bloque hacia la hoja de las firmas. Solución sin cambiar lo que se ve:
+ * cada columna termina con un espacio vacío de ALTO_FIRMAS (RESERVA) y las firmas suben ese mismo alto (marginTop negativo),
+ * de modo que quedan justo debajo de la columna más larga, sin encimarse con ninguna (las dos reservan el mismo espacio).
+ * Los últimos bloques de cada columna piden `minPresenceAhead` con la reserva: si esta no cabe en la hoja, esos bloques
+ * (los necesarios según el espacio, no un número fijo) pasan a la hoja siguiente junto con las firmas.
+ */
+const ALTO_FIRMAS = 125
+const Reserva = () => <View wrap={false} style={{ height: ALTO_FIRMAS }} />
+
 const COLS_TARIMAS: ColumnaDato[] = [
   { texto: 'No.', ancho: 20, align: 'center' },
   { texto: 'Tarima', ancho: 38 },
@@ -113,6 +124,8 @@ export function ManifiestoEmbarquePDF({
     }
   }
 
+  const hayTotales = Object.keys(totales).length > 0
+
   return (
     <Document>
       <PaginaEstandar
@@ -135,11 +148,13 @@ export function ManifiestoEmbarquePDF({
           { etiqueta: 'No. chismografo', valor: t(d.num_chismografo) },
         ]}
       >
+        <View>
         {/* Cuerpo principal: tarimas (izquierda) + datos del camión y listas (derecha) */}
         <View style={{ flexDirection: 'row' }}>
           <View style={{ flex: 1, marginRight: GAP }}>
             <Seccion titulo="TARIMAS EMBARCADAS">
               <TablaDatos
+                {...(!hayTotales && !d.observaciones ? { firmasDespues: <Reserva /> } : {})}
                 columnas={COLS_TARIMAS}
                 anchoTotal={ANCHO_UTIL.landscape - ANCHO_DERECHA - GAP}
                 fuente={7.5}
@@ -149,8 +164,8 @@ export function ManifiestoEmbarquePDF({
               />
             </Seccion>
 
-            {Object.keys(totales).length > 0 && (
-              <View style={{ marginBottom: 6 }}>
+            {hayTotales && (
+              <View minPresenceAhead={ALTO_FIRMAS} style={{ marginBottom: 6 }}>
                 <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, marginBottom: 2 }}>Total por producto</Text>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                   {Object.entries(totales).map(([prod, cajas], i) => (
@@ -163,11 +178,12 @@ export function ManifiestoEmbarquePDF({
             )}
 
             {d.observaciones && (
-              <View style={{ marginTop: 4 }}>
+              <View minPresenceAhead={ALTO_FIRMAS} style={{ marginTop: 4 }}>
                 <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, marginBottom: 2 }}>Observaciones</Text>
                 <Text style={{ fontSize: 7.5, color: PC.fieldValue }} hyphenationCallback={partirPalabraLarga}>{d.observaciones}</Text>
               </View>
             )}
+            {hayTotales || d.observaciones ? <Reserva /> : null}
           </View>
 
           {/* Columna derecha */}
@@ -194,6 +210,7 @@ export function ManifiestoEmbarquePDF({
               </View>
             </Seccion>
 
+            <View wrap={false} minPresenceAhead={ALTO_FIRMAS}>
             <Seccion titulo="CONDICIONES DE LAS TARIMAS">
               <View>
                 <FilaCondicion label="Remontado" valor={bm(d.tar_remontado)} malo={bm(d.tar_remontado) === 'Malo'} />
@@ -203,10 +220,13 @@ export function ManifiestoEmbarquePDF({
                 <FilaCondicion label="Distribución embarque" valor={bm(d.tar_distribucion)} malo={bm(d.tar_distribucion) === 'Malo'} />
               </View>
             </Seccion>
+            </View>
+            <Reserva />
           </View>
         </View>
 
-        {/* Firmas */}
+        {/* Firmas: suben la reserva de las columnas (ver ALTO_FIRMAS) */}
+        <View style={{ marginTop: -ALTO_FIRMAS }}>
         <PdfFirmas
           signatures={[
             { label: 'Responsable de la instalación', nombre: firmaRealizo?.firmante ?? '', caption: 'Firma del responsable', firma: firmaRealizo ?? null },
@@ -214,6 +234,8 @@ export function ManifiestoEmbarquePDF({
             { label: 'Firma del chofer', nombre: '', caption: 'Firma del conductor' },
           ]}
         />
+        </View>
+        </View>
       </PaginaEstandar>
     </Document>
   )
