@@ -982,7 +982,7 @@ function PanelHallazgos({
       </button>
 
       <motion.div id={idCuerpo} hidden={!abierto} {...fundido} className="min-[1480px]:min-h-0 min-[1480px]:flex-1 min-[1480px]:overflow-y-auto">
-        <div className="border-t border-border">
+        <div className="border-t border-border min-[1480px]:[&>.py-16]:py-6">
           {hallazgos.length === 0 ? (
             cargando ? (
               <div className="px-4 py-4 flex flex-col gap-2" aria-busy="true" aria-label="Cargando hallazgos">
