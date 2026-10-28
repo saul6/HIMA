@@ -13,6 +13,7 @@ import { ISOTIPO_MARCA_AGUA } from '@/lib/pdf/disenoNuevo/isotipoMarcaAgua'
 import { PdfFirmas } from '@/lib/pdf/disenoNuevo/PdfFirmas'
 import { PC } from '@/lib/pdf/components/tokens'
 import { partirParaAncho } from '@/lib/pdf/disenoNuevo/medirTexto'
+import { TextoLargo, esTextoLargo, resumenTexto } from '@/lib/pdf/disenoNuevo/TextoLargo'
 import { codigoFormato } from '@/lib/codigoFormato'
 import type { FirmaParaPdf, FirmaEnteradoParaPdf } from '@/hooks/useFirmasRegistro'
 import { SIN_ENCOGER } from '@/lib/pdf/disenoNuevo/estilos'
@@ -296,8 +297,20 @@ function notasTexto(i: ReporteVisitaItem): string[] {
   return (i.revision?.notas_auto ?? []).map((n) => n.texto).filter(Boolean)
 }
 
-function CeldaObs({ item, width }: { item: ReporteVisitaItem; width: number }) {
+/** Observación larga: en la celda queda un resumen y el texto completo va a lo ancho bajo el renglón (kit TextoLargo). */
+function obsLarga(item: ReporteVisitaItem, width: number): string | null {
   const obs = item.revision?.observacion?.trim()
+  return obs && esTextoLargo(obs, width - 10, 8) ? obs : null
+}
+
+function BloqueObs({ item, width }: { item: ReporteVisitaItem; width: number }) {
+  const obs = obsLarga(item, width)
+  return obs ? <TextoLargo etiqueta="Observaciones" texto={obs} ancho={ANCHO} fuente={8} conLinea /> : null
+}
+
+function CeldaObs({ item, width }: { item: ReporteVisitaItem; width: number }) {
+  const larga = obsLarga(item, width)
+  const obs = larga ? resumenTexto(larga, width - 10, 8) : item.revision?.observacion?.trim()
   const notas = notasTexto(item)
   return (
     <View style={{ ...s.td, width }}>
@@ -321,7 +334,8 @@ function CeldaEstado({ estado, ancho }: { estado: EstadoRev | null; ancho: numbe
 }
 
 function alturaObs(i: ReporteVisitaItem, ancho: number): number {
-  const obs = i.revision?.observacion?.trim()
+  const larga = obsLarga(i, ancho)
+  const obs = larga ? resumenTexto(larga, ancho - 10, 8) : i.revision?.observacion?.trim()
   const notas = notasTexto(i)
   return (obs ? lineas(obs, ancho, 8) * 10.8 : 0) + notas.reduce((n, t) => n + lineas(`- ${t}`, ancho, 7) * 9.6, 0)
 }
@@ -329,6 +343,7 @@ function alturaObs(i: ReporteVisitaItem, ancho: number): number {
 function FilaFormato({ item, codigoClave, partible }: { item: ReporteVisitaItem; codigoClave: string; partible?: boolean }) {
   const codigo = item.codigo_formato ? codigoFormato(item.codigo_formato, codigoClave) : ''
   return (
+    <>
     <View {...(partible ? {} : { wrap: false })} style={s.fila}>
       <Text style={{ ...s.td, width: 90 }} hyphenationCallback={partirParaAncho(78, 8)}>{item.area ?? ''}</Text>
       <Text style={{ ...s.td, width: 80 }} hyphenationCallback={partirParaAncho(68, 8)}>{codigo}</Text>
@@ -337,12 +352,15 @@ function FilaFormato({ item, codigoClave, partible }: { item: ReporteVisitaItem;
       <CeldaEstado estado={item.revision?.estado ?? null} ancho={75} />
       <CeldaObs item={item} width={OBS_ANCHO} />
     </View>
+    <BloqueObs item={item} width={OBS_ANCHO} />
+    </>
   )
 }
 
 function FilaDocumento({ item, fechaVisita, partible }: { item: ReporteVisitaItem; fechaVisita: string; partible?: boolean }) {
   const vencido = !!item.vence_el && item.vence_el.slice(0, 10) < fechaVisita.slice(0, 10)
   return (
+    <>
     <View {...(partible ? {} : { wrap: false })} style={s.fila}>
       <Text style={{ ...s.td, width: 230, fontFamily: 'Helvetica-Bold' }} hyphenationCallback={partirParaAncho(218, 8, true)}>{item.nombre}</Text>
       <View style={{ width: 95, ...s.td }}>
@@ -352,6 +370,8 @@ function FilaDocumento({ item, fechaVisita, partible }: { item: ReporteVisitaIte
       <CeldaEstado estado={item.revision?.estado ?? null} ancho={80} />
       <CeldaObs item={item} width={OBS_DOCS_ANCHO} />
     </View>
+    <BloqueObs item={item} width={OBS_DOCS_ANCHO} />
+    </>
   )
 }
 
