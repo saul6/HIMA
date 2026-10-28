@@ -111,6 +111,7 @@ export function NominaCatalogo() {
                   etiquetas={
                     <>
                       <Etiqueta tono="sky">{ETIQUETA_MODO[a.modo]}</Etiqueta>
+                      {a.es_comision && <Etiqueta tono="menta">Comisión</Etiqueta>}
                       {a.archivada && <Etiqueta tono="neutral">Archivada</Etiqueta>}
                     </>
                   }
@@ -203,10 +204,11 @@ function ActividadCatalogoSheet({ item, onClose, onGuardado }: {
   const [sinonimos, setSinonimos] = useState((item?.sinonimos ?? []).join(', '))
   const [orden, setOrden] = useState(String(item?.orden ?? 0))
   const [archivada, setArchivada] = useState(item?.archivada ?? false)
+  const [esComision, setEsComision] = useState(item?.es_comision ?? false)
   const [modoBloqueado, setModoBloqueado] = useState(false)
   const [guardando, setGuardando] = useState(false)
 
-  async function enviar(sobre: { modo: ModoActividad; archivada: boolean }) {
+  async function enviar(sobre: { modo: ModoActividad; archivada: boolean; esComision: boolean }) {
     setGuardando(true)
     try {
       const n = Number(orden.trim().replace(',', '.'))
@@ -220,6 +222,7 @@ function ActividadCatalogoSheet({ item, onClose, onGuardado }: {
         sinonimos: sinonimos.split(',').map(s => s.trim()).filter(Boolean),
         orden: Number.isFinite(n) ? Math.round(n) : 0,
         archivada: sobre.archivada,
+        esComision: sobre.modo === 'informativa' ? false : sobre.esComision,
       })
       toast.success('Actividad guardada')
       await onGuardado()
@@ -236,7 +239,7 @@ function ActividadCatalogoSheet({ item, onClose, onGuardado }: {
     <BottomSheet open onClose={onClose} height="85%" title={item ? 'Editar actividad' : 'Nueva actividad'}>
       <CuerpoSheet
         textoGuardar="Guardar"
-        onGuardar={() => void enviar({ modo, archivada })}
+        onGuardar={() => void enviar({ modo, archivada, esComision })}
         cargando={guardando}
         deshabilitado={!nombre.trim() || !unidad.trim()}
       >
@@ -247,7 +250,7 @@ function ActividadCatalogoSheet({ item, onClose, onGuardado }: {
         <CampoSeleccion
           etiqueta="Modo de pago"
           valor={modo}
-          onChange={v => setModo(v as ModoActividad)}
+          onChange={v => { setModo(v as ModoActividad); if (v === 'informativa') setEsComision(false) }}
           requerido
           opciones={(Object.keys(ETIQUETA_MODO) as ModoActividad[]).map(k => ({ valor: k, etiqueta: ETIQUETA_MODO[k] }))}
         />
@@ -256,6 +259,18 @@ function ActividadCatalogoSheet({ item, onClose, onGuardado }: {
           {modo === 'importe_pactado' && 'El administrador captura el monto y el motivo en cada registro.'}
           {modo === 'informativa' && 'Aparece en el corte pero no suma al pago.'}
         </p>
+        {modo !== 'informativa' && (
+          <label className="flex items-start gap-2 text-sm">
+            <input
+              type="checkbox" className="size-4 mt-0.5" checked={esComision} disabled={modoBloqueado}
+              onChange={e => setEsComision(e.target.checked)}
+            />
+            <span>
+              Es comisión (se acumula y se paga al liberarla)
+              <span className="block text-xs text-muted-foreground">No se paga en su semana: queda por liberar hasta que el administrador la libere.</span>
+            </span>
+          </label>
+        )}
         <CampoTexto etiqueta="Sinónimos (separados por coma)" valor={sinonimos} onChange={setSinonimos} />
         <CampoTexto etiqueta="Orden" tipo="number" valor={orden} onChange={setOrden} />
         {item && (
@@ -266,8 +281,8 @@ function ActividadCatalogoSheet({ item, onClose, onGuardado }: {
         )}
         {modoBloqueado && item && (
           <div className="rounded-xl bg-agro-info-fill text-agro-info-text text-sm p-3 space-y-2">
-            <p>Esta actividad ya tiene registros: no se puede cambiar su modo. Archívala y crea otra con el modo que necesitas.</p>
-            <Boton tamano="sm" variante="secundario" onClick={() => void enviar({ modo: item.modo, archivada: true })}>
+            <p>Esta actividad ya tiene registros: no se puede cambiar su modo ni si es comisión. Archívala y crea otra con el modo que necesitas.</p>
+            <Boton tamano="sm" variante="secundario" onClick={() => void enviar({ modo: item.modo, archivada: true, esComision: item.es_comision ?? false })}>
               Archivar esta actividad
             </Boton>
           </div>
