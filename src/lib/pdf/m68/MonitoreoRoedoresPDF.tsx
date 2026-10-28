@@ -1,4 +1,4 @@
-import { Document } from '@react-pdf/renderer'
+import { Document, View } from '@react-pdf/renderer'
 import { PaginaEstandar, Seccion } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
 import { TablaDatos, ANCHO_UTIL, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
@@ -79,18 +79,21 @@ export function MonitoreoRoedoresPage({
         />
       </Seccion>
 
-      {observaciones && (
-        <Seccion titulo="3. OBSERVACIONES Y/O ACCIÓN CORRECTIVA">
-          <FranjaDatos campos={[{ etiqueta: '', valor: observaciones }]} />
-        </Seccion>
-      )}
+      {/* Observaciones y firmas juntas: las firmas nunca quedan solas en una hoja */}
+      <View wrap={false}>
+        {observaciones && (
+          <Seccion titulo="3. OBSERVACIONES Y/O ACCIÓN CORRECTIVA">
+            <FranjaDatos campos={[{ etiqueta: '', valor: observaciones }]} />
+          </Seccion>
+        )}
 
-      <PdfFirmas
-        signatures={[
-          { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
-          { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
-        ]}
-      />
+        <PdfFirmas
+          signatures={[
+            { label: '', nombre: '', caption: 'Realizó', firma: firmaRealizo ?? null },
+            { label: '', nombre: '', caption: 'Responsable de Inocuidad', firma: firmaVerifico ?? null },
+          ]}
+        />
+      </View>
     </PaginaEstandar>
   )
 }
