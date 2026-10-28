@@ -8,6 +8,8 @@ export interface CtxSemana {
   domingo: string
   periodoId: string | null
   aprobada: boolean
+  /** Semana cerrada: no se captura ni se anula nada. */
+  cerrada: boolean
   moneda: string
   /** Rango de fechas capturables: mayor entre arranque, alta y lunes / menor entre hoy y domingo. */
   min: string

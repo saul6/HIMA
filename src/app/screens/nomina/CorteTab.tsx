@@ -14,10 +14,11 @@ import { fechaHora } from '@/lib/formato'
 import { generarVoucherPDF } from '@/lib/pdf/m81/generarVoucherPDF'
 import { FirmasVoucher } from './FirmasVoucher'
 import { AjusteSheet, PagoSheet, ReversionSheet } from './SheetsDinero'
+import { LiberarComisionSheet } from './SheetsCuentas'
 import { CLASE_INPUT, MotivoSheet } from './ui'
 import type { CtxSemana } from './contexto'
 import type {
-  CalculoCorte, CorteAprobado, LineaCorte, NomAjuste, NomPagoFila, OrigenTarifa, PagoResumen, TipoLinea,
+  CalculoCorte, CorteAprobado, CuentasTrabajador, LineaCorte, NomAjuste, NomPagoFila, OrigenTarifa, PagoResumen, TipoLinea,
 } from '@/types/nomina.types'
 
 const ORIGEN: Record<OrigenTarifa, string> = {
@@ -32,6 +33,7 @@ const GRUPOS: { tipo: TipoLinea; titulo: string }[] = [
   { tipo: 'reembolso', titulo: 'Reembolsos' },
   { tipo: 'deduccion', titulo: 'Descuentos' },
   { tipo: 'informativa', titulo: 'Informativas (no suman)' },
+  { tipo: 'comision_diferida', titulo: 'Comisiones acumuladas (no suman esta semana)' },
 ]
 
 export function estadoPagoEtiqueta(p: PagoResumen | undefined): { texto: string; tono: TonoEtiqueta } {
@@ -62,6 +64,8 @@ function Lineas({ lineas, moneda }: { lineas: LineaCorte[]; moneda: string }) {
                 derecha={
                   g.tipo === 'informativa'
                     ? <Etiqueta tono="neutral">No suma</Etiqueta>
+                    : g.tipo === 'comision_diferida'
+                    ? <span className="text-sm tabular-nums text-muted-foreground">{formatoMoneda(Math.abs(l.monto), moneda)}</span>
                     : <span className="text-sm font-semibold tabular-nums">
                         {g.tipo === 'deduccion' ? '−' : ''}{formatoMoneda(Math.abs(l.monto), moneda)}
                       </span>
@@ -93,6 +97,12 @@ function Totales({ t, moneda, extra }: {
       {fila('Descuentos', t.deducciones)}
       <div className="border-t border-border my-1" />
       {fila('Neto de la semana', t.neto, true)}
+      {(t.comisiones_diferidas ?? 0) > 0 && (
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Comisiones acumuladas (aparte del neto)</span>
+          <span className="tabular-nums">{formatoMoneda(t.comisiones_diferidas ?? 0, moneda)}</span>
+        </div>
+      )}
       {extra}
     </div>
   )
@@ -102,6 +112,7 @@ interface Props {
   ctx: CtxSemana
   calculo: ReturnType<typeof useNomCalculo>
   prestamos: ReturnType<typeof useNomPrestamos>
+  cuentas: CuentasTrabajador | null
   ajustes: NomAjuste[]
   /** Lleva a la pestaña Captura con la actividad que causa un bloqueo. */
   onIrActividad: (id: string) => void
@@ -114,9 +125,10 @@ type Sheet =
   | { tipo: 'ajuste'; corteId: string }
   | { tipo: 'anular-corte'; corteId: string }
   | { tipo: 'cancelar-ajuste'; id: string }
+  | { tipo: 'liberar' }
   | null
 
-export function CorteTab({ ctx, calculo, prestamos, ajustes, onIrActividad, onCambio }: Props) {
+export function CorteTab({ ctx, calculo, prestamos, cuentas, ajustes, onIrActividad, onCambio }: Props) {
   const { offline } = useConexion()
   const { confirmar, confirmarElemento } = useConfirmar()
   const [sheet, setSheet] = useState<Sheet>(null)
@@ -136,6 +148,25 @@ export function CorteTab({ ctx, calculo, prestamos, ajustes, onIrActividad, onCa
     )
   }
   if (!resp) return null
+
+  const porLiberar = cuentas?.comisiones.saldo_por_liberar ?? 0
+  function irADescuento(prestamoId: string) {
+    const el = document.getElementById(`desc-${prestamoId}`)
+    el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    el?.focus()
+  }
+  // Liberar solo tiene sentido mientras la semana no está aprobada ni cerrada.
+  const botonLiberar = porLiberar > 0 && !ctx.aprobada && !ctx.cerrada ? (
+    <Boton variante="secundario" className="w-full" disabled={offline} onClick={() => setSheet({ tipo: 'liberar' })}>
+      Liberar comisión ({formatoMoneda(porLiberar, ctx.moneda)} por liberar)
+    </Boton>
+  ) : null
+  const sheetLiberar = (
+    <LiberarComisionSheet
+      trabajadorId={ctx.trabajadorId} moneda={ctx.moneda} disponible={porLiberar} fechaSemana={ctx.lunes}
+      onClose={() => setSheet(null)} onGuardado={onCambio}
+    />
+  )
 
   async function aprobar(calc: CalculoCorte, periodoId: string) {
     const prestamo = calc.exceso_anticipo > 0
@@ -220,6 +251,11 @@ export function CorteTab({ ctx, calculo, prestamos, ajustes, onIrActividad, onCa
             {a.codigo === 'DIAS_SIN_ASISTENCIA' && a.fechas && a.fechas.length > 0 && (
               <p className="text-xs mt-1">Días: {a.fechas.map(fechaCorta).join(', ')}</p>
             )}
+            {a.codigo === 'PRESTAMO_SIN_DESCUENTO' && a.prestamo_id && (
+              <button type="button" className="mt-1 underline text-xs font-semibold" onClick={() => irADescuento(a.prestamo_id!)}>
+                Definir descuento{a.saldo != null ? ` (saldo ${formatoMoneda(a.saldo, c.moneda)})` : ''}
+              </button>
+            )}
             {a.codigo === 'EXCESO_ANTICIPO' && a.monto != null && (
               <p className="text-xs mt-1">Se hará préstamo por {formatoMoneda(a.monto, c.moneda)}.</p>
             )}
@@ -262,7 +298,9 @@ export function CorteTab({ ctx, calculo, prestamos, ajustes, onIrActividad, onCa
           Aprobar corte
         </Boton>
         {bloqueado && <p className="text-xs text-agro-danger-text text-center">Resuelve los pendientes de arriba para aprobar.</p>}
-        <PrestamosSeccion ctx={ctx} prestamos={prestamos} onCambio={onCambio} />
+        {botonLiberar}
+        <PrestamosSeccion ctx={ctx} prestamos={prestamos} cuentas={cuentas} onCambio={onCambio} />
+        {sheet?.tipo === 'liberar' && sheetLiberar}
         {confirmarElemento}
       </div>
     )
@@ -388,7 +426,8 @@ export function CorteTab({ ctx, calculo, prestamos, ajustes, onIrActividad, onCa
         ))}
       </section>
 
-      <PrestamosSeccion ctx={ctx} prestamos={prestamos} onCambio={onCambio} />
+      {botonLiberar}
+      <PrestamosSeccion ctx={ctx} prestamos={prestamos} cuentas={cuentas} onCambio={onCambio} />
 
       {sePuedeAnular ? (
         <Boton variante="secundario" className="w-full" disabled={offline} onClick={() => setSheet({ tipo: 'anular-corte', corteId: corte.id })}>
@@ -398,6 +437,7 @@ export function CorteTab({ ctx, calculo, prestamos, ajustes, onIrActividad, onCa
         <p className="text-xs text-muted-foreground text-center">Un corte con pagos no se anula: corrígelo con un ajuste.</p>
       )}
 
+      {sheet?.tipo === 'liberar' && sheetLiberar}
       {sheet?.tipo === 'pago' && <PagoSheet ctx={{ ...ctx, recargar: onCambio }} corteId={sheet.corteId} pendiente={sheet.pendiente} onClose={() => setSheet(null)} />}
       {sheet?.tipo === 'revertir' && <ReversionSheet ctx={{ ...ctx, recargar: onCambio }} pagoId={sheet.pagoId} maximo={sheet.maximo} onClose={() => setSheet(null)} />}
       {sheet?.tipo === 'ajuste' && <AjusteSheet ctx={{ ...ctx, recargar: onCambio }} corteId={sheet.corteId} onClose={() => setSheet(null)} />}
@@ -435,9 +475,10 @@ export function CorteTab({ ctx, calculo, prestamos, ajustes, onIrActividad, onCa
   )
 }
 
-function PrestamosSeccion({ ctx, prestamos, onCambio }: {
+function PrestamosSeccion({ ctx, prestamos, cuentas, onCambio }: {
   ctx: CtxSemana
   prestamos: ReturnType<typeof useNomPrestamos>
+  cuentas: CuentasTrabajador | null
   onCambio: () => Promise<void>
 }) {
   const { offline } = useConexion()
@@ -447,11 +488,81 @@ function PrestamosSeccion({ ctx, prestamos, onCambio }: {
     <section>
       <TituloSeccion>Préstamos activos</TituloSeccion>
       <div className="space-y-2">
-        {activos.map(p => (
-          <FilaPrestamo key={p.id} prestamo={p} moneda={ctx.moneda} deshabilitado={offline} onGuardado={onCambio} />
+        {activos.map(p => p.origen === 'manual' ? (
+          <FilaDescuento
+            key={p.id}
+            prestamo={p}
+            moneda={ctx.moneda}
+            lunes={ctx.lunes}
+            programado={cuentas?.prestamos.find(c => c.id === p.id)?.descuentos_programados.find(d => d.semana_inicio === ctx.lunes)?.monto ?? null}
+            deshabilitado={offline || ctx.aprobada || ctx.cerrada}
+            onGuardado={onCambio}
+          />
+        ) : (
+          <FilaPrestamo key={p.id} prestamo={p} moneda={ctx.moneda} deshabilitado={offline || ctx.cerrada} onGuardado={onCambio} />
         ))}
       </div>
     </section>
+  )
+}
+
+/** Préstamo manual: el admin decide cuánto se descuenta esta semana (vacío = sin definir; 0 = no descontar). */
+function FilaDescuento({ prestamo, moneda, lunes, programado, deshabilitado, onGuardado }: {
+  prestamo: ReturnType<typeof useNomPrestamos>['datos'][number]
+  moneda: string
+  lunes: string
+  programado: number | null
+  deshabilitado: boolean
+  onGuardado: () => Promise<void>
+}) {
+  const inicial = programado != null ? String(programado) : ''
+  const [monto, setMonto] = useState(inicial)
+  const [guardando, setGuardando] = useState(false)
+  const vacio = monto.trim() === ''
+  const valor = vacio ? null : (/^\s*0+(\.0+)?\s*$/.test(monto) ? 0 : leerMonto(monto))
+  const invalido = !vacio && (valor == null || Number.isNaN(valor))
+  const cambio = !invalido && (valor ?? null) !== programado
+
+  async function guardar() {
+    setGuardando(true)
+    try {
+      await nomina.descuentoPrestamo(prestamo.id, lunes, valor == null ? null : r2(valor), null)
+      toast.success(valor == null ? 'Descuento quitado' : 'Descuento guardado')
+      await onGuardado()
+    } catch (e) {
+      avisarErrorNomina(e, 'No se pudo guardar el descuento')
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-3 space-y-2">
+      <div className="flex justify-between text-sm">
+        <span className="text-muted-foreground">{etiquetaOrigenPrestamo(prestamo.origen)} · Saldo</span>
+        <span className="font-semibold tabular-nums text-agro-danger-text">{formatoMoneda(prestamo.saldo, moneda)}</span>
+      </div>
+      <div className="flex items-end gap-2">
+        <div className="flex-1">
+          <label className="text-xs font-semibold text-muted-foreground" htmlFor={`desc-${prestamo.id}`}>Descontar esta semana</label>
+          <input
+            id={`desc-${prestamo.id}`}
+            inputMode="decimal"
+            value={monto}
+            disabled={deshabilitado}
+            placeholder="Sin definir"
+            onChange={e => setMonto(e.target.value)}
+            className={CLASE_INPUT}
+          />
+          {invalido && <p role="alert" className="text-small text-agro-danger-text">Escribe el monto como 1250 o 1,250.50</p>}
+          {!vacio && !invalido && <p className="text-small text-muted-foreground">Se registrará: {formatoMoneda(valor ?? 0, moneda)}</p>}
+        </div>
+        <Boton tamano="md" variante="secundario" cargando={guardando} disabled={deshabilitado || !cambio} onClick={() => void guardar()}>
+          Guardar
+        </Boton>
+      </div>
+      <p className="text-xs text-muted-foreground">Vacío = sin definir (el corte avisa). 0 = no descontar esta semana.</p>
+    </div>
   )
 }
 
