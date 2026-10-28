@@ -1,5 +1,5 @@
-// Generado desde la BD (trigger trg_limites_texto) el 2026-10-14. No editar a mano:
-// si la BD cambia un límite, pide a Saúl la lista nueva y regenera este archivo.
+// Actualizado con la lista de la BD del 28-10-2026 (CSV de Saúl). No inventar límites:
+// si la BD cambia uno, pide a Saúl la lista nueva y actualiza este archivo.
 // Fuente de verdad: la BD. Este mapa solo sirve para poner maxLength y contadores en la UI.
 
 export const LIMITES_TEXTO: Record<string, Record<string, number>> = {
@@ -8,6 +8,11 @@ export const LIMITES_TEXTO: Record<string, Record<string, number>> = {
   aplicaciones: { aplicadores: 2000, comentario_correccion: 2000, condicion_meteorologica: 150, equipo: 150, fenologia: 150, metodo_aplicacion_gg: 150, observaciones: 2000, sector: 150, tipo_aplicacion: 150, variedad: 150 },
   aud_instancia_valores: { valor: 2000, valor_texto: 2000 },
   aud_observaciones: { observacion: 2000 },
+  chk_items: { area: 150, codigo_formato: 150, frecuencia_fuente: 150, nombre: 150, responsable_texto: 150 },
+  chk_revisiones: { observacion: 2000 },
+  chk_sin_actividad: { anulado_motivo: 2000, motivo: 2000 },
+  chk_visita_eventos: { motivo: 2000 },
+  chk_visitas: { nota: 2000 },
   fertilizantes_org: { concentracion: 150, ingrediente_activo: 150, nombre_comercial: 150, unidad: 150 },
   inventario_fertilizantes: { notas: 2000, referencia: 150 },
   inventario_movimientos: { comentario_correccion: 2000, notas: 2000, referencia: 150 },

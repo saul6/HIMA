@@ -5,6 +5,7 @@ import { ExternalLink, Loader2 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { Input } from '@/app/components/ui/input'
+import { limiteTexto } from '@/lib/limitesTexto'
 import { Pildora } from './Pildora'
 import { NotasItem, codigoItem } from './ItemCard'
 import { ESTADO_REVISION_LABEL, TONO_ESTADO, fechaLarga, haceDias } from './constantes'
@@ -198,7 +199,7 @@ function Contenido({
           </div>
           <div>
             <TextareaContador
-              limite={2000}
+              limite={limiteTexto('chk_revisiones', 'observacion') ?? 2000}
               value={obs}
               onChange={e => setObs(e.target.value)}
               placeholder={estado === 'otro' ? 'Observación (obligatoria)' : 'Observación (opcional)'}
@@ -235,7 +236,7 @@ function Contenido({
           {pideFuente && (
             <Input
               value={fuente}
-              maxLength={150}
+              maxLength={limiteTexto('chk_items', 'frecuencia_fuente')}
               placeholder="Documento y revisión (p. ej. POE-SAN-06 Rev. 02)"
               onChange={e => setFuente(e.target.value)}
             />
@@ -263,14 +264,14 @@ function Contenido({
           <h3 className="text-sm text-foreground font-semibold">Datos</h3>
           {!esModulo && (
             <Campo etiqueta="Nombre">
-              <Input value={datos.nombre} maxLength={150} onChange={e => setDatos(d => ({ ...d, nombre: e.target.value }))} />
+              <Input value={datos.nombre} maxLength={limiteTexto('chk_items', 'nombre')} onChange={e => setDatos(d => ({ ...d, nombre: e.target.value }))} />
             </Campo>
           )}
           <Campo etiqueta="Código del formato">
-            <Input value={datos.codigo_formato} maxLength={150} onChange={e => setDatos(d => ({ ...d, codigo_formato: e.target.value }))} />
+            <Input value={datos.codigo_formato} maxLength={limiteTexto('chk_items', 'codigo_formato')} onChange={e => setDatos(d => ({ ...d, codigo_formato: e.target.value }))} />
           </Campo>
           <Campo etiqueta="Área">
-            <Input value={datos.area} maxLength={150} onChange={e => setDatos(d => ({ ...d, area: e.target.value }))} />
+            <Input value={datos.area} maxLength={limiteTexto('chk_items', 'area')} onChange={e => setDatos(d => ({ ...d, area: e.target.value }))} />
           </Campo>
           <Campo etiqueta="Responsable">
             <SelectorResponsable
@@ -391,7 +392,7 @@ export function SelectorResponsable({
         {colaboradores.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
       </select>
       {!profileId && (
-        <Input value={texto} maxLength={150} placeholder="Nombre o puesto" onChange={e => onTexto(e.target.value)} />
+        <Input value={texto} maxLength={limiteTexto('chk_items', 'responsable_texto')} placeholder="Nombre o puesto" onChange={e => onTexto(e.target.value)} />
       )}
     </div>
   )

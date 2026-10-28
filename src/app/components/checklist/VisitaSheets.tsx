@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { ChevronDown, FileText, Loader2 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { TextareaContador } from '@/app/components/TextareaContador'
+import { limiteTexto } from '@/lib/limitesTexto'
 import { Input } from '@/app/components/ui/input'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { useFirmasRegistro, type MapaFirmas } from '@/hooks/useFirmasRegistro'
@@ -225,7 +226,7 @@ function FormularioAccion({ modo, ranchoId, hook, onClose, onGuardado, onTermina
             ))}
           </div>
           <TextareaContador
-            limite={2000}
+            limite={limiteTexto('chk_visita_eventos', 'motivo') ?? 2000}
             value={motivoTexto}
             onChange={e => setMotivoTexto(e.target.value)}
             placeholder="Detalle del motivo"
@@ -236,7 +237,7 @@ function FormularioAccion({ modo, ranchoId, hook, onClose, onGuardado, onTermina
       {(modo.tipo === 'programar' || modo.tipo === 'terminar') && (
         <div>
           <span className="text-xs text-muted-foreground">Nota (opcional)</span>
-          <TextareaContador limite={2000} value={nota} onChange={e => setNota(e.target.value)} rows={2} />
+          <TextareaContador limite={limiteTexto('chk_visitas', 'nota') ?? 2000} value={nota} onChange={e => setNota(e.target.value)} rows={2} />
         </div>
       )}
       <button

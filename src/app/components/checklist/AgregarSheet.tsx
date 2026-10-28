@@ -8,6 +8,7 @@ import { SelectorResponsable } from './ItemDetalleSheet'
 import { useColaboradoresChk } from './useColaboradores'
 import { FRECUENCIAS, type ChkFrecuencia, type useChecklist } from '@/hooks/useChecklist'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 interface Props {
   open: boolean
@@ -72,18 +73,18 @@ function Formulario({ ranchoId, hook, onClose, onGuardado }: Omit<Props, 'open'>
         <span className="text-xs text-muted-foreground">Nombre</span>
         <Input
           value={nombre}
-          maxLength={150}
+          maxLength={limiteTexto('chk_items', 'nombre')}
           onChange={e => setNombre(e.target.value)}
           placeholder={tipo === 'formato' ? 'Registro y control de llaves' : 'Licencia, certificado…'}
         />
       </label>
       <label className="block space-y-1">
         <span className="text-xs text-muted-foreground">Código del formato (opcional)</span>
-        <Input value={codigo} maxLength={150} onChange={e => setCodigo(e.target.value)} />
+        <Input value={codigo} maxLength={limiteTexto('chk_items', 'codigo_formato')} onChange={e => setCodigo(e.target.value)} />
       </label>
       <label className="block space-y-1">
         <span className="text-xs text-muted-foreground">Área (opcional)</span>
-        <Input value={area} maxLength={150} onChange={e => setArea(e.target.value)} />
+        <Input value={area} maxLength={limiteTexto('chk_items', 'area')} onChange={e => setArea(e.target.value)} />
       </label>
       <div className="space-y-1">
         <span className="text-xs text-muted-foreground">Responsable (opcional)</span>
