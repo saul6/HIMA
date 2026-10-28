@@ -7,6 +7,7 @@ interface Props {
   type?: "text" | "number" | "date" | "time";
   disabled?: boolean;
   placeholder?: string;
+  maxLength?: number;
 }
 
 export function FormField({
@@ -16,6 +17,7 @@ export function FormField({
   type = "text",
   disabled = false,
   placeholder = "",
+  maxLength,
 }: Props) {
   const [isFocused, setIsFocused] = useState(false);
   const hasValue = value !== "";
@@ -37,6 +39,7 @@ export function FormField({
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         disabled={disabled}
+        maxLength={maxLength}
         placeholder={isFloating ? placeholder : ""}
         className={`w-full h-16 px-4 pt-7 pb-2 rounded-lg border border-border-control bg-input-background
           focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary

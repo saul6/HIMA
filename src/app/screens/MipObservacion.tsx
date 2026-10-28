@@ -499,7 +499,7 @@ export function MipObservacion() {
 
                     <div className="rounded-[0.625rem] border border-border bg-card p-3">
                       <p className="text-xs font-semibold mb-2 text-muted-foreground">Otra técnica (opcional)</p>
-                      <input
+                      <input maxLength={limiteTexto('m54_resultados', 'tecnica_otra')}
                         type="text"
                         className="w-full h-8 rounded-lg border border-border-control bg-input-background px-3 text-xs mb-2"
                         placeholder="Describe la técnica..."

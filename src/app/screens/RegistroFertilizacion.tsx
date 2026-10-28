@@ -122,7 +122,7 @@ function FertilizanteCombobox({
 
   return (
     <div className="relative">
-      <input
+      <input maxLength={limiteTexto('fertilizantes_org', 'nombre_comercial')}
         type="text"
         value={value}
         onChange={(e) => { onChange(e.target.value); setOpen(true) }}
@@ -1311,14 +1311,14 @@ export function RegistroFertilizacion() {
 
               {/* Ing. activo + Concentración */}
               <div className="grid grid-cols-2 gap-2">
-                <input
+                <input maxLength={limiteTexto('fertilizantes_org', 'ingrediente_activo')}
                   type="text"
                   value={movIngActivo}
                   onChange={(e) => setMovIngActivo(e.target.value)}
                   placeholder="Ingrediente activo"
                   className="h-9 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 />
-                <input
+                <input maxLength={limiteTexto('fertilizantes_org', 'concentracion')}
                   type="text"
                   value={movConcentracion}
                   onChange={(e) => setMovConcentracion(e.target.value)}
@@ -1424,7 +1424,7 @@ export function RegistroFertilizacion() {
                 <label className="text-xs text-muted-foreground mb-1 block font-semibold">
                   Referencia (opcional)
                 </label>
-                <input
+                <input maxLength={limiteTexto('inventario_fertilizantes', 'referencia')}
                   type="text"
                   value={movReferencia}
                   onChange={(e) => setMovReferencia(e.target.value)}

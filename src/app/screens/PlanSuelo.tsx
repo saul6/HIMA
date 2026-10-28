@@ -408,7 +408,7 @@ export function PlanSuelo() {
                         {labelRespuesta(valores[item.id] ?? 'si')}
                       </button>
                     </div>
-                    <input
+                    <input maxLength={limiteTexto('m59_resultados', 'comentario')}
                       type="text"
                       className="w-full h-8 rounded-lg border border-border-control bg-input-background px-3 text-xs"
                       placeholder="Comentario (opcional)"

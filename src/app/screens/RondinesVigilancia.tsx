@@ -778,7 +778,7 @@ export function RondinesVigilancia() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs text-muted-foreground font-semibold">Jefe de Seguridad</label>
-                    <input
+                    <input maxLength={limiteTexto('m46_rondines', 'jefe_seguridad')}
                       type="text"
                       value={nJefe}
                       onChange={(e) => setNJefe(e.target.value)}

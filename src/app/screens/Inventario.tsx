@@ -32,6 +32,7 @@ import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { DUR, EASE_OUT } from '@/lib/motion'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 const LOW_STOCK = 5
 
@@ -300,14 +301,14 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
             />
           </div>
 
-          <FormField
+          <FormField maxLength={limiteTexto('inventario_movimientos', 'referencia')}
             label="Referencia (opcional)"
             value={form.referencia}
             onChange={set("referencia")}
             placeholder="Ej: Factura 1234"
           />
 
-          <FormField
+          <FormField maxLength={limiteTexto('inventario_movimientos', 'notas')}
             label="Notas (opcional)"
             value={form.notas}
             onChange={set("notas")}

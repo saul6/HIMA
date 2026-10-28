@@ -1189,7 +1189,7 @@ export function MonitoreoEstacionesPlagas() {
                     </select>
                   </div>
                   <div className="flex gap-2">
-                    <input
+                    <input maxLength={limiteTexto('m21_estaciones', 'numero')}
                       type="text"
                       placeholder="N.° (ej. 1, 100, 200, 1F)"
                       className="flex-1 h-10 rounded-lg border border-border-control bg-[var(--input-background)] px-3 text-sm text-foreground"

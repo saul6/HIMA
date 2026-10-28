@@ -3,6 +3,7 @@ import { FormSelect } from "../FormSelect";
 import { useRanchos } from "@/hooks/useRanchos";
 import { useMostrarCarga } from "@/hooks/useMostrarCarga";
 import { Skeleton } from "@/app/components/ui/skeleton";
+import { limiteTexto } from '@/lib/limitesTexto'
 
 interface Props {
   formData: any;
@@ -77,7 +78,7 @@ export function Step1ParcelaYCultivo({ formData, updateFormData, onNext, esCampo
         onChange={() => {}}
       />
 
-      <FormField
+      <FormField maxLength={limiteTexto('aplicaciones', 'variedad')}
         label="Variedad"
         value={formData.variety}
         onChange={(value) => updateFormData({ variety: value })}

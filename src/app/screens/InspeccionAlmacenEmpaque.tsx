@@ -752,7 +752,7 @@ export function InspeccionAlmacenEmpaque() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">Realizado por</label>
-                <input
+                <input maxLength={limiteTexto('m43_registro_mensual', 'realizado_por')}
                   type="text"
                   value={realizadoPorLocal}
                   onChange={(e) => setRealizadoPorLocal(e.target.value)}
@@ -762,7 +762,7 @@ export function InspeccionAlmacenEmpaque() {
               </div>
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">Verifica</label>
-                <input
+                <input maxLength={limiteTexto('m43_registro_mensual', 'verifica')}
                   type="text"
                   value={verificaLocal}
                   onChange={(e) => setVerificaLocal(e.target.value)}
@@ -773,7 +773,7 @@ export function InspeccionAlmacenEmpaque() {
             </div>
             <div>
               <label className="block text-xs text-muted-foreground mb-1">Autoriza</label>
-              <input
+              <input maxLength={limiteTexto('m43_registro_mensual', 'autoriza')}
                 type="text"
                 value={autorizaLocal}
                 onChange={(e) => setAutorizaLocal(e.target.value)}

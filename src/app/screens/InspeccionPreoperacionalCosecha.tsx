@@ -834,7 +834,7 @@ export function InspeccionPreoperacionalCosecha() {
                   <label className="text-xs text-muted-foreground font-semibold">
                     Realizó la inspección
                   </label>
-                  <input
+                  <input maxLength={limiteTexto('m11_registro_mensual', 'realizado_por_nombre')}
                     type="text"
                     value={nRealizadoPor}
                     onChange={(e) => setNRealizadoPor(e.target.value)}

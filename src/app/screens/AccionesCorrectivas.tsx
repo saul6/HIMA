@@ -42,6 +42,7 @@ import { esModuloAsignable, formatFechaLimite } from '@/lib/hallazgos/asignacion
 import type { AccionCorrectivaFoto } from '@/types/database.types'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { fechaCorta } from '@/lib/formato'
+import { limiteTexto } from '@/lib/limitesTexto'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -874,7 +875,7 @@ export function AccionesCorrectivas() {
                 <label className="text-xs text-muted-foreground font-semibold">
                   LEYENDA (opcional)
                 </label>
-                <input
+                <input maxLength={limiteTexto('accion_correctiva_fotos', 'leyenda')}
                   type="text"
                   value={leyendaFotoNueva}
                   onChange={(e) => setLeyendaFotoNueva(e.target.value)}

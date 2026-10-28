@@ -1098,7 +1098,7 @@ export function VerificacionInsumos() {
                       placeholder="Área"
                       className="flex-1 h-9 px-2 rounded-lg border border-border-control bg-input-background text-xs"
                     />
-                    <input
+                    <input maxLength={limiteTexto('m23_insumos', 'insumo')}
                       type="text"
                       value={catNuevoInsumo}
                       onChange={(e) => setCatNuevoInsumo(e.target.value)}

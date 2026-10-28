@@ -607,7 +607,7 @@ export function ManifiestoEmbarque() {
               ] as const).map(({ label, key, ph }) => (
                 <div key={key} className="space-y-1">
                   <label className="text-xs text-muted-foreground font-semibold">{label}</label>
-                  <input type="text" className={fieldCls} placeholder={ph}
+                  <input maxLength={limiteTexto('m38_manifiestos', key)} type="text" className={fieldCls} placeholder={ph}
                     value={form[key]} onChange={e => setF(key, e.target.value)} />
                 </div>
               ))}

@@ -1209,7 +1209,7 @@ export function TrazabilidadProducto() {
             Al generar o imprimir se registra la liberación del producto (POE-COCO-CAL-13).
           </p>
           <FormField label="VERIFICADO POR *">
-            <input value={formEtiqueta.verificado_por} onChange={e => setFormEtiqueta(f => ({ ...f, verificado_por: e.target.value }))} placeholder="Nombre del responsable de calidad" className={inputCls} />
+            <input maxLength={limiteTexto('m48_etiquetas', 'verificado_por')} value={formEtiqueta.verificado_por} onChange={e => setFormEtiqueta(f => ({ ...f, verificado_por: e.target.value }))} placeholder="Nombre del responsable de calidad" className={inputCls} />
           </FormField>
           <FormField label="CANTIDAD DE ETIQUETAS">
             <input type="number" min="1" value={formEtiqueta.cantidad_etiquetas} onChange={e => setFormEtiqueta(f => ({ ...f, cantidad_etiquetas: e.target.value }))} className={inputCls} />

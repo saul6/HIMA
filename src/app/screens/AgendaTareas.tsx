@@ -1316,7 +1316,7 @@ function EditarForm({
 
       <div>
         <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Título *</label>
-        <input
+        <input maxLength={160}
           type="text"
           value={form.titulo}
           onChange={e => onChange({ ...form, titulo: e.target.value })}

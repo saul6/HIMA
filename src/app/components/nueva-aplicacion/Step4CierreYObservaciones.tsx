@@ -130,7 +130,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
         </h3>
       </div>
 
-      <FormField
+      <FormField maxLength={limiteTexto('aplicaciones', 'aplicadores')}
         label="Aplicador(es)"
         value={formData.applicators}
         onChange={(value) => updateFormData({ applicators: value })}
