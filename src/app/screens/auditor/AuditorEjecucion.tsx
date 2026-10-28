@@ -1160,10 +1160,15 @@ export function AuditorEjecucion() {
       const visible = (scroll?.clientHeight ?? window.innerHeight) - alto
       columnas.style.setProperty('--alto-header', `${alto}px`)
       columnas.style.setProperty('--alto-visible', `${visible}px`)
+      // Alto real de la barra de acciones (columna derecha desde 1480 px): el resumen toma el resto.
+      const barra = columnas.querySelector<HTMLElement>('[data-barra-acciones]')
+      columnas.style.setProperty('--alto-acciones', `${barra ? barra.getBoundingClientRect().height : 0}px`)
     }
     medir()
     const observer = new ResizeObserver(medir)
     observer.observe(header)
+    observer.observe(columnas)
+    columnas.querySelectorAll('[data-barra-acciones]').forEach(b => observer.observe(b))
     if (scroll) observer.observe(scroll)
     return () => observer.disconnect()
   }, [cargadaPantalla])
@@ -1983,7 +1988,7 @@ export function AuditorEjecucion() {
           />
 
           {/* Resumen: paneles de puntaje, MIP, validación, hallazgos y antecedentes. xl: arriba de las preguntas; desde 1480 px: columna derecha fija. */}
-          <div className="px-4 pt-4 xl:p-0 xl:[grid-area:resumen] xl:w-full xl:max-[1479px]:max-w-3xl xl:max-[1479px]:justify-self-start min-[1480px]:max-w-none min-[1480px]:justify-self-stretch min-[1480px]:sticky min-[1480px]:top-[calc(var(--alto-header,0px)+1rem)] min-[1480px]:self-start min-[1480px]:max-h-[calc(var(--alto-visible,100vh)-2rem-17rem)] min-[1480px]:overflow-y-auto">
+          <div className="px-4 pt-4 xl:p-0 xl:[grid-area:resumen] xl:w-full xl:max-[1479px]:max-w-3xl xl:max-[1479px]:justify-self-start min-[1480px]:max-w-none min-[1480px]:justify-self-stretch min-[1480px]:sticky min-[1480px]:top-[calc(var(--alto-header,0px)+1rem)] min-[1480px]:self-start min-[1480px]:max-h-[calc(var(--alto-visible,100vh)-2rem-var(--alto-acciones,0px)-1rem)] min-[1480px]:overflow-y-auto">
             <motion.div className="flex flex-col gap-4" {...ent(0)}>
               {/* COR-07: banners de error de carga */}
               <AnimatePresence initial={false}>
@@ -2254,6 +2259,7 @@ export function AuditorEjecucion() {
               Celular: Validar y Cerrar (a la derecha del botón del menú); md+: PDF, Validar, Marcar preliminar y Cerrar. */}
           {hayBarra && (
             <div
+              data-barra-acciones
               className={`sticky bottom-0 z-10 border-t border-border bg-card pr-4 pl-[5.25rem] md:pl-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] items-center justify-end gap-2 min-[1480px]:[grid-area:resumen] min-[1480px]:self-end min-[1480px]:bottom-4 min-[1480px]:flex-col min-[1480px]:items-stretch min-[1480px]:rounded-xl min-[1480px]:border min-[1480px]:p-3 ${cerrada ? 'hidden md:flex' : 'flex'}`}
             >
               {auditoria && allPreguntas.length > 0 && (
