@@ -82,6 +82,8 @@ export function EmpleadosGGPagina({ rancho, orgNombre, empleados, firmaRealizo }
         />
       </Seccion>
 
+      {/* Nota y firma juntas: la firma nunca queda sola en una hoja */}
+      <View wrap={false}>
       <Text style={{ fontSize: 6.5, color: PC.textSub, fontFamily: 'Helvetica-Oblique', marginBottom: 8 }}>
         La columna "Firma" debe ser firmada de manera física por cada empleado al momento de leer y aceptar las políticas de la empresa.
       </Text>
@@ -89,6 +91,7 @@ export function EmpleadosGGPagina({ rancho, orgNombre, empleados, firmaRealizo }
       {firmaRealizo && (
         <PdfFirmas signatures={[{ label: '', nombre: '', caption: 'Nombre y firma del responsable', firma: firmaRealizo }]} />
       )}
+      </View>
     </PaginaEstandar>
   )
 }
