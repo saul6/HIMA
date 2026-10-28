@@ -12,6 +12,7 @@ import { estiloNegativo } from './negativo'
 import { SIN_ENCOGER } from './estilos'
 import { alturaTexto, anchoTexto, lineasTexto, partirParaAncho, ALTO_UTIL_PAGINA, FRACCION_MAX_BLOQUE } from './medirTexto'
 import { TextoLargo, esTextoLargo, resumenTexto } from './TextoLargo'
+const ALTO_FIRMAS = 170 // = reservaFirmas.ALTO_FIRMAS (no se importa para evitar una referencia circular)
 
 /** Ancho útil de una hoja A4 con márgenes de 40 pt. */
 export const ANCHO_UTIL = { landscape: 841.89 - 80, portrait: 595.28 - 80 } as const
@@ -55,6 +56,8 @@ interface Props {
   encabezadoSuperior?: { texto: string; ancho: number }[]
   /** false = el encabezado no se repite en cada página (tablas chicas junto a otras). */
   encabezadoFijo?: boolean
+  /** Lo pone PaginaEstandar (integrarFirmas): bloque que sigue a la tabla (firmas). Va como último hermano de los renglones para que el último renglón viaje con él y no queden solo. */
+  firmasDespues?: ReactNode
 }
 
 const PAD = 4
@@ -171,8 +174,9 @@ export function alturaPieza(pieza: Pieza, w: number[], fuente: number): number {
 
 export function TablaDatos({
   columnas, filas: filasEntrada, anchoTotal = ANCHO_UTIL.landscape, vacio,
-  fuente = 8, fuenteEnc = 7, encabezadoSuperior, encabezadoFijo = true,
+  fuente = 8, fuenteEnc = 7, encabezadoSuperior, encabezadoFijo = true, firmasDespues,
 }: Props) {
+  const reservaFirmas = firmasDespues ? ALTO_FIRMAS : 0
   const suma = columnas.reduce((a, c) => a + c.ancho, 0) || 1
   const w = repartirAnchos(columnas, anchoTotal, fuente, fuenteEnc)
   // Columnas `largo`: el texto que pasa del umbral sale de la celda (queda un resumen) y va debajo de su renglón.
@@ -208,7 +212,7 @@ export function TablaDatos({
   return (
     <>
       <View minPresenceAhead={presenciaInicial} style={{ height: 0 }} />
-      <View style={{ marginBottom: 10, ...SIN_ENCOGER }}>
+      <View style={{ marginBottom: firmasDespues ? 0 : 10, ...SIN_ENCOGER }}>
         <View {...(repetirEncabezado ? { fixed: true } : {})} style={{ backgroundColor: PC.m13Fondo, borderBottomWidth: 0.75, borderBottomColor: PC.m13Navy, ...SIN_ENCOGER }}>
           {encabezadoSuperior && (
             <View style={{ flexDirection: 'row' }}>
@@ -267,6 +271,7 @@ export function TablaDatos({
                   <View
                     key={k}
                     wrap={false}
+                    {...(r === filasRender.length - 1 && k === fila.piezas.length - 1 && !(largos[r]?.length) && reservaFirmas > 0 ? { minPresenceAhead: reservaFirmas } : {})}
                     style={{
                       flexDirection: 'row',
                       ...SIN_ENCOGER,
@@ -316,7 +321,8 @@ export function TablaDatos({
                   </View>
                 ))}
                 {(largos[r] ?? []).map((b, k) => (
-                  <TextoLargo key={k} etiqueta={b.etiqueta} texto={b.texto} ancho={anchoTotal} fuente={fuente} conLinea />
+                  <TextoLargo key={k} etiqueta={b.etiqueta} texto={b.texto} ancho={anchoTotal} fuente={fuente} conLinea
+                    reserva={r === filasRender.length - 1 && k === (largos[r]?.length ?? 0) - 1 ? reservaFirmas : 0} />
                 ))}
               </Fragment>
             ) : (
@@ -332,6 +338,7 @@ export function TablaDatos({
             )
           ))
         )}
+        {firmasDespues}
       </View>
     </>
   )

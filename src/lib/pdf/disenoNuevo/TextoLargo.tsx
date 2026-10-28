@@ -33,13 +33,17 @@ interface Props {
   fuente?: number
   /** Con raya inferior fina (cuando va pegado debajo de una fila de tabla). */
   conLinea?: boolean
+  /** Alto a reservar bajo el bloque: si no cabe junto con lo que sigue (las firmas), el bloque pasa a la hoja siguiente. */
+  reserva?: number
 }
 
-export function TextoLargo({ etiqueta, texto, ancho = 761.89, fuente = 8, conLinea = false }: Props) {
+export function TextoLargo({ etiqueta, texto, ancho = 761.89, fuente = 8, conLinea = false, reserva }: Props) {
+  const minPresencia = reserva ?? 0
   return (
     <>
       <View minPresenceAhead={40} style={{ height: 0 }} />
       <View
+        {...(minPresencia > 0 ? { minPresenceAhead: minPresencia } : {})}
         style={{
           paddingHorizontal: 4, paddingVertical: 4, marginBottom: 6, ...SIN_ENCOGER,
           ...(conLinea ? { borderBottomWidth: 0.5, borderBottomColor: PC.border } : {}),

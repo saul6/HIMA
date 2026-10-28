@@ -11,6 +11,7 @@ import { MarcaDeAgua } from './MarcaDeAgua'
 import { Pie } from './Pie'
 import { estiloPagina, SIN_ENCOGER } from './estilos'
 import { hoyMX } from '@/lib/fecha'
+import { integrarFirmas } from './reservaFirmas'
 
 /** Fecha de generación del PDF (hoy en México) como dd/mm/aaaa. */
 export function fechaEmisionHoy(): string {
@@ -85,7 +86,7 @@ export function PaginaEstandar({
         ]}
       />
 
-      {children}
+      {integrarFirmas(children)}
     </Page>
   )
 }
