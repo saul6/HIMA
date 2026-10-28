@@ -298,7 +298,11 @@ export interface MiVoucher {
 
 // ───────────── Consolidado mensual (nom_consolidado_mensual / nom_consolidados) ─────────────
 
-export interface ConsolidadoSaldos { por_pagar: number; anticipos_sin_aplicar: number; prestamos: number }
+// ahorro y comisiones_por_liberar no existen en revisiones guardadas antes de motor nom-2.
+export interface ConsolidadoSaldos {
+  por_pagar: number; anticipos_sin_aplicar: number; prestamos: number
+  ahorro?: number; comisiones_por_liberar?: number
+}
 
 export interface ConsolidadoTrabajador {
   trabajador_id: string
@@ -310,11 +314,17 @@ export interface ConsolidadoTrabajador {
   reconocido: {
     cortes: number; cortes_anulados: number; percepciones: number; reembolsos: number; deducciones: number
     de_ellas_recuperacion_prestamo: number; neto: number
+    de_ellas_comisiones_liberadas?: number; comisiones_diferidas_nuevas?: number; de_ellas_ahorro?: number
   }
   entregado: { pagos: number; anticipos: number; reversiones: number; total: number }
   aplicado_a_cortes: number
   traspaso_a_prestamo: number
-  prestamos: { otorgados: number; recuperados_y_ajustes: number }
+  prestamos: {
+    otorgados?: number; recuperados_y_ajustes?: number
+    otorgados_efectivo?: number; por_excedente?: number; abonos_efectivo?: number; movimiento_neto?: number
+  }
+  ahorro?: { aportado: number; devuelto_efectivo: number }
+  otros_efectivo?: { salidas: number; entradas: number }
   final: ConsolidadoSaldos
   sin_movimiento: boolean
 }
@@ -333,6 +343,20 @@ export interface ConsolidadoMovimiento {
   folio_corte: string | null
   semana_inicio: string | null
   semana_fin: string | null
+  motivo: string | null
+}
+
+export type ClaseOtroMovimiento = 'prestamo_otorgado' | 'abono_prestamo' | 'prestamo_cancelado' | 'ahorro_devuelto'
+
+export interface ConsolidadoOtroMovimiento {
+  clase: ClaseOtroMovimiento | string
+  codigo: string
+  nombre: string
+  monto: number
+  efecto_efectivo: number
+  metodo: string | null
+  referencia: string | null
+  fecha: string
   motivo: string | null
 }
 
@@ -375,6 +399,12 @@ export interface ConsolidadoResumen {
   por_pagar_final: number
   anticipos_sin_aplicar_final: number
   prestamos_final: number
+  comisiones_liberadas?: number
+  comisiones_diferidas_nuevas?: number
+  otros_salidas_efectivo?: number
+  otros_entradas_efectivo?: number
+  ahorro_final?: number
+  comisiones_por_liberar_final?: number
 }
 
 export interface ConsolidadoDatos {
@@ -392,6 +422,7 @@ export interface ConsolidadoDatos {
   resumen: ConsolidadoResumen
   trabajadores: ConsolidadoTrabajador[]
   movimientos: ConsolidadoMovimiento[]
+  otros_movimientos?: ConsolidadoOtroMovimiento[]
   cortes: ConsolidadoCorte[]
   incidencias: ConsolidadoIncidencia[]
 }

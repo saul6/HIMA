@@ -6,7 +6,7 @@ import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/
 import { TablaDatos, ANCHO_UTIL, type CeldaDato, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { fechaHoraPdf, fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 import { PC } from '@/lib/pdf/components/tokens'
-import { etiquetaMetodo, formatoMoneda } from '@/lib/nomina/formato'
+import { ETIQUETA_OTRO_MOVIMIENTO, etiquetaMetodo, formatoMoneda } from '@/lib/nomina/formato'
 import type { ConsolidadoGuardado } from '@/types/nomina.types'
 
 const ANCHO = ANCHO_UTIL.landscape
@@ -55,6 +55,12 @@ export function ConsolidadoMensualPagina({ consolidado: c }: { consolidado: Cons
         { etiqueta: 'Anticipos sin aplicar', valor: $(r.anticipos_sin_aplicar_final) },
         { etiqueta: 'Préstamos al cierre', valor: $(r.prestamos_final) },
         { etiqueta: 'Traspaso a préstamo', valor: $(r.traspaso_a_prestamo) },
+        { etiqueta: 'Ahorro al cierre', valor: $(r.ahorro_final ?? 0) },
+        { etiqueta: 'Comisiones por liberar', valor: $(r.comisiones_por_liberar_final ?? 0) },
+        { etiqueta: 'Comisiones liberadas', valor: $(r.comisiones_liberadas ?? 0) },
+        { etiqueta: 'Comisiones acumuladas', valor: $(r.comisiones_diferidas_nuevas ?? 0) },
+        { etiqueta: 'Otros: salidas de efectivo', valor: $(r.otros_salidas_efectivo ?? 0) },
+        { etiqueta: 'Otros: entradas de efectivo', valor: $(r.otros_entradas_efectivo ?? 0) },
       ]}
     >
       <Seccion titulo="2. TRABAJADORES">
@@ -83,7 +89,33 @@ export function ConsolidadoMensualPagina({ consolidado: c }: { consolidado: Cons
         />
       </Seccion>
 
-      <Seccion titulo="3. DINERO DEL MES">
+      <Seccion titulo="3. AHORRO Y COMISIONES">
+        <TablaDatos
+          columnas={[
+            { texto: 'Trabajador', ancho: 3.4, align: 'left' },
+            ...['Ahorro inicial', 'Ahorro aportado', 'Ahorro devuelto', 'Ahorro final', 'Comisiones inicial', 'Comisiones acumuladas',
+              'Comisiones liberadas', 'Comisiones final'].map((texto) => ({ texto, ancho: 1.6, align: 'right' as const })),
+          ]}
+          anchoTotal={ANCHO}
+          fuente={7}
+          fuenteEnc={6.5}
+          vacio="Sin ahorro ni comisiones en el mes"
+          filas={d.trabajadores
+            .filter((t) => [t.inicial.ahorro, t.final.ahorro, t.ahorro?.aportado, t.ahorro?.devuelto_efectivo, t.inicial.comisiones_por_liberar,
+              t.final.comisiones_por_liberar, t.reconocido.comisiones_diferidas_nuevas, t.reconocido.de_ellas_comisiones_liberadas]
+              .some((n) => Number(n ?? 0) !== 0))
+            .map((t) => [
+              `${t.nombre} (${t.codigo})`,
+              $(t.inicial.ahorro ?? 0), $(t.ahorro?.aportado ?? 0), $(t.ahorro?.devuelto_efectivo ?? 0),
+              { texto: $(t.final.ahorro ?? 0), negrita: true },
+              $(t.inicial.comisiones_por_liberar ?? 0), $(t.reconocido.comisiones_diferidas_nuevas ?? 0),
+              $(t.reconocido.de_ellas_comisiones_liberadas ?? 0),
+              { texto: $(t.final.comisiones_por_liberar ?? 0), negrita: true },
+            ])}
+        />
+      </Seccion>
+
+      <Seccion titulo="4. DINERO DEL MES">
         <TablaDatos
           columnas={[
             { texto: 'Fecha de pago', ancho: 1.2, align: 'left' },
@@ -112,7 +144,32 @@ export function ConsolidadoMensualPagina({ consolidado: c }: { consolidado: Cons
         />
       </Seccion>
 
-      <Seccion titulo="4. CORTES DEL MES">
+      <Seccion titulo="5. OTROS MOVIMIENTOS DE EFECTIVO">
+        <TablaDatos
+          columnas={[
+            { texto: 'Fecha', ancho: 1.2, align: 'left' },
+            { texto: 'Trabajador', ancho: 3, align: 'left' },
+            { texto: 'Movimiento', ancho: 1.8, align: 'left' },
+            { texto: 'Método', ancho: 1.2, align: 'left' },
+            { texto: 'Referencia', ancho: 1.6, align: 'left' },
+            { texto: 'Monto', ancho: 1.4, align: 'right' },
+            { texto: 'Motivo', ancho: 2.8, align: 'left' },
+          ]}
+          anchoTotal={ANCHO}
+          vacio="Sin otros movimientos de efectivo en el mes"
+          filas={(d.otros_movimientos ?? []).map((x) => [
+            fechaPdf(x.fecha),
+            `${x.nombre} (${x.codigo})`,
+            ETIQUETA_OTRO_MOVIMIENTO[x.clase] ?? x.clase,
+            etiquetaMetodo(x.metodo),
+            x.referencia ?? '',
+            $(x.monto),
+            x.motivo ?? '',
+          ])}
+        />
+      </Seccion>
+
+      <Seccion titulo="6. CORTES DEL MES">
         <TablaDatos
           columnas={[
             { texto: 'Folio', ancho: 1.6, align: 'left' },
@@ -144,7 +201,7 @@ export function ConsolidadoMensualPagina({ consolidado: c }: { consolidado: Cons
         />
       </Seccion>
 
-      <Seccion titulo="5. INCIDENCIAS">
+      <Seccion titulo="7. INCIDENCIAS">
         <TablaDatos
           columnas={[
             { texto: 'Tipo', ancho: 1.2, align: 'left' },

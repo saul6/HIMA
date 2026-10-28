@@ -79,10 +79,12 @@ function Lineas({ lineas, moneda }: { lineas: LineaCorte[]; moneda: string }) {
   )
 }
 
-function Totales({ t, moneda, extra }: {
+function Totales({ t, moneda, extra, saldos }: {
   t: CalculoCorte['totales']
   moneda: string
   extra?: React.ReactNode
+  /** Saldos informativos (no suman): ahorro acumulado y comisiones por liberar. */
+  saldos?: { ahorro: number; comisiones: number }
 }) {
   const fila = (e: string, v: number, fuerte = false) => (
     <div className={`flex justify-between text-sm ${fuerte ? 'font-semibold text-base' : ''}`}>
@@ -104,6 +106,12 @@ function Totales({ t, moneda, extra }: {
         </div>
       )}
       {extra}
+      {saldos && (saldos.ahorro > 0 || saldos.comisiones > 0) && (
+        <div className="border-t border-border mt-1 pt-1.5 space-y-1">
+          {saldos.ahorro > 0 && fila('Ahorro acumulado (no suma)', saldos.ahorro)}
+          {saldos.comisiones > 0 && fila('Comisiones por liberar (no suma)', saldos.comisiones)}
+        </div>
+      )}
     </div>
   )
 }
@@ -150,6 +158,7 @@ export function CorteTab({ ctx, calculo, prestamos, cuentas, ajustes, onIrActivi
   if (!resp) return null
 
   const porLiberar = cuentas?.comisiones.saldo_por_liberar ?? 0
+  const saldosInformativos = cuentas ? { ahorro: cuentas.ahorro.saldo, comisiones: porLiberar } : undefined
   function irADescuento(prestamoId: string) {
     const el = document.getElementById(`desc-${prestamoId}`)
     el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
@@ -269,6 +278,7 @@ export function CorteTab({ ctx, calculo, prestamos, cuentas, ajustes, onIrActivi
         <Totales
           t={c.totales}
           moneda={c.moneda}
+          saldos={saldosInformativos}
           extra={
             <>
               <div className="flex justify-between text-sm">
@@ -345,6 +355,7 @@ export function CorteTab({ ctx, calculo, prestamos, cuentas, ajustes, onIrActivi
         <Totales
           t={snap.totales}
           moneda={moneda}
+          saldos={saldosInformativos}
           extra={
             <>
               <div className="flex justify-between text-sm">

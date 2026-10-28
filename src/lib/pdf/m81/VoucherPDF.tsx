@@ -71,6 +71,9 @@ export function VoucherPagina({ voucher: v }: VoucherPDFProps) {
   const reembolsos = v.lineas.filter((l) => l.tipo === 'reembolso')
   const descuentos = v.lineas.filter((l) => l.tipo === 'deduccion')
   const informativas = v.lineas.filter((l) => l.tipo === 'informativa')
+  const comisionesAcumuladas = v.lineas.filter((l) => l.tipo === 'comision_diferida')
+  const ahorroSaldo = v.ahorro_saldo ?? 0
+  const comisionesPorLiberar = v.comisiones_por_liberar ?? 0
   const pagosReales = (v.pagos ?? []) as NomPagoFila[]
   const estado = estadoPagoVoucher(v.pago)
 
@@ -164,6 +167,25 @@ export function VoucherPagina({ voucher: v }: VoucherPDFProps) {
               l.fecha ? `${l.concepto} (${fechaPdf(l.fecha)})` : l.concepto,
               l.formula ?? '',
             ])}
+          />
+        </Seccion>
+      )}
+
+      {comisionesAcumuladas.length > 0 && (
+        <Seccion titulo="9. COMISIONES ACUMULADAS (NO SUMAN ESTA SEMANA)">
+          <TablaDatos columnas={COLS_LINEAS} anchoTotal={ANCHO} filas={filasLineas(comisionesAcumuladas, moneda, '')} />
+        </Seccion>
+      )}
+
+      {(ahorroSaldo > 0 || comisionesPorLiberar > 0) && (
+        <Seccion titulo="10. SALDOS INFORMATIVOS (NO SUMAN)">
+          <TablaDatos
+            columnas={[{ texto: 'Concepto', ancho: 400, align: 'left' }, { texto: 'Saldo', ancho: 100, align: 'right' }]}
+            anchoTotal={ANCHO}
+            filas={[
+              ...(ahorroSaldo > 0 ? [['Ahorro acumulado', formatoMoneda(ahorroSaldo, moneda)]] : []),
+              ...(comisionesPorLiberar > 0 ? [['Comisiones por liberar', formatoMoneda(comisionesPorLiberar, moneda)]] : []),
+            ]}
           />
         </Seccion>
       )}

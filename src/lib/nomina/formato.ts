@@ -100,6 +100,13 @@ export const etiquetaMetodo = (m: string | null | undefined) =>
   METODOS_PAGO.find(x => x.valor === m)?.etiqueta ?? (m ?? '')
 
 
+export const ETIQUETA_OTRO_MOVIMIENTO: Record<string, string> = {
+  prestamo_otorgado: 'Préstamo otorgado',
+  abono_prestamo: 'Abono a préstamo',
+  prestamo_cancelado: 'Préstamo cancelado',
+  ahorro_devuelto: 'Ahorro devuelto',
+}
+
 export function etiquetaOrigenPrestamo(origen: string | null | undefined): string {
   return origen === 'exceso_anticipo' ? 'Excedente de anticipo' : 'Préstamo'
 }

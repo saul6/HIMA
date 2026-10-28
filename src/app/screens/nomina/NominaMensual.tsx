@@ -14,7 +14,7 @@ import { useConexion } from '@/hooks/useConexion'
 import { avisarErrorNomina } from '@/lib/nomina/errores'
 import { hoyMX } from '@/lib/fecha'
 import { fechaHoraPdf, fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
-import { etiquetaMetodo, formatoMoneda } from '@/lib/nomina/formato'
+import { ETIQUETA_OTRO_MOVIMIENTO, etiquetaMetodo, formatoMoneda } from '@/lib/nomina/formato'
 import { CampoTexto, CampoTextoLargo, CuerpoSheet, MotivoSheet } from './ui'
 import type {
   ConsolidadoCorte, ConsolidadoDatos, ConsolidadoIncidencia, ConsolidadoLista, ConsolidadoTrabajador,
@@ -47,7 +47,7 @@ const ENTREGA: Record<ConsolidadoLista['entrega_estado'], string> = {
   acuse_registrado: 'Acuse registrado',
 }
 
-type Pestana = 'trabajadores' | 'dinero' | 'cortes'
+type Pestana = 'trabajadores' | 'dinero' | 'otros' | 'cortes'
 
 // ───────────── Pantalla ─────────────
 
@@ -211,6 +211,8 @@ export function NominaMensual() {
             <p className="text-xs text-muted-foreground">
               Anticipos sin aplicar al cierre: {formatoMoneda(d.resumen.anticipos_sin_aplicar_final, moneda)} · Préstamos al cierre:{' '}
               {formatoMoneda(d.resumen.prestamos_final, moneda)}
+              {d.resumen.ahorro_final != null && <> · Ahorro al cierre: {formatoMoneda(d.resumen.ahorro_final, moneda)}</>}
+              {d.resumen.comisiones_por_liberar_final != null && <> · Comisiones por liberar: {formatoMoneda(d.resumen.comisiones_por_liberar_final, moneda)}</>}
             </p>
 
             <Incidencias bloqueantes={bloqueantes} otras={otras} />
@@ -219,6 +221,7 @@ export function NominaMensual() {
               {([
                 ['trabajadores', `Trabajadores (${d.trabajadores.length})`],
                 ['dinero', `Dinero del mes (${d.movimientos.length})`],
+                ['otros', `Otros movimientos de efectivo (${(d.otros_movimientos ?? []).length})`],
                 ['cortes', `Cortes del mes (${d.cortes.length})`],
               ] as [Pestana, string][]).map(([k, t]) => (
                 <button
@@ -238,6 +241,7 @@ export function NominaMensual() {
 
             {pestana === 'trabajadores' && <ListaTrabajadores filas={d.trabajadores} moneda={moneda} />}
             {pestana === 'dinero' && <ListaDinero datos={d} />}
+            {pestana === 'otros' && <ListaOtros datos={d} />}
             {pestana === 'cortes' && <ListaCortes filas={d.cortes} moneda={moneda} />}
           </>
         )}
@@ -397,7 +401,10 @@ function ListaTrabajadores({ filas, moneda }: { filas: ConsolidadoTrabajador[]; 
                   <Renglon etiqueta="Percepciones" valor={t.reconocido.percepciones} moneda={moneda} />
                   <Renglon etiqueta="Reembolsos" valor={t.reconocido.reembolsos} moneda={moneda} />
                   <Renglon etiqueta="Descuentos" valor={t.reconocido.deducciones} moneda={moneda} />
+                  {(t.reconocido.de_ellas_comisiones_liberadas ?? 0) > 0 && <Renglon etiqueta="De ellas, comisiones liberadas" valor={t.reconocido.de_ellas_comisiones_liberadas ?? 0} moneda={moneda} />}
+                  {(t.reconocido.de_ellas_ahorro ?? 0) > 0 && <Renglon etiqueta="De ellos, ahorro" valor={t.reconocido.de_ellas_ahorro ?? 0} moneda={moneda} />}
                   <Renglon etiqueta="Neto" valor={t.reconocido.neto} moneda={moneda} negrita />
+                  {(t.reconocido.comisiones_diferidas_nuevas ?? 0) > 0 && <Renglon etiqueta="Comisiones acumuladas (no suman)" valor={t.reconocido.comisiones_diferidas_nuevas ?? 0} moneda={moneda} />}
                 </div>
                 <div className="space-y-0.5">
                   <p className="text-xs font-semibold text-foreground">Entregado</p>
@@ -413,6 +420,8 @@ function ListaTrabajadores({ filas, moneda }: { filas: ConsolidadoTrabajador[]; 
               <Renglon etiqueta={`Por pagar (inicial ${formatoMoneda(t.inicial.por_pagar, moneda)})`} valor={t.final.por_pagar} moneda={moneda} negrita />
               <Renglon etiqueta={`Anticipos sin aplicar (inicial ${formatoMoneda(t.inicial.anticipos_sin_aplicar, moneda)})`} valor={t.final.anticipos_sin_aplicar} moneda={moneda} />
               <Renglon etiqueta={`Préstamos (inicial ${formatoMoneda(t.inicial.prestamos, moneda)})`} valor={t.final.prestamos} moneda={moneda} />
+              <Renglon etiqueta={`Ahorro (inicial ${formatoMoneda(t.inicial.ahorro ?? 0, moneda)})`} valor={t.final.ahorro ?? 0} moneda={moneda} />
+              <Renglon etiqueta={`Comisiones por liberar (inicial ${formatoMoneda(t.inicial.comisiones_por_liberar ?? 0, moneda)})`} valor={t.final.comisiones_por_liberar ?? 0} moneda={moneda} />
             </div>
           </div>
         ))}
@@ -423,15 +432,15 @@ function ListaTrabajadores({ filas, moneda }: { filas: ConsolidadoTrabajador[]; 
           <thead className="bg-muted text-muted-foreground">
             <tr>
               <th rowSpan={2} className="text-left p-2 font-semibold">Trabajador</th>
-              <th colSpan={3} className="p-2 font-semibold border-l border-border">Inicial</th>
+              <th colSpan={5} className="p-2 font-semibold border-l border-border">Inicial</th>
               <th colSpan={4} className="p-2 font-semibold border-l border-border">Reconocido</th>
               <th colSpan={2} className="p-2 font-semibold border-l border-border">Entregado</th>
               <th rowSpan={2} className="p-2 font-semibold border-l border-border text-right">Aplicado</th>
-              <th colSpan={3} className="p-2 font-semibold border-l border-border">Final</th>
+              <th colSpan={5} className="p-2 font-semibold border-l border-border">Final</th>
             </tr>
             <tr>
-              {['Por pagar', 'Anticipos', 'Préstamos', 'Percepciones', 'Reembolsos', 'Descuentos', 'Neto', 'Total', 'Reversiones', 'Por pagar', 'Anticipos', 'Préstamos']
-                .map((h, i) => <th key={i} className={`p-2 font-semibold text-right ${[0, 3, 7, 10].includes(i) ? 'border-l border-border' : ''}`}>{h}</th>)}
+              {['Por pagar', 'Anticipos', 'Préstamos', 'Ahorro', 'Comis. por liberar', 'Percepciones', 'Reembolsos', 'Descuentos', 'Neto', 'Total', 'Reversiones', 'Por pagar', 'Anticipos', 'Préstamos', 'Ahorro', 'Comis. por liberar']
+                .map((h, i) => <th key={i} className={`p-2 font-semibold text-right ${[0, 5, 9, 11].includes(i) ? 'border-l border-border' : ''}`}>{h}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -442,12 +451,12 @@ function ListaTrabajadores({ filas, moneda }: { filas: ConsolidadoTrabajador[]; 
                   <span className="block text-muted-foreground">{t.codigo}{t.sin_movimiento ? ' · Sin movimiento' : ''}</span>
                 </td>
                 {[
-                  t.inicial.por_pagar, t.inicial.anticipos_sin_aplicar, t.inicial.prestamos,
+                  t.inicial.por_pagar, t.inicial.anticipos_sin_aplicar, t.inicial.prestamos, t.inicial.ahorro ?? 0, t.inicial.comisiones_por_liberar ?? 0,
                   t.reconocido.percepciones, t.reconocido.reembolsos, t.reconocido.deducciones, t.reconocido.neto,
                   t.entregado.total, t.entregado.reversiones, t.aplicado_a_cortes,
-                  t.final.por_pagar, t.final.anticipos_sin_aplicar, t.final.prestamos,
+                  t.final.por_pagar, t.final.anticipos_sin_aplicar, t.final.prestamos, t.final.ahorro ?? 0, t.final.comisiones_por_liberar ?? 0,
                 ].map((n, i) => (
-                  <td key={i} className={`p-2 text-right ${[0, 3, 7, 9, 10].includes(i) ? 'border-l border-border' : ''}`}>{formatoMoneda(n, moneda)}</td>
+                  <td key={i} className={`p-2 text-right ${[0, 5, 9, 11, 12].includes(i) ? 'border-l border-border' : ''}`}>{formatoMoneda(n, moneda)}</td>
                 ))}
               </tr>
             ))}
@@ -476,6 +485,34 @@ function ListaDinero({ datos }: { datos: ConsolidadoDatos }) {
             {TIPO_MOV[m.tipo] ?? m.tipo} · {fechaPdf(m.fecha_pago)}{m.metodo ? ` · ${etiquetaMetodo(m.metodo)}` : ''}
             {m.folio_corte ? ` · Corte ${m.folio_corte}` : ''}
             {m.semana_inicio ? ` · Semana ${fechaPdf(m.semana_inicio)}` : ''}
+          </p>
+          {m.motivo && <p className="text-xs text-muted-foreground">Motivo: {m.motivo}</p>}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ListaOtros({ datos }: { datos: ConsolidadoDatos }) {
+  const otros = datos.otros_movimientos ?? []
+  const r = datos.resumen
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-muted-foreground">
+        Dinero que entró o salió fuera de los pagos de nómina: préstamos, abonos y devoluciones de ahorro.
+        {r.otros_salidas_efectivo != null && <> Salidas: {formatoMoneda(r.otros_salidas_efectivo, datos.moneda)}.</>}
+        {r.otros_entradas_efectivo != null && <> Entradas: {formatoMoneda(r.otros_entradas_efectivo, datos.moneda)}.</>}
+      </p>
+      {otros.length === 0 && <p className="text-sm text-muted-foreground">No hubo otros movimientos de efectivo en el mes.</p>}
+      {otros.map((m, i) => (
+        <div key={i} className="rounded-xl border border-border bg-card p-3">
+          <div className="flex justify-between gap-2">
+            <p className="text-sm font-semibold text-foreground">{m.nombre} <span className="font-normal text-muted-foreground">{m.codigo}</span></p>
+            <p className={`text-sm font-semibold tabular-nums ${m.efecto_efectivo < 0 ? 'text-agro-danger-text' : 'text-foreground'}`}>{formatoMoneda(m.monto, datos.moneda)}</p>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {ETIQUETA_OTRO_MOVIMIENTO[m.clase] ?? m.clase} · {fechaPdf(m.fecha)}{m.metodo ? ` · ${etiquetaMetodo(m.metodo)}` : ''}
+            {m.referencia ? ` · ${m.referencia}` : ''}
           </p>
           {m.motivo && <p className="text-xs text-muted-foreground">Motivo: {m.motivo}</p>}
         </div>

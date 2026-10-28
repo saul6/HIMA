@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs'
-import { etiquetaMetodo } from '@/lib/nomina/formato'
+import { ETIQUETA_OTRO_MOVIMIENTO, etiquetaMetodo } from '@/lib/nomina/formato'
 import type { ConsolidadoGuardado } from '@/types/nomina.types'
 
 // Excel para contabilidad: mismos datos que el PDF (es la misma revisión guardada).
@@ -97,6 +97,12 @@ export async function generarConsolidadoMensualExcel(c: ConsolidadoGuardado): Pr
     ['Por pagar final', r.por_pagar_final],
     ['Anticipos sin aplicar al cierre', r.anticipos_sin_aplicar_final],
     ['Préstamos al cierre', r.prestamos_final],
+    ['Ahorro al cierre', r.ahorro_final ?? 0],
+    ['Comisiones por liberar al cierre', r.comisiones_por_liberar_final ?? 0],
+    ['Comisiones liberadas', r.comisiones_liberadas ?? 0],
+    ['Comisiones acumuladas nuevas', r.comisiones_diferidas_nuevas ?? 0],
+    ['Otros: salidas de efectivo', r.otros_salidas_efectivo ?? 0],
+    ['Otros: entradas de efectivo', r.otros_entradas_efectivo ?? 0],
   ]
   const fmtMoneda = `"${m === 'MXN' ? '$' : m + ' '}"#,##0.00;[Red]-"${m === 'MXN' ? '$' : m + ' '}"#,##0.00`
   cifras.forEach(([k, v], i) => {
@@ -118,6 +124,11 @@ export async function generarConsolidadoMensualExcel(c: ConsolidadoGuardado): Pr
     mon('Aplicado a cortes', 'apl'), mon('Traspaso a préstamo', 'tras'),
     mon('Préstamos otorgados', 'po'), mon('Préstamos recuperados y ajustes', 'pr'),
     mon('Final: por pagar', 'f1'), mon('Final: anticipos sin aplicar', 'f2'), mon('Final: préstamos', 'f3'),
+    mon('Inicial: ahorro', 'a1'), mon('Ahorro aportado', 'a2'), mon('Ahorro devuelto', 'a3'), mon('Final: ahorro', 'a4'),
+    mon('Inicial: comisiones por liberar', 'c1'), mon('Comisiones acumuladas', 'c2'), mon('Comisiones liberadas', 'c3'), mon('Final: comisiones por liberar', 'c4'),
+    mon('Descuento de ahorro en cortes', 'a5'),
+    mon('Préstamos otorgados en efectivo', 'p1'), mon('Préstamos por excedente', 'p2'), mon('Abonos en efectivo', 'p3'),
+    mon('Otros: salidas de efectivo', 'o1'), mon('Otros: entradas de efectivo', 'o2'),
   ], d.trabajadores.map(t => ({
     codigo: textoSeguro(t.codigo), nombre: textoSeguro(t.nombre), puesto: textoSeguro(t.puesto), activo: t.activo ? 'Sí' : 'No',
     sin: t.sin_movimiento ? 'Sí' : 'No',
@@ -129,6 +140,12 @@ export async function generarConsolidadoMensualExcel(c: ConsolidadoGuardado): Pr
     apl: t.aplicado_a_cortes, tras: t.traspaso_a_prestamo,
     po: t.prestamos.otorgados, pr: t.prestamos.recuperados_y_ajustes,
     f1: t.final.por_pagar, f2: t.final.anticipos_sin_aplicar, f3: t.final.prestamos,
+    a1: t.inicial.ahorro ?? 0, a2: t.ahorro?.aportado ?? 0, a3: t.ahorro?.devuelto_efectivo ?? 0, a4: t.final.ahorro ?? 0,
+    c1: t.inicial.comisiones_por_liberar ?? 0, c2: t.reconocido.comisiones_diferidas_nuevas ?? 0,
+    c3: t.reconocido.de_ellas_comisiones_liberadas ?? 0, c4: t.final.comisiones_por_liberar ?? 0,
+    a5: t.reconocido.de_ellas_ahorro ?? 0,
+    p1: t.prestamos.otorgados_efectivo ?? 0, p2: t.prestamos.por_excedente ?? 0, p3: t.prestamos.abonos_efectivo ?? 0,
+    o1: t.otros_efectivo?.salidas ?? 0, o2: t.otros_efectivo?.entradas ?? 0,
   })), m)
 
   hoja(wb, 'Dinero del mes', [
@@ -142,6 +159,17 @@ export async function generarConsolidadoMensualExcel(c: ConsolidadoGuardado): Pr
     fecha: aFecha(x.fecha_pago), codigo: textoSeguro(x.codigo), nombre: textoSeguro(x.nombre), tipo: TIPO_MOV[x.tipo] ?? x.tipo,
     metodo: etiquetaMetodo(x.metodo), ref: textoSeguro(x.referencia), corte: textoSeguro(x.folio_corte),
     si: aFecha(x.semana_inicio), sf: aFecha(x.semana_fin), monto: x.monto, motivo: textoSeguro(x.motivo),
+  })), m)
+
+  hoja(wb, 'Otros movimientos', [
+    { header: 'Fecha', key: 'fecha', width: 14, tipo: 'fecha' }, { header: 'Código', key: 'codigo', width: 10 },
+    { header: 'Trabajador', key: 'nombre', width: 30 }, { header: 'Movimiento', key: 'clase', width: 22 },
+    { header: 'Método', key: 'metodo', width: 14 }, { header: 'Referencia', key: 'ref', width: 20 },
+    mon('Monto', 'monto'), { header: 'Motivo', key: 'motivo', width: 36 },
+  ], (d.otros_movimientos ?? []).map(x => ({
+    fecha: aFecha(x.fecha), codigo: textoSeguro(x.codigo), nombre: textoSeguro(x.nombre),
+    clase: ETIQUETA_OTRO_MOVIMIENTO[x.clase] ?? x.clase, metodo: etiquetaMetodo(x.metodo),
+    ref: textoSeguro(x.referencia), monto: x.monto, motivo: textoSeguro(x.motivo),
   })), m)
 
   hoja(wb, 'Cortes del mes', [
