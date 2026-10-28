@@ -1983,7 +1983,7 @@ export function AuditorEjecucion() {
           />
 
           {/* Resumen: paneles de puntaje, MIP, validación, hallazgos y antecedentes. xl: arriba de las preguntas; desde 1480 px: columna derecha fija. */}
-          <div className="px-4 pt-4 xl:p-0 xl:[grid-area:resumen] xl:w-full xl:max-[1479px]:max-w-3xl xl:max-[1479px]:justify-self-start min-[1480px]:max-w-none min-[1480px]:justify-self-stretch min-[1480px]:sticky min-[1480px]:top-[calc(var(--alto-header,0px)+1rem)] min-[1480px]:max-h-[calc(var(--alto-visible,100vh)-2rem)] min-[1480px]:overflow-y-auto">
+          <div className="px-4 pt-4 xl:p-0 xl:[grid-area:resumen] xl:w-full xl:max-[1479px]:max-w-3xl xl:max-[1479px]:justify-self-start min-[1480px]:max-w-none min-[1480px]:justify-self-stretch min-[1480px]:sticky min-[1480px]:top-[calc(var(--alto-header,0px)+1rem)] min-[1480px]:self-start min-[1480px]:max-h-[calc(var(--alto-visible,100vh)-2rem-17rem)] min-[1480px]:overflow-y-auto">
             <motion.div className="flex flex-col gap-4" {...ent(0)}>
               {/* COR-07: banners de error de carga */}
               <AnimatePresence initial={false}>
@@ -2129,9 +2129,9 @@ export function AuditorEjecucion() {
             </motion.div>
           </div>
 
-          {/* Preguntas + barra de acciones al pie (sticky dentro de esta columna) */}
-          <div className="flex-1 min-w-0 flex flex-col xl:flex-none xl:[grid-area:centro] xl:self-stretch xl:w-full xl:max-[1479px]:max-w-3xl xl:justify-self-start min-[1480px]:max-w-4xl">
-            <motion.div className="flex-1 px-4 pt-4 pb-4 xl:px-0 xl:pt-0 flex flex-col gap-4" {...ent(0)}>
+          {/* Preguntas + barra de acciones. Desde 1480 px la columna es `contents`: la barra pasa a la columna derecha (misma celda que el resumen, abajo). */}
+          <div className="flex-1 min-w-0 flex flex-col xl:flex-none xl:[grid-area:centro] xl:self-stretch xl:w-full xl:max-[1479px]:max-w-3xl xl:justify-self-start min-[1480px]:contents">
+            <motion.div className="flex-1 px-4 pt-4 pb-4 xl:px-0 xl:pt-0 flex flex-col gap-4 min-[1480px]:[grid-area:centro] min-[1480px]:w-full min-[1480px]:max-w-4xl min-[1480px]:justify-self-start min-[1480px]:self-stretch" {...ent(0)}>
               {/* Celular: PDF y Marcar preliminar bajo los paneles de resumen (en md+ viven en la barra al pie) */}
               {((auditoria && allPreguntas.length > 0) || (!cerrada && !cargando && allPreguntas.length > 0 && auditoria?.estado !== 'preliminar')) && (
                 <div className="md:hidden flex flex-col gap-2">
@@ -2254,10 +2254,10 @@ export function AuditorEjecucion() {
               Celular: Validar y Cerrar (a la derecha del botón del menú); md+: PDF, Validar, Marcar preliminar y Cerrar. */}
           {hayBarra && (
             <div
-              className={`sticky bottom-0 z-10 border-t border-border bg-card pr-4 pl-[5.25rem] md:pl-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] items-center justify-end gap-2 ${cerrada ? 'hidden md:flex' : 'flex'}`}
+              className={`sticky bottom-0 z-10 border-t border-border bg-card pr-4 pl-[5.25rem] md:pl-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] items-center justify-end gap-2 min-[1480px]:[grid-area:resumen] min-[1480px]:self-end min-[1480px]:bottom-4 min-[1480px]:flex-col min-[1480px]:items-stretch min-[1480px]:rounded-xl min-[1480px]:border min-[1480px]:p-3 ${cerrada ? 'hidden md:flex' : 'flex'}`}
             >
               {auditoria && allPreguntas.length > 0 && (
-                <Boton variante="secundario" onClick={handleDescargarPDF} cargando={descargando} className="hidden md:inline-flex">
+                <Boton variante="secundario" onClick={handleDescargarPDF} cargando={descargando} className="hidden md:inline-flex min-[1480px]:w-full">
                   <Download aria-hidden="true" size={15} /> Descargar reporte PDF
                 </Boton>
               )}
@@ -2268,7 +2268,7 @@ export function AuditorEjecucion() {
                       variante="secundario"
                       onClick={handleValidar}
                       disabled={validando || cambiando || haySavePending || hayErrorCargaEsquema}
-                      className="px-3 md:px-4"
+                      className="px-3 md:px-4 min-[1480px]:w-full"
                     >
                       {validando
                         ? <><Loader aria-hidden="true" size={15} className="animate-spin motion-reduce:animate-none" />Validando…</>
@@ -2281,7 +2281,7 @@ export function AuditorEjecucion() {
                       variante="secundario"
                       onClick={() => handleCambiarEstado('preliminar')}
                       disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
-                      className="hidden md:inline-flex"
+                      className="hidden md:inline-flex min-[1480px]:w-full"
                     >
                       {cambiando ? 'Guardando…' : 'Marcar preliminar'}
                     </Boton>
@@ -2289,7 +2289,7 @@ export function AuditorEjecucion() {
                   <Boton
                     onClick={() => handleCambiarEstado('cerrada')}
                     disabled={cambiando || validando || haySavePending || hayErrorCargaEsquema}
-                    className="px-3 md:px-4"
+                    className="px-3 md:px-4 min-[1480px]:w-full"
                   >
                     {cambiando ? 'Cerrando…' : 'Cerrar auditoría'}
                   </Boton>
