@@ -166,6 +166,8 @@ function Icono({ nombre, size = 10, color = PC.m13Navy }: { nombre: IconoNombre;
 
 // ── Estimación de alturas (conservadora, para repartir páginas) ───────────────
 
+/** Alto aproximado del bloque de firmas (mismo valor que el kit). */
+const ALTO_FIRMAS = 170
 const CAP_RESTO = 445   // descuenta el encabezado compacto de las páginas 2+
 const lineas = (texto: string, ancho: number, tam: number) => {
   const porLinea = Math.max(1, Math.floor((ancho - 10) / (tam * 0.5)))
@@ -402,23 +404,27 @@ function ultimaRevision(i: ReporteVisitaItem): string {
  * no caben.
  */
 function Tabla({
-  titulo, cols, filas, alturas,
+  titulo, cols, filas, alturas, firmas,
 }: {
   titulo: string
   cols: Col[]
   filas: ReactNode[]
   alturas: number[]
+  /** Firmas que siguen a la última tabla: van como hermano del último renglón, que viaja con ellas (nunca quedan solas en una hoja). */
+  firmas?: ReactNode
 }) {
   const primera = Math.min(alturas[0] ?? 22, CAP_RESTO * 0.5)
   return (
     <>
       <View minPresenceAhead={22 + 22 + primera} style={{ height: 0 }} />
       <TituloSeccion texto={titulo} />
-      <View style={{ marginBottom: 14, ...SIN_ENCOGER }}>
+      <View style={{ marginBottom: firmas ? 0 : 14, ...SIN_ENCOGER }}>
         <View fixed style={SIN_ENCOGER}>
           <EncabezadoTabla cols={cols} />
         </View>
-        {filas}
+        {firmas ? filas.slice(0, -1) : filas}
+        {firmas && filas.length > 0 ? <View minPresenceAhead={ALTO_FIRMAS}>{filas[filas.length - 1]}</View> : null}
+        {firmas}
       </View>
     </>
   )
@@ -447,8 +453,21 @@ export function ChecklistVisitaPDF({
   const reprog = visita.reprogramaciones ?? []
   const nota = visita.nota_cierre?.trim()
 
+  const firmas = (
+    <PdfFirmas
+      signatures={[
+        { label: 'Realizó la visita', nombre: visita.revisor ?? '', caption: 'Realizó - Firma', firma: firmaRealizo ?? null },
+        { label: '', nombre: '', caption: 'Verificó - Firma', firma: firmaVerifico ?? null },
+      ]}
+      enterado={firmaEnterado ?? null}
+    />
+  )
+  // La última tabla que se dibuja lleva las firmas pegadas a su último renglón
+  const ultimaTabla = sinRevisar.length > 0 ? 'sin' : documentos.length > 0 ? 'docs' : formatos.length > 0 ? 'formatos' : null
+
   const tablaFormatos = formatos.length > 0 && (
     <Tabla
+      firmas={ultimaTabla === 'formatos' ? firmas : undefined}
       titulo="FORMATOS REVISADOS"
       cols={COLS_FORMATOS}
       filas={formatos.map((i) => <FilaFormato key={i.id} item={i} codigoClave={codigoClave} partible={alturaFormato(i) > CAP_RESTO * 0.85} />)}
@@ -458,6 +477,7 @@ export function ChecklistVisitaPDF({
 
   const tablaDocs = documentos.length > 0 && (
     <Tabla
+      firmas={ultimaTabla === 'docs' ? firmas : undefined}
       titulo="DOCUMENTOS"
       cols={COLS_DOCS}
       filas={documentos.map((i) => <FilaDocumento key={i.id} item={i} fechaVisita={visita.fecha} partible={alturaDocumento(i) > CAP_RESTO * 0.85} />)}
@@ -471,6 +491,7 @@ export function ChecklistVisitaPDF({
   const MITAD = ANCHO / 2
   const tablaSinRevisar = pares.length > 0 && (
     <Tabla
+      firmas={ultimaTabla === 'sin' ? firmas : undefined}
       titulo="SIN REVISAR EN ESTA VISITA"
       cols={[{ titulo: 'FORMATO Y ÚLTIMA REVISIÓN', resto: ANCHO }]}
       filas={pares.map((par, idx) => (
@@ -563,14 +584,7 @@ export function ChecklistVisitaPDF({
         {tablaFormatos}
         {tablaDocs}
         {tablaSinRevisar}
-
-        <PdfFirmas
-          signatures={[
-            { label: 'Realizó la visita', nombre: visita.revisor ?? '', caption: 'Realizó - Firma', firma: firmaRealizo ?? null },
-            { label: '', nombre: '', caption: 'Verificó - Firma', firma: firmaVerifico ?? null },
-          ]}
-          enterado={firmaEnterado ?? null}
-        />
+        {ultimaTabla === null ? firmas : null}
       </Page>
     </Document>
   )
