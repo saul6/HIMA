@@ -6,7 +6,7 @@ import { crearErrorNomina } from '@/lib/nomina/errores'
 import type {
   MiVoucher, NomActividad, NomActividadCatalogo, NomAjuste, NomAsistencia, NomConcepto, NomConfig,
   NomMovimiento, NomPagoFila, NomPerfilPago, NomPrestamo, NomPrestamoMov, NomTarifa, NomTrabajador,
-  RespuestaCalculo, SemanaResumen, VoucherData, ConsolidadoDatos, ConsolidadoLista, ConsolidadoGuardado,
+  RespuestaCalculo, SemanaResumen, CuentasTrabajador, PendientesSemana, ConfigVer, OrgEstadoNomina, VoucherData, ConsolidadoDatos, ConsolidadoLista, ConsolidadoGuardado,
 } from '@/types/nomina.types'
 
 // ───────────── RPC (toda escritura pasa por aquí; nunca se manda org_id) ─────────────
@@ -45,10 +45,11 @@ export const nomina = {
   }),
   guardarActividadCatalogo: (a: {
     id: string | null; nombre: string; modo: string; unidad: string; codigo: string | null
-    categoria: string | null; sinonimos: string[]; orden: number; archivada: boolean
+    categoria: string | null; sinonimos: string[]; orden: number; archivada: boolean; esComision: boolean
   }) => rpc<string>('nom_guardar_actividad_catalogo', {
     p_id: a.id, p_nombre: a.nombre, p_modo: a.modo, p_unidad: a.unidad, p_codigo: a.codigo,
     p_categoria: a.categoria, p_sinonimos: a.sinonimos, p_orden: a.orden, p_archivada: a.archivada,
+    p_es_comision: a.esComision,
   }),
   fijarTarifa: (a: { actividad: string; monto: number | null; trabajador: string | null; desde: string; motivo: string | null }) =>
     rpc<string>('nom_fijar_tarifa', {
@@ -60,6 +61,48 @@ export const nomina = {
     }),
   prestamoCuota: (prestamo: string, cuota: number | null) =>
     rpc<unknown>('nom_prestamo_cuota', { p_prestamo: prestamo, p_cuota: cuota }),
+
+  // cuentas del trabajador
+  cuentas: (trabajador: string) => rpc<CuentasTrabajador>('nom_cuentas_trabajador', { p_trabajador: trabajador }),
+  otorgarPrestamo: (a: {
+    trabajador: string; monto: number; metodo: string; fecha: string; llave: string; referencia: string | null; nota: string | null
+  }) => rpc<{ prestamo_id: string; repetida: boolean }>('nom_otorgar_prestamo', {
+    p_trabajador: a.trabajador, p_monto: a.monto, p_metodo: a.metodo, p_fecha: a.fecha,
+    p_idempotency_key: a.llave, p_referencia: a.referencia, p_nota: a.nota,
+  }),
+  abonarPrestamo: (a: { prestamo: string; monto: number; metodo: string; fecha: string; llave: string; referencia: string | null }) =>
+    rpc<{ mov_id: string; repetida: boolean; saldo: number }>('nom_abonar_prestamo', {
+      p_prestamo: a.prestamo, p_monto: a.monto, p_metodo: a.metodo, p_fecha: a.fecha,
+      p_idempotency_key: a.llave, p_referencia: a.referencia,
+    }),
+  descuentoPrestamo: (prestamo: string, fechaSemana: string, monto: number | null, motivo: string | null) =>
+    rpc<unknown>('nom_descuento_prestamo', { p_prestamo: prestamo, p_fecha_semana: fechaSemana, p_monto: monto, p_motivo: motivo }),
+  cancelarPrestamo: (prestamo: string, motivo: string) =>
+    rpc<unknown>('nom_cancelar_prestamo', { p_prestamo: prestamo, p_motivo: motivo }),
+  fijarAhorro: (a: { trabajador: string; monto: number | null; desde: string; motivo: string | null }) =>
+    rpc<unknown>('nom_fijar_ahorro', { p_trabajador: a.trabajador, p_monto: a.monto, p_desde: a.desde, p_motivo: a.motivo }),
+  devolverAhorro: (a: {
+    trabajador: string; monto: number; metodo: string; fecha: string; llave: string; referencia: string | null; motivo: string | null
+  }) => rpc<unknown>('nom_devolver_ahorro', {
+    p_trabajador: a.trabajador, p_monto: a.monto, p_metodo: a.metodo, p_fecha: a.fecha,
+    p_idempotency_key: a.llave, p_referencia: a.referencia, p_motivo: a.motivo,
+  }),
+  liberarComision: (a: { trabajador: string; fechaSemana: string; monto: number; motivo: string | null; llave: string }) =>
+    rpc<string>('nom_liberar_comision', {
+      p_trabajador: a.trabajador, p_fecha_semana: a.fechaSemana, p_monto: a.monto, p_motivo: a.motivo, p_idempotency_key: a.llave,
+    }),
+  cancelarLiberacion: (id: string) => rpc<unknown>('nom_cancelar_liberacion', { p_id: id }),
+
+  // semana y configuración
+  pendientesSemana: (fecha: string) => rpc<PendientesSemana>('nom_pendientes_semana', { p_fecha: fecha }),
+  cerrarSemana: (fecha: string) => rpc<unknown>('nom_cerrar_semana', { p_fecha: fecha }),
+  reabrirSemana: (fecha: string, motivo: string) => rpc<unknown>('nom_reabrir_semana', { p_fecha: fecha, p_motivo: motivo }),
+  configVer: () => rpc<ConfigVer>('nom_config_ver'),
+  guardarConfig: (fechaArranque: string) => rpc<unknown>('nom_guardar_config', { p_fecha_arranque: fechaArranque }),
+  orgsEstado: () => rpc<OrgEstadoNomina[]>('nom_orgs_estado'),
+  habilitarOrg: (org: string, fechaArranque: string) =>
+    rpc<unknown>('nom_habilitar_org', { p_org: org, p_fecha_arranque: fechaArranque }),
+  deshabilitarOrg: (org: string) => rpc<unknown>('nom_deshabilitar_org', { p_org: org }),
 
   // captura
   registrarActividad: (a: {
@@ -305,6 +348,24 @@ export function useNomPrestamos(trabajadorId: string) {
       .map(p => ({ ...p, saldo: movs.filter(m => m.prestamo_id === p.id).reduce((s, m) => s + Number(m.monto), 0) }))
       .filter(p => p.estado === 'activo' || p.saldo !== 0)
   }, [org, trabajadorId], !!org)
+}
+
+export function useNomCuentas(trabajadorId: string) {
+  const { profile } = useAuthContext()
+  const org = profile?.org_id ?? null
+  return useCarga<CuentasTrabajador | null>(null, () => nomina.cuentas(trabajadorId), [org, trabajadorId], !!org)
+}
+
+export function useNomPendientesSemana(fecha: string) {
+  const { profile } = useAuthContext()
+  const org = profile?.org_id ?? null
+  return useCarga<PendientesSemana | null>(null, () => nomina.pendientesSemana(fecha), [org, fecha], !!org)
+}
+
+export function useNomConfigVer() {
+  const { profile } = useAuthContext()
+  const org = profile?.org_id ?? null
+  return useCarga<ConfigVer | null>(null, () => nomina.configVer(), [org], !!org)
 }
 
 /** Usuarios activos de la org para ligar a un trabajador. */

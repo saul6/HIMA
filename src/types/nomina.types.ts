@@ -6,7 +6,7 @@ export type ModoActividad = 'cantidad' | 'importe_pactado' | 'informativa'
 export type TipoConcepto = 'percepcion' | 'deduccion' | 'reembolso' | 'memo'
 export type EstadoAsistencia = 'trabajado' | 'medio' | 'ausente' | 'descanso' | 'permiso_pagado'
 export type MetodoPago = 'efectivo' | 'transferencia' | 'deposito' | 'cheque' | 'vale' | 'otro'
-export type TipoLinea = 'percepcion' | 'deduccion' | 'reembolso' | 'informativa'
+export type TipoLinea = 'percepcion' | 'deduccion' | 'reembolso' | 'informativa' | 'comision_diferida'
 export type OrigenTarifa = 'perfil' | 'trabajador' | 'organizacion' | 'pactado'
 export type TipoPago = 'pago' | 'anticipo' | 'reversion'
 
@@ -56,6 +56,7 @@ export interface NomActividadCatalogo {
   sinonimos: string[]
   orden: number
   archivada: boolean
+  es_comision?: boolean
 }
 
 export interface NomTarifa {
@@ -217,14 +218,17 @@ export interface LineaCorte {
 }
 
 export interface BloqueoCorte { codigo: string; mensaje: string; fuente_id?: string | null }
-export interface AvisoCorte { codigo: string; mensaje: string; rojo?: boolean; fechas?: string[]; monto?: number }
+export interface AvisoCorte {
+  codigo: string; mensaje: string; rojo?: boolean; fechas?: string[]; monto?: number
+  prestamo_id?: string; saldo?: number
+}
 
 export interface CalculoCorte {
   trabajador: { id: string; nombre: string; codigo: string; puesto?: string | null }
-  periodo: { inicio: string; fin: string }
+  periodo: { inicio: string; fin: string; estado?: string }
   moneda: string
   lineas: LineaCorte[]
-  totales: { percepciones: number; reembolsos: number; deducciones: number; neto: number }
+  totales: { percepciones: number; reembolsos: number; deducciones: number; neto: number; comisiones_diferidas?: number }
   anticipos_sin_aplicar: number
   exceso_anticipo: number
   pendiente_estimado: number
@@ -276,6 +280,8 @@ export interface VoucherData {
   pago: PagoResumen
   pagos: NomPagoFila[]
   prestamos_activos: { id: string; origen: string; saldo: number }[]
+  ahorro_saldo?: number
+  comisiones_por_liberar?: number
 }
 
 export interface MiVoucher {
@@ -412,3 +418,72 @@ export interface ConsolidadoLista {
 
 /** Revisión guardada: la lista más sus datos congelados. */
 export interface ConsolidadoGuardado extends ConsolidadoLista { datos: ConsolidadoDatos }
+
+
+// ───────────── Cuentas del trabajador (préstamos, ahorro, comisiones) ─────────────
+
+export interface CuentaPrestamoMov {
+  tipo: string; monto: number; fecha: string | null; metodo: string | null
+  referencia: string | null; folio_corte: string | null; motivo: string | null
+}
+export interface CuentaPrestamo {
+  id: string
+  origen: 'manual' | 'exceso_anticipo' | string
+  estado: 'activo' | 'liquidado' | 'cancelado' | string
+  monto_original: number
+  nota: string | null
+  creado_en: string
+  saldo: number
+  descuentos_programados: { semana_inicio: string; monto: number }[]
+  movimientos: CuentaPrestamoMov[]
+}
+export interface CuentaAhorro {
+  saldo: number
+  vigente: { monto_semanal: number; desde: string } | null
+  historial_config: { monto_semanal: number | null; desde: string; motivo?: string | null }[]
+  movimientos: { tipo: string; monto: number; fecha: string | null; metodo?: string | null; referencia?: string | null; motivo?: string | null }[]
+}
+export interface CuentaComisiones {
+  saldo_por_liberar: number
+  liberaciones_pendientes: { id: string; semana_inicio: string; monto: number; motivo: string | null }[]
+  movimientos: { tipo: string; monto: number; fecha: string | null; motivo?: string | null }[]
+}
+export interface CuentasTrabajador {
+  prestamos: CuentaPrestamo[]
+  ahorro: CuentaAhorro
+  comisiones: CuentaComisiones
+}
+
+// ───────────── Cerrar semana y configuración ─────────────
+
+export interface PendientesSemana {
+  periodo_id: string | null
+  estado: 'abierto' | 'cerrado' | string
+  cerrado_en: string | null
+  cerrado_por: string | null
+  reabierto_en: string | null
+  motivo_reapertura: string | null
+  semana_terminada: boolean
+  pendientes: { trabajador_id: string; codigo: string; nombre: string }[]
+}
+
+export interface ConfigVer {
+  fecha_arranque: string
+  zona_horaria: string
+  moneda: string
+  semana_inicia: number
+  folio_siguiente: number | string
+  primera_captura: string | null
+  tiene_cortes: boolean
+}
+
+export interface OrgEstadoNomina {
+  org_id: string
+  nombre: string
+  plan: string | null
+  estado: string | null
+  habilitado: boolean
+  fecha_arranque: string | null
+  trabajadores: number
+  cortes: number
+}

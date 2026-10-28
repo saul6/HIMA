@@ -14,6 +14,7 @@ import { useConexion } from '@/hooks/useConexion'
 import { hoyMX } from '@/lib/fecha'
 import { fechaCorta, formatoMoneda } from '@/lib/nomina/formato'
 import { ETIQUETA_MODALIDAD, PerfilPagoSheet, TarifaSheet, TrabajadorSheet } from './SheetsCatalogos'
+import { CuentasSeccion } from './CuentasSeccion'
 import { montoModalidad } from './NominaTrabajadores'
 import type { NomTarifa } from '@/types/nomina.types'
 
@@ -174,6 +175,8 @@ export function NominaTrabajadorDetalle() {
             </div>
           ))}
         </section>
+
+        {t && <CuentasSeccion trabajadorId={id} moneda={moneda} />}
       </div>
 
       {sheet?.tipo === 'editar' && t && (
