@@ -337,7 +337,7 @@ function PanelM9({
 
   return (
     <div
-      className="rounded-xl border border-border px-4 py-3 flex items-center justify-between gap-3"
+      className="rounded-xl border border-border px-4 py-3 flex items-center justify-between gap-3 min-[1480px]:shrink-0"
       style={{ backgroundColor: 'var(--card)' }}
     >
       <div className="flex flex-col gap-0.5 min-w-0">
@@ -419,7 +419,8 @@ function PanelValidacion({
 
   return (
     <div id="panel-validacion"
-      className="rounded-xl border overflow-hidden"
+      data-abierto={abierto}
+      className="rounded-xl border overflow-hidden min-[1480px]:flex min-[1480px]:flex-col min-[1480px]:min-h-0 min-[1480px]:data-[abierto=false]:shrink-0 min-[1480px]:data-[abierto=true]:flex-[1_1_0] min-[1480px]:data-[abierto=true]:min-h-[5.5rem]"
       style={{
         backgroundColor: reviewLoadError ? 'var(--agro-danger-fill)' : tieneBlockers ? 'var(--agro-danger-fill)' : 'var(--card)',
         borderColor: reviewLoadError ? 'var(--agro-red)' : tieneBlockers ? 'var(--agro-red)' : 'var(--border)',
@@ -432,7 +433,7 @@ function PanelValidacion({
         onClick={() => setAbierto(v => !v)}
         aria-expanded={abierto}
         aria-controls={idCuerpo}
-        className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left focus-visible:outline-offset-[-2px]"
+        className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left focus-visible:outline-offset-[-2px] min-[1480px]:shrink-0"
       >
         <div className="flex items-center gap-2 min-w-0 flex-wrap">
           {validando ? (
@@ -478,7 +479,7 @@ function PanelValidacion({
       </button>
 
       {/* Cuerpo: plegar solo lo oculta */}
-      <motion.div id={idCuerpo} hidden={!abierto} {...fundido}>
+      <motion.div id={idCuerpo} hidden={!abierto} {...fundido} className="min-[1480px]:min-h-0 min-[1480px]:flex-1 min-[1480px]:overflow-y-auto">
         <div className="border-t border-border">
           {validando ? (
             <div className="flex items-center justify-center gap-2 py-6">
@@ -665,14 +666,14 @@ function PanelScoring({
   }
 
   return (
-    <div className="rounded-xl border border-border overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
+    <div data-abierto={abierto} className="rounded-xl border border-border overflow-hidden min-[1480px]:flex min-[1480px]:flex-col min-[1480px]:min-h-0 min-[1480px]:data-[abierto=false]:shrink-0 min-[1480px]:data-[abierto=true]:flex-[1_1_0] min-[1480px]:data-[abierto=true]:min-h-[5.5rem]" style={{ backgroundColor: 'var(--card)' }}>
       {/* Cabecera */}
       <button
         type="button"
         onClick={() => setAbierto(v => !v)}
         aria-expanded={abierto}
         aria-controls={idCuerpo}
-        className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left focus-visible:outline-offset-[-2px]"
+        className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left focus-visible:outline-offset-[-2px] min-[1480px]:shrink-0"
       >
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <BarChart2 aria-hidden="true"
@@ -706,7 +707,7 @@ function PanelScoring({
         <ChevronPlegable abierto={abierto} />
       </button>
 
-      <motion.div id={idCuerpo} hidden={!abierto} {...fundido}>
+      <motion.div id={idCuerpo} hidden={!abierto} {...fundido} className="min-[1480px]:min-h-0 min-[1480px]:flex-1 min-[1480px]:overflow-y-auto">
         <div className="border-t border-border px-4 pb-4 flex flex-col gap-3">
           {/* Etiqueta invariante */}
           <p className="text-caption pt-3 italic" style={{ color: 'var(--muted-foreground)' }}>
@@ -961,13 +962,13 @@ function PanelHallazgos({
   }
 
   return (
-    <div className="rounded-xl border border-border overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
+    <div data-abierto={abierto} className="rounded-xl border border-border overflow-hidden min-[1480px]:flex min-[1480px]:flex-col min-[1480px]:min-h-0 min-[1480px]:data-[abierto=false]:shrink-0 min-[1480px]:data-[abierto=true]:flex-[1_1_0] min-[1480px]:data-[abierto=true]:min-h-[5.5rem]" style={{ backgroundColor: 'var(--card)' }}>
       <button
         type="button"
         onClick={() => setAbierto(v => !v)}
         aria-expanded={abierto}
         aria-controls={idCuerpo}
-        className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left focus-visible:outline-offset-[-2px]"
+        className="w-full min-h-11 flex items-center justify-between gap-2 px-4 py-3 text-left focus-visible:outline-offset-[-2px] min-[1480px]:shrink-0"
       >
         <div className="flex items-center gap-2">
           <Flag aria-hidden="true" size={15} className="flex-shrink-0" style={{ color: hallazgos.length > 0 ? 'var(--agro-danger-text)' : 'var(--muted-foreground)' }} />
@@ -980,7 +981,7 @@ function PanelHallazgos({
         <ChevronPlegable abierto={abierto} />
       </button>
 
-      <motion.div id={idCuerpo} hidden={!abierto} {...fundido}>
+      <motion.div id={idCuerpo} hidden={!abierto} {...fundido} className="min-[1480px]:min-h-0 min-[1480px]:flex-1 min-[1480px]:overflow-y-auto">
         <div className="border-t border-border">
           {hallazgos.length === 0 ? (
             cargando ? (
@@ -1988,12 +1989,12 @@ export function AuditorEjecucion() {
           />
 
           {/* Resumen: paneles de puntaje, MIP, validación, hallazgos y antecedentes. xl: arriba de las preguntas; desde 1480 px: columna derecha fija. */}
-          <div className="px-4 pt-4 xl:p-0 xl:[grid-area:resumen] xl:w-full xl:max-[1479px]:max-w-3xl xl:max-[1479px]:justify-self-start min-[1480px]:max-w-none min-[1480px]:justify-self-stretch min-[1480px]:sticky min-[1480px]:top-[calc(var(--alto-header,0px)+1rem)] min-[1480px]:self-start min-[1480px]:max-h-[calc(var(--alto-visible,100vh)-2rem-var(--alto-acciones,0px)-1rem)] min-[1480px]:overflow-y-auto">
-            <motion.div className="flex flex-col gap-4" {...ent(0)}>
+          <div className="px-4 pt-4 xl:p-0 xl:[grid-area:resumen] xl:w-full xl:max-[1479px]:max-w-3xl xl:max-[1479px]:justify-self-start min-[1480px]:max-w-none min-[1480px]:justify-self-stretch min-[1480px]:sticky min-[1480px]:top-[calc(var(--alto-header,0px)+1rem)] min-[1480px]:self-start min-[1480px]:h-[calc(var(--alto-visible,100vh)-2rem-var(--alto-acciones,0px)-1rem)] min-[1480px]:flex min-[1480px]:flex-col min-[1480px]:min-h-0">
+            <motion.div className="flex flex-col gap-4 min-[1480px]:flex-1 min-[1480px]:min-h-0" {...ent(0)}>
               {/* COR-07: banners de error de carga */}
               <AnimatePresence initial={false}>
               {esquemaCargaEstado === 'error' && (
-                <motion.div key="err-esquema" role="alert" {...avisoMotion(reducedMotion)} className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
+                <motion.div key="err-esquema" role="alert" {...avisoMotion(reducedMotion)} className="flex items-start gap-3 rounded-xl px-4 py-3 min-[1480px]:shrink-0" style={{ backgroundColor: 'var(--agro-danger-fill)', border: '1px solid var(--agro-red)' }}>
                   <XCircle aria-hidden="true" size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-danger-text)' }} />
                   <div className="flex-1">
                     <p className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>No se pudieron cargar los campos de comentario</p>
@@ -2005,7 +2006,7 @@ export function AuditorEjecucion() {
                 </motion.div>
               )}
               {obsCargaEstado === 'error' && (
-                <motion.div key="err-obs" role="status" {...avisoMotion(reducedMotion)} className="flex items-start gap-3 rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
+                <motion.div key="err-obs" role="status" {...avisoMotion(reducedMotion)} className="flex items-start gap-3 rounded-xl px-4 py-3 min-[1480px]:shrink-0" style={{ backgroundColor: 'var(--agro-info-fill)', border: '1px solid var(--agro-menta)' }}>
                   <AlertCircle aria-hidden="true" size={15} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
                   <div className="flex-1">
                     <p className="text-xs font-semibold" style={{ color: 'var(--agro-info-text)' }}>No se pudieron cargar las observaciones guardadas</p>
@@ -2051,7 +2052,7 @@ export function AuditorEjecucion() {
               )}
 
               {/* Panel de hallazgos */}
-              <div ref={panelHallazgosRef}>
+              <div ref={panelHallazgosRef} className="min-[1480px]:flex min-[1480px]:flex-col min-[1480px]:min-h-0 min-[1480px]:has-[[data-abierto=false]]:shrink-0 min-[1480px]:has-[[data-abierto=true]]:flex-[1_1_0]">
                 <PanelHallazgos
                   hallazgos={hallazgos}
                   preguntas={allPreguntas}
@@ -2072,7 +2073,7 @@ export function AuditorEjecucion() {
 
               {/* Panel de antecedentes (historial de NC por criterio en el sitio) */}
               {historialCriterios.length > 0 && (
-                <div className="rounded-xl border border-border overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
+                <div className="rounded-xl border border-border overflow-hidden min-[1480px]:shrink-0" style={{ backgroundColor: 'var(--card)' }}>
                   <button
                     type="button"
                     onClick={() => setPanelAntecedentesAbierto(v => !v)}
