@@ -14,7 +14,7 @@ import { useConexion } from '@/hooks/useConexion'
 import { avisarErrorNomina } from '@/lib/nomina/errores'
 import { hoyMX } from '@/lib/fecha'
 import { fechaHoraPdf, fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
-import { ETIQUETA_OTRO_MOVIMIENTO, etiquetaMetodo, formatoMoneda } from '@/lib/nomina/formato'
+import { ETIQUETA_OTRO_MOVIMIENTO, NOTA_REVISION_ANTERIOR, etiquetaMetodo, faltaAhorroComisiones, formatoMoneda, monedaOSinDato } from '@/lib/nomina/formato'
 import { CampoTexto, CampoTextoLargo, CuerpoSheet, MotivoSheet } from './ui'
 import type {
   ConsolidadoCorte, ConsolidadoDatos, ConsolidadoIncidencia, ConsolidadoLista, ConsolidadoTrabajador,
@@ -211,9 +211,10 @@ export function NominaMensual() {
             <p className="text-xs text-muted-foreground">
               Anticipos sin aplicar al cierre: {formatoMoneda(d.resumen.anticipos_sin_aplicar_final, moneda)} · Préstamos al cierre:{' '}
               {formatoMoneda(d.resumen.prestamos_final, moneda)}
-              {d.resumen.ahorro_final != null && <> · Ahorro al cierre: {formatoMoneda(d.resumen.ahorro_final, moneda)}</>}
-              {d.resumen.comisiones_por_liberar_final != null && <> · Comisiones por liberar: {formatoMoneda(d.resumen.comisiones_por_liberar_final, moneda)}</>}
+              {' '}· Ahorro al cierre: {monedaOSinDato(d.resumen.ahorro_final, moneda)}
+              {' '}· Comisiones por liberar: {monedaOSinDato(d.resumen.comisiones_por_liberar_final, moneda)}
             </p>
+            {faltaAhorroComisiones(d) && <p className="text-xs text-muted-foreground">{NOTA_REVISION_ANTERIOR}</p>}
 
             <Incidencias bloqueantes={bloqueantes} otras={otras} />
 
@@ -372,10 +373,10 @@ function Incidencias({ bloqueantes, otras }: { bloqueantes: ConsolidadoIncidenci
 
 // ───────────── Trabajadores ─────────────
 
-function Renglon({ etiqueta, valor, moneda, negrita }: { etiqueta: string; valor: number; moneda: string; negrita?: boolean }) {
+function Renglon({ etiqueta, valor, moneda, negrita }: { etiqueta: string; valor: number | undefined; moneda: string; negrita?: boolean }) {
   return (
     <div className={`flex justify-between gap-2 text-xs ${negrita ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
-      <span>{etiqueta}</span><span className="tabular-nums">{formatoMoneda(valor, moneda)}</span>
+      <span>{etiqueta}</span><span className="tabular-nums">{monedaOSinDato(valor, moneda)}</span>
     </div>
   )
 }
@@ -420,8 +421,8 @@ function ListaTrabajadores({ filas, moneda }: { filas: ConsolidadoTrabajador[]; 
               <Renglon etiqueta={`Por pagar (inicial ${formatoMoneda(t.inicial.por_pagar, moneda)})`} valor={t.final.por_pagar} moneda={moneda} negrita />
               <Renglon etiqueta={`Anticipos sin aplicar (inicial ${formatoMoneda(t.inicial.anticipos_sin_aplicar, moneda)})`} valor={t.final.anticipos_sin_aplicar} moneda={moneda} />
               <Renglon etiqueta={`Préstamos (inicial ${formatoMoneda(t.inicial.prestamos, moneda)})`} valor={t.final.prestamos} moneda={moneda} />
-              <Renglon etiqueta={`Ahorro (inicial ${formatoMoneda(t.inicial.ahorro ?? 0, moneda)})`} valor={t.final.ahorro ?? 0} moneda={moneda} />
-              <Renglon etiqueta={`Comisiones por liberar (inicial ${formatoMoneda(t.inicial.comisiones_por_liberar ?? 0, moneda)})`} valor={t.final.comisiones_por_liberar ?? 0} moneda={moneda} />
+              <Renglon etiqueta={`Ahorro (inicial ${monedaOSinDato(t.inicial.ahorro, moneda)})`} valor={t.final.ahorro} moneda={moneda} />
+              <Renglon etiqueta={`Comisiones por liberar (inicial ${monedaOSinDato(t.inicial.comisiones_por_liberar, moneda)})`} valor={t.final.comisiones_por_liberar} moneda={moneda} />
             </div>
           </div>
         ))}
@@ -451,12 +452,12 @@ function ListaTrabajadores({ filas, moneda }: { filas: ConsolidadoTrabajador[]; 
                   <span className="block text-muted-foreground">{t.codigo}{t.sin_movimiento ? ' · Sin movimiento' : ''}</span>
                 </td>
                 {[
-                  t.inicial.por_pagar, t.inicial.anticipos_sin_aplicar, t.inicial.prestamos, t.inicial.ahorro ?? 0, t.inicial.comisiones_por_liberar ?? 0,
+                  t.inicial.por_pagar, t.inicial.anticipos_sin_aplicar, t.inicial.prestamos, t.inicial.ahorro, t.inicial.comisiones_por_liberar,
                   t.reconocido.percepciones, t.reconocido.reembolsos, t.reconocido.deducciones, t.reconocido.neto,
                   t.entregado.total, t.entregado.reversiones, t.aplicado_a_cortes,
-                  t.final.por_pagar, t.final.anticipos_sin_aplicar, t.final.prestamos, t.final.ahorro ?? 0, t.final.comisiones_por_liberar ?? 0,
+                  t.final.por_pagar, t.final.anticipos_sin_aplicar, t.final.prestamos, t.final.ahorro, t.final.comisiones_por_liberar,
                 ].map((n, i) => (
-                  <td key={i} className={`p-2 text-right ${[0, 5, 9, 11, 12].includes(i) ? 'border-l border-border' : ''}`}>{formatoMoneda(n, moneda)}</td>
+                  <td key={i} className={`p-2 text-right ${[0, 5, 9, 11, 12].includes(i) ? 'border-l border-border' : ''}`}>{monedaOSinDato(n, moneda)}</td>
                 ))}
               </tr>
             ))}
@@ -500,10 +501,11 @@ function ListaOtros({ datos }: { datos: ConsolidadoDatos }) {
     <div className="space-y-2">
       <p className="text-xs text-muted-foreground">
         Dinero que entró o salió fuera de los pagos de nómina: préstamos, abonos y devoluciones de ahorro.
-        {r.otros_salidas_efectivo != null && <> Salidas: {formatoMoneda(r.otros_salidas_efectivo, datos.moneda)}.</>}
-        {r.otros_entradas_efectivo != null && <> Entradas: {formatoMoneda(r.otros_entradas_efectivo, datos.moneda)}.</>}
+        {' '}Salidas: {monedaOSinDato(r.otros_salidas_efectivo, datos.moneda)}.
+        {' '}Entradas: {monedaOSinDato(r.otros_entradas_efectivo, datos.moneda)}.
       </p>
-      {otros.length === 0 && <p className="text-sm text-muted-foreground">No hubo otros movimientos de efectivo en el mes.</p>}
+      {datos.otros_movimientos === undefined && <p className="text-xs text-muted-foreground">{NOTA_REVISION_ANTERIOR}</p>}
+      {datos.otros_movimientos !== undefined && otros.length === 0 && <p className="text-sm text-muted-foreground">No hubo otros movimientos de efectivo en el mes.</p>}
       {otros.map((m, i) => (
         <div key={i} className="rounded-xl border border-border bg-card p-3">
           <div className="flex justify-between gap-2">

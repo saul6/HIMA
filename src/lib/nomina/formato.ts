@@ -11,6 +11,23 @@ export function formatoMoneda(monto: number | null | undefined, moneda = 'MXN'):
   return nf.format(Number(monto ?? 0))
 }
 
+/** Importe de una revisión guardada: si el campo no existe (revisión anterior) muestra "—", no $0. */
+export const SIN_DATO = '—'
+export const monedaOSinDato = (monto: number | null | undefined, moneda = 'MXN') =>
+  monto == null ? SIN_DATO : formatoMoneda(monto, moneda)
+
+export const NOTA_REVISION_ANTERIOR = 'Revisión generada antes de incluir ahorro y comisiones. Genera una revisión nueva para verlos.'
+
+/** true si la revisión guardada no trae ahorro/comisiones/otros movimientos (se detecta por campo, no por fecha). */
+export function faltaAhorroComisiones(d: {
+  resumen: { ahorro_final?: number; comisiones_por_liberar_final?: number }
+  otros_movimientos?: unknown
+  trabajadores: { inicial: { ahorro?: number }; final: { ahorro?: number } }[]
+}): boolean {
+  return d.resumen.ahorro_final === undefined || d.resumen.comisiones_por_liberar_final === undefined ||
+    d.otros_movimientos === undefined || d.trabajadores.some((t) => !('ahorro' in t.inicial) || !('ahorro' in t.final))
+}
+
 /** Redondeo a 2 decimales de lo capturado (monto) o 4 (cantidad). */
 export const r2 = (n: number) => parseFloat(n.toFixed(2))
 export const r4 = (n: number) => parseFloat(n.toFixed(4))

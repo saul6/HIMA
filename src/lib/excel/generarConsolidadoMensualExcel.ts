@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs'
-import { ETIQUETA_OTRO_MOVIMIENTO, etiquetaMetodo } from '@/lib/nomina/formato'
+import { ETIQUETA_OTRO_MOVIMIENTO, NOTA_REVISION_ANTERIOR, SIN_DATO, etiquetaMetodo, faltaAhorroComisiones } from '@/lib/nomina/formato'
 import type { ConsolidadoGuardado } from '@/types/nomina.types'
 
 // Excel para contabilidad: mismos datos que el PDF (es la misma revisión guardada).
@@ -81,7 +81,7 @@ export async function generarConsolidadoMensualExcel(c: ConsolidadoGuardado): Pr
   ws.addRow([])
   const cab = ws.addRow(['Concepto', 'Importe'])
   cab.font = { bold: true }
-  const cifras: [string, number][] = [
+  const cifras: [string, number | string][] = [
     ['Trabajadores', r.trabajadores],
     ['Percepciones', r.percepciones],
     ['Reembolsos', r.reembolsos],
@@ -97,18 +97,20 @@ export async function generarConsolidadoMensualExcel(c: ConsolidadoGuardado): Pr
     ['Por pagar final', r.por_pagar_final],
     ['Anticipos sin aplicar al cierre', r.anticipos_sin_aplicar_final],
     ['Préstamos al cierre', r.prestamos_final],
-    ['Ahorro al cierre', r.ahorro_final ?? 0],
-    ['Comisiones por liberar al cierre', r.comisiones_por_liberar_final ?? 0],
-    ['Comisiones liberadas', r.comisiones_liberadas ?? 0],
-    ['Comisiones acumuladas nuevas', r.comisiones_diferidas_nuevas ?? 0],
-    ['Otros: salidas de efectivo', r.otros_salidas_efectivo ?? 0],
-    ['Otros: entradas de efectivo', r.otros_entradas_efectivo ?? 0],
+    ['Ahorro al cierre', r.ahorro_final ?? SIN_DATO],
+    ['Comisiones por liberar al cierre', r.comisiones_por_liberar_final ?? SIN_DATO],
+    ['Comisiones liberadas', r.comisiones_liberadas ?? SIN_DATO],
+    ['Comisiones acumuladas nuevas', r.comisiones_diferidas_nuevas ?? SIN_DATO],
+    ['Otros: salidas de efectivo', r.otros_salidas_efectivo ?? SIN_DATO],
+    ['Otros: entradas de efectivo', r.otros_entradas_efectivo ?? SIN_DATO],
   ]
   const fmtMoneda = `"${m === 'MXN' ? '$' : m + ' '}"#,##0.00;[Red]-"${m === 'MXN' ? '$' : m + ' '}"#,##0.00`
   cifras.forEach(([k, v], i) => {
     const f = ws.addRow([k, v])
     if (i > 0) f.getCell(2).numFmt = fmtMoneda
+    if (v === SIN_DATO) f.getCell(2).alignment = { horizontal: 'right' }
   })
+  if (faltaAhorroComisiones(d)) ws.addRow(['Nota', NOTA_REVISION_ANTERIOR])
   ws.views = [{ state: 'frozen', ySplit: info.length + 2 }]
 
   const mon = (header: string, key: string, width = 16): Col => ({ header, key, width, tipo: 'moneda' })
@@ -140,12 +142,12 @@ export async function generarConsolidadoMensualExcel(c: ConsolidadoGuardado): Pr
     apl: t.aplicado_a_cortes, tras: t.traspaso_a_prestamo,
     po: t.prestamos.otorgados, pr: t.prestamos.recuperados_y_ajustes,
     f1: t.final.por_pagar, f2: t.final.anticipos_sin_aplicar, f3: t.final.prestamos,
-    a1: t.inicial.ahorro ?? 0, a2: t.ahorro?.aportado ?? 0, a3: t.ahorro?.devuelto_efectivo ?? 0, a4: t.final.ahorro ?? 0,
-    c1: t.inicial.comisiones_por_liberar ?? 0, c2: t.reconocido.comisiones_diferidas_nuevas ?? 0,
-    c3: t.reconocido.de_ellas_comisiones_liberadas ?? 0, c4: t.final.comisiones_por_liberar ?? 0,
-    a5: t.reconocido.de_ellas_ahorro ?? 0,
+    a1: t.inicial.ahorro ?? SIN_DATO, a2: t.ahorro?.aportado ?? SIN_DATO, a3: t.ahorro?.devuelto_efectivo ?? SIN_DATO, a4: t.final.ahorro ?? SIN_DATO,
+    c1: t.inicial.comisiones_por_liberar ?? SIN_DATO, c2: t.reconocido.comisiones_diferidas_nuevas ?? SIN_DATO,
+    c3: t.reconocido.de_ellas_comisiones_liberadas ?? SIN_DATO, c4: t.final.comisiones_por_liberar ?? SIN_DATO,
+    a5: t.reconocido.de_ellas_ahorro ?? SIN_DATO,
     p1: t.prestamos.otorgados_efectivo ?? 0, p2: t.prestamos.por_excedente ?? 0, p3: t.prestamos.abonos_efectivo ?? 0,
-    o1: t.otros_efectivo?.salidas ?? 0, o2: t.otros_efectivo?.entradas ?? 0,
+    o1: t.otros_efectivo?.salidas ?? SIN_DATO, o2: t.otros_efectivo?.entradas ?? SIN_DATO,
   })), m)
 
   hoja(wb, 'Dinero del mes', [

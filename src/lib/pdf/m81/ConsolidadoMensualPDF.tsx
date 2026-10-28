@@ -6,7 +6,7 @@ import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/
 import { TablaDatos, ANCHO_UTIL, type CeldaDato, type ColumnaDato } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { fechaHoraPdf, fechaPdf } from '@/lib/pdf/disenoNuevo/fechas'
 import { PC } from '@/lib/pdf/components/tokens'
-import { ETIQUETA_OTRO_MOVIMIENTO, etiquetaMetodo, formatoMoneda } from '@/lib/nomina/formato'
+import { ETIQUETA_OTRO_MOVIMIENTO, NOTA_REVISION_ANTERIOR, SIN_DATO, etiquetaMetodo, faltaAhorroComisiones, formatoMoneda, monedaOSinDato } from '@/lib/nomina/formato'
 import type { ConsolidadoGuardado } from '@/types/nomina.types'
 
 const ANCHO = ANCHO_UTIL.landscape
@@ -27,6 +27,8 @@ export function ConsolidadoMensualPagina({ consolidado: c }: { consolidado: Cons
   const $ = (n: number) => formatoMoneda(n, m)
   const neg = (n: number): CeldaDato => (n < 0 ? { texto: $(n), color: PC.negativo } : $(n))
   const r = d.resumen
+  const $s = (n: number | null | undefined) => monedaOSinDato(n, m)
+  const falta = faltaAhorroComisiones(d)
 
   const colsTrab: ColumnaDato[] = [
     { texto: 'Trabajador', ancho: 3.4, align: 'left' },
@@ -55,12 +57,12 @@ export function ConsolidadoMensualPagina({ consolidado: c }: { consolidado: Cons
         { etiqueta: 'Anticipos sin aplicar', valor: $(r.anticipos_sin_aplicar_final) },
         { etiqueta: 'Préstamos al cierre', valor: $(r.prestamos_final) },
         { etiqueta: 'Traspaso a préstamo', valor: $(r.traspaso_a_prestamo) },
-        { etiqueta: 'Ahorro al cierre', valor: $(r.ahorro_final ?? 0) },
-        { etiqueta: 'Comisiones por liberar', valor: $(r.comisiones_por_liberar_final ?? 0) },
-        { etiqueta: 'Comisiones liberadas', valor: $(r.comisiones_liberadas ?? 0) },
-        { etiqueta: 'Comisiones acumuladas', valor: $(r.comisiones_diferidas_nuevas ?? 0) },
-        { etiqueta: 'Otros: salidas de efectivo', valor: $(r.otros_salidas_efectivo ?? 0) },
-        { etiqueta: 'Otros: entradas de efectivo', valor: $(r.otros_entradas_efectivo ?? 0) },
+        { etiqueta: 'Ahorro al cierre', valor: $s(r.ahorro_final) },
+        { etiqueta: 'Comisiones por liberar', valor: $s(r.comisiones_por_liberar_final) },
+        { etiqueta: 'Comisiones liberadas', valor: $s(r.comisiones_liberadas) },
+        { etiqueta: 'Comisiones acumuladas', valor: $s(r.comisiones_diferidas_nuevas) },
+        { etiqueta: 'Otros: salidas de efectivo', valor: $s(r.otros_salidas_efectivo) },
+        { etiqueta: 'Otros: entradas de efectivo', valor: $s(r.otros_entradas_efectivo) },
       ]}
     >
       <Seccion titulo="2. TRABAJADORES">
@@ -90,6 +92,7 @@ export function ConsolidadoMensualPagina({ consolidado: c }: { consolidado: Cons
       </Seccion>
 
       <Seccion titulo="3. AHORRO Y COMISIONES">
+        {falta && <Text style={{ fontSize: 7, color: PC.fieldLabel, marginBottom: 4 }}>{NOTA_REVISION_ANTERIOR}</Text>}
         <TablaDatos
           columnas={[
             { texto: 'Trabajador', ancho: 3.4, align: 'left' },
@@ -99,18 +102,18 @@ export function ConsolidadoMensualPagina({ consolidado: c }: { consolidado: Cons
           anchoTotal={ANCHO}
           fuente={7}
           fuenteEnc={6.5}
-          vacio="Sin ahorro ni comisiones en el mes"
+          vacio={falta ? SIN_DATO : 'Sin ahorro ni comisiones en el mes'}
           filas={d.trabajadores
             .filter((t) => [t.inicial.ahorro, t.final.ahorro, t.ahorro?.aportado, t.ahorro?.devuelto_efectivo, t.inicial.comisiones_por_liberar,
               t.final.comisiones_por_liberar, t.reconocido.comisiones_diferidas_nuevas, t.reconocido.de_ellas_comisiones_liberadas]
               .some((n) => Number(n ?? 0) !== 0))
             .map((t) => [
               `${t.nombre} (${t.codigo})`,
-              $(t.inicial.ahorro ?? 0), $(t.ahorro?.aportado ?? 0), $(t.ahorro?.devuelto_efectivo ?? 0),
-              { texto: $(t.final.ahorro ?? 0), negrita: true },
-              $(t.inicial.comisiones_por_liberar ?? 0), $(t.reconocido.comisiones_diferidas_nuevas ?? 0),
-              $(t.reconocido.de_ellas_comisiones_liberadas ?? 0),
-              { texto: $(t.final.comisiones_por_liberar ?? 0), negrita: true },
+              $s(t.inicial.ahorro), $s(t.ahorro?.aportado), $s(t.ahorro?.devuelto_efectivo),
+              { texto: $s(t.final.ahorro), negrita: true },
+              $s(t.inicial.comisiones_por_liberar), $s(t.reconocido.comisiones_diferidas_nuevas),
+              $s(t.reconocido.de_ellas_comisiones_liberadas),
+              { texto: $s(t.final.comisiones_por_liberar), negrita: true },
             ])}
         />
       </Seccion>
@@ -145,6 +148,7 @@ export function ConsolidadoMensualPagina({ consolidado: c }: { consolidado: Cons
       </Seccion>
 
       <Seccion titulo="5. OTROS MOVIMIENTOS DE EFECTIVO">
+        {d.otros_movimientos === undefined && <Text style={{ fontSize: 7, color: PC.fieldLabel, marginBottom: 4 }}>{NOTA_REVISION_ANTERIOR}</Text>}
         <TablaDatos
           columnas={[
             { texto: 'Fecha', ancho: 1.2, align: 'left' },
@@ -156,7 +160,7 @@ export function ConsolidadoMensualPagina({ consolidado: c }: { consolidado: Cons
             { texto: 'Motivo', ancho: 2.8, align: 'left' },
           ]}
           anchoTotal={ANCHO}
-          vacio="Sin otros movimientos de efectivo en el mes"
+          vacio={d.otros_movimientos === undefined ? SIN_DATO : 'Sin otros movimientos de efectivo en el mes'}
           filas={(d.otros_movimientos ?? []).map((x) => [
             fechaPdf(x.fecha),
             `${x.nombre} (${x.codigo})`,
