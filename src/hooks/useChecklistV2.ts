@@ -19,12 +19,16 @@ export type Vigencia = 'vigente' | 'proximo' | 'vencido' | 'sin_dato'
 export type Aplicabilidad = 'aplica' | 'no_aplica' | 'por_confirmar'
 export type PrecisionRegistro = 'dia' | 'mes' | 'texto'
 
+export interface ChkSector { clave: string; nombre: string; icono: string }
+
 export interface VisitaResumenCartera { id: string; fecha: string; asesor: string | null; tipo_cierre?: string | null; estado?: string }
 
 export interface CarteraInstalacion {
   id: string
   nombre: string
   tipo: string | null
+  sector_clave: string | null
+  sector_nombre: string | null
   ubicacion: string | null
   activo: boolean
   linked_rancho_id: string | null
@@ -97,6 +101,7 @@ export interface ChkDocumento {
 export interface CatalogoVer {
   instalacion: {
     id: string; nombre: string; tipo: string | null; cliente: string
+    sector_clave: string | null; sector_nombre: string | null
     catalogo_estado: CatalogoEstado; catalogo_version: number
     aprobado_en: string | null; aprobado_por: string | null; umbral_vigencia_dias: number
   }
@@ -319,13 +324,16 @@ export const chk = {
   sitiosCliente: (cliente: string) => rpc<{ id: string; nombre: string; org: 'propia' | 'cliente' }[]>('chk_sitios_cliente', { p_cliente: cliente }),
   instalacionGuardar: (p: {
     id?: string | null; cliente: string; nombre: string; tipo?: string | null; ubicacion?: string | null
-    linked_rancho?: string | null; comparte_datos?: boolean; umbral?: number; activo?: boolean
+    linked_rancho?: string | null; comparte_datos?: boolean; umbral?: number; activo?: boolean; sector?: string | null
   }) =>
     rpc<string>('chk_instalacion_guardar', {
       p_id: p.id ?? null, p_cliente: p.cliente, p_nombre: p.nombre, p_tipo: p.tipo ?? null, p_ubicacion: p.ubicacion ?? null,
       p_linked_rancho: p.linked_rancho ?? null, p_comparte_datos: p.comparte_datos ?? false,
-      p_umbral_vigencia_dias: p.umbral ?? 30, p_activo: p.activo ?? true,
+      p_umbral_vigencia_dias: p.umbral ?? 30, p_activo: p.activo ?? true, p_sector: p.sector ?? null,
     }),
+  sectores: () => rpc<ChkSector[]>('chk_sectores'),
+  catalogoPrecargar: (instalacion: string, sector: string) =>
+    rpc<{ sector: string; agregados: number }>('chk_catalogo_precargar', { p_instalacion: instalacion, p_sector: sector }),
 
   catalogoVer: (instalacion: string) => rpc<CatalogoVer>('chk_catalogo_ver', { p_instalacion: instalacion }),
   documentoGuardar: (p: { id?: string | null; instalacion: string; datos: Record<string, unknown>; motivo?: string | null }) =>
@@ -403,6 +411,18 @@ export interface Carga<T> {
 }
 
 /** Carga una RPC de lectura al montar (y cuando cambia `clave`); `null` en clave = no cargar. */
+let sectoresCache: ChkSector[] | null = null
+
+/** Sectores para mostrar el ícono de cada instalación; se piden una sola vez por sesión. */
+export function useSectoresChk(): ChkSector[] {
+  const [sectores, setSectores] = useState<ChkSector[]>(sectoresCache ?? [])
+  useEffect(() => {
+    if (sectoresCache) return
+    chk.sectores().then(s => { sectoresCache = s ?? []; setSectores(sectoresCache) }).catch(() => { /* el ícono es decorativo */ })
+  }, [])
+  return sectores
+}
+
 export function useCarga<T>(clave: string | null, fn: () => Promise<T>): Carga<T> {
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(clave !== null)

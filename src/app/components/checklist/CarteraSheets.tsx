@@ -5,7 +5,8 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { Input } from '@/app/components/ui/input'
 import { Pildora } from './Pildora'
 import { CLASE_INPUT, CLASE_TEXTAREA, PieFormulario } from './comun'
-import { chk, mensajeError, useAccion, type CarteraCliente, type CarteraInstalacion } from '@/hooks/useChecklistV2'
+import { resolverIcono } from '@/app/components/iconos-modulos'
+import { chk, mensajeError, useAccion, type CarteraCliente, type CarteraInstalacion, type ChkSector } from '@/hooks/useChecklistV2'
 
 // ── Cliente ──────────────────────────────────────────────────────────────────
 
@@ -127,6 +128,8 @@ interface InstalacionProps {
   instalacion: CarteraInstalacion | null
   onClose: () => void
   onGuardado: () => void
+  /** Solo al crear: id de la instalación nueva, para abrir su catálogo. */
+  onCreada?: (instalacionId: string) => void
 }
 
 export function InstalacionSheet({ open, ...resto }: InstalacionProps) {
@@ -137,9 +140,10 @@ export function InstalacionSheet({ open, ...resto }: InstalacionProps) {
   )
 }
 
-function FormInstalacion({ cliente, instalacion, onClose, onGuardado }: Omit<InstalacionProps, 'open' | 'cliente'> & { cliente: CarteraCliente }) {
+function FormInstalacion({ cliente, instalacion, onClose, onGuardado, onCreada }: Omit<InstalacionProps, 'open' | 'cliente'> & { cliente: CarteraCliente }) {
   const [nombre, setNombre] = useState(instalacion?.nombre ?? '')
-  const [tipo, setTipo] = useState(instalacion?.tipo ?? '')
+  const [sector, setSector] = useState(instalacion?.sector_clave ?? '')
+  const [sectores, setSectores] = useState<ChkSector[]>([])
   const [ubicacion, setUbicacion] = useState(instalacion?.ubicacion ?? '')
   const [rancho, setRancho] = useState(instalacion?.linked_rancho_id ?? '')
   const [umbral, setUmbral] = useState(String(instalacion?.umbral_vigencia_dias ?? 30))
@@ -152,19 +156,31 @@ function FormInstalacion({ cliente, instalacion, onClose, onGuardado }: Omit<Ins
     if (cargado.current) return
     cargado.current = true
     chk.sitiosCliente(cliente.id).then(s => setSitios(s ?? [])).catch(e => toast.error(mensajeError(e)))
+    chk.sectores().then(s => setSectores(s ?? [])).catch(e => toast.error(mensajeError(e)))
   }, [cliente.id])
 
   async function guardar() {
     if (!nombre.trim()) { toast.warning('El nombre es obligatorio'); return }
+    if (!instalacion && !sector) { toast.warning('Elige el tipo de instalación'); return }
     const dias = Number(umbral)
     if (!Number.isInteger(dias) || dias < 1 || dias > 365) { toast.warning('El umbral de vigencia son días (1 a 365)'); return }
+    const elegido = sectores.find(s => s.clave === sector)
     const r = await ejecutar(() => chk.instalacionGuardar({
-      id: instalacion?.id, cliente: cliente.id, nombre: nombre.trim(), tipo: tipo.trim() || null,
+      id: instalacion?.id, cliente: cliente.id, nombre: nombre.trim(),
+      tipo: elegido?.nombre ?? instalacion?.tipo ?? null, sector: sector || null,
       ubicacion: ubicacion.trim() || null, linked_rancho: rancho || null,
       comparte_datos: instalacion?.comparte_datos ?? false, umbral: dias, activo,
     }))
     if (!r.ok) { toast.error(r.mensaje); return }
-    toast.success(instalacion ? 'Instalación actualizada' : 'Instalación creada')
+    if (instalacion) {
+      toast.success('Instalación actualizada')
+    } else {
+      // La BD precarga los módulos del sector al crear: se cuenta lo cargado para avisar
+      let cargados = 0
+      try { cargados = (await chk.catalogoVer(r.data)).documentos.filter(d => d.activo).length } catch { /* el aviso es informativo */ }
+      toast.success(cargados > 0 ? `Instalación creada · ${cargados} documentos cargados` : 'Instalación creada')
+      onCreada?.(r.data)
+    }
     onGuardado()
     onClose()
   }
@@ -177,10 +193,25 @@ function FormInstalacion({ cliente, instalacion, onClose, onGuardado }: Omit<Ins
           <span className="text-xs text-muted-foreground">Nombre</span>
           <Input value={nombre} maxLength={200} onChange={e => setNombre(e.target.value)} />
         </label>
-        <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Tipo (opcional)</span>
-          <Input value={tipo} maxLength={100} onChange={e => setTipo(e.target.value)} placeholder="Empacadora, cuarto frío…" />
-        </label>
+        <div className="space-y-1">
+          <span className="text-xs text-muted-foreground">Tipo de instalación{instalacion ? '' : ' *'}</span>
+          <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Tipo de instalación">
+            {sectores.map(s => {
+              const Icono = resolverIcono(s.icono)
+              const activa = sector === s.clave
+              return (
+                <button
+                  key={s.clave} type="button" role="radio" aria-checked={activa} onClick={() => setSector(s.clave)}
+                  className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm min-h-11 ${activa ? 'border-primary bg-muted font-semibold text-foreground' : 'border-border-control bg-card text-muted-foreground'}`}
+                >
+                  <Icono className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+                  <span className="truncate">{s.nombre}</span>
+                </button>
+              )
+            })}
+          </div>
+          {!instalacion && <p className="text-xs text-muted-foreground">Al crearla se cargan los módulos de este tipo de instalación. Podrás quitar los que no apliquen.</p>}
+        </div>
         <label className="block space-y-1">
           <span className="text-xs text-muted-foreground">Ubicación (opcional)</span>
           <Input value={ubicacion} maxLength={300} onChange={e => setUbicacion(e.target.value)} />

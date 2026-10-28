@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { Check, Plus, Upload } from 'lucide-react'
+import { Check, Layers, Plus, Upload } from 'lucide-react'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
@@ -32,6 +32,24 @@ export function CatalogoTab({ catalogo, esAdmin, onRecargar, onImportar }: Props
   const [motivoSheet, setMotivoSheet] = useState<string[] | null>(null)
   const [aprobarAbierto, setAprobarAbierto] = useState(false)
   const accion = useAccion()
+  const precarga = useAccion()
+  const [confirmarPrecarga, setConfirmarPrecarga] = useState(false)
+
+  async function cargarModulos() {
+    if (!inst.sector_clave) return
+    const r = await precarga.ejecutar(() => chk.catalogoPrecargar(inst.id, inst.sector_clave as string))
+    if (!r.ok) { toast.error(r.mensaje); return }
+    setConfirmarPrecarga(false)
+    if (r.data.agregados === 0) toast.info('Ya están todos los módulos del sector')
+    else toast.success(`${r.data.agregados} módulos agregados · el catálogo vuelve a borrador`)
+    onRecargar()
+  }
+
+  function pedirPrecarga() {
+    if (!inst.sector_clave) { toast.warning('Esta instalación no tiene tipo asignado. Edítala y elige uno.'); return }
+    if (inst.catalogo_estado === 'aprobado') setConfirmarPrecarga(true)
+    else void cargarModulos()
+  }
 
   const cuenta = useMemo(() => ({
     por_confirmar: docs.filter(d => d.aplicabilidad === 'por_confirmar').length,
@@ -89,6 +107,7 @@ export function CatalogoTab({ catalogo, esAdmin, onRecargar, onImportar }: Props
         </span>
         {esAdmin && (
           <div className="ml-auto flex gap-2">
+            <Boton tamano="sm" variante="secundario" cargando={precarga.ocupado} onClick={pedirPrecarga}><Layers className="w-4 h-4" /> Cargar módulos del sector</Boton>
             <Boton tamano="sm" variante="secundario" onClick={onImportar}><Upload className="w-4 h-4" /> Importar</Boton>
             <Boton tamano="sm" variante="secundario" onClick={() => setEditar({ abierto: true, doc: null })}><Plus className="w-4 h-4" /> Documento</Boton>
             <Boton tamano="sm" onClick={() => setAprobarAbierto(true)}><Check className="w-4 h-4" /> Aprobar catálogo</Boton>
@@ -122,7 +141,14 @@ export function CatalogoTab({ catalogo, esAdmin, onRecargar, onImportar }: Props
       )}
 
       {docs.length === 0 ? (
-        <EstadoVacio titulo="El catálogo de esta instalación está vacío" ayuda={esAdmin ? 'Importa un PDF o Word, o agrega los documentos uno por uno.' : undefined} />
+        <EstadoVacio titulo="El catálogo de esta instalación está vacío" ayuda={esAdmin ? 'Carga los módulos del sector, importa un PDF o Word, o agrega los documentos uno por uno.' : undefined}
+          accion={esAdmin && (
+            <div className="flex flex-wrap justify-center gap-2">
+              <Boton tamano="sm" cargando={precarga.ocupado} onClick={pedirPrecarga}><Layers className="w-4 h-4" /> Cargar módulos del sector</Boton>
+              <Boton tamano="sm" variante="secundario" onClick={onImportar}><Upload className="w-4 h-4" /> Importar</Boton>
+              <Boton tamano="sm" variante="secundario" onClick={() => setEditar({ abierto: true, doc: null })}><Plus className="w-4 h-4" /> Documento</Boton>
+            </div>
+          )} />
       ) : visibles.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-10">Nada coincide con este filtro.</p>
       ) : (
@@ -149,6 +175,7 @@ export function CatalogoTab({ catalogo, esAdmin, onRecargar, onImportar }: Props
                       <td className="p-2">{d.tipo_doc}</td><td className="p-2">{d.revision}</td><td className="p-2">{d.numeral}</td>
                       <td className="p-2 min-w-48">
                         <button type="button" className="text-left font-semibold hover:underline" onClick={() => setEditar({ abierto: true, doc: d })}>{d.nombre}</button>
+                        <ChipPlantilla d={d} />
                         {d.alertas.map((a, i) => <p key={i} className="text-xs mt-0.5" style={{ color: 'var(--agro-info-text)' }}>{a.mensaje}</p>)}
                       </td>
                       <td className="p-2 whitespace-nowrap">{d.codigo}</td><td className="p-2">{d.responsable_llenado}</td>
@@ -172,6 +199,7 @@ export function CatalogoTab({ catalogo, esAdmin, onRecargar, onImportar }: Props
                     {esAdmin && <input type="checkbox" className="mt-1" aria-label={`Seleccionar ${d.nombre}`} checked={seleccion.has(d.id)} onChange={() => alternar(d.id)} />}
                     <button type="button" className="text-left flex-1 min-w-0" onClick={() => setEditar({ abierto: true, doc: d })}>
                       <p className="text-sm font-semibold">{d.nombre}</p>
+                      <ChipPlantilla d={d} />
                       <p className="text-xs text-muted-foreground">{[d.tipo_doc, d.codigo, d.revision ? `Rev ${d.revision}` : null, d.numeral ? `#${d.numeral}` : null].filter(Boolean).join(' · ')}</p>
                     </button>
                     <ChipVigencia vigencia={d.vigencia} />
@@ -205,6 +233,16 @@ export function CatalogoTab({ catalogo, esAdmin, onRecargar, onImportar }: Props
         onClose={() => setMotivoSheet(null)}
         onConfirmar={async motivo => { if (motivoSheet && await cambiarAplicabilidad(motivoSheet, 'no_aplica', motivo)) setMotivoSheet(null) }}
       />
+      <BottomSheet open={confirmarPrecarga} onClose={() => setConfirmarPrecarga(false)} title="Cargar módulos del sector">
+        {confirmarPrecarga && (
+          <>
+            <div className="px-4 py-4">
+              <p className="text-sm text-muted-foreground">Se agregarán los módulos que falten y el catálogo tendrá que aprobarse de nuevo.</p>
+            </div>
+            <PieFormulario onCancelar={() => setConfirmarPrecarga(false)} onGuardar={cargarModulos} textoGuardar="Cargar módulos" cargando={precarga.ocupado} />
+          </>
+        )}
+      </BottomSheet>
       <AprobarSheet
         open={aprobarAbierto}
         bloqueos={bloqueos}
@@ -214,6 +252,11 @@ export function CatalogoTab({ catalogo, esAdmin, onRecargar, onImportar }: Props
       />
     </div>
   )
+}
+
+function ChipPlantilla({ d }: { d: ChkDocumento }) {
+  if (d.origen !== 'plantilla') return null
+  return <Chip className="mt-1">Módulo M.A.D.Y.{d.modulos_mady?.[0] ? ` · ${d.modulos_mady[0]}` : ''}</Chip>
 }
 
 function SelectAplica({ d, esAdmin, ocupado, onCambiar }: { d: ChkDocumento; esAdmin: boolean; ocupado: boolean; onCambiar: (v: Aplicabilidad) => void }) {

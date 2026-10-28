@@ -3,7 +3,8 @@ import { Building2, ChevronRight, MapPin, Pencil, Plus } from 'lucide-react'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
-import type { CarteraCliente, CarteraInstalacion } from '@/hooks/useChecklistV2'
+import { resolverIcono } from '@/app/components/iconos-modulos'
+import { useSectoresChk, type CarteraCliente, type CarteraInstalacion } from '@/hooks/useChecklistV2'
 import { Chip, ChipCatalogo, TONOS } from './comun'
 import { ClienteSheet, InstalacionSheet } from './CarteraSheets'
 import { fechaLarga } from './constantes'
@@ -79,7 +80,7 @@ export function CarteraView({ cartera, esAdmin, onAbrir, onRecargar }: Props) {
       ))}
 
       <ClienteSheet open={clienteSheet.abierto} cliente={clienteSheet.cliente} onClose={() => setClienteSheet(s => ({ ...s, abierto: false }))} onGuardado={onRecargar} />
-      <InstalacionSheet open={instSheet.abierto} cliente={instSheet.cliente} instalacion={instSheet.inst} onClose={() => setInstSheet(s => ({ ...s, abierto: false }))} onGuardado={onRecargar} />
+      <InstalacionSheet open={instSheet.abierto} cliente={instSheet.cliente} instalacion={instSheet.inst} onClose={() => setInstSheet(s => ({ ...s, abierto: false }))} onGuardado={onRecargar} onCreada={onAbrir} />
     </div>
   )
 }
@@ -87,15 +88,18 @@ export function CarteraView({ cartera, esAdmin, onAbrir, onRecargar }: Props) {
 function TarjetaInstalacion({ inst, esAdmin, onAbrir, onEditar }: { inst: CarteraInstalacion; esAdmin: boolean; onAbrir: () => void; onEditar: () => void }) {
   const enCurso = inst.visita_en_curso
   const proxima = inst.proxima_visita
+  const sectores = useSectoresChk()
+  const Icono = inst.sector_clave ? resolverIcono(sectores.find(s => s.clave === inst.sector_clave)?.icono ?? '') : MapPin
+  const etiquetaTipo = inst.sector_nombre ?? inst.tipo
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
       <button type="button" onClick={onAbrir} className="w-full text-left flex items-start justify-between gap-2">
         <div className="min-w-0 space-y-1">
           <p className="text-sm font-semibold text-foreground truncate">{inst.nombre}</p>
-          {(inst.tipo || inst.ubicacion) && (
+          {(etiquetaTipo || inst.ubicacion) && (
             <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
-              <MapPin className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
-              {[inst.tipo, inst.ubicacion].filter(Boolean).join(' · ')}
+              <Icono className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+              {[etiquetaTipo, inst.ubicacion].filter(Boolean).join(' · ')}
             </p>
           )}
         </div>

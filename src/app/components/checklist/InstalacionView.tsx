@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useAuthContext } from '@/context/AuthContext'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'
-import { chk, useCarga, type CatalogoVer } from '@/hooks/useChecklistV2'
+import { resolverIcono } from '@/app/components/iconos-modulos'
+import { chk, useCarga, useSectoresChk, type CatalogoVer } from '@/hooks/useChecklistV2'
 import { Cargando, ErrorReintentar } from './comun'
 import { CatalogoTab } from './CatalogoTab'
 import { VisitasTab } from './VisitasTab'
@@ -25,6 +26,7 @@ interface Props {
 
 export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoClave, tab, onTab, onAbrirVisita, onCambio }: Props) {
   const { profile } = useAuthContext()
+  const sectores = useSectoresChk()
   const catalogo = useCarga<CatalogoVer>(instalacionId, () => chk.catalogoVer(instalacionId))
   const [version, setVersion] = useState(0)
   const [importarAbierto, setImportarAbierto] = useState(false)
@@ -35,6 +37,7 @@ export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoCl
   if (catalogo.loading && !catalogo.data) return <Cargando />
   if (catalogo.error || !catalogo.data) return <ErrorReintentar mensaje={catalogo.error ?? 'No se pudo cargar la instalación'} onReintentar={catalogo.recargar} />
   const cat = catalogo.data
+  const IconoSector = resolverIcono(sectores.find(s => s.clave === cat.instalacion.sector_clave)?.icono ?? '')
 
   const tabs = [
     { value: 'catalogo', label: 'Catálogo' },
@@ -47,7 +50,12 @@ export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoCl
     <div className="space-y-4">
       <div>
         <p className="text-sm font-semibold text-foreground">{cat.instalacion.cliente} · {cat.instalacion.nombre}</p>
-        {cat.instalacion.tipo && <p className="text-xs text-muted-foreground">{cat.instalacion.tipo}</p>}
+        {(cat.instalacion.sector_nombre ?? cat.instalacion.tipo) && (
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <IconoSector className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+            {cat.instalacion.sector_nombre ?? cat.instalacion.tipo}
+          </p>
+        )}
       </div>
 
       <FiltroPildoras<string> groupId="chk-instalacion-tab" value={tab} onChange={v => onTab(v as TabInstalacion)} options={tabs} />
