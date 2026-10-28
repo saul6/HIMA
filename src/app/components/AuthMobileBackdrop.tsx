@@ -59,7 +59,7 @@ export function AuthMobileBackdrop({ paused = false }: AuthMobileBackdropProps) 
                   alt=""
                   decoding="async"
                   loading={i === 0 ? 'eager' : 'lazy'}
-                  fetchPriority={i === 0 ? 'high' : undefined}
+                  fetchpriority={i === 0 ? 'high' : undefined}
                   className="h-full w-full object-cover"
                   style={{ filter: 'saturate(.85) brightness(.9)' }}
                 />
