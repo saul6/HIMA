@@ -54,7 +54,7 @@ export function CapturaTab({ ctx, foco, onFocoAtendido, onCambio, captura }: Pro
   const [sheet, setSheet] = useState<Sheet>(null)
   const { actividades, asistencia, movimientos, anticipos } = captura.datos
 
-  const bloqueada = ctx.aprobada
+  const bloqueada = ctx.aprobada || ctx.cerrada
   const nombreActividad = (id: string) => catalogo.find(a => a.id === id)
   const nombreConcepto = (id: string) => conceptos.find(c => c.id === id)?.nombre ?? 'Concepto'
 
@@ -103,7 +103,7 @@ export function CapturaTab({ ctx, foco, onFocoAtendido, onCambio, captura }: Pro
     <div className="space-y-6">
       {bloqueada && (
         <p className="rounded-xl bg-agro-info-fill text-agro-info-text text-sm px-3 py-2">
-          Semana aprobada: corrige con un ajuste.
+          {ctx.cerrada ? 'Semana cerrada: reábrela desde la semana para capturar o anular.' : 'Semana aprobada: corrige con un ajuste.'}
         </p>
       )}
 

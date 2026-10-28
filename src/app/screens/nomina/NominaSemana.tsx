@@ -1,13 +1,17 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
-import { ChevronLeft, ChevronRight, Users, BookOpen, History, Printer, CalendarRange } from 'lucide-react'
+import { Lock, ChevronLeft, ChevronRight, Users, BookOpen, History, Printer, CalendarRange } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
 import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { Boton } from '@/app/components/ui-mady/Boton'
-import { useNomSemana } from '@/hooks/useNomina'
+import { nomina, useNomPendientesSemana, useNomSemana } from '@/hooks/useNomina'
+import { useConfirmar } from '@/app/components/ui-mady/ConfirmarSheet'
+import { fechaHora } from '@/lib/formato'
+import { MotivoSheet } from './ui'
+import { toast } from 'sonner'
 import { avisarErrorNomina } from '@/lib/nomina/errores'
 import { generarVouchersSemanaPDF } from '@/lib/pdf/m81/generarVoucherPDF'
 import { useConexion } from '@/hooks/useConexion'
@@ -35,6 +39,12 @@ export function NominaSemana() {
   const [params] = useSearchParams()
   const [lunes, setLunes] = useState(() => lunesDe(params.get('fecha') || hoy))
   const { datos: semana, cargando, error, recargar } = useNomSemana(lunes)
+  const estadoSemana = useNomPendientesSemana(lunes)
+  const { confirmar, confirmarElemento } = useConfirmar()
+  const [reabriendo, setReabriendo] = useState(false)
+  const [cerrando, setCerrando] = useState(false)
+  const sem = estadoSemana.datos
+  const cerrada = sem?.estado === 'cerrado'
 
   const moneda = semana?.moneda ?? 'MXN'
   const lunesArranque = semana?.fecha_arranque ? lunesDe(semana.fecha_arranque) : null
@@ -44,6 +54,25 @@ export function NominaSemana() {
   const trabajadores = useMemo(() => semana?.trabajadores ?? [], [semana])
   const [imprimiendo, setImprimiendo] = useState(false)
   const cortesAprobados = trabajadores.flatMap(t => (t.estado === 'aprobado' && t.corte_id ? [t.corte_id] : []))
+
+  async function cerrarSemana() {
+    if (!(await confirmar({
+      titulo: 'Cerrar semana',
+      descripcion: 'Todos los cortes están aprobados. Una semana cerrada ya no permite capturar ni anular; puedes reabrirla con un motivo.',
+      textoConfirmar: 'Cerrar semana',
+    }))) return
+    setCerrando(true)
+    try {
+      await nomina.cerrarSemana(lunes)
+      toast.success('Semana cerrada')
+      await Promise.all([estadoSemana.recargar(), recargar()])
+    } catch (e) {
+      avisarErrorNomina(e, 'No se pudo cerrar la semana')
+      await estadoSemana.recargar()
+    } finally {
+      setCerrando(false)
+    }
+  }
 
   async function imprimirVouchers() {
     setImprimiendo(true)
@@ -115,6 +144,52 @@ export function NominaSemana() {
             <ChevronRight className="size-5" />
           </Boton>
         </div>
+
+        {sem && (
+          <div className="rounded-xl border border-border bg-card p-3 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-semibold">Estado de la semana</span>
+              <Etiqueta tono={cerrada ? 'menta' : 'sky'}>{cerrada ? 'Cerrada' : 'Abierta'}</Etiqueta>
+            </div>
+            {cerrada && (
+              <>
+                <p className="text-sm text-agro-info-text bg-agro-info-fill rounded-lg px-3 py-2 flex items-center gap-1.5">
+                  <Lock className="size-4 shrink-0" /> Semana cerrada: no se captura ni se anula nada.
+                </p>
+                {sem.cerrado_en && <p className="text-xs text-muted-foreground">Cerrada el {fechaHora(sem.cerrado_en)}</p>}
+                <Boton tamano="sm" variante="secundario" disabled={offline} onClick={() => setReabriendo(true)}>Reabrir</Boton>
+              </>
+            )}
+            {!cerrada && sem.reabierto_en && (
+              <p className="text-xs text-muted-foreground">
+                Reabierta el {fechaHora(sem.reabierto_en)}{sem.motivo_reapertura ? ` · ${sem.motivo_reapertura}` : ''}
+              </p>
+            )}
+            {!cerrada && sem.semana_terminada && sem.pendientes.length === 0 && (
+              <Boton className="w-full" cargando={cerrando} disabled={offline || !sem.periodo_id} onClick={() => void cerrarSemana()}>
+                Cerrar semana
+              </Boton>
+            )}
+            {!cerrada && sem.semana_terminada && sem.pendientes.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Faltan cortes por aprobar para cerrar:</p>
+                <ul className="space-y-1">
+                  {sem.pendientes.map(p => (
+                    <li key={p.trabajador_id} className="text-sm flex justify-between">
+                      <span>{p.nombre} <span className="text-muted-foreground">· {p.codigo}</span></span>
+                      <button type="button" className="text-xs underline font-semibold" onClick={() => navigate(`/nomina/semana/${p.trabajador_id}?fecha=${lunes}`)}>
+                        Ver semana
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {!cerrada && !sem.semana_terminada && (
+              <p className="text-xs text-muted-foreground">Podrás cerrarla cuando termine la semana y todos los cortes estén aprobados.</p>
+            )}
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           <TarjetaContador etiqueta="Aprobados" valor={semana?.totales.aprobados ?? null} />
@@ -188,6 +263,21 @@ export function NominaSemana() {
           </Boton>
         )}
       </div>
+      {reabriendo && (
+        <MotivoSheet
+          titulo="Reabrir semana"
+          descripcion="Podrás volver a capturar y anular. No se puede reabrir si el consolidado mensual de ese mes ya está finalizado."
+          textoConfirmar="Reabrir semana"
+          minimo={5}
+          onClose={() => setReabriendo(false)}
+          onConfirmar={async motivo => {
+            await nomina.reabrirSemana(lunes, motivo)
+            toast.success('Semana reabierta')
+            await Promise.all([estadoSemana.recargar(), recargar()])
+          }}
+        />
+      )}
+      {confirmarElemento}
     </div>
   )
 }

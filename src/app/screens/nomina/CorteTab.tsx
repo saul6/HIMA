@@ -292,11 +292,12 @@ export function CorteTab({ ctx, calculo, prestamos, cuentas, ajustes, onIrActivi
         <Boton
           className="w-full"
           cargando={aprobando}
-          disabled={bloqueado || offline || !periodoId}
+          disabled={bloqueado || offline || !periodoId || ctx.cerrada}
           onClick={() => periodoId && void aprobar(c, periodoId)}
         >
           Aprobar corte
         </Boton>
+        {ctx.cerrada && <p className="text-xs text-muted-foreground text-center">Semana cerrada: reábrela para aprobar.</p>}
         {bloqueado && <p className="text-xs text-agro-danger-text text-center">Resuelve los pendientes de arriba para aprobar.</p>}
         {botonLiberar}
         <PrestamosSeccion ctx={ctx} prestamos={prestamos} cuentas={cuentas} onCambio={onCambio} />
@@ -430,7 +431,7 @@ export function CorteTab({ ctx, calculo, prestamos, cuentas, ajustes, onIrActivi
       <PrestamosSeccion ctx={ctx} prestamos={prestamos} cuentas={cuentas} onCambio={onCambio} />
 
       {sePuedeAnular ? (
-        <Boton variante="secundario" className="w-full" disabled={offline} onClick={() => setSheet({ tipo: 'anular-corte', corteId: corte.id })}>
+        <Boton variante="secundario" className="w-full" disabled={offline || ctx.cerrada} onClick={() => setSheet({ tipo: 'anular-corte', corteId: corte.id })}>
           Anular corte
         </Boton>
       ) : (
