@@ -4,6 +4,8 @@ import { toast } from 'sonner'
 import { Lock, ChevronLeft, WifiOff } from 'lucide-react'
 import { useModulosContext } from '@/context/ModulosContext'
 import { useConexion } from '@/hooks/useConexion'
+import { useAuthContext } from '@/context/AuthContext'
+import { useChkEsCliente } from '@/hooks/useChecklistV2'
 import { resolverIcono } from '@/app/components/iconos-modulos'
 import type { ModuloVisible } from '@/hooks/useMisModulos'
 import { MODULOS_OFFLINE, type CodigoOffline } from '@/lib/offline/modulosOffline'
@@ -131,18 +133,28 @@ export function RequireModulo() {
   const { online } = useConexion()
   const location = useLocation()
   const navigate = useNavigate()
+  const { profile } = useAuthContext()
+  // El cliente ligado a una consultoría entra al Checklist aunque su plan no incluya M80
+  const esRutaChecklist = location.pathname === '/inocuidad/checklist'
+  const cliente = useChkEsCliente(profile?.id, esRutaChecklist && profile?.rol === 'admin_org')
+  const pasaComoCliente = esRutaChecklist && cliente.esCliente
 
   useEffect(() => {
     if (loading || !cargado || error) return
+    if (esRutaChecklist && !cliente.listo) return
+    if (pasaComoCliente) return
     if (!modulos.some(m => m.ruta === location.pathname)) {
       navigate('/', { replace: true })
       toast.warning('Módulo no disponible en tu plan')
     }
-  }, [loading, cargado, error, location.pathname, modulos, navigate])
+  }, [loading, cargado, error, location.pathname, modulos, navigate, esRutaChecklist, cliente.listo, pasaComoCliente])
 
   if (!loading && cargado && error && modulos.length === 0) {
     return <ErrorCargaModulos onReintentar={() => { void refetch() }} />
   }
+
+  if (pasaComoCliente) return <Outlet />
+  if (esRutaChecklist && !cliente.listo && !loading && cargado) return null
 
   if (!loading && modulos.length > 0) {
     const modulo = modulos.find(m => m.ruta === location.pathname)

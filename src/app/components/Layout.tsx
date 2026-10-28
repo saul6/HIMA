@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet, useLocation, useMatches, Link } from "react-router";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { Home, PlusCircle, Package, History, Users, Search, Sun, Moon, ClipboardCheck, FileCheck2, X, Calendar, ListChecks, BarChart3, CloudUpload, WifiOff, Receipt } from "lucide-react";
+import { useChkEsCliente } from "@/hooks/useChecklistV2";
 import { useModulosContext } from "@/context/ModulosContext";
 import { useAuthContext } from "@/context/AuthContext";
 import { useHomeSearch } from "@/context/HomeSearchContext";
@@ -136,7 +137,9 @@ export function Layout() {
   const mostrarAgendaTareas    = !esAuditor && !loadingModulos && modulos.some(m => m.clave === "agenda_tareas" && m.desbloqueado);
   const mostrarMetricas        = !esAuditor;
   const mostrarVouchers        = !esAuditor && misVouchers.length > 0;
-  const mostrarChecklist       = !esAuditor && ['admin_org', 'asesor_tecnico'].includes(profile?.rol ?? '') && !loadingModulos && modulos.some(m => m.codigo === 'M80' && m.desbloqueado);
+  // El cliente ligado a una consultoría ve la entrada aunque su org no tenga M80 desbloqueado (chk_estado().es_cliente)
+  const { esCliente: chkEsCliente } = useChkEsCliente(profile?.id, !esAuditor && profile?.rol === 'admin_org');
+  const mostrarChecklist       = !esAuditor && ['admin_org', 'asesor_tecnico'].includes(profile?.rol ?? '') && ((!loadingModulos && modulos.some(m => m.codigo === 'M80' && m.desbloqueado)) || chkEsCliente);
 
   const homeItem = esAuditor
     ? { path: "/auditor",  icon: Home, label: "Inicio" }
