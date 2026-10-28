@@ -165,7 +165,7 @@ export function NuevaAuditoriaPgfsForm({ onClose }: { onClose: () => void }) {
 
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4 flex flex-col gap-5">
         {cargando ? (
-          <FormularioSkeleton />
+          <FormularioSkeleton permitirRecargar={false} />
         ) : (
           <motion.div className="flex flex-col gap-5" {...ent(0)}>
         {/* Instalación */}

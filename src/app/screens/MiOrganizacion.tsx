@@ -27,6 +27,7 @@ import type { Organizacion, Rancho } from '@/types/database.types'
 import { Fab } from '@/app/components/Fab'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
 
 const CULTIVOS = ['Zarzamora', 'Frambuesa', 'Fresa', 'Mora azul', 'Coco']
 const CULTIVO_OTRO = '__otro__'
@@ -339,6 +340,7 @@ export function MiOrganizacion() {
             <Skeleton className="h-20 w-full rounded-xl" />
             <Skeleton className="h-20 w-full rounded-xl" />
             <Skeleton className="h-32 w-full rounded-xl" />
+            <AvisoCargaLenta />
           </div>
         ) : cargando && !organizacion ? (
           <div style={{ minHeight: '280px' }} />

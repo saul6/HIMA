@@ -1,15 +1,20 @@
 import { Skeleton } from '@/app/components/ui/skeleton'
+import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
 
 interface ListaSkeletonProps {
   /** Número de filas a imitar (3–6). */
   rows?: number
+  /** Refetch que la pantalla ya tiene: agrega "Reintentar" al aviso de carga lenta. */
+  onReintentar?: () => void
+  /** false si el esqueleto está sobre un formulario a medio llenar (el aviso no ofrece recargar la página). */
+  permitirRecargar?: boolean
 }
 
 /** Skeleton genérico para listas de registros de módulo — mismo contenedor
  * de card (rounded-xl border p-4) que usa el patrón M6 de referencia
  * (ver BotiquinPrimerosAuxilios.tsx). Sustituye el spinner centrado que
  * mostraban estas pantallas mientras `loading` es true. */
-export function ListaSkeleton({ rows = 4 }: ListaSkeletonProps) {
+export function ListaSkeleton({ rows = 4, onReintentar, permitirRecargar }: ListaSkeletonProps) {
   return (
     <div className="space-y-3">
       {Array.from({ length: rows }).map((_, i) => (
@@ -26,6 +31,7 @@ export function ListaSkeleton({ rows = 4 }: ListaSkeletonProps) {
           </div>
         </div>
       ))}
+      <AvisoCargaLenta onReintentar={onReintentar} permitirRecargar={permitirRecargar} />
     </div>
   )
 }

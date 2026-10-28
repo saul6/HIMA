@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router'
 import { useAuthContext } from '@/context/AuthContext'
 import { Skeleton } from '@/app/components/ui/skeleton'
+import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
 
 export function RequireAuth() {
   const { user, loading, isRecovery } = useAuthContext()
@@ -12,6 +13,7 @@ export function RequireAuth() {
         <Skeleton className="h-24 w-full" />
         <Skeleton className="h-24 w-full" />
         <Skeleton className="h-24 w-full" />
+        <AvisoCargaLenta />
       </div>
     )
   }

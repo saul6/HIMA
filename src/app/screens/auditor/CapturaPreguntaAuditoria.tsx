@@ -22,6 +22,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { traducirErrorBd, mensajeErrorBd } from '@/lib/erroresBd'
 import { guardarBorradorAuditor, cargarBorradorAuditor, borrarBorradorAuditor, claveBorradorAuditor } from '@/lib/idb/auditorBorradorStore'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
 import { Campo } from '@/app/components/ui-mady/Campo'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { fechaCorta } from '@/lib/formato'
@@ -216,6 +217,7 @@ function CapturaSkeleton() {
       </div>
       <Skeleton className="h-11 w-full rounded-lg" />
       <Skeleton className="h-11 w-full rounded-lg" />
+      <AvisoCargaLenta permitirRecargar={false} />
     </div>
   )
 }

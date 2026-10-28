@@ -1,4 +1,5 @@
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { X, CheckCircle, Loader2, FileDown, FileText } from "lucide-react";
@@ -112,6 +113,7 @@ export function DetalleAplicacion() {
               <SkeletonRow valueWidth="w-20" />
             </div>
           </div>
+          <AvisoCargaLenta />
         </div>
       </div>
     );

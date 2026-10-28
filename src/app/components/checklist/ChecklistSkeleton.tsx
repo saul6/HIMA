@@ -1,4 +1,5 @@
 import { Skeleton } from '@/app/components/ui/skeleton'
+import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
 
 /** Imita la pantalla del checklist (sitio + visita, píldoras y tarjetas en 2 columnas). */
 export function ChecklistSkeleton() {
@@ -34,6 +35,7 @@ export function ChecklistSkeleton() {
           </div>
         ))}
       </div>
+      <AvisoCargaLenta />
     </div>
   )
 }

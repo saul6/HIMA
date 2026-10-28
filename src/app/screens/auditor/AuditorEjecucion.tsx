@@ -24,6 +24,7 @@ import { CapturaPreguntaAuditoria } from './CapturaPreguntaAuditoria'
 import type { CapturaPreguntaRef, AjusteInfo } from './CapturaPreguntaAuditoria'
 import { traducirErrorBd } from '@/lib/erroresBd'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
 import { useConfirmar } from '@/app/components/ui-mady/ConfirmarSheet'
 import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
@@ -1957,6 +1958,7 @@ export function AuditorEjecucion() {
                     </div>
                   </div>
                 ))}
+                <AvisoCargaLenta />
               </div>
             ) : null
           ) : (
@@ -2376,7 +2378,7 @@ export function AuditorEjecucion() {
 
           {cargandoAccion ? (
             <div className="flex-1 px-4 py-4">
-              <FormularioSkeleton campos={4} />
+              <FormularioSkeleton campos={4} permitirRecargar={false} />
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">

@@ -18,6 +18,7 @@ import { AuditorCampana } from './AuditorCampana'
 import { AuditorBusqueda } from './AuditorBusqueda'
 import { Fab } from '@/app/components/Fab'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { FilaNavegable } from './FilaNavegable'
 import { Skeleton } from '@/app/components/ui/skeleton'
@@ -347,6 +348,7 @@ export function AuditorHome() {
                   </div>
                 </div>
               ))}
+              <AvisoCargaLenta onReintentar={() => setRefreshKey(k => k + 1)} />
             </div>
           ) : errorDash ? (
             <EstadoVacio

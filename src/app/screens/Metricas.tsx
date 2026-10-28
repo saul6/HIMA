@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { BarChart3, ChevronDown, AlertTriangle, CheckCircle2, AlertCircle, XCircle, CircleDashed, Clock, TrendingUp } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
@@ -103,6 +104,7 @@ function TabSkeleton() {
       <Skeleton className="h-16 w-full" />
       <Skeleton className="h-16 w-full" />
       <Skeleton className="h-16 w-full" />
+      <AvisoCargaLenta />
     </div>
   )
 }
