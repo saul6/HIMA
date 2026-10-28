@@ -171,7 +171,7 @@ export function MisVisitas() {
             </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 min-[1480px]:grid min-[1480px]:grid-cols-[repeat(auto-fill,minmax(20rem,1fr))]">
             {pendientes.map((ev, index) => (
               <EventoCard
                 key={ev.id}
@@ -189,7 +189,7 @@ export function MisVisitas() {
       {hechos.length > 0 && (
         <section>
           <TituloSeccion as="p">Completados</TituloSeccion>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 min-[1480px]:grid min-[1480px]:grid-cols-[repeat(auto-fill,minmax(20rem,1fr))]">
             {hechos.map((ev, index) => (
               <EventoCard
                 key={ev.id}

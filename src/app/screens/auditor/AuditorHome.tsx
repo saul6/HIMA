@@ -250,7 +250,7 @@ export function AuditorHome() {
         </div>
       </header>
 
-      <main className="flex-1 w-full px-4 py-4 flex flex-col gap-5 lg:grid lg:grid-cols-3 lg:items-start lg:gap-x-6 lg:max-w-6xl">
+      <main className="flex-1 w-full px-4 py-4 flex flex-col gap-5 lg:grid lg:grid-cols-3 lg:items-start lg:gap-x-6">
 
         {/* Buscador — móvil (en escritorio vive en el header del Layout) */}
         <div className="md:hidden">
@@ -370,7 +370,7 @@ export function AuditorHome() {
           ) : (
             <div className="flex flex-col gap-4">
               {itemsVencidos.length > 0 && (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 min-[1480px]:grid min-[1480px]:grid-cols-2 min-[1480px]:[&>p]:col-span-full">
                   <TituloSeccion
                     as="p"
                     variante="subtitulo"
@@ -394,7 +394,7 @@ export function AuditorHome() {
               )}
 
               {itemsResto.length > 0 && (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 min-[1480px]:grid min-[1480px]:grid-cols-2 min-[1480px]:[&>p]:col-span-full">
                   {itemsVencidos.length > 0 && (
                     <TituloSeccion as="p" variante="subtitulo" className="mb-0">
                       Pendientes · {itemsResto.length}

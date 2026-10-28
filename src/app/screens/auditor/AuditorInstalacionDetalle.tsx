@@ -271,7 +271,7 @@ export function AuditorInstalacionDetalle() {
           {error}
         </p>
       ) : (
-        <main className="flex-1 w-full px-4 py-4 flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6 lg:max-w-5xl">
+        <main className="flex-1 w-full px-4 py-4 flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:items-start lg:gap-x-6">
          <div className="contents lg:flex lg:flex-col lg:gap-6">
           {/* Info de la instalación */}
           {instalacion && (instalacion.ubicacion || instalacion.tipo_operacion || instalacion.cultivo_producto || instalacion.contacto) && (
@@ -343,7 +343,7 @@ export function AuditorInstalacionDetalle() {
             {auditorias.length === 0 ? (
               <EstadoVacio icono={ClipboardCheck} titulo="Sin auditorías registradas" ayuda="Usa el botón + para crear la primera" />
             ) : (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 min-[1480px]:grid min-[1480px]:grid-cols-[repeat(auto-fill,minmax(20rem,1fr))]">
                 {auditorias.map((a, index) => {
                   const estado = estadoAuditoria(a.estado)
                   return (

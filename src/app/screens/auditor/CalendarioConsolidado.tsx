@@ -268,7 +268,7 @@ export function CalendarioConsolidado() {
               >
                 {formatDayHeader(dayIso)}
               </p>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 min-[1480px]:grid min-[1480px]:grid-cols-[repeat(auto-fill,minmax(20rem,1fr))]">
                 {evs.map((ev, index) => (
                   <EventoItem
                     key={`${ev.source}-${ev.source_id}`}

@@ -90,7 +90,7 @@ export function AuditorOrgDetalle() {
           </Boton>
         </div>
       ) : (
-        <main className="flex-1 w-full px-4 py-4 flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6 lg:max-w-5xl">
+        <main className="flex-1 w-full px-4 py-4 flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start lg:gap-x-6">
           {/* Instalaciones */}
           <section>
             <div className="flex items-center gap-2 mb-2.5">
@@ -100,7 +100,7 @@ export function AuditorOrgDetalle() {
             {ranchos.length === 0 ? (
               <EstadoVacio icono={MapPin} titulo="Sin instalaciones registradas." />
             ) : (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 min-[1480px]:grid min-[1480px]:grid-cols-[repeat(auto-fill,minmax(16rem,1fr))]">
                 {ranchos.map((r, index) => (
                   <motion.div
                     key={r.id}
