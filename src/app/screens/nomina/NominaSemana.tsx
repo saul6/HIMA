@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
-import { Lock, ChevronLeft, ChevronRight, Users, BookOpen, History, Printer, CalendarRange } from 'lucide-react'
+import { Lock, Settings, ChevronLeft, ChevronRight, Users, BookOpen, History, Printer, CalendarRange } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
@@ -99,6 +99,9 @@ export function NominaSemana() {
             </Boton>
             <Boton variante="icono" aria-label="Consolidado mensual" onClick={() => navigate('/nomina/mensual')}>
               <CalendarRange className="size-5" />
+            </Boton>
+            <Boton variante="icono" aria-label="Configuración" onClick={() => navigate('/nomina/configuracion')}>
+              <Settings className="size-5" />
             </Boton>
             <Boton variante="icono" aria-label="Historial" onClick={() => navigate('/nomina/historial')}>
               <History className="size-5" />

@@ -169,6 +169,8 @@ import { NominaCatalogo } from "./screens/nomina/NominaCatalogo"
 import { NominaHistorial } from "./screens/nomina/NominaHistorial"
 import { MisVouchers } from "./screens/nomina/MisVouchers"
 import { NominaMensual } from "./screens/nomina/NominaMensual"
+import { NominaConfiguracion } from "./screens/nomina/NominaConfiguracion"
+import { NominaOrgsAdmin } from "./screens/nomina/NominaOrgsAdmin"
 
 export const router = createBrowserRouter([
   {
@@ -240,6 +242,7 @@ export const router = createBrowserRouter([
               { path: "equipo/actividad", Component: ActividadEquipo },
               { path: "metricas", Component: Metricas },
               { path: "mis-vouchers", Component: MisVouchers },
+              { path: "admin/nomina-orgs", Component: NominaOrgsAdmin },
               {
                 path: "nomina",
                 Component: RequireNomina,
@@ -251,6 +254,7 @@ export const router = createBrowserRouter([
                   { path: "catalogo", Component: NominaCatalogo },
                   { path: "historial", Component: NominaHistorial },
                   { path: "mensual", Component: NominaMensual },
+                  { path: "configuracion", Component: NominaConfiguracion },
                 ],
               },
               { path: "inocuidad/auditorias-primusgfs", Component: AuditoriasPrimusGFS },
