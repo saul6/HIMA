@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { supabase } from '@/lib/supabase'
 import type { CSSProperties } from 'react'
 import { motion, AnimatePresence, useReducedMotion, LayoutGroup } from 'motion/react'
 import {
@@ -691,7 +692,7 @@ function DetalleSheet({
         {esTareaDeChecklist(tarea) && (
           <button
             type="button"
-            onClick={() => { onClose(); navigate(`/inocuidad/checklist${tarea.rancho_id ? `?sitio=${tarea.rancho_id}` : ''}`) }}
+            onClick={() => { void abrirChecklistDeTarea(tarea.id, tarea.rancho_id, navigate, onClose) }}
             className="w-full h-10 rounded-lg border border-border text-sm inline-flex items-center justify-center gap-2 transition-colors hover:bg-muted"
             style={{ fontWeight: 600, color: 'var(--primary)' }}
           >
@@ -1248,6 +1249,19 @@ function DetalleSheet({
 /** Tareas creadas por la asignación de hallazgos (título "Hallazgo {numeral} · …", módulo M26) */
 function esTareaDeHallazgo(t: { titulo: string; modulo_codigo: string | null } | undefined): boolean {
   return !!t && t.modulo_codigo === 'M26' && t.titulo.startsWith('Hallazgo ')
+}
+
+/** Lleva a la visita del checklist ligada a la tarea (chk_visitas.tarea_id); si no la encuentra, a la cartera. */
+async function abrirChecklistDeTarea(tareaId: string, ranchoId: string | null, navigate: (to: string) => void, cerrar: () => void) {
+  cerrar()
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (supabase as any).from('chk_visitas').select('id, instalacion_id').eq('tarea_id', tareaId).maybeSingle()
+    if (data) { navigate(`/inocuidad/checklist?instalacion=${data.instalacion_id}&visita=${data.id}&tab=visitas`); return }
+  } catch (e) {
+    console.error('[agenda] visita del checklist', e)
+  }
+  navigate(`/inocuidad/checklist${ranchoId ? `?sitio=${ranchoId}` : ''}`)
 }
 
 /** Tareas creadas por las visitas del checklist de documentos (módulo M80) */

@@ -1,395 +1,217 @@
-import { useEffect, useRef, useState } from 'react'
+// Sheets de la visita en curso: Confirmar, Actualizar, Incidencia y seguimiento de incidencias.
+// Cada intento del usuario usa un event_id propio (useAccion): reintentar por red no duplica.
+import { useState } from 'react'
 import { toast } from 'sonner'
-import { ChevronDown, FileText, Loader2 } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
-import { TextareaContador } from '@/app/components/TextareaContador'
-import { limiteTexto } from '@/lib/limitesTexto'
 import { Input } from '@/app/components/ui/input'
-import { FirmasRegistro } from '@/app/components/FirmasRegistro'
-import { useFirmasRegistro, type MapaFirmas } from '@/hooks/useFirmasRegistro'
-import { useConexion } from '@/hooks/useConexion'
-import { hoyMX } from '@/lib/fecha'
 import { Pildora } from './Pildora'
-import { fechaLarga } from './constantes'
-import { useColaboradoresChk } from './useColaboradores'
-import type { ChkVisita, ChkVisitaEvento, useChecklist } from '@/hooks/useChecklist'
-import { Boton } from '@/app/components/ui-mady/Boton'
-import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
-import { SkeletonFilas } from '@/app/components/SkeletonFilas'
+import { CLASE_INPUT, CLASE_TEXTAREA, PieFormulario, textoRegistro } from './comun'
+import { chk, useAccion, type DocVisita, type IncidenciaDoc, type PrecisionRegistro } from '@/hooks/useChecklistV2'
 
-type Hook = ReturnType<typeof useChecklist>
+interface Base { visitaId: string; onClose: () => void; onGuardado: () => void }
 
-export type ModoVisita =
-  | { tipo: 'programar' }
-  | { tipo: 'reprogramar'; visita: ChkVisita }
-  | { tipo: 'cancelar'; visita: ChkVisita }
-  | { tipo: 'terminar'; visita: ChkVisita }
-
-const MOTIVOS_RAPIDOS = ['Falta de tiempo', 'Cambio de fecha', 'Clima', 'Otro']
-
-const TITULOS: Record<ModoVisita['tipo'], string> = {
-  programar: 'Programar visita',
-  reprogramar: 'Reprogramar visita',
-  cancelar: 'Cancelar visita',
-  terminar: 'Terminar visita',
-}
-
-interface OpcionesPdf {
-  codigoClave?: string
-  terminoSitio?: string
-}
-
-/** Genera (descarga) o previsualiza el PDF de una visita; errores de la BD en toast tal cual. */
-function usePdfVisita(opc: OpcionesPdf) {
-  const { online } = useConexion()
-  const [generando, setGenerando] = useState<string | null>(null)
-
-  async function generar(visitaId: string, previa = false) {
-    if (generando) return
-    if (!online) { toast.warning('Necesitas conexión para generar el PDF'); return }
-    setGenerando(visitaId)
-    try {
-      // Import dinámico: @react-pdf pesa y solo se necesita al generar
-      const m = await import('@/lib/pdf/m80/generarChecklistVisitaPDF')
-      if (previa) await m.previsualizarChecklistVisitaPDF(visitaId, opc)
-      else await m.generarChecklistVisitaPDF(visitaId, opc)
-    } catch (e) {
-      toast.error(e instanceof Error && e.message ? e.message : 'No se pudo generar el PDF')
-    } finally {
-      setGenerando(null)
-    }
-  }
-  return { generando, generar }
-}
-
-function BotonPdf({ visitaId, previa, generando, onClick }: { visitaId: string; previa?: boolean; generando: string | null; onClick: () => void }) {
-  const ocupado = generando === visitaId
+function Hoja({ doc, titulo, onClose, children }: { doc: DocVisita | null; titulo: string; onClose: () => void; children: React.ReactNode }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={!!generando}
-      className="h-8 px-3 rounded-lg border border-border bg-card text-xs text-foreground inline-flex items-center gap-1.5 transition-colors hover:bg-muted disabled:opacity-50 font-semibold"
-    >
-      {ocupado ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
-      {previa ? 'Vista previa' : 'PDF'}
-    </button>
-  )
-}
-
-interface AccionProps extends OpcionesPdf {
-  modo: ModoVisita | null
-  ranchoId: string
-  hook: Hook
-  onClose: () => void
-  onGuardado: () => void
-}
-
-export function VisitaAccionSheet({ modo, ...resto }: AccionProps) {
-  // Tras terminar, el mismo sheet pasa a "Firmas de la visita"
-  const [firmasDe, setFirmasDe] = useState<ChkVisita | null>(null)
-  const cerrar = () => { setFirmasDe(null); resto.onClose() }
-
-  return (
-    <BottomSheet
-      open={!!modo || !!firmasDe}
-      onClose={cerrar}
-      height={firmasDe ? '85%' : undefined}
-      title={firmasDe ? 'Firmas de la visita' : modo ? TITULOS[modo.tipo] : ''}
-    >
-      {firmasDe ? (
-        <PasoFirmasVisita visita={firmasDe} codigoClave={resto.codigoClave} terminoSitio={resto.terminoSitio} onCerrar={cerrar} />
-      ) : modo && (
-        <FormularioAccion modo={modo} {...resto} onClose={cerrar} onTerminada={setFirmasDe} />
-      )}
+    <BottomSheet open={!!doc} onClose={onClose} height="85%" title={titulo}>
+      {doc && children}
     </BottomSheet>
   )
 }
 
-function PasoFirmasVisita({ visita, codigoClave, terminoSitio, onCerrar }: OpcionesPdf & { visita: ChkVisita; onCerrar: () => void }) {
-  const { firmas, loading, refetch } = useFirmasRegistro('M80', [visita.id])
-  const { generando, generar } = usePdfVisita({ codigoClave, terminoSitio })
+const Resumen = ({ doc }: { doc: DocVisita }) => (
+  <div>
+    <p className="text-sm font-semibold">{doc.nombre}</p>
+    <p className="text-xs text-muted-foreground">{[doc.codigo, doc.revision ? `Rev ${doc.revision}` : null].filter(Boolean).join(' · ')}</p>
+  </div>
+)
 
-  async function generarYCerrar() {
-    await generar(visita.id)
-    onCerrar()
+// ── Confirmar ────────────────────────────────────────────────────────────────
+
+export function ConfirmarDocSheet({ doc, ...b }: Base & { doc: DocVisita | null }) {
+  return <Hoja doc={doc} titulo="Confirmar documento" onClose={b.onClose}>{doc && <FormConfirmar doc={doc} {...b} />}</Hoja>
+}
+
+function FormConfirmar({ doc, visitaId, onClose, onGuardado }: Base & { doc: DocVisita }) {
+  const [obs, setObs] = useState('')
+  const { ocupado, ejecutar } = useAccion()
+  async function guardar() {
+    const r = await ejecutar(eventId => chk.docConfirmar({ visita: visitaId, documento: doc.id, observacion: obs.trim() || null, eventId }))
+    if (!r.ok) { toast.error(r.mensaje); return }
+    toast.success('Documento confirmado')
+    onGuardado(); onClose()
   }
-
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-      <p className="text-xs text-muted-foreground">
-        Visita del {fechaLarga(visita.fecha)}. Firma ahora o más tarde desde la lista de visitas.
-      </p>
-      <FirmasRegistro
-        modulo="M80"
-        registroId={visita.id}
-        fechaRegistro={visita.fecha}
-        firma={firmas[visita.id]}
-        loadingFirmas={loading}
-        onFirmado={refetch}
-      />
-      <div className="flex gap-2">
-        <Boton type="button" onClick={generarYCerrar} cargando={!!generando} className="flex-1">
-          {generando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Generar PDF'}
-        </Boton>
-        <button
-          type="button"
-          onClick={onCerrar}
-          disabled={!!generando}
-          className="h-11 px-5 rounded-lg border border-border bg-card text-sm text-foreground transition-colors hover:bg-muted font-semibold"
-        >
-          Después
-        </button>
+    <>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <Resumen doc={doc} />
+        <p className="text-sm text-muted-foreground">Confirmas que revisaste este documento en esta visita y sus datos son correctos.</p>
+        <label className="block space-y-1">
+          <span className="text-xs text-muted-foreground">Observación (opcional)</span>
+          <textarea className={CLASE_TEXTAREA} value={obs} maxLength={2000} onChange={e => setObs(e.target.value)} />
+        </label>
       </div>
-    </div>
+      <PieFormulario onCancelar={onClose} onGuardar={guardar} textoGuardar="Confirmar" cargando={ocupado} />
+    </>
   )
 }
 
-function FormularioAccion({ modo, ranchoId, hook, onClose, onGuardado, onTerminada }: AccionProps & { modo: ModoVisita; onTerminada: (v: ChkVisita) => void }) {
-  const hoy = hoyMX()
-  const { admins } = useColaboradoresChk(modo.tipo === 'programar' || modo.tipo === 'reprogramar')
-  const visita = modo.tipo === 'programar' ? null : modo.visita
-  const [fecha, setFecha] = useState(visita && modo.tipo === 'reprogramar' ? (visita.fecha < hoy ? hoy : visita.fecha) : '')
-  const [revisor, setRevisor] = useState(visita?.revisor_id ?? '')
-  const [nota, setNota] = useState('')
-  const [motivoRapido, setMotivoRapido] = useState<string | null>(null)
-  const [motivoTexto, setMotivoTexto] = useState('')
-  const [guardando, setGuardando] = useState(false)
-  // Un solo p_event_id por ventana: reintentos reusan el mismo
-  const eventId = useRef(crypto.randomUUID())
+// ── Actualizar ───────────────────────────────────────────────────────────────
 
-  const pideMotivo = modo.tipo === 'reprogramar' || modo.tipo === 'cancelar'
-  const motivoFinal = [motivoRapido && motivoRapido !== 'Otro' ? motivoRapido : null, motivoTexto.trim() || null]
-    .filter(Boolean).join(' · ')
+export function ActualizarDocSheet({ doc, ...b }: Base & { doc: DocVisita | null }) {
+  return <Hoja doc={doc} titulo="Actualizar documento" onClose={b.onClose}>{doc && <FormActualizar doc={doc} {...b} />}</Hoja>
+}
+
+function FormActualizar({ doc, visitaId, onClose, onGuardado }: Base & { doc: DocVisita }) {
+  const [revision, setRevision] = useState(doc.revision ?? '')
+  const [resp, setResp] = useState(doc.responsable_llenado ?? '')
+  const [precision, setPrecision] = useState<PrecisionRegistro>(doc.ultimo_registro_precision ?? 'dia')
+  const [fecha, setFecha] = useState(doc.ultimo_registro_fecha ?? '')
+  const [texto, setTexto] = useState(doc.ultimo_registro_texto ?? '')
+  const [vence, setVence] = useState(doc.vence_el ?? '')
+  const [obs, setObs] = useState('')
+  const { ocupado, ejecutar } = useAccion()
 
   async function guardar() {
-    if (guardando) return
-    if ((modo.tipo === 'programar' || modo.tipo === 'reprogramar') && !fecha) { toast.warning('Elige la fecha'); return }
-    if (pideMotivo && !motivoFinal) { toast.warning('El motivo es obligatorio'); return }
-    if (pideMotivo && motivoRapido === 'Otro' && !motivoTexto.trim()) { toast.warning('Escribe el motivo'); return }
-    setGuardando(true)
-    let res
-    if (modo.tipo === 'programar') {
-      res = await hook.visitaProgramar({ rancho: ranchoId, fecha, revisor: revisor || undefined, nota, eventId: eventId.current })
-    } else if (modo.tipo === 'reprogramar') {
-      res = await hook.visitaReprogramar({ visita: modo.visita.id, fecha, motivo: motivoFinal, revisor: revisor || undefined, eventId: eventId.current })
-    } else if (modo.tipo === 'cancelar') {
-      res = await hook.visitaCancelar({ visita: modo.visita.id, motivo: motivoFinal, eventId: eventId.current })
-    } else {
-      res = await hook.visitaTerminar({ visita: modo.visita.id, nota, eventId: eventId.current })
+    // Solo lo que cambió
+    const cambios: Record<string, unknown> = {}
+    if (revision.trim() !== (doc.revision ?? '')) cambios.revision = revision.trim() || null
+    if (resp.trim() !== (doc.responsable_llenado ?? '')) cambios.responsable_llenado = resp.trim() || null
+    if (vence !== (doc.vence_el ?? '')) cambios.vence_el = vence || null
+    const nuevaFecha = precision === 'dia' ? (fecha || null) : null
+    const nuevoTexto = precision === 'dia' ? null : (texto.trim() || null)
+    const nuevaPrec = precision === 'dia' ? (fecha ? 'dia' : null) : (texto.trim() ? precision : null)
+    if (nuevaFecha !== (doc.ultimo_registro_fecha ?? null) || nuevoTexto !== (doc.ultimo_registro_texto ?? null) || nuevaPrec !== (doc.ultimo_registro_precision ?? null)) {
+      cambios.ultimo_registro_fecha = nuevaFecha
+      cambios.ultimo_registro_texto = nuevoTexto
+      cambios.ultimo_registro_precision = nuevaPrec
     }
-    setGuardando(false)
-    if (!res.ok) { toast.error(res.mensaje ?? 'No se pudo completar la acción'); return }
-    toast.success({
-      programar: 'Visita programada',
-      reprogramar: 'Visita reprogramada',
-      cancelar: 'Visita cancelada',
-      terminar: 'Visita terminada',
-    }[modo.tipo])
-    onGuardado()
-    if (modo.tipo === 'terminar') onTerminada(modo.visita)
-    else onClose()
+    if (Object.keys(cambios).length === 0) { toast.warning('No cambiaste ningún dato. Usa Confirmar si todo sigue igual.'); return }
+    const r = await ejecutar(eventId => chk.docActualizar({ visita: visitaId, documento: doc.id, cambios, observacion: obs.trim() || null, eventId }))
+    if (!r.ok) { toast.error(r.mensaje); return }
+    toast.success('Documento actualizado')
+    onGuardado(); onClose()
   }
 
-  const conFecha = modo.tipo === 'programar' || modo.tipo === 'reprogramar'
-
   return (
-    <div className="px-4 py-4 space-y-4 overflow-y-auto">
-      {visita && (
-        <p className="text-xs text-muted-foreground">Visita del {fechaLarga(visita.fecha)}</p>
-      )}
-      {conFecha && (
+    <>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <Resumen doc={doc} />
         <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Fecha</span>
-          <Input type="date" value={fecha} min={hoy} onChange={e => setFecha(e.target.value)} />
+          <span className="text-xs text-muted-foreground">Revisión</span>
+          <Input value={revision} maxLength={20} onChange={e => setRevision(e.target.value)} />
         </label>
-      )}
-      {conFecha && (
         <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Quién revisa</span>
-          <select
-            value={revisor}
-            onChange={e => setRevisor(e.target.value)}
-            className="w-full h-9 rounded-md border border-border-control bg-input-background px-3 text-sm text-foreground"
-          >
-            <option value="">Yo</option>
-            {admins.map(a => <option key={a.id} value={a.id}>{a.nombre}</option>)}
-          </select>
+          <span className="text-xs text-muted-foreground">Responsable de llenado</span>
+          <Input value={resp} maxLength={300} onChange={e => setResp(e.target.value)} />
         </label>
-      )}
-      {pideMotivo && (
         <div className="space-y-2">
-          <span className="text-xs text-muted-foreground">Motivo (obligatorio)</span>
+          <span className="text-xs text-muted-foreground">Último registro</span>
           <div className="flex flex-wrap gap-2">
-            {MOTIVOS_RAPIDOS.map(m => (
-              <Pildora key={m} activa={motivoRapido === m} onClick={() => setMotivoRapido(motivoRapido === m ? null : m)}>{m}</Pildora>
+            {(['dia', 'mes', 'texto'] as const).map(p => (
+              <Pildora key={p} activa={precision === p} onClick={() => setPrecision(p)}>{p === 'dia' ? 'Fecha' : p === 'mes' ? 'Mes y año' : 'Texto'}</Pildora>
             ))}
           </div>
-          <TextareaContador
-            limite={limiteTexto('chk_visita_eventos', 'motivo') ?? 2000}
-            value={motivoTexto}
-            onChange={e => setMotivoTexto(e.target.value)}
-            placeholder="Detalle del motivo"
-            rows={2}
-          />
+          {precision === 'dia'
+            ? <input type="date" className={CLASE_INPUT} value={fecha} onChange={e => setFecha(e.target.value)} />
+            : <Input value={texto} maxLength={200} onChange={e => setTexto(e.target.value)} placeholder={precision === 'mes' ? 'Febrero 2026' : 'Tal como aparece'} />}
         </div>
-      )}
-      {(modo.tipo === 'programar' || modo.tipo === 'terminar') && (
-        <div>
-          <span className="text-xs text-muted-foreground">Nota (opcional)</span>
-          <TextareaContador limite={limiteTexto('chk_visitas', 'nota') ?? 2000} value={nota} onChange={e => setNota(e.target.value)} rows={2} />
-        </div>
-      )}
-      <button
-        type="button"
-        onClick={guardar}
-        disabled={guardando}
-        className="w-full h-11 rounded-lg text-sm transition disabled:opacity-50"
-        style={
-          modo.tipo === 'cancelar'
-            ? { backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)', fontWeight: 600 }
-            : { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', fontWeight: 600 }
-        }
-      >
-        {guardando ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : {
-          programar: 'Programar',
-          reprogramar: 'Reprogramar',
-          cancelar: 'Cancelar visita',
-          terminar: 'Terminar visita',
-        }[modo.tipo]}
-      </button>
-    </div>
+        <label className="block space-y-1">
+          <span className="text-xs text-muted-foreground">Vence el</span>
+          <input type="date" className={CLASE_INPUT} value={vence} onChange={e => setVence(e.target.value)} />
+        </label>
+        <label className="block space-y-1">
+          <span className="text-xs text-muted-foreground">Observación (opcional)</span>
+          <textarea className={CLASE_TEXTAREA} value={obs} maxLength={2000} onChange={e => setObs(e.target.value)} />
+        </label>
+      </div>
+      <PieFormulario onCancelar={onClose} onGuardar={guardar} textoGuardar="Guardar y confirmar" cargando={ocupado} />
+    </>
   )
 }
 
-// ── Lista de visitas con bitácora ─────────────────────────────────────────────
+// ── Incidencia ───────────────────────────────────────────────────────────────
 
-const ETIQUETA_EVENTO: Record<string, string> = {
-  programada: 'Programada',
-  reprogramada: 'Reprogramada',
-  cancelada: 'Cancelada',
-  realizada: 'Realizada',
+export function IncidenciaDocSheet({ doc, ...b }: Base & { doc: DocVisita | null }) {
+  return <Hoja doc={doc} titulo="Registrar incidencia" onClose={b.onClose}>{doc && <FormIncidencia doc={doc} {...b} />}</Hoja>
 }
 
-interface ListaProps extends OpcionesPdf {
-  open: boolean
-  visitas: ChkVisita[]
-  destacada: string | null
-  hook: Hook
-  onClose: () => void
-}
-
-export function VisitasSheet({ open, visitas, destacada, hook, onClose, codigoClave, terminoSitio }: ListaProps) {
-  const [abierta, setAbierta] = useState<string | null>(destacada)
-  useEffect(() => { if (open) setAbierta(destacada) }, [open, destacada])
-  const pdf = usePdfVisita({ codigoClave, terminoSitio })
-  // Firmas solo de las visitas realizadas, y solo con el sheet abierto
-  const idsRealizadas = open ? visitas.filter(v => v.estado === 'realizada').map(v => v.id) : []
-  const { firmas, loading: loadingFirmas, refetch } = useFirmasRegistro('M80', idsRealizadas)
-
+function FormIncidencia({ doc, visitaId, onClose, onGuardado }: Base & { doc: DocVisita }) {
+  const [desc, setDesc] = useState('')
+  const [resp, setResp] = useState('')
+  const [compromiso, setCompromiso] = useState('')
+  const { ocupado, ejecutar } = useAccion()
+  async function guardar() {
+    if (desc.trim().length < 5) { toast.warning('Describe la incidencia (mínimo 5 caracteres)'); return }
+    const r = await ejecutar(eventId => chk.incidenciaRegistrar({
+      visita: visitaId, documento: doc.id, descripcion: desc.trim(), responsable: resp.trim() || null,
+      fechaCompromiso: compromiso || null, eventId,
+    }))
+    if (!r.ok) { toast.error(r.mensaje); return }
+    toast.success('Incidencia registrada')
+    onGuardado(); onClose()
+  }
   return (
-    <BottomSheet open={open} onClose={onClose} height="85%" title="Visitas de revisión">
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {visitas.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">Aún no hay visitas.</p>}
-        {visitas.map(v => (
-          <FilaVisita key={v.id} visita={v} abierta={abierta === v.id} onToggle={() => setAbierta(abierta === v.id ? null : v.id)} hook={hook}
-            pdf={pdf} firmas={firmas} loadingFirmas={loadingFirmas} onFirmado={refetch} />
-        ))}
+    <>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <Resumen doc={doc} />
+        <label className="block space-y-1">
+          <span className="text-xs text-muted-foreground">Descripción</span>
+          <textarea className={CLASE_TEXTAREA} value={desc} maxLength={2000} onChange={e => setDesc(e.target.value)} />
+        </label>
+        <label className="block space-y-1">
+          <span className="text-xs text-muted-foreground">Responsable de corregir (opcional)</span>
+          <Input value={resp} maxLength={200} onChange={e => setResp(e.target.value)} />
+        </label>
+        <label className="block space-y-1">
+          <span className="text-xs text-muted-foreground">Fecha compromiso (opcional)</span>
+          <input type="date" className={CLASE_INPUT} value={compromiso} onChange={e => setCompromiso(e.target.value)} />
+        </label>
       </div>
+      <PieFormulario onCancelar={onClose} onGuardar={guardar} textoGuardar="Registrar" cargando={ocupado} />
+    </>
+  )
+}
+
+// ── Seguimiento de incidencias abiertas ──────────────────────────────────────
+
+export type TipoSeguimiento = 'seguimiento' | 'correccion_rechazada' | 'cierre'
+const TITULO_SEG: Record<TipoSeguimiento, { titulo: string; etiqueta: string; boton: string }> = {
+  seguimiento: { titulo: 'Dar seguimiento', etiqueta: 'Seguimiento', boton: 'Guardar seguimiento' },
+  correccion_rechazada: { titulo: 'Rechazar corrección', etiqueta: 'Por qué se rechaza', boton: 'Rechazar corrección' },
+  cierre: { titulo: 'Cerrar incidencia', etiqueta: 'Sustento del cierre', boton: 'Cerrar incidencia' },
+}
+
+export function SeguirIncidenciaSheet({ objetivo, visitaId, onClose, onGuardado }: Base & { objetivo: { incidencia: IncidenciaDoc; tipo: TipoSeguimiento } | null }) {
+  return (
+    <BottomSheet open={!!objetivo} onClose={onClose} title={objetivo ? TITULO_SEG[objetivo.tipo].titulo : ''}>
+      {objetivo && <FormSeguir objetivo={objetivo} visitaId={visitaId} onClose={onClose} onGuardado={onGuardado} />}
     </BottomSheet>
   )
 }
 
-interface FilaProps {
-  visita: ChkVisita
-  abierta: boolean
-  onToggle: () => void
-  hook: Hook
-  pdf: ReturnType<typeof usePdfVisita>
-  firmas: MapaFirmas
-  loadingFirmas: boolean
-  onFirmado: () => void
-}
-
-function FilaVisita({ visita, abierta, onToggle, hook, pdf, firmas, loadingFirmas, onFirmado }: FilaProps) {
-  const [eventos, setEventos] = useState<ChkVisitaEvento[] | null>(null)
-
-  useEffect(() => {
-    if (!abierta || eventos) return
-    let vivo = true
-    hook.visitaEventos(visita.id).then(r => { if (vivo) setEventos(r.ok ? (r.data ?? []) : []) })
-    return () => { vivo = false }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [abierta, visita.id])
-
-  const tono = visita.atrasada
-    ? { fill: 'var(--agro-info-fill)', text: 'var(--agro-info-text)' }
-    : visita.estado === 'cancelada'
-      ? { fill: 'var(--agro-danger-fill)', text: 'var(--agro-danger-text)' }
-      : visita.estado === 'realizada'
-        ? { fill: 'var(--agro-success-fill)', text: 'var(--agro-success-text)' }
-        : { fill: 'var(--muted)', text: 'var(--foreground)' }
-
+function FormSeguir({ objetivo, visitaId, onClose, onGuardado }: Omit<Base, never> & { objetivo: { incidencia: IncidenciaDoc; tipo: TipoSeguimiento } }) {
+  const t = TITULO_SEG[objetivo.tipo]
+  const [texto, setTexto] = useState('')
+  const { ocupado, ejecutar } = useAccion()
+  async function guardar() {
+    if (texto.trim().length < 3) { toast.warning('Escribe el texto (mínimo 3 caracteres)'); return }
+    const r = await ejecutar(eventId => chk.incidenciaSeguir({ incidencia: objetivo.incidencia.id, tipo: objetivo.tipo, texto: texto.trim(), visita: visitaId, eventId }))
+    if (!r.ok) { toast.error(r.mensaje); return }
+    toast.success(objetivo.tipo === 'cierre' ? 'Incidencia cerrada' : 'Guardado')
+    onGuardado(); onClose()
+  }
   return (
-    <FilaRegistro
-      variante="tarjeta"
-      relleno="compacto"
-      titulo={fechaLarga(visita.fecha)}
-      lineas={visita.revisor ? `Revisa: ${visita.revisor}` : undefined}
-      onClick={onToggle}
-      expandido={abierta}
-      derecha={
-        <div className="flex items-center gap-2 flex-shrink-0 self-center">
-          <span className="rounded-full px-2 py-0.5 text-caption font-semibold" style={{ backgroundColor: tono.fill, color: tono.text }}>
-            {visita.atrasada ? 'Atrasada' : visita.estado === 'programada' ? 'Programada' : visita.estado === 'realizada' ? 'Realizada' : 'Cancelada'}
-          </span>
-          <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${abierta ? 'rotate-180' : ''}`} />
-        </div>
-      }
-      detalle={abierta ? (
-        <>
-          {visita.nota && <p className="text-xs text-foreground whitespace-pre-wrap">{visita.nota}</p>}
-          {(visita.estado === 'realizada' || visita.estado === 'programada') && (
-            <div className="flex justify-end">
-              <BotonPdf
-                visitaId={visita.id}
-                previa={visita.estado === 'programada'}
-                generando={pdf.generando}
-                onClick={() => pdf.generar(visita.id, visita.estado === 'programada')}
-              />
-            </div>
-          )}
-          {eventos === null ? (
-            <SkeletonFilas rows={2} />
-          ) : eventos.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Sin movimientos.</p>
-          ) : (
-            <ul className="space-y-2">
-              {eventos.map((e, i) => (
-                <li key={i} className="text-xs">
-                  <p className="text-foreground font-semibold">
-                    {ETIQUETA_EVENTO[e.tipo] ?? e.tipo}
-                    <span className="text-muted-foreground" style={{ fontWeight: 400 }}>
-                      {' · '}{fechaLarga(e.fecha)}{e.actor ? ` · ${e.actor}` : ''}
-                    </span>
-                  </p>
-                  {e.nota && <p className="text-muted-foreground whitespace-pre-wrap">{e.nota}</p>}
-                </li>
-              ))}
-            </ul>
-          )}
-          {visita.estado === 'realizada' && (
-            <FirmasRegistro
-              modulo="M80"
-              registroId={visita.id}
-              fechaRegistro={visita.fecha}
-              firma={firmas[visita.id]}
-              loadingFirmas={loadingFirmas}
-              onFirmado={onFirmado}
-            />
-          )}
-        </>
-      ) : undefined}
-    />
+    <>
+      <div className="px-4 py-4 space-y-3">
+        <p className="text-sm">{objetivo.incidencia.descripcion}</p>
+        <label className="block space-y-1">
+          <span className="text-xs text-muted-foreground">{t.etiqueta}</span>
+          <textarea className={CLASE_TEXTAREA} value={texto} maxLength={2000} onChange={e => setTexto(e.target.value)} />
+        </label>
+      </div>
+      <PieFormulario onCancelar={onClose} onGuardar={guardar} textoGuardar={t.boton} cargando={ocupado} />
+    </>
   )
 }
+
+export { textoRegistro }
