@@ -279,7 +279,7 @@ export function Tensiometros() {
                     {r.prof_15cm != null && (
                       <span
                         className="text-xs px-2 py-0.5 rounded font-medium"
-                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                       >
                         15 cm: {r.prof_15cm}
                       </span>
@@ -287,7 +287,7 @@ export function Tensiometros() {
                     {r.prof_45cm != null && (
                       <span
                         className="text-xs px-2 py-0.5 rounded font-medium"
-                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                       >
                         45 cm: {r.prof_45cm}
                       </span>

@@ -298,7 +298,7 @@ export function CalibracionBombas() {
                 chips={m.resultado && (
                   <span
                     className="block max-w-full rounded px-2 py-0.5 text-xs font-medium"
-                    style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                    style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                   >
                     <TextoColapsable texto={m.resultado} className="text-xs font-medium" />
                   </span>

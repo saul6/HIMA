@@ -350,7 +350,7 @@ export function FertilizacionGG() {
                     {reg.cantidad_total != null && (
                       <span
                         className="text-xs px-2 py-0.5 rounded font-medium"
-                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                       >
                         {reg.cantidad_total} {reg.unidad ?? ''}
                       </span>

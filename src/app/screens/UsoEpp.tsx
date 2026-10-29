@@ -306,8 +306,8 @@ export function UsoEpp() {
                     <span
                       className="text-xs px-2 py-0.5 rounded font-medium"
                       style={{
-                        backgroundColor: r.momento === 'inicio' ? 'var(--agro-success-fill)' : 'var(--muted)',
-                        color: r.momento === 'inicio' ? 'var(--agro-success-text)' : 'var(--muted-foreground)',
+                        backgroundColor: 'var(--muted)',
+                        color: 'var(--muted-foreground)',
                       }}
                     >
                       {r.momento === 'inicio' ? 'Inicio' : 'Fin'}

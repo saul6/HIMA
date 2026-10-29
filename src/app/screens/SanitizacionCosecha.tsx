@@ -309,7 +309,7 @@ export function SanitizacionCosecha() {
                     <span className="line-clamp-2 basis-full break-words text-xs text-muted-foreground" title={r.producto_sanitizante}>{r.producto_sanitizante}</span>
                     <span
                       className="text-xs px-2 py-0.5 rounded font-medium"
-                      style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                      style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                     >
                       {r.ppm} ppm
                     </span>

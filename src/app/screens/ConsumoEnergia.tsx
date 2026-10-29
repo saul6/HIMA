@@ -283,7 +283,7 @@ export function ConsumoEnergia() {
                     {r.cantidad_litros != null && (
                       <span
                         className="text-xs px-2 py-0.5 rounded font-medium"
-                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                       >
                         {r.cantidad_litros} L
                       </span>

@@ -290,7 +290,7 @@ export function CalibracionVolumetricos() {
                     {m.capacidad !== null && (
                       <span
                         className="line-clamp-3 max-w-full break-words rounded px-2 py-0.5 text-xs font-medium"
-                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                         title={`${m.capacidad} ${m.unidad}`}
                       >
                         {m.capacidad} {m.unidad}

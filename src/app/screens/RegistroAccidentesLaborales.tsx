@@ -196,7 +196,7 @@ function AccidenteCard({
           {orgNombre && (
             <span className="font-medium">{orgNombre} ·</span>
           )}
-          <span className="truncate rounded-full bg-[var(--agro-success-fill)] px-2 py-0.5 text-xs font-semibold text-[var(--agro-success-text)]">
+          <span className="truncate rounded-full bg-[var(--muted)] px-2 py-0.5 text-xs font-semibold text-[var(--muted-foreground)]">
             {acc.rancho_nombre}
           </span>
           <span>{formatFecha(acc.fecha)}</span>
@@ -228,7 +228,7 @@ function AccidenteCard({
               {acc.atencion_recibida.map((a) => (
                 <span
                   key={a}
-                  className="text-xs bg-[var(--agro-info-fill)] text-[var(--agro-info-text)] px-2 py-0.5 rounded-full"
+                  className="text-xs bg-[var(--muted)] text-[var(--muted-foreground)] px-2 py-0.5 rounded-full"
                 >
                   {a}
                 </span>

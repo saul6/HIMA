@@ -284,7 +284,7 @@ export function GestionResiduos() {
                     {r.clasificacion && (
                       <span
                         className="line-clamp-3 max-w-full break-words rounded px-2 py-0.5 text-xs font-medium"
-                        style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                         title={r.clasificacion}
                       >
                         {r.clasificacion}
