@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { FileDown, X, Loader2, WifiOff } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -31,6 +31,10 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { opInsert } from '@/lib/offline/construirOperaciones'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { ListaTarjetas, useListaDosColumnas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { fechaCorta } from '@/lib/formato'
 
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
@@ -77,6 +81,11 @@ const EPP_ITEMS = [
   { campo: 'mascarilla_ok', label: 'Mascarilla' },
 ] as const
 
+/** Muestra su contenido solo en 1 columna (dos=false) o solo en 2 columnas (dos). */
+function SoloEnColumnas({ dos, children }: { dos?: boolean; children: ReactNode }) {
+  return useListaDosColumnas() === !!dos ? <>{children}</> : null
+}
+
 export function UsoEpp() {
   const navigate = useNavigate()
   const { profile, user, codigoClave } = useAuthContext()
@@ -96,6 +105,11 @@ export function UsoEpp() {
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M63', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [consolidadoOpen, setConsolidadoOpen] = useState(false)
@@ -228,14 +242,20 @@ export function UsoEpp() {
         tituloFallback="Uso de Equipo de Protección Personal (EPP)"
         subtitulo="M63 · Por evento"
         onBack={() => navigate(-1)}
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `M63 · Por evento · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />}
       />
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3 pb-4">
+      <div className="px-4 pt-3 pb-4 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
-      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
+      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto min-[1224px]:pt-4">
         {lotesOffline.length > 0 && (
           <div className="space-y-2 pb-2">
             {lotesOffline.map(lote => (
@@ -252,28 +272,37 @@ export function UsoEpp() {
           </div>
         )}
         {mostrarSkeleton ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : loading && registros.length === 0 && lotesOffline.length === 0 ? (
           <div style={{ minHeight: '280px' }} />
         ) : registros.length === 0 && lotesOffline.length === 0 ? (
           <EstadoVacio titulo="Sin registros. Usa el botón + para agregar." />
         ) : null}
-        {registros.map(r => {
-          const okCount = eppOkCount(r)
-          const allOk = okCount === 5
-          return (
-            <div key={r.id} className="bg-card border border-border rounded-[0.625rem] p-4">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1 flex-wrap mb-0.5">
-                    {orgNombre && (
-                      <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
-                    )}
-                    <span className="text-sm font-semibold">{r.rancho_nombre}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">{formatFecha(r.fecha)}</p>
-                  <p className="text-sm mt-1 font-medium">{r.aplicador}</p>
-                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+        <ListaTarjetas>
+          {registros.map(r => {
+            const okCount = eppOkCount(r)
+            const allOk = okCount === 5
+            const resumen = resumenFirmas(firmas[r.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (r as any).requiere_correccion === true
+            return (
+              <TarjetaRegistro
+                key={r.id}
+                className="rounded-[0.625rem]"
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  <>
+                    {orgNombre && <span className="font-medium">{orgNombre} · </span>}
+                    <span className="text-sm font-semibold text-foreground @min-[972px]/lista:text-xs">{r.rancho_nombre}</span>
+                  </>,
+                  formatFecha(r.fecha),
+                ]}
+                titulo={r.aplicador}
+                tituloTexto={r.aplicador}
+                tituloClassName="mt-1 font-medium @min-[972px]/lista:mt-0 @min-[972px]/lista:font-semibold"
+                chips={(
+                  <>
                     <span
                       className="text-xs px-2 py-0.5 rounded font-medium"
                       style={{
@@ -292,11 +321,17 @@ export function UsoEpp() {
                     >
                       EPP: {okCount}/5 ok
                     </span>
-                  </div>
-                  {r.observaciones && (
-                    <p className="text-xs mt-1 text-muted-foreground leading-snug">{r.observaciones}</p>
-                  )}
-                  <FirmasRegistro
+                  </>
+                )}
+                contenido={(
+                  <>
+                    {r.observaciones && (
+                      <TextoColapsable texto={r.observaciones} className="mt-1 text-xs text-muted-foreground leading-snug" />
+                    )}
+                    {/* En 1 columna las firmas van en la columna del título, como antes; en 2 columnas, al pie a todo el ancho. */}
+                    <SoloEnColumnas dos={false}>
+                      <FirmasRegistro
+                    variante="escritorio"
                     modulo="M63"
                     registroId={r.id}
                     fechaRegistro={r.fecha}
@@ -304,21 +339,39 @@ export function UsoEpp() {
                     loadingFirmas={loadingFirmas}
                     onFirmado={refetchFirmas}
                   />
-                </div>
-                <button
-                  onClick={() => descargarPDF(r.id)}
-                  disabled={pdfLoading === r.id}
-                  className="p-2 rounded-lg border border-border shrink-0"
-                >
-                  {pdfLoading === r.id
-                    ? <Loader2 className="w-4 h-4 animate-spin" />
-                    : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-                  }
-                </button>
-              </div>
-            </div>
-          )
-        })}
+                    </SoloEnColumnas>
+                  </>
+                )}
+                acciones={(
+                  <button
+                    onClick={() => descargarPDF(r.id)}
+                    disabled={pdfLoading === r.id}
+                    className="p-2 rounded-lg border border-border shrink-0"
+                    aria-label="Descargar PDF"
+                  >
+                    {pdfLoading === r.id
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                    }
+                  </button>
+                )}
+                pie={(
+                  <SoloEnColumnas dos>
+                    <FirmasRegistro
+                    variante="escritorio"
+                    modulo="M63"
+                    registroId={r.id}
+                    fechaRegistro={r.fecha}
+                    firma={firmas[r.id]}
+                    loadingFirmas={loadingFirmas}
+                    onFirmado={refetchFirmas}
+                  />
+                  </SoloEnColumnas>
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
       </div>
 
       <Fab onClick={abrirNuevo} aria-label="Nuevo registro EPP" icon={!online ? WifiOff : undefined} />
