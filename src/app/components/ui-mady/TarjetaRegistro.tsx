@@ -49,6 +49,12 @@ interface TarjetaRegistroProps {
   responsable?: React.ReactNode
   /** Botones de arriba a la derecha (PDF, eliminar...). */
   acciones?: React.ReactNode
+  /** Aviso sobre el encabezado (p. ej. el comentario de corrección). */
+  encima?: React.ReactNode
+  /** Hace clicable la columna del título (con teclado y foco): para tarjetas que se expanden. */
+  alHacerClic?: () => void
+  /** aria-expanded de la zona clicable. */
+  expandido?: boolean
   /** Contenido propio en la columna del título (textos, chips, fotos), a la izquierda de `acciones`. */
   contenido?: React.ReactNode
   /** Cuerpo propio del módulo, a ancho completo bajo el encabezado. */
@@ -61,7 +67,7 @@ interface TarjetaRegistroProps {
 /** Tarjeta de registro de módulo. En 1 columna se ve como la tarjeta de siempre (p-4, borde, radio);
  * en 2 columnas (dentro de ListaTarjetas) suma franja y etiqueta de estado, chip de firmas y encabezado compacto. */
 export function TarjetaRegistro({
-  estado = 'neutro', etiquetas, meta, titulo, tituloTexto, tituloClassName, chips, chipMovil, firmas, responsable, contenido, acciones, children, pie, className,
+  estado = 'neutro', etiquetas, meta, titulo, tituloTexto, tituloClassName, chips, chipMovil, firmas, responsable, contenido, acciones, children, pie, encima, alHacerClic, expandido, className,
 }: TarjetaRegistroProps) {
   const dos = useListaDosColumnas()
   const textoEstado = TEXTO_ESTADO[estado]
@@ -83,11 +89,30 @@ export function TarjetaRegistro({
         'min-w-0 rounded-xl border border-border bg-card p-4',
         dos && 'border-l-4',
         dos && FRANJA[estado],
+        // En 1 columna, "requiere corrección" conserva el aspecto de siempre: borde menta y fondo de aviso.
+        !dos && estado === 'correccion' && 'border-[var(--agro-menta)] bg-[var(--agro-info-fill)]',
         className,
       )}
     >
+      {encima}
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
+        <div
+          className={cn('min-w-0 flex-1', alHacerClic && 'cursor-pointer rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50')}
+          {...(alHacerClic
+            ? {
+                role: 'button' as const,
+                tabIndex: 0,
+                'aria-expanded': expandido,
+                onClick: alHacerClic,
+                onKeyDown: (e: React.KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    alHacerClic()
+                  }
+                },
+              }
+            : {})}
+        >
           {!dos && etiquetas && <div className="mb-1 flex flex-wrap items-center gap-2">{etiquetas}</div>}
           {dos ? (
             lineas.length > 0 && (

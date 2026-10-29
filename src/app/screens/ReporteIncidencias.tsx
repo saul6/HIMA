@@ -49,6 +49,10 @@ import { limiteTexto, MAX_FOTOS } from '@/lib/limitesTexto'
 import { useConfirmar } from '@/app/components/ui-mady/ConfirmarSheet'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { ListaAncho, ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { fechaCorta } from '@/lib/formato'
 import { DUR, EASE_OUT } from '@/lib/motion'
 
@@ -470,6 +474,11 @@ export function ReporteIncidencias() {
 
   const todosIds = reportes.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M13', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (reportes.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : reportes.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
   const { obligatoria, tengoFirma } = useFirmaContext()
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M13')
@@ -1398,133 +1407,130 @@ export function ReporteIncidencias() {
     }
   }
 
+  function abrirConsolidado() {
+    setConsRanchoId('')
+    setConsDesde('')
+    setConsHasta(hoy())
+    setErrConsFechas(false)
+    setSheetConsolidadoAbierto(true)
+  }
+
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-full pb-safe-nav">
 
       {/* Header */}
-      <ModuloHeader tituloFallback={TITULO_MODULO} subtitulo={CLAVE_MODULO} />
+      <ModuloHeader
+        tituloFallback={TITULO_MODULO}
+        subtitulo={CLAVE_MODULO}
+        subtituloEscritorio={loading ? undefined : `${CLAVE_MODULO} · ${textoResumenLista(reportes.length, pendientesFirma)}`}
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={abrirConsolidado} />}
+      />
 
       <BannerTareaOrigen tareaId={tareaId} registroGuardado={registroGuardado} />
 
       {/* Acción consolidado */}
-      <div className="px-4 pt-3">
-        <BotonExportarConsolidado
-          onClick={() => {
-            setConsRanchoId('')
-            setConsDesde('')
-            setConsHasta(hoy())
-            setErrConsFechas(false)
-            setSheetConsolidadoAbierto(true)
-          }}
-        />
+      <div className="px-4 pt-3 min-[1224px]:hidden">
+        <BotonExportarConsolidado onClick={abrirConsolidado} />
       </div>
 
       {/* Lista de reportes */}
       <div className="p-4 space-y-3">
         {/* Reportes pendientes offline */}
-        {lotesOffline.map(lote => {
-          const meta = lote.metadatos as { rancho_nombre?: string; fecha?: string; incidencias_count?: number; fotos_count?: number } | undefined
-          return (
-            <div key={lote.id} className="bg-card border border-border rounded-xl p-4 opacity-80">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="text-sm text-foreground truncate font-semibold">
-                      {meta?.rancho_nombre ?? '—'}
-                    </span>
-                    {meta?.incidencias_count && (
-                      <Etiqueta tono="neutral">
-                        {meta.incidencias_count} incidencia{meta.incidencias_count !== 1 ? 's' : ''}
-                      </Etiqueta>
-                    )}
-                    {meta?.fotos_count && (
-                      <Etiqueta tono="neutral">
-                        {meta.fotos_count} foto{meta.fotos_count !== 1 ? 's' : ''}
-                      </Etiqueta>
+        {lotesOffline.length > 0 && (
+          <ListaTarjetas>
+            {lotesOffline.map(lote => {
+              const meta = lote.metadatos as { rancho_nombre?: string; fecha?: string; incidencias_count?: number; fotos_count?: number } | undefined
+              return (
+                <ListaAncho key={lote.id}>
+                  <div className="bg-card border border-border rounded-xl p-4 opacity-80">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="text-sm text-foreground truncate font-semibold">
+                            {meta?.rancho_nombre ?? '—'}
+                          </span>
+                          {meta?.incidencias_count && (
+                            <Etiqueta tono="neutral">
+                              {meta.incidencias_count} incidencia{meta.incidencias_count !== 1 ? 's' : ''}
+                            </Etiqueta>
+                          )}
+                          {meta?.fotos_count && (
+                            <Etiqueta tono="neutral">
+                              {meta.fotos_count} foto{meta.fotos_count !== 1 ? 's' : ''}
+                            </Etiqueta>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{meta?.fecha ? formatFecha(meta.fecha) : '—'}</p>
+                      </div>
+                      <ChipOffline lote={lote} />
+                    </div>
+                    {lote.estado === 'rechazado' && lote.error && (
+                      <p className="text-xs mt-1" style={{ color: 'var(--agro-danger-text)' }}>{lote.error}</p>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground">{meta?.fecha ? formatFecha(meta.fecha) : '—'}</p>
-                </div>
-                <ChipOffline lote={lote} />
-              </div>
-              {lote.estado === 'rechazado' && lote.error && (
-                <p className="text-xs mt-1" style={{ color: 'var(--agro-danger-text)' }}>{lote.error}</p>
-              )}
-            </div>
-          )
-        })}
+                </ListaAncho>
+              )
+            })}
+          </ListaTarjetas>
+        )}
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : reportes.length === 0 && lotesOffline.length === 0 ? (
           <EstadoVacio icono={ClipboardList} titulo="Sin reportes aún" ayuda="Toca + para registrar el primer reporte de incidencias" />
         ) : (
-          reportes.map((r) => {
-            const totalFotosReporte = r.incidencias.reduce((acc, inc) => acc + inc.fotos.length, 0)
-            const abierto = expandido === r.id
-            return (
-              <div
-                key={r.id}
-                className="bg-card rounded-xl border overflow-hidden"
-                style={{
-                  borderColor: r.requiere_correccion ? 'var(--agro-menta)' : 'var(--border)',
-                  backgroundColor: r.requiere_correccion ? 'var(--agro-info-fill)' : undefined,
-                }}
-              >
-                {/* Comentario de corrección */}
-                {r.requiere_correccion && r.comentario_correccion && (
-                  <div
-                    className="flex items-start gap-2 px-4 pt-3 text-xs"
-                    style={{ color: 'var(--agro-info-text)' }}
-                  >
-                    <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" />
-                    {r.comentario_correccion}
-                  </div>
-                )}
-
-                <div className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div
-                      className="flex-1 min-w-0 cursor-pointer"
-                      onClick={() => setExpandido(abierto ? null : r.id)}
-                    >
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        {orgNombre && (
-                          <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
-                        )}
-                        <span className="text-sm text-foreground truncate font-semibold">
-                          {r.rancho_nombre}
-                        </span>
-                        <span
-                          className="text-caption px-2 py-0.5 rounded flex-shrink-0 bg-muted text-muted-foreground font-semibold"
-                        >
-                          {r.incidencias.length} incidencia{r.incidencias.length !== 1 ? 's' : ''}
-                        </span>
-                        <Etiqueta tono="neutral">
-                          {totalFotosReporte} foto{totalFotosReporte !== 1 ? 's' : ''}
-                        </Etiqueta>
-                      </div>
-                      <p className="text-xs text-muted-foreground">{formatFecha(r.fecha)}</p>
-                      {r.auditor_nombre && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Auditor: {r.auditor_nombre}
-                        </p>
-                      )}
-                      {r.creado_por_nombre !== '—' && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Por: {r.creado_por_nombre}
-                        </p>
-                      )}
+          <ListaTarjetas>
+            {reportes.map((r) => {
+              const totalFotosReporte = r.incidencias.reduce((acc, inc) => acc + inc.fotos.length, 0)
+              const abierto = expandido === r.id
+              const resumen = resumenFirmas(firmas[r.id], sinDatosFirmas)
+              return (
+                <TarjetaRegistro
+                  key={r.id}
+                  estado={r.requiere_correccion ? 'correccion' : resumen.estado}
+                  firmas={resumen.estado === 'neutro' ? null : resumen}
+                  encima={r.requiere_correccion && r.comentario_correccion ? (
+                    /* Comentario de corrección */
+                    <div className="mb-3 flex items-start gap-2 text-xs" style={{ color: 'var(--agro-info-text)' }}>
+                      <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                      <TextoColapsable texto={r.comentario_correccion} className="text-xs" />
                     </div>
-
-                    <div className="flex items-center gap-1 flex-shrink-0">
+                  ) : undefined}
+                  alHacerClic={() => setExpandido(abierto ? null : r.id)}
+                  expandido={abierto}
+                  etiquetas={(
+                    <>
+                      {orgNombre && (
+                        <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+                      )}
+                      <span className="text-sm text-foreground truncate font-semibold">
+                        {r.rancho_nombre}
+                      </span>
+                      <span
+                        className="text-caption px-2 py-0.5 rounded flex-shrink-0 bg-muted text-muted-foreground font-semibold"
+                      >
+                        {r.incidencias.length} incidencia{r.incidencias.length !== 1 ? 's' : ''}
+                      </span>
+                      <Etiqueta tono="neutral">
+                        {totalFotosReporte} foto{totalFotosReporte !== 1 ? 's' : ''}
+                      </Etiqueta>
+                    </>
+                  )}
+                  meta={[
+                    formatFecha(r.fecha),
+                    r.auditor_nombre ? `Auditor: ${r.auditor_nombre}` : null,
+                    r.creado_por_nombre !== '—' ? `Por: ${r.creado_por_nombre}` : null,
+                  ]}
+                  acciones={(
+                    <>
                       {/* PDF individual / Descargar PDF */}
                       <button
                         onClick={() => handleDescargarPDF(r)}
                         disabled={generandoPDF === r.id}
                         className="p-2 text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
                         title="Descargar PDF"
+                        aria-label="Descargar PDF"
                       >
                         {generandoPDF === r.id
                           ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -1536,13 +1542,15 @@ export function ReporteIncidencias() {
                         onClick={() => handleEliminar(r)}
                         disabled={!online}
                         title={!online ? 'Necesitas conexión para eliminar' : 'Eliminar reporte'}
+                        aria-label="Eliminar reporte"
                         className="p-2 text-muted-foreground hover:text-agro-red transition-colors disabled:opacity-40"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
-                    </div>
-                  </div>
-
+                    </>
+                  )}
+                  pie={<FirmasRegistro variante="escritorio" modulo="M13" registroId={r.id} firma={firmas[r.id]} loadingFirmas={loadingFirmas} fechaRegistro={r.fecha} onFirmado={refetchFirmas} />}
+                >
                   {/* Incidencias expandidas */}
                   {abierto && r.incidencias.length > 0 && (
                     <div className="mt-3 space-y-3 border-t border-border pt-3">
@@ -1557,11 +1565,10 @@ export function ReporteIncidencias() {
                       ))}
                     </div>
                   )}
-                  <FirmasRegistro modulo="M13" registroId={r.id} firma={firmas[r.id]} loadingFirmas={loadingFirmas} fechaRegistro={r.fecha} onFirmado={refetchFirmas} />
-                </div>
-              </div>
-            )
-          })
+                </TarjetaRegistro>
+              )
+            })}
+          </ListaTarjetas>
         )}
       </div>
 
