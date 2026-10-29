@@ -35,6 +35,9 @@ import { ChipOffline } from '@/app/components/ChipOffline'
 import { BannerLimiteOffline } from '@/app/components/BannerLimiteOffline'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { ListaAncho, ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { fechaCorta } from '@/lib/formato'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -125,6 +128,11 @@ export function RegistroLimpiezaBanos() {
 
   const todosIds = jornadas.flatMap(j => j.banos.map(b => b.id))
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M12', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (jornadas.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : jornadas.filter(j => resumenFirmas(firmasDeFilasParaTarjeta(firmas, j.banos.map(b => b.id))).estado === 'pendiente').length
   const { obligatoria, tengoFirma } = useFirmaContext()
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M12')
@@ -375,73 +383,90 @@ export function RegistroLimpiezaBanos() {
     }
   }
 
+  function abrirConsolidado() {
+    setConsRanchoId('')
+    setConsDesde('')
+    setConsHasta(hoy())
+    setErrConsRancho(false)
+    setErrConsFechas(false)
+    setSheetConsAbierto(true)
+  }
+
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-full pb-safe-nav">
 
       {/* Header */}
-      <ModuloHeader tituloFallback={TITULO_MODULO} subtitulo={CLAVE_MODULO} />
+      <ModuloHeader
+        tituloFallback={TITULO_MODULO}
+        subtitulo={CLAVE_MODULO}
+        subtituloEscritorio={loading ? undefined : `${CLAVE_MODULO} · ${textoResumenLista(jornadas.length, pendientesFirma)}`}
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={abrirConsolidado} />}
+      />
 
       <BannerTareaOrigen tareaId={tareaId} registroGuardado={registroGuardado} />
 
       {/* Exportar consolidado */}
-      <div className="px-4 pt-3">
-        <BotonExportarConsolidado
-          onClick={() => {
-            setConsRanchoId('')
-            setConsDesde('')
-            setConsHasta(hoy())
-            setErrConsRancho(false)
-            setErrConsFechas(false)
-            setSheetConsAbierto(true)
-          }}
-        />
+      <div className="px-4 pt-3 min-[1224px]:hidden">
+        <BotonExportarConsolidado onClick={abrirConsolidado} />
       </div>
 
       {/* Historial */}
       <div className="p-4 space-y-3">
         {/* Lotes sin conexión */}
-        {lotesOffline.map(lote => {
-          const meta = lote.metadatos as { rancho_nombre?: string; fecha?: string; banos_count?: number } | undefined
-          return (
-            <div key={lote.id} className="bg-card border border-border rounded-xl p-4 opacity-80">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-sm text-foreground font-semibold">
-                      {meta?.rancho_nombre ?? '—'}
-                    </span>
-                    {meta?.banos_count && (
-                      <span className="text-caption px-2 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0 font-semibold">
-                        {meta.banos_count} {meta.banos_count === 1 ? 'baño' : 'baños'}
-                      </span>
+        {lotesOffline.length > 0 && (
+          <ListaTarjetas>
+            {lotesOffline.map(lote => {
+              const meta = lote.metadatos as { rancho_nombre?: string; fecha?: string; banos_count?: number } | undefined
+              return (
+                <ListaAncho key={lote.id}>
+                  <div className="bg-card border border-border rounded-xl p-4 opacity-80">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className="text-sm text-foreground font-semibold">
+                            {meta?.rancho_nombre ?? '—'}
+                          </span>
+                          {meta?.banos_count && (
+                            <span className="text-caption px-2 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0 font-semibold">
+                              {meta.banos_count} {meta.banos_count === 1 ? 'baño' : 'baños'}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{meta?.fecha ? formatFecha(meta.fecha) : '—'}</p>
+                      </div>
+                      <ChipOffline lote={lote} />
+                    </div>
+                    {lote.estado === 'rechazado' && lote.error && (
+                      <p className="text-xs mt-1" style={{ color: 'var(--agro-danger-text)' }}>{lote.error}</p>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground">{meta?.fecha ? formatFecha(meta.fecha) : '—'}</p>
-                </div>
-                <ChipOffline lote={lote} />
-              </div>
-              {lote.estado === 'rechazado' && lote.error && (
-                <p className="text-xs mt-1" style={{ color: 'var(--agro-danger-text)' }}>{lote.error}</p>
-              )}
-            </div>
-          )
-        })}
+                </ListaAncho>
+              )
+            })}
+          </ListaTarjetas>
+        )}
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : jornadas.length === 0 && lotesOffline.length === 0 ? (
           <EstadoVacio icono={Droplets} titulo="Sin registros aún" ayuda="Toca + para registrar la primera limpieza" />
         ) : (
-          jornadas.map((jornada) => {
-            const key = `${jornada.rancho_id}|${jornada.fecha}`
-            const todosLimpieza = jornada.banos.every((b) => b.limpieza)
-            const todosDesinfeccion = jornada.banos.every((b) => b.desinfeccion)
-            return (
-              <div key={key} className="bg-card border border-border rounded-xl p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
+          <ListaTarjetas>
+            {jornadas.map((jornada) => {
+              const key = `${jornada.rancho_id}|${jornada.fecha}`
+              const todosLimpieza = jornada.banos.every((b) => b.limpieza)
+              const todosDesinfeccion = jornada.banos.every((b) => b.desinfeccion)
+              const firmaJornada = firmasDeFilasParaTarjeta(firmas, jornada.banos.map(b => b.id))
+              // requiere_correccion no llega a la tarjeta de M12 (el hook no lo conserva): no se usa el estado "correccion"
+              const resumen = resumenFirmas(firmaJornada, sinDatosFirmas)
+              return (
+                <TarjetaRegistro
+                  key={key}
+                  estado={resumen.estado}
+                  firmas={resumen.estado === 'neutro' ? null : resumen}
+                  etiquetas={(
+                    <>
                       {orgNombre && (
                         <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
                       )}
@@ -453,79 +478,84 @@ export function RegistroLimpiezaBanos() {
                       >
                         {jornada.banos.length} {jornada.banos.length === 1 ? 'baño' : 'baños'}
                       </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{formatFecha(jornada.fecha)}</p>
+                    </>
+                  )}
+                  meta={[formatFecha(jornada.fecha)]}
+                  acciones={(
+                    <button
+                      onClick={() => handleDescargarPDF(jornada)}
+                      disabled={generandoPDF === key}
+                      className="p-2 text-muted-foreground hover:text-primary transition-colors flex-shrink-0 disabled:opacity-50"
+                      title="Descargar PDF"
+                      aria-label="Descargar PDF"
+                    >
+                      {generandoPDF === key ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <FileDown className="w-4 h-4" />
+                      )}
+                    </button>
+                  )}
+                  pie={jornada.banos[0] ? (
+                    <FirmasRegistro
+                      variante="escritorio"
+                      modulo="M12"
+                      registroId={idRepresentativoJornada(jornada.banos) ?? jornada.banos[0].id}
+                      firma={firmaJornada}
+                      loadingFirmas={loadingFirmas}
+                      fechaRegistro={jornada.fecha}
+                      onFirmado={refetchFirmas}
+                    />
+                  ) : undefined}
+                >
+                  {/* Chips de estado */}
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    <span
+                      className={`text-caption px-2 py-0.5 rounded ${
+                        todosLimpieza
+                          ? 'bg-agro-success-fill text-agro-success-text'
+                          : 'bg-agro-info-fill text-agro-info-text'
+                      }`}
+                    >
+                      {todosLimpieza ? 'Limpieza completa' : 'Limpieza parcial'}
+                    </span>
+                    <span
+                      className={`text-caption px-2 py-0.5 rounded ${
+                        todosDesinfeccion
+                          ? 'bg-agro-success-fill text-agro-success-text'
+                          : 'bg-agro-info-fill text-agro-info-text'
+                      }`}
+                    >
+                      {todosDesinfeccion ? 'Desinfección completa' : 'Desinfección parcial'}
+                    </span>
                   </div>
-                  <button
-                    onClick={() => handleDescargarPDF(jornada)}
-                    disabled={generandoPDF === key}
-                    className="p-2 text-muted-foreground hover:text-primary transition-colors flex-shrink-0 disabled:opacity-50"
-                    title="Descargar PDF"
-                  >
-                    {generandoPDF === key ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <FileDown className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
 
-                {/* Chips de estado */}
-                <div className="flex flex-wrap gap-1 mt-2">
-                  <span
-                    className={`text-caption px-2 py-0.5 rounded ${
-                      todosLimpieza
-                        ? 'bg-agro-success-fill text-agro-success-text'
-                        : 'bg-agro-info-fill text-agro-info-text'
-                    }`}
-                  >
-                    {todosLimpieza ? 'Limpieza completa' : 'Limpieza parcial'}
-                  </span>
-                  <span
-                    className={`text-caption px-2 py-0.5 rounded ${
-                      todosDesinfeccion
-                        ? 'bg-agro-success-fill text-agro-success-text'
-                        : 'bg-agro-info-fill text-agro-info-text'
-                    }`}
-                  >
-                    {todosDesinfeccion ? 'Desinfección completa' : 'Desinfección parcial'}
-                  </span>
-                </div>
-
-                {/* Detalle de baños */}
-                <div className="mt-3 pt-3 border-t border-border space-y-1">
-                  {jornada.banos.map((b) => (
-                    <div key={b.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span
-                        className="w-16 text-foreground flex-shrink-0 font-semibold"
-                      >
-                        Baño {b.bano_numero}
-                      </span>
-                      <span className={b.limpieza ? 'text-agro-success-text' : 'text-agro-danger-text'}>
-                        {b.limpieza ? 'Lavado' : 'Sin lavar'}
-                      </span>
-                      <span className="text-border">·</span>
-                      <span className={b.desinfeccion ? 'text-agro-success-text' : 'text-agro-danger-text'}>
-                        {b.desinfeccion ? 'Desinfectado' : 'Sin desinfectar'}
-                      </span>
-                      <span className="text-border">·</span>
-                      <span>{b.concentracion_ppm} ppm</span>
-                    </div>
-                  ))}
-                </div>
-                {jornada.banos[0] && (
-                  <FirmasRegistro
-                    modulo="M12"
-                    registroId={idRepresentativoJornada(jornada.banos) ?? jornada.banos[0].id}
-                    firma={firmasDeFilasParaTarjeta(firmas, jornada.banos.map(b => b.id))}
-                    loadingFirmas={loadingFirmas}
-                    fechaRegistro={jornada.fecha}
-                    onFirmado={refetchFirmas}
-                  />
-                )}
-              </div>
-            )
-          })
+                  {/* Detalle de baños */}
+                  <div className="mt-3 pt-3 border-t border-border space-y-1">
+                    {jornada.banos.map((b) => (
+                      <div key={b.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span
+                          className="w-16 text-foreground flex-shrink-0 font-semibold break-words line-clamp-3"
+                          title={`Baño ${b.bano_numero}`}
+                        >
+                          Baño {b.bano_numero}
+                        </span>
+                        <span className={b.limpieza ? 'text-agro-success-text' : 'text-agro-danger-text'}>
+                          {b.limpieza ? 'Lavado' : 'Sin lavar'}
+                        </span>
+                        <span className="text-border">·</span>
+                        <span className={b.desinfeccion ? 'text-agro-success-text' : 'text-agro-danger-text'}>
+                          {b.desinfeccion ? 'Desinfectado' : 'Sin desinfectar'}
+                        </span>
+                        <span className="text-border">·</span>
+                        <span>{b.concentracion_ppm} ppm</span>
+                      </div>
+                    ))}
+                  </div>
+                </TarjetaRegistro>
+              )
+            })}
+          </ListaTarjetas>
         )}
       </div>
 
