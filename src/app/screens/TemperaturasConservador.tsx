@@ -31,6 +31,9 @@ import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 const HORAS = Array.from({ length: 24 }, (_, i) => i + 1)
@@ -75,6 +78,11 @@ export function TemperaturasConservador() {
 
   const todosIds = useMemo(() => registros.map(r => r.id), [registros])
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M41', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
@@ -344,17 +352,23 @@ export function TemperaturasConservador() {
       <ModuloHeader
         tituloFallback="Registro de Temperaturas del Conservador"
         onBack={() => navigate(-1)}
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolAbierto(true)} />}
       />
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolAbierto(true)} />
       </div>
 
       {/* Lista */}
       <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 space-y-3">
         <PendientesOffline modulo="M41" />
-        {mostrarSkeleton && <ListaSkeleton />}
+        {mostrarSkeleton && <ListaSkeleton rejilla />}
         {error && (
           <p className="text-center text-sm py-8" style={{ color: 'var(--agro-danger-text)' }}>{error}</p>
         )}
@@ -363,37 +377,81 @@ export function TemperaturasConservador() {
             Sin registros. Toca + para agregar.
           </p>
         )}
-        {registros.map(r => (
-          <div key={r.id} className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="flex items-start gap-2">
-              <div className="flex-1 min-w-0">
-                <p className="text-body font-semibold truncate">{r.rancho_nombre}</p>
-                <p className="text-small mt-0.5" style={{ color: 'var(--muted-foreground)' }}>{fmtFecha(r.fecha)}</p>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1.5">
-                  {(r.temp_min != null || r.temp_max != null) && (
-                    <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                      Rango: {r.temp_min ?? '—'} – {r.temp_max ?? '—'} °C
+        <ListaTarjetas>
+          {registros.map(r => {
+            const resumen = resumenFirmas(firmas[r.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (r as any).requiere_correccion === true
+            return (
+              <TarjetaRegistro
+                key={r.id}
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  <span className="hidden @min-[972px]/lista:inline">{r.rancho_nombre}</span>,
+                  <span className="hidden @min-[972px]/lista:inline">{fmtFecha(r.fecha)}</span>,
+                ]}
+                titulo={(
+                  <>
+                    <span className="@min-[972px]/lista:hidden">{r.rancho_nombre}</span>
+                    <span className="hidden @min-[972px]/lista:inline">
+                      {r.temp_min != null || r.temp_max != null
+                        ? `${r.temp_min ?? '—'} – ${r.temp_max ?? '—'} °C`
+                        : `${r.lecturas_count} lectura${r.lecturas_count !== 1 ? 's' : ''}`}
                     </span>
-                  )}
-                  <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                    {r.lecturas_count} lectura{r.lecturas_count !== 1 ? 's' : ''}
-                  </span>
-                </div>
-                {r.fuera_de_rango && (
-                  <div className="flex items-center gap-1 mt-1.5">
-                    <AlertTriangle size={11} style={{ color: 'var(--agro-danger-text)' }} />
-                    <span className="text-caption font-medium" style={{ color: 'var(--agro-danger-text)' }}>
-                      Con incidencias
-                    </span>
-                  </div>
+                  </>
                 )}
-                {obligatoria && !firmas[r.id]?.realizo && (
-                  <Etiqueta tono="error" className="mt-1">
+                tituloTexto={r.rancho_nombre}
+                tituloClassName="truncate @min-[972px]/lista:whitespace-normal"
+                contenido={(
+                  <>
+                    <div className="@min-[972px]/lista:hidden">
+                      <p className="text-small mt-0.5" style={{ color: 'var(--muted-foreground)' }}>{fmtFecha(r.fecha)}</p>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1.5">
+                        {(r.temp_min != null || r.temp_max != null) && (
+                      <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
+                        Rango: {r.temp_min ?? '—'} – {r.temp_max ?? '—'} °C
+                      </span>
+                    )}
+                        <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
+                          {r.lecturas_count} lectura{r.lecturas_count !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      {r.fuera_de_rango && (
+                      <div className="flex items-center gap-1 mt-1.5">
+                        <AlertTriangle size={11} style={{ color: 'var(--agro-danger-text)' }} />
+                        <span className="text-caption font-medium" style={{ color: 'var(--agro-danger-text)' }}>
+                          Con incidencias
+                        </span>
+                      </div>
+                    )}
+                      {obligatoria && !firmas[r.id]?.realizo && (
+<Etiqueta tono="error" className="">
                     Pendiente de firma
                   </Etiqueta>
+                      )}
+                    </div>
+                    <div className="hidden @min-[972px]/lista:block">
+                      {(r.temp_min != null || r.temp_max != null) && (
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <span className="text-xs px-2 py-0.5 rounded font-medium" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                            {r.lecturas_count} lectura{r.lecturas_count !== 1 ? 's' : ''}
+                          </span>
+                        </div>
+                      )}
+                      {r.fuera_de_rango && (
+                      <div className="flex items-center gap-1 mt-1.5">
+                        <AlertTriangle size={11} style={{ color: 'var(--agro-danger-text)' }} />
+                        <span className="text-caption font-medium" style={{ color: 'var(--agro-danger-text)' }}>
+                          Con incidencias
+                        </span>
+                      </div>
+                    )}
+                    </div>
+                  </>
                 )}
-              </div>
-              <button
+                acciones={<>
+                  <button
                 onClick={() => {
                   if (obligatoria && !firmas[r.id]?.realizo) {
                     toast.info('Firma este registro antes de descargar el PDF')
@@ -408,8 +466,10 @@ export function TemperaturasConservador() {
               >
                 <FileText size={18} />
               </button>
-            </div>
-            <FirmasRegistro
+                </>}
+                pie={(
+                  <FirmasRegistro
+                    variante="escritorio"
               modulo="M41"
               registroId={r.id}
               fechaRegistro={r.fecha}
@@ -417,8 +477,11 @@ export function TemperaturasConservador() {
               loadingFirmas={loadingFirmas}
               onFirmado={async () => { await refetch(); await refetchFirmas() }}
             />
-          </div>
-        ))}
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
       </div>
 
       {/* FAB */}
