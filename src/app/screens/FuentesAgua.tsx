@@ -31,6 +31,9 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { fechaCorta } from '@/lib/formato'
@@ -99,6 +102,11 @@ export function FuentesAgua() {
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M62', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
@@ -253,64 +261,83 @@ export function FuentesAgua() {
       <ModuloHeader
         tituloFallback="Inspección de Fuentes de Agua"
         subtitulo="M62 · Por evento"
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `M62 · Por evento · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />}
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3 pb-4">
+      <div className="px-4 pt-3 pb-4 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
-      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
+      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto min-[1224px]:pt-4">
         <PendientesOffline modulo="M62" />
         {mostrarSkeleton ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : loading && registros.length === 0 ? (
           <div style={{ minHeight: '280px' }} />
         ) : registros.length === 0 ? (
           <EstadoVacio titulo="Sin registros. Usa el botón + para agregar." />
         ) : null}
-        {registros.map(r => (
-          <div key={r.id} className="bg-card border border-border rounded-[0.625rem] p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1 flex-wrap mb-0.5">
-                  {orgNombre && (
-                    <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
-                  )}
-                  <span className="text-sm font-semibold">{r.rancho_nombre}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">{formatFecha(r.fecha)}</p>
-                {r.tipo_fuente && (
-                  <p className="text-sm mt-1 font-medium">{r.tipo_fuente}</p>
-                )}
-                {obligatoria && !firmas[r.id]?.realizo && (
-                  <Etiqueta tono="error" className="mt-1">
+        <ListaTarjetas>
+          {registros.map(r => {
+            const resumen = resumenFirmas(firmas[r.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (r as any).requiere_correccion === true
+            return (
+              <TarjetaRegistro
+                key={r.id}
+                className="rounded-[0.625rem]"
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  <>
+                    {orgNombre && <span className="font-medium">{orgNombre} · </span>}
+                    <span className="text-sm font-semibold text-foreground @min-[972px]/lista:text-xs">{r.rancho_nombre}</span>
+                  </>,
+                  formatFecha(r.fecha),
+                ]}
+                titulo={r.tipo_fuente || undefined}
+                tituloTexto={r.tipo_fuente ?? undefined}
+                tituloClassName="mt-1 font-medium @min-[972px]/lista:mt-0 @min-[972px]/lista:font-semibold"
+                chipMovil={obligatoria && !firmas[r.id]?.realizo && (
+                  <Etiqueta tono="error">
                     Pendiente de firma
                   </Etiqueta>
                 )}
-              </div>
-              <button
-                onClick={() => descargarPDF(r.id)}
-                disabled={pdfLoading === r.id}
-                className="p-2 rounded-lg border border-border shrink-0"
-              >
-                {pdfLoading === r.id
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-                }
-              </button>
-            </div>
-            <FirmasRegistro
-              modulo="M62"
-              registroId={r.id}
-              fechaRegistro={r.fecha}
-              firma={firmas[r.id]}
-              loadingFirmas={loadingFirmas}
-              onFirmado={async () => { await refetch(); await refetchFirmas() }}
-            />
-          </div>
-        ))}
+                acciones={(
+                  <button
+                    onClick={() => descargarPDF(r.id)}
+                    disabled={pdfLoading === r.id}
+                    className="p-2 rounded-lg border border-border shrink-0"
+                    aria-label="Descargar PDF"
+                  >
+                    {pdfLoading === r.id
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                    }
+                  </button>
+                )}
+                pie={(
+                  <FirmasRegistro
+                    variante="escritorio"
+                    modulo="M62"
+                    registroId={r.id}
+                    fechaRegistro={r.fecha}
+                    firma={firmas[r.id]}
+                    loadingFirmas={loadingFirmas}
+                    onFirmado={async () => { await refetch(); await refetchFirmas() }}
+                  />
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
       </div>
 
             <Fab onClick={abrirNuevo} aria-label="Nueva inspección" />
