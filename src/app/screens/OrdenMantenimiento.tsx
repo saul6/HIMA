@@ -349,28 +349,59 @@ export function OrdenMantenimiento() {
                   // requiere_correccion no viene en la consulta de M44: no se usa el estado "correccion"
                   estado={resumen.estado}
                   firmas={resumen.estado === 'neutro' ? null : resumen}
+                  // En celular (< 972 px) la tarjeta es la de siempre: prioridad + #folio, rancho, fecha, descripción.
+                  // En escritorio: folio como título y "rancho · fecha" arriba. Lo propio de cada ancho se oculta con clases.
                   etiquetas={(
-                    <span
-                      className="text-xs px-2 py-0.5 rounded"
-                      style={{
-                        backgroundColor: PRIORIDAD_FONDOS[o.prioridad],
-                        color:           PRIORIDAD_COLORES[o.prioridad],
-                        fontWeight:      600,
-                      }}
-                    >
-                      {PRIORIDAD_LABELS[o.prioridad]}
-                    </span>
+                    <>
+                      <span
+                        className="text-xs px-2 py-0.5 rounded"
+                        style={{
+                          backgroundColor: PRIORIDAD_FONDOS[o.prioridad],
+                          color:           PRIORIDAD_COLORES[o.prioridad],
+                          fontWeight:      600,
+                        }}
+                      >
+                        {PRIORIDAD_LABELS[o.prioridad]}
+                      </span>
+                      {o.folio && (
+                        <span className="text-xs text-muted-foreground @min-[972px]/lista:hidden">#{o.folio}</span>
+                      )}
+                    </>
                   )}
                   meta={[
-                    <span className="text-sm font-semibold text-foreground @min-[972px]/lista:text-xs">{o.rancho_nombre}</span>,
-                    fmtFecha(o.fecha),
+                    o.folio ? <span className="hidden @min-[972px]/lista:inline"><span className="font-semibold text-foreground">{o.rancho_nombre}</span></span> : null,
+                    <span className="hidden @min-[972px]/lista:inline">{fmtFecha(o.fecha)}</span>,
                   ]}
-                  titulo={o.folio ? `#${o.folio}` : undefined}
-                  tituloTexto={o.folio ?? undefined}
-                  chipMovil={obligatoria && !firmas[o.id]?.realizo && (
-                    <Etiqueta tono="error">
-                      Pendiente de firma
-                    </Etiqueta>
+                  titulo={(
+                    <>
+                      <span className="@min-[972px]/lista:hidden">{o.rancho_nombre}</span>
+                      <span className="hidden @min-[972px]/lista:inline">{o.folio ? `#${o.folio}` : o.rancho_nombre}</span>
+                    </>
+                  )}
+                  tituloTexto={o.folio ?? o.rancho_nombre}
+                  tituloClassName="truncate @min-[972px]/lista:whitespace-normal"
+                  contenido={(
+                    <div className="@min-[972px]/lista:hidden">
+                      <p className="text-xs text-muted-foreground mt-0.5">{fmtFecha(o.fecha)}</p>
+                      {o.descripcion_solicitud && (
+                        <div className="mt-1">
+                          <TextoColapsable texto={o.descripcion_solicitud} className="text-xs text-muted-foreground" />
+                        </div>
+                      )}
+                      {o.equipo_produccion && !o.lavado_sanitizado && (
+                        <div className="flex items-center gap-1 mt-1.5">
+                          <AlertTriangle className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
+                          <span className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
+                            Sin sanitizar — incidencia M13 generada
+                          </span>
+                        </div>
+                      )}
+                      {obligatoria && !firmas[o.id]?.realizo && (
+                        <Etiqueta tono="error" className="mt-1">
+                          Pendiente de firma
+                        </Etiqueta>
+                      )}
+                    </div>
                   )}
                   acciones={(
                     <button
@@ -400,19 +431,22 @@ export function OrdenMantenimiento() {
                     />
                   )}
                 >
-                  {o.descripcion_solicitud && (
-                    <div className="mt-2">
-                      <TextoColapsable texto={o.descripcion_solicitud} className="text-xs text-muted-foreground" />
-                    </div>
-                  )}
-                  {o.equipo_produccion && !o.lavado_sanitizado && (
-                    <div className="flex items-center gap-1 mt-1.5">
-                      <AlertTriangle className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
-                      <span className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
-                        Sin sanitizar — incidencia M13 generada
-                      </span>
-                    </div>
-                  )}
+                  {/* Escritorio: descripción y aviso a ancho completo bajo el encabezado (en celular van en `contenido`) */}
+                  <div className="hidden @min-[972px]/lista:block">
+                    {o.descripcion_solicitud && (
+                      <div className="mt-2">
+                        <TextoColapsable texto={o.descripcion_solicitud} className="text-xs text-muted-foreground" />
+                      </div>
+                    )}
+                    {o.equipo_produccion && !o.lavado_sanitizado && (
+                      <div className="flex items-center gap-1 mt-1.5">
+                        <AlertTriangle className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
+                        <span className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
+                          Sin sanitizar — incidencia M13 generada
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </TarjetaRegistro>
               )
             })}
