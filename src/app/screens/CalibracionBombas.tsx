@@ -37,6 +37,7 @@ import { opInsert } from '@/lib/offline/construirOperaciones'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { ListaAncho, ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
 import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
 import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { fechaCorta } from '@/lib/formato'
 
@@ -296,11 +297,10 @@ export function CalibracionBombas() {
                 tituloClassName="mt-1 font-medium @min-[972px]/lista:mt-0 @min-[972px]/lista:font-semibold"
                 chips={m.resultado && (
                   <span
-                    className="line-clamp-3 max-w-full break-words rounded px-2 py-0.5 text-xs font-medium"
+                    className="block max-w-full rounded px-2 py-0.5 text-xs font-medium"
                     style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
-                    title={m.resultado}
                   >
-                    {m.resultado}
+                    <TextoColapsable texto={m.resultado} className="text-xs font-medium" />
                   </span>
                 )}
                 chipMovil={obligatoria && !firmas[m.id]?.realizo && (
