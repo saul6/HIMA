@@ -15,13 +15,16 @@ interface ModuloHeaderProps {
    */
   forzarTitulo?: string
   subtitulo?: string
+  /** Solo escritorio ancho (≥ 1224 px, donde las listas pasan a 2 columnas): reemplaza a `subtitulo`
+   * (p. ej. el resumen "N registros · N pendientes de firma"). Por debajo se ve `subtitulo`. */
+  subtituloEscritorio?: string
   /** Por defecto regresa a "/". Pasar solo si la pantalla necesita otro destino/mecanismo. */
   onBack?: () => void
   /** Botones reales del lado derecho (no decorativos) — se preservan tal cual. */
   acciones?: ReactNode
 }
 
-export function ModuloHeader({ tituloFallback, forzarTitulo, subtitulo, onBack, acciones }: ModuloHeaderProps) {
+export function ModuloHeader({ tituloFallback, forzarTitulo, subtitulo, subtituloEscritorio, onBack, acciones }: ModuloHeaderProps) {
   const location = useLocation()
   const navigate = useNavigate()
   const { modulos } = useModulosContext()
@@ -53,7 +56,12 @@ export function ModuloHeader({ tituloFallback, forzarTitulo, subtitulo, onBack, 
               {titulo}
             </motion.h1>
           </AnimatePresence>
-          {subtitulo && <p className="text-xs text-muted-foreground">{subtitulo}</p>}
+          {subtitulo && (
+            <p className={`text-xs text-muted-foreground${subtituloEscritorio ? ' min-[1224px]:hidden' : ''}`}>{subtitulo}</p>
+          )}
+          {subtituloEscritorio && (
+            <p className="hidden text-xs text-muted-foreground min-[1224px]:block">{subtituloEscritorio}</p>
+          )}
         </div>
         {acciones && (
           <div className="flex items-center gap-2 flex-shrink-0">
