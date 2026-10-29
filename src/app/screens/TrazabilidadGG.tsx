@@ -28,6 +28,9 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { useFirmaContext } from '@/context/FirmaContext'
 import {
   generarNotaTrazabilidadPDF,
@@ -112,6 +115,11 @@ export function TrazabilidadGG() {
   const { guardar: guardarOffline } = useGuardarOffline('M78')
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M78', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const orgId = profile?.org_id
   const orgNombre = useOrganizacion(orgId)
@@ -270,16 +278,25 @@ export function TrazabilidadGG() {
   return (
     <div className="min-h-full pb-safe-nav">
 
-      <ModuloHeader tituloFallback="Nota de Trazabilidad" subtitulo="M78 · Salida de producto · GlobalGAP" />
+      <ModuloHeader
+        tituloFallback="Nota de Trazabilidad"
+        subtitulo="M78 · Salida de producto · GlobalGAP"
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `M78 · Salida de producto · GlobalGAP · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />}
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}
-      <div className="px-4 pt-3 pb-4">
+      <div className="px-4 pt-3 pb-4 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
       {/* Lista */}
-      <div className="px-4 pb-32 space-y-3">
+      <div className="px-4 pb-32 space-y-3 min-[1224px]:pt-4">
         <PendientesOffline modulo="M78" />
         {error && (
           <div
@@ -292,44 +309,56 @@ export function TrazabilidadGG() {
         )}
 
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : registros.length === 0 ? (
           <EstadoVacio icono={Truck} titulo="Sin notas aún" ayuda="Registra la primera nota de trazabilidad con el botón +" />
         ) : (
-          <div className="space-y-3">
-            {registros.map((reg) => (
-              <div
+          <ListaTarjetas>
+          {registros.map(reg => {
+            const resumen = resumenFirmas(firmas[reg.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (reg as any).requiere_correccion === true
+            return (
+              <TarjetaRegistro
                 key={reg.id}
-                className="rounded-xl p-4 border"
-                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start gap-2 mb-1 flex-wrap">
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                etiquetas={(
+                  <>
+                    <span className="text-xs px-2 py-0.5 rounded font-semibold @min-[972px]/lista:hidden" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                      {formatFecha(reg.fecha)}
+                    </span>
+                    {reg.folio && (
                       <span
-                        className="text-xs px-2 py-0.5 rounded font-semibold"
-                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                        className="text-xs px-2 py-0.5 rounded font-mono font-semibold @min-[972px]/lista:hidden"
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
                       >
-                        {formatFecha(reg.fecha)}
+                        {reg.folio}
                       </span>
-                      {reg.folio && (
-                        <span
-                          className="text-xs px-2 py-0.5 rounded font-mono font-semibold"
-                          style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
-                        >
-                          {reg.folio}
-                        </span>
-                      )}
-                      {reg.presentacion && (
-                        <span
-                          className="text-xs px-2 py-0.5 rounded"
-                          style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
-                        >
-                          {reg.presentacion === 'Otro' ? reg.otro_presentacion || 'Otro' : reg.presentacion}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-sm text-foreground font-semibold">{reg.rancho_nombre}</span>
+                    )}
+                    {reg.presentacion && (
+                      <span
+                        className="text-xs px-2 py-0.5 rounded"
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                      >
+                        {reg.presentacion === 'Otro' ? reg.otro_presentacion || 'Otro' : reg.presentacion}
+                      </span>
+                    )}
+                  </>
+                )}
+                meta={[
+                  reg.folio ? <span className="hidden @min-[972px]/lista:inline"><span className="font-semibold text-foreground">{reg.rancho_nombre}</span></span> : null,
+                  <span className="hidden @min-[972px]/lista:inline">{formatFecha(reg.fecha)}</span>,
+                ]}
+                titulo={(
+                  <>
+                    <span className="@min-[972px]/lista:hidden">{reg.rancho_nombre}</span>
+                    <span className="hidden font-mono @min-[972px]/lista:inline">{reg.folio || reg.rancho_nombre}</span>
+                  </>
+                )}
+                tituloTexto={reg.folio ?? reg.rancho_nombre}
+                contenido={(
+                  <>
                     {reg.cultivo && (
                       <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
                         Cultivo: {reg.cultivo}
@@ -345,13 +374,17 @@ export function TrazabilidadGG() {
                         Chofer: {reg.chofer}
                       </div>
                     )}
-                    {obligatoria && !firmas[reg.id]?.realizo && (
-                      <span className="text-xs px-2 py-0.5 rounded font-medium mt-2 inline-block"
+                    <div className="@min-[972px]/lista:hidden">
+                      {obligatoria && !firmas[reg.id]?.realizo && (
+<span className="text-xs px-2 py-0.5 rounded font-medium"
                         style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
                         Pendiente de firma
                       </span>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  </>
+                )}
+                acciones={<>
                   <button
                     onClick={() => descargarPDF(reg.id)}
                     disabled={pdfLoading === reg.id}
@@ -363,8 +396,10 @@ export function TrazabilidadGG() {
                       : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
                     }
                   </button>
-                </div>
-                <FirmasRegistro
+                </>}
+                pie={(
+                  <FirmasRegistro
+                    variante="escritorio"
                   modulo="M78"
                   registroId={reg.id}
                   fechaRegistro={reg.fecha}
@@ -372,9 +407,11 @@ export function TrazabilidadGG() {
                   loadingFirmas={loadingFirmas}
                   onFirmado={refetchFirmas}
                 />
-              </div>
-            ))}
-          </div>
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
         )}
       </div>
 
