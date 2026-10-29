@@ -31,6 +31,9 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { opInsert } from '@/lib/offline/construirOperaciones'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { fechaCorta } from '@/lib/formato'
 
@@ -86,6 +89,11 @@ export function ControlHerramientas() {
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M64', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M64')
@@ -235,19 +243,25 @@ export function ControlHerramientas() {
         tituloFallback="Control de Herramientas"
         subtitulo="M64 · Por evento"
         onBack={() => navigate(-1)}
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `M64 · Por evento · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />}
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}
-      <div className="px-4 pt-3 pb-4">
+      <div className="px-4 pt-3 pb-4 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
       {/* Lista */}
-      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
+      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto min-[1224px]:pt-4">
         {mostrarSkeleton ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : loading && registros.length === 0 ? (
           <div style={{ minHeight: '280px' }} />
         ) : registros.length === 0 ? (
@@ -268,57 +282,74 @@ export function ControlHerramientas() {
             ))}
           </div>
         )}
-        {registros.map(r => (
-          <div key={r.id} className="bg-card border border-border rounded-[0.625rem] p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1 flex-wrap mb-0.5">
-                  {orgNombre && (
-                    <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
-                  )}
-                  <span className="text-sm font-semibold">{r.rancho_nombre}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">{formatFecha(r.fecha)}</p>
-                <p className="text-sm mt-1 font-medium">{r.herramienta} <span className="text-muted-foreground font-normal">x{r.cantidad}</span></p>
-                <p className="text-xs text-muted-foreground mt-0.5">{r.trabajador}</p>
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  <span
-                    className="text-xs px-2 py-0.5 rounded font-medium"
-                    style={r.devuelto
-                      ? { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
-                      : { backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }
-                    }
-                  >
-                    {r.devuelto ? 'Devuelto' : 'Pendiente'}
-                  </span>
-                </div>
-                {obligatoria && !firmas[r.id]?.realizo && (
-                  <Etiqueta tono="error" className="mt-1">
+        <ListaTarjetas>
+          {registros.map(r => {
+            const resumen = resumenFirmas(firmas[r.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (r as any).requiere_correccion === true
+            return (
+              <TarjetaRegistro
+                key={r.id}
+                className="rounded-[0.625rem]"
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  <>
+                    {orgNombre && <span className="font-medium">{orgNombre} · </span>}
+                    <span className="text-sm font-semibold text-foreground @min-[972px]/lista:text-xs">{r.rancho_nombre}</span>
+                  </>,
+                  formatFecha(r.fecha),
+                ]}
+                titulo={<>{r.herramienta} <span className="font-normal text-muted-foreground">x{r.cantidad}</span></>}
+                tituloTexto={`${r.herramienta} x${r.cantidad}`}
+                tituloClassName="mt-1 font-medium @min-[972px]/lista:mt-0 @min-[972px]/lista:font-semibold"
+                chips={(
+                  <>
+                    <span className="line-clamp-2 basis-full break-words text-xs text-muted-foreground" title={r.trabajador}>{r.trabajador}</span>
+                    <span
+                      className="text-xs px-2 py-0.5 rounded font-medium"
+                      style={r.devuelto
+                        ? { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
+                        : { backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }
+                      }
+                    >
+                      {r.devuelto ? 'Devuelto' : 'Pendiente'}
+                    </span>
+                  </>
+                )}
+                chipMovil={obligatoria && !firmas[r.id]?.realizo && (
+                  <Etiqueta tono="error">
                     Pendiente de firma
                   </Etiqueta>
                 )}
-              </div>
-              <button
-                onClick={() => descargarPDF(r.id)}
-                disabled={pdfLoading === r.id}
-                className="p-2 rounded-lg border border-border shrink-0"
-              >
-                {pdfLoading === r.id
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-                }
-              </button>
-            </div>
-            <FirmasRegistro
-              modulo="M64"
-              registroId={r.id}
-              fechaRegistro={r.fecha}
-              firma={firmas[r.id]}
-              loadingFirmas={loadingFirmas}
-              onFirmado={async () => { await refetch(); await refetchFirmas() }}
-            />
-          </div>
-        ))}
+                acciones={(
+                  <button
+                    onClick={() => descargarPDF(r.id)}
+                    disabled={pdfLoading === r.id}
+                    className="p-2 rounded-lg border border-border shrink-0"
+                    aria-label="Descargar PDF"
+                  >
+                    {pdfLoading === r.id
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                    }
+                  </button>
+                )}
+                pie={(
+                  <FirmasRegistro
+                    variante="escritorio"
+                    modulo="M64"
+                    registroId={r.id}
+                    fechaRegistro={r.fecha}
+                    firma={firmas[r.id]}
+                    loadingFirmas={loadingFirmas}
+                    onFirmado={async () => { await refetch(); await refetchFirmas() }}
+                  />
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
       </div>
 
       {/* FAB */}
