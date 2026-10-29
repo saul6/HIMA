@@ -27,6 +27,9 @@ import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { TextareaContador } from '@/app/components/TextareaContador'
@@ -202,6 +205,11 @@ export function RecepcionFruta() {
 
   const todosIds = useMemo(() => recepciones.filter(r => !r.sin_subir).map(r => r.id), [recepciones])
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M39', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (recepciones.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : recepciones.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
@@ -543,10 +551,16 @@ export function RecepcionFruta() {
       <ModuloHeader
         tituloFallback="Recepción Diaria de Fruta"
         subtitulo={`${codigoFormato('F-FRUS-PRO-02', codigoClave)} · Por evento`}
+        subtituloEscritorio={
+          loading && recepciones.length === 0
+            ? undefined
+            : `${codigoFormato('F-FRUS-PRO-02', codigoClave)} · Por evento · ${textoResumenLista(recepciones.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />}
       />
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
@@ -562,28 +576,45 @@ export function RecepcionFruta() {
         )}
 
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : recepciones.length === 0 ? (
           <EstadoVacio icono={PackageOpen} titulo="Sin recepciones aún" ayuda="Crea la primera recepción con el botón +" />
         ) : (
-          recepciones.map(r => {
+          <ListaTarjetas>
+          {recepciones.map(r => {
+            const resumen = resumenFirmas(firmas[r.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (r as any).requiere_correccion === true
             const esAL = r.hoja_no !== null
             const pendienteFirma = !r.sin_subir && obligatoria && !firmas[r.id]?.realizo
             return (
-              <div key={r.id} className="bg-card border border-border rounded-xl p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground truncate font-semibold">
-                      {r.rancho_nombre}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{formatFecha(r.fecha)}</p>
+              <TarjetaRegistro
+                key={r.id}
+                className={r.sin_subir ? 'col-span-full' : undefined}
+                estado={r.sin_subir ? 'neutro' : requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={r.sin_subir || resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  <span className="hidden @min-[972px]/lista:inline">{r.empresa ? r.rancho_nombre : null}</span>,
+                  <span className="hidden @min-[972px]/lista:inline">{formatFecha(r.fecha)}</span>,
+                ]}
+                titulo={(
+                  <>
+                    <span className="@min-[972px]/lista:hidden">{r.rancho_nombre}</span>
+                    <span className="hidden @min-[972px]/lista:inline">{r.empresa || r.rancho_nombre}</span>
+                  </>
+                )}
+                tituloTexto={r.empresa || r.rancho_nombre}
+                tituloClassName="truncate @min-[972px]/lista:whitespace-normal"
+                contenido={(
+                  <>
+                    <p className="text-xs text-muted-foreground @min-[972px]/lista:hidden">{formatFecha(r.fecha)}</p>
                     {r.empresa && (
-                      <p className="text-xs mt-0.5 font-semibold">{r.empresa}</p>
+                      <p className="mt-0.5 text-xs font-semibold @min-[972px]/lista:hidden">{r.empresa}</p>
                     )}
                     {r.hoja_no && (
                       <p className="text-xs text-muted-foreground mt-0.5">Hoja No.: {r.hoja_no}</p>
                     )}
-                    <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                    <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
                       {r.sin_subir && (
                         <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
                           style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
@@ -593,33 +624,38 @@ export function RecepcionFruta() {
                         </span>
                       )}
                       {pendienteFirma && (
-                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold @min-[972px]/lista:hidden"
                           style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
                           Pendiente de firma
                         </span>
                       )}
                       {esAL ? (
-                        <>
-                          <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                            style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}>
-                            {r.total_cajas} cajas · {r.total_piezas} piezas
-                          </span>
-                        </>
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                          {r.total_cajas} cajas · {r.total_piezas} piezas
+                        </span>
                       ) : (
                         <>
-                          <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                            style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}>
+                          <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
                             {r.total_6oz + r.total_12oz + r.total_18oz} cajas totales
                           </span>
                           {(r.total_6oz > 0 || r.total_12oz > 0 || r.total_18oz > 0) && (
-                            <span className="text-xs text-muted-foreground">
-                              {r.total_6oz} · {r.total_12oz} · {r.total_18oz} (6/12/18 oz)
-                            </span>
+                            <>
+                              <span className="text-xs text-muted-foreground @min-[972px]/lista:hidden">
+                                {r.total_6oz} · {r.total_12oz} · {r.total_18oz} (6/12/18 oz)
+                              </span>
+                              <span className="hidden grid-cols-3 gap-1 text-xs text-muted-foreground @min-[972px]/lista:grid">
+                                <span className="rounded px-2 py-0.5 text-center" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>6 oz: {r.total_6oz}</span>
+                                <span className="rounded px-2 py-0.5 text-center" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>12 oz: {r.total_12oz}</span>
+                                <span className="rounded px-2 py-0.5 text-center" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>18 oz: {r.total_18oz}</span>
+                              </span>
+                            </>
                           )}
                         </>
                       )}
                     </div>
-                  </div>
+                  </>
+                )}
+                acciones={<>
                   <button
                     onClick={() => descargarPDF(r.id)}
                     disabled={pdfLoading === r.id || r.sin_subir}
@@ -630,11 +666,15 @@ export function RecepcionFruta() {
                       : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
                     }
                   </button>
-                </div>
-                {!r.sin_subir && <FirmasRegistro modulo="M39" registroId={r.id} fechaRegistro={r.fecha} firma={firmas[r.id]} loadingFirmas={loadingFirmas} onFirmado={refetchFirmas} />}
-              </div>
+                </>}
+                pie={(
+                  !r.sin_subir ? (<FirmasRegistro
+                    variante="escritorio" modulo="M39" registroId={r.id} fechaRegistro={r.fecha} firma={firmas[r.id]} loadingFirmas={loadingFirmas} onFirmado={refetchFirmas} />) : null
+                )}
+              />
             )
-          })
+          })}
+        </ListaTarjetas>
         )}
       </div>
 
