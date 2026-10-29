@@ -24,6 +24,9 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { generarMantenimientoEquiposGGPDF, generarMantenimientoEquiposGGConsolidadoPDF } from '@/lib/pdf/m76/generarMantenimientoEquiposGGPDF'
@@ -147,6 +150,11 @@ export function MantenimientoEquiposGG() {
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M76', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M76')
@@ -290,10 +298,19 @@ export function MantenimientoEquiposGG() {
   return (
     <div className="min-h-full pb-safe-nav">
 
-      <ModuloHeader tituloFallback="Verificación y Mantenimiento de Equipos" subtitulo="M76 · REG-09 · Mantenimiento" />
+      <ModuloHeader
+        tituloFallback="Verificación y Mantenimiento de Equipos"
+        subtitulo="M76 · REG-09 · Mantenimiento"
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `M76 · REG-09 · Mantenimiento · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setSheetConsolidado(true)} />}
+      />
 
       <BannerTareaOrigen tareaId={tareaId} />
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
       </div>
 
@@ -328,36 +345,65 @@ export function MantenimientoEquiposGG() {
           </div>
         )}
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : registros.length === 0 ? (
           <EstadoVacio icono={Wrench} titulo="Sin registros aún" ayuda="Crea el primer registro con el botón +" />
         ) : (
-          <div className="space-y-3">
-            {registros.map((reg) => {
-              const tipo = (reg.tipo_actividad as TipoActividad | null) ?? 'verificacion'
-              const cols = TIPO_COLORS[tipo] ?? TIPO_COLORS.verificacion
-              return (
-                <div
-                  key={reg.id}
-                  className="rounded-xl p-4 border"
-                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-                >
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span
-                        className="text-xs px-2 py-0.5 rounded font-semibold"
-                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
-                      >
-                        {formatFecha(reg.fecha)}
-                      </span>
-                      <span
-                        className="text-xs px-2 py-0.5 rounded font-semibold"
-                        style={{ backgroundColor: cols.fill, color: cols.text }}
-                      >
-                        {TIPO_LABELS[tipo]}
-                      </span>
+          <ListaTarjetas>
+          {registros.map(reg => {
+            const resumen = resumenFirmas(firmas[reg.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (reg as any).requiere_correccion === true
+            const tipo = (reg.tipo_actividad as TipoActividad | null) ?? 'verificacion'
+            return (
+              <TarjetaRegistro
+                key={reg.id}
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                etiquetas={(
+                  <>
+                    <span className="text-xs px-2 py-0.5 rounded font-semibold @min-[972px]/lista:hidden" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                      {formatFecha(reg.fecha)}
+                    </span>
+                    <span
+                      className="text-xs px-2 py-0.5 rounded font-semibold"
+                      style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                    >
+                      {TIPO_LABELS[tipo]}
+                    </span>
+                  </>
+                )}
+                meta={[
+                  <span className="hidden @min-[972px]/lista:inline">{formatFecha(reg.fecha)}</span>,
+                ]}
+                titulo={reg.rancho_nombre}
+                tituloTexto={reg.rancho_nombre}
+                contenido={(
+                  <>
+                    {reg.equipo && (
+                      <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                        Equipo: {reg.equipo}
+                      </div>
+                    )}
+                    {reg.realizo && (
+                      <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                        Realizó: {reg.realizo}
+                      </div>
+                    )}
+                    <div className="@min-[972px]/lista:hidden">
+                      {!loadingFirmas && !firmas[reg.id]?.realizo && (
+<span
+                      className=" text-xs px-2 py-0.5 rounded font-semibold"
+                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
+                    >
+                      Pendiente de firma
+                    </span>
+                      )}
                     </div>
-                    <button
+                  </>
+                )}
+                acciones={<>
+                  <button
                       onClick={() => descargarPDF(reg.id)}
                       className="p-1 flex-shrink-0"
                       style={{ color: 'var(--primary)' }}
@@ -368,27 +414,10 @@ export function MantenimientoEquiposGG() {
                         ? <Loader2 className="w-4 h-4 animate-spin" />
                         : <FileDown className="w-4 h-4" />}
                     </button>
-                  </div>
-                  <span className="text-sm text-foreground font-semibold">{reg.rancho_nombre}</span>
-                  {reg.equipo && (
-                    <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                      Equipo: {reg.equipo}
-                    </div>
-                  )}
-                  {reg.realizo && (
-                    <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                      Realizó: {reg.realizo}
-                    </div>
-                  )}
-                  {!loadingFirmas && !firmas[reg.id]?.realizo && (
-                    <span
-                      className="inline-block mt-1 text-xs px-2 py-0.5 rounded font-semibold"
-                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
-                    >
-                      Pendiente de firma
-                    </span>
-                  )}
+                </>}
+                pie={(
                   <FirmasRegistro
+                    variante="escritorio"
                     modulo="M76"
                     registroId={reg.id}
                     firma={firmas[reg.id]}
@@ -396,10 +425,11 @@ export function MantenimientoEquiposGG() {
                     fechaRegistro={reg.fecha}
                     onFirmado={refetchFirmas}
                   />
-                </div>
-              )
-            })}
-          </div>
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
         )}
       </div>
 
