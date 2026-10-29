@@ -49,6 +49,8 @@ interface TarjetaRegistroProps {
   responsable?: React.ReactNode
   /** Botones de arriba a la derecha (PDF, eliminar...). */
   acciones?: React.ReactNode
+  /** Contenido propio en la columna del título (textos, chips, fotos), a la izquierda de `acciones`. */
+  contenido?: React.ReactNode
   /** Cuerpo propio del módulo, a ancho completo bajo el encabezado. */
   children?: React.ReactNode
   /** Bloque de firmas (FirmasRegistro), al fondo. */
@@ -59,7 +61,7 @@ interface TarjetaRegistroProps {
 /** Tarjeta de registro de módulo. En 1 columna se ve como la tarjeta de siempre (p-4, borde, radio);
  * en 2 columnas (dentro de ListaTarjetas) suma franja y etiqueta de estado, chip de firmas y encabezado compacto. */
 export function TarjetaRegistro({
-  estado = 'neutro', etiquetas, meta, titulo, tituloTexto, tituloClassName, chips, chipMovil, firmas, responsable, acciones, children, pie, className,
+  estado = 'neutro', etiquetas, meta, titulo, tituloTexto, tituloClassName, chips, chipMovil, firmas, responsable, contenido, acciones, children, pie, className,
 }: TarjetaRegistroProps) {
   const dos = useListaDosColumnas()
   const textoEstado = TEXTO_ESTADO[estado]
@@ -119,6 +121,7 @@ export function TarjetaRegistro({
             </div>
           )}
           {!dos && responsable && <p className="mt-1 text-xs text-muted-foreground">{responsable}</p>}
+          {contenido}
         </div>
         {acciones && <div className="flex flex-shrink-0 items-center gap-1">{acciones}</div>}
       </div>

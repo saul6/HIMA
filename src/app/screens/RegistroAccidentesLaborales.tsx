@@ -9,6 +9,10 @@ import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { FotoEvidencia } from '@/app/components/FotoEvidencia'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
+import { ListaAncho, ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { toast } from 'sonner'
 import { comprimirImagen } from '@/lib/fotos/comprimirImagen'
 import { useAuthContext } from '@/context/AuthContext'
@@ -179,27 +183,45 @@ function AccidenteCard({
   onFirmado: () => Promise<void>
 }) {
   const fotoPaths = acc.fotos.map((f) => f.storage_path)
+  // requiere_correccion no viene en la consulta de M20: no se usa el estado "correccion"
+  const sinDatosFirmas = loadingFirmas || Object.keys(firmas).length === 0
+  const resumen = resumenFirmas(firmas[acc.id], sinDatosFirmas)
 
   return (
-    <div className="bg-card rounded-xl border border-border p-4 flex flex-col gap-2">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex flex-col gap-1 flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            {orgNombre && (
-              <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
-            )}
-            <span className="text-xs font-semibold bg-[var(--agro-success-fill)] text-[var(--agro-success-text)] px-2 py-0.5 rounded-full truncate">
-              {acc.rancho_nombre}
-            </span>
-            <span className="text-xs text-muted-foreground">{formatFecha(acc.fecha)}</span>
-          </div>
-          <p className="text-sm font-semibold text-foreground leading-snug mt-0.5">
-            {acc.trabajador_nombre}
-          </p>
+    <TarjetaRegistro
+      estado={resumen.estado}
+      firmas={resumen.estado === 'neutro' ? null : resumen}
+      meta={[
+        <span className="inline-flex flex-wrap items-center gap-2">
+          {orgNombre && (
+            <span className="font-medium">{orgNombre} ·</span>
+          )}
+          <span className="truncate rounded-full bg-[var(--agro-success-fill)] px-2 py-0.5 text-xs font-semibold text-[var(--agro-success-text)]">
+            {acc.rancho_nombre}
+          </span>
+          <span>{formatFecha(acc.fecha)}</span>
+        </span>,
+      ]}
+      titulo={acc.trabajador_nombre}
+      tituloClassName="mt-0.5 leading-snug"
+      acciones={(
+        <Button
+          variant="ghost"
+          size="icon"
+          className="shrink-0 text-[var(--primary)] transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-[var(--agro-success-fill)]"
+          onClick={() => onPDF(acc.id)}
+          disabled={cargandoPDF === acc.id}
+          aria-label="Descargar PDF"
+        >
+          {cargandoPDF === acc.id
+            ? <Loader2 className="w-4 h-4 animate-spin" />
+            : <FileDown className="w-4 h-4" />}
+        </Button>
+      )}
+      contenido={(
+        <div className="mt-1 flex flex-col gap-1">
           {acc.descripcion_incidente && (
-            <p className="text-xs text-muted-foreground line-clamp-2 leading-snug">
-              {acc.descripcion_incidente}
-            </p>
+            <TextoColapsable texto={acc.descripcion_incidente} className="text-xs text-muted-foreground leading-snug" />
           )}
           {acc.atencion_recibida.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-1">
@@ -215,23 +237,21 @@ function AccidenteCard({
           )}
           {fotoPaths.length > 0 && <GaleriaFotos paths={fotoPaths} />}
         </div>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="shrink-0 text-[var(--primary)] transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-[var(--agro-success-fill)]"
-          onClick={() => onPDF(acc.id)}
-          disabled={cargandoPDF === acc.id}
-          aria-label="Descargar PDF"
-        >
-          {cargandoPDF === acc.id
-            ? <Loader2 className="w-4 h-4 animate-spin" />
-            : <FileDown className="w-4 h-4" />}
-        </Button>
-      </div>
-
+      )}
+      pie={(
+        <FirmasRegistro
+          variante="escritorio"
+          modulo="M20"
+          registroId={acc.id}
+          fechaRegistro={acc.fecha}
+          firma={firmas[acc.id]}
+          loadingFirmas={loadingFirmas}
+          onFirmado={onFirmado}
+        />
+      )}
+    >
       {/* Indicadores booleanos */}
-      <div className="flex gap-2 flex-wrap text-xs">
+      <div className="mt-2 flex gap-2 flex-wrap text-xs">
         {acc.requirio_incapacidad && (
           <span className="bg-[var(--agro-danger-fill)] text-[var(--agro-danger-text)] px-2 py-0.5 rounded-full">
             Incapacidad
@@ -248,20 +268,12 @@ function AccidenteCard({
           </span>
         )}
         {obligatoria && !firmas[acc.id]?.realizo && (
-          <Etiqueta tono="error">
+          <Etiqueta tono="error" className="@min-[972px]/lista:hidden">
             Pendiente de firma
           </Etiqueta>
         )}
       </div>
-      <FirmasRegistro
-        modulo="M20"
-        registroId={acc.id}
-        fechaRegistro={acc.fecha}
-        firma={firmas[acc.id]}
-        loadingFirmas={loadingFirmas}
-        onFirmado={onFirmado}
-      />
-    </div>
+    </TarjetaRegistro>
   )
 }
 
@@ -325,6 +337,10 @@ export function RegistroAccidentesLaborales() {
   // Firmas
   const todosIds = accidentes.map(a => a.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M20', todosIds)
+  // Sin datos de firmas todavía (cargando): sin conteo de pendientes en el subtítulo.
+  const pendientesFirma = loadingFirmas || (accidentes.length > 0 && Object.keys(firmas).length === 0)
+    ? null
+    : accidentes.filter(a => resumenFirmas(firmas[a.id]).estado === 'pendiente').length
 
   // Sheets
   const [sheetNuevo, setSheetNuevo] = useState(false)
@@ -596,6 +612,13 @@ export function RegistroAccidentesLaborales() {
     }
   }
 
+  function abrirConsolidado() {
+    setConsolidadoRanchoId(ranchos[0]?.id ?? '')
+    setConsolidadoDesde('')
+    setConsolidadoHasta('')
+    setSheetConsolidado(true)
+  }
+
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
@@ -604,26 +627,25 @@ export function RegistroAccidentesLaborales() {
       <ModuloHeader
         tituloFallback={TITULO_MODULO}
         subtitulo={`${codigoFormato('F-FRUS-CAL-15', codigoClave)} · Cuarto Frío`}
+        subtituloEscritorio={
+          loading && accidentes.length === 0
+            ? undefined
+            : `${codigoFormato('F-FRUS-CAL-15', codigoClave)} · Cuarto Frío · ${textoResumenLista(accidentes.length, pendientesFirma)}`
+        }
         onBack={() => navigate(-1)}
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={abrirConsolidado} />}
       />
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3">
-        <BotonExportarConsolidado
-          onClick={() => {
-            setConsolidadoRanchoId(ranchos[0]?.id ?? '')
-            setConsolidadoDesde('')
-            setConsolidadoHasta('')
-            setSheetConsolidado(true)
-          }}
-        />
+      <div className="px-4 pt-3 min-[1224px]:hidden">
+        <BotonExportarConsolidado onClick={abrirConsolidado} />
       </div>
 
       {/* Lista */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 pb-28 flex flex-col gap-3">
           {mostrarSkeleton && (
-            <ListaSkeleton />
+            <ListaSkeleton rejilla />
           )}
           {!mostrarSkeleton && loading && accidentes.length === 0 && lotesOffline.length === 0 && (
             <div style={{ minHeight: '280px' }} />
@@ -634,30 +656,34 @@ export function RegistroAccidentesLaborales() {
           {!loading && !error && accidentes.length === 0 && lotesOffline.length === 0 && (
             <EstadoVacio icono={ShieldAlert} titulo="No hay registros de accidentes" />
           )}
-          {lotesOffline.map(lote => (
-            <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground">{(lote.metadatos as any)?.rancho_nombre ?? '—'}</p>
-                  <p className="text-xs text-muted-foreground">{(lote.metadatos as any)?.fecha ?? '—'}</p>
+          <ListaTarjetas>
+            {lotesOffline.map(lote => (
+              <ListaAncho key={lote.id}>
+                <div className="bg-card border border-border rounded-[0.625rem] p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{(lote.metadatos as any)?.rancho_nombre ?? '—'}</p>
+                      <p className="text-xs text-muted-foreground">{(lote.metadatos as any)?.fecha ?? '—'}</p>
+                    </div>
+                    <ChipOffline lote={lote} />
+                  </div>
                 </div>
-                <ChipOffline lote={lote} />
-              </div>
-            </div>
-          ))}
-          {accidentes.length > 0 && accidentes.map((acc) => (
-            <AccidenteCard
-              key={acc.id}
-              acc={acc}
-              onPDF={handlePDF}
-              cargandoPDF={cargandoPDF}
-              orgNombre={orgNombre}
-              obligatoria={obligatoria}
-              firmas={firmas}
-              loadingFirmas={loadingFirmas}
-              onFirmado={refetchFirmas}
-            />
-          ))}
+              </ListaAncho>
+            ))}
+            {accidentes.length > 0 && accidentes.map((acc) => (
+              <AccidenteCard
+                key={acc.id}
+                acc={acc}
+                onPDF={handlePDF}
+                cargandoPDF={cargandoPDF}
+                orgNombre={orgNombre}
+                obligatoria={obligatoria}
+                firmas={firmas}
+                loadingFirmas={loadingFirmas}
+                onFirmado={refetchFirmas}
+              />
+            ))}
+          </ListaTarjetas>
         </div>
       </div>
 
