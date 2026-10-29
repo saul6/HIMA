@@ -30,6 +30,9 @@ const FRANJA: Record<EstadoTarjeta, string> = {
 interface TarjetaRegistroProps {
   /** Franja de color + etiqueta de texto: solo habla de firmas (y de corrección). Solo en 2 columnas. */
   estado?: EstadoTarjeta
+  /** Etiquetas del módulo (prioridad...). En 1 columna van sobre las líneas `meta` (como en la tarjeta anterior);
+   * en 2 columnas pasan a la fila de chips. */
+  etiquetas?: React.ReactNode
   /** Líneas pequeñas sobre el título (instalación, fecha). En 1 columna una por renglón; en 2 columnas en una línea con " · ". */
   meta?: React.ReactNode[]
   titulo?: React.ReactNode
@@ -56,7 +59,7 @@ interface TarjetaRegistroProps {
 /** Tarjeta de registro de módulo. En 1 columna se ve como la tarjeta de siempre (p-4, borde, radio);
  * en 2 columnas (dentro de ListaTarjetas) suma franja y etiqueta de estado, chip de firmas y encabezado compacto. */
 export function TarjetaRegistro({
-  estado = 'neutro', meta, titulo, tituloTexto, tituloClassName, chips, chipMovil, firmas, responsable, acciones, children, pie, className,
+  estado = 'neutro', etiquetas, meta, titulo, tituloTexto, tituloClassName, chips, chipMovil, firmas, responsable, acciones, children, pie, className,
 }: TarjetaRegistroProps) {
   const dos = useListaDosColumnas()
   const textoEstado = TEXTO_ESTADO[estado]
@@ -83,6 +86,7 @@ export function TarjetaRegistro({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
+          {!dos && etiquetas && <div className="mb-1 flex flex-wrap items-center gap-2">{etiquetas}</div>}
           {dos ? (
             lineas.length > 0 && (
               <p className="mb-0.5 text-xs text-muted-foreground">
@@ -100,10 +104,11 @@ export function TarjetaRegistro({
             ))
           )}
           {tituloEl}
-          {(chips || chipMovil || (dos && (textoEstado || firmas || responsable))) && (
+          {(chips || chipMovil || (dos && (textoEstado || firmas || responsable || etiquetas))) && (
             <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
               {dos && textoEstado && <Etiqueta tono={TONO_ESTADO[estado]}>{textoEstado}</Etiqueta>}
               {dos && firmas && <Etiqueta tono="neutral" className="font-normal">{firmas.hechas}/{firmas.total} firmas</Etiqueta>}
+              {dos && etiquetas}
               {chips}
               {!dos && chipMovil}
               {dos && responsable && (

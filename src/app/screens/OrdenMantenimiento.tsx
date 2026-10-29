@@ -32,6 +32,10 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -136,6 +140,11 @@ export function OrdenMantenimiento() {
 
   const todosIds = useMemo(() => ordenes.map(o => o.id), [ordenes])
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M44', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (ordenes.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : ordenes.filter(o => resumenFirmas(firmas[o.id]).estado === 'pendiente').length
 
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
@@ -307,6 +316,7 @@ export function OrdenMantenimiento() {
       <ModuloHeader
         tituloFallback="Orden de Mantenimiento"
         subtitulo="Cuarto Frío · Por evento"
+        subtituloEscritorio={loading ? undefined : `Cuarto Frío · Por evento · ${textoResumenLista(ordenes.length, pendientesFirma)}`}
       />
       <BannerTareaOrigen tareaId={tareaId} />
 
@@ -326,18 +336,20 @@ export function OrdenMantenimiento() {
         )}
 
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : ordenes.length === 0 ? (
           <EstadoVacio icono={Wrench} titulo="Sin órdenes aún" ayuda="Crea la primera orden con el botón +" />
         ) : (
-          ordenes.map((o) => (
-            <div
-              key={o.id}
-              className="bg-card rounded-xl p-4 border border-border"
-            >
-              <div className="flex items-start gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
+          <ListaTarjetas>
+            {ordenes.map((o) => {
+              const resumen = resumenFirmas(firmas[o.id], sinDatosFirmas)
+              return (
+                <TarjetaRegistro
+                  key={o.id}
+                  // requiere_correccion no viene en la consulta de M44: no se usa el estado "correccion"
+                  estado={resumen.estado}
+                  firmas={resumen.estado === 'neutro' ? null : resumen}
+                  etiquetas={(
                     <span
                       className="text-xs px-2 py-0.5 rounded"
                       style={{
@@ -348,18 +360,50 @@ export function OrdenMantenimiento() {
                     >
                       {PRIORIDAD_LABELS[o.prioridad]}
                     </span>
-                    {o.folio && (
-                      <span className="text-xs text-muted-foreground">#{o.folio}</span>
-                    )}
-                  </div>
-                  <p className="text-sm text-foreground truncate font-semibold">
-                    {o.rancho_nombre}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{fmtFecha(o.fecha)}</p>
+                  )}
+                  meta={[
+                    <span className="text-sm font-semibold text-foreground @min-[972px]/lista:text-xs">{o.rancho_nombre}</span>,
+                    fmtFecha(o.fecha),
+                  ]}
+                  titulo={o.folio ? `#${o.folio}` : undefined}
+                  tituloTexto={o.folio ?? undefined}
+                  chipMovil={obligatoria && !firmas[o.id]?.realizo && (
+                    <Etiqueta tono="error">
+                      Pendiente de firma
+                    </Etiqueta>
+                  )}
+                  acciones={(
+                    <button
+                      onClick={() => handlePDF(o)}
+                      disabled={generandoPDF === o.id}
+                      className="p-2 rounded-lg flex-shrink-0 disabled:opacity-50"
+                      style={{ color: 'var(--primary)' }}
+                      title="Descargar PDF"
+                      aria-label="Descargar PDF"
+                    >
+                      {generandoPDF === o.id ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <FileText className="w-5 h-5" />
+                      )}
+                    </button>
+                  )}
+                  pie={(
+                    <FirmasRegistro
+                      variante="escritorio"
+                      modulo="M44"
+                      registroId={o.id}
+                      fechaRegistro={o.fecha}
+                      firma={firmas[o.id]}
+                      loadingFirmas={loadingFirmas}
+                      onFirmado={async () => { await refetch(); await refetchFirmas() }}
+                    />
+                  )}
+                >
                   {o.descripcion_solicitud && (
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                      {o.descripcion_solicitud}
-                    </p>
+                    <div className="mt-2">
+                      <TextoColapsable texto={o.descripcion_solicitud} className="text-xs text-muted-foreground" />
+                    </div>
                   )}
                   {o.equipo_produccion && !o.lavado_sanitizado && (
                     <div className="flex items-center gap-1 mt-1.5">
@@ -369,36 +413,10 @@ export function OrdenMantenimiento() {
                       </span>
                     </div>
                   )}
-                  {obligatoria && !firmas[o.id]?.realizo && (
-                    <Etiqueta tono="error" className="mt-1">
-                      Pendiente de firma
-                    </Etiqueta>
-                  )}
-                </div>
-                <button
-                  onClick={() => handlePDF(o)}
-                  disabled={generandoPDF === o.id}
-                  className="p-2 rounded-lg flex-shrink-0 disabled:opacity-50"
-                  style={{ color: 'var(--primary)' }}
-                  title="Descargar PDF"
-                >
-                  {generandoPDF === o.id ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <FileText className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-              <FirmasRegistro
-                modulo="M44"
-                registroId={o.id}
-                fechaRegistro={o.fecha}
-                firma={firmas[o.id]}
-                loadingFirmas={loadingFirmas}
-                onFirmado={async () => { await refetch(); await refetchFirmas() }}
-              />
-            </div>
-          ))
+                </TarjetaRegistro>
+              )
+            })}
+          </ListaTarjetas>
         )}
       </div>
 
