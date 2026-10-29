@@ -24,6 +24,9 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { generarEmpleadosGGPDF, generarEmpleadosGGConsolidadoPDF } from '@/lib/pdf/m77/generarEmpleadosGGPDF'
@@ -84,6 +87,11 @@ export function EmpleadosGG() {
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M77', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M77')
@@ -228,10 +236,19 @@ export function EmpleadosGG() {
   return (
     <div className="min-h-full pb-safe-nav">
 
-      <ModuloHeader tituloFallback="Identificación de Empleados" subtitulo="M77 · REG-ASIP-26 · Seguridad" />
+      <ModuloHeader
+        tituloFallback="Identificación de Empleados"
+        subtitulo="M77 · REG-ASIP-26 · Seguridad"
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `M77 · REG-ASIP-26 · Seguridad · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setSheetConsolidado(true)} />}
+      />
 
       <BannerTareaOrigen tareaId={tareaId} />
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
       </div>
 
@@ -266,50 +283,59 @@ export function EmpleadosGG() {
           </div>
         )}
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : registros.length === 0 ? (
           <EstadoVacio icono={Users} titulo="Sin empleados registrados" ayuda="Agrega el primer empleado con el botón +" />
         ) : (
-          <div className="space-y-3">
-            {registros.map((reg) => {
-              const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
-              const esMio = reg.creado_por === user?.id
-              return (
-                <div
-                  key={reg.id}
-                  className="rounded-xl p-4 border"
-                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm text-foreground font-semibold">{reg.nombre}</span>
+          <ListaTarjetas>
+          {registros.map(reg => {
+            const resumen = resumenFirmas(firmas[reg.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (reg as any).requiere_correccion === true
+            const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
+            const esMio = reg.creado_por === user?.id
+            return (
+              <TarjetaRegistro
+                key={reg.id}
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  <span className="hidden @min-[972px]/lista:inline">{reg.rancho_nombre}</span>,
+                ]}
+                titulo={reg.nombre}
+                tituloTexto={reg.nombre}
+                contenido={(
+                  <>
+                    <div className="text-xs mt-0.5 @min-[972px]/lista:hidden" style={{ color: 'var(--muted-foreground)' }}>
+                      {reg.rancho_nombre}
+                    </div>
+                    {reg.fecha_ingreso && (
                       <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                        {reg.rancho_nombre}
+                        Ingreso: {formatFecha(reg.fecha_ingreso)}
                       </div>
-                      {reg.fecha_ingreso && (
-                        <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                          Ingreso: {formatFecha(reg.fecha_ingreso)}
-                        </div>
-                      )}
-                      {reg.telefono && (
-                        <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                          Tel: {reg.telefono}
-                        </div>
-                      )}
-                      {reg.persona_contacto && (
-                        <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                          Contacto: {reg.persona_contacto}
-                        </div>
-                      )}
+                    )}
+                    {reg.telefono && (
+                      <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                        Tel: {reg.telefono}
+                      </div>
+                    )}
+                    {reg.persona_contacto && (
+                      <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                        Contacto: {reg.persona_contacto}
+                      </div>
+                    )}
+                    <div className="@min-[972px]/lista:hidden">
                       {obligatoria && !firmas[reg.id]?.realizo && (
-                        <span className="text-xs px-2 py-0.5 rounded font-medium mt-1 inline-block"
+<span className="text-xs px-2 py-0.5 rounded font-medium"
                           style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
                           Pendiente de firma
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
+                  </>
+                )}
+                acciones={<>
+                  <button
                         onClick={() => descargarPDF(reg.id)}
                         className="p-2"
                         style={{ color: 'var(--primary)' }}
@@ -330,9 +356,10 @@ export function EmpleadosGG() {
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
-                    </div>
-                  </div>
+                </>}
+                pie={(
                   <FirmasRegistro
+                    variante="escritorio"
                     modulo="M77"
                     registroId={reg.id}
                     fechaRegistro={reg.fecha_ingreso ?? reg.created_at ?? ''}
@@ -340,10 +367,11 @@ export function EmpleadosGG() {
                     loadingFirmas={loadingFirmas}
                     onFirmado={refetchFirmas}
                   />
-                </div>
-              )
-            })}
-          </div>
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
         )}
       </div>
 
