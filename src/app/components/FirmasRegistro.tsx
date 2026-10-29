@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
-import { CheckCircle2, AlertTriangle, ChevronDown, Loader2 } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, ChevronDown, ChevronRight, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -18,6 +18,8 @@ import { FirmaSvg } from '@/app/components/FirmaSvg'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { SkeletonFilas } from '@/app/components/SkeletonFilas'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { useListaDosColumnas } from '@/app/components/ui-mady/ListaTarjetas'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/app/components/ui/dialog'
 import { EASE_OUT } from '@/lib/motion'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
@@ -29,6 +31,9 @@ interface FirmasRegistroProps {
   firma?: FirmasDeRegistro
   loadingFirmas?: boolean
   onFirmado?: () => void
+  /** `escritorio`: solo dentro de una ListaTarjetas en 2 columnas. Huecos y botones en fila, y el
+   * historial se abre en un diálogo. En 1 columna (o sin la prop) se ve como siempre. */
+  variante?: 'normal' | 'escritorio'
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -197,9 +202,13 @@ export function FirmasRegistro({
   firma,
   loadingFirmas = false,
   onFirmado,
+  variante = 'normal',
 }: FirmasRegistroProps) {
   const { profile } = useAuthContext()
   const { online } = useConexion()
+  const dosColumnas = useListaDosColumnas()
+  const escritorio = variante === 'escritorio' && dosColumnas
+  const botonHistorialRef = useRef<HTMLButtonElement>(null)
 
   // Panel de confirmación inline
   const [panelActivo, setPanelActivo] = useState<'realizo' | 'verifico' | null>(null)
@@ -435,11 +444,122 @@ export function FirmasRegistro({
     return <div className="border-t border-border mt-3 pt-3" style={{ minHeight: '44px' }} />
   }
 
+  // Botones de firma: mismos botones y condiciones de siempre; solo cambia dónde se colocan (normal / escritorio).
+  const botonEnterado = puedeFirmarEnterado ? (
+    <button
+      onClick={abrirEnterado}
+      className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
+      style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+    >
+      {online ? 'Firma de enterado' : 'Necesitas conexión para firmar'}
+    </button>
+  ) : null
+
+  const botonesAccion = (puedeRealizarFirma || puedeVerificarFirma || puedeCompletarUnica) && panelActivo === null ? (
+    <>
+      {puedeRealizarFirma && (
+        <button
+          onClick={() => abrirPanel('realizo')}
+          className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
+          style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
+        >
+          {esAdminOrg ? 'Firmar como Realizó y verificó' : 'Firmar como Realizó'}
+        </button>
+      )}
+      {puedeCompletarUnica && (
+        <button
+          onClick={() => abrirPanel('verifico')}
+          className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
+          style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
+        >
+          Completar como Realizó y verificó
+        </button>
+      )}
+      {puedeVerificarFirma && (
+        <button
+          onClick={() => abrirPanel('verifico')}
+          className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
+          style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
+        >
+          Verificar y firmar
+        </button>
+      )}
+    </>
+  ) : null
+
+  // Cuerpo del historial: el mismo en el acordeón (1 columna) y en el diálogo (escritorio).
+  const contenidoHistorial = (
+    <div className="mt-2 space-y-2">
+      {!online && cargandoHistorial ? (
+        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Disponible con conexión</p>
+      ) : mostrarSkeletonHistorial ? (
+        <SkeletonFilas rows={2} />
+      ) : historial.length === 0 ? (
+        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+          Sin historial de firmas
+        </p>
+      ) : (
+        historial.map((h, i) => (
+          <div
+            key={i}
+            className="rounded-lg border p-2 space-y-1"
+            style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
+          >
+            <div className="flex items-center gap-2">
+              {h.estado === 'vigente' ? (
+                <CheckCircle2 className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-success-text)' }} />
+              ) : (
+                <AlertTriangle className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
+              )}
+              <span
+                className="text-xs font-semibold"
+                style={{
+                  color: h.estado === 'vigente' ? 'var(--agro-success-text)' : 'var(--agro-info-text)',
+                }}
+              >
+                {h.estado === 'vigente' ? 'Vigente' : 'Desactualizada'}
+              </span>
+              <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                · {h.rol_firma === 'realizo' ? 'Realizó' : h.rol_firma === 'enterado' ? 'Enterado (Encargado)' : 'Verificó'}
+                {h.firma_unica && h.rol_firma !== 'enterado' ? ' (firma única)' : ''}
+              </span>
+            </div>
+            <p className="text-xs" style={{ color: 'var(--foreground)' }}>{h.firmante}</p>
+            {h.rol_firma === 'enterado' && h.cargo && (
+              <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>{h.cargo}</p>
+            )}
+            {h.rol_firma === 'enterado' && h.capturado_por && (
+              <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
+                Capturada por {h.capturado_por}
+              </p>
+            )}
+            <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
+              {formatFirmaFecha(h.firmado_en)}
+            </p>
+            {h.sello && (
+              <p className="text-caption font-mono" style={{ color: 'var(--muted-foreground)' }}>
+                Sello: {(h.sello ?? '').slice(0, 12)}
+              </p>
+            )}
+            {(h.trazos || h.firma_png) && (
+              <div
+                className="rounded border p-1 mt-1"
+                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}
+              >
+                <FirmaPreview firmaInfo={{ trazos: h.trazos, firma_png: h.firma_png }} />
+              </div>
+            )}
+          </div>
+        ))
+      )}
+    </div>
+  )
+
   return (
     <div className="border-t border-border mt-3 pt-3">
 
       {/* Estado de firmas */}
-      <div className={`grid ${firmaUnica ? 'grid-cols-2' : 'grid-cols-3'} gap-2 mb-3`}>
+      <div className={`grid ${firmaUnica ? 'grid-cols-2' : 'grid-cols-3'} ${escritorio ? 'gap-4' : 'gap-2'} mb-3`}>
         {firmaUnica ? (
           <FirmaEstadoChip
             firma={firma?.verifico?.estado === 'desactualizada' ? firma.verifico : firma?.realizo}
@@ -454,49 +574,26 @@ export function FirmasRegistro({
         <FirmaEstadoChip firma={firma?.enterado} label="Enterado (Encargado)" />
       </div>
 
-      {puedeFirmarEnterado && (
-        <div className="mb-3">
+      {/* Botón de historial de la fila de escritorio (a la derecha, abre el diálogo) */}
+      {escritorio ? (
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          {botonesAccion}
+          {botonEnterado}
           <button
-            onClick={abrirEnterado}
-            className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
-            style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+            ref={botonHistorialRef}
+            onClick={toggleHistorial}
+            aria-haspopup="dialog"
+            className="ml-auto flex items-center gap-1 text-xs font-semibold text-primary rounded-md px-1 py-1 outline-none transition-colors hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
-            {online ? 'Firma de enterado' : 'Necesitas conexión para firmar'}
+            Ver historial de firmas
+            <ChevronRight className="w-3 h-3" />
           </button>
         </div>
-      )}
-
-      {/* Botones de acción */}
-      {(puedeRealizarFirma || puedeVerificarFirma || puedeCompletarUnica) && panelActivo === null && (
-        <div className="flex flex-wrap gap-2 mb-3">
-          {puedeRealizarFirma && (
-            <button
-              onClick={() => abrirPanel('realizo')}
-              className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
-              style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
-            >
-              {esAdminOrg ? 'Firmar como Realizó y verificó' : 'Firmar como Realizó'}
-            </button>
-          )}
-          {puedeCompletarUnica && (
-            <button
-              onClick={() => abrirPanel('verifico')}
-              className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
-              style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
-            >
-              Completar como Realizó y verificó
-            </button>
-          )}
-          {puedeVerificarFirma && (
-            <button
-              onClick={() => abrirPanel('verifico')}
-              className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
-              style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
-            >
-              Verificar y firmar
-            </button>
-          )}
-        </div>
+      ) : (
+        <>
+          {botonEnterado && <div className="mb-3">{botonEnterado}</div>}
+          {botonesAccion && <div className="flex flex-wrap gap-2 mb-3">{botonesAccion}</div>}
+        </>
       )}
 
       {/* Panel de confirmación inline */}
@@ -619,88 +716,44 @@ export function FirmasRegistro({
         </div>
       </BottomSheet>
 
-      {/* Toggle historial */}
-      <button
-        onClick={toggleHistorial}
-        aria-expanded={mostrarHistorial}
-        className="flex items-center gap-1 text-xs transition-colors"
-        style={{ color: 'var(--muted-foreground)' }}
-      >
-        <ChevronDown className={`accordion-arrow w-3 h-3 ${mostrarHistorial ? 'is-open' : ''}`} />
-        {mostrarHistorial ? 'Ocultar historial' : 'Ver historial de firmas'}
-      </button>
+      {/* Historial: en escritorio es un diálogo (botón en la fila de arriba); en 1 columna, el acordeón de siempre */}
+      {escritorio ? (
+        <Dialog open={mostrarHistorial} onOpenChange={(abierto) => { if (!abierto) setMostrarHistorial(false) }}>
+          <DialogContent
+            className="max-h-[80vh] overflow-y-auto shadow-none sm:max-w-md"
+            onCloseAutoFocus={(e) => {
+              e.preventDefault()
+              botonHistorialRef.current?.focus()
+            }}
+          >
+            <DialogTitle>Historial de firmas</DialogTitle>
+            <DialogDescription>Registro del {formatFechaLarga(fechaRegistro)}</DialogDescription>
+            {contenidoHistorial}
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <>
+          {/* Toggle historial */}
+          <button
+            onClick={toggleHistorial}
+            aria-expanded={mostrarHistorial}
+            className="flex items-center gap-1 text-xs transition-colors"
+            style={{ color: 'var(--muted-foreground)' }}
+          >
+            <ChevronDown className={`accordion-arrow w-3 h-3 ${mostrarHistorial ? 'is-open' : ''}`} />
+            {mostrarHistorial ? 'Ocultar historial' : 'Ver historial de firmas'}
+          </button>
 
-      {/* Historial */}
-      <div
-        className={`accordion-rows ${mostrarHistorial ? 'is-open' : ''}`}
-        aria-hidden={!mostrarHistorial}
-        inert={!mostrarHistorial ? '' : undefined}
-      >
-        <div className="mt-2 space-y-2">
-          {!online && cargandoHistorial ? (
-            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Disponible con conexión</p>
-          ) : mostrarSkeletonHistorial ? (
-            <SkeletonFilas rows={2} />
-          ) : historial.length === 0 ? (
-            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-              Sin historial de firmas
-            </p>
-          ) : (
-            historial.map((h, i) => (
-              <div
-                key={i}
-                className="rounded-lg border p-2 space-y-1"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--input-background)' }}
-              >
-                <div className="flex items-center gap-2">
-                  {h.estado === 'vigente' ? (
-                    <CheckCircle2 className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-success-text)' }} />
-                  ) : (
-                    <AlertTriangle className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
-                  )}
-                  <span
-                    className="text-xs font-semibold"
-                    style={{
-                      color: h.estado === 'vigente' ? 'var(--agro-success-text)' : 'var(--agro-info-text)',
-                    }}
-                  >
-                    {h.estado === 'vigente' ? 'Vigente' : 'Desactualizada'}
-                  </span>
-                  <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                    · {h.rol_firma === 'realizo' ? 'Realizó' : h.rol_firma === 'enterado' ? 'Enterado (Encargado)' : 'Verificó'}
-                    {h.firma_unica && h.rol_firma !== 'enterado' ? ' (firma única)' : ''}
-                  </span>
-                </div>
-                <p className="text-xs" style={{ color: 'var(--foreground)' }}>{h.firmante}</p>
-                {h.rol_firma === 'enterado' && h.cargo && (
-                  <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>{h.cargo}</p>
-                )}
-                {h.rol_firma === 'enterado' && h.capturado_por && (
-                  <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                    Capturada por {h.capturado_por}
-                  </p>
-                )}
-                <p className="text-caption" style={{ color: 'var(--muted-foreground)' }}>
-                  {formatFirmaFecha(h.firmado_en)}
-                </p>
-                {h.sello && (
-                  <p className="text-caption font-mono" style={{ color: 'var(--muted-foreground)' }}>
-                    Sello: {(h.sello ?? '').slice(0, 12)}
-                  </p>
-                )}
-                {(h.trazos || h.firma_png) && (
-                  <div
-                    className="rounded border p-1 mt-1"
-                    style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}
-                  >
-                    <FirmaPreview firmaInfo={{ trazos: h.trazos, firma_png: h.firma_png }} />
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+          {/* Historial */}
+          <div
+            className={`accordion-rows ${mostrarHistorial ? 'is-open' : ''}`}
+            aria-hidden={!mostrarHistorial}
+            inert={!mostrarHistorial ? '' : undefined}
+          >
+            {contenidoHistorial}
+          </div>
+        </>
+      )}
     </div>
   )
 }
