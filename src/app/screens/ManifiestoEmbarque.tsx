@@ -29,6 +29,9 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
@@ -184,6 +187,11 @@ export function ManifiestoEmbarque() {
 
   const todosIds = useMemo(() => manifiestos.map(m => m.id), [manifiestos])
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M38', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (manifiestos.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : manifiestos.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
@@ -419,11 +427,17 @@ export function ManifiestoEmbarque() {
       <ModuloHeader
         tituloFallback="Manifiesto de Embarque"
         subtitulo={`${codigoFormato('F-FRUS-PRO-01', codigoClave)} · Por evento`}
+        subtituloEscritorio={
+          loading && manifiestos.length === 0
+            ? undefined
+            : `${codigoFormato('F-FRUS-PRO-01', codigoClave)} · Por evento · ${textoResumenLista(manifiestos.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />}
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
@@ -439,47 +453,67 @@ export function ManifiestoEmbarque() {
         )}
 
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : manifiestos.length === 0 ? (
           <EstadoVacio icono={Truck} titulo="Sin manifiestos aún" ayuda="Crea el primer manifiesto con el botón +" />
         ) : (
-          manifiestos.map(m => (
-            <div key={m.id} className="bg-card border border-border rounded-xl p-4">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                    <span className="text-sm text-foreground font-semibold">
+          <ListaTarjetas>
+          {manifiestos.map(m => {
+            const resumen = resumenFirmas(firmas[m.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (m as any).requiere_correccion === true
+            return (
+              <TarjetaRegistro
+                key={m.id}
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  m.folio ? <span className="hidden @min-[972px]/lista:inline"><span className="font-semibold text-foreground">{m.rancho_nombre}</span></span> : null,
+                  <span className="hidden @min-[972px]/lista:inline">{formatFecha(m.fecha)}</span>,
+                ]}
+                titulo={(
+                  <>
+                    <span className="@min-[972px]/lista:hidden">
                       {m.rancho_nombre}
+                      {m.folio && (
+                        <span className="ml-1.5 text-xs px-1.5 py-0.5 rounded font-semibold"
+                          style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                          #{m.folio}
+                        </span>
+                      )}
                     </span>
-                    {m.folio && (
-                      <span className="text-xs px-1.5 py-0.5 rounded font-semibold"
-                        style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
-                        #{m.folio}
-                      </span>
+                    <span className="hidden @min-[972px]/lista:inline">{m.folio ? `#${m.folio}` : m.rancho_nombre}</span>
+                  </>
+                )}
+                tituloTexto={m.folio ?? m.rancho_nombre}
+                contenido={(
+                  <>
+                    <p className="text-xs text-muted-foreground @min-[972px]/lista:hidden">{formatFecha(m.fecha)}</p>
+                    {m.empresa && (
+                      <p className="text-xs mt-0.5 font-semibold">{m.empresa}</p>
                     )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">{formatFecha(m.fecha)}</p>
-                  {m.empresa && (
-                    <p className="text-xs mt-0.5 font-semibold">{m.empresa}</p>
-                  )}
-                  {m.nombre_chofer && (
-                    <p className="text-xs text-muted-foreground mt-0.5">Chofer: {m.nombre_chofer}</p>
-                  )}
-                  {m.incidencia_id && (
-                    <div className="flex items-center gap-1 mt-1">
-                      <Bug className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
-                      <span className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
-                        Plaga registrada → M13
-                      </span>
-                    </div>
-                  )}
-                  {obligatoria && !firmas[m.id]?.realizo && (
-                    <Etiqueta tono="error" className="mt-1">
+                    {m.nombre_chofer && (
+                      <p className="text-xs text-muted-foreground mt-0.5">Chofer: {m.nombre_chofer}</p>
+                    )}
+                    {m.incidencia_id && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <Bug className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--agro-danger-text)' }} />
+                        <span className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>
+                          Plaga registrada → M13
+                        </span>
+                      </div>
+                    )}
+                    <div className="@min-[972px]/lista:hidden">
+                      {obligatoria && !firmas[m.id]?.realizo && (
+<Etiqueta tono="error" className="">
                       Pendiente de firma
                     </Etiqueta>
-                  )}
-                </div>
-                <button
+                      )}
+                    </div>
+                  </>
+                )}
+                acciones={<>
+                  <button
                   onClick={() => descargarPDF(m.id)}
                   disabled={pdfLoading === m.id}
                   className="p-2 rounded-lg border border-border flex-shrink-0 disabled:opacity-50"
@@ -489,8 +523,10 @@ export function ManifiestoEmbarque() {
                     : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
                   }
                 </button>
-              </div>
-              <FirmasRegistro
+                </>}
+                pie={(
+                  <FirmasRegistro
+                    variante="escritorio"
                 modulo="M38"
                 registroId={m.id}
                 fechaRegistro={m.fecha}
@@ -498,8 +534,11 @@ export function ManifiestoEmbarque() {
                 loadingFirmas={loadingFirmas}
                 onFirmado={async () => { await refetch(); await refetchFirmas() }}
               />
-            </div>
-          ))
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
         )}
       </div>
 
