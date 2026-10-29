@@ -35,6 +35,8 @@ interface TarjetaRegistroProps {
   titulo?: React.ReactNode
   /** Texto plano del título para `title` (máx. 2 renglones). */
   tituloTexto?: string
+  /** Ajuste fino del título para que en 1 columna coincida con la tarjeta anterior del módulo. */
+  tituloClassName?: string
   /** Chips propios del módulo (resultado, prioridad...). */
   chips?: React.ReactNode
   /** Chip antiguo del módulo ("Pendiente de firma"): solo se ve en 1 columna; en 2 columnas lo cubre `estado`. */
@@ -54,7 +56,7 @@ interface TarjetaRegistroProps {
 /** Tarjeta de registro de módulo. En 1 columna se ve como la tarjeta de siempre (p-4, borde, radio);
  * en 2 columnas (dentro de ListaTarjetas) suma franja y etiqueta de estado, chip de firmas y encabezado compacto. */
 export function TarjetaRegistro({
-  estado = 'neutro', meta, titulo, tituloTexto, chips, chipMovil, firmas, responsable, acciones, children, pie, className,
+  estado = 'neutro', meta, titulo, tituloTexto, tituloClassName, chips, chipMovil, firmas, responsable, acciones, children, pie, className,
 }: TarjetaRegistroProps) {
   const dos = useListaDosColumnas()
   const textoEstado = TEXTO_ESTADO[estado]
@@ -62,7 +64,7 @@ export function TarjetaRegistro({
 
   const tituloEl = titulo ? (
     <p
-      className={cn('font-semibold text-foreground', dos ? 'text-base leading-snug' : 'text-sm')}
+      className={cn('font-semibold text-foreground', dos ? 'text-base leading-snug' : 'text-sm', tituloClassName)}
       title={tituloTexto}
       style={dos ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } : undefined}
     >
@@ -98,17 +100,20 @@ export function TarjetaRegistro({
             ))
           )}
           {tituloEl}
-          {(chips || chipMovil || (dos && (textoEstado || firmas)) || responsable) && (
+          {(chips || chipMovil || (dos && (textoEstado || firmas || responsable))) && (
             <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
               {dos && textoEstado && <Etiqueta tono={TONO_ESTADO[estado]}>{textoEstado}</Etiqueta>}
               {dos && firmas && <Etiqueta tono="neutral" className="font-normal">{firmas.hechas}/{firmas.total} firmas</Etiqueta>}
               {chips}
               {!dos && chipMovil}
-              {responsable && (
-                <span className="min-w-0 break-words text-xs text-muted-foreground">{responsable}</span>
+              {dos && responsable && (
+                <span className="min-w-0 break-words text-xs text-muted-foreground">
+                  Responsable: <span className="font-semibold text-foreground">{responsable}</span>
+                </span>
               )}
             </div>
           )}
+          {!dos && responsable && <p className="mt-1 text-xs text-muted-foreground">{responsable}</p>}
         </div>
         {acciones && <div className="flex flex-shrink-0 items-center gap-1">{acciones}</div>}
       </div>

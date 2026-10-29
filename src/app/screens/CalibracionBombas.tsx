@@ -35,6 +35,9 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { opInsert } from '@/lib/offline/construirOperaciones'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { ListaAncho, ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { fechaCorta } from '@/lib/formato'
 
 function formatFecha(iso: string): string {
@@ -96,6 +99,11 @@ export function CalibracionBombas() {
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M49', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
@@ -230,84 +238,108 @@ export function CalibracionBombas() {
       <ModuloHeader
         tituloFallback="Calibración de Bombas de Aplicación"
         subtitulo={`${codigoFormato('REG-07', codigoClave)} · Por evento`}
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `${codigoFormato('REG-07', codigoClave)} · Por evento · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />}
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3 pb-4">
+      <div className="px-4 pt-3 pb-4 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
-      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
+      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto min-[1224px]:pt-4">
         {mostrarSkeleton ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : loading && registros.length === 0 && lotesOffline.length === 0 ? (
           <div style={{ minHeight: '280px' }} />
         ) : registros.length === 0 && lotesOffline.length === 0 ? (
           <EstadoVacio titulo="Sin registros. Usa el botón + para agregar." />
         ) : null}
-        {lotesOffline.map(lote => (
-          <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground">{(lote.metadatos as any)?.rancho_nombre ?? '—'}</p>
-                <p className="text-xs text-muted-foreground">{(lote.metadatos as any)?.fecha ?? '—'}</p>
-              </div>
-              <ChipOffline lote={lote} />
-            </div>
-          </div>
-        ))}
-        {registros.map(m => (
-          <div key={m.id} className="bg-card border border-border rounded-[0.625rem] p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1 flex-wrap mb-0.5">
-                  {orgNombre && <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>}
-                  <span className="text-sm font-semibold">{m.rancho_nombre}</span>
+        <ListaTarjetas>
+          {lotesOffline.map(lote => (
+            <ListaAncho key={lote.id}>
+              <div className="bg-card border border-border rounded-[0.625rem] p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">{(lote.metadatos as any)?.rancho_nombre ?? '—'}</p>
+                    <p className="text-xs text-muted-foreground">{(lote.metadatos as any)?.fecha ?? '—'}</p>
+                  </div>
+                  <ChipOffline lote={lote} />
                 </div>
-                <p className="text-xs text-muted-foreground">{formatFecha(m.fecha)}</p>
-                <p className="text-sm mt-1 font-medium">{m.equipo} — {m.num_equipo}</p>
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  {m.resultado && (
-                    <span
-                      className="text-xs px-2 py-0.5 rounded font-medium"
-                      style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
-                    >
-                      {m.resultado}
-                    </span>
-                  )}
-                  {obligatoria && !firmas[m.id]?.realizo && (
-                    <span
-                      className="text-xs px-2 py-0.5 rounded font-medium"
-                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
-                    >
-                      Pendiente de firma
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">{m.realizo}</p>
               </div>
-              <button
-                onClick={() => descargarPDF(m.id)}
-                disabled={pdfLoading === m.id}
-                className="p-2 rounded-lg border border-border shrink-0"
-              >
-                {pdfLoading === m.id
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-                }
-              </button>
-            </div>
-            <FirmasRegistro
-              modulo="M49"
-              registroId={m.id}
-              fechaRegistro={m.fecha}
-              firma={firmas[m.id]}
-              loadingFirmas={loadingFirmas}
-              onFirmado={refetchFirmas}
-            />
-          </div>
-        ))}
+            </ListaAncho>
+          ))}
+          {registros.map(m => {
+            const resumen = resumenFirmas(firmas[m.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta es select('*'); no se cambia)
+            const requiereCorreccion = (m as any).requiere_correccion === true
+            return (
+              <TarjetaRegistro
+                key={m.id}
+                className="rounded-[0.625rem]"
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  <>
+                    {orgNombre && <span className="font-medium">{orgNombre} · </span>}
+                    <span className="text-sm font-semibold text-foreground @min-[972px]/lista:text-xs">{m.rancho_nombre}</span>
+                  </>,
+                  formatFecha(m.fecha),
+                ]}
+                titulo={`${m.equipo} — ${m.num_equipo}`}
+                tituloTexto={`${m.equipo} — ${m.num_equipo}`}
+                tituloClassName="mt-1 font-medium @min-[972px]/lista:mt-0 @min-[972px]/lista:font-semibold"
+                chips={m.resultado && (
+                  <span
+                    className="line-clamp-3 max-w-full break-words rounded px-2 py-0.5 text-xs font-medium"
+                    style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                    title={m.resultado}
+                  >
+                    {m.resultado}
+                  </span>
+                )}
+                chipMovil={obligatoria && !firmas[m.id]?.realizo && (
+                  <span
+                    className="text-xs px-2 py-0.5 rounded font-medium"
+                    style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
+                  >
+                    Pendiente de firma
+                  </span>
+                )}
+                responsable={m.realizo}
+                acciones={(
+                  <button
+                    onClick={() => descargarPDF(m.id)}
+                    disabled={pdfLoading === m.id}
+                    className="p-2 rounded-lg border border-border shrink-0"
+                    aria-label="Descargar PDF"
+                  >
+                    {pdfLoading === m.id
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                    }
+                  </button>
+                )}
+                pie={(
+                  <FirmasRegistro
+                    variante="escritorio"
+                    modulo="M49"
+                    registroId={m.id}
+                    fechaRegistro={m.fecha}
+                    firma={firmas[m.id]}
+                    loadingFirmas={loadingFirmas}
+                    onFirmado={refetchFirmas}
+                  />
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
       </div>
 
             <Fab onClick={abrirNuevo} aria-label="Nueva calibración" />
