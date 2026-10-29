@@ -20,6 +20,9 @@ import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaAncho, ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
@@ -109,6 +112,11 @@ export function VerificacionRoedores() {
 
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M70', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
   const { obligatoria, tengoFirma } = useFirmaContext()
   const { online } = useConexion()
   const { guardar: guardarOffline } = useGuardarOffline('M70')
@@ -273,19 +281,28 @@ export function VerificacionRoedores() {
 
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--background)' }}>
-      <ModuloHeader tituloFallback="Verificación de Trampas para Roedores" subtitulo="M70 · REG-24 · Por evento" />
+      <ModuloHeader
+        tituloFallback="Verificación de Trampas para Roedores"
+        subtitulo="M70 · REG-24 · Por evento"
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `M70 · REG-24 · Por evento · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />}
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Botón consolidado */}
-      <div className="px-4 pt-3 pb-4">
+      <div className="px-4 pt-3 pb-4 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
       {/* Lista */}
-      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
+      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto min-[1224px]:pt-4">
         <PendientesOffline modulo="M70" />
         {mostrarSkeleton ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : loading && grupos.length === 0 ? (
           <div style={{ minHeight: '280px' }} />
         ) : grupos.length === 0 ? (
@@ -293,9 +310,10 @@ export function VerificacionRoedores() {
             Sin registros. Usa el botón + para agregar.
           </div>
         ) : null}
-        {grupos.map(g => (
-          <div
-            key={g.key}
+        <ListaTarjetas>
+          {grupos.map(g => (
+            <ListaAncho key={g.key}>
+<div
             className="rounded-[0.625rem] border overflow-hidden"
             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
           >
@@ -321,7 +339,7 @@ export function VerificacionRoedores() {
             <div className="px-4 py-3 space-y-3">
               {g.trampas.map(t => (
                 <div key={t.id} className="space-y-1.5">
-                  <p className="text-sm font-medium">T: {t.num_trampa}</p>
+                  <p className="line-clamp-2 break-words text-sm font-medium" title={`T: ${t.num_trampa}`}>T: {t.num_trampa}</p>
                   <div className="flex flex-wrap gap-1.5">
                     <ChipCheck valor={t.roedor} label="Roedor" />
                     <ChipCheck valor={t.insectos} label="Insectos" />
@@ -332,7 +350,7 @@ export function VerificacionRoedores() {
                     <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Verificó: {t.verifico}</p>
                   )}
                   {t.observaciones && (
-                    <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{t.observaciones}</p>
+                    <TextoColapsable texto={t.observaciones} className="text-xs" style={{ color: 'var(--muted-foreground)' }} />
                   )}
                   <FirmasRegistro
                     modulo="M70"
@@ -346,7 +364,9 @@ export function VerificacionRoedores() {
               ))}
             </div>
           </div>
-        ))}
+            </ListaAncho>
+          ))}
+        </ListaTarjetas>
       </div>
 
       {/* FAB */}
