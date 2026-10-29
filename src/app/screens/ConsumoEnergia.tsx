@@ -31,6 +31,9 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { opInsert } from '@/lib/offline/construirOperaciones'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { mesAnio } from '@/lib/formato'
@@ -90,6 +93,11 @@ export function ConsumoEnergia() {
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M60', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
@@ -212,15 +220,21 @@ export function ConsumoEnergia() {
       <ModuloHeader
         tituloFallback="Consumo de Combustible y Energía"
         subtitulo="M60 · Por mes"
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `M60 · Por mes · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />}
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3 pb-4">
+      <div className="px-4 pt-3 pb-4 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
-      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
+      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto min-[1224px]:pt-4">
         {lotesOffline.length > 0 && (
           <div className="space-y-2 pb-2">
             {lotesOffline.map(lote => (
@@ -237,64 +251,79 @@ export function ConsumoEnergia() {
           </div>
         )}
         {mostrarSkeleton ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : loading && registros.length === 0 && lotesOffline.length === 0 ? (
           <div style={{ minHeight: '280px' }} />
         ) : registros.length === 0 && lotesOffline.length === 0 ? (
           <EstadoVacio titulo="Sin registros. Usa el botón + para agregar." />
         ) : null}
-        {registros.map(r => (
-          <div key={r.id} className="bg-card border border-border rounded-[0.625rem] p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1 flex-wrap mb-0.5">
-                  {orgNombre && (
-                    <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
-                  )}
-                  <span className="text-sm font-semibold">{r.rancho_nombre}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">{formatMes(r.mes)}</p>
-                {r.tipo_combustible && (
-                  <p className="text-sm mt-1 font-medium">{r.tipo_combustible}</p>
+        <ListaTarjetas>
+          {registros.map(r => {
+            const resumen = resumenFirmas(firmas[r.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (r as any).requiere_correccion === true
+            return (
+              <TarjetaRegistro
+                key={r.id}
+                className="rounded-[0.625rem]"
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  <>
+                    {orgNombre && <span className="font-medium">{orgNombre} · </span>}
+                    <span className="text-sm font-semibold text-foreground @min-[972px]/lista:text-xs">{r.rancho_nombre}</span>
+                  </>,
+                  formatMes(r.mes),
+                ]}
+                titulo={r.tipo_combustible || undefined}
+                tituloTexto={r.tipo_combustible ?? undefined}
+                tituloClassName="mt-1 font-medium @min-[972px]/lista:mt-0 @min-[972px]/lista:font-semibold"
+                chips={(
+                  <>
+                    {r.cantidad_litros != null && (
+                      <span
+                        className="text-xs px-2 py-0.5 rounded font-medium"
+                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                      >
+                        {r.cantidad_litros} L
+                      </span>
+                    )}
+                  </>
                 )}
-                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                  {r.cantidad_litros != null && (
-                    <span
-                      className="text-xs px-2 py-0.5 rounded font-medium"
-                      style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
-                    >
-                      {r.cantidad_litros} L
-                    </span>
-                  )}
-                  {r.realizo && <span className="text-xs text-muted-foreground">{r.realizo}</span>}
-                </div>
-                {obligatoria && !firmas[r.id]?.realizo && (
-                  <Etiqueta tono="error" className="mt-1">
+                chipMovil={obligatoria && !firmas[r.id]?.realizo && (
+                  <Etiqueta tono="error">
                     Pendiente de firma
                   </Etiqueta>
                 )}
-              </div>
-              <button
-                onClick={() => descargarPDF(r.id)}
-                disabled={pdfLoading === r.id}
-                className="p-2 rounded-lg border border-border shrink-0"
-              >
-                {pdfLoading === r.id
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-                }
-              </button>
-            </div>
-            <FirmasRegistro
-              modulo="M60"
-              registroId={r.id}
-              fechaRegistro={r.mes}
-              firma={firmas[r.id]}
-              loadingFirmas={loadingFirmas}
-              onFirmado={async () => { await refetch(); await refetchFirmas() }}
-            />
-          </div>
-        ))}
+                responsable={r.realizo}
+                acciones={(
+                  <button
+                    onClick={() => descargarPDF(r.id)}
+                    disabled={pdfLoading === r.id}
+                    className="p-2 rounded-lg border border-border shrink-0"
+                    aria-label="Descargar PDF"
+                  >
+                    {pdfLoading === r.id
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                    }
+                  </button>
+                )}
+                pie={(
+                  <FirmasRegistro
+                    variante="escritorio"
+                    modulo="M60"
+                    registroId={r.id}
+                    fechaRegistro={r.mes}
+                    firma={firmas[r.id]}
+                    loadingFirmas={loadingFirmas}
+                    onFirmado={async () => { await refetch(); await refetchFirmas() }}
+                  />
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
       </div>
 
       <Fab onClick={abrirNuevo} aria-label="Nuevo registro" icon={!online ? WifiOff : undefined} />
