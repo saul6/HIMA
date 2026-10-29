@@ -27,6 +27,9 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import {
   generarMonitoreoPlaguasPDF,
   generarMonitoreoPlaguasConsolidadoPDF,
@@ -96,6 +99,11 @@ export function MonitoreoPlaguasEnfermedades() {
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M72', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
   const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
@@ -282,19 +290,28 @@ export function MonitoreoPlaguasEnfermedades() {
 
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--background)' }}>
-      <ModuloHeader tituloFallback="Monitoreo de Plagas y Enfermedades" subtitulo="M72 · REG-21 · Por evento" />
+      <ModuloHeader
+        tituloFallback="Monitoreo de Plagas y Enfermedades"
+        subtitulo="M72 · REG-21 · Por evento"
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `M72 · REG-21 · Por evento · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />}
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Botón consolidado */}
-      <div className="px-4 pt-3 pb-4">
+      <div className="px-4 pt-3 pb-4 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
       {/* Lista */}
-      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
+      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto min-[1224px]:pt-4">
         <PendientesOffline modulo="M72" />
         {mostrarSkeleton ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : loading && registros.length === 0 ? (
           <div style={{ minHeight: '280px' }} />
         ) : registros.length === 0 ? (
@@ -302,18 +319,49 @@ export function MonitoreoPlaguasEnfermedades() {
             Sin registros. Usa el botón + para agregar.
           </div>
         ) : null}
-        {registros.map(r => (
-          <div
-            key={r.id}
-            className="rounded-[0.625rem] border p-4 space-y-2"
-            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate">{r.rancho_nombre}</p>
-                <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{formatFecha(r.fecha)}</p>
-              </div>
-              <button
+        <ListaTarjetas>
+          {registros.map(r => {
+            const resumen = resumenFirmas(firmas[r.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (r as any).requiere_correccion === true
+            return (
+              <TarjetaRegistro
+                key={r.id}
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  <span className="hidden @min-[972px]/lista:inline">{formatFecha(r.fecha)}</span>,
+                ]}
+                titulo={r.rancho_nombre}
+                tituloTexto={r.rancho_nombre}
+                tituloClassName="truncate @min-[972px]/lista:whitespace-normal"
+                contenido={(
+                  <>
+                    <p className="text-xs @min-[972px]/lista:hidden" style={{ color: 'var(--muted-foreground)' }}>{formatFecha(r.fecha)}</p>
+                    <div className="mt-1.5 hidden flex-wrap items-center gap-x-2 gap-y-1 @min-[972px]/lista:flex">
+                      {r.etapa_fenologica && (
+                        <span className="text-xs px-2 py-0.5 rounded font-medium" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>Etapa: {r.etapa_fenologica}</span>
+                      )}
+                      {r.realizo && (
+                        <span className="text-xs text-muted-foreground">Responsable: <span className="font-semibold text-foreground">{r.realizo}</span></span>
+                      )}
+                    </div>
+                    <div className="@min-[972px]/lista:hidden">
+                      {r.etapa_fenologica && (
+                        <p className="mt-2 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                          Etapa: <span style={{ color: 'var(--foreground)' }}>{r.etapa_fenologica}</span>
+                        </p>
+                      )}
+                      {r.realizo && (
+                        <p className="mt-2 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                          Realizó: <span style={{ color: 'var(--foreground)' }}>{r.realizo}</span>
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
+                acciones={<>
+                  <button
                 onClick={(e) => { e.stopPropagation(); descargarPDF(r.id) }}
                 disabled={pdfLoading === r.id}
                 className="p-2 rounded-lg border shrink-0"
@@ -324,18 +372,10 @@ export function MonitoreoPlaguasEnfermedades() {
                   : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
                 }
               </button>
-            </div>
-            {r.etapa_fenologica && (
-              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                Etapa: <span style={{ color: 'var(--foreground)' }}>{r.etapa_fenologica}</span>
-              </p>
-            )}
-            {r.realizo && (
-              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                Realizó: <span style={{ color: 'var(--foreground)' }}>{r.realizo}</span>
-              </p>
-            )}
-            <FirmasRegistro
+                </>}
+                pie={(
+                  <FirmasRegistro
+                    variante="escritorio"
               modulo="M72"
               registroId={r.id}
               firma={firmas[r.id]}
@@ -343,8 +383,11 @@ export function MonitoreoPlaguasEnfermedades() {
               fechaRegistro={r.fecha}
               onFirmado={refetchFirmas}
             />
-          </div>
-        ))}
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
       </div>
 
       {/* FAB */}
