@@ -24,6 +24,10 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaAncho, ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
@@ -80,6 +84,11 @@ export function MonitoreoGermicida() {
 
   const todosIds = monitoreos.map(m => m.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M36', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (monitoreos.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : monitoreos.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
@@ -220,26 +229,34 @@ export function MonitoreoGermicida() {
       <ModuloHeader
         tituloFallback="Monitoreo de Solución Germicida"
         subtitulo={`${codigoFormato('F-FRUS-SAN-14', codigoClave)} · Por evento`}
+        subtituloEscritorio={
+          loading && monitoreos.length === 0
+            ? undefined
+            : `${codigoFormato('F-FRUS-SAN-14', codigoClave)} · Por evento · ${textoResumenLista(monitoreos.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />}
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}
-      <div className="px-4 pt-3 pb-4">
+      <div className="px-4 pt-3 pb-4 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
       {/* Lista */}
-      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
+      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto min-[1224px]:pt-4">
         {mostrarSkeleton ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : loading && monitoreos.length === 0 && lotesOffline.length === 0 ? (
           <div style={{ minHeight: '280px' }} />
         ) : monitoreos.length === 0 && lotesOffline.length === 0 ? (
           <EstadoVacio titulo="Sin registros. Usa el botón + para agregar." />
         ) : null}
-        {lotesOffline.map((lote) => (
-          <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
+        <ListaTarjetas>
+          {lotesOffline.map(lote => (
+            <ListaAncho key={lote.id}>
+<div className="bg-card border border-border rounded-[0.625rem] p-4">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold">{lote.descripcion}</p>
@@ -250,41 +267,53 @@ export function MonitoreoGermicida() {
               <ChipOffline lote={lote} />
             </div>
           </div>
-        ))}
-        {monitoreos.map(m => (
-          <div key={m.id} className="bg-card border border-border rounded-[0.625rem] p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1 flex-wrap mb-0.5">
-                  {orgNombre && (
-                    <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
-                  )}
-                  <span className="text-sm font-semibold">{m.rancho_nombre}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">{formatFecha(m.fecha)}</p>
-                <p className="text-sm mt-1 font-medium">{m.tipo_germicida}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{m.uso}</p>
-                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                  <span
-                    className="text-xs px-2 py-0.5 rounded font-medium"
-                    style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
-                  >
-                    {m.concentracion} ppm
-                  </span>
-                  <span className="text-xs text-muted-foreground">{m.preparado_por}</span>
-                </div>
-                {m.correccion && (
-                  <p className="text-xs mt-1" style={{ color: 'var(--agro-info-text)' }}>
-                    Corrección: {m.correccion}
-                  </p>
+            </ListaAncho>
+          ))}
+          {monitoreos.map(m => {
+            const resumen = resumenFirmas(firmas[m.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (m as any).requiere_correccion === true
+            return (
+              <TarjetaRegistro
+                key={m.id}
+                className="rounded-[0.625rem]"
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  <>
+                    {orgNombre && <span className="font-medium">{orgNombre} · </span>}
+                    <span className="text-sm font-semibold text-foreground @min-[972px]/lista:text-xs">{m.rancho_nombre}</span>
+                  </>,
+                  formatFecha(m.fecha),
+                ]}
+                titulo={m.tipo_germicida}
+                tituloTexto={m.tipo_germicida}
+                tituloClassName="mt-1 font-medium @min-[972px]/lista:mt-0 @min-[972px]/lista:font-semibold"
+                chips={(
+                  <>
+                    {m.uso && (
+                      <div className="basis-full">
+                        <TextoColapsable texto={m.uso} className="text-xs text-muted-foreground" />
+                      </div>
+                    )}
+                    <span className="text-xs px-2 py-0.5 rounded font-medium" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                      {m.concentracion} ppm
+                    </span>
+                    <span className="text-xs text-muted-foreground">{m.preparado_por}</span>
+                    {m.correccion && (
+                      <div className="basis-full">
+                        <TextoColapsable texto={`Corrección: ${m.correccion}`} className="text-xs" style={{ color: 'var(--agro-info-text)' }} />
+                      </div>
+                    )}
+                  </>
                 )}
-                {obligatoria && !firmas[m.id]?.realizo && (
-                  <Etiqueta tono="error" className="mt-1">
+                chipMovil={obligatoria && !firmas[m.id]?.realizo && (
+<Etiqueta tono="error" className="">
                     Pendiente de firma
                   </Etiqueta>
                 )}
-              </div>
-              <button
+                acciones={<>
+                  <button
                 onClick={() => descargarPDF(m.id)}
                 disabled={pdfLoading === m.id}
                 className="p-2 rounded-lg border border-border shrink-0"
@@ -294,8 +323,10 @@ export function MonitoreoGermicida() {
                   : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
                 }
               </button>
-            </div>
-            <FirmasRegistro
+                </>}
+                pie={(
+                  <FirmasRegistro
+                    variante="escritorio"
               modulo="M36"
               registroId={m.id}
               fechaRegistro={m.fecha}
@@ -303,8 +334,11 @@ export function MonitoreoGermicida() {
               loadingFirmas={loadingFirmas}
               onFirmado={async () => { await refetch(); await refetchFirmas() }}
             />
-          </div>
-        ))}
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
       </div>
 
       {/* FAB */}
