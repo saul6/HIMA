@@ -25,6 +25,10 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaAncho, ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
@@ -90,6 +94,11 @@ export function PreparacionCloro() {
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = preparaciones.map(p => p.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M27', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (preparaciones.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : preparaciones.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
   const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
@@ -279,11 +288,23 @@ export function PreparacionCloro() {
       <ModuloHeader
         tituloFallback={TITULO_MODULO}
         subtitulo={codigoFormato('F-FRUS-SAN-03', codigoClave)}
+        subtituloEscritorio={
+          loading && preparaciones.length === 0
+            ? undefined
+            : `${codigoFormato('F-FRUS-SAN-03', codigoClave)} · ${textoResumenLista(preparaciones.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado"
+          onClick={() => {
+            setConsRanchoId(''); setConsDesde(''); setConsHasta(hoy())
+            setErrConsRancho(false); setErrConsFechas(false)
+            setSheetConsAbierto(true)
+          }}
+        />}
       />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado
           onClick={() => {
             setConsRanchoId(''); setConsDesde(''); setConsHasta(hoy())
@@ -331,13 +352,15 @@ export function PreparacionCloro() {
       {/* Lista de preparaciones */}
       <div className="p-4 space-y-3">
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : preparaciones.length === 0 && lotesOffline.length === 0 ? (
           <EstadoVacio icono={FlaskConical} titulo="Sin registros aún" ayuda="Toca + para registrar la primera preparación" />
         ) : (
           <>
-          {lotesOffline.map((lote) => (
-            <div key={lote.id} className="bg-card border border-border rounded-xl p-4">
+          <ListaTarjetas>
+          {lotesOffline.map(lote => (
+            <ListaAncho key={lote.id}>
+<div className="bg-card border border-border rounded-xl p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-foreground font-semibold">
@@ -350,25 +373,34 @@ export function PreparacionCloro() {
                 <ChipOffline lote={lote} />
               </div>
             </div>
+            </ListaAncho>
           ))}
-          {preparaciones.map((prep) => (
-            <div key={prep.id} className="bg-card border border-border rounded-xl p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    {orgNombre && (
-                      <span className="text-xs text-muted-foreground" style={{ fontWeight: 500 }}>
-                        {orgNombre} ·
-                      </span>
-                    )}
-                    <span className="text-sm text-foreground font-semibold">
-                      {prep.rancho_nombre}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">{formatFecha(prep.fecha)}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{prep.area}</p>
-                </div>
-                <button
+          {preparaciones.map(prep => {
+            const resumen = resumenFirmas(firmas[prep.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (prep as any).requiere_correccion === true
+            return (
+              <TarjetaRegistro
+                key={prep.id}
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  <>
+                    {orgNombre && <span className="font-medium">{orgNombre} · </span>}
+                    <span className="text-sm font-semibold text-foreground @min-[972px]/lista:text-xs">{prep.rancho_nombre}</span>
+                  </>,
+                  formatFecha(prep.fecha),
+                ]}
+                titulo={prep.area || undefined}
+                tituloTexto={prep.area ?? undefined}
+                tituloClassName="mt-0.5 text-xs font-normal text-muted-foreground @min-[972px]/lista:text-base @min-[972px]/lista:font-semibold @min-[972px]/lista:text-foreground"
+                chipMovil={obligatoria && !firmas[prep.id]?.realizo && (
+<Etiqueta tono="error" className="">
+                  Pendiente de firma
+                </Etiqueta>
+                )}
+                acciones={<>
+                  <button
                   onClick={() => handleDescargarPDF(prep)}
                   disabled={generandoPDF === prep.id}
                   className="p-2 text-muted-foreground hover:text-primary transition-colors flex-shrink-0 disabled:opacity-50"
@@ -378,43 +410,10 @@ export function PreparacionCloro() {
                     ? <Loader2 className="w-4 h-4 animate-spin" />
                     : <FileDown className="w-4 h-4" />}
                 </button>
-              </div>
-
-              {/* Chips */}
-              <div className="flex flex-wrap gap-2 mt-2">
-                <span
-                  className="text-caption px-2.5 py-1 rounded-lg font-semibold"
-                  style={{
-                    backgroundColor: 'var(--agro-success-fill)',
-                    color: 'var(--agro-success-text)',
-                  }}
-                >
-                  {prep.litros_agua} L agua
-                </span>
-                <span
-                  className="text-caption px-2.5 py-1 rounded-lg bg-primary text-white font-semibold"
-                >
-                  {prep.ml_cloro} mL cloro
-                </span>
-              </div>
-
-              {/* Detalle opcional */}
-              {(prep.responsable || prep.observaciones) && (
-                <div className="mt-2 pt-2 border-t border-border space-y-0.5">
-                  {prep.responsable && (
-                    <p className="text-xs text-muted-foreground">Responsable: {prep.responsable}</p>
-                  )}
-                  {prep.observaciones && (
-                    <p className="text-xs text-muted-foreground">{prep.observaciones}</p>
-                  )}
-                </div>
-              )}
-              {obligatoria && !firmas[prep.id]?.realizo && (
-                <Etiqueta tono="error" className="mt-2">
-                  Pendiente de firma
-                </Etiqueta>
-              )}
-              <FirmasRegistro
+                </>}
+                pie={(
+                  <FirmasRegistro
+                    variante="escritorio"
                 modulo="M27"
                 registroId={prep.id}
                 fechaRegistro={prep.fecha}
@@ -422,8 +421,30 @@ export function PreparacionCloro() {
                 loadingFirmas={loadingFirmas}
                 onFirmado={async () => { await refetch(); await refetchFirmas() }}
               />
-            </div>
-          ))}
+                )}
+              >
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <span className="text-caption px-2.5 py-1 rounded-lg font-semibold" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                    {prep.litros_agua} L agua
+                  </span>
+                  <span className="text-caption px-2.5 py-1 rounded-lg font-semibold" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                    {prep.ml_cloro} mL cloro
+                  </span>
+                </div>
+                {(prep.responsable || prep.observaciones) && (
+                  <div className="mt-2 pt-2 border-t border-border space-y-0.5">
+                    {prep.responsable && (
+                      <p className="text-xs text-muted-foreground">Responsable: {prep.responsable}</p>
+                    )}
+                    {prep.observaciones && (
+                      <TextoColapsable texto={prep.observaciones} className="text-xs text-muted-foreground" />
+                    )}
+                  </div>
+                )}
+              </TarjetaRegistro>
+            )
+          })}
+        </ListaTarjetas>
           </>
         )}
       </div>
