@@ -11,6 +11,9 @@ import {
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { useModulosContext } from '@/context/ModulosContext'
@@ -78,6 +81,11 @@ export function BotiquinGG() {
 
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M73', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
   const { obligatoria, tengoFirma } = useFirmaContext()
   const { online } = useConexion()
   const { guardar: guardarOffline } = useGuardarOffline('M73')
@@ -294,10 +302,19 @@ export function BotiquinGG() {
   return (
     <div className="min-h-full pb-safe-nav">
 
-      <ModuloHeader tituloFallback="Inventario de Material de Curación" subtitulo="M73 · Botiquín GlobalGAP · Seguridad" />
+      <ModuloHeader
+        tituloFallback="Inventario de Material de Curación"
+        subtitulo="M73 · Botiquín GlobalGAP · Seguridad"
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `M73 · Botiquín GlobalGAP · Seguridad · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setSheetConsolidado(true)} />}
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
       </div>
 
@@ -315,54 +332,55 @@ export function BotiquinGG() {
         )}
 
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : registros.length === 0 ? (
           <EstadoVacio icono={ShieldPlus} titulo="Sin registros aún" ayuda="Crea el primer registro con el botón +" />
         ) : (
-          <div className="space-y-3">
-            {registros.map((reg) => {
-              const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
-              const esMio = reg.creado_por === user?.id
-              return (
-                <div
-                  key={reg.id}
-                  className="rounded-xl p-4 border"
-                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span
-                          className="text-xs px-2 py-0.5 rounded font-semibold"
-                          style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
-                        >
-                          {formatFecha(reg.fecha)}
-                        </span>
-                        {reg.total_materiales > 0 && (
-                          <span
-                            className="text-xs px-2 py-0.5 rounded font-semibold"
-                            style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
-                          >
-                            {reg.total_materiales} material{reg.total_materiales !== 1 ? 'es' : ''}
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-sm text-foreground font-semibold">
-                        {reg.rancho_nombre}
+          <ListaTarjetas>
+          {registros.map(reg => {
+            const resumen = resumenFirmas(firmas[reg.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (reg as any).requiere_correccion === true
+            const esAdmin = profile?.rol === 'admin_org' || profile?.rol === 'super_admin'
+            const esMio = reg.creado_por === user?.id
+            return (
+              <TarjetaRegistro
+                key={reg.id}
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                etiquetas={(
+                  <>
+                    <span className="text-xs px-2 py-0.5 rounded font-semibold @min-[972px]/lista:hidden" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                      {formatFecha(reg.fecha)}
+                    </span>
+                    {reg.total_materiales > 0 && (
+                      <span className="text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                        {reg.total_materiales} material{reg.total_materiales !== 1 ? 'es' : ''}
                       </span>
-                      {reg.botiquin_num && (
-                        <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                          Botiquín: {reg.botiquin_num}
-                        </div>
-                      )}
-                      {reg.realizo && (
-                        <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                          Realizó: {reg.realizo}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
+                    )}
+                  </>
+                )}
+                meta={[
+                  <span className="hidden @min-[972px]/lista:inline">{formatFecha(reg.fecha)}</span>,
+                ]}
+                titulo={reg.rancho_nombre}
+                tituloTexto={reg.rancho_nombre}
+                contenido={(
+                  <>
+                    {reg.botiquin_num && (
+                      <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                        Botiquín: {reg.botiquin_num}
+                      </div>
+                    )}
+                    {reg.realizo && (
+                      <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                        Realizó: {reg.realizo}
+                      </div>
+                    )}
+                  </>
+                )}
+                acciones={<>
+                  <button
                         onClick={() => descargarPDF(reg)}
                         className="p-2"
                         style={{ color: 'var(--primary)' }}
@@ -383,9 +401,10 @@ export function BotiquinGG() {
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
-                    </div>
-                  </div>
+                </>}
+                pie={(
                   <FirmasRegistro
+                    variante="escritorio"
                     modulo="M73"
                     registroId={reg.id}
                     firma={firmas[reg.id]}
@@ -393,10 +412,11 @@ export function BotiquinGG() {
                     fechaRegistro={reg.fecha}
                     onFirmado={refetchFirmas}
                   />
-                </div>
-              )
-            })}
-          </div>
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
         )}
       </div>
 
