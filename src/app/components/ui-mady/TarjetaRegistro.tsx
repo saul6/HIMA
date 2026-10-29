@@ -19,12 +19,13 @@ const TONO_ESTADO: Record<EstadoTarjeta, TonoEtiqueta> = {
   neutro: 'neutral',
 }
 
-// Franja izquierda (solo en 2 columnas); siempre va acompañada del texto del estado.
+// Franja de estado (solo en 2 columnas): 2 px, dentro de la tarjeta y sin tocar las esquinas, con el color
+// del token atenuado (claro y oscuro). Siempre va acompañada del texto del estado.
 const FRANJA: Record<EstadoTarjeta, string> = {
-  firmado: 'border-l-[var(--agro-menta)]',
-  pendiente: 'border-l-[var(--agro-info-text)]',
-  correccion: 'border-l-[var(--agro-danger-text)]',
-  neutro: 'border-l-[var(--border)]',
+  firmado: 'bg-agro-menta/60',
+  pendiente: 'bg-agro-info-text/50',
+  correccion: 'bg-agro-danger-text/60',
+  neutro: 'bg-border',
 }
 
 interface TarjetaRegistroProps {
@@ -86,14 +87,13 @@ export function TarjetaRegistro({
   return (
     <div
       className={cn(
-        'min-w-0 rounded-xl border border-border bg-card p-4',
-        dos && 'border-l-4',
-        dos && FRANJA[estado],
+        'relative min-w-0 rounded-xl border border-border bg-card p-4',
         // En 1 columna, "requiere corrección" conserva el aspecto de siempre: borde menta y fondo de aviso.
         !dos && estado === 'correccion' && 'border-[var(--agro-menta)] bg-[var(--agro-info-fill)]',
         className,
       )}
     >
+      {dos && <span aria-hidden="true" className={cn('pointer-events-none absolute bottom-3 left-1.5 top-3 w-0.5 rounded-full', FRANJA[estado])} />}
       {encima}
       <div className="flex items-start justify-between gap-2">
         <div
