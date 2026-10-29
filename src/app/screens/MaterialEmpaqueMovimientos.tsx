@@ -32,6 +32,10 @@ import { PendientesOffline } from '@/app/components/PendientesOffline'
 
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 const hoyMX = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
 const tbl = (name: string) => (supabase as any).from(name)
@@ -123,6 +127,11 @@ export function MaterialEmpaqueMovimientos() {
 
   const todosIds = useMemo(() => movimientos.map(m => m.id), [movimientos])
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M42', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (movimientos.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : movimientos.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
@@ -309,63 +318,112 @@ export function MaterialEmpaqueMovimientos() {
       <ModuloHeader
         tituloFallback="Entradas y Salidas de Material de Empaque"
         onBack={() => navigate(-1)}
+        subtituloEscritorio={
+          loading && movimientos.length === 0
+            ? undefined
+            : `${textoResumenLista(movimientos.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolAbierto(true)} />}
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolAbierto(true)} />
       </div>
 
       {/* Lista */}
       <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 space-y-3">
         <PendientesOffline modulo="M42" />
-        {mostrarSkeleton && <ListaSkeleton />}
+        {mostrarSkeleton && <ListaSkeleton rejilla />}
         {error && <p className="text-center text-sm py-8" style={{ color: 'var(--agro-danger-text)' }}>{error}</p>}
         {!loading && !error && movimientos.length === 0 && (
           <p className="text-center text-sm py-8" style={{ color: 'var(--muted-foreground)' }}>
             Sin movimientos. Toca + para registrar.
           </p>
         )}
-        {movimientos.map(m => (
-          <div key={m.id} className="rounded-xl p-4 border" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="flex items-start gap-2">
-              <div className="flex-1 min-w-0">
-                <p className="text-body font-semibold truncate">{m.rancho_nombre}</p>
-                <p className="text-small mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                  {fmtFecha(m.fecha)}{m.empresa ? ` · ${m.empresa}` : ''}
-                </p>
-                {m.descripcion_material && (
-                  <p className="text-small mt-1 truncate" style={{ color: 'var(--muted-foreground)' }}>
-                    {m.descripcion_material}
-                  </p>
+        <ListaTarjetas>
+          {movimientos.map(m => {
+            const resumen = resumenFirmas(firmas[m.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (m as any).requiere_correccion === true
+            return (
+              <TarjetaRegistro
+                key={m.id}
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  <span className="hidden @min-[972px]/lista:inline">{m.empresa ? m.rancho_nombre : null}</span>,
+                  <span className="hidden @min-[972px]/lista:inline">{fmtFecha(m.fecha)}</span>,
+                ]}
+                titulo={(
+                  <>
+                    <span className="@min-[972px]/lista:hidden">{m.rancho_nombre}</span>
+                    <span className="hidden @min-[972px]/lista:inline">{m.empresa || m.rancho_nombre}</span>
+                  </>
                 )}
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1.5">
-                  {m.entrada != null && (
-                    <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Ent: {m.entrada}</span>
-                  )}
-                  {m.salida != null && (
-                    <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Sal: {m.salida}</span>
-                  )}
-                  {m.total != null && (
-                    <span className="text-caption font-medium">Total: {m.total}</span>
-                  )}
-                </div>
-                {(!m.mat_libre_plagas || !m.tr_libre_plagas) && (
-                  <div className="flex items-center gap-1 mt-1.5">
-                    <AlertTriangle size={11} style={{ color: 'var(--agro-danger-text)' }} />
-                    <span className="text-caption font-medium" style={{ color: 'var(--agro-danger-text)' }}>
-                      Presencia de plagas — incidencia generada
-                    </span>
-                  </div>
-                )}
-                {obligatoria && !firmas[m.id]?.realizo && (
-                  <Etiqueta tono="error" className="mt-1">
+                tituloTexto={m.empresa || m.rancho_nombre}
+                tituloClassName="truncate @min-[972px]/lista:whitespace-normal"
+                contenido={(
+                  <>
+                    <div className="@min-[972px]/lista:hidden">
+                      <p className="text-small mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                        {fmtFecha(m.fecha)}{m.empresa ? ` · ${m.empresa}` : ''}
+                      </p>
+                      {m.descripcion_material && (
+                        <p className="text-small mt-1 truncate" style={{ color: 'var(--muted-foreground)' }}>
+                          {m.descripcion_material}
+                        </p>
+                      )}
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1.5">
+                        {m.entrada != null && (
+                          <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Ent: {m.entrada}</span>
+                        )}
+                        {m.salida != null && (
+                          <span className="text-caption" style={{ color: 'var(--muted-foreground)' }}>Sal: {m.salida}</span>
+                        )}
+                        {m.total != null && (
+                          <span className="text-caption font-medium">Total: {m.total}</span>
+                        )}
+                      </div>
+                      {(!m.mat_libre_plagas || !m.tr_libre_plagas) && (
+                      <div className="flex items-center gap-1 mt-1.5">
+                        <AlertTriangle size={11} style={{ color: 'var(--agro-danger-text)' }} />
+                        <span className="text-caption font-medium" style={{ color: 'var(--agro-danger-text)' }}>
+                          Presencia de plagas — incidencia generada
+                        </span>
+                      </div>
+                    )}
+                      {obligatoria && !firmas[m.id]?.realizo && (
+<Etiqueta tono="error" className="">
                     Pendiente de firma
                   </Etiqueta>
+                      )}
+                    </div>
+                    <div className="hidden @min-[972px]/lista:block">
+                      {m.descripcion_material && (
+                        <div className="mt-1">
+                          <TextoColapsable texto={m.descripcion_material} className="text-xs text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                        {m.entrada != null && <span className="text-xs px-2 py-0.5 rounded font-medium" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>Ent: {m.entrada}</span>}
+                        {m.salida != null && <span className="text-xs px-2 py-0.5 rounded font-medium" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>Sal: {m.salida}</span>}
+                        {m.total != null && <span className="text-xs px-2 py-0.5 rounded font-medium" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>Total: {m.total}</span>}
+                      </div>
+                      {(!m.mat_libre_plagas || !m.tr_libre_plagas) && (
+                      <div className="flex items-center gap-1 mt-1.5">
+                        <AlertTriangle size={11} style={{ color: 'var(--agro-danger-text)' }} />
+                        <span className="text-caption font-medium" style={{ color: 'var(--agro-danger-text)' }}>
+                          Presencia de plagas — incidencia generada
+                        </span>
+                      </div>
+                    )}
+                    </div>
+                  </>
                 )}
-              </div>
-              <button
+                acciones={<>
+                  <button
                 onClick={() => {
                   if (obligatoria && !firmas[m.id]?.realizo) {
                     toast.info('Firma este registro antes de descargar el PDF')
@@ -379,8 +437,10 @@ export function MaterialEmpaqueMovimientos() {
               >
                 <FileText size={18} />
               </button>
-            </div>
-            <FirmasRegistro
+                </>}
+                pie={(
+                  <FirmasRegistro
+                    variante="escritorio"
               modulo="M42"
               registroId={m.id}
               fechaRegistro={m.fecha}
@@ -388,8 +448,11 @@ export function MaterialEmpaqueMovimientos() {
               loadingFirmas={loadingFirmas}
               onFirmado={async () => { await refetch(); await refetchFirmas() }}
             />
-          </div>
-        ))}
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
       </div>
 
       {/* FAB */}
