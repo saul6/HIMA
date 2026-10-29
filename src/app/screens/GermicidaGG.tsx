@@ -24,6 +24,9 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import {
@@ -93,6 +96,11 @@ export function GermicidaGG() {
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M74', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M74')
@@ -244,11 +252,20 @@ export function GermicidaGG() {
   return (
     <div className="min-h-full pb-safe-nav">
 
-      <ModuloHeader tituloFallback="Monitoreo de Solución Germicida" subtitulo="M74 · REG-10.1 · Limpieza" />
+      <ModuloHeader
+        tituloFallback="Monitoreo de Solución Germicida"
+        subtitulo="M74 · REG-10.1 · Limpieza"
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `M74 · REG-10.1 · Limpieza · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />}
+      />
 
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3 pb-0">
+      <div className="px-4 pt-3 pb-0 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
@@ -295,23 +312,23 @@ export function GermicidaGG() {
           </div>
         )}
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : registros.length === 0 ? (
           <EstadoVacio icono={FlaskConical} titulo="Sin registros aún" ayuda="Crea el primer registro con el botón +" />
         ) : (
-          <div className="space-y-3">
-            {registros.map((reg) => (
-              <div
+          <ListaTarjetas>
+          {registros.map(reg => {
+            const resumen = resumenFirmas(firmas[reg.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (reg as any).requiere_correccion === true
+            return (
+              <TarjetaRegistro
                 key={reg.id}
-                className="rounded-xl p-4 border"
-                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-              >
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span
-                      className="text-xs px-2 py-0.5 rounded font-semibold"
-                      style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
-                    >
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                etiquetas={(
+                  <>
+                    <span className="text-xs px-2 py-0.5 rounded font-semibold @min-[972px]/lista:hidden" style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
                       {formatFecha(reg.fecha)}
                     </span>
                     {reg.sector && (
@@ -322,7 +339,72 @@ export function GermicidaGG() {
                         {reg.sector}
                       </span>
                     )}
-                  </div>
+                  </>
+                )}
+                meta={[
+                  <span className="hidden @min-[972px]/lista:inline">{formatFecha(reg.fecha)}</span>,
+                ]}
+                titulo={reg.rancho_nombre}
+                tituloTexto={reg.rancho_nombre}
+                contenido={(
+                  <>
+                    {reg.producto && (
+                      <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                        Producto: {reg.producto}
+                      </div>
+                    )}
+                    {/* Celular: lecturas como antes. Escritorio: mini tabla compacta. */}
+                    <div className="flex gap-3 mt-2 flex-wrap @min-[972px]/lista:hidden">
+                      {[
+                      { hora: reg.hora1, ppm: reg.ppm1, label: 'Toma 1' },
+                      { hora: reg.hora2, ppm: reg.ppm2, label: 'Toma 2' },
+                      { hora: reg.hora3, ppm: reg.ppm3, label: 'Toma 3' },
+                    ].filter((t) => t.ppm !== null).map((t, i) => (
+                        <div key={i} className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                          {t.label}: <span style={{ color: 'var(--foreground)' }} className="font-semibold">{t.ppm} ppm</span>
+                          {t.hora && ` · ${t.hora}`}
+                        </div>
+                      ))}
+                    </div>
+                    {[
+                      { hora: reg.hora1, ppm: reg.ppm1, label: 'Toma 1' },
+                      { hora: reg.hora2, ppm: reg.ppm2, label: 'Toma 2' },
+                      { hora: reg.hora3, ppm: reg.ppm3, label: 'Toma 3' },
+                    ].filter((t) => t.ppm !== null).length > 0 && (
+                      <table className="mt-2 hidden w-full max-w-xs text-xs @min-[972px]/lista:table">
+                        <thead>
+                          <tr className="text-left text-muted-foreground">
+                            <th className="py-0.5 pr-3 font-normal">Toma</th>
+                            <th className="py-0.5 pr-3 font-normal">Hora</th>
+                            <th className="py-0.5 text-right font-normal">ppm</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {[
+                      { hora: reg.hora1, ppm: reg.ppm1, label: 'Toma 1' },
+                      { hora: reg.hora2, ppm: reg.ppm2, label: 'Toma 2' },
+                      { hora: reg.hora3, ppm: reg.ppm3, label: 'Toma 3' },
+                    ].filter((t) => t.ppm !== null).map((t, i) => (
+                            <tr key={i} className="border-t border-border">
+                              <td className="py-0.5 pr-3 text-muted-foreground">{t.label}</td>
+                              <td className="py-0.5 pr-3">{t.hora || '—'}</td>
+                              <td className="py-0.5 text-right font-semibold">{t.ppm}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                    <div className="@min-[972px]/lista:hidden">
+                      {obligatoria && !firmas[reg.id]?.realizo && (
+<span className="text-xs px-2 py-0.5 rounded font-medium"
+                    style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
+                    Pendiente de firma
+                  </span>
+                      )}
+                    </div>
+                  </>
+                )}
+                acciones={<>
                   <button
                     onClick={(e) => { e.stopPropagation(); descargarPDF(reg.id) }}
                     disabled={pdfLoading === reg.id}
@@ -334,33 +416,10 @@ export function GermicidaGG() {
                       : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
                     }
                   </button>
-                </div>
-                <span className="text-sm text-foreground font-semibold">{reg.rancho_nombre}</span>
-                {reg.producto && (
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                    Producto: {reg.producto}
-                  </div>
-                )}
-                {/* Resumen tomas */}
-                <div className="flex gap-3 mt-2 flex-wrap">
-                  {[
-                    { hora: reg.hora1, ppm: reg.ppm1, label: 'Toma 1' },
-                    { hora: reg.hora2, ppm: reg.ppm2, label: 'Toma 2' },
-                    { hora: reg.hora3, ppm: reg.ppm3, label: 'Toma 3' },
-                  ].filter((t) => t.ppm !== null).map((t, i) => (
-                    <div key={i} className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                      {t.label}: <span style={{ color: 'var(--foreground)' }} className="font-semibold">{t.ppm} ppm</span>
-                      {t.hora && ` · ${t.hora}`}
-                    </div>
-                  ))}
-                </div>
-                {obligatoria && !firmas[reg.id]?.realizo && (
-                  <span className="text-xs px-2 py-0.5 rounded font-medium mt-2 inline-block"
-                    style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
-                    Pendiente de firma
-                  </span>
-                )}
-                <FirmasRegistro
+                </>}
+                pie={(
+                  <FirmasRegistro
+                    variante="escritorio"
                   modulo="M74"
                   registroId={reg.id}
                   fechaRegistro={reg.fecha}
@@ -368,9 +427,11 @@ export function GermicidaGG() {
                   loadingFirmas={loadingFirmas}
                   onFirmado={refetchFirmas}
                 />
-              </div>
-            ))}
-          </div>
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
         )}
       </div>
 
