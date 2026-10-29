@@ -28,6 +28,9 @@ import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { FirmaGatePaso } from '@/app/components/FirmaGatePaso'
 import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
@@ -110,6 +113,11 @@ export function EntradasSalidasPreFrio() {
 
   const todosIds = useMemo(() => registros.map(r => r.id), [registros])
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M40', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
@@ -282,11 +290,17 @@ export function EntradasSalidasPreFrio() {
       <ModuloHeader
         tituloFallback="Entradas y Salidas en Pre-enfriamiento"
         subtitulo={`${codigoFormato('F-FRUS-PRO-04', codigoClave)} · Por evento`}
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `${codigoFormato('F-FRUS-PRO-04', codigoClave)} · Por evento · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />}
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
@@ -302,28 +316,47 @@ export function EntradasSalidasPreFrio() {
         )}
 
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : registros.length === 0 ? (
           <EstadoVacio icono={ArrowLeftRight} titulo="Sin registros aún" ayuda="Crea el primer registro con el botón +" />
         ) : (
-          registros.map(r => (
-            <div key={r.id} className="bg-card border border-border rounded-xl p-4">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground truncate font-semibold">
-                    {r.rancho_nombre}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{formatFecha(r.fecha)}</p>
-                  {r.empresa && (
-                    <p className="text-xs mt-0.5 font-semibold">{r.empresa}</p>
-                  )}
-                  {obligatoria && !firmas[r.id]?.realizo && (
-                    <Etiqueta tono="error" className="mt-1">
+          <ListaTarjetas>
+          {registros.map(r => {
+            const resumen = resumenFirmas(firmas[r.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (r as any).requiere_correccion === true
+            return (
+              <TarjetaRegistro
+                key={r.id}
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  <span className="hidden @min-[972px]/lista:inline">{r.empresa ? r.rancho_nombre : null}</span>,
+                  <span className="hidden @min-[972px]/lista:inline">{formatFecha(r.fecha)}</span>,
+                ]}
+                titulo={(
+                  <>
+                    <span className="@min-[972px]/lista:hidden">{r.rancho_nombre}</span>
+                    <span className="hidden @min-[972px]/lista:inline">{r.empresa || r.rancho_nombre}</span>
+                  </>
+                )}
+                tituloTexto={r.empresa || r.rancho_nombre}
+                tituloClassName="truncate @min-[972px]/lista:whitespace-normal"
+                contenido={(
+                  <div className="@min-[972px]/lista:hidden">
+                    <p className="text-xs text-muted-foreground">{formatFecha(r.fecha)}</p>
+                    {r.empresa && (
+                      <p className="text-xs mt-0.5 font-semibold">{r.empresa}</p>
+                    )}
+                    {obligatoria && !firmas[r.id]?.realizo && (
+<Etiqueta tono="error" className="">
                       Pendiente de firma
                     </Etiqueta>
-                  )}
-                </div>
-                <button
+                    )}
+                  </div>
+                )}
+                acciones={<>
+                  <button
                   onClick={() => descargarPDF(r.id)}
                   disabled={pdfLoading === r.id}
                   className="p-2 rounded-lg border border-border flex-shrink-0 disabled:opacity-50"
@@ -333,8 +366,10 @@ export function EntradasSalidasPreFrio() {
                     : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
                   }
                 </button>
-              </div>
-              <FirmasRegistro
+                </>}
+                pie={(
+                  <FirmasRegistro
+                    variante="escritorio"
                 modulo="M40"
                 registroId={r.id}
                 fechaRegistro={r.fecha}
@@ -342,8 +377,11 @@ export function EntradasSalidasPreFrio() {
                 loadingFirmas={loadingFirmas}
                 onFirmado={async () => { await refetch(); await refetchFirmas() }}
               />
-            </div>
-          ))
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
         )}
       </div>
 
