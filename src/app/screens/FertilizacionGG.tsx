@@ -35,6 +35,9 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { opInsert } from '@/lib/offline/construirOperaciones'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { fechaCorta } from '@/lib/formato'
 
@@ -98,6 +101,11 @@ export function FertilizacionGG() {
   const { obligatoria, tengoFirma } = useFirmaContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M67', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M67')
@@ -271,19 +279,28 @@ export function FertilizacionGG() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <ModuloHeader tituloFallback="Aplicación de Fertilizantes" subtitulo="REG-18 · GlobalG.A.P. v6 · Por evento" />
+      <ModuloHeader
+        tituloFallback="Aplicación de Fertilizantes"
+        subtitulo="REG-18 · GlobalG.A.P. v6 · Por evento"
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `REG-18 · GlobalG.A.P. v6 · Por evento · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />}
+      />
 
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}
-      <div className="px-4 pt-3 pb-4">
+      <div className="px-4 pt-3 pb-4 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
       {/* Lista */}
-      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto">
+      <div className="flex-1 px-4 pb-32 space-y-3 overflow-y-auto min-[1224px]:pt-4">
         {mostrarSkeleton ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : loading && registros.length === 0 ? (
           <div style={{ minHeight: '280px' }} />
         ) : registros.length === 0 ? (
@@ -304,68 +321,87 @@ export function FertilizacionGG() {
             ))}
           </div>
         )}
-        {registros.map(reg => (
-          <div key={reg.id} className="bg-card border border-border rounded-[0.625rem] p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1 flex-wrap mb-0.5">
-                  {orgNombre && (
-                    <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
-                  )}
-                  <span className="text-sm font-semibold">{reg.rancho_nombre}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">{formatFecha(reg.fecha)}</p>
-                <p className="text-sm font-medium mt-1">{reg.producto}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {reg.cultivo}{reg.bloque ? ` · ${reg.bloque}` : ''}
-                </p>
-                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                  {reg.cantidad_total != null && (
-                    <span
-                      className="text-xs px-2 py-0.5 rounded font-medium"
-                      style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
-                    >
-                      {reg.cantidad_total} {reg.unidad ?? ''}
+        <ListaTarjetas>
+          {registros.map(reg => {
+            const resumen = resumenFirmas(firmas[reg.id], sinDatosFirmas)
+            // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+            const requiereCorreccion = (reg as any).requiere_correccion === true
+            return (
+              <TarjetaRegistro
+                key={reg.id}
+                className="rounded-[0.625rem]"
+                estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  <>
+                    {orgNombre && <span className="font-medium">{orgNombre} · </span>}
+                    <span className="text-sm font-semibold text-foreground @min-[972px]/lista:text-xs">{reg.rancho_nombre}</span>
+                  </>,
+                  formatFecha(reg.fecha),
+                ]}
+                titulo={reg.producto}
+                tituloTexto={reg.producto}
+                tituloClassName="mt-1 font-medium @min-[972px]/lista:mt-0 @min-[972px]/lista:font-semibold"
+                chips={(
+                  <>
+                    <span className="line-clamp-2 basis-full break-words text-xs text-muted-foreground" title={`${reg.cultivo}${reg.bloque ? ` · ${reg.bloque}` : ''}`}>
+                      {reg.cultivo}{reg.bloque ? ` · ${reg.bloque}` : ''}
                     </span>
-                  )}
-                  {reg.superficie_ha != null && (
-                    <span className="text-xs text-muted-foreground">{reg.superficie_ha} ha</span>
-                  )}
-                  {reg.operario && (
-                    <span className="text-xs text-muted-foreground">{reg.operario}</span>
-                  )}
-                </div>
-                {reg.metodo_aplicacion && (
-                  <p className="text-xs mt-1 text-muted-foreground">{reg.metodo_aplicacion}</p>
+                    {reg.cantidad_total != null && (
+                      <span
+                        className="text-xs px-2 py-0.5 rounded font-medium"
+                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                      >
+                        {reg.cantidad_total} {reg.unidad ?? ''}
+                      </span>
+                    )}
+                    {reg.superficie_ha != null && (
+                      <span className="text-xs text-muted-foreground">{reg.superficie_ha} ha</span>
+                    )}
+                    {reg.operario && (
+                      <span className="text-xs text-muted-foreground">{reg.operario}</span>
+                    )}
+                    {reg.metodo_aplicacion && (
+                      <span className="line-clamp-2 basis-full break-words text-xs text-muted-foreground" title={reg.metodo_aplicacion}>{reg.metodo_aplicacion}</span>
+                    )}
+                  </>
                 )}
-                {obligatoria && !firmas[reg.id]?.realizo && (
-                  <span className="text-xs px-2 py-0.5 rounded font-medium mt-1 inline-block"
-                    style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
+                chipMovil={obligatoria && !firmas[reg.id]?.realizo && (
+                  <span
+                    className="text-xs px-2 py-0.5 rounded font-medium"
+                    style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
+                  >
                     Pendiente de firma
                   </span>
                 )}
-              </div>
-              <button
-                onClick={() => descargarPDF(reg.id)}
-                disabled={pdfLoading === reg.id}
-                className="p-2 rounded-lg border border-border shrink-0"
-              >
-                {pdfLoading === reg.id
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-                }
-              </button>
-            </div>
-            <FirmasRegistro
-              modulo="M67"
-              registroId={reg.id}
-              fechaRegistro={reg.fecha}
-              firma={firmas[reg.id]}
-              loadingFirmas={loadingFirmas}
-              onFirmado={refetchFirmas}
-            />
-          </div>
-        ))}
+                acciones={(
+                  <button
+                    onClick={() => descargarPDF(reg.id)}
+                    disabled={pdfLoading === reg.id}
+                    className="p-2 rounded-lg border border-border shrink-0"
+                    aria-label="Descargar PDF"
+                  >
+                    {pdfLoading === reg.id
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                    }
+                  </button>
+                )}
+                pie={(
+                  <FirmasRegistro
+                    variante="escritorio"
+                    modulo="M67"
+                    registroId={reg.id}
+                    fechaRegistro={reg.fecha}
+                    firma={firmas[reg.id]}
+                    loadingFirmas={loadingFirmas}
+                    onFirmado={refetchFirmas}
+                  />
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
       </div>
 
       {/* FAB */}
