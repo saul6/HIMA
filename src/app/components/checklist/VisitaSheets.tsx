@@ -1,4 +1,4 @@
-// Sheets de la visita en curso: Confirmar, Actualizar, Incidencia y seguimiento de incidencias.
+// Sheets de la visita en curso: Verificar, Pendiente / No aplica, Actualizar, Incidencia y seguimiento de incidencias.
 // Cada intento del usuario usa un event_id propio (useAccion): reintentar por red no duplica.
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -28,7 +28,7 @@ const Resumen = ({ doc }: { doc: DocVisita }) => (
 // ── Confirmar ────────────────────────────────────────────────────────────────
 
 export function ConfirmarDocSheet({ doc, ...b }: Base & { doc: DocVisita | null }) {
-  return <Hoja doc={doc} titulo="Confirmar documento" onClose={b.onClose}>{doc && <FormConfirmar doc={doc} {...b} />}</Hoja>
+  return <Hoja doc={doc} titulo="Verificar documento" onClose={b.onClose}>{doc && <FormConfirmar doc={doc} {...b} />}</Hoja>
 }
 
 function FormConfirmar({ doc, visitaId, onClose, onGuardado }: Base & { doc: DocVisita }) {
@@ -37,20 +37,20 @@ function FormConfirmar({ doc, visitaId, onClose, onGuardado }: Base & { doc: Doc
   async function guardar() {
     const r = await ejecutar(eventId => chk.docConfirmar({ visita: visitaId, documento: doc.id, observacion: obs.trim() || null, eventId }))
     if (!r.ok) { toast.error(r.mensaje); return }
-    toast.success('Documento confirmado')
+    toast.success('Verificado sin cambios')
     onGuardado(); onClose()
   }
   return (
     <>
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         <Resumen doc={doc} />
-        <p className="text-sm text-muted-foreground">Confirmas que revisaste este documento en esta visita y sus datos son correctos.</p>
+        <p className="text-sm text-muted-foreground">¿Revisaste este documento hoy? Se registrará como “Verificado sin cambios” con tu nombre y la hora actual.</p>
         <label className="block space-y-1">
           <span className="text-xs text-muted-foreground">Observación (opcional)</span>
           <textarea className={CLASE_TEXTAREA} value={obs} maxLength={2000} onChange={e => setObs(e.target.value)} />
         </label>
       </div>
-      <PieFormulario onCancelar={onClose} onGuardar={guardar} textoGuardar="Confirmar" cargando={ocupado} />
+      <PieFormulario onCancelar={onClose} onGuardar={guardar} textoGuardar="Sí, verificar" cargando={ocupado} />
     </>
   )
 }
@@ -85,10 +85,10 @@ function FormActualizar({ doc, visitaId, onClose, onGuardado }: Base & { doc: Do
       cambios.ultimo_registro_texto = nuevoTexto
       cambios.ultimo_registro_precision = nuevaPrec
     }
-    if (Object.keys(cambios).length === 0) { toast.warning('No cambiaste ningún dato. Usa Confirmar si todo sigue igual.'); return }
+    if (Object.keys(cambios).length === 0) { toast.warning('No cambiaste ningún dato. Usa Verificar si todo sigue igual.'); return }
     const r = await ejecutar(eventId => chk.docActualizar({ visita: visitaId, documento: doc.id, cambios, observacion: obs.trim() || null, eventId }))
     if (!r.ok) { toast.error(r.mensaje); return }
-    toast.success('Documento actualizado')
+    toast.success('Actualizado y verificado')
     onGuardado(); onClose()
   }
 
@@ -98,7 +98,7 @@ function FormActualizar({ doc, visitaId, onClose, onGuardado }: Base & { doc: Do
         <Resumen doc={doc} />
         <label className="block space-y-1">
           <span className="text-xs text-muted-foreground">Revisión</span>
-          <Input value={revision} maxLength={20} onChange={e => setRevision(e.target.value)} />
+          <Input value={revision} maxLength={60} onChange={e => setRevision(e.target.value)} />
         </label>
         <label className="block space-y-1">
           <span className="text-xs text-muted-foreground">Responsable de llenado</span>
@@ -125,6 +125,45 @@ function FormActualizar({ doc, visitaId, onClose, onGuardado }: Base & { doc: Do
         </label>
       </div>
       <PieFormulario onCancelar={onClose} onGuardar={guardar} textoGuardar="Guardar y confirmar" cargando={ocupado} />
+    </>
+  )
+}
+
+// ── Pendiente de evidencia / No aplica en esta visita ───────────────────────
+
+export type TipoMarca = 'pendiente' | 'no_aplica'
+
+export function MarcarDocSheet({ objetivo, ...b }: Base & { objetivo: { doc: DocVisita; tipo: TipoMarca } | null }) {
+  const titulo = objetivo?.tipo === 'no_aplica' ? 'No aplica en esta visita' : 'Pendiente de evidencia'
+  return <Hoja doc={objetivo?.doc ?? null} titulo={titulo} onClose={b.onClose}>{objetivo && <FormMarcar doc={objetivo.doc} tipo={objetivo.tipo} {...b} />}</Hoja>
+}
+
+function FormMarcar({ doc, tipo, visitaId, onClose, onGuardado }: Base & { doc: DocVisita; tipo: TipoMarca }) {
+  const [obs, setObs] = useState('')
+  const { ocupado, ejecutar } = useAccion()
+  const obligatorio = tipo === 'no_aplica'
+  async function guardar() {
+    if (obligatorio && obs.trim().length < 3) { toast.warning('Escribe el motivo (mínimo 3 caracteres)'); return }
+    const r = await ejecutar(eventId => chk.docMarcar({ visita: visitaId, documento: doc.id, resultado: tipo, observacion: obs.trim() || null, eventId }))
+    if (!r.ok) { toast.error(r.mensaje); return }
+    toast.success(tipo === 'no_aplica' ? 'Marcado como no aplica en esta visita' : 'Marcado como pendiente')
+    onGuardado(); onClose()
+  }
+  return (
+    <>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <Resumen doc={doc} />
+        <p className="text-sm text-muted-foreground">
+          {obligatorio
+            ? 'Solo aplica a esta visita; no cambia la aplicabilidad del catálogo. El motivo es obligatorio.'
+            : 'Queda registrado como pendiente: falta evidencia para verificarlo. No cuenta como verificado.'}
+        </p>
+        <label className="block space-y-1">
+          <span className="text-xs text-muted-foreground">{obligatorio ? 'Motivo (obligatorio)' : 'Qué falta (opcional)'}</span>
+          <textarea className={CLASE_TEXTAREA} value={obs} maxLength={2000} onChange={e => setObs(e.target.value)} />
+        </label>
+      </div>
+      <PieFormulario onCancelar={onClose} onGuardar={guardar} textoGuardar="Guardar" cargando={ocupado} deshabilitado={obligatorio && obs.trim().length < 3} />
     </>
   )
 }

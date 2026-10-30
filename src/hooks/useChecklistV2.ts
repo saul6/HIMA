@@ -62,10 +62,12 @@ export interface CarteraCliente {
 
 export interface AlertaDoc { campo: string; mensaje: string }
 
+export type ResultadoVerificacion = 'correcto' | 'incidencia' | 'pendiente' | 'no_aplica'
+
 export interface Antecedente {
   fuente: 'visita' | 'checklist_anterior'
   fecha: string
-  resultado?: 'correcto' | 'incidencia'
+  resultado?: ResultadoVerificacion
   actualizado?: boolean
   estado_anterior?: string
   observacion: string | null
@@ -148,7 +150,15 @@ export type EstadoVisita = 'programada' | 'en_curso' | 'cerrada' | 'cancelada' |
 export interface ResumenVisita {
   aplicables: number; correctos: number; con_incidencia: number
   sin_revisar: number; actualizados: number; vencidos: number
+  pendientes?: number; no_aplica?: number
 }
+
+/** Conteos por sección ("1", "2", "3" si el orgánico está activo). */
+export interface ResumenSeccion {
+  aplicables: number; correctos: number; actualizados: number; pendientes: number
+  no_aplica: number; con_incidencia: number; sin_revisar: number
+}
+export type SeccionesResumen = Record<string, ResumenSeccion>
 
 export interface VisitaLista {
   id: string
@@ -166,7 +176,7 @@ export interface VisitaLista {
 }
 
 export interface VerificacionDoc {
-  resultado: 'correcto' | 'incidencia'
+  resultado: ResultadoVerificacion
   actualizado: boolean
   cambios: Record<string, unknown> | null
   observacion: string | null
@@ -186,14 +196,36 @@ export interface IncidenciaDoc {
   seguimientos: Seguimiento[]
 }
 
+/** Documento de otra tabla vinculado (y confirmado) con este: solo consulta. */
+export interface DocRelacionado {
+  id: string
+  seccion: number
+  codigo: string | null
+  nombre: string
+  tipo: 'contexto' | 'parcial' | 'directo'
+  ultimo_registro: string | null
+  verificacion_actual: { resultado: ResultadoVerificacion; creado_en: string } | null
+  antecedente: Antecedente | null
+}
+
 export interface DocVisita extends Omit<ChkDocumento, 'alertas' | 'incidencias_abiertas'> {
   verificacion: VerificacionDoc | null
   incidencias: IncidenciaDoc[]
+  /** false = documento de la Tabla 3 con la revisión orgánica apagada */
+  habilitado: boolean
+  atribucion: Atribucion
+  relacionados: DocRelacionado[]
 }
+
+export interface NotaGeneral { id: string; seccion: number; nombre: string; antecedentes: string | null; atribucion: Atribucion }
 
 export interface VisitaEnCurso {
   estado: EstadoVisita
-  visita: { id: string; estado: EstadoVisita; fecha: string; asesor_id: string | null; asesor: string | null; nota: string | null; abierta_en: string | null; puede_capturar: boolean }
+  visita: { id: string; estado: EstadoVisita; fecha: string; asesor_id: string | null; asesor: string | null; nota: string | null; abierta_en: string | null; puede_capturar: boolean
+    alcance_id: string | null; alcance: string | null; organico_activo: boolean; tiene_plantilla_organica: boolean
+  }
+  notas: NotaGeneral[]
+  secciones: SeccionesResumen | null
   cliente: string
   instalacion: { id: string; nombre: string; tipo: string | null }
   documentos: DocVisita[]
@@ -213,7 +245,8 @@ export interface ReporteDoc {
   ultimo_registro: string | null
   vence_el: string | null
   vigencia: Vigencia
-  estado: 'sin_revisar' | 'correcto' | 'incidencia'
+  categoria?: string | null
+  estado: 'sin_revisar' | ResultadoVerificacion
   actualizado: boolean
   cambios: Record<string, { antes?: unknown; despues?: unknown } | unknown>
   observacion: string | null
@@ -241,6 +274,10 @@ export interface Reporte {
   cliente: string
   instalacion: string
   instalacion_tipo: string | null
+  alcance?: string | null
+  organico?: { activo: boolean; plantilla_disponible: boolean; leyenda: string | null }
+  secciones?: SeccionesResumen
+  notas?: { seccion: number; nombre: string; antecedentes: string | null }[]
   visita: {
     id: string; fecha: string; estado: string; asesor: string | null; abierta_en: string | null
     catalogo_version: number; tipo_cierre: 'completo' | 'parcial'
@@ -385,6 +422,12 @@ export const chk = {
   visCancelar: (p: { visita: string; motivo: string; eventId: string }) =>
     rpc<unknown>('chk_vis_cancelar', { p_visita: p.visita, p_motivo: p.motivo, p_event_id: p.eventId }),
   visLista: (instalacion: string) => rpc<VisitaLista[]>('chk_vis_lista', { p_instalacion: instalacion }),
+  visOrganico: (p: { visita: string; activo: boolean; motivo?: string | null; eventId: string }) =>
+    rpc<{ organico_activo: boolean; avances?: number; sin_cambios?: boolean }>('chk_vis_organico', {
+      p_visita: p.visita, p_activo: p.activo, p_motivo: p.motivo ?? null, p_event_id: p.eventId,
+    }),
+  docMarcar: (p: { visita: string; documento: string; resultado: 'pendiente' | 'no_aplica'; observacion: string | null; eventId: string }) =>
+    rpc<unknown>('chk_doc_marcar', { p_visita: p.visita, p_documento: p.documento, p_resultado: p.resultado, p_observacion: p.observacion, p_event_id: p.eventId }),
   visAbrir: (visita: string, eventId: string) => rpc<unknown>('chk_vis_abrir', { p_visita: visita, p_event_id: eventId }),
   visVer: (visita: string) => rpc<VisitaEnCurso | { estado: 'cerrada'; reporte: Reporte }>('chk_vis_ver', { p_visita: visita }),
   docConfirmar: (p: { visita: string; documento: string; observacion: string | null; eventId: string }) =>

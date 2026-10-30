@@ -22,7 +22,10 @@ export function CerrarVisitaSheet({ open, ...resto }: Props) {
   )
 }
 
-const ESTADO_TXT = { correcto: 'Correcto', incidencia: 'Incidencia', sin_revisar: 'Sin revisar' } as const
+const ESTADO_TXT = {
+  correcto: 'Verificado', incidencia: 'No conforme', pendiente: 'Pendiente', no_aplica: 'No aplica', sin_revisar: 'Sin revisar',
+} as const
+const NOMBRE_SEC: Record<string, string> = { '1': 'Tabla 1 · Formatos', '2': 'Tabla 2 · Controles complementarios', '3': 'Tabla 3 · Orgánico' }
 
 function Contenido({ visitaId, onClose, onCerrada }: Omit<Props, 'open'>) {
   const carga = useCarga<Reporte>(visitaId, () => chk.visPreview(visitaId))
@@ -72,23 +75,34 @@ function Contenido({ visitaId, onClose, onCerrada }: Omit<Props, 'open'>) {
   const parcial = r.sin_revisar > 0
   const porArea = new Map<string, typeof rep.documentos>()
   for (const d of rep.documentos) {
-    const k = d.area?.trim() || 'Sin área'
+    const k = `${d.seccion}|${d.area?.trim() || d.categoria?.trim() || 'Sin área'}`
     porArea.set(k, [...(porArea.get(k) ?? []), d])
   }
+  const secciones = Object.entries(rep.secciones ?? {}).sort(([a], [b]) => Number(a) - Number(b))
 
   return (
     <>
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         <div className="space-y-1">
-          <p className="text-sm font-semibold">{rep.cliente} · {rep.instalacion}</p>
+          <p className="text-sm font-semibold">{[rep.cliente, rep.instalacion, rep.alcance].filter(Boolean).join(' · ')}</p>
           <p className="text-xs text-muted-foreground">{fechaLarga(rep.visita.fecha)} · {rep.visita.asesor ?? 'Sin asesora'}</p>
           <div className="flex flex-wrap gap-1.5 pt-1">
-            <Chip tono={TONOS.exito}>{r.correctos} correctos</Chip>
-            <Chip tono={r.con_incidencia ? TONOS.peligro : TONOS.neutro}>{r.con_incidencia} con incidencia</Chip>
+            <Chip tono={TONOS.exito}>{r.correctos} verificados</Chip>
+            <Chip tono={r.con_incidencia ? TONOS.peligro : TONOS.neutro}>{r.con_incidencia} no conformes</Chip>
+            {!!r.pendientes && <Chip tono={TONOS.info}>{r.pendientes} pendientes</Chip>}
+            {!!r.no_aplica && <Chip>{r.no_aplica} no aplica</Chip>}
             <Chip tono={r.sin_revisar ? TONOS.info : TONOS.neutro}>{r.sin_revisar} sin revisar</Chip>
             <Chip>{r.actualizados} actualizados</Chip>
             <Chip tono={r.vencidos ? TONOS.peligro : TONOS.neutro}>{r.vencidos} vencidos</Chip>
           </div>
+          {secciones.length > 0 && (
+            <ul className="text-xs text-muted-foreground pt-1 space-y-0.5">
+              {secciones.map(([n, x]) => (
+                <li key={n}>{NOMBRE_SEC[n] ?? `Sección ${n}`}: {x.aplicables - x.sin_revisar} de {x.aplicables} revisados{x.sin_revisar ? ` · ${x.sin_revisar} sin revisar` : ''}</li>
+              ))}
+            </ul>
+          )}
+          {rep.organico?.leyenda && <p className="text-xs text-muted-foreground">{rep.organico.leyenda}</p>}
         </div>
 
         <Aviso>Esta es la vista previa del reporte. Al cerrar, queda guardado tal cual y no se puede modificar.</Aviso>
@@ -96,9 +110,9 @@ function Contenido({ visitaId, onClose, onCerrada }: Omit<Props, 'open'>) {
           <FileText className="w-4 h-4" /> Ver como PDF
         </Boton>
 
-        {[...porArea.entries()].map(([area, docs]) => (
-          <div key={area} className="space-y-1">
-            <p className="text-xs font-semibold text-muted-foreground">{area}</p>
+        {[...porArea.entries()].map(([clave, docs]) => (
+          <div key={clave} className="space-y-1">
+            <p className="text-xs font-semibold text-muted-foreground">{NOMBRE_SEC[clave.split('|')[0]]?.split(' · ')[0]} · {clave.split('|').slice(1).join('|')}</p>
             <ul className="rounded-lg border border-border divide-y divide-border bg-card">
               {docs.map(d => (
                 <li key={d.documento_id} className="px-3 py-2 text-xs space-y-0.5">
@@ -127,6 +141,13 @@ function Contenido({ visitaId, onClose, onCerrada }: Omit<Props, 'open'>) {
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {!!rep.notas?.length && (
+          <div className="space-y-1">
+            <p className="text-xs font-semibold text-muted-foreground">Antecedentes (observaciones generales)</p>
+            {rep.notas.map((n, i) => n.antecedentes && <p key={i} className="text-xs whitespace-pre-line rounded-lg bg-muted px-3 py-2">{n.antecedentes}</p>)}
           </div>
         )}
 
