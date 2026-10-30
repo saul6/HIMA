@@ -5,12 +5,14 @@ import { Boton } from '@/app/components/ui-mady/Boton'
 import { Input } from '@/app/components/ui/input'
 import {
   chk, mensajeError, useAccion, useCarga,
-  type Clasificacion, type ImportacionFila, type ImportacionVer,
+  type ChkAlcance, type Clasificacion, type ImportacionFila, type ImportacionVer,
 } from '@/hooks/useChecklistV2'
 import { Aviso, Cargando, Chip, ErrorReintentar, TONOS } from './comun'
 import { fechaCorta } from './constantes'
+import { NOMBRE_SECCION_CORTO } from './secciones'
 
 interface Props {
+  alcances: ChkAlcance[]
   importacionId: string | null
   onClose: () => void
   /** Se aplicó o se canceló: recargar catálogo e importaciones. */
@@ -28,19 +30,20 @@ const CLASIF: Record<Clasificacion, { label: string; tono: typeof TONOS.exito }>
 const ETIQ: Record<string, string> = {
   area: 'Área', tipo_doc: 'Tipo', revision: 'Rev', numeral: '#', nombre: 'Nombre', codigo: 'Código',
   responsable_llenado: 'Responsable', ultimo_registro_fecha: 'Fecha de registro', ultimo_registro_texto: 'Último registro (texto)',
-  ultimo_registro_precision: 'Precisión', antecedentes: 'Antecedentes', seccion: 'Sección',
+  ultimo_registro_precision: 'Precisión', antecedentes: 'Antecedentes', seccion: 'Sección', categoria: 'Categoría',
+  alcance_id: 'Alcance', es_nota: 'Observación general', atribucion_por_confirmar: 'Atribución por confirmar',
 }
 const mostrar = (v: unknown) => (v == null || v === '' ? '—' : typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? fechaCorta(v) : String(v))
 
-export function ImportacionPreview({ importacionId, onClose, onCambio }: Props) {
+export function ImportacionPreview({ alcances, importacionId, onClose, onCambio }: Props) {
   return (
     <BottomSheet open={!!importacionId} onClose={onClose} height="95%" title="Vista previa de importación">
-      {importacionId && <Contenido importacionId={importacionId} onClose={onClose} onCambio={onCambio} />}
+      {importacionId && <Contenido alcances={alcances} importacionId={importacionId} onClose={onClose} onCambio={onCambio} />}
     </BottomSheet>
   )
 }
 
-function Contenido({ importacionId, onClose, onCambio }: { importacionId: string; onClose: () => void; onCambio: () => void }) {
+function Contenido({ alcances, importacionId, onClose, onCambio }: { alcances: ChkAlcance[]; importacionId: string; onClose: () => void; onCambio: () => void }) {
   const carga = useCarga<ImportacionVer>(importacionId, () => chk.importacionVer(importacionId))
   const accion = useAccion()
   const imp = carga.data
@@ -99,7 +102,7 @@ function Contenido({ importacionId, onClose, onCambio }: { importacionId: string
         {abierta && sinDecision > 0 && <Aviso>Faltan {sinDecision} renglones por decidir (Aplicar u Omitir).</Aviso>}
 
         {imp.filas.map(f => (
-          <FilaPreview key={f.id} fila={f} editable={abierta} ocupado={accion.ocupado} onDecidir={(d, datos, res) => decidir(f, d, datos, res)} />
+          <FilaPreview key={f.id} fila={f} alcances={alcances} editable={abierta} ocupado={accion.ocupado} onDecidir={(d, datos, res) => decidir(f, d, datos, res)} />
         ))}
       </div>
       {abierta && (
@@ -114,8 +117,8 @@ function Contenido({ importacionId, onClose, onCambio }: { importacionId: string
   )
 }
 
-function FilaPreview({ fila, editable, ocupado, onDecidir }: {
-  fila: ImportacionFila; editable: boolean; ocupado: boolean
+function FilaPreview({ fila, alcances, editable, ocupado, onDecidir }: {
+  fila: ImportacionFila; alcances: ChkAlcance[]; editable: boolean; ocupado: boolean
   onDecidir: (decision: 'aplicar' | 'omitir', datos: Record<string, unknown> | null, resueltas: boolean) => void
 }) {
   const d = fila.datos as Record<string, unknown>
@@ -126,6 +129,10 @@ function FilaPreview({ fila, editable, ocupado, onDecidir }: {
     nombre: String(d.nombre ?? ''), codigo: String(d.codigo ?? ''), revision: String(d.revision ?? ''),
     area: String(d.area ?? ''), responsable_llenado: String(d.responsable_llenado ?? ''),
     registro: String(d.ultimo_registro_texto ?? d.ultimo_registro_fecha ?? ''),
+    antecedentes: String(d.antecedentes ?? ''),
+    categoria: String(d.categoria ?? ''),
+    alcance_id: String(d.alcance_id ?? ''),
+    por_confirmar: d.atribucion_por_confirmar === true,
   })
   const [revisadas, setRevisadas] = useState(false)
 
@@ -134,6 +141,8 @@ function FilaPreview({ fila, editable, ocupado, onDecidir }: {
     const out: Record<string, unknown> = {
       nombre: campos.nombre.trim(), codigo: campos.codigo.trim() || null, revision: campos.revision.trim() || null,
       area: campos.area.trim() || null, responsable_llenado: campos.responsable_llenado.trim() || null,
+      antecedentes: campos.antecedentes.trim() || null, categoria: campos.categoria.trim() || null,
+      alcance_id: campos.alcance_id || null, atribucion_por_confirmar: !campos.alcance_id && campos.por_confirmar,
     }
     const reg = campos.registro.trim()
     if (reg !== String(d.ultimo_registro_texto ?? d.ultimo_registro_fecha ?? '')) {
@@ -146,6 +155,9 @@ function FilaPreview({ fila, editable, ocupado, onDecidir }: {
     return out
   }
 
+  const seccion = Number(d.seccion ?? 1)
+  const nombreAlcance = d.alcance_id ? alcances.find(a => a.id === d.alcance_id)?.nombre ?? 'Alcance' : 'Compartido'
+  const candidatos = Array.isArray((fila.original as Record<string, unknown>)?.candidatos_t1) ? ((fila.original as Record<string, unknown>).candidatos_t1 as string[]) : []
   const bloqueaAplicar = fila.clasificacion === 'duplicado'
   return (
     <div className="rounded-xl border border-border bg-card p-3 space-y-2" style={dudoso ? { borderColor: 'var(--agro-info-text)' } : undefined}>
@@ -157,6 +169,15 @@ function FilaPreview({ fila, editable, ocupado, onDecidir }: {
         </div>
         <Chip tono={c.tono}>{c.label}</Chip>
       </div>
+      <div className="flex flex-wrap gap-1">
+        <Chip>{NOMBRE_SECCION_CORTO[seccion] ?? `Sección ${seccion}`}</Chip>
+        <Chip>{nombreAlcance}</Chip>
+        {d.es_nota === true && <Chip tono={TONOS.info}>Observación general</Chip>}
+        {d.atribucion_por_confirmar === true && <Chip tono={TONOS.info}>Atribución por confirmar</Chip>}
+        {d.categoria ? <Chip>{String(d.categoria)}</Chip> : null}
+      </div>
+      {d.antecedentes ? <p className="text-xs text-muted-foreground whitespace-pre-line">{String(d.antecedentes)}</p> : null}
+      {candidatos.length > 0 && <p className="text-xs text-muted-foreground">Relaciones sugeridas con la Tabla 1: {candidatos.join(', ')}</p>}
 
       {Object.keys(fila.diferencias ?? {}).length > 0 && (
         <ul className="text-xs text-muted-foreground space-y-0.5">
@@ -181,6 +202,22 @@ function FilaPreview({ fila, editable, ocupado, onDecidir }: {
               <Input value={campos[k]} onChange={e => setCampos(s => ({ ...s, [k]: e.target.value }))} />
             </label>
           ))}
+          <label className="block space-y-0.5 col-span-2">
+            <span className="text-xs text-muted-foreground">Antecedentes</span>
+            <textarea className="w-full min-h-16 rounded-lg border border-border-control bg-card px-3 py-2 text-sm" value={campos.antecedentes} onChange={e => setCampos(s => ({ ...s, antecedentes: e.target.value }))} />
+          </label>
+          <label className="block space-y-0.5">
+            <span className="text-xs text-muted-foreground">Alcance</span>
+            <select className="w-full h-10 rounded-lg border border-border-control bg-card px-2 text-sm" value={campos.alcance_id} onChange={e => setCampos(s => ({ ...s, alcance_id: e.target.value }))}>
+              <option value="">Compartido</option>
+              {alcances.map(a => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+            </select>
+          </label>
+          {!campos.alcance_id && alcances.length > 0 && (
+            <label className="flex items-end gap-2 text-xs pb-2">
+              <input type="checkbox" checked={campos.por_confirmar} onChange={e => setCampos(s => ({ ...s, por_confirmar: e.target.checked }))} /> Atribución por confirmar
+            </label>
+          )}
         </div>
       )}
       {editable && dudoso && (

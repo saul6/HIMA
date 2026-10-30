@@ -79,9 +79,9 @@ export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoCl
 
       {esAdmin && (
         <>
-          <ImportarSheet open={importarAbierto} instalacionId={instalacionId} onClose={() => setImportarAbierto(false)}
+          <ImportarSheet open={importarAbierto} instalacionId={instalacionId} alcances={alcances.filter(a => a.activo)} onClose={() => setImportarAbierto(false)}
             onCreada={id => { setVersion(v => v + 1); setPreviewId(id) }} />
-          <ImportacionPreview importacionId={previewId} onClose={() => setPreviewId(null)} onCambio={refrescar} />
+          <ImportacionPreview alcances={alcances} importacionId={previewId} onClose={() => setPreviewId(null)} onCambio={refrescar} />
         </>
       )}
     </div>

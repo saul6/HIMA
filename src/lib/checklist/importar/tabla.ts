@@ -79,7 +79,7 @@ export function fusionarLineas(lineas: Linea[], enc: Encabezado): Linea[] {
 
 export interface FilaImportacion {
   original: Record<string, string>
-  datos: Record<string, string | number>
+  datos: Record<string, string | number | boolean>
   alertas: AlertaImport[]
 }
 
