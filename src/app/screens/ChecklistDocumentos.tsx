@@ -20,7 +20,7 @@ import { InstalacionView, type TabInstalacion } from '@/app/components/checklist
 import { VisitaEjecucion } from '@/app/components/checklist/VisitaEjecucion'
 import { PortalCliente } from '@/app/components/checklist/PortalCliente'
 
-const TABS: TabInstalacion[] = ['catalogo', 'visitas', 'incidencias', 'importaciones']
+const TABS: TabInstalacion[] = ['catalogo', 'visitas', 'incidencias', 'relaciones', 'importaciones']
 
 export function ChecklistDocumentos() {
   const { profile, codigoClave } = useAuthContext()

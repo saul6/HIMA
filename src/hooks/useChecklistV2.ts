@@ -123,6 +123,15 @@ export interface CatalogoVer {
 
 export interface Seguimiento { tipo: string; texto: string | null; cliente: boolean; actor?: string | null; fecha: string }
 
+export type TipoVinculo = 'contexto' | 'parcial' | 'directo'
+export type EstadoVinculo = 'sugerido' | 'confirmado' | 'descartado'
+export interface VinculoDocRef { id: string; seccion: number; codigo: string | null; nombre: string }
+export interface Vinculo {
+  id: string; tipo: TipoVinculo; estado: EstadoVinculo; nota: string | null
+  origen: VinculoDocRef; destino: VinculoDocRef
+  decidido_por: string | null; decidido_en: string | null
+}
+
 export interface IncidenciaLista {
   id: string
   documento_id: string
@@ -422,6 +431,11 @@ export const chk = {
   visCancelar: (p: { visita: string; motivo: string; eventId: string }) =>
     rpc<unknown>('chk_vis_cancelar', { p_visita: p.visita, p_motivo: p.motivo, p_event_id: p.eventId }),
   visLista: (instalacion: string) => rpc<VisitaLista[]>('chk_vis_lista', { p_instalacion: instalacion }),
+  vinculosLista: (instalacion: string, estado: EstadoVinculo | null) =>
+    rpc<Vinculo[]>('chk_vinculos_lista', { p_instalacion: instalacion, p_estado: estado }),
+  vinculoGuardar: (p: { origen: string; destino: string; tipo: TipoVinculo; estado: EstadoVinculo; nota?: string | null }) =>
+    rpc<unknown>('chk_vinculo_guardar', { p_origen: p.origen, p_destino: p.destino, p_tipo: p.tipo, p_estado: p.estado, p_nota: p.nota ?? null }),
+
   visOrganico: (p: { visita: string; activo: boolean; motivo?: string | null; eventId: string }) =>
     rpc<{ organico_activo: boolean; avances?: number; sin_cambios?: boolean }>('chk_vis_organico', {
       p_visita: p.visita, p_activo: p.activo, p_motivo: p.motivo ?? null, p_event_id: p.eventId,

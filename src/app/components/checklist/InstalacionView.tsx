@@ -7,11 +7,12 @@ import { Cargando, ErrorReintentar } from './comun'
 import { CatalogoTab } from './CatalogoTab'
 import { VisitasTab } from './VisitasTab'
 import { IncidenciasTab } from './IncidenciasTab'
+import { RelacionesTab } from './RelacionesTab'
 import { ImportacionesTab } from './ImportacionesTab'
 import { ImportarSheet } from './ImportarSheet'
 import { ImportacionPreview } from './ImportacionPreview'
 
-export type TabInstalacion = 'catalogo' | 'visitas' | 'incidencias' | 'importaciones'
+export type TabInstalacion = 'catalogo' | 'visitas' | 'incidencias' | 'relaciones' | 'importaciones'
 
 interface Props {
   instalacionId: string
@@ -45,6 +46,7 @@ export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoCl
     { value: 'catalogo', label: 'Catálogo' },
     { value: 'visitas', label: 'Visitas' },
     { value: 'incidencias', label: 'Incidencias' },
+    ...(esAdmin ? [{ value: 'relaciones', label: 'Relaciones' }] : []),
     ...(esAdmin ? [{ value: 'importaciones', label: 'Importaciones' }] : []),
   ]
 
@@ -70,6 +72,7 @@ export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoCl
         />
       )}
       {tab === 'incidencias' && <IncidenciasTab instalacionId={instalacionId} version={version} />}
+      {tab === 'relaciones' && esAdmin && <RelacionesTab instalacionId={instalacionId} version={version} />}
       {tab === 'importaciones' && esAdmin && (
         <ImportacionesTab instalacionId={instalacionId} version={version} onAbrir={setPreviewId} onImportar={() => setImportarAbierto(true)} />
       )}
