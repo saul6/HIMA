@@ -1,20 +1,21 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { AlertTriangle, Check, ChevronDown, FileDown, MoreHorizontal, Pencil } from 'lucide-react'
+import { AlertTriangle, Check, FileDown, MoreHorizontal, Pencil } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import {
-  chk, useAccion, useCarga, type Antecedente, type DocVisita, type IncidenciaDoc, type ResultadoVerificacion, type VisitaEnCurso,
+  chk, useAccion, useCarga, type DocVisita, type IncidenciaDoc, type VisitaEnCurso,
 } from '@/hooks/useChecklistV2'
-import { Aviso, Cargando, Chip, ChipVigencia, ErrorReintentar, PieFormulario, TONOS, textoRegistro } from './comun'
-import { SeguimientosLista, etiquetaEstadoIncidencia } from './IncidenciasTab'
+import { Aviso, Cargando, Chip, ChipVigencia, ErrorReintentar, PieFormulario, TONOS } from './comun'
+import { DetalleDoc } from './DetalleDoc'
+import { COLOR_RESULTADO } from './estadoDoc'
 import {
   ActualizarDocSheet, ConfirmarDocSheet, IncidenciaDocSheet, MarcarDocSheet, SeguirIncidenciaSheet, type TipoMarca, type TipoSeguimiento,
 } from './VisitaSheets'
 import { CerrarVisitaSheet } from './CerrarVisitaSheet'
-import { fechaCorta, fechaLarga, horaCorta } from './constantes'
+import { fechaLarga } from './constantes'
 import { NOMBRE_SECCION, NOMBRE_SECCION_CORTO } from './secciones'
 import { descargarReportePdf } from './pdfVisita'
 
@@ -26,31 +27,6 @@ interface Props {
   onCambio: () => void
 }
 
-/** Estado de una verificación en texto: nunca "correcto" a secas. */
-function etiquetaResultado(r: ResultadoVerificacion | undefined, actualizado?: boolean): string {
-  switch (r) {
-    case 'correcto': return actualizado ? 'Actualizado y verificado' : 'Verificado sin cambios'
-    case 'incidencia': return 'No conforme'
-    case 'pendiente': return 'Pendiente de evidencia'
-    case 'no_aplica': return 'No aplica en esta visita'
-    default: return 'revisado'
-  }
-}
-
-function textoAntecedente(a: Antecedente | null): string | null {
-  if (!a) return null
-  if (a.fuente === 'visita') {
-    return `Última verificación: ${fechaCorta(a.fecha)}, ${etiquetaResultado(a.resultado, a.actualizado).toLowerCase()}${a.asesor ? `, ${a.asesor}` : ''}`
-  }
-  return `Checklist anterior: ${(a.estado_anterior ?? 'revisado').replace(/_/g, ' ')}${a.fecha ? ` (${fechaCorta(a.fecha)})` : ''}${a.asesor ? `, ${a.asesor}` : ''}`
-}
-
-const COLOR_RESULTADO: Record<ResultadoVerificacion, string | undefined> = {
-  correcto: 'var(--agro-success-text)',
-  incidencia: 'var(--agro-danger-text)',
-  pendiente: 'var(--agro-info-text)',
-  no_aplica: undefined,
-}
 
 export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
   const carga = useCarga<Awaited<ReturnType<typeof chk.visVer>>>(visitaId, () => chk.visVer(visitaId))
@@ -295,13 +271,9 @@ function TarjetaDoc({ doc: d, puede, onConfirmar, onActualizar, onMarcar, onInci
   onConfirmar: () => void; onActualizar: () => void; onMarcar: (t: TipoMarca) => void; onIncidencia: () => void
   onSeguir: (inc: IncidenciaDoc, tipo: TipoSeguimiento) => void
 }) {
-  const ver = d.verificacion
-  const antecedente = textoAntecedente(d.antecedente)
-  const registro = textoRegistro(d)
   // Sin revisar = sin color de éxito
-  const borde = ver ? COLOR_RESULTADO[ver.resultado] : undefined
+  const borde = d.verificacion ? COLOR_RESULTADO[d.verificacion.resultado] : undefined
   const encabezado = [d.codigo, d.area ?? d.categoria].filter(Boolean).join(' · ')
-  const hayAntecedentes = !!(registro || d.antecedentes || antecedente || d.responsable_llenado || d.vence_el || d.relacionados.length > 0)
 
   return (
     <div className="rounded-xl border border-border bg-card p-3 space-y-2.5" style={borde ? { borderColor: borde } : undefined}>
@@ -316,77 +288,7 @@ function TarjetaDoc({ doc: d, puede, onConfirmar, onActualizar, onMarcar, onInci
         <ChipVigencia vigencia={d.vigencia} />
       </div>
 
-      {hayAntecedentes && (
-        <details className="group rounded-lg bg-muted px-2.5 py-1.5 text-xs text-muted-foreground">
-          <summary className="cursor-pointer font-semibold flex items-center gap-1 list-none">
-            <ChevronDown className="w-3 h-3 transition-transform group-open:rotate-180" aria-hidden="true" /> Antecedentes
-          </summary>
-          <div className="mt-1.5 space-y-1.5">
-            {registro && <p><span className="font-semibold">Último registro documental:</span> {registro}</p>}
-            {d.antecedentes && <p className="whitespace-pre-line"><span className="font-semibold">Observación histórica:</span> {d.antecedentes}</p>}
-            {antecedente && <p>{antecedente}</p>}
-            {(d.revision || d.numeral) && <p>{[d.revision ? `Rev ${d.revision}` : null, d.numeral ? `#${d.numeral}` : null].filter(Boolean).join(' · ')}</p>}
-            {d.responsable_llenado && <p>Responsable de llenado: {d.responsable_llenado}</p>}
-            {d.vence_el && <p>Vence: {fechaLarga(d.vence_el)}</p>}
-            {d.relacionados.length > 0 && (
-              <div className="space-y-1">
-                <p className="font-semibold">Documentos relacionados (solo consulta)</p>
-                {d.relacionados.map(r => (
-                  <div key={r.id} className="rounded-md border border-border bg-card px-2 py-1">
-                    <p className="text-foreground">{r.nombre}{r.codigo ? ` · ${r.codigo}` : ''} <span className="text-muted-foreground">({r.tipo})</span></p>
-                    {r.ultimo_registro && <p>Último registro documental: {r.ultimo_registro}</p>}
-                    <p>
-                      {r.verificacion_actual
-                        ? `En esta visita: ${etiquetaResultado(r.verificacion_actual.resultado)}`
-                        : textoAntecedente(r.antecedente) ?? 'Sin verificación previa'}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </details>
-      )}
-
-      {ver && (
-        <div className="text-xs space-y-0.5">
-          <p className="font-semibold" style={{ color: COLOR_RESULTADO[ver.resultado] }}>
-            {etiquetaResultado(ver.resultado, ver.actualizado)} · por {ver.actor ?? '—'} el {fechaCorta(ver.creado_en)} a las {horaCorta(ver.creado_en)}
-          </p>
-          {ver.observacion && <p className="text-muted-foreground">{ver.observacion}</p>}
-        </div>
-      )}
-
-      {d.incidencias.length > 0 && (
-        <div className="space-y-2">
-          {d.incidencias.map(i => {
-            const e = etiquetaEstadoIncidencia(i.estado)
-            const sinCerrar = i.estado !== 'cerrada'
-            return (
-              <div key={i.id} className="rounded-lg border border-border p-2 space-y-1.5">
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-xs font-semibold flex items-center gap-1"><AlertTriangle className="w-3 h-3" aria-hidden="true" />{i.nueva ? 'Incidencia nueva' : `Incidencia del ${fechaCorta(i.origen_fecha)}`}</p>
-                  <Chip tono={e.tono}>{e.label}</Chip>
-                </div>
-                <p className="text-xs">{i.descripcion}</p>
-                {(i.responsable || i.fecha_compromiso) && (
-                  <p className="text-xs text-muted-foreground">{i.responsable ? `Responsable: ${i.responsable}` : ''}{i.fecha_compromiso ? ` · Compromiso: ${fechaLarga(i.fecha_compromiso)}` : ''}</p>
-                )}
-                <SeguimientosLista items={i.seguimientos} />
-                {puede && sinCerrar && !i.nueva && (
-                  <div className="flex flex-wrap gap-3 pt-0.5">
-                    <button type="button" className="text-xs font-semibold" style={{ color: 'var(--primary)' }} onClick={() => onSeguir(i, 'seguimiento')}>Seguimiento</button>
-                    {i.estado === 'correccion_reportada' && (
-                      <button type="button" className="text-xs font-semibold" style={{ color: 'var(--primary)' }} onClick={() => onSeguir(i, 'correccion_rechazada')}>Rechazar corrección</button>
-                    )}
-                    <button type="button" className="text-xs font-semibold" style={{ color: 'var(--primary)' }} onClick={() => onSeguir(i, 'cierre')}>Cerrar</button>
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
+      <DetalleDoc doc={d} puede={puede} onSeguir={onSeguir} />
 
       {puede && (
         <div className="flex flex-wrap items-center gap-2 pt-0.5">
