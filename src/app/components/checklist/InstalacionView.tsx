@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuthContext } from '@/context/AuthContext'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { resolverIcono } from '@/app/components/iconos-modulos'
-import { chk, useCarga, useSectoresChk, type CatalogoVer } from '@/hooks/useChecklistV2'
+import { chk, useCarga, useSectoresChk, type CatalogoVer, type ChkAlcance } from '@/hooks/useChecklistV2'
 import { Cargando, ErrorReintentar } from './comun'
 import { CatalogoTab } from './CatalogoTab'
 import { VisitasTab } from './VisitasTab'
@@ -28,11 +28,13 @@ export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoCl
   const { profile } = useAuthContext()
   const sectores = useSectoresChk()
   const catalogo = useCarga<CatalogoVer>(instalacionId, () => chk.catalogoVer(instalacionId))
+  const alcancesCarga = useCarga<ChkAlcance[]>(instalacionId, () => chk.alcancesLista(instalacionId))
+  const alcances = alcancesCarga.data ?? []
   const [version, setVersion] = useState(0)
   const [importarAbierto, setImportarAbierto] = useState(false)
   const [previewId, setPreviewId] = useState<string | null>(null)
 
-  const refrescar = () => { setVersion(v => v + 1); void catalogo.recargar(); onCambio() }
+  const refrescar = () => { setVersion(v => v + 1); void catalogo.recargar(); void alcancesCarga.recargar(); onCambio() }
 
   if (catalogo.loading && !catalogo.data) return <Cargando />
   if (catalogo.error || !catalogo.data) return <ErrorReintentar mensaje={catalogo.error ?? 'No se pudo cargar la instalación'} onReintentar={catalogo.recargar} />
@@ -60,10 +62,10 @@ export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoCl
 
       <FiltroPildoras<string> groupId="chk-instalacion-tab" value={tab} onChange={v => onTab(v as TabInstalacion)} options={tabs} />
 
-      {tab === 'catalogo' && <CatalogoTab catalogo={cat} esAdmin={esAdmin} onRecargar={refrescar} onImportar={() => setImportarAbierto(true)} />}
+      {tab === 'catalogo' && <CatalogoTab catalogo={cat} alcances={alcances} esAdmin={esAdmin} onRecargar={refrescar} onImportar={() => setImportarAbierto(true)} />}
       {tab === 'visitas' && (
         <VisitasTab
-          instalacionId={instalacionId} catalogoEstado={cat.instalacion.catalogo_estado} esAdmin={esAdmin} puedeRevisar={puedeRevisar}
+          instalacionId={instalacionId} alcances={alcances} catalogoEstado={cat.instalacion.catalogo_estado} esAdmin={esAdmin} puedeRevisar={puedeRevisar}
           perfilId={profile?.id} version={version} codigoClave={codigoClave} onAbrirVisita={onAbrirVisita} onCambio={refrescar}
         />
       )}

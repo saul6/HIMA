@@ -21,6 +21,10 @@ export type PrecisionRegistro = 'dia' | 'mes' | 'texto'
 
 export interface ChkSector { clave: string; nombre: string; icono: string }
 
+/** Subalcance de una instalación (ej. Irapuato → Cal Giant, Hortifrut). */
+export interface ChkAlcance { id: string; nombre: string; activo: boolean }
+export type Atribucion = 'alcance' | 'compartido' | 'compartido_por_confirmar'
+
 export interface VisitaResumenCartera { id: string; fecha: string; asesor: string | null; tipo_cierre?: string | null; estado?: string }
 
 export interface CarteraInstalacion {
@@ -71,7 +75,14 @@ export interface Antecedente {
 export interface ChkDocumento {
   id: string
   instalacion_id: string
+  /** 1 = formatos codificados, 2 = controles complementarios (sin código), 3 = plantilla orgánica */
   seccion: number
+  categoria: string | null
+  /** Observación general: se muestra como antecedente, no se evalúa */
+  es_nota: boolean
+  /** null = documento compartido entre alcances */
+  alcance_id: string | null
+  atribucion_por_confirmar: boolean
   area: string | null
   tipo_doc: string | null
   revision: string | null
@@ -147,6 +158,9 @@ export interface VisitaLista {
   asesor: string | null
   asesor_id: string | null
   nota: string | null
+  alcance_id: string | null
+  alcance: string | null
+  organico_activo: boolean
   resumen: ResumenVisita | null
   eventos: VisitaEvento[]
 }
@@ -358,8 +372,14 @@ export const chk = {
   importacionAplicar: (id: string) => rpc<{ altas: number; modificados: number }>('chk_importacion_aplicar', { p_importacion: id }),
   importacionCancelar: (id: string) => rpc<unknown>('chk_importacion_cancelar', { p_importacion: id }),
 
-  visProgramar: (p: { instalacion: string; fecha: string; asesor: string | null; nota: string | null; eventId: string }) =>
-    rpc<unknown>('chk_vis_programar', { p_instalacion: p.instalacion, p_fecha: p.fecha, p_asesor: p.asesor, p_nota: p.nota, p_event_id: p.eventId }),
+  alcancesLista: (instalacion: string) => rpc<ChkAlcance[]>('chk_alcances_lista', { p_instalacion: instalacion }),
+  alcanceGuardar: (p: { id?: string | null; instalacion: string; nombre: string; activo?: boolean }) =>
+    rpc<unknown>('chk_alcance_guardar', { p_id: p.id ?? null, p_instalacion: p.instalacion, p_nombre: p.nombre, p_activo: p.activo ?? true }),
+
+  visProgramar: (p: { instalacion: string; fecha: string; asesor: string | null; nota: string | null; alcance?: string | null; eventId: string }) =>
+    rpc<unknown>('chk_vis_programar', {
+      p_instalacion: p.instalacion, p_fecha: p.fecha, p_asesor: p.asesor, p_nota: p.nota, p_event_id: p.eventId, p_alcance: p.alcance ?? null,
+    }),
   visReprogramar: (p: { visita: string; fecha: string; asesor: string | null; motivo: string; eventId: string }) =>
     rpc<unknown>('chk_vis_reprogramar', { p_visita: p.visita, p_fecha: p.fecha, p_asesor: p.asesor, p_motivo: p.motivo, p_event_id: p.eventId }),
   visCancelar: (p: { visita: string; motivo: string; eventId: string }) =>

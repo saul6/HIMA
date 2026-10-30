@@ -7,7 +7,7 @@ import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Input } from '@/app/components/ui/input'
 import { useAuthContext } from '@/context/AuthContext'
 import { hoyMX } from '@/lib/fecha'
-import { chk, useAccion, useCarga, type CatalogoEstado, type VisitaLista } from '@/hooks/useChecklistV2'
+import { chk, useAccion, useCarga, type CatalogoEstado, type ChkAlcance, type VisitaLista } from '@/hooks/useChecklistV2'
 import { Aviso, Cargando, CLASE_INPUT, Chip, ErrorReintentar, PieFormulario, TONOS } from './comun'
 import { useColaboradoresChk } from './useColaboradores'
 import { fechaLarga } from './constantes'
@@ -15,6 +15,7 @@ import { descargarReportePdf } from './pdfVisita'
 
 interface Props {
   instalacionId: string
+  alcances: ChkAlcance[]
   catalogoEstado: CatalogoEstado
   esAdmin: boolean
   puedeRevisar: boolean
@@ -35,7 +36,7 @@ const ESTADO: Record<string, { label: string; tono: typeof TONOS.exito }> = {
 
 type Modo = { tipo: 'programar' } | { tipo: 'reprogramar'; visita: VisitaLista } | { tipo: 'cancelar'; visita: VisitaLista }
 
-export function VisitasTab({ instalacionId, catalogoEstado, esAdmin, puedeRevisar, perfilId, version, codigoClave, onAbrirVisita, onCambio }: Props) {
+export function VisitasTab({ instalacionId, alcances, catalogoEstado, esAdmin, puedeRevisar, perfilId, version, codigoClave, onAbrirVisita, onCambio }: Props) {
   const carga = useCarga<VisitaLista[]>(`${instalacionId}:${version}`, () => chk.visLista(instalacionId))
   const [modo, setModo] = useState<Modo | null>(null)
   const [pdf, setPdf] = useState<string | null>(null)
@@ -57,6 +58,8 @@ export function VisitasTab({ instalacionId, catalogoEstado, esAdmin, puedeRevisa
     try { await descargarReportePdf(v, codigoClave) } catch (e) { console.error(e); toast.error('No se pudo generar el PDF') } finally { setPdf(null) }
   }
 
+  // Puede haber una visita en curso por alcance (sin alcances: una sola)
+  const hayAbiertaEn = (v: VisitaLista) => visitas.some(x => x.estado === 'en_curso' && x.id !== v.id && x.alcance_id === v.alcance_id)
   const hayAbierta = visitas.some(v => v.estado === 'en_curso')
 
   return (
@@ -69,7 +72,7 @@ export function VisitasTab({ instalacionId, catalogoEstado, esAdmin, puedeRevisa
         </div>
       )}
       {catalogoEstado !== 'aprobado' && <Aviso>Solo con el catálogo aprobado se pueden programar visitas.</Aviso>}
-      {hayAbierta && <Aviso>Hay una visita en curso: ciérrala antes de abrir otra.</Aviso>}
+      {hayAbierta && <Aviso>{alcances.length > 0 ? 'Hay visitas en curso: solo se permite una por alcance.' : 'Hay una visita en curso: ciérrala antes de abrir otra.'}</Aviso>}
 
       {visitas.length === 0 ? (
         <EstadoVacio titulo="Sin visitas" ayuda="Las visitas se programan manualmente; nunca se crean solas." />
@@ -81,7 +84,7 @@ export function VisitasTab({ instalacionId, catalogoEstado, esAdmin, puedeRevisa
           <div key={v.id} className="rounded-xl border border-border bg-card p-3 space-y-2">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="text-sm font-semibold">{fechaLarga(v.fecha)}</p>
+                <p className="text-sm font-semibold">{fechaLarga(v.fecha)}{v.alcance ? ` · ${v.alcance}` : ''}</p>
                 <p className="text-xs text-muted-foreground">{v.asesor ?? 'Sin asesora asignada'}{reprog > 0 ? ` · reprogramada ${reprog} ${reprog === 1 ? 'vez' : 'veces'}` : ''}</p>
               </div>
               <Chip tono={e.tono}>{e.label}</Chip>
@@ -95,7 +98,7 @@ export function VisitasTab({ instalacionId, catalogoEstado, esAdmin, puedeRevisa
             )}
             <div className="flex flex-wrap gap-2">
               {v.estado === 'programada' && puedeRevisar && (esAdmin || mia) && (
-                <Boton tamano="sm" cargando={abrir.ocupado} disabled={hayAbierta} onClick={() => abrirVisita(v)}>Abrir visita</Boton>
+                <Boton tamano="sm" cargando={abrir.ocupado} disabled={hayAbiertaEn(v)} onClick={() => abrirVisita(v)}>Abrir visita</Boton>
               )}
               {v.estado === 'en_curso' && <Boton tamano="sm" onClick={() => onAbrirVisita(v.id)}>Continuar</Boton>}
               {v.estado === 'programada' && esAdmin && (
@@ -114,7 +117,7 @@ export function VisitasTab({ instalacionId, catalogoEstado, esAdmin, puedeRevisa
         )
       })}
 
-      <VisitaAccionSheet modo={modo} instalacionId={instalacionId} onClose={() => setModo(null)} onGuardado={onCambio} />
+      <VisitaAccionSheet modo={modo} instalacionId={instalacionId} alcances={alcances} onClose={() => setModo(null)} onGuardado={onCambio} />
     </div>
   )
 }
@@ -124,6 +127,7 @@ export function VisitasTab({ instalacionId, catalogoEstado, esAdmin, puedeRevisa
 interface AccionProps {
   modo: Modo | null
   instalacionId: string
+  alcances: ChkAlcance[]
   onClose: () => void
   onGuardado: () => void
 }
@@ -137,7 +141,7 @@ function VisitaAccionSheet({ modo, ...resto }: AccionProps) {
   )
 }
 
-function Formulario({ modo, instalacionId, onClose, onGuardado }: AccionProps & { modo: Modo }) {
+function Formulario({ modo, instalacionId, alcances, onClose, onGuardado }: AccionProps & { modo: Modo }) {
   const { profile } = useAuthContext()
   const esSuper = profile?.rol === 'super_admin'
   const { colaboradores } = useColaboradoresChk(modo.tipo !== 'cancelar')
@@ -145,6 +149,8 @@ function Formulario({ modo, instalacionId, onClose, onGuardado }: AccionProps & 
   const inicial = modo.tipo === 'programar' ? null : modo.visita
   const [fecha, setFecha] = useState(inicial?.fecha.slice(0, 10) ?? hoyMX())
   const [asesor, setAsesor] = useState(inicial?.asesor_id ?? profile?.id ?? '')
+  const activos = alcances.filter(a => a.activo)
+  const [alcance, setAlcance] = useState('')
   const [texto, setTexto] = useState(modo.tipo === 'programar' ? '' : '')
   const { ocupado, ejecutar } = useAccion()
   const motivoObligatorio = modo.tipo !== 'programar'
@@ -154,9 +160,10 @@ function Formulario({ modo, instalacionId, onClose, onGuardado }: AccionProps & 
       if (!fecha) { toast.warning('Indica la fecha'); return }
       if (!esSuper && fecha < hoyMX()) { toast.warning('La fecha no puede ser anterior a hoy'); return }
     }
+    if (modo.tipo === 'programar' && activos.length > 0 && !alcance) { toast.warning('Elige el alcance de la visita'); return }
     if (motivoObligatorio && texto.trim().length < 3) { toast.warning('El motivo es obligatorio'); return }
     const r = await ejecutar(eventId => {
-      if (modo.tipo === 'programar') return chk.visProgramar({ instalacion: instalacionId, fecha, asesor: asesor || profile?.id || null, nota: texto.trim() || null, eventId })
+      if (modo.tipo === 'programar') return chk.visProgramar({ instalacion: instalacionId, fecha, asesor: asesor || profile?.id || null, nota: texto.trim() || null, alcance: alcance || null, eventId })
       if (modo.tipo === 'reprogramar') return chk.visReprogramar({ visita: modo.visita.id, fecha, asesor: asesor || profile?.id || null, motivo: texto.trim(), eventId })
       return chk.visCancelar({ visita: modo.visita.id, motivo: texto.trim(), eventId })
     })
@@ -169,6 +176,15 @@ function Formulario({ modo, instalacionId, onClose, onGuardado }: AccionProps & 
   return (
     <>
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {modo.tipo === 'programar' && activos.length > 0 && (
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Alcance (obligatorio)</span>
+            <select className={CLASE_INPUT} value={alcance} onChange={e => setAlcance(e.target.value)}>
+              <option value="">Elige un alcance</option>
+              {activos.map(a => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+            </select>
+          </label>
+        )}
         {modo.tipo !== 'cancelar' && (
           <>
             <label className="block space-y-1">

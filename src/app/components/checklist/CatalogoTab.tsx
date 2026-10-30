@@ -1,21 +1,23 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { Check, Layers, Plus, Upload } from 'lucide-react'
+import { Check, GitBranch, Layers, Plus, Upload } from 'lucide-react'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { ContadorPildora } from './ContadorPildora'
-import { chk, mensajeError, useAccion, type Aplicabilidad, type CatalogoVer, type ChkDocumento } from '@/hooks/useChecklistV2'
+import { chk, mensajeError, useAccion, type Aplicabilidad, type CatalogoVer, type ChkAlcance, type ChkDocumento } from '@/hooks/useChecklistV2'
 import { Aviso, CLASE_INPUT, Chip, ChipCatalogo, ChipVigencia, PieFormulario, TONOS, textoRegistro } from './comun'
 import { DocumentoSheet } from './DocumentoSheet'
+import { AlcancesSheet } from './AlcancesSheet'
 import { fechaLarga } from './constantes'
 
 type Filtro = 'por_confirmar' | 'alertas' | 'no_aplica' | 'vencidos'
 
 interface Props {
   catalogo: CatalogoVer
+  alcances: ChkAlcance[]
   esAdmin: boolean
   onRecargar: () => void
   onImportar: () => void
@@ -23,9 +25,13 @@ interface Props {
 
 const ETIQUETA_APLICA: Record<Aplicabilidad, string> = { aplica: 'Aplica', no_aplica: 'No aplica', por_confirmar: 'Por confirmar' }
 
-export function CatalogoTab({ catalogo, esAdmin, onRecargar, onImportar }: Props) {
+export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImportar }: Props) {
   const { instalacion: inst } = catalogo
-  const docs = catalogo.documentos.filter(d => d.activo)
+  // Filtro por alcance: '' = todos, 'compartidos' = sin alcance, o el id del alcance
+  const [alcanceSel, setAlcanceSel] = useState('')
+  const [alcancesAbierto, setAlcancesAbierto] = useState(false)
+  const docs = catalogo.documentos.filter(d => d.activo && (
+    !alcanceSel || (alcanceSel === 'compartidos' ? d.alcance_id === null : d.alcance_id === alcanceSel)))
   const [filtro, setFiltro] = useState<Filtro | null>(null)
   const [seleccion, setSeleccion] = useState<Set<string>>(new Set())
   const [editar, setEditar] = useState<{ abierto: boolean; doc: ChkDocumento | null }>({ abierto: false, doc: null })
@@ -108,6 +114,7 @@ export function CatalogoTab({ catalogo, esAdmin, onRecargar, onImportar }: Props
         {esAdmin && (
           <div className="ml-auto flex gap-2">
             <Boton tamano="sm" variante="secundario" cargando={precarga.ocupado} onClick={pedirPrecarga}><Layers className="w-4 h-4" /> Cargar módulos del sector</Boton>
+            <Boton tamano="sm" variante="secundario" onClick={() => setAlcancesAbierto(true)}><GitBranch className="w-4 h-4" /> Alcances</Boton>
             <Boton tamano="sm" variante="secundario" onClick={onImportar}><Upload className="w-4 h-4" /> Importar</Boton>
             <Boton tamano="sm" variante="secundario" onClick={() => setEditar({ abierto: true, doc: null })}><Plus className="w-4 h-4" /> Documento</Boton>
             <Boton tamano="sm" onClick={() => setAprobarAbierto(true)}><Check className="w-4 h-4" /> Aprobar catálogo</Boton>
@@ -117,6 +124,15 @@ export function CatalogoTab({ catalogo, esAdmin, onRecargar, onImportar }: Props
 
       {inst.catalogo_estado !== 'aprobado' && docs.length > 0 && (
         <Aviso>Solo con el catálogo aprobado se pueden programar visitas. Un catálogo en borrador no genera revisiones.</Aviso>
+      )}
+
+      {alcances.length > 0 && (
+        <FiltroPildoras<string>
+          groupId="chk-catalogo-alcance"
+          value={alcanceSel}
+          onChange={v => setAlcanceSel(alcanceSel === v ? '' : v)}
+          options={[...alcances.filter(a => a.activo).map(a => ({ value: a.id, label: a.nombre })), { value: 'compartidos', label: 'Compartidos' }]}
+        />
       )}
 
       {docs.length > 0 && (
@@ -219,6 +235,9 @@ export function CatalogoTab({ catalogo, esAdmin, onRecargar, onImportar }: Props
         ))
       )}
 
+      {esAdmin && (
+        <AlcancesSheet open={alcancesAbierto} instalacionId={inst.id} alcances={alcances} onClose={() => setAlcancesAbierto(false)} onCambio={onRecargar} />
+      )}
       <DocumentoSheet
         open={editar.abierto}
         instalacionId={inst.id}
