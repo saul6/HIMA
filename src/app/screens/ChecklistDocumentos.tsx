@@ -100,6 +100,8 @@ export function ChecklistDocumentos() {
               onTab={t => ir({ tab: t })}
               onAbrirVisita={id => ir({ visita: id, tab: 'visitas' })}
               onCambio={() => void cartera.recargar()}
+              cartera={cartera.data ?? []}
+              onCambiarInstalacion={id => ir({ instalacion: id, tab: null, visita: null })}
             />
           )}
         </div>
