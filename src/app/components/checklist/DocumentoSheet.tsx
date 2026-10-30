@@ -4,12 +4,18 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { Input } from '@/app/components/ui/input'
 import { Pildora } from './Pildora'
 import { Aviso, CLASE_INPUT, CLASE_TEXTAREA, PieFormulario } from './comun'
-import { chk, mensajeError, useAccion, type ChkDocumento, type HistorialDoc, type PrecisionRegistro } from '@/hooks/useChecklistV2'
+import { chk, mensajeError, useAccion, type ChkAlcance, type ChkDocumento, type HistorialDoc, type PrecisionRegistro } from '@/hooks/useChecklistV2'
 import { fechaCorta, fechaLarga, horaCorta } from './constantes'
+import { NOMBRE_SECCION } from './secciones'
 
 interface Props {
   open: boolean
   instalacionId: string
+  alcances: ChkAlcance[]
+  /** Sección con la que se crea un documento nuevo */
+  seccionInicial?: number
+  /** Alcance preseleccionado en un documento nuevo ('' = compartido) */
+  alcanceInicial?: string
   /** null = documento nuevo */
   documento: ChkDocumento | null
   /** Solo lectura (asesora): se ve el detalle y el historial, no se edita. */
@@ -27,7 +33,12 @@ export function DocumentoSheet({ open, ...resto }: Props) {
   )
 }
 
-function Formulario({ instalacionId, documento: d, soloLectura, onClose, onGuardado }: Omit<Props, 'open'>) {
+function Formulario({ instalacionId, alcances, seccionInicial, alcanceInicial, documento: d, soloLectura, onClose, onGuardado }: Omit<Props, 'open'>) {
+  const [seccion, setSeccion] = useState<number>(d?.seccion ?? seccionInicial ?? 1)
+  const [alcanceId, setAlcanceId] = useState(d ? (d.alcance_id ?? '') : (alcanceInicial ?? ''))
+  const [categoria, setCategoria] = useState(d?.categoria ?? '')
+  const [esNota, setEsNota] = useState(d?.es_nota ?? false)
+  const [porConfirmar, setPorConfirmar] = useState(d?.atribucion_por_confirmar ?? false)
   const [area, setArea] = useState(d?.area ?? '')
   const [tipo, setTipo] = useState(d?.tipo_doc ?? '')
   const [revision, setRevision] = useState(d?.revision ?? '')
@@ -54,13 +65,17 @@ function Formulario({ instalacionId, documento: d, soloLectura, onClose, onGuard
   async function guardar() {
     if (!nombre.trim()) { toast.warning('El nombre es obligatorio'); return }
     const datos: Record<string, unknown> = {
-      seccion: d?.seccion ?? 1,
+      seccion,
+      alcance_id: alcanceId || null,
+      categoria: categoria.trim() || null,
+      es_nota: esNota,
+      atribucion_por_confirmar: !alcanceId && porConfirmar,
       area: area.trim() || null,
       tipo_doc: tipo.trim() || null,
       revision: revision.trim() || null,
       numeral: numeral.trim() || null,
       nombre: nombre.trim(),
-      codigo: codigo.trim() || null,
+      codigo: seccion === 2 ? null : codigo.trim() || null,
       responsable_llenado: resp.trim() || null,
       vence_el: vence || null,
       antecedentes: antecedentes.trim() || null,
@@ -100,13 +115,35 @@ function Formulario({ instalacionId, documento: d, soloLectura, onClose, onGuard
           </Aviso>
         )}
         <div className="grid grid-cols-2 gap-3">
+          <Campo etiqueta="Sección">
+            <select disabled={bloqueado || !!d} className={CLASE_INPUT} value={seccion} onChange={e => setSeccion(Number(e.target.value))}>
+              {[1, 2, 3].map(n => <option key={n} value={n}>{NOMBRE_SECCION[n]}</option>)}
+            </select>
+          </Campo>
+          <Campo etiqueta="Alcance">
+            <select disabled={bloqueado} className={CLASE_INPUT} value={alcanceId} onChange={e => setAlcanceId(e.target.value)}>
+              <option value="">Compartido</option>
+              {alcances.filter(a => a.activo || a.id === alcanceId).map(a => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+            </select>
+          </Campo>
+          {seccion !== 1 && <div className="col-span-2"><Campo etiqueta="Categoría"><Input disabled={bloqueado} value={categoria} maxLength={100} onChange={e => setCategoria(e.target.value)} /></Campo></div>}
           <Campo etiqueta="Área"><Input disabled={bloqueado} value={area} maxLength={100} onChange={e => setArea(e.target.value)} /></Campo>
           <Campo etiqueta="Tipo"><Input disabled={bloqueado} value={tipo} maxLength={20} onChange={e => setTipo(e.target.value)} /></Campo>
-          <Campo etiqueta="Rev"><Input disabled={bloqueado} value={revision} maxLength={20} onChange={e => setRevision(e.target.value)} /></Campo>
+          <Campo etiqueta="Rev"><Input disabled={bloqueado} value={revision} maxLength={60} onChange={e => setRevision(e.target.value)} /></Campo>
           <Campo etiqueta="#"><Input disabled={bloqueado} value={numeral} maxLength={20} onChange={e => setNumeral(e.target.value)} /></Campo>
         </div>
         <Campo etiqueta="Nombre"><Input disabled={bloqueado} value={nombre} maxLength={300} onChange={e => setNombre(e.target.value)} /></Campo>
-        <Campo etiqueta="Código"><Input disabled={bloqueado} value={codigo} maxLength={100} onChange={e => setCodigo(e.target.value)} /></Campo>
+        {seccion !== 2 && <Campo etiqueta="Código"><Input disabled={bloqueado} value={codigo} maxLength={100} onChange={e => setCodigo(e.target.value)} /></Campo>}
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" disabled={bloqueado} checked={esNota} onChange={e => setEsNota(e.target.checked)} />
+          Observación general (se muestra como antecedente, no se evalúa)
+        </label>
+        {!alcanceId && alcances.length > 0 && (
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" disabled={bloqueado} checked={porConfirmar} onChange={e => setPorConfirmar(e.target.checked)} />
+            Atribución por confirmar (compartido, pero podría ser de un solo alcance)
+          </label>
+        )}
         <Campo etiqueta="Responsable de llenado"><Input disabled={bloqueado} value={resp} maxLength={300} onChange={e => setResp(e.target.value)} /></Campo>
 
         <div className="space-y-2">
@@ -178,7 +215,8 @@ const ETIQUETA_CAMPO: Record<string, string> = {
   area: 'Área', tipo_doc: 'Tipo', revision: 'Rev', numeral: '#', nombre: 'Nombre', codigo: 'Código',
   responsable_llenado: 'Responsable', ultimo_registro_fecha: 'Último registro', ultimo_registro_texto: 'Último registro',
   ultimo_registro_precision: 'Precisión', vence_el: 'Vence', aplicabilidad: 'Aplicabilidad', motivo_no_aplica: 'Motivo',
-  antecedentes: 'Antecedentes', frecuencia: 'Frecuencia', orden: 'Orden', alertas: 'Alertas',
+  seccion: 'Sección', categoria: 'Categoría', es_nota: 'Observación general', alcance_id: 'Alcance',
+  atribucion_por_confirmar: 'Atribución por confirmar', antecedentes: 'Antecedentes', frecuencia: 'Frecuencia', orden: 'Orden', alertas: 'Alertas',
 }
 
 const mostrar = (v: unknown) => (v == null || v === '' ? '—' : typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? fechaCorta(v) : typeof v === 'object' ? JSON.stringify(v) : String(v))

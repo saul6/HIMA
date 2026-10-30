@@ -11,6 +11,7 @@ import { chk, mensajeError, useAccion, type Aplicabilidad, type CatalogoVer, typ
 import { Aviso, CLASE_INPUT, Chip, ChipCatalogo, ChipVigencia, PieFormulario, TONOS, textoRegistro } from './comun'
 import { DocumentoSheet } from './DocumentoSheet'
 import { AlcancesSheet } from './AlcancesSheet'
+import { NOMBRE_SECCION } from './secciones'
 import { fechaLarga } from './constantes'
 
 type Filtro = 'por_confirmar' | 'alertas' | 'no_aplica' | 'vencidos'
@@ -30,8 +31,12 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
   // Filtro por alcance: '' = todos, 'compartidos' = sin alcance, o el id del alcance
   const [alcanceSel, setAlcanceSel] = useState('')
   const [alcancesAbierto, setAlcancesAbierto] = useState(false)
-  const docs = catalogo.documentos.filter(d => d.activo && (
+  const [seccion, setSeccion] = useState(1)
+  const docsAlcance = catalogo.documentos.filter(d => d.activo && (
     !alcanceSel || (alcanceSel === 'compartidos' ? d.alcance_id === null : d.alcance_id === alcanceSel)))
+  const docs = docsAlcance.filter(d => d.seccion === seccion)
+  const porSeccion = (n: number) => docsAlcance.filter(d => d.seccion === n).length
+  const nombreAlcance = (id: string | null) => (id ? alcances.find(a => a.id === id)?.nombre ?? 'Alcance' : 'Compartido')
   const [filtro, setFiltro] = useState<Filtro | null>(null)
   const [seleccion, setSeleccion] = useState<Set<string>>(new Set())
   const [editar, setEditar] = useState<{ abierto: boolean; doc: ChkDocumento | null }>({ abierto: false, doc: null })
@@ -57,6 +62,8 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
     else void cargarModulos()
   }
 
+  // La aprobación mira todo el catálogo, no solo la sección o el alcance a la vista
+  const todos = catalogo.documentos.filter(d => d.activo)
   const cuenta = useMemo(() => ({
     por_confirmar: docs.filter(d => d.aplicabilidad === 'por_confirmar').length,
     alertas: docs.filter(d => d.alertas.length > 0).length,
@@ -77,7 +84,7 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
   const porArea = useMemo(() => {
     const m = new Map<string, ChkDocumento[]>()
     for (const d of visibles) {
-      const k = d.area?.trim() || 'Sin área'
+      const k = d.area?.trim() || d.categoria?.trim() || 'Sin área'
       m.set(k, [...(m.get(k) ?? []), d])
     }
     return [...m.entries()]
@@ -99,10 +106,12 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
   const alternar = (id: string) => setSeleccion(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n })
 
   const bloqueos: string[] = []
-  if (docs.length === 0) bloqueos.push('El catálogo está vacío.')
-  if (cuenta.por_confirmar > 0) bloqueos.push(`${cuenta.por_confirmar} documento(s) con aplicabilidad por confirmar.`)
-  if (cuenta.alertas > 0) bloqueos.push(`${cuenta.alertas} documento(s) con alertas por validar.`)
-  if (docs.length > 0 && docs.every(d => d.aplicabilidad !== 'aplica')) bloqueos.push('Ningún documento aplica.')
+  const nPorConfirmar = todos.filter(d => d.aplicabilidad === 'por_confirmar').length
+  const nAlertas = todos.filter(d => d.alertas.length > 0).length
+  if (todos.length === 0) bloqueos.push('El catálogo está vacío.')
+  if (nPorConfirmar > 0) bloqueos.push(`${nPorConfirmar} documento(s) con aplicabilidad por confirmar.`)
+  if (nAlertas > 0) bloqueos.push(`${nAlertas} documento(s) con alertas por validar.`)
+  if (todos.length > 0 && todos.every(d => d.aplicabilidad !== 'aplica')) bloqueos.push('Ningún documento aplica.')
 
   return (
     <div className="space-y-4">
@@ -122,9 +131,16 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
         )}
       </div>
 
-      {inst.catalogo_estado !== 'aprobado' && docs.length > 0 && (
+      {inst.catalogo_estado !== 'aprobado' && todos.length > 0 && (
         <Aviso>Solo con el catálogo aprobado se pueden programar visitas. Un catálogo en borrador no genera revisiones.</Aviso>
       )}
+
+      <FiltroPildoras<string>
+        groupId="chk-catalogo-seccion"
+        value={String(seccion)}
+        onChange={v => { setSeccion(Number(v)); setFiltro(null) }}
+        options={[1, 2, 3].map(n => ({ value: String(n), label: <>{NOMBRE_SECCION[n]} · <ContadorPildora n={porSeccion(n)} /></> }))}
+      />
 
       {alcances.length > 0 && (
         <FiltroPildoras<string>
@@ -156,7 +172,7 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
         </div>
       )}
 
-      {docs.length === 0 ? (
+      {catalogo.documentos.filter(d => d.activo).length === 0 ? (
         <EstadoVacio titulo="El catálogo de esta instalación está vacío" ayuda={esAdmin ? 'Carga los módulos del sector, importa un PDF o Word, o agrega los documentos uno por uno.' : undefined}
           accion={esAdmin && (
             <div className="flex flex-wrap justify-center gap-2">
@@ -166,7 +182,7 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
             </div>
           )} />
       ) : visibles.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-10">Nada coincide con este filtro.</p>
+        <p className="text-sm text-muted-foreground text-center py-10">{docs.length === 0 ? 'Esta sección no tiene documentos.' : 'Nada coincide con este filtro.'}</p>
       ) : (
         porArea.map(([area, lista]) => (
           <section key={area} className="space-y-2">
@@ -192,6 +208,7 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
                       <td className="p-2 min-w-48">
                         <button type="button" className="text-left font-semibold hover:underline" onClick={() => setEditar({ abierto: true, doc: d })}>{d.nombre}</button>
                         <ChipPlantilla d={d} />
+                        <ChipsAtribucion d={d} nombreAlcance={nombreAlcance} />
                         {d.alertas.map((a, i) => <p key={i} className="text-xs mt-0.5" style={{ color: 'var(--agro-info-text)' }}>{a.mensaje}</p>)}
                       </td>
                       <td className="p-2 whitespace-nowrap">{d.codigo}</td><td className="p-2">{d.responsable_llenado}</td>
@@ -216,6 +233,7 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
                     <button type="button" className="text-left flex-1 min-w-0" onClick={() => setEditar({ abierto: true, doc: d })}>
                       <p className="text-sm font-semibold">{d.nombre}</p>
                       <ChipPlantilla d={d} />
+                      <ChipsAtribucion d={d} nombreAlcance={nombreAlcance} />
                       <p className="text-xs text-muted-foreground">{[d.tipo_doc, d.codigo, d.revision ? `Rev ${d.revision}` : null, d.numeral ? `#${d.numeral}` : null].filter(Boolean).join(' · ')}</p>
                     </button>
                     <ChipVigencia vigencia={d.vigencia} />
@@ -241,6 +259,9 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
       <DocumentoSheet
         open={editar.abierto}
         instalacionId={inst.id}
+        alcances={alcances}
+        seccionInicial={seccion}
+        alcanceInicial={alcanceSel && alcanceSel !== 'compartidos' ? alcanceSel : ''}
         documento={editar.doc}
         soloLectura={!esAdmin}
         onClose={() => setEditar(s => ({ ...s, abierto: false }))}
@@ -270,6 +291,16 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
         onAprobado={onRecargar}
       />
     </div>
+  )
+}
+
+function ChipsAtribucion({ d, nombreAlcance }: { d: ChkDocumento; nombreAlcance: (id: string | null) => string }) {
+  return (
+    <span className="flex flex-wrap gap-1 mt-1">
+      {d.es_nota && <Chip tono={TONOS.info}>Observación general</Chip>}
+      <Chip>{nombreAlcance(d.alcance_id)}</Chip>
+      {d.atribucion_por_confirmar && <Chip tono={TONOS.info}>Atribución por confirmar</Chip>}
+    </span>
   )
 }
 
