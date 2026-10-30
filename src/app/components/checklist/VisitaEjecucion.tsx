@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { AlertTriangle, Check, FileDown, MoreHorizontal, Pencil } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -10,7 +10,9 @@ import {
 } from '@/hooks/useChecklistV2'
 import { Aviso, Cargando, Chip, ChipVigencia, ErrorReintentar, PieFormulario, TONOS } from './comun'
 import { DetalleDoc } from './DetalleDoc'
-import { COLOR_RESULTADO } from './estadoDoc'
+import { COLOR_RESULTADO, type FiltroDoc } from './estadoDoc'
+import { RevisionEscritorio } from './RevisionEscritorio'
+import { useEsEscritorio } from './useEsEscritorio'
 import {
   ActualizarDocSheet, ConfirmarDocSheet, IncidenciaDocSheet, MarcarDocSheet, SeguirIncidenciaSheet, type TipoMarca, type TipoSeguimiento,
 } from './VisitaSheets'
@@ -19,7 +21,9 @@ import { fechaLarga } from './constantes'
 import { NOMBRE_SECCION, NOMBRE_SECCION_CORTO } from './secciones'
 import { descargarReportePdf } from './pdfVisita'
 
-type Filtro = 'sin_revisar' | 'pendiente' | 'incidencia' | 'no_aplica' | 'revisados'
+type Filtro = FiltroDoc
+
+const normalizar = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 interface Props {
   visitaId: string
@@ -40,6 +44,9 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
   const [seccion, setSeccion] = useState(1)
   const [apagarOrganico, setApagarOrganico] = useState<number | null>(null)
   const [pdf, setPdf] = useState(false)
+  const esEscritorio = useEsEscritorio()
+  const [seleccionId, setSeleccionId] = useState<string | null>(null)
+  const [busqueda, setBusqueda] = useState('')
   const abrir = useAccion()
   const organico = useAccion()
 
@@ -52,6 +59,8 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
 
   const visibles = useMemo(() => docs.filter(d => {
     if (d.seccion !== seccionActiva) return false
+    const q = normalizar(busqueda.trim())
+    if (q && !normalizar(`${d.nombre} ${d.codigo ?? ''}`).includes(q)) return false
     const r = d.verificacion?.resultado
     if (filtro === 'sin_revisar') return !d.verificacion
     if (filtro === 'pendiente') return r === 'pendiente'
@@ -59,7 +68,7 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
     if (filtro === 'no_aplica') return r === 'no_aplica'
     if (filtro === 'revisados') return r === 'correcto'
     return true
-  }), [docs, filtro, seccionActiva])
+  }), [docs, filtro, seccionActiva, busqueda])
 
   const porArea = useMemo(() => {
     const m = new Map<string, DocVisita[]>()
@@ -69,6 +78,26 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
     }
     return [...m.entries()]
   }, [visibles])
+
+  // Escritorio: documento en revisión. Por omisión, el primero sin revisar de la sección; después conserva la selección.
+  const docSel = useMemo(
+    () => {
+      const orden = porArea.flatMap(([, l]) => l)
+      return orden.find(d => d.id === seleccionId) ?? orden.find(d => !d.verificacion) ?? orden[0] ?? null
+    },
+    [porArea, seleccionId],
+  )
+  useEffect(() => {
+    if (esEscritorio && docSel && docSel.id !== seleccionId) setSeleccionId(docSel.id)
+  }, [esEscritorio, docSel, seleccionId])
+
+  function siguienteSinRevisar() {
+    const orden = porArea.flatMap(([, l]) => l)
+    const i = orden.findIndex(d => d.id === docSel?.id)
+    const siguiente = [...orden.slice(i + 1), ...orden.slice(0, Math.max(i, 0))].find(d => !d.verificacion)
+    if (siguiente) setSeleccionId(siguiente.id)
+    else toast.info('No quedan documentos sin revisar en esta vista')
+  }
 
   function recargar() { void carga.recargar(); onCambio() }
 
@@ -183,67 +212,96 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
           {!!resumen?.no_aplica && <Chip>{resumen.no_aplica} no aplica</Chip>}
           <Chip tono={resumen?.vencidos ? TONOS.peligro : TONOS.neutro}>{resumen?.vencidos ?? 0} vencidos</Chip>
         </div>
-        {puede && <Boton onClick={() => setCerrarAbierto(true)}><Check className="w-4 h-4" /> Cerrar visita</Boton>}
+        {puede && !esEscritorio && <Boton onClick={() => setCerrarAbierto(true)}><Check className="w-4 h-4" /> Cerrar visita</Boton>}
         {!puede && <Aviso>Solo la asesora asignada o un administrador puede capturar esta visita.</Aviso>}
       </div>
 
-      <FiltroPildoras<string>
-        groupId="chk-visita-seccion"
-        value={String(seccionActiva)}
-        onChange={n => { setSeccion(Number(n)); setFiltro(null) }}
-        options={[1, 2, ...(visita.organico_activo ? [3] : [])].map(n => ({ value: String(n), label: <>{NOMBRE_SECCION[n]} · {conteo(n)}</> }))}
-      />
+      {esEscritorio ? (
+        <RevisionEscritorio
+          pestanas={[1, 2, 3].filter(n => n !== 3 || visita.tiene_plantilla_organica).map(n => {
+            const apagada = n === 3 && !visita.organico_activo
+            return { n, etiqueta: NOMBRE_SECCION[n], conteo: conteo(n), deshabilitada: apagada, titulo: apagada ? 'La revisión orgánica está fuera de esta visita. Enciéndela para evaluar la Tabla 3.' : undefined }
+          })}
+          seccionActiva={seccionActiva}
+          onSeccion={n => { setSeccion(n); setFiltro(null) }}
+          filtro={filtro}
+          onFiltro={setFiltro}
+          busqueda={busqueda}
+          onBusqueda={setBusqueda}
+          porArea={porArea}
+          seleccionado={docSel}
+          onSeleccionar={setSeleccionId}
+          onSiguiente={siguienteSinRevisar}
+          notas={notasVisibles}
+          puede={puede}
+          onCerrar={() => setCerrarAbierto(true)}
+          onConfirmar={setConfirmar}
+          onActualizar={setActualizar}
+          onMarcar={(doc, tipo) => setMarcar({ doc, tipo })}
+          onIncidencia={setIncidencia}
+          onSeguir={(inc, tipo) => setSeguir({ incidencia: inc, tipo })}
+        />
+      ) : (
+        <>
+        <FiltroPildoras<string>
+          groupId="chk-visita-seccion"
+          value={String(seccionActiva)}
+          onChange={n => { setSeccion(Number(n)); setFiltro(null) }}
+          options={[1, 2, ...(visita.organico_activo ? [3] : [])].map(n => ({ value: String(n), label: <>{NOMBRE_SECCION[n]} · {conteo(n)}</> }))}
+        />
 
-      {notasVisibles.length > 0 && (
-        <details className="rounded-xl border border-border bg-card p-3">
-          <summary className="text-sm font-semibold cursor-pointer">Observaciones de visitas anteriores · {notasVisibles.length}</summary>
-          <div className="mt-2 space-y-2">
-            {notasVisibles.map(n => (
-              <div key={n.id}>
-                <p className="text-xs text-muted-foreground">
-                  {NOMBRE_SECCION_CORTO[n.seccion]}{n.atribucion === 'compartido_por_confirmar' ? ' · Antecedente compartido — atribución por confirmar' : ''}
-                </p>
-                <p className="text-sm whitespace-pre-line">{n.antecedentes}</p>
-              </div>
-            ))}
-          </div>
-        </details>
+        {notasVisibles.length > 0 && (
+          <details className="rounded-xl border border-border bg-card p-3">
+            <summary className="text-sm font-semibold cursor-pointer">Observaciones de visitas anteriores · {notasVisibles.length}</summary>
+            <div className="mt-2 space-y-2">
+              {notasVisibles.map(n => (
+                <div key={n.id}>
+                  <p className="text-xs text-muted-foreground">
+                    {NOMBRE_SECCION_CORTO[n.seccion]}{n.atribucion === 'compartido_por_confirmar' ? ' · Antecedente compartido — atribución por confirmar' : ''}
+                  </p>
+                  <p className="text-sm whitespace-pre-line">{n.antecedentes}</p>
+                </div>
+              ))}
+            </div>
+          </details>
+        )}
+
+        <FiltroPildoras<string>
+          groupId="chk-visita-filtro"
+          value={filtro ?? ''}
+          onChange={f => setFiltro(filtro === f ? null : (f as Filtro))}
+          options={[
+            { value: 'sin_revisar', label: 'Sin revisar' },
+            { value: 'pendiente', label: 'Pendientes' },
+            { value: 'incidencia', label: 'Con incidencia' },
+            { value: 'no_aplica', label: 'No aplica' },
+            { value: 'revisados', label: 'Revisados' },
+          ]}
+        />
+
+        {visibles.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-10">{filtro ? 'Nada coincide con este filtro.' : 'No hay documentos en esta sección.'}</p>
+        ) : porArea.map(([area, lista]) => (
+          <section key={area} className="space-y-2">
+            <TituloSeccion as="h2" className="mb-0">{area} · {lista.length}</TituloSeccion>
+            <div className="grid gap-3 grid-cols-1 xl:grid-cols-2">
+              {lista.map(d => (
+                <TarjetaDoc
+                  key={d.id}
+                  doc={d}
+                  puede={puede}
+                  onConfirmar={() => setConfirmar(d)}
+                  onActualizar={() => setActualizar(d)}
+                  onMarcar={tipo => setMarcar({ doc: d, tipo })}
+                  onIncidencia={() => setIncidencia(d)}
+                  onSeguir={(inc, tipo) => setSeguir({ incidencia: inc, tipo })}
+                />
+              ))}
+            </div>
+          </section>
+        ))}
+        </>
       )}
-
-      <FiltroPildoras<string>
-        groupId="chk-visita-filtro"
-        value={filtro ?? ''}
-        onChange={f => setFiltro(filtro === f ? null : (f as Filtro))}
-        options={[
-          { value: 'sin_revisar', label: 'Sin revisar' },
-          { value: 'pendiente', label: 'Pendientes' },
-          { value: 'incidencia', label: 'Con incidencia' },
-          { value: 'no_aplica', label: 'No aplica' },
-          { value: 'revisados', label: 'Revisados' },
-        ]}
-      />
-
-      {visibles.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-10">{filtro ? 'Nada coincide con este filtro.' : 'No hay documentos en esta sección.'}</p>
-      ) : porArea.map(([area, lista]) => (
-        <section key={area} className="space-y-2">
-          <TituloSeccion as="h2" className="mb-0">{area} · {lista.length}</TituloSeccion>
-          <div className="grid gap-3 grid-cols-1 xl:grid-cols-2">
-            {lista.map(d => (
-              <TarjetaDoc
-                key={d.id}
-                doc={d}
-                puede={puede}
-                onConfirmar={() => setConfirmar(d)}
-                onActualizar={() => setActualizar(d)}
-                onMarcar={tipo => setMarcar({ doc: d, tipo })}
-                onIncidencia={() => setIncidencia(d)}
-                onSeguir={(inc, tipo) => setSeguir({ incidencia: inc, tipo })}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
 
       <ConfirmarDocSheet doc={confirmar} visitaId={visitaId} onClose={() => setConfirmar(null)} onGuardado={recargar} />
       <ActualizarDocSheet doc={actualizar} visitaId={visitaId} onClose={() => setActualizar(null)} onGuardado={recargar} />

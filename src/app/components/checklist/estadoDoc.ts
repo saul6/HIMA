@@ -27,3 +27,5 @@ export const COLOR_RESULTADO: Record<ResultadoVerificacion, string | undefined> 
   pendiente: 'var(--agro-info-text)',
   no_aplica: undefined,
 }
+
+export type FiltroDoc = 'sin_revisar' | 'pendiente' | 'incidencia' | 'no_aplica' | 'revisados'
