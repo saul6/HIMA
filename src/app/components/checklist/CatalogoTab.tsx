@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { Check, GitBranch, Layers, Plus, Upload } from 'lucide-react'
+import { Check, ChevronDown, GitBranch, Layers, Plus, Upload } from 'lucide-react'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/app/components/ui/collapsible'
 import { ContadorPildora } from './ContadorPildora'
 import { chk, mensajeError, useAccion, type Aplicabilidad, type CatalogoVer, type ChkAlcance, type ChkDocumento } from '@/hooks/useChecklistV2'
 import { Aviso, CLASE_INPUT, Chip, ChipCatalogo, ChipVigencia, PieFormulario, TONOS, textoRegistro } from './comun'
@@ -115,25 +116,35 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <ChipCatalogo estado={inst.catalogo_estado} />
-        <span className="text-xs text-muted-foreground">
-          Versión {inst.catalogo_version}{inst.aprobado_en ? ` · aprobado el ${fechaLarga(inst.aprobado_en)}${inst.aprobado_por ? ` por ${inst.aprobado_por}` : ''}` : ''}
-        </span>
-        {esAdmin && (
-          <div className="ml-auto flex gap-2">
-            <Boton tamano="sm" variante="secundario" cargando={precarga.ocupado} onClick={pedirPrecarga}><Layers className="w-4 h-4" /> Cargar módulos del sector</Boton>
-            <Boton tamano="sm" variante="secundario" onClick={() => setAlcancesAbierto(true)}><GitBranch className="w-4 h-4" /> Alcances</Boton>
-            <Boton tamano="sm" variante="secundario" onClick={onImportar}><Upload className="w-4 h-4" /> Importar</Boton>
-            <Boton tamano="sm" variante="secundario" onClick={() => setEditar({ abierto: true, doc: null })}><Plus className="w-4 h-4" /> Documento</Boton>
-            <Boton tamano="sm" onClick={() => setAprobarAbierto(true)}><Check className="w-4 h-4" /> Aprobar catálogo</Boton>
-          </div>
-        )}
-      </div>
-
-      {inst.catalogo_estado !== 'aprobado' && todos.length > 0 && (
-        <Aviso>Solo con el catálogo aprobado se pueden programar visitas. Un catálogo en borrador no genera revisiones.</Aviso>
-      )}
+      <Collapsible defaultOpen={inst.catalogo_estado !== 'aprobado'} className="rounded-xl border border-border bg-card">
+        <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 px-4 py-3 text-left">
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold">Configuración documental{esAdmin ? ' · administración' : ''}</span>
+            <ChipCatalogo estado={inst.catalogo_estado} />
+          </span>
+          <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" aria-hidden="true" />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="px-4 pb-4 space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Versión {inst.catalogo_version}{inst.aprobado_en ? ` · aprobado el ${fechaLarga(inst.aprobado_en)}${inst.aprobado_por ? ` por ${inst.aprobado_por}` : ''}` : ''}
+          </p>
+          {inst.catalogo_estado !== 'aprobado' ? (
+            todos.length > 0
+              ? <Aviso>Catálogo pendiente de aprobación. Solo con el catálogo aprobado se pueden programar visitas; un catálogo en borrador no genera revisiones.</Aviso>
+              : <Aviso>Catálogo pendiente de aprobación.</Aviso>
+          ) : (
+            <Aviso>Catálogo autorizado para visitas. Si lo modificas, tendrá que aprobarse de nuevo.</Aviso>
+          )}
+          {esAdmin && (
+            <div className="flex flex-wrap gap-2">
+              <Boton tamano="sm" variante="secundario" cargando={precarga.ocupado} onClick={pedirPrecarga}><Layers className="w-4 h-4" /> Cargar módulos del sector</Boton>
+              <Boton tamano="sm" variante="secundario" onClick={() => setAlcancesAbierto(true)}><GitBranch className="w-4 h-4" /> Alcances</Boton>
+              <Boton tamano="sm" variante="secundario" onClick={onImportar}><Upload className="w-4 h-4" /> Importar</Boton>
+              <Boton tamano="sm" variante="secundario" onClick={() => setEditar({ abierto: true, doc: null })}><Plus className="w-4 h-4" /> Documento</Boton>
+            </div>
+          )}
+        </CollapsibleContent>
+      </Collapsible>
 
       <FiltroPildoras<string>
         groupId="chk-catalogo-seccion"
@@ -188,69 +199,42 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
           <section key={area} className="space-y-2">
             <TituloSeccion as="h2" className="mb-0">{area} · {lista.length}</TituloSeccion>
 
-            {/* Escritorio: tabla */}
-            <div className="hidden md:block overflow-x-auto rounded-xl border border-border bg-card">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs text-muted-foreground border-b border-border">
-                    {esAdmin && <th className="w-8 p-2" />}
-                    <th className="p-2 font-semibold">Tipo</th><th className="p-2 font-semibold">Rev</th><th className="p-2 font-semibold">#</th>
-                    <th className="p-2 font-semibold">Nombre</th><th className="p-2 font-semibold">Código</th>
-                    <th className="p-2 font-semibold">Responsable</th><th className="p-2 font-semibold">Último registro</th>
-                    <th className="p-2 font-semibold">Vence</th><th className="p-2 font-semibold">Módulos</th><th className="p-2 font-semibold">Aplica</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lista.map(d => (
-                    <tr key={d.id} className="border-b border-border last:border-0 align-top" style={d.alertas.length ? { backgroundColor: 'var(--agro-info-fill)' } : undefined}>
-                      {esAdmin && <td className="p-2"><input type="checkbox" aria-label={`Seleccionar ${d.nombre}`} checked={seleccion.has(d.id)} onChange={() => alternar(d.id)} /></td>}
-                      <td className="p-2">{d.tipo_doc}</td><td className="p-2">{d.revision}</td><td className="p-2">{d.numeral}</td>
-                      <td className="p-2 min-w-48">
-                        <button type="button" className="text-left font-semibold hover:underline" onClick={() => setEditar({ abierto: true, doc: d })}>{d.nombre}</button>
-                        <ChipPlantilla d={d} />
-                        <ChipsAtribucion d={d} nombreAlcance={nombreAlcance} />
-                        {d.alertas.map((a, i) => <p key={i} className="text-xs mt-0.5" style={{ color: 'var(--agro-info-text)' }}>{a.mensaje}</p>)}
-                      </td>
-                      <td className="p-2 whitespace-nowrap">{d.codigo}</td><td className="p-2">{d.responsable_llenado}</td>
-                      <td className="p-2">{textoRegistro(d)}</td>
-                      <td className="p-2"><div className="flex flex-col gap-1 items-start">{d.vence_el && <span className="text-xs">{fechaLarga(d.vence_el)}</span>}<ChipVigencia vigencia={d.vigencia} /></div></td>
-                      <td className="p-2 text-xs">{d.modulos_mady?.join(', ')}</td>
-                      <td className="p-2">
-                        <SelectAplica d={d} esAdmin={esAdmin} ocupado={accion.ocupado} onCambiar={v => pedirAplicabilidad([d.id], v)} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Celular: tarjetas */}
-            <div className="md:hidden space-y-2">
-              {lista.map(d => (
-                <div key={d.id} className="rounded-xl border border-border bg-card p-3 space-y-2" style={d.alertas.length ? { borderColor: 'var(--agro-info-text)' } : undefined}>
-                  <div className="flex items-start gap-2">
+            <div className="rounded-xl border border-border bg-card divide-y divide-border">
+              {lista.map(d => {
+                const meta = [d.tipo_doc, d.revision ? `Rev ${d.revision}` : null, d.numeral ? `#${d.numeral}` : null, d.responsable_llenado,
+                  textoRegistro(d) ? `Último registro: ${textoRegistro(d)}` : null, d.vence_el ? `Vence: ${fechaLarga(d.vence_el)}` : null,
+                  d.modulos_mady && d.modulos_mady.length > 0 ? `Módulos M.A.D.Y: ${d.modulos_mady.join(', ')}` : null].filter(Boolean).join(' · ')
+                return (
+                  <div key={d.id} className="flex flex-wrap items-start gap-x-3 gap-y-2 p-3" style={d.alertas.length ? { backgroundColor: 'var(--agro-info-fill)' } : undefined}>
                     {esAdmin && <input type="checkbox" className="mt-1" aria-label={`Seleccionar ${d.nombre}`} checked={seleccion.has(d.id)} onChange={() => alternar(d.id)} />}
-                    <button type="button" className="text-left flex-1 min-w-0" onClick={() => setEditar({ abierto: true, doc: d })}>
-                      <p className="text-sm font-semibold">{d.nombre}</p>
+                    <button type="button" className="text-left flex-1 min-w-48" onClick={() => setEditar({ abierto: true, doc: d })}>
+                      <span className="flex flex-wrap items-baseline gap-x-2">
+                        <span className="text-sm font-bold" style={{ color: 'var(--primary)' }}>{d.codigo || 'Sin código'}</span>
+                        <span className="text-xs font-semibold uppercase tracking-wide text-foreground">{d.nombre}</span>
+                      </span>
+                      {meta && <span className="block text-xs text-muted-foreground mt-0.5">{meta}</span>}
+                    </button>
+                    <div className="flex items-center gap-2">
+                      <ChipVigencia vigencia={d.vigencia} />
+                      <SelectAplica d={d} esAdmin={esAdmin} ocupado={accion.ocupado} onCambiar={v => pedirAplicabilidad([d.id], v)} />
+                    </div>
+                    <div className="basis-full space-y-0.5 empty:hidden">
                       <ChipPlantilla d={d} />
                       <ChipsAtribucion d={d} nombreAlcance={nombreAlcance} />
-                      <p className="text-xs text-muted-foreground">{[d.tipo_doc, d.codigo, d.revision ? `Rev ${d.revision}` : null, d.numeral ? `#${d.numeral}` : null].filter(Boolean).join(' · ')}</p>
-                    </button>
-                    <ChipVigencia vigencia={d.vigencia} />
+                      {d.alertas.map((a, i) => <p key={i} className="text-xs mt-0.5" style={{ color: 'var(--agro-info-text)' }}>{a.mensaje}</p>)}
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground space-y-0.5">
-                    {d.responsable_llenado && <p>Responsable: {d.responsable_llenado}</p>}
-                    {textoRegistro(d) && <p>Último registro: {textoRegistro(d)}</p>}
-                    {d.vence_el && <p>Vence: {fechaLarga(d.vence_el)}</p>}
-                    {d.modulos_mady && d.modulos_mady.length > 0 && <p>Módulos M.A.D.Y: {d.modulos_mady.join(', ')}</p>}
-                  </div>
-                  {d.alertas.map((a, i) => <Aviso key={i}>{a.mensaje}</Aviso>)}
-                  <SelectAplica d={d} esAdmin={esAdmin} ocupado={accion.ocupado} onCambiar={v => pedirAplicabilidad([d.id], v)} />
-                </div>
-              ))}
+                )
+              })}
             </div>
           </section>
         ))
+      )}
+
+      {esAdmin && (
+        <div className="flex justify-end">
+          <Boton onClick={() => setAprobarAbierto(true)}><Check className="w-4 h-4" /> Aprobar catálogo de la instalación</Boton>
+        </div>
       )}
 
       {esAdmin && (
