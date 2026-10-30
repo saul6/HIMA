@@ -11,6 +11,7 @@ import {
 import { Aviso, Cargando, Chip, ChipVigencia, ErrorReintentar, PieFormulario, TONOS } from './comun'
 import { DetalleDoc } from './DetalleDoc'
 import { COLOR_RESULTADO, type FiltroDoc } from './estadoDoc'
+import { InterruptorOrganico } from './InterruptorOrganico'
 import { RevisionEscritorio } from './RevisionEscritorio'
 import { useEsEscritorio } from './useEsEscritorio'
 import {
@@ -125,9 +126,9 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
             <Chip>{r.resumen.sin_revisar} sin revisar</Chip>
           </div>
           {r.organico && !r.organico.activo && r.organico.leyenda && <p className="text-xs text-muted-foreground">{r.organico.leyenda}</p>}
-          <Boton tamano="sm" variante="secundario" cargando={pdf} onClick={bajarPdf}><FileDown className="w-4 h-4" /> Descargar PDF</Boton>
         </div>
         <Aviso>Visita cerrada: el reporte no se puede modificar.</Aviso>
+        <PieTrazabilidad pdf={{ cargando: pdf, onClick: bajarPdf }} />
       </div>
     )
   }
@@ -184,13 +185,13 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
         </div>
 
         {visita.tiene_plantilla_organica && puede && (
-          <label className="flex items-start gap-2 rounded-lg border border-border px-3 py-2 text-sm cursor-pointer">
-            <input type="checkbox" className="mt-1" checked={visita.organico_activo} disabled={organico.ocupado} onChange={alternarOrganico} />
-            <span>
-              <span className="font-semibold">Incluir revisión orgánica en esta visita</span>
-              <span className="block text-xs text-muted-foreground">Apagada, la Tabla 3 no se evalúa ni cuenta en el reporte.</span>
-            </span>
-          </label>
+          <InterruptorOrganico
+            checked={visita.organico_activo}
+            disabled={organico.ocupado}
+            onChange={alternarOrganico}
+            titulo="Incluir revisión orgánica en esta visita"
+            ayuda="Apagada, la Tabla 3 no se evalúa ni cuenta en el reporte."
+          />
         )}
         {visita.tiene_plantilla_organica && !visita.organico_activo && (
           <p className="text-xs text-muted-foreground">La revisión orgánica quedó fuera del alcance de esta visita.</p>
@@ -268,9 +269,10 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
 
         <FiltroPildoras<string>
           groupId="chk-visita-filtro"
-          value={filtro ?? ''}
-          onChange={f => setFiltro(filtro === f ? null : (f as Filtro))}
+          value={filtro ?? 'todas'}
+          onChange={f => setFiltro(f === 'todas' || filtro === f ? null : (f as Filtro))}
           options={[
+            { value: 'todas', label: 'Todas' },
             { value: 'sin_revisar', label: 'Sin revisar' },
             { value: 'pendiente', label: 'Pendientes' },
             { value: 'incidencia', label: 'Con incidencia' },
@@ -302,6 +304,8 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
         ))}
         </>
       )}
+
+      <PieTrazabilidad />
 
       <ConfirmarDocSheet doc={confirmar} visitaId={visitaId} onClose={() => setConfirmar(null)} onGuardado={recargar} />
       <ActualizarDocSheet doc={actualizar} visitaId={visitaId} onClose={() => setActualizar(null)} onGuardado={recargar} />
@@ -366,6 +370,18 @@ function TarjetaDoc({ doc: d, puede, onConfirmar, onActualizar, onMarcar, onInci
           </details>
         </div>
       )}
+    </div>
+  )
+}
+
+function PieTrazabilidad({ pdf }: { pdf?: { cargando: boolean; onClick: () => void } }) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <p className="text-sm font-semibold">Trazabilidad de la visita</p>
+        <p className="text-xs text-muted-foreground">Cada acción queda registrada con quién, cuándo y qué cambió.</p>
+      </div>
+      {pdf && <Boton tamano="sm" variante="secundario" cargando={pdf.cargando} onClick={pdf.onClick}><FileDown className="w-4 h-4" /> Descargar reporte PDF</Boton>}
     </div>
   )
 }
