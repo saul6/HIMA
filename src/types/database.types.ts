@@ -63,6 +63,9 @@ export type Database = {
           rol: Rol
           activo: boolean
           org_id: string | null
+          baja_en: string | null
+          baja_motivo: string | null
+          baja_por: string | null
           created_at: string
           updated_at: string
         }
@@ -72,6 +75,9 @@ export type Database = {
           rol: Rol
           activo?: boolean
           org_id?: string | null
+          baja_en?: string | null
+          baja_motivo?: string | null
+          baja_por?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -81,6 +87,9 @@ export type Database = {
           rol?: Rol
           activo?: boolean
           org_id?: string | null
+          baja_en?: string | null
+          baja_motivo?: string | null
+          baja_por?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -122,7 +131,8 @@ export type Database = {
           productor_id: string
           nombre: string
           codigo: string
-          cultivo: string
+          cultivo: string | null
+          sector_id: string | null
           superficie_ha: number | null
           activo: boolean
           org_id: string
@@ -134,7 +144,8 @@ export type Database = {
           productor_id: string
           nombre: string
           codigo: string
-          cultivo: string
+          cultivo?: string | null
+          sector_id?: string | null
           superficie_ha?: number | null
           activo?: boolean
           org_id: string
@@ -146,7 +157,8 @@ export type Database = {
           productor_id?: string
           nombre?: string
           codigo?: string
-          cultivo?: string
+          cultivo?: string | null
+          sector_id?: string | null
           superficie_ha?: number | null
           activo?: boolean
           org_id?: string

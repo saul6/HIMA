@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import {
-  ChevronLeft, Plus, Pencil, Trash2, X, Loader2, AlertTriangle, Users, Check,
+  ChevronLeft, ChevronDown, Pencil, Trash2, X, Loader2, AlertTriangle, Users, Check, Info,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -21,12 +21,20 @@ import {
   getAsignacionesOrg,
   asignarRanchoEmpleado,
   desasignarRanchoEmpleado,
+  getSectoresLista,
+  darBajaMiembro,
+  reactivarMiembro,
+  getMiembrosBaja,
+  type SectorLista,
+  type MiembroBaja,
   type EmpleadoBasicoConRol,
 } from '@/lib/queries'
 import type { Organizacion, Rancho } from '@/types/database.types'
 import { Fab } from '@/app/components/Fab'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { ConfirmarSheet } from '@/app/components/ui-mady/ConfirmarSheet'
+import { resolverIcono } from '@/app/components/iconos-modulos'
 import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
 
 const CULTIVOS = ['Zarzamora', 'Frambuesa', 'Fresa', 'Mora azul', 'Coco']
@@ -37,6 +45,21 @@ const LIMITE_POR_PLAN: Record<string, number | null> = {
   basico: 5,
   free: null,
   personalizado: null,
+}
+
+const ROL_LABELS: Record<string, string> = {
+  super_admin: 'Super admin',
+  admin_org: 'Administrador',
+  asesor_tecnico: 'Asesor técnico',
+  operario: 'Operario',
+  auditor: 'Auditor',
+}
+
+interface Colaborador { id: string; nombre: string; rol: string }
+
+function formatearFecha(iso: string): string {
+  const d = new Date(iso)
+  return isNaN(d.getTime()) ? '' : d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 const PLAN_LABELS: Record<string, string> = {
@@ -66,12 +89,13 @@ function parsearErrorLimiteSitios(mensaje: string, plan?: string | null, pluralS
 interface FormRancho {
   nombre: string
   codigo: string
+  sector_id: string
   cultivo: string
   cultivoOtro: string
   superficie_ha: string
 }
 
-const FORM_VACÍO: FormRancho = { nombre: '', codigo: '', cultivo: '', cultivoOtro: '', superficie_ha: '' }
+const FORM_VACÍO: FormRancho = { nombre: '', codigo: '', sector_id: '', cultivo: '', cultivoOtro: '', superficie_ha: '' }
 
 export function MiOrganizacion() {
   const navigate = useNavigate()
@@ -88,6 +112,10 @@ export function MiOrganizacion() {
   const [empleados, setEmpleados] = useState<EmpleadoBasicoConRol[]>([])
   // Map profile_id → Set<rancho_id>
   const [asignaciones, setAsignaciones] = useState<Map<string, Set<string>>>(new Map())
+  const [sectores, setSectores] = useState<SectorLista[]>([])
+  const [colaboradores, setColaboradores] = useState<Colaborador[]>([])
+  const [bajas, setBajas] = useState<MiembroBaja[]>([])
+  const [bajasAbiertas, setBajasAbiertas] = useState(false)
   const [cargando, setCargando] = useState(true)
   const mostrarSkeleton = useMostrarCarga(cargando, !!organizacion)
 
@@ -111,6 +139,15 @@ export function MiOrganizacion() {
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState<EmpleadoBasicoConRol | null>(null)
   const [asignandoRancho, setAsignandoRancho] = useState<string | null>(null)
 
+  // ── Baja de miembros ─────────────────────────────────────────────────────────
+  const [bajaObjetivo, setBajaObjetivo] = useState<Colaborador | null>(null)
+  const [bajaMotivo, setBajaMotivo] = useState('')
+  const [reactivandoId, setReactivandoId] = useState<string | null>(null)
+
+  const sectorPorId = useMemo(() => new Map(sectores.map((x) => [x.id, x])), [sectores])
+  const sectorForm = sectorPorId.get(form.sector_id)
+  const pideCultivo = sectorForm?.pide_cultivo ?? false
+
   useEffect(() => {
     if (!profile?.org_id) return
     cargar()
@@ -119,16 +156,26 @@ export function MiOrganizacion() {
   async function cargar() {
     setCargando(true)
     try {
-      const [org, listaRanchos, listaEmpleados, listaAsignaciones] = await Promise.all([
+      const [org, listaRanchos, listaEmpleados, listaAsignaciones, listaSectores, listaColab, listaBajas] = await Promise.all([
         getOrganizacion(profile!.org_id!),
         // Sin filtro de productor — RLS muestra todos los ranchos de la org para admin
         getRanchos(),
         esAdmin ? getEmpleadosOrg(profile!.org_id!) : Promise.resolve([]),
         esAdmin ? getAsignacionesOrg(profile!.org_id!) : Promise.resolve([]),
+        getSectoresLista().catch(() => [] as SectorLista[]),
+        esAdmin
+          ? Promise.resolve((supabase as any).rpc('org_colaboradores'))
+              .then(({ data }: { data: Colaborador[] | null }) => data ?? [])
+              .catch(() => [] as Colaborador[])
+          : Promise.resolve([] as Colaborador[]),
+        esAdmin ? getMiembrosBaja().catch(() => [] as MiembroBaja[]) : Promise.resolve([] as MiembroBaja[]),
       ])
       setOrganizacion(org)
       setRanchos(listaRanchos)
       setEmpleados(listaEmpleados)
+      setSectores(listaSectores)
+      setColaboradores(listaColab)
+      setBajas(listaBajas)
 
       const mapa = new Map<string, Set<string>>()
       for (const a of listaAsignaciones) {
@@ -154,12 +201,14 @@ export function MiOrganizacion() {
 
   function abrirEditar(rancho: Rancho) {
     setRanchoEditando(rancho)
-    const esPersonalizado = !CULTIVOS.includes(rancho.cultivo)
+    const cultivoActual = rancho.cultivo ?? ''
+    const esPersonalizado = cultivoActual !== '' && !CULTIVOS.includes(cultivoActual)
     setForm({
       nombre: rancho.nombre,
       codigo: rancho.codigo,
-      cultivo: esPersonalizado ? CULTIVO_OTRO : rancho.cultivo,
-      cultivoOtro: esPersonalizado ? rancho.cultivo : '',
+      sector_id: rancho.sector_id ?? '',
+      cultivo: esPersonalizado ? CULTIVO_OTRO : cultivoActual,
+      cultivoOtro: esPersonalizado ? cultivoActual : '',
       superficie_ha: rancho.superficie_ha?.toString() ?? '',
     })
     setErrores({})
@@ -175,10 +224,13 @@ export function MiOrganizacion() {
     const e: Partial<FormRancho> = {}
     if (!form.nombre.trim()) e.nombre = 'El nombre es requerido'
     if (!ranchoEditando && !form.codigo.trim()) e.codigo = 'El código es requerido'
-    if (!form.cultivo) e.cultivo = 'Selecciona un cultivo'
-    else if (form.cultivo === CULTIVO_OTRO && !form.cultivoOtro.trim()) e.cultivoOtro = 'Especifica el cultivo'
-    const sup = parseFloat(form.superficie_ha)
-    if (!form.superficie_ha || isNaN(sup) || sup <= 0) e.superficie_ha = 'Debe ser mayor a 0'
+    if (!form.sector_id) e.sector_id = 'Selecciona un sector'
+    if (pideCultivo) {
+      if (!form.cultivo) e.cultivo = 'Selecciona un cultivo'
+      else if (form.cultivo === CULTIVO_OTRO && !form.cultivoOtro.trim()) e.cultivoOtro = 'Especifica el cultivo'
+      const sup = parseFloat(form.superficie_ha)
+      if (!form.superficie_ha || isNaN(sup) || sup <= 0) e.superficie_ha = 'Debe ser mayor a 0'
+    }
     setErrores(e)
     return Object.keys(e).length === 0
   }
@@ -203,13 +255,16 @@ export function MiOrganizacion() {
   async function handleGuardar() {
     if (!validar()) return
     setGuardando(true)
-    const cultivoFinal = form.cultivo === CULTIVO_OTRO ? form.cultivoOtro.trim() : form.cultivo
+    // Fuera de campo/invernadero no se manda cultivo ni superficie.
+    const cultivoFinal = !pideCultivo ? null : form.cultivo === CULTIVO_OTRO ? form.cultivoOtro.trim() : form.cultivo
+    const superficieFinal = pideCultivo ? parseFloat(form.superficie_ha) : null
     try {
       if (ranchoEditando) {
         await actualizarRancho(ranchoEditando.id, {
           nombre: form.nombre.trim(),
+          sector_id: form.sector_id,
           cultivo: cultivoFinal,
-          superficie_ha: parseFloat(form.superficie_ha),
+          superficie_ha: superficieFinal,
         })
         toast.success(`${sTermino} ${sGenero === 'f' ? 'actualizada' : 'actualizado'}`)
       } else {
@@ -228,8 +283,9 @@ export function MiOrganizacion() {
         await crearRancho({
           nombre: form.nombre.trim(),
           codigo: codigoNorm,
+          sector_id: form.sector_id,
           cultivo: cultivoFinal,
-          superficie_ha: parseFloat(form.superficie_ha),
+          superficie_ha: superficieFinal,
           productor_id: productorId,
           org_id: profile!.org_id!,
         })
@@ -241,6 +297,10 @@ export function MiOrganizacion() {
       const msg = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
       if (msg.includes('LIMITE_RANCHOS_PLAN')) {
         toast.warning(parsearErrorLimiteSitios(msg, organizacion?.plan, sPlural), { duration: 7000 })
+      } else if (msg.includes('CULTIVO_REQUERIDO')) {
+        setErrores({ cultivo: 'Selecciona un cultivo' })
+      } else if (msg.includes('SUPERFICIE_REQUERIDA')) {
+        setErrores({ superficie_ha: 'Debe ser mayor a 0' })
       } else if (msg.includes('ranchos_productor_id_codigo_key')) {
         setErrores({ codigo: `Ya existe ${sGenero === 'f' ? 'una' : 'un'} ${sTerminoL} con este código` })
       } else {
@@ -297,6 +357,12 @@ export function MiOrganizacion() {
         await desasignarRanchoEmpleado(empleadoSeleccionado.id, ranchoId)
       } else {
         await asignarRanchoEmpleado(empleadoSeleccionado.id, ranchoId)
+        const nombreSector = sectorPorId.get(ranchos.find((r) => r.id === ranchoId)?.sector_id ?? '')?.nombre
+        toast.success(
+          nombreSector
+            ? `Asignado. ${empleadoSeleccionado.nombre_completo} verá los módulos de ${nombreSector} al volver a entrar.`
+            : 'Asignado.',
+        )
       }
       // Actualizar estado local
       setAsignaciones((prev) => {
@@ -310,11 +376,64 @@ export function MiOrganizacion() {
         siguiente.set(empleadoSeleccionado.id, set)
         return siguiente
       })
-    } catch {
-      toast.error('No se pudo actualizar la asignación')
+    } catch (err: unknown) {
+      const msg = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
+      toast.error(
+        msg.includes('FORBIDDEN')
+          ? `Ese ${sTerminoL} y el colaborador deben ser de tu organización`
+          : 'No se pudo actualizar la asignación',
+      )
     } finally {
       setAsignandoRancho(null)
     }
+  }
+
+  // ── Baja de miembros ─────────────────────────────────────────────────────────
+
+  function cerrarBaja() {
+    setBajaObjetivo(null)
+    setBajaMotivo('')
+  }
+
+  async function handleConfirmarBaja() {
+    const objetivo = bajaObjetivo
+    if (!objetivo) return
+    const motivo = bajaMotivo
+    cerrarBaja()
+    try {
+      const { tareas_abiertas } = await darBajaMiembro(objetivo.id, motivo)
+      toast.success(`${objetivo.nombre} fue dado de baja`)
+      if (tareas_abiertas > 0) {
+        toast.warning(
+          `Tenía ${tareas_abiertas} ${tareas_abiertas === 1 ? 'tarea abierta' : 'tareas abiertas'} en Agenda; reasígnalas.`,
+          { duration: 7000 },
+        )
+      }
+      await cargar()
+    } catch (err: unknown) {
+      const msg = (err instanceof Error ? err.message : (err as any)?.message) ?? ''
+      if (msg.includes('ULTIMO_ADMIN')) toast.error('Debe quedar al menos un administrador activo en la organización')
+      else if (msg.includes('FORBIDDEN')) toast.error('No puedes dar de baja a esta cuenta')
+      else toast.error('No se pudo dar de baja')
+    }
+  }
+
+  async function handleReactivar(m: MiembroBaja) {
+    if (reactivandoId) return
+    setReactivandoId(m.id)
+    try {
+      await reactivarMiembro(m.id)
+      toast.success(`${m.nombre} fue reactivado. Asígnale sus ${sPluralL} de nuevo.`)
+      await cargar()
+    } catch {
+      toast.error('No se pudo reactivar')
+    } finally {
+      setReactivandoId(null)
+    }
+  }
+
+  function sectorDe(r: Rancho): SectorLista | undefined {
+    return r.sector_id ? sectorPorId.get(r.sector_id) : undefined
   }
 
   // ── Render ────────────────────────────────────────────────────────────────────
@@ -430,6 +549,71 @@ export function MiOrganizacion() {
               </div>
             )}
 
+            {/* Equipo — dar de baja (solo admin) */}
+            {esAdmin && colaboradores.some((c) => c.id !== profile?.id) && (
+              <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+                <p className="text-xs text-muted-foreground font-semibold">EQUIPO</p>
+                <div className="space-y-2">
+                  {colaboradores.filter((c) => c.id !== profile?.id).map((c) => (
+                    <div key={c.id} className="flex items-center justify-between gap-3 py-1">
+                      <div className="min-w-0">
+                        <p className="text-sm text-foreground truncate font-semibold">{c.nombre || 'Sin nombre'}</p>
+                        <p className="text-xs text-muted-foreground">{ROL_LABELS[c.rol] ?? c.rol}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setBajaObjetivo(c)}
+                        className="text-xs font-semibold px-3 py-2 -my-2 rounded-lg text-agro-red hover:bg-muted transition-colors flex-shrink-0"
+                      >
+                        Dar de baja
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Miembros dados de baja (solo admin) */}
+            {esAdmin && bajas.length > 0 && (
+              <div className="bg-card border border-border rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setBajasAbiertas((v) => !v)}
+                  aria-expanded={bajasAbiertas}
+                  className="w-full flex items-center justify-between gap-3 p-4 text-left"
+                >
+                  <p className="text-xs text-muted-foreground font-semibold">
+                    MIEMBROS DADOS DE BAJA ({bajas.length})
+                  </p>
+                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${bajasAbiertas ? 'rotate-180' : ''}`} />
+                </button>
+                {bajasAbiertas && (
+                  <div className="px-4 pb-4 space-y-3">
+                    {bajas.map((m) => (
+                      <div key={m.id} className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm text-foreground truncate font-semibold">{m.nombre || 'Sin nombre'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {ROL_LABELS[m.rol] ?? m.rol}{m.baja_en ? ` · ${formatearFecha(m.baja_en)}` : ''}
+                          </p>
+                          {m.baja_motivo && <p className="text-xs text-muted-foreground mt-0.5">{m.baja_motivo}</p>}
+                          {m.baja_por && <p className="text-xs text-muted-foreground">Por {m.baja_por}</p>}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleReactivar(m)}
+                          disabled={!!reactivandoId}
+                          className="text-xs font-semibold px-3 py-2 rounded-lg border border-border-control text-foreground hover:bg-muted transition-colors flex-shrink-0 disabled:opacity-50"
+                        >
+                          {reactivandoId === m.id ? 'Reactivando…' : 'Reactivar'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Lista de ranchos */}
             <div>
               <div className="flex items-center justify-between mb-2 px-1">
@@ -520,9 +704,9 @@ export function MiOrganizacion() {
                             {r.codigo}
                           </Etiqueta>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          {r.cultivo}
-                          {r.superficie_ha ? ` · ${r.superficie_ha} ha` : ''}
+                        <p className="text-xs text-muted-foreground flex items-center gap-x-1.5 flex-wrap">
+                          {sectorDe(r) && <SectorChip sector={sectorDe(r)!} />}
+                          {[r.cultivo, r.superficie_ha ? `${r.superficie_ha} ha` : null].filter(Boolean).join(' · ')}
                         </p>
                       </div>
                       {esAdmin && (
@@ -612,6 +796,42 @@ export function MiOrganizacion() {
 
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
+                  SECTOR *
+                </label>
+                <select
+                  value={form.sector_id}
+                  onChange={(e) => setForm((f) => ({ ...f, sector_id: e.target.value }))}
+                  className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
+                    errores.sector_id ? 'border-agro-red' : 'border-border-control'
+                  } ${!form.sector_id ? 'text-muted-foreground' : 'text-foreground'}`}
+                >
+                  <option value="" disabled>Seleccionar sector</option>
+                  {sectores.map((x) => (
+                    <option key={x.id} value={x.id}>{x.nombre}</option>
+                  ))}
+                </select>
+                {errores.sector_id && (
+                  <p className="text-xs text-agro-red mt-1">{errores.sector_id}</p>
+                )}
+                {!form.sector_id && ranchoEditando && !errores.sector_id && (
+                  <p className="text-xs text-muted-foreground mt-1">Elige el sector de este {sTerminoL}</p>
+                )}
+                {sectorForm && !sectorForm.contratado && (
+                  <div
+                    className="mt-2 rounded-lg px-3 py-2 flex items-start gap-2"
+                    style={{ background: 'var(--agro-info-fill)' }}
+                  >
+                    <Info className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'var(--agro-info-text)' }} />
+                    <p className="text-xs" style={{ color: 'var(--agro-info-text)' }}>
+                      Este sector se activará para tu organización. Los módulos que no tengas contratados aparecerán con candado.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {pideCultivo && (
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   CULTIVO *
                 </label>
                 <select
@@ -647,6 +867,9 @@ export function MiOrganizacion() {
                 )}
               </div>
 
+              )}
+
+              {pideCultivo && (
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
                   SUPERFICIE (ha) *
@@ -666,6 +889,7 @@ export function MiOrganizacion() {
                   <p className="text-xs text-agro-red mt-1">{errores.superficie_ha}</p>
                 )}
               </div>
+              )}
             </div>
 
             <div className="p-4 border-t border-border flex-shrink-0">
@@ -740,9 +964,10 @@ export function MiOrganizacion() {
                           <p className="text-sm text-foreground truncate" style={{ fontWeight: asignado ? 600 : 400 }}>
                             {r.nombre}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            {r.codigo}
-                            {r.cultivo ? ` · ${r.cultivo}` : ''}
+                          <p className="text-xs text-muted-foreground flex items-center gap-x-1.5 flex-wrap">
+                            <span>{r.codigo}</span>
+                            {sectorDe(r) && <SectorChip sector={sectorDe(r)!} />}
+                            {r.cultivo ? <span>{r.cultivo}</span> : null}
                           </p>
                         </div>
                       </button>
@@ -752,6 +977,40 @@ export function MiOrganizacion() {
               )}
             </div>
       </BottomSheet>
+
+      <ConfirmarSheet
+        abierto={!!bajaObjetivo}
+        titulo={`Dar de baja a ${bajaObjetivo?.nombre ?? ''}`}
+        descripcion={`${bajaObjetivo?.nombre ?? 'Esta persona'} ya no podrá entrar a la app ni ver información de la organización. Sus registros y firmas se conservan.`}
+        textoConfirmar="Dar de baja"
+        tono="peligro"
+        onConfirmar={handleConfirmarBaja}
+        onCancelar={cerrarBaja}
+      >
+        <div>
+          <label htmlFor="motivo-baja" className="block text-xs text-muted-foreground mb-1.5 font-semibold">
+            MOTIVO (opcional)
+          </label>
+          <textarea
+            id="motivo-baja"
+            value={bajaMotivo}
+            onChange={(e) => setBajaMotivo(e.target.value.slice(0, 500))}
+            maxLength={500}
+            rows={3}
+            className="w-full px-3 py-2 rounded-lg bg-input-background border border-border-control text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          />
+        </div>
+      </ConfirmarSheet>
     </div>
+  )
+}
+
+function SectorChip({ sector }: { sector: SectorLista }) {
+  const Icono = resolverIcono(sector.icono ?? '')
+  return (
+    <span className="inline-flex items-center gap-1">
+      <Icono className="w-3.5 h-3.5" aria-hidden="true" />
+      {sector.nombre}
+    </span>
   )
 }

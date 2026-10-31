@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react'
 import { BottomSheet } from '../BottomSheet'
 import { Boton } from './Boton'
 
@@ -19,6 +19,8 @@ export interface OpcionesConfirmar {
 
 interface ConfirmarSheetProps extends OpcionesConfirmar {
   abierto: boolean
+  /** Contenido extra bajo la descripción (p. ej. un campo de motivo). */
+  children?: ReactNode
   onConfirmar: () => void
   onCancelar: () => void
 }
@@ -35,6 +37,7 @@ export function ConfirmarSheet({
   textoConfirmar,
   textoCancelar = 'Cancelar',
   tono = 'normal',
+  children,
   onConfirmar,
   onCancelar,
 }: ConfirmarSheetProps) {
@@ -52,6 +55,7 @@ export function ConfirmarSheet({
     <BottomSheet open={abierto} onClose={onCancelar} title={titulo}>
       <div className="px-4 py-4 flex flex-col gap-4">
         {descripcion && <p className="text-body text-muted-foreground">{descripcion}</p>}
+        {children}
         <div className="flex gap-3">
           <Boton ref={cancelarRef} type="button" variante="secundario" className="flex-1" onClick={onCancelar}>
             {textoCancelar}

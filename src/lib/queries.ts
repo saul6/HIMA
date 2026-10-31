@@ -284,6 +284,53 @@ export async function desasignarRanchoEmpleado(profileId: string, ranchoId: stri
   if (error) throw error
 }
 
+// ── Sectores y baja de miembros ───────────────────────────────────────────────
+
+export interface SectorLista {
+  id: string
+  clave: string
+  nombre: string
+  icono: string | null
+  pide_cultivo: boolean
+  contratado: boolean
+}
+
+export async function getSectoresLista(): Promise<SectorLista[]> {
+  const { data, error } = await (supabase as any).rpc('sectores_lista')
+  if (error) throw error
+  return (data ?? []) as SectorLista[]
+}
+
+export interface MiembroBaja {
+  id: string
+  nombre: string
+  rol: string
+  baja_en: string
+  baja_motivo: string | null
+  baja_por: string | null
+}
+
+export async function darBajaMiembro(profileId: string, motivo: string): Promise<{ tareas_abiertas: number }> {
+  const { data, error } = await (supabase as any).rpc('org_miembro_baja', {
+    p_profile: profileId,
+    p_motivo: motivo.trim() || null,
+  })
+  if (error) throw error
+  const fila = Array.isArray(data) ? data[0] : data
+  return { tareas_abiertas: Number(fila?.tareas_abiertas ?? 0) }
+}
+
+export async function reactivarMiembro(profileId: string): Promise<void> {
+  const { error } = await (supabase as any).rpc('org_miembro_reactivar', { p_profile: profileId })
+  if (error) throw error
+}
+
+export async function getMiembrosBaja(): Promise<MiembroBaja[]> {
+  const { data, error } = await (supabase as any).rpc('org_miembros_baja_lista')
+  if (error) throw error
+  return (data ?? []) as MiembroBaja[]
+}
+
 // ── Perfil ────────────────────────────────────────────────────────────────────
 
 export async function actualizarNombreCompleto(
