@@ -211,6 +211,8 @@ export function ProductosAutorizados() {
           <button
             onClick={exportarPDF}
             disabled={pdfLoading}
+            aria-label="Descargar PDF"
+            title="Descargar PDF"
             className="p-2 rounded-lg border border-border"
           >
             {pdfLoading
@@ -244,6 +246,7 @@ export function ProductosAutorizados() {
 
           {mercadosUnicos.length > 0 && (
             <select
+              aria-label="Filtrar por mercado"
               className="h-9 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm text-foreground"
               value={mercadoFiltro}
               onChange={e => setMercadoFiltro(e.target.value)}
