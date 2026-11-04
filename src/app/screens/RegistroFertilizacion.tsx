@@ -44,6 +44,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { fechaCorta } from '@/lib/formato'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -900,21 +901,12 @@ export function RegistroFertilizacion() {
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Tabs */}
-      <div className="px-4 pt-3 flex gap-1 bg-card border-b border-border">
-        {(['registros', 'inventario'] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className="flex-1 h-9 text-sm rounded-t-lg transition-colors"
-            style={
-              tab === t
-                ? { backgroundColor: 'var(--primary)', color: '#fff', fontWeight: 600 }
-                : { color: 'var(--muted-foreground)', fontWeight: 400 }
-            }
-          >
-            {t === 'registros' ? 'Registros' : 'Inventario'}
-          </button>
-        ))}
+      <div className="px-4 py-3 flex flex-wrap items-center gap-2 bg-card border-b border-border">
+        <FiltroPildoras
+          options={[{ value: 'registros', label: 'Registros' }, { value: 'inventario', label: 'Inventario' }]}
+          value={tab}
+          onChange={setTab}
+        />
       </div>
 
       {/* ── TAB: Registros ───────────────────────────────────────────────────── */}
