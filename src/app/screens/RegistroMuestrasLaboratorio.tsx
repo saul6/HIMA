@@ -25,6 +25,10 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmaContext } from '@/context/FirmaContext'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { useConexion } from '@/hooks/useConexion'
 import { usePendientesModulo } from '@/hooks/usePendientesModulo'
 import { useGuardarOffline } from '@/hooks/useGuardarOffline'
@@ -83,6 +87,11 @@ export function RegistroMuestrasLaboratorio() {
   const mostrarSkeleton = useMostrarCarga(loading, muestras.length > 0 || lotesOffline.length > 0)
   const todosIds = muestras.map(m => m.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M22', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (muestras.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : muestras.filter(m => resumenFirmas(firmas[m.id]).estado === 'pendiente').length
 
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
@@ -237,11 +246,17 @@ export function RegistroMuestrasLaboratorio() {
       <ModuloHeader
         tituloFallback="Registro de Muestras Enviadas al Laboratorio"
         subtitulo={`${codigoFormato('F-FRUS-CAL-24', codigoClave)} · Por evento`}
+        subtituloEscritorio={
+          loading && muestras.length === 0
+            ? undefined
+            : `${codigoFormato('F-FRUS-CAL-24', codigoClave)} · Por evento · ${textoResumenLista(muestras.length, pendientesFirma)}`
+        }
+        acciones={<BotonExportarConsolidado variante="encabezado" onClick={() => setConsolidadoOpen(true)} />}
       />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}
-      <div className="px-4 pt-3 pb-4">
+      <div className="px-4 pt-3 pb-4 min-[1224px]:hidden">
         <BotonExportarConsolidado onClick={() => setConsolidadoOpen(true)} />
       </div>
 
@@ -266,24 +281,42 @@ export function RegistroMuestrasLaboratorio() {
           )
         })}
         {mostrarSkeleton ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : loading && muestras.length === 0 && lotesOffline.length === 0 ? (
           <div style={{ minHeight: '280px' }} />
         ) : muestras.length === 0 && lotesOffline.length === 0 ? (
           <EstadoVacio titulo="Sin registros. Usa el botón + para agregar." />
         ) : null}
-        {muestras.map(m => (
-          <div key={m.id} className="bg-card border border-border rounded-[0.625rem] p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1 flex-wrap mb-0.5">
+        <ListaTarjetas>
+        {muestras.map(m => {
+          const resumen = resumenFirmas(firmas[m.id], sinDatosFirmas)
+          // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+          const requiereCorreccion = (m as any).requiere_correccion === true
+          return (
+          <TarjetaRegistro
+            key={m.id}
+            className="rounded-[0.625rem]"
+            estado={requiereCorreccion ? 'correccion' : resumen.estado}
+            firmas={resumen.estado === 'neutro' ? null : resumen}
+            meta={[
+              orgNombre ? <span className="hidden @min-[972px]/lista:inline">{orgNombre}</span> : null,
+              <span className="hidden @min-[972px]/lista:inline">{formatFecha(m.fecha_muestreo)}{m.hora_muestreo ? ` · ${m.hora_muestreo}` : ''}</span>,
+            ]}
+            titulo={<span className="hidden @min-[972px]/lista:inline">{m.rancho_nombre}</span>}
+            tituloTexto={m.rancho_nombre}
+            contenido={(
+              <>
+                <div className="flex items-center gap-1 flex-wrap mb-0.5 @min-[972px]/lista:hidden">
                   {orgNombre && (
                     <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
                   )}
                   <span className="text-sm font-semibold">{m.rancho_nombre}</span>
                 </div>
-                <p className="text-xs text-muted-foreground">{formatFecha(m.fecha_muestreo)}{m.hora_muestreo ? ` · ${m.hora_muestreo}` : ''}</p>
-                <p className="text-xs mt-1 line-clamp-2">{m.descripcion_muestra}</p>
+                <p className="text-xs text-muted-foreground @min-[972px]/lista:hidden">{formatFecha(m.fecha_muestreo)}{m.hora_muestreo ? ` · ${m.hora_muestreo}` : ''}</p>
+                <p className="text-xs mt-1 line-clamp-2 @min-[972px]/lista:hidden">{m.descripcion_muestra}</p>
+                <div className="mt-1 hidden @min-[972px]/lista:block">
+                  <TextoColapsable texto={m.descripcion_muestra} className="text-xs" />
+                </div>
                 <p className="text-xs text-muted-foreground mt-1">{m.laboratorio}</p>
                 <div className="flex flex-wrap gap-1 mt-2">
                   {m.microorganismos.map(c => (
@@ -291,12 +324,14 @@ export function RegistroMuestrasLaboratorio() {
                   ))}
                 </div>
                 {obligatoria && !firmas[m.id]?.realizo && (
-                  <span className="text-xs px-2 py-0.5 rounded font-medium mt-1 inline-block"
+                  <span className="text-xs px-2 py-0.5 rounded font-medium mt-1 inline-block @min-[972px]/lista:hidden"
                     style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
                     Pendiente de firma
                   </span>
                 )}
-              </div>
+              </>
+            )}
+            acciones={(
               <button
                 onClick={() => descargarPDF(m.id)}
                 disabled={pdfLoading === m.id}
@@ -307,17 +342,22 @@ export function RegistroMuestrasLaboratorio() {
                   : <FileDown className="w-4 h-4 text-primary" />
                 }
               </button>
-            </div>
-            <FirmasRegistro
-              modulo="M22"
-              registroId={m.id}
-              fechaRegistro={m.fecha_muestreo}
-              firma={firmas[m.id]}
-              loadingFirmas={loadingFirmas}
-              onFirmado={refetchFirmas}
-            />
-          </div>
-        ))}
+            )}
+            pie={(
+              <FirmasRegistro
+                variante="escritorio"
+                modulo="M22"
+                registroId={m.id}
+                fechaRegistro={m.fecha_muestreo}
+                firma={firmas[m.id]}
+                loadingFirmas={loadingFirmas}
+                onFirmado={refetchFirmas}
+              />
+            )}
+          />
+          )
+        })}
+        </ListaTarjetas>
       </div>
 
       {/* FAB */}
