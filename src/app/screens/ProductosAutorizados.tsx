@@ -23,6 +23,10 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { opInsert } from '@/lib/offline/construirOperaciones'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 
 type FormState = {
   cultivo: string
@@ -59,6 +63,8 @@ export function ProductosAutorizados() {
   const { obligatoria } = useFirmaContext()
   const todosIds = productos.map(p => p.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M66', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (productos.length > 0 && Object.keys(firmas).length === 0)
 
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M66')
@@ -198,6 +204,7 @@ export function ProductosAutorizados() {
       <ModuloHeader
         tituloFallback="Lista de Productos Autorizados"
         subtitulo="M66 · Org-level"
+        subtituloEscritorio={loading && productos.length === 0 ? undefined : `M66 · Org-level · ${textoResumenLista(productosFiltrados.length, null)}`}
         onBack={() => navigate(-1)}
         acciones={
           <button
@@ -275,7 +282,7 @@ export function ProductosAutorizados() {
       {/* Lista */}
       <div className="flex-1 px-4 pb-32 space-y-2 overflow-y-auto">
         {mostrarSkeleton ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : loading && !error && productosFiltrados.length === 0 ? (
           <div style={{ minHeight: '280px' }} />
         ) : null}
@@ -302,21 +309,42 @@ export function ProductosAutorizados() {
             ))}
           </div>
         )}
-        {productosFiltrados.map(p => (
-          <div key={p.id} className="bg-card border border-border rounded-[0.625rem] p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap mb-0.5">
+        <ListaTarjetas className="gap-2 @min-[972px]/lista:gap-3">
+        {productosFiltrados.map(p => {
+          const resumen = resumenFirmas(firmas[p.id], sinDatosFirmas)
+          // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+          const requiereCorreccion = (p as any).requiere_correccion === true
+          return (
+          <TarjetaRegistro
+            key={p.id}
+            className="rounded-[0.625rem]"
+            estado={requiereCorreccion ? 'correccion' : resumen.estado}
+            firmas={resumen.estado === 'neutro' ? null : resumen}
+            meta={[
+              <span className="hidden @min-[972px]/lista:inline">{p.cultivo}</span>,
+              <span className="hidden @min-[972px]/lista:inline">{p.empresa}</span>,
+            ]}
+            titulo={<span className="hidden @min-[972px]/lista:inline">{p.nombre_comercial}</span>}
+            tituloTexto={p.nombre_comercial}
+            chips={!p.activo ? (
+              <span className="hidden @min-[972px]/lista:inline text-xs font-semibold px-2 py-0.5 rounded-full"
+                style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
+                Inactivo
+              </span>
+            ) : undefined}
+            contenido={(
+              <>
+                <div className="flex items-center gap-2 flex-wrap mb-0.5 @min-[972px]/lista:hidden">
                   <p className="text-sm font-semibold leading-snug">{p.nombre_comercial}</p>
                   <span
                     className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                    style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                   >
                     {p.cultivo}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">{p.ingrediente_activo}{p.concentracion ? ` · ${p.concentracion}` : ''}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{p.empresa}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 @min-[972px]/lista:hidden">{p.empresa}</p>
                 <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                   {p.dosis_ha && (
                     <span className="text-xs text-muted-foreground">Dosis: {p.dosis_ha}</span>
@@ -324,7 +352,7 @@ export function ProductosAutorizados() {
                   {p.intervalo_seguridad_dias != null && (
                     <span
                       className="text-xs px-2 py-0.5 rounded font-medium"
-                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}
+                      style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                     >
                       I.S. {p.intervalo_seguridad_dias} dias
                     </span>
@@ -334,34 +362,44 @@ export function ProductosAutorizados() {
                   )}
                 </div>
                 {p.plagas_control && (
-                  <p className="text-xs text-muted-foreground mt-1 leading-snug line-clamp-2">{p.plagas_control}</p>
+                  <>
+                    <p className="text-xs text-muted-foreground mt-1 leading-snug line-clamp-2 @min-[972px]/lista:hidden">{p.plagas_control}</p>
+                    <div className="mt-1 hidden @min-[972px]/lista:block">
+                      <TextoColapsable texto={p.plagas_control} className="text-xs leading-snug text-muted-foreground" />
+                    </div>
+                  </>
                 )}
                 {!p.activo && (
-                  <span className="mt-1 inline-block text-xs font-semibold px-2 py-0.5 rounded-full"
+                  <span className="mt-1 inline-block text-xs font-semibold px-2 py-0.5 rounded-full @min-[972px]/lista:hidden"
                     style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}>
                     Inactivo
                   </span>
                 )}
-              </div>
-              {esAdmin && (
-                <button aria-label="Editar"
-                  onClick={() => abrirEdicion(p)}
-                  className="p-1.5 rounded-lg border border-border shrink-0"
-                >
-                  <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                </button>
-              )}
-            </div>
-            <FirmasRegistro
-              modulo="M66"
-              registroId={p.id}
-              fechaRegistro={p.created_at.slice(0, 10)}
-              firma={firmas[p.id]}
-              loadingFirmas={loadingFirmas}
-              onFirmado={async () => { await refetch(); await refetchFirmas() }}
-            />
-          </div>
-        ))}
+              </>
+            )}
+            acciones={esAdmin ? (
+              <button aria-label="Editar"
+                onClick={() => abrirEdicion(p)}
+                className="p-1.5 rounded-lg border border-border shrink-0"
+              >
+                <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
+            ) : undefined}
+            pie={(
+              <FirmasRegistro
+                variante="escritorio"
+                modulo="M66"
+                registroId={p.id}
+                fechaRegistro={p.created_at.slice(0, 10)}
+                firma={firmas[p.id]}
+                loadingFirmas={loadingFirmas}
+                onFirmado={async () => { await refetch(); await refetchFirmas() }}
+              />
+            )}
+          />
+          )
+        })}
+        </ListaTarjetas>
       </div>
 
       {/* FAB — solo admin */}
