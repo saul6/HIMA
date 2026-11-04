@@ -27,10 +27,14 @@ import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import {
   useFirmasRegistro,
   obtenerFirmasParaPdf,
   firmaDetalleAParaPdf,
+  firmasDeFilasParaTarjeta,
   type MapaFirmas,
 } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
@@ -278,6 +282,11 @@ export function InspeccionVidrioPlastico() {
   const { guardar: guardarOffline } = useGuardarOffline('M7')
   const todosIds = inspecciones.flatMap(insp => insp.materiales.map(m => m.id))
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M7', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (inspecciones.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : inspecciones.filter(insp => resumenFirmas(firmasDeFilasParaTarjeta(firmas, insp.materiales.map(m => m.id))).estado === 'pendiente').length
 
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }))
 
@@ -716,13 +725,33 @@ export function InspeccionVidrioPlastico() {
       <ModuloHeader
         tituloFallback={TITULO_MODULO}
         subtitulo={CLAVE_MODULO}
-        acciones={<BotonConfigurar onClick={() => abrirSheetConfig()} />}
+        subtituloEscritorio={
+          loading && inspecciones.length === 0
+            ? undefined
+            : `${CLAVE_MODULO} · ${textoResumenLista(inspecciones.length, pendientesFirma)}`
+        }
+        acciones={
+          <>
+            <BotonExportarConsolidado
+              variante="encabezado"
+              onClick={() => {
+                setConsRanchoId('')
+                setConsDesde('')
+                setConsHasta(hoy())
+                setErrConsRancho(false)
+                setErrConsFechas(false)
+                setSheetConsolidadoAbierto(true)
+              }}
+            />
+            <BotonConfigurar onClick={() => abrirSheetConfig()} />
+          </>
+        }
       />
 
       <BannerTareaOrigen tareaId={tareaId} registroGuardado={registroGuardado} />
 
       {/* Botón de exportar */}
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado
           onClick={() => {
             setConsRanchoId('')
@@ -758,32 +787,39 @@ export function InspeccionVidrioPlastico() {
           )
         })}
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : inspecciones.length === 0 && lotesOffline.length === 0 ? (
           <EstadoVacio icono={Eye} titulo="Sin inspecciones aún" ayuda="Toca + para registrar la primera" />
         ) : (
-          inspecciones.map((insp) => {
+          <ListaTarjetas>
+          {inspecciones.map((insp) => {
             const key = `${insp.rancho_id}|${insp.fecha}`
             const estadoResumen = resumirEstados(insp.materiales)
+            const idsJornada = insp.materiales.map(m => m.id)
+            // requiere_correccion no llega a la tarjeta de M7 (el hook no lo conserva): no se usa el estado "correccion"
+            const resumen = resumenFirmas(firmasDeFilasParaTarjeta(firmas, idsJornada), sinDatosFirmas)
             return (
-              <div key={key} className="bg-card border border-border rounded-xl p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      {orgNombre && (
-                        <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
-                      )}
-                      <span className="text-sm text-foreground truncate font-semibold">
-                        {insp.rancho_nombre}
-                      </span>
-                      <span
-                        className="text-caption px-2 py-0.5 rounded bg-muted text-muted-foreground flex-shrink-0 font-semibold"
-                      >
-                        {insp.materiales.length} materiales
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{formatFecha(insp.fecha)}</p>
-                  </div>
+              <TarjetaRegistro
+                key={key}
+                estado={resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                etiquetas={(
+                  <>
+                    {orgNombre && (
+                      <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+                    )}
+                    <span className="text-sm text-foreground truncate font-semibold">
+                      {insp.rancho_nombre}
+                    </span>
+                    <span
+                      className="text-caption px-2 py-0.5 rounded bg-muted text-muted-foreground flex-shrink-0 font-semibold"
+                    >
+                      {insp.materiales.length} materiales
+                    </span>
+                  </>
+                )}
+                meta={[formatFecha(insp.fecha)]}
+                acciones={(
                   <button
                     onClick={() => handleDescargarPDF(insp)}
                     disabled={generandoPDF === key}
@@ -796,7 +832,24 @@ export function InspeccionVidrioPlastico() {
                       <FileDown className="w-4 h-4" />
                     )}
                   </button>
-                </div>
+                )}
+                pie={(
+                  <>
+                    {insp.materiales.map(m => (
+                      <FirmasRegistro
+                        key={m.id}
+                        variante="escritorio"
+                        modulo="M7"
+                        registroId={m.id}
+                        fechaRegistro={insp.fecha}
+                        firma={firmas[m.id]}
+                        loadingFirmas={loadingFirmas}
+                        onFirmado={async () => { await refetch(); await refetchFirmas() }}
+                      />
+                    ))}
+                  </>
+                )}
+              >
                 <div className="flex flex-wrap gap-1 mt-2">
                   {(Object.entries(estadoResumen) as [Estado, number][]).map(([estado, count]) => (
                     <span
@@ -811,25 +864,15 @@ export function InspeccionVidrioPlastico() {
                     </span>
                   ))}
                   {obligatoria && insp.materiales.some(m => !firmas[m.id]?.realizo) && (
-                    <Etiqueta tono="error">
+                    <Etiqueta tono="error" className="@min-[972px]/lista:hidden">
                       Pendiente de firma
                     </Etiqueta>
                   )}
                 </div>
-                {insp.materiales.map(m => (
-                  <FirmasRegistro
-                    key={m.id}
-                    modulo="M7"
-                    registroId={m.id}
-                    fechaRegistro={insp.fecha}
-                    firma={firmas[m.id]}
-                    loadingFirmas={loadingFirmas}
-                    onFirmado={async () => { await refetch(); await refetchFirmas() }}
-                  />
-                ))}
-              </div>
+              </TarjetaRegistro>
             )
-          })
+          })}
+          </ListaTarjetas>
         )}
       </div>
 
