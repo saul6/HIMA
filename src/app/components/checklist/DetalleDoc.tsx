@@ -73,9 +73,21 @@ export function DetalleDoc({ doc: d, puede, onSeguir, variante = 'tarjeta' }: Pr
         </div>
       )}
 
-      {d.incidencias.length > 0 && (
+      <IncidenciasDoc incidencias={d.incidencias} puede={puede} onSeguir={onSeguir} />
+    </>
+  )
+}
+
+/** Incidencias del documento; `soloAnteriores` oculta la registrada en esta visita. */
+export function IncidenciasDoc({ incidencias: todas, puede, onSeguir, soloAnteriores = false }: {
+  incidencias: IncidenciaDoc[]; puede: boolean; onSeguir: (inc: IncidenciaDoc, tipo: TipoSeguimiento) => void; soloAnteriores?: boolean
+}) {
+  const incidencias = soloAnteriores ? todas.filter(i => !i.nueva) : todas
+  return (
+    <>
+      {incidencias.length > 0 && (
         <div className="space-y-2">
-          {d.incidencias.map(i => {
+          {incidencias.map(i => {
             const e = etiquetaEstadoIncidencia(i.estado)
             const sinCerrar = i.estado !== 'cerrada'
             return (
@@ -116,7 +128,7 @@ function Dato({ titulo, children }: { titulo: string; children: React.ReactNode 
   )
 }
 
-function Relacionados({ doc: d }: { doc: DocVisita }) {
+export function Relacionados({ doc: d }: { doc: DocVisita }) {
   if (d.relacionados.length === 0) return null
   return (
     <div className="space-y-1">
