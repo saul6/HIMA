@@ -21,6 +21,10 @@ import { useModulosContext } from '@/context/ModulosContext'
 import { useRanchos } from '@/hooks/useRanchos'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { SkeletonFilas } from '@/app/components/SkeletonFilas'
 import {
   useM21EstacionesRancho,
@@ -144,29 +148,60 @@ function RevisionCard({
 }) {
   const conHallazgo = rev.resultados.filter(r => r.incidencia_id).length
   const totalEst = rev.resultados.length
+  // Sin datos de firmas todavía (cargando): franja neutra.
+  const sinDatosFirmas = loadingFirmas || Object.keys(firmas).length === 0
+  const resumen = resumenFirmas(firmas[rev.id], sinDatosFirmas)
+  // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+  const requiereCorreccion = (rev as any).requiere_correccion === true
 
   return (
-    <div className="bg-card rounded-xl border border-border p-4 flex flex-col gap-2">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex flex-col gap-1 flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
+    <TarjetaRegistro
+      className={rev.sin_subir ? 'col-span-full' : undefined}
+      estado={rev.sin_subir ? 'neutro' : requiereCorreccion ? 'correccion' : resumen.estado}
+      firmas={rev.sin_subir || resumen.estado === 'neutro' ? null : resumen}
+      meta={[
+        <span className="hidden @min-[972px]/lista:inline">{rev.rancho_nombre}</span>,
+        <span className="hidden @min-[972px]/lista:inline">{formatFecha(rev.fecha)}</span>,
+      ]}
+      titulo={rev.inspector_nombre ? <span className="hidden @min-[972px]/lista:inline">{rev.inspector_nombre}</span> : undefined}
+      tituloTexto={rev.inspector_nombre ?? undefined}
+      contenido={(
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 flex-wrap @min-[972px]/lista:hidden">
             {orgNombre && (
               <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
             )}
-            <span className="text-xs font-semibold bg-[var(--agro-success-fill)] text-[var(--agro-success-text)] px-2 py-0.5 rounded-full truncate">
+            <span className="text-xs font-semibold bg-muted text-muted-foreground px-2 py-0.5 rounded-full truncate">
               {rev.rancho_nombre}
             </span>
             <span className="text-xs text-muted-foreground">{formatFecha(rev.fecha)}</span>
           </div>
           {rev.inspector_nombre && (
-            <p className="text-sm font-semibold text-foreground leading-snug mt-0.5">
+            <p className="text-sm font-semibold text-foreground leading-snug mt-0.5 @min-[972px]/lista:hidden">
               {rev.inspector_nombre}
             </p>
           )}
           <p className="text-xs text-muted-foreground">
             {totalEst} estación{totalEst !== 1 ? 'es' : ''} revisada{totalEst !== 1 ? 's' : ''}
           </p>
+          {conHallazgo > 0 && (
+            <div className="flex gap-2 mt-1">
+              <span className="text-xs bg-[var(--agro-danger-fill)] text-[var(--agro-danger-text)] px-2 py-0.5 rounded-full">
+                {conHallazgo} hallazgo{conHallazgo !== 1 ? 's' : ''} reportado{conHallazgo !== 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
+          {rev.observaciones && (
+            <>
+              <p className="text-xs text-muted-foreground italic line-clamp-2 mt-1 @min-[972px]/lista:hidden">{rev.observaciones}</p>
+              <div className="mt-1 hidden @min-[972px]/lista:block">
+                <TextoColapsable texto={rev.observaciones} className="text-xs italic text-muted-foreground" />
+              </div>
+            </>
+          )}
         </div>
+      )}
+      acciones={(
         <Button
           variant="ghost"
           size="icon"
@@ -179,27 +214,15 @@ function RevisionCard({
             ? <Loader2 className="w-4 h-4 animate-spin" />
             : <FileDown className="w-4 h-4" />}
         </Button>
-      </div>
-
-      {conHallazgo > 0 && (
-        <div className="flex gap-2">
-          <span className="text-xs bg-[var(--agro-danger-fill)] text-[var(--agro-danger-text)] px-2 py-0.5 rounded-full">
-            {conHallazgo} hallazgo{conHallazgo !== 1 ? 's' : ''} reportado{conHallazgo !== 1 ? 's' : ''}
-          </span>
-        </div>
       )}
-
-      {rev.observaciones && (
-        <p className="text-xs text-muted-foreground italic line-clamp-2">{rev.observaciones}</p>
-      )}
-      {rev.sin_subir ? (
-        <span className="self-start text-xs bg-[var(--agro-info-fill)] text-[var(--agro-info-text)] px-2 py-0.5 rounded-full">
+      pie={rev.sin_subir ? (
+        <span className="mt-2 inline-block text-xs bg-[var(--agro-info-fill)] text-[var(--agro-info-text)] px-2 py-0.5 rounded-full">
           Sin subir — podrás firmar y descargar el PDF al sincronizar
         </span>
       ) : (
-        <FirmasRegistro modulo="M21" registroId={rev.id} firma={firmas[rev.id]} loadingFirmas={loadingFirmas} fechaRegistro={rev.fecha} onFirmado={onFirmado} />
+        <FirmasRegistro variante="escritorio" modulo="M21" registroId={rev.id} firma={firmas[rev.id]} loadingFirmas={loadingFirmas} fechaRegistro={rev.fecha} onFirmado={onFirmado} />
       )}
-    </div>
+    />
   )
 }
 
@@ -465,6 +488,11 @@ export function MonitoreoEstacionesPlagas() {
 
   const todosIds = revisiones.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M21', todosIds)
+  // Sin datos de firmas todavía (cargando): sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (revisiones.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : revisiones.filter(r => !r.sin_subir && resumenFirmas(firmas[r.id]).estado === 'pendiente').length
   const { obligatoria, tengoFirma } = useFirmaContext()
   const { online } = useConexion()
   const { guardar: guardarOffline } = useGuardarOffline('M21')
@@ -1054,20 +1082,36 @@ export function MonitoreoEstacionesPlagas() {
       <ModuloHeader
         tituloFallback={TITULO_MODULO}
         subtitulo={`${codigoFormato('F-FRUS-CAL-19', codigoClave)} · Cuarto Frío`}
+        subtituloEscritorio={
+          loading && revisiones.length === 0
+            ? undefined
+            : `${codigoFormato('F-FRUS-CAL-19', codigoClave)} · Cuarto Frío · ${textoResumenLista(revisiones.length, pendientesFirma)}`
+        }
         onBack={() => navigate(-1)}
         acciones={
-          <BotonConfigurar
-            onClick={() => {
-              setEstRanchoId(ranchos[0]?.id ?? '')
-              setSheetEstaciones(true)
-            }}
-          />
+          <>
+            <BotonExportarConsolidado
+              variante="encabezado"
+              onClick={() => {
+                setConsRanchoId(ranchos[0]?.id ?? '')
+                setConsDesde('')
+                setConsHasta('')
+                setSheetConsolidado(true)
+              }}
+            />
+            <BotonConfigurar
+              onClick={() => {
+                setEstRanchoId(ranchos[0]?.id ?? '')
+                setSheetEstaciones(true)
+              }}
+            />
+          </>
         }
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado
           onClick={() => {
             setConsRanchoId(ranchos[0]?.id ?? '')
@@ -1083,7 +1127,7 @@ export function MonitoreoEstacionesPlagas() {
         <div className="p-4 pb-28 flex flex-col gap-3">
           <PendientesOffline modulo="M21" />
           {mostrarSkeleton && (
-            <ListaSkeleton />
+            <ListaSkeleton rejilla />
           )}
           {!mostrarSkeleton && loading && revisiones.length === 0 && (
             <div style={{ minHeight: '280px' }} />
@@ -1094,18 +1138,22 @@ export function MonitoreoEstacionesPlagas() {
           {!loading && !error && revisiones.length === 0 && (
             <EstadoVacio icono={Bug} titulo="Sin revisiones registradas" ayuda="Primero configura las estaciones con el ícono de ajustes" />
           )}
-          {revisiones.length > 0 && revisiones.map(rev => (
-            <RevisionCard
-              key={rev.id}
-              rev={rev}
-              onPDF={handlePDF}
-              cargandoPDF={cargandoPDF}
-              orgNombre={orgNombre}
-              firmas={firmas}
-              loadingFirmas={loadingFirmas}
-              onFirmado={refetchFirmas}
-            />
-          ))}
+          {revisiones.length > 0 && (
+            <ListaTarjetas>
+              {revisiones.map(rev => (
+                <RevisionCard
+                  key={rev.id}
+                  rev={rev}
+                  onPDF={handlePDF}
+                  cargandoPDF={cargandoPDF}
+                  orgNombre={orgNombre}
+                  firmas={firmas}
+                  loadingFirmas={loadingFirmas}
+                  onFirmado={refetchFirmas}
+                />
+              ))}
+            </ListaTarjetas>
+          )}
         </div>
       </div>
 
