@@ -21,6 +21,7 @@ import { FilaControl } from './FilaControl'
 import { IndicadorEtapas, PieEtapas, type Etapa } from './EtapasVisita'
 import { ResumenCierre } from './ResumenCierre'
 import { CLASE_TEXTAREA } from './comun'
+import { hoyMX } from '@/lib/fecha'
 import { fechaLarga } from './constantes'
 import { NOMBRE_SECCION_CORTO } from './secciones'
 import { descargarReportePdf } from './pdfVisita'
@@ -39,6 +40,7 @@ interface Props {
 export function VisitaEjecucion({ visitaId, codigoClave, onCambio, onDescartada }: Props) {
   const { profile } = useAuthContext()
   const [descartar, setDescartar] = useState(false)
+  const [cambiarFecha, setCambiarFecha] = useState(false)
   const carga = useCarga<Awaited<ReturnType<typeof chk.visVer>>>(visitaId, () => chk.visVer(visitaId))
   const omis = useCarga<Omision[]>(visitaId, () => chk.visOmisiones(visitaId))
   const [etapa, setEtapa] = useState<Etapa>(1)
@@ -237,9 +239,14 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio, onDescartada 
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-        <div>
-          <p className="text-sm font-semibold">{[v.cliente, v.instalacion.nombre, visita.alcance].filter(Boolean).join(' · ')}</p>
-          <p className="text-xs text-muted-foreground">{fechaLarga(visita.fecha)}{visita.asesor ? ` · ${visita.asesor}` : ''}</p>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold">{[v.cliente, v.instalacion.nombre, visita.alcance].filter(Boolean).join(' · ')}</p>
+            <p className="text-xs text-muted-foreground">{fechaLarga(visita.fecha)}{visita.asesor ? ` · ${visita.asesor}` : ''}</p>
+          </div>
+          {puedeDescartar && (
+            <Boton tamano="sm" variante="secundario" onClick={() => setCambiarFecha(true)}>Cambiar fecha</Boton>
+          )}
         </div>
 
         {visita.tiene_plantilla_organica && puede && (
@@ -395,7 +402,17 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio, onDescartada 
       <ActualizarDocSheet doc={actualizar} visitaId={visitaId} onClose={() => setActualizar(null)} onGuardado={recargar} />
       <MarcarDocSheet objetivo={marcar} visitaId={visitaId} onClose={() => setMarcar(null)} onGuardado={recargar} />
       <SeguirIncidenciaSheet objetivo={seguir} visitaId={visitaId} onClose={() => setSeguir(null)} onGuardado={recargar} />
-      <BottomSheet open={descartar} onClose={() => setDescartar(false)} title="¿Descartar esta visita?">
+      <BottomSheet open={cambiarFecha} onClose={() => setCambiarFecha(false)} title="Cambiar la fecha de la visita">
+        {cambiarFecha && (
+          <CambiarFechaVisita
+            visitaId={visitaId}
+            fechaActual={visita.fecha.slice(0, 10)}
+            onClose={() => setCambiarFecha(false)}
+            onGuardada={recargar}
+          />
+        )}
+      </BottomSheet>
+      <BottomSheet open={descartar}onClose={() => setDescartar(false)} title="¿Descartar esta visita?">
         {descartar && (
           <DescartarVisita
             visitaId={visitaId}
@@ -417,6 +434,52 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio, onDescartada 
         )}
       </BottomSheet>
     </div>
+  )
+}
+
+function CambiarFechaVisita({ visitaId, fechaActual, onClose, onGuardada }: {
+  visitaId: string; fechaActual: string; onClose: () => void; onGuardada: () => void
+}) {
+  const [fecha, setFecha] = useState(fechaActual)
+  const [motivo, setMotivo] = useState('')
+  const [errFecha, setErrFecha] = useState<string | null>(null)
+  const [errMotivo, setErrMotivo] = useState<string | null>(null)
+  const { ocupado, ejecutar } = useAccion()
+  const motivoOk = motivo.trim().length >= 5 && motivo.trim().length <= 500
+  const valido = !!fecha && fecha !== fechaActual && motivoOk
+
+  async function guardar() {
+    if (!valido) return
+    const r = await ejecutar(() => chk.visCorregirFecha(visitaId, fecha, motivo.trim()))
+    if (!r.ok) {
+      const c = codigoError(r.error)
+      if (c === 'MOTIVO_REQUERIDO') setErrMotivo(r.mensaje)
+      else if (c === 'FECHA_FUTURA' || c === 'FECHA_ANTERIOR' || c === 'SIN_CAMBIOS') setErrFecha(r.mensaje)
+      else toast.error(r.mensaje)
+      return
+    }
+    toast.success('Fecha corregida')
+    onClose()
+    onGuardada()
+  }
+
+  return (
+    <>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <p className="text-sm text-muted-foreground">Lo que ya revisaste se conserva. Solo cambia la fecha con la que queda la visita y su reporte.</p>
+        <label className="block space-y-1">
+          <span className="text-xs text-muted-foreground">Fecha de la visita</span>
+          <input type="date" className={CLASE_INPUT} value={fecha} max={hoyMX()} onChange={e => { setFecha(e.target.value); setErrFecha(null) }} />
+          {errFecha && <p role="alert" className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>{errFecha}</p>}
+        </label>
+        <label className="block space-y-1">
+          <span className="text-xs text-muted-foreground">Motivo (obligatorio, de 5 a 500 caracteres)</span>
+          <textarea className={CLASE_TEXTAREA} value={motivo} maxLength={500} onChange={e => { setMotivo(e.target.value); setErrMotivo(null) }} />
+          {errMotivo && <p role="alert" className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>{errMotivo}</p>}
+        </label>
+      </div>
+      <PieFormulario onCancelar={onClose} onGuardar={guardar} textoGuardar="Guardar fecha" cargando={ocupado} deshabilitado={!valido} />
+    </>
   )
 }
 

@@ -464,6 +464,10 @@ export const chk = {
     rpc<unknown>('chk_vis_cancelar', { p_visita: p.visita, p_motivo: p.motivo, p_event_id: p.eventId }),
   visDescartar: (p: { visita: string; motivo: string; eventId: string }) =>
     rpc<VisitaDescartada>('chk_vis_descartar', { p_visita: p.visita, p_motivo: p.motivo, p_event_id: p.eventId }),
+  visCorregirFecha: (visita: string, fecha: string, motivo: string) =>
+    rpc<{ visita_id?: string; fecha_anterior?: string; fecha?: string; idempotente?: boolean }>('chk_vis_corregir_fecha', {
+      p_visita: visita, p_fecha: fecha, p_motivo: motivo, p_event_id: nuevoEventId(),
+    }),
   visLista: (instalacion: string) => rpc<VisitaLista[]>('chk_vis_lista', { p_instalacion: instalacion }),
   vinculosLista: (instalacion: string, estado: EstadoVinculo | null) =>
     rpc<Vinculo[]>('chk_vinculos_lista', { p_instalacion: instalacion, p_estado: estado }),

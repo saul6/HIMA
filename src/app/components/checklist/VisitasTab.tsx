@@ -34,7 +34,13 @@ const ESTADO: Record<string, { label: string; tono: typeof TONOS.exito }> = {
   realizada: { label: 'Visita anterior', tono: TONOS.neutro },
 }
 
-type Modo = { tipo: 'programar' } | { tipo: 'reprogramar'; visita: VisitaLista } | { tipo: 'cancelar'; visita: VisitaLista }
+const fechaDMA = (iso: string | null) => {
+  if (!iso) return ''
+  const [y, m, d] = iso.slice(0, 10).split('-')
+  return `${d}/${m}/${y}`
+}
+
+type Modo ={ tipo: 'programar' } | { tipo: 'reprogramar'; visita: VisitaLista } | { tipo: 'cancelar'; visita: VisitaLista }
 
 export function VisitasTab({ instalacionId, alcances, catalogoEstado, esAdmin, puedeRevisar, perfilId, version, codigoClave, onAbrirVisita, onCambio }: Props) {
   const carga = useCarga<VisitaLista[]>(`${instalacionId}:${version}`, () => chk.visLista(instalacionId))
@@ -91,6 +97,11 @@ export function VisitasTab({ instalacionId, alcances, catalogoEstado, esAdmin, p
               <Chip tono={e.tono}>{e.label}</Chip>
             </div>
             {v.nota && <p className="text-xs text-muted-foreground">{v.nota}</p>}
+            {v.eventos.filter(x => x.tipo === 'fecha_corregida').map((x, i) => (
+              <p key={i} className="text-xs text-muted-foreground">
+                Fecha corregida del {fechaDMA(x.fecha_anterior)} al {fechaDMA(x.fecha_nueva)} por {x.actor ?? 'un usuario'}: {x.motivo ?? ''}
+              </p>
+            ))}
             {descarte && <p className="text-xs text-muted-foreground">Descartada por {descarte.actor ?? 'un usuario'}: {descarte.motivo ?? ''}</p>}
             {v.resumen && (
               <p className="text-xs text-muted-foreground">
