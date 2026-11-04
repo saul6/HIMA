@@ -7,6 +7,9 @@ import { toast } from 'sonner'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas, ListaAncho } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
@@ -199,6 +202,11 @@ export function InspeccionAlmacenEmpaque() {
   const { guardar: guardarOffline } = useGuardarOffline('M43')
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M43', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const [sheetCrearPaso, setSheetCrearPaso] = useState<'firma_gate' | 'form' | 'firma_decision'>('form')
   const [pendienteFirmaId, setPendienteFirmaId] = useState<string | null>(null)
@@ -606,9 +614,16 @@ export function InspeccionAlmacenEmpaque() {
         tituloFallback="Inspección de Almacén de Material de Empaque"
         forzarTitulo={vista === 'detalle' ? (registroActivo ? formatMesLabel(registroActivo.anio, registroActivo.mes) : '—') : undefined}
         subtitulo={vista === 'lista' ? 'Cuarto Frío · Mensual' : (registroActivo?.rancho_nombre ?? '—')}
+        subtituloEscritorio={
+          vista === 'lista' && !(loading && registros.length === 0)
+            ? `Cuarto Frío · Mensual · ${textoResumenLista(registros.length, pendientesFirma)}`
+            : undefined
+        }
         onBack={vista === 'detalle' ? volverALista : undefined}
         acciones={
-          vista === 'detalle' && registroActivo ? (
+          vista === 'lista' ? (
+            <BotonExportarConsolidado variante="encabezado" onClick={() => setSheetConsolidado(true)} />
+          ) : vista === 'detalle' && registroActivo ? (
             <Boton variante="secundario" tamano="sm" onClick={() => handlePDFIndividual(registroActivo.id)} cargando={generandoPDF === registroActivo.id} disabled={dias.length === 0}>
               {generandoPDF === registroActivo.id ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -623,7 +638,7 @@ export function InspeccionAlmacenEmpaque() {
       <BannerTareaOrigen tareaId={tareaId} />
 
       {vista === 'lista' && (
-        <div className="px-4 pt-3">
+        <div className="px-4 pt-3 min-[1224px]:hidden">
           <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
         </div>
       )}
@@ -644,13 +659,14 @@ export function InspeccionAlmacenEmpaque() {
           )}
 
           {loading ? (
-            <ListaSkeleton />
+            <ListaSkeleton rejilla />
           ) : registros.length === 0 && lotesOffline.length === 0 ? (
             <EstadoVacio icono={PackageOpen} titulo="Sin registros aún" ayuda="Crea el primer registro mensual con el botón +" />
           ) : (
-            <div className="space-y-3">
+            <ListaTarjetas>
               {lotesOffline.map((lote) => (
-                <div key={lote.id} className="bg-card rounded-xl border border-border p-4">
+                <ListaAncho key={lote.id}>
+                <div className="bg-card rounded-xl border border-border p-4">
                   <div className="mb-1">
                     <span className="text-xs px-2 py-0.5 rounded font-semibold"
                       style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
@@ -662,56 +678,64 @@ export function InspeccionAlmacenEmpaque() {
                   </span>
                   <div className="mt-2"><ChipOffline lote={lote} /></div>
                 </div>
+                </ListaAncho>
               ))}
-              {registros.map((reg) => (
-                <button
-                  key={reg.id}
-                  onClick={() => abrirDetalle(reg)}
-                  className="w-full text-left bg-card rounded-xl p-4 border border-border"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
+              {registros.map((reg) => {
+                const resumen = resumenFirmas(firmas[reg.id], sinDatosFirmas)
+                // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+                const requiereCorreccion = (reg as any).requiere_correccion === true
+                return (
+                  <TarjetaRegistro
+                    key={reg.id}
+                    estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                    firmas={resumen.estado === 'neutro' ? null : resumen}
+                    alHacerClic={() => abrirDetalle(reg)}
+                    etiquetas={(
+                      <>
                         <span
                           className="text-xs px-2 py-0.5 rounded font-semibold"
-                          style={{
-                            backgroundColor: 'var(--agro-success-fill)',
-                            color: 'var(--agro-success-text)',
-                          }}
+                          style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                         >
                           {formatMesLabel(reg.anio, reg.mes)}
                         </span>
                         <span className="text-xs text-muted-foreground">
                           {reg.dias.length} día{reg.dias.length !== 1 ? 's' : ''}
                         </span>
-                      </div>
-                      <span className="text-sm text-foreground truncate block font-semibold">
-                        {reg.rancho_nombre}
-                      </span>
-                      {reg.realizado_por && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Realizado por: {reg.realizado_por}
-                        </p>
-                      )}
-                      {obligatoria && !firmas[reg.id]?.realizo && (
-                        <Etiqueta tono="error" className="mt-1">
-                          Pendiente de firma
-                        </Etiqueta>
-                      )}
-                    </div>
-                    <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />
-                  </div>
-                  <FirmasRegistro
-                    modulo="M43"
-                    registroId={reg.id}
-                    fechaRegistro={`${reg.anio}-${String(reg.mes).padStart(2, '0')}-01`}
-                    firma={firmas[reg.id]}
-                    loadingFirmas={loadingFirmas}
-                    onFirmado={async () => { await refetch(); await refetchFirmas() }}
+                      </>
+                    )}
+                    titulo={reg.rancho_nombre}
+                    tituloTexto={reg.rancho_nombre}
+                    tituloClassName="truncate @min-[972px]/lista:whitespace-normal"
+                    contenido={(
+                      <>
+                        {reg.realizado_por && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Realizado por: {reg.realizado_por}
+                          </p>
+                        )}
+                        {obligatoria && !firmas[reg.id]?.realizo && (
+                          <Etiqueta tono="error" className="mt-1 @min-[972px]/lista:hidden">
+                            Pendiente de firma
+                          </Etiqueta>
+                        )}
+                      </>
+                    )}
+                    acciones={<ChevronLeft aria-hidden="true" className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />}
+                    pie={(
+                      <FirmasRegistro
+                        variante="escritorio"
+                        modulo="M43"
+                        registroId={reg.id}
+                        fechaRegistro={`${reg.anio}-${String(reg.mes).padStart(2, '0')}-01`}
+                        firma={firmas[reg.id]}
+                        loadingFirmas={loadingFirmas}
+                        onFirmado={async () => { await refetch(); await refetchFirmas() }}
+                      />
+                    )}
                   />
-                </button>
-              ))}
-            </div>
+                )
+              })}
+            </ListaTarjetas>
           )}
         </div>
       )}
