@@ -53,6 +53,9 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { InputContador } from '@/app/components/InputContador'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { ListaTarjetas, ListaAncho } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { fechaCorta, mesAnio } from '@/lib/formato'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -272,6 +275,11 @@ export function InspeccionPreoperacionalCooler() {
   const orgNombre = useOrganizacion(profile?.org_id)
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M19', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter((r) => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
   const { obligatoria, tengoFirma } = useFirmaContext()
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M19')
@@ -718,9 +726,16 @@ export function InspeccionPreoperacionalCooler() {
         tituloFallback="Inspección Pre-operacional"
         forzarTitulo={vista === 'detalle' ? (registroActivo ? formatMesLabel(registroActivo.mes) : '—') : undefined}
         subtitulo={vista === 'lista' ? 'Cuarto Frío · Diaria' : (registroActivo?.rancho_nombre ?? '—')}
+        subtituloEscritorio={
+          vista === 'lista' && !(loading && registros.length === 0)
+            ? `Cuarto Frío · Diaria · ${textoResumenLista(registros.length, pendientesFirma)}`
+            : undefined
+        }
         onBack={vista === 'detalle' ? volverALista : undefined}
         acciones={
-          vista === 'detalle' && registroActivo ? (
+          vista === 'lista' ? (
+            <BotonExportarConsolidado variante="encabezado" onClick={() => setSheetConsolidado(true)} />
+          ) : vista === 'detalle' && registroActivo ? (
             <Boton variante="secundario" tamano="sm" onClick={() => handlePDFIndividual(registroActivo.id)} cargando={generandoPDF === registroActivo.id} disabled={dias.length === 0}>
               {generandoPDF === registroActivo.id ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -736,7 +751,7 @@ export function InspeccionPreoperacionalCooler() {
       <BannerTareaOrigen tareaId={tareaId} />
 
       {vista === 'lista' && (
-        <div className="px-4 pt-3">
+        <div className="px-4 pt-3 min-[1224px]:hidden">
           <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
         </div>
       )}
@@ -757,13 +772,14 @@ export function InspeccionPreoperacionalCooler() {
           )}
 
           {loading ? (
-            <ListaSkeleton />
+            <ListaSkeleton rejilla />
           ) : registros.length === 0 && lotesOffline.length === 0 ? (
             <EstadoVacio icono={ClipboardList} titulo="Sin registros aún" ayuda="Crea el primer registro mensual con el botón +" />
           ) : (
-            <div className="space-y-3">
+            <ListaTarjetas>
               {lotesOffline.map((lote) => (
-                <div key={lote.id} className="bg-card rounded-xl border border-border p-4">
+                <ListaAncho key={lote.id}>
+                <div className="bg-card rounded-xl border border-border p-4">
                   <div className="mb-1">
                     <span className="text-xs px-2 py-0.5 rounded font-semibold"
                       style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
@@ -775,45 +791,52 @@ export function InspeccionPreoperacionalCooler() {
                   </span>
                   <div className="mt-2"><ChipOffline lote={lote} /></div>
                 </div>
+                </ListaAncho>
               ))}
-              {registros.map((reg) => (
-                <button
-                  key={reg.id}
-                  onClick={() => abrirDetalle(reg)}
-                  className="w-full text-left bg-card rounded-xl p-4 border border-border"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span
-                          className="text-xs px-2 py-0.5 rounded font-semibold"
-                          style={{
-                            backgroundColor: 'var(--agro-success-fill)',
-                            color: 'var(--agro-success-text)',
-                          }}
-                        >
-                          {formatMesLabel(reg.mes)}
+              {registros.map((reg) => {
+                // Las firmas de M19 se capturan en el detalle del mes; aquí solo se resumen con los datos que la lista ya tiene.
+                const resumen = resumenFirmas(firmas[reg.id], sinDatosFirmas)
+                return (
+                  <TarjetaRegistro
+                    key={reg.id}
+                    estado={resumen.estado}
+                    firmas={resumen.estado === 'neutro' ? null : resumen}
+                    alHacerClic={() => abrirDetalle(reg)}
+                    // 1 columna igual que antes: chip del mes y nombre de la instalación; 2 columnas: instalación y mes como título
+                    etiquetas={(
+                      <span
+                        className="text-xs px-2 py-0.5 rounded font-semibold @min-[972px]/lista:hidden"
+                        style={{
+                          backgroundColor: 'var(--agro-success-fill)',
+                          color: 'var(--agro-success-text)',
+                        }}
+                      >
+                        {formatMesLabel(reg.mes)}
+                      </span>
+                    )}
+                    meta={[<span key="i" className="hidden @min-[972px]/lista:inline">{orgNombre ? `${orgNombre} · ${reg.rancho_nombre}` : reg.rancho_nombre}</span>]}
+                    titulo={(
+                      <>
+                        <span className="flex items-center gap-1 flex-wrap @min-[972px]/lista:hidden">
+                          {orgNombre && (
+                            <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+                          )}
+                          <span className="truncate">{reg.rancho_nombre}</span>
                         </span>
+                        <span className="hidden @min-[972px]/lista:inline">{formatMesLabel(reg.mes)}</span>
+                      </>
+                    )}
+                    tituloTexto={formatMesLabel(reg.mes)}
+                    contenido={reg.realizado_por_nombre ? (
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        Realizó: {reg.realizado_por_nombre}
                       </div>
-                      <div className="flex items-center gap-1 flex-wrap">
-                        {orgNombre && (
-                          <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
-                        )}
-                        <span className="text-sm text-foreground truncate font-semibold">
-                          {reg.rancho_nombre}
-                        </span>
-                      </div>
-                      {reg.realizado_por_nombre && (
-                        <div className="text-xs text-muted-foreground mt-0.5">
-                          Realizó: {reg.realizado_por_nombre}
-                        </div>
-                      )}
-                    </div>
-                    <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />
-                  </div>
-                </button>
-              ))}
-            </div>
+                    ) : undefined}
+                    acciones={<ChevronLeft aria-hidden="true" className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />}
+                  />
+                )
+              })}
+            </ListaTarjetas>
           )}
         </div>
       )}
