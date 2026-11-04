@@ -62,16 +62,19 @@ interface TarjetaRegistroProps {
   children?: React.ReactNode
   /** Bloque de firmas (FirmasRegistro), al fondo. */
   pie?: React.ReactNode
+  /** Módulos sin firmas: no dibuja la franja lateral, ni la etiqueta de estado, ni el chip "N/M firmas". */
+  sinFirmas?: boolean
   className?: string
 }
 
 /** Tarjeta de registro de módulo. En 1 columna se ve como la tarjeta de siempre (p-4, borde, radio);
  * en 2 columnas (dentro de ListaTarjetas) suma franja y etiqueta de estado, chip de firmas y encabezado compacto. */
 export function TarjetaRegistro({
-  estado = 'neutro', etiquetas, meta, titulo, tituloTexto, tituloClassName, chips, chipMovil, firmas, responsable, contenido, acciones, children, pie, encima, alHacerClic, expandido, className,
+  estado = 'neutro', etiquetas, meta, titulo, tituloTexto, tituloClassName, chips, chipMovil, firmas, responsable, contenido, acciones, children, pie, encima, alHacerClic, expandido, sinFirmas, className,
 }: TarjetaRegistroProps) {
   const dos = useListaDosColumnas()
-  const textoEstado = TEXTO_ESTADO[estado]
+  const textoEstado = sinFirmas ? null : TEXTO_ESTADO[estado]
+  const chipFirmas = sinFirmas ? null : firmas
   const lineas = (meta ?? []).filter(Boolean)
 
   const tituloEl = titulo ? (
@@ -93,7 +96,7 @@ export function TarjetaRegistro({
         className,
       )}
     >
-      {dos && <span aria-hidden="true" className={cn('pointer-events-none absolute bottom-3 left-1.5 top-3 w-0.5 rounded-full', FRANJA[estado])} />}
+      {dos && !sinFirmas && <span aria-hidden="true" className={cn('pointer-events-none absolute bottom-3 left-1.5 top-3 w-0.5 rounded-full', FRANJA[estado])} />}
       {encima}
       <div className="flex items-start justify-between gap-2">
         <div
@@ -131,10 +134,10 @@ export function TarjetaRegistro({
             ))
           )}
           {tituloEl}
-          {(chips || chipMovil || (dos && (textoEstado || firmas || responsable || etiquetas))) && (
+          {(chips || chipMovil || (dos && (textoEstado || chipFirmas || responsable || etiquetas))) && (
             <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
               {dos && textoEstado && <Etiqueta tono={TONO_ESTADO[estado]}>{textoEstado}</Etiqueta>}
-              {dos && firmas && <Etiqueta tono="neutral" className="font-normal">{firmas.hechas}/{firmas.total} firmas</Etiqueta>}
+              {dos && chipFirmas && <Etiqueta tono="neutral" className="font-normal">{chipFirmas.hechas}/{chipFirmas.total} firmas</Etiqueta>}
               {dos && etiquetas}
               {chips}
               {!dos && chipMovil}
