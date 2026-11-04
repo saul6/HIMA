@@ -28,6 +28,9 @@ import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import {
   useFirmasRegistro,
   obtenerFirmasParaPdf,
@@ -178,6 +181,11 @@ export function BotiquinPrimerosAuxilios() {
   // Firmas del hook (sin imágenes)
   const ids = registros.map((r) => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M6', ids)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter((r) => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const [sheetAbierto, setSheetAbierto] = useState(false)
   const [sheetPaso, setSheetPaso] = useState<'form' | 'firma_decision'>('form')
@@ -529,12 +537,33 @@ export function BotiquinPrimerosAuxilios() {
     <div className="min-h-full pb-safe-nav">
 
       {/* Header */}
-      <ModuloHeader tituloFallback={TITULO_MODULO} subtitulo={CLAVE_MODULO} />
+      <ModuloHeader
+        tituloFallback={TITULO_MODULO}
+        subtitulo={CLAVE_MODULO}
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `${CLAVE_MODULO} · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={
+          <BotonExportarConsolidado
+            variante="encabezado"
+            onClick={() => {
+              setConsRanchoId('')
+              setConsDesde('')
+              setConsHasta(hoy())
+              setErrConsRancho(false)
+              setErrConsFechas(false)
+              setSheetConsolidadoAbierto(true)
+            }}
+          />
+        }
+      />
 
       <BannerTareaOrigen tareaId={tareaId} registroGuardado={registroGuardado} />
 
       {/* Acción consolidado */}
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado
           onClick={() => {
             setConsRanchoId('')
@@ -570,23 +599,39 @@ export function BotiquinPrimerosAuxilios() {
           )
         })}
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : registros.length === 0 && lotesOffline.length === 0 ? (
           <EstadoVacio icono={Shield} titulo="Sin registros aún" ayuda="Toca + para registrar la primera verificación" />
         ) : (
-          registros.map((r) => {
+          <ListaTarjetas>
+          {registros.map((r) => {
             const presentes = contarPresentes(r)
             const completo = presentes === ARTICULOS.length
+            const resumen = resumenFirmas(firmas[r.id], sinDatosFirmas)
             return (
-              <div
+              <TarjetaRegistro
                 key={r.id}
-                className="bg-card rounded-xl p-4 border"
-                style={{
-                  borderColor: r.requiere_correccion ? 'var(--agro-menta)' : 'var(--border)',
-                  backgroundColor: r.requiere_correccion ? 'var(--agro-info-fill)' : undefined,
-                }}
-              >
-                {r.requiere_correccion && r.comentario_correccion && (
+                estado={r.requiere_correccion ? 'correccion' : resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                meta={[
+                  orgNombre ? <span className="hidden @min-[972px]/lista:inline">{orgNombre}</span> : null,
+                  <span className="hidden @min-[972px]/lista:inline">{formatFecha(r.fecha_verificacion)}</span>,
+                ]}
+                titulo={<span className="hidden @min-[972px]/lista:inline">{r.rancho_nombre}</span>}
+                tituloTexto={r.rancho_nombre}
+                chips={(
+                  <span
+                    className={`hidden @min-[972px]/lista:inline text-caption px-2 py-0.5 rounded flex-shrink-0 ${
+                      completo
+                        ? 'bg-agro-success-fill text-agro-success-text'
+                        : 'bg-agro-info-fill text-agro-info-text'
+                    }`}
+                    style={{ fontWeight: 600 }}
+                  >
+                    {presentes}/{ARTICULOS.length} artículos
+                  </span>
+                )}
+                encima={r.requiere_correccion && r.comentario_correccion ? (
                   <div
                     className="flex items-start gap-2 mb-3 text-xs rounded-lg px-3 py-2"
                     style={{ backgroundColor: 'rgba(0,0,0,0.05)', color: 'var(--agro-info-text)' }}
@@ -594,10 +639,10 @@ export function BotiquinPrimerosAuxilios() {
                     <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" />
                     {r.comentario_correccion}
                   </div>
-                )}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                ) : null}
+                contenido={(
+                  <>
+                    <div className="flex items-center gap-2 mb-1 flex-wrap @min-[972px]/lista:hidden">
                       {orgNombre && (
                         <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
                       )}
@@ -617,7 +662,7 @@ export function BotiquinPrimerosAuxilios() {
                         {presentes}/{ARTICULOS.length} artículos
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground @min-[972px]/lista:hidden">
                       {formatFecha(r.fecha_verificacion)}
                     </p>
                     {r.creado_por_nombre !== '—' && (
@@ -625,7 +670,9 @@ export function BotiquinPrimerosAuxilios() {
                         Por: {r.creado_por_nombre}
                       </p>
                     )}
-                  </div>
+                  </>
+                )}
+                acciones={(
                   <button
                     onClick={() => handleDescargarPDF(r)}
                     disabled={generandoPDF === r.id}
@@ -638,9 +685,23 @@ export function BotiquinPrimerosAuxilios() {
                       <FileDown className="w-4 h-4" />
                     )}
                   </button>
-                </div>
-
-                {/* Chips de artículos */}
+                )}
+                pie={(
+                  <FirmasRegistro
+                    variante="escritorio"
+                    modulo="M6"
+                    registroId={r.id}
+                    fechaRegistro={r.fecha_verificacion}
+                    firma={firmas[r.id]}
+                    loadingFirmas={loadingFirmas}
+                    onFirmado={async () => {
+                      await refetch()
+                      await refetchFirmas()
+                    }}
+                  />
+                )}
+              >
+                {/* Chips de artículos (su color depende de si el artículo está o no) */}
                 <div className="flex flex-wrap gap-1 mt-2">
                   {ARTICULOS.map((a) => {
                     const tiene = r[a.key]
@@ -658,22 +719,10 @@ export function BotiquinPrimerosAuxilios() {
                     )
                   })}
                 </div>
-
-                {/* Firmas del registro */}
-                <FirmasRegistro
-                  modulo="M6"
-                  registroId={r.id}
-                  fechaRegistro={r.fecha_verificacion}
-                  firma={firmas[r.id]}
-                  loadingFirmas={loadingFirmas}
-                  onFirmado={async () => {
-                    await refetch()
-                    await refetchFirmas()
-                  }}
-                />
-              </div>
+              </TarjetaRegistro>
             )
-          })
+          })}
+          </ListaTarjetas>
         )}
       </div>
 
