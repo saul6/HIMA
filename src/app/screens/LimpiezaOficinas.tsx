@@ -628,44 +628,54 @@ export function LimpiezaOficinas() {
                   </span>
                   <div className="mt-2"><ChipOffline lote={lote} /></div>
                 </div>
+                </ListaAncho>
               ))}
-              {registros.map((reg) => (
-                <div key={reg.id} className="bg-card rounded-xl border border-border">
-                  <button
-                    onClick={() => abrirDetalle(reg)}
-                    className="w-full text-left p-4"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="mb-1">
-                          <span className="text-xs px-2 py-0.5 rounded font-semibold"
-                            style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}>
-                            {formatMesLabel(reg.anio, reg.mes)}
-                          </span>
-                        </div>
-                        <span className="text-sm text-foreground font-semibold">{reg.rancho_nombre}</span>
-                        {obligatoria && !firmas[reg.id]?.realizo && (
-                          <Etiqueta tono="error" className="mt-1">
-                            Pendiente de firma
-                          </Etiqueta>
-                        )}
-                      </div>
-                      <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />
-                    </div>
-                  </button>
-                  <div className="px-4 pb-4">
-                    <FirmasRegistro
-                      modulo="M31"
-                      registroId={reg.id}
-                      fechaRegistro={`${reg.anio}-${String(reg.mes).padStart(2, '0')}-01`}
-                      firma={firmas[reg.id]}
-                      loadingFirmas={loadingFirmas}
-                      onFirmado={async () => { await refetch(); await refetchFirmas() }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+              {registros.map((reg) => {
+                const resumen = resumenFirmas(firmas[reg.id], sinDatosFirmas)
+                return (
+                  <TarjetaRegistro
+                    key={reg.id}
+                    estado={resumen.estado}
+                    firmas={resumen.estado === 'neutro' ? null : resumen}
+                    alHacerClic={() => abrirDetalle(reg)}
+                    // 1 columna igual que antes: chip del mes y nombre de la instalación; 2 columnas: instalación y mes como título
+                    etiquetas={(
+                      <span
+                        className="text-xs px-2 py-0.5 rounded font-semibold @min-[972px]/lista:hidden"
+                        style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
+                      >
+                        {formatMesLabel(reg.anio, reg.mes)}
+                      </span>
+                    )}
+                    meta={[<span key="i" className="hidden @min-[972px]/lista:inline">{reg.rancho_nombre}</span>]}
+                    titulo={(
+                      <>
+                        <span className="@min-[972px]/lista:hidden">{reg.rancho_nombre}</span>
+                        <span className="hidden @min-[972px]/lista:inline">{formatMesLabel(reg.anio, reg.mes)}</span>
+                      </>
+                    )}
+                    tituloTexto={formatMesLabel(reg.anio, reg.mes)}
+                    contenido={obligatoria && !firmas[reg.id]?.realizo ? (
+                      <Etiqueta tono="error" className="mt-1 @min-[972px]/lista:hidden">
+                        Pendiente de firma
+                      </Etiqueta>
+                    ) : undefined}
+                    acciones={<ChevronLeft aria-hidden="true" className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />}
+                    pie={(
+                      <FirmasRegistro
+                        variante="escritorio"
+                        modulo="M31"
+                        registroId={reg.id}
+                        fechaRegistro={`${reg.anio}-${String(reg.mes).padStart(2, '0')}-01`}
+                        firma={firmas[reg.id]}
+                        loadingFirmas={loadingFirmas}
+                        onFirmado={async () => { await refetch(); await refetchFirmas() }}
+                      />
+                    )}
+                  />
+                )
+              })}
+            </ListaTarjetas>
           )}
         </div>
       )}
