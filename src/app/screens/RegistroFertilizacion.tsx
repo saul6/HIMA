@@ -36,6 +36,9 @@ import { PasoFirmaRegistro } from '@/app/components/PasoFirmaRegistro'
 import { useFirmasRegistro, idRepresentativoJornada, firmasDeFilasParaTarjeta } from '@/hooks/useFirmasRegistro'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
@@ -367,6 +370,11 @@ export function RegistroFertilizacion() {
   const orgNombre = useOrganizacion(profile?.org_id)
   const todosIds = registros.flatMap(r => r.fertilizantes.map(f => f.id))
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M8', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter(reg => resumenFirmas(firmasDeFilasParaTarjeta(firmas, reg.fertilizantes.map(f => f.id))).estado === 'pendiente').length
   const { obligatoria, tengoFirma } = useFirmaContext()
   const { online } = useConexion()
   const { guardar: guardarOffline } = useGuardarOffline('M8')
@@ -867,7 +875,28 @@ export function RegistroFertilizacion() {
     <div className="min-h-full pb-safe-nav">
 
       {/* Header */}
-      <ModuloHeader tituloFallback={TITULO_MODULO} subtitulo={CLAVE_MODULO} />
+      <ModuloHeader
+        tituloFallback={TITULO_MODULO}
+        subtitulo={CLAVE_MODULO}
+        subtituloEscritorio={
+          tab !== 'registros' || (loading && registros.length === 0)
+            ? undefined
+            : `${CLAVE_MODULO} · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={tab === 'registros' ? (
+          <BotonExportarConsolidado
+            variante="encabezado"
+            onClick={() => {
+              setConsRanchoId('')
+              setConsDesde('')
+              setConsHasta(hoy())
+              setErrConsRancho(false)
+              setErrConsFechas(false)
+              setSheetConsolidadoAbierto(true)
+            }}
+          />
+        ) : undefined}
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Tabs */}
@@ -892,7 +921,7 @@ export function RegistroFertilizacion() {
       {tab === 'registros' && (
         <>
           {/* Botón consolidado */}
-          <div className="px-4 pt-3">
+          <div className="px-4 pt-3 min-[1224px]:hidden">
             <BotonExportarConsolidado
               onClick={() => {
                 setConsRanchoId('')
@@ -909,21 +938,38 @@ export function RegistroFertilizacion() {
           <div className="p-4 space-y-3">
             <PendientesOffline modulo="M8" />
             {mostrarSkeletonRegistros ? (
-              <ListaSkeleton />
+              <ListaSkeleton rejilla />
             ) : registros.length > 0 ? (
-              registros.map((reg) => {
+              <ListaTarjetas>
+              {registros.map((reg) => {
                 const key = `${reg.rancho_id}|${reg.fecha}`
+                const idsJornada = reg.fertilizantes.map((f) => f.id)
+                const firmaJornada = firmasDeFilasParaTarjeta(firmas, idsJornada)
+                // requiere_correccion no llega a la tarjeta de M8 (el hook no lo conserva): no se usa el estado "correccion"
+                const resumen = resumenFirmas(firmaJornada, sinDatosFirmas)
                 return (
-                  <div key={key} className="bg-card border border-border rounded-xl p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          {orgNombre && (
-                            <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
-                          )}
-                          <span className="text-sm text-foreground truncate font-semibold">
-                            {reg.rancho_nombre}
-                          </span>
+                  <TarjetaRegistro
+                    key={key}
+                    estado={resumen.estado}
+                    firmas={resumen.estado === 'neutro' ? null : resumen}
+                    etiquetas={(
+                      <>
+                        {orgNombre && (
+                          <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+                        )}
+                        <span className="text-sm text-foreground truncate font-semibold">
+                          {reg.rancho_nombre}
+                        </span>
+                        <span
+                          className="text-caption px-2 py-0.5 rounded flex-shrink-0 font-semibold"
+                          style={{
+                            backgroundColor: 'var(--muted)',
+                            color: 'var(--muted-foreground)',
+                          }}
+                        >
+                          {reg.fertilizantes.length} fertilizante{reg.fertilizantes.length !== 1 ? 's' : ''}
+                        </span>
+                        {reg.sector && (
                           <span
                             className="text-caption px-2 py-0.5 rounded flex-shrink-0 font-semibold"
                             style={{
@@ -931,22 +977,13 @@ export function RegistroFertilizacion() {
                               color: 'var(--muted-foreground)',
                             }}
                           >
-                            {reg.fertilizantes.length} fertilizante{reg.fertilizantes.length !== 1 ? 's' : ''}
+                            {reg.sector}
                           </span>
-                          {reg.sector && (
-                            <span
-                              className="text-caption px-2 py-0.5 rounded flex-shrink-0 font-semibold"
-                              style={{
-                                backgroundColor: 'var(--agro-success-fill)',
-                                color: 'var(--agro-success-text)',
-                              }}
-                            >
-                              {reg.sector}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground">{formatFecha(reg.fecha)}</p>
-                      </div>
+                        )}
+                      </>
+                    )}
+                    meta={[formatFecha(reg.fecha)]}
+                    acciones={(
                       <button
                         onClick={() => handleDescargarPDF(reg)}
                         disabled={generandoPDF === key}
@@ -959,7 +996,11 @@ export function RegistroFertilizacion() {
                           <FileDown className="w-4 h-4" />
                         )}
                       </button>
-                    </div>
+                    )}
+                    pie={reg.fertilizantes[0] ? (
+                      <FirmasRegistro variante="escritorio" modulo="M8" registroId={idRepresentativoJornada(reg.fertilizantes) ?? reg.fertilizantes[0].id} firma={firmaJornada} loadingFirmas={loadingFirmas} fechaRegistro={reg.fecha} onFirmado={refetchFirmas} />
+                    ) : undefined}
+                  >
                     <div className="mt-2 space-y-1">
                       {reg.fertilizantes.map((f, i) => (
                         <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -971,12 +1012,10 @@ export function RegistroFertilizacion() {
                         </div>
                       ))}
                     </div>
-                    {reg.fertilizantes[0] && (
-                      <FirmasRegistro modulo="M8" registroId={idRepresentativoJornada(reg.fertilizantes) ?? reg.fertilizantes[0].id} firma={firmasDeFilasParaTarjeta(firmas, reg.fertilizantes.map((f) => f.id))} loadingFirmas={loadingFirmas} fechaRegistro={reg.fecha} onFirmado={refetchFirmas} />
-                    )}
-                  </div>
+                  </TarjetaRegistro>
                 )
-              })
+              })}
+              </ListaTarjetas>
             ) : loading ? (
               <div style={{ minHeight: '280px' }} />
             ) : (
