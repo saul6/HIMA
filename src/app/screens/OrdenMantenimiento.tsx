@@ -32,6 +32,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { codigoFormato } from '@/lib/codigoFormato'
 import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
 import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
@@ -315,8 +316,8 @@ export function OrdenMantenimiento() {
       {/* Header */}
       <ModuloHeader
         tituloFallback="Orden de Mantenimiento"
-        subtitulo="Cuarto Frío · Por evento"
-        subtituloEscritorio={loading ? undefined : `Cuarto Frío · Por evento · ${textoResumenLista(ordenes.length, pendientesFirma)}`}
+        subtitulo={`${codigoFormato('F-FRUS-MTT-01', codigoClave)} · Por evento`}
+        subtituloEscritorio={loading ? undefined : `${codigoFormato('F-FRUS-MTT-01', codigoClave)} · Por evento · ${textoResumenLista(ordenes.length, pendientesFirma)}`}
       />
       <BannerTareaOrigen tareaId={tareaId} />
 
