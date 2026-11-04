@@ -24,6 +24,7 @@ import { limiteTexto } from '@/lib/limitesTexto'
 import { opInsert } from '@/lib/offline/construirOperaciones'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
 import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
@@ -225,48 +226,25 @@ export function ProductosAutorizados() {
         {/* Filtro por cultivo */}
         {cultivosUnicos.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setCultivoFiltro(null)}
-              className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors"
-              style={cultivoFiltro === null
-                ? { backgroundColor: 'var(--primary)', color: '#fff', borderColor: 'var(--primary)' }
-                : { backgroundColor: 'var(--input-background)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }
-              }
-            >
-              Todos
-            </button>
-            {cultivosUnicos.map(c => (
-              <button
-                key={c}
-                onClick={() => setCultivoFiltro(c)}
-                className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors"
-                style={cultivoFiltro === c
-                  ? { backgroundColor: 'var(--primary)', color: '#fff', borderColor: 'var(--primary)' }
-                  : { backgroundColor: 'var(--input-background)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }
-                }
-              >
-                {c}
-              </button>
-            ))}
+            <FiltroPildoras
+              options={[{ value: '', label: 'Todos' }, ...cultivosUnicos.map(c => ({ value: c, label: c }))]}
+              value={cultivoFiltro ?? ''}
+              onChange={c => setCultivoFiltro(c === '' ? null : c)}
+            />
           </div>
         )}
 
         {/* Filtros secundarios */}
         <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => setSoloActivos(v => !v)}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors"
-            style={soloActivos
-              ? { backgroundColor: 'var(--primary)', color: '#fff', borderColor: 'var(--primary)' }
-              : { backgroundColor: 'var(--input-background)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }
-            }
-          >
-            Solo activos
-          </button>
+          <FiltroPildoras
+            options={[{ value: 'activos', label: 'Solo activos' }]}
+            value={soloActivos ? 'activos' : ''}
+            onChange={() => setSoloActivos(v => !v)}
+          />
 
           {mercadosUnicos.length > 0 && (
             <select
-              className="h-8 rounded-lg border border-border-control bg-input-background px-2 text-xs text-muted-foreground"
+              className="h-9 rounded-[0.625rem] border border-border-control bg-input-background px-3 text-sm text-foreground"
               value={mercadoFiltro}
               onChange={e => setMercadoFiltro(e.target.value)}
             >
