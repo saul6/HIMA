@@ -20,7 +20,8 @@ import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { useFirmasRegistro } from '@/hooks/useFirmasRegistro'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
-import { ListaAncho, ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
 import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { FirmasRegistro } from '@/app/components/FirmasRegistro'
@@ -312,31 +313,28 @@ export function VerificacionRoedores() {
         ) : null}
         <ListaTarjetas>
           {grupos.map(g => (
-            <ListaAncho key={g.key}>
-<div
-            className="rounded-[0.625rem] border overflow-hidden"
-            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-          >
-            {/* Cabecera del grupo */}
-            <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--muted)' }}>
-              <div>
-                <p className="text-sm font-semibold">{g.rancho_nombre}</p>
-                <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{formatFecha(g.fecha)}</p>
-              </div>
-              <button
-                onClick={(e) => { e.stopPropagation(); descargarPDF(g.trampas[0].rancho_id, g.fecha, g.key) }}
-                disabled={pdfLoading === g.key}
-                className="p-2 rounded-lg border"
-                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}
-              >
-                {pdfLoading === g.key
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-                }
-              </button>
-            </div>
+            <TarjetaRegistro
+              key={g.key}
+              sinFirmas
+              className="rounded-[0.625rem]"
+              meta={[formatFecha(g.fecha)]}
+              titulo={g.rancho_nombre}
+              tituloTexto={g.rancho_nombre}
+              acciones={(
+                <button
+                  onClick={(e) => { e.stopPropagation(); descargarPDF(g.trampas[0].rancho_id, g.fecha, g.key) }}
+                  disabled={pdfLoading === g.key}
+                  className="p-2 rounded-lg border border-border bg-card"
+                >
+                  {pdfLoading === g.key
+                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                    : <FileDown className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                  }
+                </button>
+              )}
+            >
             {/* Trampas */}
-            <div className="px-4 py-3 space-y-3">
+            <div className="mt-3 space-y-3 border-t border-border pt-3">
               {g.trampas.map(t => (
                 <div key={t.id} className="space-y-1.5">
                   <p className="line-clamp-2 break-words text-sm font-medium" title={`T: ${t.num_trampa}`}>T: {t.num_trampa}</p>
@@ -347,7 +345,7 @@ export function VerificacionRoedores() {
                     <ChipCheck valor={t.cambio} label="Cebo repuesto" />
                   </div>
                   {t.verifico && (
-                    <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Verificó: {t.verifico}</p>
+                    <TextoColapsable texto={`Verificó: ${t.verifico}`} className="text-xs" style={{ color: 'var(--muted-foreground)' }} />
                   )}
                   {t.observaciones && (
                     <TextoColapsable texto={t.observaciones} className="text-xs" style={{ color: 'var(--muted-foreground)' }} />
@@ -363,8 +361,7 @@ export function VerificacionRoedores() {
                 </div>
               ))}
             </div>
-          </div>
-            </ListaAncho>
+            </TarjetaRegistro>
           ))}
         </ListaTarjetas>
       </div>
