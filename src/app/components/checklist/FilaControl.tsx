@@ -43,8 +43,6 @@ export function FilaControl({ doc: d, visitaId, puede, falta, onGuardado, onSegu
   const ver = d.verificacion
   const guardado = ver ? observacionDeVisita(d) : null
   const sinObservacion = !!ver && ver.resultado !== 'no_aplica' && !guardado?.trim()
-  // Un registro con incidencia no se reabre: volver a registrarla crearía otra incidencia
-  const bloqueado = ver?.resultado === 'incidencia'
   const [editando, setEditando] = useState(!ver || sinObservacion)
   const [estado, setEstado] = useState<Estado | null>(ver && ver.resultado !== 'no_aplica' ? ver.resultado : null)
   const [obs, setObs] = useState(guardado ?? '')
@@ -193,7 +191,7 @@ export function FilaControl({ doc: d, visitaId, puede, falta, onGuardado, onSegu
           <div className="space-y-1">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Chip tono={TONO_ESTADO[ver.resultado]}>{TEXTO_ESTADO[ver.resultado]}</Chip>
-              {puede && !bloqueado && (
+              {puede && (
                 <button type="button" onClick={abrirEdicion} className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: 'var(--primary)' }}>
                   <Pencil className="w-3 h-3" aria-hidden="true" /> Editar
                 </button>
@@ -201,7 +199,6 @@ export function FilaControl({ doc: d, visitaId, puede, falta, onGuardado, onSegu
             </div>
             <p className="text-sm whitespace-pre-line">{guardado}</p>
             <p className="text-xs text-muted-foreground">por {ver.actor ?? '—'} el {fechaCorta(ver.creado_en)} a las {horaCorta(ver.creado_en)}</p>
-            {bloqueado && <p className="text-xs text-muted-foreground">La incidencia ya está registrada; dale seguimiento desde Incidencias.</p>}
           </div>
         ) : (
           <p className="text-xs text-muted-foreground">Sin revisar.</p>

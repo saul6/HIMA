@@ -86,10 +86,20 @@ function filasDocs(docs: ReporteDoc[], conCodigo: boolean): (CeldaDato[] | FilaB
     } else {
       // En una incidencia, la observación de esta visita es la descripción de la incidencia
       const obs = (d.estado === 'incidencia' ? d.incidencia || d.observacion : d.observacion) ?? ''
-      const c1 = [d.nombre, d.ultimo_registro ? `Último registro documental: ${d.ultimo_registro}` : ''].filter(Boolean).join('\n')
+      const ant = d.antecedentes?.trim()
+      const c1 = [d.nombre, d.ultimo_registro ? `Último registro documental: ${d.ultimo_registro}` : '', ant ? `Antecedente: ${ant}` : ''].filter(Boolean).join('\n')
       const etiqueta = d.estado === 'incidencia' ? 'Incidencia' : estado
       filas.push([
-        c1,
+        {
+          texto: c1,
+          nodo: (ancho: number) => (
+            <>
+              <Text style={{ fontSize: 8, color: PC.fieldValue }} hyphenationCallback={partirParaAncho(ancho, 8)}>{d.nombre}</Text>
+              {d.ultimo_registro ? <Text style={{ fontSize: 7, color: PC.textSub, marginTop: 2 }} hyphenationCallback={partirParaAncho(ancho, 7)}>{`Último registro documental: ${d.ultimo_registro}`}</Text> : null}
+              {ant ? <Text style={{ fontSize: 7, color: PC.textSub, marginTop: 2 }} hyphenationCallback={partirParaAncho(ancho, 7)}>{`Antecedente: ${ant}`}</Text> : null}
+            </>
+          ),
+        },
         {
           texto: `${etiqueta}\n${obs}`,
           nodo: (ancho: number) => (

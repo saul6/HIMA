@@ -255,6 +255,8 @@ export interface ReporteDoc {
   vence_el: string | null
   vigencia: Vigencia
   categoria?: string | null
+  /** Observación histórica del documento (cuando viene en el reporte). */
+  antecedentes?: string | null
   estado: 'sin_revisar' | ResultadoVerificacion
   actualizado: boolean
   cambios: Record<string, { antes?: unknown; despues?: unknown } | unknown>
