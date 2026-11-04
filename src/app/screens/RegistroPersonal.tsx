@@ -33,6 +33,9 @@ import { InputContador } from '@/app/components/InputContador'
 import { PendientesOffline } from '@/app/components/PendientesOffline'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { fechaCorta } from '@/lib/formato'
 
 const tbl = (name: string) => (supabase as any).from(name)
@@ -470,14 +473,20 @@ export function RegistroPersonal() {
         tituloFallback="Registro de Personal"
         subtitulo={`${codigoFormato('F-FRUS-ADM-04', codigoClave)} · Padrón`}
         acciones={
-          <BotonConfigurar
-            onClick={() => { setConfRanchoId(''); setConfigurarOpen(true) }}
-          />
+          <>
+            <BotonExportarConsolidado
+              variante="encabezado"
+              onClick={() => setPdfSheetOpen(true)}
+            />
+            <BotonConfigurar
+              onClick={() => { setConfRanchoId(''); setConfigurarOpen(true) }}
+            />
+          </>
         }
       />
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado
           onClick={() => setPdfSheetOpen(true)}
         />
@@ -517,7 +526,7 @@ export function RegistroPersonal() {
         )}
 
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : listaTrabajadores.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <Users className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
@@ -529,47 +538,48 @@ export function RegistroPersonal() {
             </p>
           </div>
         ) : (
-          listaTrabajadores.map(t => {
-            const docsOk = t.checklist.filter(c => c.valor).length
-            const docsTotal = t.checklist.length
-            return (
-              <div key={t.id} className="bg-card border border-border rounded-xl p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground truncate font-semibold">
-                      {t.nombre}
-                    </p>
-                    {t.puesto && (
-                      <p className="text-xs text-muted-foreground truncate">{t.puesto}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {t.rancho_nombre} · {formatFecha(t.fecha)}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      {t.celular && (
-                        <span className="text-xs text-muted-foreground">{t.celular}</span>
+          <ListaTarjetas>
+            {listaTrabajadores.map(t => {
+              const docsOk = t.checklist.filter(c => c.valor).length
+              const docsTotal = t.checklist.length
+              return (
+                <TarjetaRegistro
+                  key={t.id}
+                  sinFirmas
+                  titulo={t.nombre}
+                  tituloTexto={t.nombre}
+                  acciones={(
+                    <button aria-label="Editar"
+                      onClick={() => abrirEditar(t)}
+                      className="p-2 rounded-lg border border-border flex-shrink-0"
+                    >
+                      <Pencil className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                  )}
+                  contenido={(
+                    <>
+                      {t.puesto && (
+                        <p className="text-xs text-muted-foreground truncate">{t.puesto}</p>
                       )}
-                      {docsTotal > 0 && (
-                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                          style={{
-                            backgroundColor: docsOk === docsTotal ? 'var(--agro-success-fill)' : 'var(--agro-info-fill)',
-                            color: docsOk === docsTotal ? 'var(--agro-success-text)' : 'var(--agro-info-text)',
-                          }}>
-                          {docsOk}/{docsTotal} documentos
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <button aria-label="Editar"
-                    onClick={() => abrirEditar(t)}
-                    className="p-2 rounded-lg border border-border flex-shrink-0"
-                  >
-                    <Pencil className="w-4 h-4 text-muted-foreground" />
-                  </button>
-                </div>
-              </div>
-            )
-          })
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {t.rancho_nombre} · {formatFecha(t.fecha)}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        {t.celular && (
+                          <span className="text-xs text-muted-foreground">{t.celular}</span>
+                        )}
+                        {docsTotal > 0 && (
+                          <Etiqueta tono={docsOk === docsTotal ? 'menta' : 'neutral'}>
+                            {docsOk}/{docsTotal} documentos
+                          </Etiqueta>
+                        )}
+                      </div>
+                    </>
+                  )}
+                />
+              )
+            })}
+          </ListaTarjetas>
         )}
       </div>
 
