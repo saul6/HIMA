@@ -190,8 +190,9 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio, onDescartada 
   const v = data as VisitaEnCurso
   const { visita, resumen } = v
   const puede = visita.puede_capturar
-  // El front no sabe quién abrió la visita: se ofrece al admin; la BD valida de todos modos
-  const puedeDescartar = visita.estado === 'en_curso' && (profile?.rol === 'admin_org' || profile?.rol === 'super_admin')
+  // La BD valida de todos modos
+  const puedeDescartar = visita.estado === 'en_curso'
+    && (profile?.rol === 'admin_org' || profile?.rol === 'super_admin' || (!!visita.abierta_por && visita.abierta_por === profile?.id))
 
   if (visita.estado === 'programada') {
     return (

@@ -240,7 +240,7 @@ export interface NotaGeneral { id: string; seccion: number; nombre: string; ante
 
 export interface VisitaEnCurso {
   estado: EstadoVisita
-  visita: { id: string; estado: EstadoVisita; fecha: string; asesor_id: string | null; asesor: string | null; nota: string | null; abierta_en: string | null; puede_capturar: boolean
+  visita: { id: string; estado: EstadoVisita; fecha: string; asesor_id: string | null; asesor: string | null; nota: string | null; abierta_en: string | null; abierta_por?: string | null; puede_capturar: boolean
     alcance_id: string | null; alcance: string | null; organico_activo: boolean; tiene_plantilla_organica: boolean
   }
   notas: NotaGeneral[]
