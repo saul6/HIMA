@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { Check, FileDown, Pencil } from 'lucide-react'
+import { Check, FileDown, Pencil, Trash2 } from 'lucide-react'
+import { useAuthContext } from '@/context/AuthContext'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import {
-  chk, mensajeError, useAccion, useCarga, type DocVisita, type IncidenciaDoc, type Omision, type VisitaEnCurso,
+  chk, codigoError, mensajeError, useAccion, useCarga, type DocVisita, type IncidenciaDoc, type Omision, type VisitaEnCurso,
 } from '@/hooks/useChecklistV2'
 import { Aviso, Cargando, CLASE_INPUT, Chip, ErrorReintentar, PieFormulario, TONOS } from './comun'
 import { DetalleDoc } from './DetalleDoc'
@@ -19,6 +20,7 @@ import {
 import { FilaControl } from './FilaControl'
 import { IndicadorEtapas, PieEtapas, type Etapa } from './EtapasVisita'
 import { ResumenCierre } from './ResumenCierre'
+import { CLASE_TEXTAREA } from './comun'
 import { fechaLarga } from './constantes'
 import { NOMBRE_SECCION_CORTO } from './secciones'
 import { descargarReportePdf } from './pdfVisita'
@@ -29,10 +31,14 @@ interface Props {
   visitaId: string
   codigoClave: string
   onCambio: () => void
+  /** Tras descartar la visita: regresar a la lista de visitas. */
+  onDescartada?: () => void
 }
 
 
-export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
+export function VisitaEjecucion({ visitaId, codigoClave, onCambio, onDescartada }: Props) {
+  const { profile } = useAuthContext()
+  const [descartar, setDescartar] = useState(false)
   const carga = useCarga<Awaited<ReturnType<typeof chk.visVer>>>(visitaId, () => chk.visVer(visitaId))
   const omis = useCarga<Omision[]>(visitaId, () => chk.visOmisiones(visitaId))
   const [etapa, setEtapa] = useState<Etapa>(1)
@@ -184,6 +190,8 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
   const v = data as VisitaEnCurso
   const { visita, resumen } = v
   const puede = visita.puede_capturar
+  // El front no sabe quién abrió la visita: se ofrece al admin; la BD valida de todos modos
+  const puedeDescartar = visita.estado === 'en_curso' && (profile?.rol === 'admin_org' || profile?.rol === 'super_admin')
 
   if (visita.estado === 'programada') {
     return (
@@ -262,6 +270,18 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
           {!!resumen?.no_aplica && <Chip>{resumen.no_aplica} no aplica</Chip>}
         </div>
         {!puede && <Aviso>Solo la asesora asignada o un administrador puede capturar esta visita.</Aviso>}
+        {puedeDescartar && (
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setDescartar(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border px-3 h-9 text-xs font-semibold"
+              style={{ color: 'var(--agro-danger-text)', borderColor: 'var(--agro-danger-text)' }}
+            >
+              <Trash2 className="w-4 h-4" aria-hidden="true" /> Descartar visita
+            </button>
+          </div>
+        )}
       </div>
 
       <IndicadorEtapas
@@ -374,6 +394,16 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
       <ActualizarDocSheet doc={actualizar} visitaId={visitaId} onClose={() => setActualizar(null)} onGuardado={recargar} />
       <MarcarDocSheet objetivo={marcar} visitaId={visitaId} onClose={() => setMarcar(null)} onGuardado={recargar} />
       <SeguirIncidenciaSheet objetivo={seguir} visitaId={visitaId} onClose={() => setSeguir(null)} onGuardado={recargar} />
+      <BottomSheet open={descartar} onClose={() => setDescartar(false)} title="¿Descartar esta visita?">
+        {descartar && (
+          <DescartarVisita
+            visitaId={visitaId}
+            revisados={hechos}
+            onClose={() => setDescartar(false)}
+            onDescartada={() => { onCambio(); onDescartada?.() }}
+          />
+        )}
+      </BottomSheet>
       <BottomSheet open={apagarOrganico !== null} onClose={() => setApagarOrganico(null)} title="Apagar revisión orgánica">
         {apagarOrganico !== null && (
           <>
@@ -386,6 +416,60 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
         )}
       </BottomSheet>
     </div>
+  )
+}
+
+function DescartarVisita({ visitaId, revisados, onClose, onDescartada }: {
+  visitaId: string; revisados: number; onClose: () => void; onDescartada: () => void
+}) {
+  const [motivo, setMotivo] = useState('')
+  const [errMotivo, setErrMotivo] = useState<string | null>(null)
+  const { ocupado, ejecutar } = useAccion()
+  const valido = motivo.trim().length >= 5 && motivo.trim().length <= 500
+
+  async function descartar() {
+    if (!valido) return
+    const r = await ejecutar(eventId => chk.visDescartar({ visita: visitaId, motivo: motivo.trim(), eventId }))
+    if (!r.ok) {
+      if (codigoError(r.error) === 'MOTIVO_REQUERIDO') setErrMotivo(r.mensaje)
+      else toast.error(r.mensaje)
+      return
+    }
+    const d = r.data
+    let msg = 'Visita descartada'
+    if (d?.datos_no_revertidos) msg += ` · ${d.datos_no_revertidos} ${d.datos_no_revertidos === 1 ? 'dato no se regresó porque alguien lo cambió' : 'datos no se regresaron porque alguien los cambió'} después`
+    if (d?.seguimientos_conservados) msg += ` · se conservaron ${d.seguimientos_conservados} ${d.seguimientos_conservados === 1 ? 'seguimiento' : 'seguimientos'} de incidencias anteriores`
+    toast.success(msg)
+    onClose()
+    onDescartada()
+  }
+
+  return (
+    <>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <p className="text-sm text-muted-foreground">
+          Úsalo si abriste la visita por error. La visita queda cancelada, se anulan las incidencias que registraste en ella y se regresan
+          los datos que actualizaste. Lo que revisaste queda en el historial, pero no cuenta para la siguiente visita. Esto no se puede deshacer.
+        </p>
+        {revisados > 0 && (
+          <p className="text-sm font-semibold">Llevas {revisados} {revisados === 1 ? 'formato revisado' : 'formatos revisados'} en esta visita.</p>
+        )}
+        <label className="block space-y-1">
+          <span className="text-xs text-muted-foreground">Motivo (obligatorio, de 5 a 500 caracteres)</span>
+          <textarea
+            className={CLASE_TEXTAREA}
+            value={motivo}
+            maxLength={500}
+            onChange={e => { setMotivo(e.target.value); setErrMotivo(null) }}
+          />
+          {errMotivo && <p role="alert" className="text-xs font-semibold" style={{ color: 'var(--agro-danger-text)' }}>{errMotivo}</p>}
+        </label>
+      </div>
+      <div className="flex gap-3 px-4 py-3 border-t border-border">
+        <Boton type="button" variante="secundario" className="flex-1" onClick={onClose}>Cancelar</Boton>
+        <Boton type="button" className="flex-1" style={{ backgroundColor: 'var(--destructive)', color: 'var(--destructive-foreground)' }} cargando={ocupado} disabled={!valido} onClick={descartar}>Descartar visita</Boton>
+      </div>
+    </>
   )
 }
 

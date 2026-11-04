@@ -88,6 +88,7 @@ export function ChecklistDocumentos() {
               visitaId={visitaId}
               codigoClave={codigoClave}
               onCambio={() => { if (consultoria) void cartera.recargar() }}
+              onDescartada={() => ir({ visita: null, tab: 'visitas' })}
             />
           ) : (
             <InstalacionView

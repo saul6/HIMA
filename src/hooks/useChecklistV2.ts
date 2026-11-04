@@ -180,8 +180,15 @@ export interface VisitaLista {
   alcance_id: string | null
   alcance: string | null
   organico_activo: boolean
+  descartada?: boolean
   resumen: ResumenVisita | null
   eventos: VisitaEvento[]
+}
+
+export interface VisitaDescartada {
+  visita_id?: string; estado?: 'cancelada'; descartada?: boolean; idempotente?: boolean
+  datos_revertidos?: number; datos_no_revertidos?: number
+  incidencias_anuladas?: number; seguimientos_conservados?: number
 }
 
 export interface VerificacionDoc {
@@ -455,6 +462,8 @@ export const chk = {
     rpc<unknown>('chk_vis_reprogramar', { p_visita: p.visita, p_fecha: p.fecha, p_asesor: p.asesor, p_motivo: p.motivo, p_event_id: p.eventId }),
   visCancelar: (p: { visita: string; motivo: string; eventId: string }) =>
     rpc<unknown>('chk_vis_cancelar', { p_visita: p.visita, p_motivo: p.motivo, p_event_id: p.eventId }),
+  visDescartar: (p: { visita: string; motivo: string; eventId: string }) =>
+    rpc<VisitaDescartada>('chk_vis_descartar', { p_visita: p.visita, p_motivo: p.motivo, p_event_id: p.eventId }),
   visLista: (instalacion: string) => rpc<VisitaLista[]>('chk_vis_lista', { p_instalacion: instalacion }),
   vinculosLista: (instalacion: string, estado: EstadoVinculo | null) =>
     rpc<Vinculo[]>('chk_vinculos_lista', { p_instalacion: instalacion, p_estado: estado }),

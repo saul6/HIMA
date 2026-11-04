@@ -77,7 +77,8 @@ export function VisitasTab({ instalacionId, alcances, catalogoEstado, esAdmin, p
       {visitas.length === 0 ? (
         <EstadoVacio titulo="Sin visitas" ayuda="Las visitas se programan manualmente; nunca se crean solas." />
       ) : visitas.map(v => {
-        const e = ESTADO[v.estado] ?? ESTADO.cerrada
+        const e = v.descartada ? { label: 'Descartada', tono: TONOS.neutro } : (ESTADO[v.estado] ?? ESTADO.cerrada)
+        const descarte = v.descartada ? v.eventos.find(x => x.tipo === 'descartada') : undefined
         const mia = v.asesor_id === perfilId
         const reprog = v.eventos.filter(x => x.tipo.includes('reprogram')).length
         return (
@@ -90,6 +91,7 @@ export function VisitasTab({ instalacionId, alcances, catalogoEstado, esAdmin, p
               <Chip tono={e.tono}>{e.label}</Chip>
             </div>
             {v.nota && <p className="text-xs text-muted-foreground">{v.nota}</p>}
+            {descarte && <p className="text-xs text-muted-foreground">Descartada por {descarte.actor ?? 'un usuario'}: {descarte.motivo ?? ''}</p>}
             {v.resumen && (
               <p className="text-xs text-muted-foreground">
                 {v.resumen.correctos} correctos · {v.resumen.con_incidencia} con incidencia · {v.resumen.sin_revisar} sin revisar
