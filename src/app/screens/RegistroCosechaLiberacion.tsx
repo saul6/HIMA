@@ -181,6 +181,7 @@ export function RegistroCosechaLiberacion() {
   const [fecha, setFecha]                   = useState(hoy())
   const [liberaciones, setLiberaciones]     = useState<FilaLiberacion[]>([])
   const [guardando, setGuardando]           = useState(false)
+  const [registroGuardado, setRegistroGuardado] = useState(false)
   const [errRancho, setErrRancho]           = useState(false)
   const [advertencias, setAdvertencias]     = useState<Advertencia[]>([])
   const [cargandoVerif, setCargandoVerif]   = useState(false)
@@ -360,6 +361,7 @@ export function RegistroCosechaLiberacion() {
       if (error) throw error
 
       toast.success('Registro guardado')
+      if (tareaId) setRegistroGuardado(true)
       await refetch()
 
       const rancho = ranchos.find((r) => r.id === ranchoId)
@@ -502,7 +504,7 @@ export function RegistroCosechaLiberacion() {
           />
         }
       />
-      <BannerTareaOrigen tareaId={tareaId} />
+      <BannerTareaOrigen tareaId={tareaId} registroGuardado={registroGuardado} />
 
       {/* Exportar consolidado */}
       <div className="px-4 pt-3 min-[1224px]:hidden">
