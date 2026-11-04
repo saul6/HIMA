@@ -43,6 +43,9 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { fechaCorta, mesAnio } from '@/lib/formato'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -180,6 +183,11 @@ export function InspeccionPerimetral() {
   const { terminosSitio } = useModulosContext()
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M9', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter((r) => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
   const { obligatoria, tengoFirma } = useFirmaContext()
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M9')
@@ -609,9 +617,16 @@ export function InspeccionPerimetral() {
         tituloFallback="Monitoreo Perimetral de Plagas"
         forzarTitulo={vista === 'detalle' ? (registroActivo ? formatMesLabel(registroActivo.mes) : '—') : undefined}
         subtitulo={vista === 'lista' ? 'Semanal' : (registroActivo?.rancho_nombre ?? '—')}
+        subtituloEscritorio={
+          vista === 'lista' && !(loading && registros.length === 0)
+            ? `Semanal · ${textoResumenLista(registros.length, pendientesFirma)}`
+            : undefined
+        }
         onBack={vista === 'detalle' ? volverALista : undefined}
         acciones={
-          vista === 'detalle' && registroActivo ? (
+          vista === 'lista' ? (
+            <BotonExportarConsolidado variante="encabezado" onClick={() => setSheetConsolidado(true)} />
+          ) : vista === 'detalle' && registroActivo ? (
             <Boton variante="secundario" tamano="sm" onClick={() => handlePDFIndividual(registroActivo.id)} cargando={generandoPDF === registroActivo.id} disabled={dias.length === 0}>
               {generandoPDF === registroActivo.id ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -627,7 +642,7 @@ export function InspeccionPerimetral() {
       <BannerTareaOrigen tareaId={tareaId} />
 
       {vista === 'lista' && (
-        <div className="px-4 pt-3">
+        <div className="px-4 pt-3 min-[1224px]:hidden">
           <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
         </div>
       )}
@@ -671,20 +686,23 @@ export function InspeccionPerimetral() {
             )
           })}
           {mostrarSkeletonRegistros ? (
-            <ListaSkeleton />
+            <ListaSkeleton rejilla />
           ) : registros.length > 0 ? (
-            <div className="space-y-3">
-              {registros.map((reg) => (
-                <button
-                  key={reg.id}
-                  onClick={() => abrirDetalle(reg)}
-                  className="w-full text-left bg-card rounded-xl p-4 border border-border"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
+            <ListaTarjetas>
+              {registros.map((reg) => {
+                // Las firmas de M9 se capturan en el detalle del mes; aquí solo se resumen con los datos que la lista ya tiene.
+                const resumen = resumenFirmas(firmas[reg.id], sinDatosFirmas)
+                return (
+                  <TarjetaRegistro
+                    key={reg.id}
+                    estado={resumen.estado}
+                    firmas={resumen.estado === 'neutro' ? null : resumen}
+                    alHacerClic={() => abrirDetalle(reg)}
+                    // 1 columna igual que antes: chip del mes y nombre de la instalación; 2 columnas: instalación y mes como título
+                    etiquetas={(
+                      <>
                         <span
-                          className="text-xs px-2 py-0.5 rounded font-semibold"
+                          className="text-xs px-2 py-0.5 rounded font-semibold @min-[972px]/lista:hidden"
                           style={{
                             backgroundColor: 'var(--agro-success-fill)',
                             color: 'var(--agro-success-text)',
@@ -704,21 +722,27 @@ export function InspeccionPerimetral() {
                             Almacén
                           </span>
                         )}
+                      </>
+                    )}
+                    meta={[<span key="i" className="hidden @min-[972px]/lista:inline">{reg.rancho_nombre}</span>]}
+                    titulo={(
+                      <>
+                        <span className="@min-[972px]/lista:hidden">{reg.rancho_nombre}</span>
+                        <span className="hidden @min-[972px]/lista:inline">{formatMesLabel(reg.mes)}</span>
+                      </>
+                    )}
+                    tituloTexto={formatMesLabel(reg.mes)}
+                    tituloClassName="truncate @min-[972px]/lista:whitespace-normal"
+                    contenido={reg.responsable_nombre ? (
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        Resp: {reg.responsable_nombre}
                       </div>
-                      <div className="text-sm text-foreground truncate font-semibold">
-                        {reg.rancho_nombre}
-                      </div>
-                      {reg.responsable_nombre && (
-                        <div className="text-xs text-muted-foreground mt-0.5">
-                          Resp: {reg.responsable_nombre}
-                        </div>
-                      )}
-                    </div>
-                    <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />
-                  </div>
-                </button>
-              ))}
-            </div>
+                    ) : undefined}
+                    acciones={<ChevronLeft aria-hidden="true" className="w-4 h-4 text-muted-foreground rotate-180 flex-shrink-0 mt-0.5" />}
+                  />
+                )
+              })}
+            </ListaTarjetas>
           ) : loading ? (
             <div style={{ minHeight: '280px' }} />
           ) : registros.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').length === 0 ? (
