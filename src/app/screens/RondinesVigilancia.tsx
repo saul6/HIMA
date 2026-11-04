@@ -7,6 +7,9 @@ import {
 import { BotonExportarConsolidado } from '@/app/components/BotonExportarConsolidado'
 import { BotonConfigurar } from '@/app/components/BotonConfigurar'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useConexion } from '@/hooks/useConexion'
@@ -72,58 +75,6 @@ function fmtFecha(f: string): string {
     const [y, m, d] = f.split('-')
     return `${d}/${m}/${y}`
   } catch { return f }
-}
-
-// ── Subcomponente: tarjeta de rondín ────────────────────────────────────────
-
-function RondinCard({
-  rondin,
-  onPDF,
-  generando,
-}: {
-  rondin: M46RondinResumen
-  onPDF: () => void
-  generando: boolean
-}) {
-  return (
-    <div className="bg-card border border-border rounded-xl p-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span
-              className="text-xs px-2 py-0.5 rounded font-semibold"
-              style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
-            >
-              {fmtFecha(rondin.fecha)}
-            </span>
-            {rondin.turno && (
-              <span
-                className="text-xs px-2 py-0.5 rounded font-semibold"
-                style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
-              >
-                {rondin.turno}
-              </span>
-            )}
-            {rondin.num_novedades > 0 && (
-              <span
-                className="text-xs px-2 py-0.5 rounded font-semibold"
-                style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
-              >
-                {rondin.num_novedades} novedad{rondin.num_novedades > 1 ? 'es' : ''}
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-foreground truncate font-semibold">
-            {rondin.rancho_nombre}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">Vigilante: {rondin.vigilante}</p>
-        </div>
-        <Boton variante="secundario" tamano="sm" onClick={onPDF} cargando={generando} aria-label="Descargar PDF" className="flex-shrink-0">
-          {generando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
-        </Boton>
-      </div>
-    </div>
-  )
 }
 
 // ── Subcomponente: ítem del checklist ────────────────────────────────────────
@@ -201,6 +152,11 @@ export function RondinesVigilancia() {
 
   const todosIds = useMemo(() => rondines.map(r => r.id), [rondines])
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M46', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (rondines.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : rondines.filter(r => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   // ── PDF individual ──
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null)
@@ -614,13 +570,24 @@ export function RondinesVigilancia() {
       <ModuloHeader
         tituloFallback="Bitácora de Rondines de Vigilancia"
         subtitulo={codigoFormato('F-FRUS-ADM-07', codigoClave)}
+        subtituloEscritorio={
+          loading && rondines.length === 0
+            ? undefined
+            : `${codigoFormato('F-FRUS-ADM-07', codigoClave)} · ${textoResumenLista(rondines.length, pendientesFirma)}`
+        }
         acciones={
-          <BotonConfigurar onClick={() => { setConfRanchoId(''); setSheetConf(true) }} />
+          <>
+            <BotonExportarConsolidado
+              variante="encabezado"
+              onClick={() => { setCRanchoId(''); setCErrRancho(false); setSheetConsolidado(true) }}
+            />
+            <BotonConfigurar onClick={() => { setConfRanchoId(''); setSheetConf(true) }} />
+          </>
         }
       />
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado
           onClick={() => { setCRanchoId(''); setCErrRancho(false); setSheetConsolidado(true) }}
         />
@@ -642,30 +609,71 @@ export function RondinesVigilancia() {
 
         <PendientesOffline modulo="M46" />
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : rondines.length === 0 ? (
           <EstadoVacio icono={Shield} titulo="Sin rondines aún" ayuda="Registra el primer rondín con el botón +" />
         ) : (
-          <div className="space-y-3">
-            {rondines.map((r) => (
-              <div key={r.id}>
-                {obligatoria && !firmas[r.id]?.realizo && (
-                  <div className="mb-1">
-                    <span className="text-xs px-2 py-0.5 rounded font-semibold"
-                      style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
-                      Pendiente de firma
-                    </span>
-                  </div>
-                )}
-                <RondinCard
-                  rondin={r}
-                  onPDF={() => handlePDFIndividual(r)}
-                  generando={generandoPDF === r.id}
+          <ListaTarjetas className="gap-3">
+            {rondines.map((r) => {
+              const resumen = resumenFirmas(firmas[r.id], sinDatosFirmas)
+              // requiere_correccion solo se usa si el registro ya lo trae (la consulta no se cambia)
+              const requiereCorreccion = (r as any).requiere_correccion === true
+              return (
+                <TarjetaRegistro
+                  key={r.id}
+                  estado={requiereCorreccion ? 'correccion' : resumen.estado}
+                  firmas={resumen.estado === 'neutro' ? null : resumen}
+                  encima={obligatoria && !firmas[r.id]?.realizo ? (
+                    <div className="mb-1 @min-[972px]/lista:hidden">
+                      <span className="text-xs px-2 py-0.5 rounded font-semibold"
+                        style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
+                        Pendiente de firma
+                      </span>
+                    </div>
+                  ) : null}
+                  etiquetas={(
+                    <>
+                      <span
+                        className="text-xs px-2 py-0.5 rounded font-semibold @min-[972px]/lista:hidden"
+                        style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                      >
+                        {fmtFecha(r.fecha)}
+                      </span>
+                      {r.turno && (
+                        <span
+                          className="text-xs px-2 py-0.5 rounded font-semibold"
+                          style={{ backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
+                        >
+                          {r.turno}
+                        </span>
+                      )}
+                      {r.num_novedades > 0 && (
+                        <span
+                          className="text-xs px-2 py-0.5 rounded font-semibold"
+                          style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
+                        >
+                          {r.num_novedades} novedad{r.num_novedades > 1 ? 'es' : ''}
+                        </span>
+                      )}
+                    </>
+                  )}
+                  meta={[<span className="hidden @min-[972px]/lista:inline">{fmtFecha(r.fecha)}</span>]}
+                  titulo={r.rancho_nombre}
+                  tituloTexto={r.rancho_nombre}
+                  tituloClassName="truncate @min-[972px]/lista:whitespace-normal"
+                  contenido={<p className="text-xs text-muted-foreground mt-0.5">Vigilante: {r.vigilante}</p>}
+                  acciones={(
+                    <Boton variante="secundario" tamano="sm" onClick={() => handlePDFIndividual(r)} cargando={generandoPDF === r.id} aria-label="Descargar PDF" className="flex-shrink-0">
+                      {generandoPDF === r.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
+                    </Boton>
+                  )}
+                  pie={(
+                    <FirmasRegistro variante="escritorio" modulo="M46" registroId={r.id} fechaRegistro={r.fecha} firma={firmas[r.id]} loadingFirmas={loadingFirmas} onFirmado={refetchFirmas} />
+                  )}
                 />
-                <FirmasRegistro modulo="M46" registroId={r.id} fechaRegistro={r.fecha} firma={firmas[r.id]} loadingFirmas={loadingFirmas} onFirmado={refetchFirmas} />
-              </div>
-            ))}
-          </div>
+              )
+            })}
+          </ListaTarjetas>
         )}
       </div>
 
