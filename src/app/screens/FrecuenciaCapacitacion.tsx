@@ -192,6 +192,8 @@ export function FrecuenciaCapacitacion() {
           <button
             onClick={exportarPDF}
             disabled={pdfLoading}
+            aria-label="Descargar PDF"
+            title="Descargar PDF"
             className="p-2 rounded-lg border border-border"
           >
             {pdfLoading
