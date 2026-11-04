@@ -45,6 +45,9 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { ListaTarjetas, ListaAncho } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { mesAnio } from '@/lib/formato'
 
@@ -113,6 +116,11 @@ export function LimpiezaOficinas() {
   const { guardar: guardarOffline } = useGuardarOffline('M31')
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M31', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter((r) => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
 
   const [vista, setVista] = useState<Vista>('lista')
   const [registroActivo, setRegistroActivo] = useState<M31RegistroResumen | null>(null)
@@ -552,12 +560,23 @@ export function LimpiezaOficinas() {
         tituloFallback="Bitácora de Limpieza de las Oficinas"
         forzarTitulo={vista === 'detalle' ? (registroActivo ? formatMesLabel(registroActivo.anio, registroActivo.mes) : '—') : undefined}
         subtitulo={vista === 'lista' ? codigoFormato('F-FRUS-SAN-09', codigoClave) : (registroActivo?.rancho_nombre ?? '—')}
+        subtituloEscritorio={
+          vista === 'lista' && !(loading && registros.length === 0)
+            ? `${codigoFormato('F-FRUS-SAN-09', codigoClave)} · ${textoResumenLista(registros.length, pendientesFirma)}`
+            : undefined
+        }
         onBack={vista === 'detalle' ? volverALista : undefined}
         acciones={
           vista === 'lista' ? (
-            <BotonConfigurar
-              onClick={() => { setCatRanchoId(''); setCatNombre(''); setCatFrecuencia('diario'); setSheetConfigurar(true) }}
-            />
+            <>
+              <BotonExportarConsolidado
+                variante="encabezado"
+                onClick={() => { setCRanchoId(''); setCErrRancho(false); setSheetConsolidado(true) }}
+              />
+              <BotonConfigurar
+                onClick={() => { setCatRanchoId(''); setCatNombre(''); setCatFrecuencia('diario'); setSheetConfigurar(true) }}
+              />
+            </>
           ) : vista === 'detalle' && registroActivo ? (
             <>
               <BotonConfigurar onClick={abrirConfigurar} />
@@ -572,7 +591,7 @@ export function LimpiezaOficinas() {
       <BannerTareaOrigen tareaId={tareaId} />
 
       {vista === 'lista' && (
-        <div className="px-4 pt-3">
+        <div className="px-4 pt-3 min-[1224px]:hidden">
           <BotonExportarConsolidado
             onClick={() => { setCRanchoId(''); setCErrRancho(false); setSheetConsolidado(true) }}
           />
@@ -590,13 +609,14 @@ export function LimpiezaOficinas() {
             </div>
           )}
           {loading ? (
-            <ListaSkeleton />
+            <ListaSkeleton rejilla />
           ) : registros.length === 0 && lotesOffline.length === 0 ? (
             <EstadoVacio icono={Building2} titulo="Sin registros aún" ayuda="Crea el primer registro mensual con el botón +" />
           ) : (
-            <div className="space-y-3">
+            <ListaTarjetas>
               {lotesOffline.map((lote) => (
-                <div key={lote.id} className="bg-card rounded-xl border border-border p-4">
+                <ListaAncho key={lote.id}>
+                <div className="bg-card rounded-xl border border-border p-4">
                   <div className="mb-1">
                     <span className="text-xs px-2 py-0.5 rounded font-semibold"
                       style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
