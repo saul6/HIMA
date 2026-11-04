@@ -2,21 +2,14 @@
 // Las acciones abren las mismas sheets que la tarjeta del celular; aquí solo cambia desde dónde se abren.
 import { AlertTriangle, Check, ChevronRight, Pencil } from 'lucide-react'
 import { Boton } from '@/app/components/ui-mady/Boton'
-import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import type { DocVisita, IncidenciaDoc, NotaGeneral, ResultadoVerificacion } from '@/hooks/useChecklistV2'
 import { Aviso, CLASE_INPUT, Chip, TONOS } from './comun'
 import { DetalleDoc } from './DetalleDoc'
-import { etiquetaResultado, type FiltroDoc } from './estadoDoc'
+import { etiquetaResultado } from './estadoDoc'
 import type { TipoMarca, TipoSeguimiento } from './VisitaSheets'
 
-export interface PestanaSeccion { n: number; etiqueta: string; conteo: string; deshabilitada: boolean; titulo?: string }
-
 interface Props {
-  pestanas: PestanaSeccion[]
   seccionActiva: number
-  onSeccion: (n: number) => void
-  filtro: FiltroDoc | null
-  onFiltro: (f: FiltroDoc | null) => void
   busqueda: string
   onBusqueda: (v: string) => void
   porArea: [string, DocVisita[]][]
@@ -25,7 +18,8 @@ interface Props {
   onSiguiente: () => void
   notas: NotaGeneral[]
   puede: boolean
-  onCerrar: () => void
+  /** Aviso del servidor para el documento seleccionado (falta el estado). */
+  falta?: string | null
   onConfirmar: (d: DocVisita) => void
   onActualizar: (d: DocVisita) => void
   onMarcar: (d: DocVisita, t: TipoMarca) => void
@@ -63,43 +57,6 @@ export function RevisionEscritorio(p: Props) {
       <div className="rounded-xl border border-border bg-card p-3 space-y-3 min-w-0">
         <h2 className="text-sm font-semibold">Documentos</h2>
 
-        <div role="tablist" aria-label="Tabla del catálogo" className="flex flex-wrap gap-x-4 gap-y-1 border-b border-border">
-          {p.pestanas.map(t => {
-            const activa = t.n === p.seccionActiva
-            return (
-              <button
-                key={t.n}
-                type="button"
-                role="tab"
-                aria-selected={activa}
-                disabled={t.deshabilitada}
-                title={t.titulo}
-                onClick={() => p.onSeccion(t.n)}
-                className={`-mb-px border-b-2 px-1 pb-2 pt-1 text-sm whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-50 disabled:cursor-not-allowed ${activa ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}
-                style={{ borderBottomColor: activa ? 'var(--primary)' : 'transparent' }}
-              >
-                {t.etiqueta} · {t.conteo}
-              </button>
-            )
-          })}
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <FiltroPildoras<string>
-            groupId="chk-visita-filtro-esc"
-            value={p.filtro ?? 'todas'}
-            onChange={f => p.onFiltro(f === 'todas' || p.filtro === f ? null : (f as FiltroDoc))}
-            options={[
-              { value: 'todas', label: 'Todas' },
-              { value: 'sin_revisar', label: 'Sin revisar' },
-              { value: 'pendiente', label: 'Pendientes' },
-              { value: 'incidencia', label: 'Con incidencia' },
-              { value: 'no_aplica', label: 'No aplica' },
-              { value: 'revisados', label: 'Revisados' },
-            ]}
-          />
-        </div>
-
         <input
           type="search"
           className={CLASE_INPUT}
@@ -122,7 +79,7 @@ export function RevisionEscritorio(p: Props) {
         )}
 
         {total === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">{p.filtro || p.busqueda ? 'Nada coincide con este filtro.' : 'No hay documentos en esta sección.'}</p>
+          <p className="text-sm text-muted-foreground text-center py-8">{p.busqueda ? 'Nada coincide con la búsqueda.' : 'No hay documentos en esta sección.'}</p>
         ) : p.porArea.map(([area, lista]) => (
           <section key={area} className="space-y-1">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{area} · {lista.length}</h3>
@@ -134,6 +91,7 @@ export function RevisionEscritorio(p: Props) {
                   <li key={doc.id}>
                     <button
                       type="button"
+                      data-doc-id={doc.id}
                       aria-pressed={sel}
                       onClick={() => p.onSeleccionar(doc.id)}
                       className="flex w-full items-start gap-2 rounded-lg border px-2.5 py-2 text-left text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring hover:bg-muted"
@@ -160,11 +118,6 @@ export function RevisionEscritorio(p: Props) {
           </section>
         ))}
 
-        {p.puede && (
-          <div className="border-t border-border pt-3">
-            <Boton className="w-full" onClick={p.onCerrar}><Check className="w-4 h-4" /> Revisar antes de cerrar</Boton>
-          </div>
-        )}
       </div>
 
       {/* Columna derecha: revisión del documento */}
@@ -185,6 +138,8 @@ export function RevisionEscritorio(p: Props) {
             </div>
 
             <DetalleDoc doc={d} puede={p.puede} onSeguir={p.onSeguir} variante="panel" />
+
+            {p.falta && <p role="alert" className="text-sm font-semibold" style={{ color: 'var(--agro-danger-text)' }}>Revisa este registro: falta {p.falta}</p>}
 
             {p.puede ? (
               <div className="space-y-2 border-t border-border pt-3">
