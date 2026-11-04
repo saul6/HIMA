@@ -20,6 +20,11 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { opInsert } from '@/lib/offline/construirOperaciones'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { ListaAncho, ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
+import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const ANIO_ACTUAL = new Date().getFullYear()
@@ -199,52 +204,24 @@ export function FrecuenciaCapacitacion() {
 
       <div className="px-4 mb-3 space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
-          {aniosDisponibles.map(a => (
-            <button
-              key={a}
-              onClick={() => setAnioFiltro(a)}
-              className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors"
-              style={anioFiltro === a
-                ? { backgroundColor: 'var(--primary)', color: '#fff', borderColor: 'var(--primary)' }
-                : { backgroundColor: 'var(--input-background)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }
-              }
-            >
-              {a}
-            </button>
-          ))}
+          <FiltroPildoras
+            options={aniosDisponibles.map(String)}
+            value={String(anioFiltro)}
+            onChange={a => setAnioFiltro(Number(a))}
+          />
         </div>
-        <button
-          onClick={() => setSoloActivos(v => !v)}
-          className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors"
-          style={soloActivos
-            ? { backgroundColor: 'var(--primary)', color: '#fff', borderColor: 'var(--primary)' }
-            : { backgroundColor: 'var(--input-background)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }
-          }
-        >
-          Solo activos
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <FiltroPildoras
+            options={[{ value: 'activos', label: 'Solo activos' }]}
+            value={soloActivos ? 'activos' : ''}
+            onChange={() => setSoloActivos(v => !v)}
+          />
+        </div>
       </div>
 
       <div className="flex-1 px-4 pb-32 space-y-2 overflow-y-auto">
-        {lotesOffline.length > 0 && (
-          <div className="space-y-2 pb-2">
-            {lotesOffline.map(lote => (
-              <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold leading-snug">{lote.metadatos?.tema ?? lote.descripcion}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {lote.metadatos?.mes != null ? `${MESES[lote.metadatos.mes - 1]} ${lote.metadatos.anio}` : ''}
-                    </p>
-                  </div>
-                  <ChipOffline lote={lote} />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
         {mostrarSkeleton ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : loading && !error && registrosFiltrados.length === 0 ? (
           <div style={{ minHeight: '280px' }} />
         ) : null}
@@ -256,38 +233,55 @@ export function FrecuenciaCapacitacion() {
             Sin registros para {anioFiltro}.
           </p>
         )}
-        {registrosFiltrados.map(r => (
-          <div key={r.id} className="bg-card border border-border rounded-[0.625rem] p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold leading-snug">{r.tema}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{MESES[(r.mes - 1)]} {r.anio}{r.capacitador ? ` · ${r.capacitador}` : ''}</p>
+        <ListaTarjetas>
+          {lotesOffline.map(lote => (
+            <ListaAncho key={lote.id}>
+              <div className="bg-card border border-border rounded-[0.625rem] p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold leading-snug">{lote.metadatos?.tema ?? lote.descripcion}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {lote.metadatos?.mes != null ? `${MESES[lote.metadatos.mes - 1]} ${lote.metadatos.anio}` : ''}
+                    </p>
+                  </div>
+                  <ChipOffline lote={lote} />
+                </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span
-                  className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                  style={r.realizado
-                    ? { backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }
-                    : { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }
-                  }
-                >
-                  {r.realizado ? 'Realizado' : 'Pendiente'}
-                </span>
-                {esAdmin && (
-                  <button aria-label="Editar"
-                    onClick={() => abrirEdicion(r)}
-                    className="p-1.5 rounded-lg border border-border"
-                  >
-                    <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                  </button>
-                )}
-              </div>
-            </div>
-            {r.observaciones && (
-              <p className="text-xs text-muted-foreground mt-2 leading-snug">{r.observaciones}</p>
-            )}
-          </div>
-        ))}
+            </ListaAncho>
+          ))}
+          {registrosFiltrados.map(r => (
+            <TarjetaRegistro
+              key={r.id}
+              sinFirmas
+              className="rounded-[0.625rem]"
+              meta={[`${MESES[(r.mes - 1)]} ${r.anio}${r.capacitador ? ` · ${r.capacitador}` : ''}`]}
+              titulo={r.tema}
+              tituloTexto={r.tema}
+              tituloClassName="leading-snug"
+              acciones={(
+                <>
+                  <Etiqueta tono={r.realizado ? 'menta' : 'neutral'}>
+                    {r.realizado ? 'Realizado' : 'Pendiente'}
+                  </Etiqueta>
+                  {esAdmin && (
+                    <button aria-label="Editar"
+                      onClick={() => abrirEdicion(r)}
+                      className="p-1.5 rounded-lg border border-border"
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                    </button>
+                  )}
+                </>
+              )}
+            >
+              {r.observaciones && (
+                <div className="mt-2">
+                  <TextoColapsable texto={r.observaciones} className="text-xs text-muted-foreground leading-snug" />
+                </div>
+              )}
+            </TarjetaRegistro>
+          ))}
+        </ListaTarjetas>
       </div>
 
       {esAdmin && (
