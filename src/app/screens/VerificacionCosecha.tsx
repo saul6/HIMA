@@ -46,6 +46,9 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { ListaTarjetas, ListaAncho } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { mesAnio } from '@/lib/formato'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -175,6 +178,11 @@ export function VerificacionCosecha() {
 
   const todosIds = registros.map(r => r.id)
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M69', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter((r) => resumenFirmas(firmas[r.id]).estado === 'pendiente').length
   const { obligatoria, tengoFirma } = useFirmaContext()
   const { online } = useConexion()
   const { lotes: lotesOffline } = usePendientesModulo('M69')
@@ -480,12 +488,22 @@ export function VerificacionCosecha() {
         tituloFallback="Verificación Diaria de Cosecha"
         forzarTitulo={vista === 'detalle' ? (registroActivo ? formatMesLabel(registroActivo.mes) : '—') : undefined}
         subtitulo={vista === 'lista' ? 'M69 · REG-13 · Gestión de campo' : (registroActivo?.rancho_nombre ?? '—')}
+        subtituloEscritorio={
+          vista === 'lista' && !(loading && registros.length === 0)
+            ? `M69 · REG-13 · Gestión de campo · ${textoResumenLista(registros.length, pendientesFirma)}`
+            : undefined
+        }
         onBack={vista === 'detalle' ? volverALista : undefined}
+        acciones={
+          vista === 'lista' ? (
+            <BotonExportarConsolidado variante="encabezado" onClick={() => setSheetConsolidado(true)} />
+          ) : undefined
+        }
       />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {vista === 'lista' && (
-        <div className="px-4 pt-3">
+        <div className="px-4 pt-3 min-[1224px]:hidden">
           <BotonExportarConsolidado onClick={() => setSheetConsolidado(true)} />
         </div>
       )}
@@ -510,14 +528,14 @@ export function VerificacionCosecha() {
           )}
 
           {loading ? (
-            <ListaSkeleton />
+            <ListaSkeleton rejilla />
           ) : registros.length === 0 && lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').length === 0 ? (
             <EstadoVacio icono={ClipboardCheck} titulo="Sin registros aún" ayuda="Crea el primer registro mensual con el botón +" />
           ) : (
-            <div className="space-y-3">
+            <ListaTarjetas>
               {lotesOffline.filter(l => (l.metadatos as any)?.tipo === 'cabecera').map((lote) => (
+                <ListaAncho key={lote.id}>
                 <div
-                  key={lote.id}
                   className="rounded-xl border overflow-hidden"
                   style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
                 >
@@ -538,52 +556,59 @@ export function VerificacionCosecha() {
                     </div>
                   </div>
                 </div>
+                </ListaAncho>
               ))}
-              {registros.map((reg) => (
-                <div
-                  key={reg.id}
-                  className="rounded-xl border overflow-hidden"
-                  style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
-                >
-                  <button
-                    onClick={() => abrirDetalle(reg)}
-                    className="w-full text-left p-4"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
+              {registros.map((reg) => {
+                const resumen = resumenFirmas(firmas[reg.id], sinDatosFirmas)
+                return (
+                  // La tarjeta ya no es un <button> con otro botón (PDF) adentro: la zona del título abre el detalle y el PDF queda aparte
+                  <TarjetaRegistro
+                    key={reg.id}
+                    estado={resumen.estado}
+                    firmas={resumen.estado === 'neutro' ? null : resumen}
+                    alHacerClic={() => abrirDetalle(reg)}
+                    // 1 columna igual que antes: chip del mes (y cultivo) y nombre de la instalación; 2 columnas: instalación y mes como título
+                    etiquetas={(
+                      <>
+                        <span
+                          className="text-xs px-2 py-0.5 rounded font-semibold @min-[972px]/lista:hidden"
+                          style={{
+                            backgroundColor: 'var(--agro-success-fill)',
+                            color: 'var(--agro-success-text)',
+                          }}
+                        >
+                          {formatMesLabel(reg.mes)}
+                        </span>
+                        {reg.cultivo && (
                           <span
-                            className="text-xs px-2 py-0.5 rounded font-semibold"
+                            className="text-xs px-2 py-0.5 rounded"
                             style={{
-                              backgroundColor: 'var(--agro-success-fill)',
-                              color: 'var(--agro-success-text)',
+                              backgroundColor: 'var(--muted)',
+                              color: 'var(--muted-foreground)',
                             }}
                           >
-                            {formatMesLabel(reg.mes)}
+                            {reg.cultivo}
                           </span>
-                          {reg.cultivo && (
-                            <span
-                              className="text-xs px-2 py-0.5 rounded"
-                              style={{
-                                backgroundColor: 'var(--muted)',
-                                color: 'var(--muted-foreground)',
-                              }}
-                            >
-                              {reg.cultivo}
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-sm text-foreground font-semibold">
-                          {reg.rancho_nombre}
-                        </span>
-                        {reg.realizo && (
-                          <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-                            Realizó: {reg.realizo}
-                          </div>
                         )}
+                      </>
+                    )}
+                    meta={[<span key="i" className="hidden @min-[972px]/lista:inline">{reg.rancho_nombre}</span>]}
+                    titulo={(
+                      <>
+                        <span className="@min-[972px]/lista:hidden">{reg.rancho_nombre}</span>
+                        <span className="hidden @min-[972px]/lista:inline">{formatMesLabel(reg.mes)}</span>
+                      </>
+                    )}
+                    tituloTexto={formatMesLabel(reg.mes)}
+                    contenido={reg.realizo ? (
+                      <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                        Realizó: {reg.realizo}
                       </div>
+                    ) : undefined}
+                    acciones={(
                       <div className="flex items-center gap-2 shrink-0">
                         <button
+                          type="button"
                           onClick={(e) => { e.stopPropagation(); descargarPDF(reg.id) }}
                           disabled={pdfLoading === reg.id}
                           className="p-2 rounded-lg border"
@@ -595,25 +620,27 @@ export function VerificacionCosecha() {
                           }
                         </button>
                         <ChevronLeft
+                          aria-hidden="true"
                           className="w-4 h-4 flex-shrink-0 mt-0.5 rotate-180"
                           style={{ color: 'var(--muted-foreground)' }}
                         />
                       </div>
-                    </div>
-                  </button>
-                  <div className="pt-4 px-4 pb-4">
-                    <FirmasRegistro
-                      modulo="M69"
-                      registroId={reg.id}
-                      firma={firmas[reg.id]}
-                      loadingFirmas={loadingFirmas}
-                      fechaRegistro={reg.mes}
-                      onFirmado={refetchFirmas}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+                    )}
+                    pie={(
+                      <FirmasRegistro
+                        variante="escritorio"
+                        modulo="M69"
+                        registroId={reg.id}
+                        firma={firmas[reg.id]}
+                        loadingFirmas={loadingFirmas}
+                        fechaRegistro={reg.mes}
+                        onFirmado={refetchFirmas}
+                      />
+                    )}
+                  />
+                )
+              })}
+            </ListaTarjetas>
           )}
         </div>
       )}
