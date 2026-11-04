@@ -20,6 +20,11 @@ import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { opInsert } from '@/lib/offline/construirOperaciones'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { ListaAncho, ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
+import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 
 const PERIODICIDADES = ['Mensual', 'Bimestral', 'Trimestral', 'Semestral', 'Anual']
 
@@ -186,36 +191,18 @@ export function CronogramaCapacitacion() {
       />
 
       <div className="px-4 mb-3">
-        <button
-          onClick={() => setSoloActivos(v => !v)}
-          className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors"
-          style={soloActivos
-            ? { backgroundColor: 'var(--primary)', color: '#fff', borderColor: 'var(--primary)' }
-            : { backgroundColor: 'var(--input-background)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }
-          }
-        >
-          Solo activos
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <FiltroPildoras
+            options={[{ value: 'activos', label: 'Solo activos' }]}
+            value={soloActivos ? 'activos' : ''}
+            onChange={() => setSoloActivos(v => !v)}
+          />
+        </div>
       </div>
 
       <div className="flex-1 px-4 pb-32 space-y-2 overflow-y-auto">
-        {lotesOffline.length > 0 && (
-          <div className="space-y-2 pb-2">
-            {lotesOffline.map(lote => (
-              <div key={lote.id} className="bg-card border border-border rounded-[0.625rem] p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold leading-snug">{lote.metadatos?.cargo ?? lote.descripcion}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{lote.metadatos?.tematica ?? ''}</p>
-                  </div>
-                  <ChipOffline lote={lote} />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
         {mostrarSkeleton ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : loading && !error && registrosFiltrados.length === 0 ? (
           <div style={{ minHeight: '280px' }} />
         ) : null}
@@ -227,27 +214,40 @@ export function CronogramaCapacitacion() {
             Sin registros. {esAdmin ? 'Usa el botón + para agregar.' : ''}
           </p>
         )}
-        {registrosFiltrados.map(r => (
-          <div key={r.id} className="bg-card border border-border rounded-[0.625rem] p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold leading-snug">{r.cargo}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{r.tematica}</p>
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  {r.periodicidad && (
-                    <span
-                      className="text-xs font-medium px-2 py-0.5 rounded-full"
-                      style={{ backgroundColor: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' }}
-                    >
-                      {r.periodicidad}
-                    </span>
-                  )}
-                  {r.mes_programado && (
-                    <span className="text-xs text-muted-foreground">{r.mes_programado}</span>
-                  )}
+        <ListaTarjetas>
+          {lotesOffline.map(lote => (
+            <ListaAncho key={lote.id}>
+              <div className="bg-card border border-border rounded-[0.625rem] p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold leading-snug">{lote.metadatos?.cargo ?? lote.descripcion}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{lote.metadatos?.tematica ?? ''}</p>
+                  </div>
+                  <ChipOffline lote={lote} />
                 </div>
               </div>
-              {esAdmin && (
+            </ListaAncho>
+          ))}
+          {registrosFiltrados.map(r => (
+            <TarjetaRegistro
+              key={r.id}
+              sinFirmas
+              className="rounded-[0.625rem]"
+              titulo={r.cargo}
+              tituloTexto={r.cargo}
+              tituloClassName="leading-snug"
+              contenido={(
+                <>
+                  <TextoColapsable texto={r.tematica} className="mt-0.5 text-xs text-muted-foreground leading-snug" />
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                    {r.periodicidad && <Etiqueta tono="neutral">{r.periodicidad}</Etiqueta>}
+                    {r.mes_programado && (
+                      <span className="text-xs text-muted-foreground">{r.mes_programado}</span>
+                    )}
+                  </div>
+                </>
+              )}
+              acciones={esAdmin && (
                 <button aria-label="Editar"
                   onClick={() => abrirEdicion(r)}
                   className="p-1.5 rounded-lg border border-border shrink-0"
@@ -255,12 +255,15 @@ export function CronogramaCapacitacion() {
                   <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
               )}
-            </div>
-            {r.observaciones && (
-              <p className="text-xs text-muted-foreground mt-2 leading-snug">{r.observaciones}</p>
-            )}
-          </div>
-        ))}
+            >
+              {r.observaciones && (
+                <div className="mt-2">
+                  <TextoColapsable texto={r.observaciones} className="text-xs text-muted-foreground leading-snug" />
+                </div>
+              )}
+            </TarjetaRegistro>
+          ))}
+        </ListaTarjetas>
       </div>
 
       {esAdmin && (
