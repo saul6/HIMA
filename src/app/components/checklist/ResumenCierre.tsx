@@ -19,11 +19,14 @@ const GRUPOS: Record<Grupo, { titulo: string; fill: string; text: string }> = {
   incidencia: { titulo: 'Incidencias', fill: 'var(--agro-danger-fill)', text: 'var(--agro-danger-text)' },
 }
 
+/** Documento con incidencia de esta visita: resultado "incidencia" o verificación ligada a una incidencia. */
+const tieneIncidenciaVisita = (d: DocVisita) => d.verificacion?.resultado === 'incidencia' || !!d.verificacion?.incidencia_id
+
 /** Observación de esta visita del documento (en una incidencia, su descripción). */
 function textoDe(d: DocVisita): string {
   const v = d.verificacion
   if (!v) return ''
-  if (v.resultado === 'incidencia') return d.incidencias.find(i => i.nueva)?.descripcion ?? v.observacion ?? ''
+  if (tieneIncidenciaVisita(d)) return d.incidencias.find(i => i.nueva)?.descripcion ?? v.observacion ?? ''
   return v.observacion ?? ''
 }
 
@@ -59,7 +62,8 @@ export function ResumenCierre({ visitaId, codigoClave, docs, omisiones, puede, o
   const eventId = useRef<string | null>(null)
 
   const por = (r: Grupo) => docs.filter(d => d.verificacion?.resultado === r)
-  const listas: Record<Grupo, DocVisita[]> = { pendiente: por('pendiente'), correcto: por('correcto'), incidencia: por('incidencia') }
+  // Incidencias: no conformes y formatos verificados con incidencia abierta de esta visita (también cuentan en Revisadas)
+  const listas: Record<Grupo, DocVisita[]> = { pendiente: por('pendiente'), correcto: por('correcto'), incidencia: docs.filter(tieneIncidenciaVisita) }
   const noAplica = docs.filter(d => d.verificacion?.resultado === 'no_aplica').length
   const hayControles = docs.length > 0
   const sinOmisiones = omisiones.length === 0

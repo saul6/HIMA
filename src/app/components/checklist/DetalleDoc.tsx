@@ -2,7 +2,7 @@
 // Lo usan la tarjeta (celular) y el panel de revisión (escritorio); las acciones se abren desde quien lo monta.
 import { AlertTriangle, ChevronDown } from 'lucide-react'
 import type { DocVisita, IncidenciaDoc } from '@/hooks/useChecklistV2'
-import { Chip, textoRegistro } from './comun'
+import { Chip, TONOS, textoRegistro } from './comun'
 import { SeguimientosLista, etiquetaEstadoIncidencia } from './IncidenciasTab'
 import type { TipoSeguimiento } from './VisitaSheets'
 import { COLOR_RESULTADO, etiquetaResultado, textoAntecedente } from './estadoDoc'
@@ -73,14 +73,16 @@ export function DetalleDoc({ doc: d, puede, onSeguir, variante = 'tarjeta' }: Pr
         </div>
       )}
 
-      <IncidenciasDoc incidencias={d.incidencias} puede={puede} onSeguir={onSeguir} />
+      <IncidenciasDoc incidencias={d.incidencias} puede={puede} onSeguir={onSeguir} informativa={d.verificacion?.resultado === 'pendiente'} />
     </>
   )
 }
 
 /** Incidencias del documento; `soloAnteriores` oculta la registrada en esta visita. */
-export function IncidenciasDoc({ incidencias: todas, puede, onSeguir, soloAnteriores = false }: {
+export function IncidenciasDoc({ incidencias: todas, puede, onSeguir, soloAnteriores = false, informativa = false }: {
   incidencias: IncidenciaDoc[]; puede: boolean; onSeguir: (inc: IncidenciaDoc, tipo: TipoSeguimiento) => void; soloAnteriores?: boolean
+  /** Formato pendiente de evidencia: el recuadro de esta visita va en tono informativo, no de peligro. */
+  informativa?: boolean
 }) {
   const incidencias = soloAnteriores ? todas.filter(i => !i.nueva) : todas
   return (
@@ -91,10 +93,10 @@ export function IncidenciasDoc({ incidencias: todas, puede, onSeguir, soloAnteri
             const e = etiquetaEstadoIncidencia(i.estado)
             const sinCerrar = i.estado !== 'cerrada'
             return (
-              <div key={i.id} className="rounded-lg border border-border p-2 space-y-1.5">
+              <div key={i.id} className="rounded-lg border p-2 space-y-1.5" style={i.nueva && sinCerrar ? (informativa ? { borderColor: 'var(--agro-info-text)', backgroundColor: 'var(--agro-info-fill)' } : { borderColor: 'var(--agro-danger-text)', backgroundColor: 'var(--agro-danger-fill)' }) : { borderColor: 'var(--border)' }}>
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-xs font-semibold flex items-center gap-1"><AlertTriangle className="w-3 h-3" aria-hidden="true" />{i.nueva ? 'Incidencia nueva' : `Incidencia del ${fechaCorta(i.origen_fecha)}`}</p>
-                  <Chip tono={e.tono}>{e.label}</Chip>
+                  <p className="text-xs font-semibold flex items-center gap-1"><AlertTriangle className="w-3 h-3" aria-hidden="true" />{i.nueva ? (informativa ? 'Seguimiento abierto' : 'Incidencia abierta') : `Incidencia del ${fechaCorta(i.origen_fecha)}`}</p>
+                  <Chip tono={informativa && i.nueva ? TONOS.info : e.tono}>{e.label}</Chip>
                 </div>
                 <p className="text-xs">{i.descripcion}</p>
                 {(i.responsable || i.fecha_compromiso) && (

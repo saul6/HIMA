@@ -1,4 +1,4 @@
-// Sheets de la visita en curso: Verificar, Pendiente / No aplica, Actualizar, Incidencia y seguimiento de incidencias.
+// Sheets de la visita en curso: Verificar y Actualizar (ambas con incidencia opcional), Pendiente / No aplica y seguimiento de incidencias.
 // Cada intento del usuario usa un event_id propio (useAccion): reintentar por red no duplica.
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -6,7 +6,8 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { Input } from '@/app/components/ui/input'
 import { Pildora } from './Pildora'
 import { CLASE_INPUT, CLASE_TEXTAREA, PieFormulario, textoRegistro } from './comun'
-import { chk, useAccion, type DocVisita, type IncidenciaDoc, type PrecisionRegistro } from '@/hooks/useChecklistV2'
+import { chk, codigoError, useAccion, type DocVisita, type IncidenciaDoc, type IncidenciaNueva, type PrecisionRegistro } from '@/hooks/useChecklistV2'
+import { hoyMX } from '@/lib/fecha'
 
 interface Base { visitaId: string; onClose: () => void; onGuardado: () => void }
 
@@ -25,6 +26,49 @@ const Resumen = ({ doc }: { doc: DocVisita }) => (
   </div>
 )
 
+// ── Incidencia dentro de Verificar / Actualizar (Tabla 1) ───────────────────
+
+interface EstadoIncidencia { activa: boolean; desc: string; resp: string; compromiso: string }
+const INCIDENCIA_VACIA: EstadoIncidencia = { activa: false, desc: '', resp: '', compromiso: '' }
+
+/** Incidencia lista para la RPC, o el error de campo si está encendida y no cumple. */
+function incidenciaDe(e: EstadoIncidencia): { valor: IncidenciaNueva | null; error: string | null } {
+  if (!e.activa) return { valor: null, error: null }
+  const descripcion = e.desc.trim()
+  if (descripcion.length < 5) return { valor: null, error: 'Describe la incidencia (mínimo 5 caracteres)' }
+  return { valor: { descripcion, responsable: e.resp.trim() || null, fecha_compromiso: e.compromiso || null }, error: null }
+}
+
+function CamposIncidencia({ valor, onChange, error, titulo = '¿Encontraste algo por corregir?', etiquetaDesc = 'Incidencia' }: {
+  valor: EstadoIncidencia; onChange: (v: EstadoIncidencia) => void; error: string | null; titulo?: string; etiquetaDesc?: string
+}) {
+  return (
+    <div className="rounded-lg border border-border p-3 space-y-3">
+      <label className="flex items-start gap-2 text-sm font-semibold cursor-pointer">
+        <input type="checkbox" className="mt-0.5" checked={valor.activa} onChange={e => onChange({ ...valor, activa: e.target.checked })} />
+        <span>{titulo}</span>
+      </label>
+      {valor.activa && (
+        <div className="space-y-3">
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">{etiquetaDesc}</span>
+            <textarea className={CLASE_TEXTAREA} value={valor.desc} maxLength={2000} aria-invalid={!!error} onChange={e => onChange({ ...valor, desc: e.target.value })} />
+            {error && <span role="alert" className="block text-xs" style={{ color: 'var(--agro-danger-text)' }}>{error}</span>}
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Responsable de corregir (opcional)</span>
+            <Input value={valor.resp} maxLength={200} onChange={e => onChange({ ...valor, resp: e.target.value })} />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Fecha compromiso (opcional)</span>
+            <input type="date" className={CLASE_INPUT} min={hoyMX()} value={valor.compromiso} onChange={e => onChange({ ...valor, compromiso: e.target.value })} />
+          </label>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Confirmar ────────────────────────────────────────────────────────────────
 
 export function ConfirmarDocSheet({ doc, ...b }: Base & { doc: DocVisita | null }) {
@@ -33,11 +77,16 @@ export function ConfirmarDocSheet({ doc, ...b }: Base & { doc: DocVisita | null 
 
 function FormConfirmar({ doc, visitaId, onClose, onGuardado }: Base & { doc: DocVisita }) {
   const [obs, setObs] = useState('')
+  const [inc, setInc] = useState(INCIDENCIA_VACIA)
+  const [errInc, setErrInc] = useState<string | null>(null)
   const { ocupado, ejecutar } = useAccion()
   async function guardar() {
-    const r = await ejecutar(eventId => chk.docConfirmar({ visita: visitaId, documento: doc.id, observacion: obs.trim() || null, eventId }))
+    const { valor, error } = incidenciaDe(inc)
+    setErrInc(error)
+    if (error) return
+    const r = await ejecutar(eventId => chk.docConfirmar({ visita: visitaId, documento: doc.id, observacion: obs.trim() || null, incidencia: valor, eventId }))
     if (!r.ok) { toast.error(r.mensaje); return }
-    toast.success('Verificado sin cambios')
+    toast.success(valor ? 'Verificado con incidencia' : 'Verificado sin cambios')
     onGuardado(); onClose()
   }
   return (
@@ -49,8 +98,9 @@ function FormConfirmar({ doc, visitaId, onClose, onGuardado }: Base & { doc: Doc
           <span className="text-xs text-muted-foreground">Observación (opcional)</span>
           <textarea className={CLASE_TEXTAREA} value={obs} maxLength={2000} onChange={e => setObs(e.target.value)} />
         </label>
+        <CamposIncidencia valor={inc} onChange={setInc} error={errInc} />
       </div>
-      <PieFormulario onCancelar={onClose} onGuardar={guardar} textoGuardar="Sí, verificar" cargando={ocupado} />
+      <PieFormulario onCancelar={onClose} onGuardar={guardar} textoGuardar={inc.activa ? 'Guardar con incidencia' : 'Sí, verificar'} cargando={ocupado} />
     </>
   )
 }
@@ -68,9 +118,14 @@ function FormActualizar({ doc, visitaId, onClose, onGuardado }: Base & { doc: Do
   const [fecha, setFecha] = useState(doc.ultimo_registro_fecha ?? '')
   const [texto, setTexto] = useState(doc.ultimo_registro_texto ?? '')
   const [obs, setObs] = useState('')
+  const [inc, setInc] = useState(INCIDENCIA_VACIA)
+  const [errInc, setErrInc] = useState<string | null>(null)
   const { ocupado, ejecutar } = useAccion()
 
   async function guardar() {
+    const { valor, error } = incidenciaDe(inc)
+    setErrInc(error)
+    if (error) return
     // Solo lo que cambió
     const cambios: Record<string, unknown> = {}
     if (revision.trim() !== (doc.revision ?? '')) cambios.revision = revision.trim() || null
@@ -83,10 +138,10 @@ function FormActualizar({ doc, visitaId, onClose, onGuardado }: Base & { doc: Do
       cambios.ultimo_registro_texto = nuevoTexto
       cambios.ultimo_registro_precision = nuevaPrec
     }
-    if (Object.keys(cambios).length === 0) { toast.warning('No cambiaste ningún dato. Usa Verificar si todo sigue igual.'); return }
-    const r = await ejecutar(eventId => chk.docActualizar({ visita: visitaId, documento: doc.id, cambios, observacion: obs.trim() || null, eventId }))
+    if (Object.keys(cambios).length === 0 && !valor) { toast.warning('No cambiaste ningún dato. Usa Verificar si todo sigue igual.'); return }
+    const r = await ejecutar(eventId => chk.docActualizar({ visita: visitaId, documento: doc.id, cambios, observacion: obs.trim() || null, incidencia: valor, eventId }))
     if (!r.ok) { toast.error(r.mensaje); return }
-    toast.success('Actualizado y verificado')
+    toast.success(valor ? 'Guardado con incidencia' : 'Actualizado y verificado')
     onGuardado(); onClose()
   }
 
@@ -117,8 +172,9 @@ function FormActualizar({ doc, visitaId, onClose, onGuardado }: Base & { doc: Do
           <span className="text-xs text-muted-foreground">Observación (opcional)</span>
           <textarea className={CLASE_TEXTAREA} value={obs} maxLength={2000} onChange={e => setObs(e.target.value)} />
         </label>
+        <CamposIncidencia valor={inc} onChange={setInc} error={errInc} />
       </div>
-      <PieFormulario onCancelar={onClose} onGuardar={guardar} textoGuardar="Guardar y confirmar" cargando={ocupado} />
+      <PieFormulario onCancelar={onClose} onGuardar={guardar} textoGuardar={inc.activa ? 'Guardar con incidencia' : 'Guardar y confirmar'} cargando={ocupado} />
     </>
   )
 }
@@ -134,13 +190,23 @@ export function MarcarDocSheet({ objetivo, ...b }: Base & { objetivo: { doc: Doc
 
 function FormMarcar({ doc, tipo, visitaId, onClose, onGuardado }: Base & { doc: DocVisita; tipo: TipoMarca }) {
   const [obs, setObs] = useState('')
+  const [inc, setInc] = useState(INCIDENCIA_VACIA)
+  const [errInc, setErrInc] = useState<string | null>(null)
   const { ocupado, ejecutar } = useAccion()
   const obligatorio = tipo === 'no_aplica'
+  // El seguimiento solo aplica a "Pendiente" de la Tabla 1
+  const conSeguimiento = tipo === 'pendiente' && doc.seccion === 1
   async function guardar() {
     if (obligatorio && obs.trim().length < 3) { toast.warning('Escribe el motivo (mínimo 3 caracteres)'); return }
-    const r = await ejecutar(eventId => chk.docMarcar({ visita: visitaId, documento: doc.id, resultado: tipo, observacion: obs.trim() || null, eventId }))
-    if (!r.ok) { toast.error(r.mensaje); return }
-    toast.success(tipo === 'no_aplica' ? 'Marcado como no aplica en esta visita' : 'Marcado como pendiente')
+    const { valor, error } = conSeguimiento ? incidenciaDe(inc) : { valor: null, error: null }
+    setErrInc(error)
+    if (error) return
+    const r = await ejecutar(eventId => chk.docMarcar({ visita: visitaId, documento: doc.id, resultado: tipo, observacion: obs.trim() || null, incidencia: valor, eventId }))
+    if (!r.ok) {
+      if (codigoError(r.error) === 'DESCRIPCION_REQUERIDA') { setErrInc('Describe qué hay que corregir (mínimo 5 caracteres)'); return }
+      toast.error(r.mensaje); return
+    }
+    toast.success(tipo === 'no_aplica' ? 'Marcado como no aplica en esta visita' : valor ? 'Pendiente con seguimiento' : 'Marcado como pendiente')
     onGuardado(); onClose()
   }
   return (
@@ -156,51 +222,9 @@ function FormMarcar({ doc, tipo, visitaId, onClose, onGuardado }: Base & { doc: 
           <span className="text-xs text-muted-foreground">{obligatorio ? 'Motivo (obligatorio)' : 'Qué falta (opcional)'}</span>
           <textarea className={CLASE_TEXTAREA} value={obs} maxLength={2000} onChange={e => setObs(e.target.value)} />
         </label>
+        {conSeguimiento && <CamposIncidencia valor={inc} onChange={setInc} error={errInc} titulo="¿Dar seguimiento en las próximas visitas?" etiquetaDesc="Qué hay que corregir" />}
       </div>
       <PieFormulario onCancelar={onClose} onGuardar={guardar} textoGuardar="Guardar" cargando={ocupado} deshabilitado={obligatorio && obs.trim().length < 3} />
-    </>
-  )
-}
-
-// ── Incidencia ───────────────────────────────────────────────────────────────
-
-export function IncidenciaDocSheet({ doc, ...b }: Base & { doc: DocVisita | null }) {
-  return <Hoja doc={doc} titulo="Registrar incidencia" onClose={b.onClose}>{doc && <FormIncidencia doc={doc} {...b} />}</Hoja>
-}
-
-function FormIncidencia({ doc, visitaId, onClose, onGuardado }: Base & { doc: DocVisita }) {
-  const [desc, setDesc] = useState('')
-  const [resp, setResp] = useState('')
-  const [compromiso, setCompromiso] = useState('')
-  const { ocupado, ejecutar } = useAccion()
-  async function guardar() {
-    if (desc.trim().length < 5) { toast.warning('Describe la incidencia (mínimo 5 caracteres)'); return }
-    const r = await ejecutar(eventId => chk.incidenciaRegistrar({
-      visita: visitaId, documento: doc.id, descripcion: desc.trim(), responsable: resp.trim() || null,
-      fechaCompromiso: compromiso || null, eventId,
-    }))
-    if (!r.ok) { toast.error(r.mensaje); return }
-    toast.success('Incidencia registrada')
-    onGuardado(); onClose()
-  }
-  return (
-    <>
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        <Resumen doc={doc} />
-        <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Descripción</span>
-          <textarea className={CLASE_TEXTAREA} value={desc} maxLength={2000} onChange={e => setDesc(e.target.value)} />
-        </label>
-        <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Responsable de corregir (opcional)</span>
-          <Input value={resp} maxLength={200} onChange={e => setResp(e.target.value)} />
-        </label>
-        <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Fecha compromiso (opcional)</span>
-          <input type="date" className={CLASE_INPUT} value={compromiso} onChange={e => setCompromiso(e.target.value)} />
-        </label>
-      </div>
-      <PieFormulario onCancelar={onClose} onGuardar={guardar} textoGuardar="Registrar" cargando={ocupado} />
     </>
   )
 }

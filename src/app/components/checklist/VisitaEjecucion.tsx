@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { AlertTriangle, Check, FileDown, MoreHorizontal, Pencil } from 'lucide-react'
+import { Check, FileDown, Pencil } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
@@ -14,7 +14,7 @@ import { InterruptorOrganico } from './InterruptorOrganico'
 import { RevisionEscritorio } from './RevisionEscritorio'
 import { useEsEscritorio } from './useEsEscritorio'
 import {
-  ActualizarDocSheet, ConfirmarDocSheet, IncidenciaDocSheet, MarcarDocSheet, SeguirIncidenciaSheet, type TipoMarca, type TipoSeguimiento,
+  ActualizarDocSheet, ConfirmarDocSheet, MarcarDocSheet, SeguirIncidenciaSheet, type TipoMarca, type TipoSeguimiento,
 } from './VisitaSheets'
 import { FilaControl } from './FilaControl'
 import { IndicadorEtapas, PieEtapas, type Etapa } from './EtapasVisita'
@@ -41,7 +41,6 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
   const [verificando, setVerificando] = useState(false)
   const [confirmar, setConfirmar] = useState<DocVisita | null>(null)
   const [actualizar, setActualizar] = useState<DocVisita | null>(null)
-  const [incidencia, setIncidencia] = useState<DocVisita | null>(null)
   const [marcar, setMarcar] = useState<{ doc: DocVisita; tipo: TipoMarca } | null>(null)
   const [seguir, setSeguir] = useState<{ incidencia: IncidenciaDoc; tipo: TipoSeguimiento } | null>(null)
   const [apagarOrganico, setApagarOrganico] = useState<number | null>(null)
@@ -300,7 +299,6 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
               onConfirmar={setConfirmar}
               onActualizar={setActualizar}
               onMarcar={(doc, tipo) => setMarcar({ doc, tipo })}
-              onIncidencia={setIncidencia}
               onSeguir={(inc, tipo) => setSeguir({ incidencia: inc, tipo })}
             />
           ) : (
@@ -341,7 +339,6 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
                         onConfirmar={() => setConfirmar(d)}
                         onActualizar={() => setActualizar(d)}
                         onMarcar={tipo => setMarcar({ doc: d, tipo })}
-                        onIncidencia={() => setIncidencia(d)}
                         onSeguir={(inc, tipo) => setSeguir({ incidencia: inc, tipo })}
                       />
                     ) : (
@@ -376,7 +373,6 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
       <ConfirmarDocSheet doc={confirmar} visitaId={visitaId} onClose={() => setConfirmar(null)} onGuardado={recargar} />
       <ActualizarDocSheet doc={actualizar} visitaId={visitaId} onClose={() => setActualizar(null)} onGuardado={recargar} />
       <MarcarDocSheet objetivo={marcar} visitaId={visitaId} onClose={() => setMarcar(null)} onGuardado={recargar} />
-      <IncidenciaDocSheet doc={incidencia} visitaId={visitaId} onClose={() => setIncidencia(null)} onGuardado={recargar} />
       <SeguirIncidenciaSheet objetivo={seguir} visitaId={visitaId} onClose={() => setSeguir(null)} onGuardado={recargar} />
       <BottomSheet open={apagarOrganico !== null} onClose={() => setApagarOrganico(null)} title="Apagar revisión orgánica">
         {apagarOrganico !== null && (
@@ -393,9 +389,9 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
   )
 }
 
-function TarjetaDoc({ doc: d, puede, falta, onConfirmar, onActualizar, onMarcar, onIncidencia, onSeguir }: {
+function TarjetaDoc({ doc: d, puede, falta, onConfirmar, onActualizar, onMarcar, onSeguir }: {
   doc: DocVisita; puede: boolean; falta: string | null
-  onConfirmar: () => void; onActualizar: () => void; onMarcar: (t: TipoMarca) => void; onIncidencia: () => void
+  onConfirmar: () => void; onActualizar: () => void; onMarcar: (t: TipoMarca) => void
   onSeguir: (inc: IncidenciaDoc, tipo: TipoSeguimiento) => void
 }) {
   // Sin revisar = sin color de éxito
@@ -423,16 +419,6 @@ function TarjetaDoc({ doc: d, puede, falta, onConfirmar, onActualizar, onMarcar,
           <Boton tamano="sm" variante="secundario" onClick={onActualizar}><Pencil className="w-4 h-4" /> Actualizar</Boton>
           <Boton tamano="sm" variante="secundario" onClick={() => onMarcar('pendiente')}>Pendiente</Boton>
           <Boton tamano="sm" variante="secundario" onClick={() => onMarcar('no_aplica')}>No aplica</Boton>
-          <details className="relative">
-            <summary className="list-none cursor-pointer rounded-lg border border-border px-2 py-1.5 text-muted-foreground" aria-label="Más acciones">
-              <MoreHorizontal className="w-4 h-4" aria-hidden="true" />
-            </summary>
-            <div className="absolute z-10 mt-1 right-0 rounded-lg border border-border bg-card p-1 min-w-40">
-              <button type="button" className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-left hover:bg-muted" onClick={onIncidencia}>
-                <AlertTriangle className="w-4 h-4" aria-hidden="true" /> Registrar incidencia
-              </button>
-            </div>
-          </details>
         </div>
       )}
     </div>

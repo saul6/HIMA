@@ -194,6 +194,9 @@ export interface VerificacionDoc {
   creado_en: string
 }
 
+/** Incidencia que se captura dentro de Verificar / Actualizar (Tabla 1). */
+export interface IncidenciaNueva { descripcion: string; responsable?: string | null; fecha_compromiso?: string | null }
+
 export interface IncidenciaDoc {
   id: string
   descripcion: string
@@ -462,14 +465,14 @@ export const chk = {
     rpc<{ organico_activo: boolean; avances?: number; sin_cambios?: boolean }>('chk_vis_organico', {
       p_visita: p.visita, p_activo: p.activo, p_motivo: p.motivo ?? null, p_event_id: p.eventId,
     }),
-  docMarcar: (p: { visita: string; documento: string; resultado: 'pendiente' | 'no_aplica'; observacion: string | null; eventId: string }) =>
-    rpc<unknown>('chk_doc_marcar', { p_visita: p.visita, p_documento: p.documento, p_resultado: p.resultado, p_observacion: p.observacion, p_event_id: p.eventId }),
+  docMarcar: (p: { visita: string; documento: string; resultado: 'pendiente' | 'no_aplica'; observacion: string | null; incidencia?: IncidenciaNueva | null; eventId: string }) =>
+    rpc<unknown>('chk_doc_marcar', { p_visita: p.visita, p_documento: p.documento, p_resultado: p.resultado, p_observacion: p.observacion, p_event_id: p.eventId, p_incidencia: p.incidencia ?? null }),
   visAbrir: (visita: string, eventId: string) => rpc<unknown>('chk_vis_abrir', { p_visita: visita, p_event_id: eventId }),
   visVer: (visita: string) => rpc<VisitaEnCurso | { estado: 'cerrada'; reporte: Reporte }>('chk_vis_ver', { p_visita: visita }),
-  docConfirmar: (p: { visita: string; documento: string; observacion: string | null; eventId: string }) =>
-    rpc<unknown>('chk_doc_confirmar', { p_visita: p.visita, p_documento: p.documento, p_observacion: p.observacion, p_event_id: p.eventId }),
-  docActualizar: (p: { visita: string; documento: string; cambios: Record<string, unknown>; observacion: string | null; eventId: string }) =>
-    rpc<unknown>('chk_doc_actualizar', { p_visita: p.visita, p_documento: p.documento, p_cambios: p.cambios, p_observacion: p.observacion, p_event_id: p.eventId }),
+  docConfirmar: (p: { visita: string; documento: string; observacion: string | null; incidencia?: IncidenciaNueva | null; eventId: string }) =>
+    rpc<unknown>('chk_doc_confirmar', { p_visita: p.visita, p_documento: p.documento, p_observacion: p.observacion, p_event_id: p.eventId, p_incidencia: p.incidencia ?? null }),
+  docActualizar: (p: { visita: string; documento: string; cambios: Record<string, unknown>; observacion: string | null; incidencia?: IncidenciaNueva | null; eventId: string }) =>
+    rpc<unknown>('chk_doc_actualizar', { p_visita: p.visita, p_documento: p.documento, p_cambios: p.cambios, p_observacion: p.observacion, p_event_id: p.eventId, p_incidencia: p.incidencia ?? null }),
   incidenciaRegistrar: (p: {
     visita: string; documento: string; descripcion: string; categoria?: string | null
     responsable?: string | null; fechaCompromiso?: string | null; eventId: string

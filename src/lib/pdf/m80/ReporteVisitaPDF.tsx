@@ -64,7 +64,7 @@ const COLS_DOS_COLUMNAS: ColumnaDato[] = [
 ]
 
 function textoEstado(d: ReporteDoc): string {
-  return d.estado === 'correcto' && d.actualizado ? 'Actualizado' : ESTADO_TXT[d.estado]
+  return d.estado === 'correcto' && d.actualizado ? 'Actualizado y verificado' : ESTADO_TXT[d.estado]
 }
 
 function filasDocs(docs: ReporteDoc[], conCodigo: boolean): (CeldaDato[] | FilaBanda)[] {
@@ -182,6 +182,7 @@ export function ReporteVisitaPDF({ reporte, vistaPrevia = false, firmaRealizo, f
               { etiqueta: 'Aplicables', valor: String(resumen.aplicables) },
               { etiqueta: 'Verificados', valor: String(resumen.correctos) },
               { etiqueta: 'No conformes', valor: String(resumen.con_incidencia) },
+              { etiqueta: 'Incidencias abiertas', valor: String(reporte.incidencias.filter(i => i.estado !== 'cerrada').length) },
               { etiqueta: 'Pendientes', valor: String(resumen.pendientes ?? 0) },
               { etiqueta: 'No aplica', valor: String(resumen.no_aplica ?? 0) },
               { etiqueta: 'Sin revisar', valor: String(resumen.sin_revisar) },

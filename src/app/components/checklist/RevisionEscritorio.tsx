@@ -1,6 +1,6 @@
 // Visita en curso en escritorio (≥ lg): lista compacta de documentos a la izquierda y panel de revisión a la derecha.
 // Las acciones abren las mismas sheets que la tarjeta del celular; aquí solo cambia desde dónde se abren.
-import { AlertTriangle, Check, ChevronRight, Pencil } from 'lucide-react'
+import { Check, ChevronRight, Pencil } from 'lucide-react'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import type { DocVisita, IncidenciaDoc, NotaGeneral, ResultadoVerificacion } from '@/hooks/useChecklistV2'
 import { Aviso, CLASE_INPUT, Chip, TONOS } from './comun'
@@ -23,7 +23,6 @@ interface Props {
   onConfirmar: (d: DocVisita) => void
   onActualizar: (d: DocVisita) => void
   onMarcar: (d: DocVisita, t: TipoMarca) => void
-  onIncidencia: (d: DocVisita) => void
   onSeguir: (inc: IncidenciaDoc, t: TipoSeguimiento) => void
 }
 
@@ -151,10 +150,7 @@ export function RevisionEscritorio(p: Props) {
                   <Boton variante="secundario" onClick={() => p.onMarcar(d, 'pendiente')}>Pendiente</Boton>
                   <Boton variante="secundario" onClick={() => p.onMarcar(d, 'no_aplica')}>No aplica</Boton>
                 </div>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <button type="button" className="inline-flex items-center gap-1 text-sm font-semibold" style={{ color: 'var(--primary)' }} onClick={() => p.onIncidencia(d)}>
-                    <AlertTriangle className="w-4 h-4" aria-hidden="true" /> Registrar incidencia
-                  </button>
+                <div className="flex flex-wrap items-center justify-end gap-2">
                   <button type="button" className="inline-flex items-center gap-1 text-sm font-semibold" style={{ color: 'var(--primary)' }} onClick={p.onSiguiente}>
                     Siguiente sin revisar <ChevronRight className="w-4 h-4" aria-hidden="true" />
                   </button>
