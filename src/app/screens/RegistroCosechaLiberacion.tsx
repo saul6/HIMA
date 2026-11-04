@@ -22,6 +22,9 @@ import { Fab } from '@/app/components/Fab'
 import { useContextoTarea } from '@/hooks/useContextoTarea'
 import { BannerTareaOrigen } from '@/app/components/BannerTareaOrigen'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import {
   useFirmasRegistro,
   idRepresentativoJornada,
@@ -142,6 +145,11 @@ export function RegistroCosechaLiberacion() {
   // Firmas del hook (sin imágenes) para la lista
   const todosIds = registros.flatMap((r) => r.liberaciones.map((l) => l.id))
   const { firmas, loading: loadingFirmas, refetch: refetchFirmas } = useFirmasRegistro('M10', todosIds)
+  // Sin datos de firmas todavía (cargando): franja neutra y sin conteo de pendientes.
+  const sinDatosFirmas = loadingFirmas || (registros.length > 0 && Object.keys(firmas).length === 0)
+  const pendientesFirma = sinDatosFirmas
+    ? null
+    : registros.filter((r) => resumenFirmas(firmasDeFilasParaTarjeta(firmas, r.liberaciones.map((l) => l.id))).estado === 'pendiente').length
 
   // Perfiles de la org para el select de encargado
   const [perfiles, setPerfiles] = useState<PerfilItem[]>([])
@@ -472,11 +480,32 @@ export function RegistroCosechaLiberacion() {
     <div className="min-h-full pb-safe-nav">
 
       {/* Header */}
-      <ModuloHeader tituloFallback={TITULO_MODULO} subtitulo={CLAVE_MODULO} />
+      <ModuloHeader
+        tituloFallback={TITULO_MODULO}
+        subtitulo={CLAVE_MODULO}
+        subtituloEscritorio={
+          loading && registros.length === 0
+            ? undefined
+            : `${CLAVE_MODULO} · ${textoResumenLista(registros.length, pendientesFirma)}`
+        }
+        acciones={
+          <BotonExportarConsolidado
+            variante="encabezado"
+            onClick={() => {
+              setConsRanchoId('')
+              setConsDesde('')
+              setConsHasta(hoy())
+              setErrConsRancho(false)
+              setErrConsFechas(false)
+              setSheetConsAbierto(true)
+            }}
+          />
+        }
+      />
       <BannerTareaOrigen tareaId={tareaId} />
 
       {/* Exportar consolidado */}
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado
           onClick={() => {
             setConsRanchoId('')
@@ -512,11 +541,12 @@ export function RegistroCosechaLiberacion() {
           )
         })}
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla />
         ) : registros.length === 0 && lotesOffline.length === 0 ? (
           <EstadoVacio icono={Package} titulo="Sin registros aún" ayuda="Toca + para registrar la primera liberación" />
         ) : (
-          registros.map((reg) => {
+          <ListaTarjetas>
+          {registros.map((reg) => {
             const key = `${reg.rancho_id}|${reg.fecha}`
             const lotesLiberados = reg.liberaciones.filter((l) => l.lote_liberado).length
             const totalBandejas  = reg.liberaciones.reduce((s, l) => s + (l.cantidad_bandejas ?? 0), 0)
@@ -524,36 +554,40 @@ export function RegistroCosechaLiberacion() {
             const priId = idRepresentativoJornada(reg.liberaciones)
             const firmaReg = firmasDeFilasParaTarjeta(firmas, idsReg)
             const pendienteDeFirma = obligatoria && priId && !firmaReg?.realizo
+            // requiere_correccion no llega a la tarjeta de M10 (el hook no lo conserva): no se usa el estado "correccion"
+            const resumen = resumenFirmas(firmaReg, sinDatosFirmas)
             return (
-              <div key={key} className="bg-card border border-border rounded-xl p-4"
-                style={{ borderColor: pendienteDeFirma ? 'var(--agro-red)' : undefined }}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      {orgNombre && (
-                        <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
-                      )}
-                      <span className="text-sm text-foreground font-semibold">
-                        {reg.rancho_nombre}
-                      </span>
+              <TarjetaRegistro
+                key={key}
+                className={pendienteDeFirma ? 'border-[var(--agro-red)] @min-[972px]/lista:border-border' : undefined}
+                estado={resumen.estado}
+                firmas={resumen.estado === 'neutro' ? null : resumen}
+                etiquetas={(
+                  <>
+                    {orgNombre && (
+                      <span className="text-xs text-muted-foreground font-medium">{orgNombre} ·</span>
+                    )}
+                    <span className="text-sm text-foreground font-semibold">
+                      {reg.rancho_nombre}
+                    </span>
+                    <span
+                      className="text-caption px-2 py-0.5 rounded bg-muted text-muted-foreground flex-shrink-0 font-semibold"
+                    >
+                      {reg.liberaciones.length} {reg.liberaciones.length === 1 ? 'liberación' : 'liberaciones'}
+                    </span>
+                    {pendienteDeFirma && (
                       <span
-                        className="text-caption px-2 py-0.5 rounded bg-primary/10 text-primary flex-shrink-0 font-semibold"
+                        className="text-caption px-2 py-0.5 rounded flex-shrink-0 flex items-center gap-1 font-semibold @min-[972px]/lista:hidden"
+                        style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
                       >
-                        {reg.liberaciones.length} {reg.liberaciones.length === 1 ? 'liberación' : 'liberaciones'}
+                        <PenLine className="w-3 h-3" />
+                        Pendiente de firma
                       </span>
-                      {pendienteDeFirma && (
-                        <span
-                          className="text-caption px-2 py-0.5 rounded flex-shrink-0 flex items-center gap-1 font-semibold"
-                          style={{ backgroundColor: 'var(--agro-danger-fill)', color: 'var(--agro-danger-text)' }}
-                        >
-                          <PenLine className="w-3 h-3" />
-                          Pendiente de firma
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">{formatFecha(reg.fecha)}</p>
-                  </div>
+                    )}
+                  </>
+                )}
+                meta={[formatFecha(reg.fecha)]}
+                acciones={(
                   <button
                     onClick={() => handleDescargarPDF(reg)}
                     disabled={generandoPDF === key}
@@ -566,8 +600,22 @@ export function RegistroCosechaLiberacion() {
                       <FileDown className="w-4 h-4" />
                     )}
                   </button>
-                </div>
-
+                )}
+                pie={priId ? (
+                  <FirmasRegistro
+                    variante="escritorio"
+                    modulo="M10"
+                    registroId={priId}
+                    fechaRegistro={reg.fecha}
+                    firma={firmaReg}
+                    loadingFirmas={loadingFirmas}
+                    onFirmado={async () => {
+                      await refetch()
+                      await refetchFirmas()
+                    }}
+                  />
+                ) : undefined}
+              >
                 {/* Chips de resumen */}
                 <div className="flex flex-wrap gap-1 mt-2">
                   <span
@@ -608,24 +656,10 @@ export function RegistroCosechaLiberacion() {
                     </div>
                   ))}
                 </div>
-
-                {/* Firmas del registro */}
-                {priId && (
-                  <FirmasRegistro
-                    modulo="M10"
-                    registroId={priId}
-                    fechaRegistro={reg.fecha}
-                    firma={firmaReg}
-                    loadingFirmas={loadingFirmas}
-                    onFirmado={async () => {
-                      await refetch()
-                      await refetchFirmas()
-                    }}
-                  />
-                )}
-              </div>
+              </TarjetaRegistro>
             )
-          })
+          })}
+          </ListaTarjetas>
         )}
       </div>
 
