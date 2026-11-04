@@ -317,7 +317,7 @@ export function RegistroMuestrasLaboratorio() {
                 <div className="mt-1 hidden @min-[972px]/lista:block">
                   <TextoColapsable texto={m.descripcion_muestra} className="text-xs" />
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{m.laboratorio}</p>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2 break-words" title={m.laboratorio}>{m.laboratorio}</p>
                 <div className="flex flex-wrap gap-1 mt-2">
                   {m.microorganismos.map(c => (
                     <span key={c} className="text-caption px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{c}</span>
