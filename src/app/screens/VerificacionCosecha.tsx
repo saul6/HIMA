@@ -581,7 +581,8 @@ export function VerificacionCosecha() {
                         </span>
                         {reg.cultivo && (
                           <span
-                            className="text-xs px-2 py-0.5 rounded"
+                            className="text-xs px-2 py-0.5 rounded min-w-0 max-w-full line-clamp-2 break-words"
+                            title={reg.cultivo}
                             style={{
                               backgroundColor: 'var(--muted)',
                               color: 'var(--muted-foreground)',
