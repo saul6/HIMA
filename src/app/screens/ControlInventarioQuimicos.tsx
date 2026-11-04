@@ -38,6 +38,7 @@ import { SkeletonFilas } from '@/app/components/SkeletonFilas'
 import { Skeleton } from '@/app/components/ui/skeleton'
 import { limiteTexto } from '@/lib/limitesTexto'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { codigoFormato } from '@/lib/codigoFormato'
 import { fechaCorta } from '@/lib/formato'
 
 const hoy = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' })
@@ -483,7 +484,7 @@ function DetalleQuimico({ quimico, ranchoNombre, orgId, esSuperAdmin, perfilNomb
 
 export function ControlInventarioQuimicos() {
   const navigate = useNavigate()
-  const { profile, user } = useAuthContext()
+  const { profile, user, codigoClave } = useAuthContext()
   const esSuperAdmin = profile?.rol === 'super_admin'
   const puedeEditarFecha = esSuperAdmin || puedeEditarFechaLibre(user?.email)
   const { terminosSitio } = useModulosContext()
@@ -634,15 +635,25 @@ export function ControlInventarioQuimicos() {
     <div className="min-h-full pb-safe-nav">
       <ModuloHeader
         tituloFallback="Control de Inventario de Químicos e Insumos"
+        subtitulo={codigoFormato('F-FRUS-SAN-02', codigoClave)}
         onBack={() => navigate(-1)}
         acciones={
-          <BotonConfigurar onClick={() => setConfigurarOpen(true)} />
+          <>
+            <BotonExportarConsolidado
+              variante="encabezado"
+              onClick={() => {
+                setConsolidadoForm(f => ({ ...f, rancho_id: ranchoId }))
+                setConsolidadoOpen(true)
+              }}
+            />
+            <BotonConfigurar onClick={() => setConfigurarOpen(true)} />
+          </>
         }
       />
 
       <BannerTareaOrigen tareaId={tareaId} />
 
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-3 min-[1224px]:hidden">
         <BotonExportarConsolidado
           onClick={() => {
             setConsolidadoForm(f => ({ ...f, rancho_id: ranchoId }))
