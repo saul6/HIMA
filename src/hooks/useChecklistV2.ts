@@ -297,7 +297,27 @@ export interface Reporte {
   incidencias: ReporteIncidencia[]
   hash: string
   es_borrador?: boolean
+  /** Solo en cierres firmados (desde el recorrido de 4 pantallas). */
+  firmas?: {
+    asesor: FirmaSnapshot
+    enterado: FirmaSnapshot
+    preview_hash: string
+  }
 }
+
+export interface FirmaSnapshot { nombre: string; firma_png: string; firmado_en: string }
+
+/** Registro que falta por marcar (`estado`) o al que le falta la observación (`observaciones`). */
+export interface Omision {
+  documento_id: string
+  seccion: number
+  nombre: string
+  codigo: string | null
+  falta: 'estado' | 'observaciones'
+}
+
+export interface CierreFirmado { visita_id: string; reporte_id: string; tipo_cierre: string; resumen: ResumenVisita; idempotente?: boolean }
+export interface MiFirma { tiene: boolean; firma_png?: string }
 
 export interface HistorialDoc {
   version: number; accion: string; cambios: Record<string, unknown> | null
@@ -466,10 +486,17 @@ export const chk = {
   incidencias: (instalacion: string, soloAbiertas: boolean) =>
     rpc<IncidenciaLista[]>('chk_incidencias_lista', { p_instalacion: instalacion, p_solo_abiertas: soloAbiertas }),
   visPreview: (visita: string) => rpc<Reporte>('chk_vis_preview', { p_visita: visita }),
-  visCerrar: (p: { visita: string; justificacion: string | null; observaciones: string | null; hash: string; eventId: string }) =>
-    rpc<unknown>('chk_vis_cerrar', {
-      p_visita: p.visita, p_justificacion: p.justificacion, p_observaciones: p.observaciones, p_preview_hash: p.hash, p_event_id: p.eventId,
+  visOmisiones: (visita: string) => rpc<Omision[]>('chk_vis_omisiones', { p_visita: visita }),
+  visCerrarFirmado: (p: {
+    visita: string; observaciones: string | null; hash: string; enteradoNombre: string
+    enteradoPng: string; enteradoTrazos: unknown; enteradoPuntos: number; eventId: string
+  }) =>
+    rpc<CierreFirmado>('chk_vis_cerrar_firmado', {
+      p_visita: p.visita, p_observaciones: p.observaciones, p_preview_hash: p.hash,
+      p_enterado_nombre: p.enteradoNombre, p_enterado_firma_png: p.enteradoPng,
+      p_enterado_trazos: p.enteradoTrazos, p_enterado_n_puntos: p.enteradoPuntos, p_event_id: p.eventId,
     }),
+  miFirma: () => rpc<MiFirma>('mi_firma'),
   visReporte: (visita: string) => rpc<Reporte>('chk_vis_reporte', { p_visita: visita }),
 
   clientePortal: () => rpc<PortalConsultoria[]>('chk_cliente_portal'),
