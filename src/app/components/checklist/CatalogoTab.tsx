@@ -9,13 +9,13 @@ import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/app/components/ui/collapsible'
 import { ContadorPildora } from './ContadorPildora'
 import { chk, mensajeError, useAccion, type Aplicabilidad, type CatalogoVer, type ChkAlcance, type ChkDocumento } from '@/hooks/useChecklistV2'
-import { Aviso, CLASE_INPUT, Chip, ChipCatalogo, ChipVigencia, PieFormulario, TONOS, textoRegistro } from './comun'
+import { Aviso, CLASE_INPUT, Chip, ChipCatalogo, PieFormulario, TONOS, textoRegistro } from './comun'
 import { DocumentoSheet } from './DocumentoSheet'
 import { AlcancesSheet } from './AlcancesSheet'
 import { NOMBRE_SECCION } from './secciones'
 import { fechaLarga } from './constantes'
 
-type Filtro = 'por_confirmar' | 'alertas' | 'no_aplica' | 'vencidos'
+type Filtro = 'por_confirmar' | 'alertas' | 'no_aplica'
 
 interface Props {
   catalogo: CatalogoVer
@@ -69,7 +69,6 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
     por_confirmar: docs.filter(d => d.aplicabilidad === 'por_confirmar').length,
     alertas: docs.filter(d => d.alertas.length > 0).length,
     no_aplica: docs.filter(d => d.aplicabilidad === 'no_aplica').length,
-    vencidos: docs.filter(d => d.vigencia === 'vencido').length,
   }), [docs])
 
   const visibles = docs.filter(d => {
@@ -77,7 +76,6 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
       case 'por_confirmar': return d.aplicabilidad === 'por_confirmar'
       case 'alertas': return d.alertas.length > 0
       case 'no_aplica': return d.aplicabilidad === 'no_aplica'
-      case 'vencidos': return d.vigencia === 'vencido'
       default: return true
     }
   })
@@ -168,7 +166,7 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
           value={filtro ?? ''}
           onChange={v => setFiltro(filtro === v ? null : (v as Filtro))}
           options={([
-            ['por_confirmar', 'Por confirmar'], ['alertas', 'Con alertas'], ['no_aplica', 'No aplica'], ['vencidos', 'Vencidos'],
+            ['por_confirmar', 'Por confirmar'], ['alertas', 'Con alertas'], ['no_aplica', 'No aplica'],
           ] as const).map(([k, label]) => ({ value: k, label: <>{label} · <ContadorPildora n={cuenta[k]} /></> }))}
         />
       )}
@@ -202,7 +200,7 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
             <div className="rounded-xl border border-border bg-card divide-y divide-border">
               {lista.map(d => {
                 const meta = [d.tipo_doc, d.revision ? `Rev ${d.revision}` : null, d.numeral ? `#${d.numeral}` : null, d.responsable_llenado,
-                  textoRegistro(d) ? `Último registro: ${textoRegistro(d)}` : null, d.vence_el ? `Vence: ${fechaLarga(d.vence_el)}` : null,
+                  textoRegistro(d) ? `Último registro: ${textoRegistro(d)}` : null,
                   d.modulos_mady && d.modulos_mady.length > 0 ? `Módulos M.A.D.Y: ${d.modulos_mady.join(', ')}` : null].filter(Boolean).join(' · ')
                 return (
                   <div key={d.id} className="flex flex-wrap items-start gap-x-3 gap-y-2 p-3" style={d.alertas.length ? { backgroundColor: 'var(--agro-info-fill)' } : undefined}>
@@ -215,7 +213,6 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
                       {meta && <span className="block text-xs text-muted-foreground mt-0.5">{meta}</span>}
                     </button>
                     <div className="flex items-center gap-2">
-                      <ChipVigencia vigencia={d.vigencia} />
                       <SelectAplica d={d} esAdmin={esAdmin} ocupado={accion.ocupado} onCambiar={v => pedirAplicabilidad([d.id], v)} />
                     </div>
                     <div className="basis-full space-y-0.5 empty:hidden">

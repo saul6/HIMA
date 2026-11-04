@@ -67,7 +67,6 @@ function FormActualizar({ doc, visitaId, onClose, onGuardado }: Base & { doc: Do
   const [precision, setPrecision] = useState<PrecisionRegistro>(doc.ultimo_registro_precision ?? 'dia')
   const [fecha, setFecha] = useState(doc.ultimo_registro_fecha ?? '')
   const [texto, setTexto] = useState(doc.ultimo_registro_texto ?? '')
-  const [vence, setVence] = useState(doc.vence_el ?? '')
   const [obs, setObs] = useState('')
   const { ocupado, ejecutar } = useAccion()
 
@@ -76,7 +75,6 @@ function FormActualizar({ doc, visitaId, onClose, onGuardado }: Base & { doc: Do
     const cambios: Record<string, unknown> = {}
     if (revision.trim() !== (doc.revision ?? '')) cambios.revision = revision.trim() || null
     if (resp.trim() !== (doc.responsable_llenado ?? '')) cambios.responsable_llenado = resp.trim() || null
-    if (vence !== (doc.vence_el ?? '')) cambios.vence_el = vence || null
     const nuevaFecha = precision === 'dia' ? (fecha || null) : null
     const nuevoTexto = precision === 'dia' ? null : (texto.trim() || null)
     const nuevaPrec = precision === 'dia' ? (fecha ? 'dia' : null) : (texto.trim() ? precision : null)
@@ -115,10 +113,6 @@ function FormActualizar({ doc, visitaId, onClose, onGuardado }: Base & { doc: Do
             ? <input type="date" className={CLASE_INPUT} value={fecha} onChange={e => setFecha(e.target.value)} />
             : <Input value={texto} maxLength={200} onChange={e => setTexto(e.target.value)} placeholder={precision === 'mes' ? 'Febrero 2026' : 'Tal como aparece'} />}
         </div>
-        <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Vence el</span>
-          <input type="date" className={CLASE_INPUT} value={vence} onChange={e => setVence(e.target.value)} />
-        </label>
         <label className="block space-y-1">
           <span className="text-xs text-muted-foreground">Observación (opcional)</span>
           <textarea className={CLASE_TEXTAREA} value={obs} maxLength={2000} onChange={e => setObs(e.target.value)} />

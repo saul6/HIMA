@@ -93,7 +93,6 @@ function Contenido({ visitaId, onClose, onCerrada }: Omit<Props, 'open'>) {
             {!!r.no_aplica && <Chip>{r.no_aplica} no aplica</Chip>}
             <Chip tono={r.sin_revisar ? TONOS.info : TONOS.neutro}>{r.sin_revisar} sin revisar</Chip>
             <Chip>{r.actualizados} actualizados</Chip>
-            <Chip tono={r.vencidos ? TONOS.peligro : TONOS.neutro}>{r.vencidos} vencidos</Chip>
           </div>
           {secciones.length > 0 && (
             <ul className="text-xs text-muted-foreground pt-1 space-y-0.5">

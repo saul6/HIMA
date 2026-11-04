@@ -2,7 +2,7 @@
 // Lo usan la tarjeta (celular) y el panel de revisión (escritorio); las acciones se abren desde quien lo monta.
 import { AlertTriangle, ChevronDown } from 'lucide-react'
 import type { DocVisita, IncidenciaDoc } from '@/hooks/useChecklistV2'
-import { Chip, ChipVigencia, textoRegistro } from './comun'
+import { Chip, textoRegistro } from './comun'
 import { SeguimientosLista, etiquetaEstadoIncidencia } from './IncidenciasTab'
 import type { TipoSeguimiento } from './VisitaSheets'
 import { COLOR_RESULTADO, etiquetaResultado, textoAntecedente } from './estadoDoc'
@@ -19,7 +19,7 @@ interface Props {
 export function DetalleDoc({ doc: d, puede, onSeguir, variante = 'tarjeta' }: Props) {
   const antecedente = textoAntecedente(d.antecedente)
   const registro = textoRegistro(d)
-  const hayAntecedentes = !!(registro || d.antecedentes || antecedente || d.responsable_llenado || d.vence_el || d.relacionados.length > 0)
+  const hayAntecedentes = !!(registro || d.antecedentes || antecedente || d.responsable_llenado || d.relacionados.length > 0)
 
   return (
     <>
@@ -35,7 +35,6 @@ export function DetalleDoc({ doc: d, puede, onSeguir, variante = 'tarjeta' }: Pr
               {antecedente && <p>{antecedente}</p>}
               {(d.revision || d.numeral) && <p>{[d.revision ? `Rev ${d.revision}` : null, d.numeral ? `#${d.numeral}` : null].filter(Boolean).join(' · ')}</p>}
               {d.responsable_llenado && <p>Responsable de llenado: {d.responsable_llenado}</p>}
-              {d.vence_el && <p>Vence: {fechaLarga(d.vence_el)}</p>}
               <Relacionados doc={d} />
             </div>
           </details>
@@ -54,10 +53,6 @@ export function DetalleDoc({ doc: d, puede, onSeguir, variante = 'tarjeta' }: Pr
               <p className="whitespace-pre-line mt-0.5">{d.antecedentes}</p>
             </div>
           )}
-          <div className="flex flex-wrap items-center gap-2">
-            <ChipVigencia vigencia={d.vigencia} />
-            {d.vence_el && <span className="text-xs text-muted-foreground">Vence: {fechaLarga(d.vence_el)}</span>}
-          </div>
           {d.relacionados.length > 0 && (
             <details className="group rounded-lg border border-border px-2.5 py-1.5 text-xs text-muted-foreground">
               <summary className="cursor-pointer font-semibold flex items-center gap-1 list-none">

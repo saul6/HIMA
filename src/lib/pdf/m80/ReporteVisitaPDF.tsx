@@ -20,7 +20,7 @@ interface Props {
 
 const ETIQUETA_CAMPO: Record<string, string> = {
   revision: 'Rev', responsable_llenado: 'Responsable', ultimo_registro_fecha: 'Fecha de registro',
-  ultimo_registro_texto: 'Último registro', ultimo_registro_precision: 'Precisión', vence_el: 'Vence',
+  ultimo_registro_texto: 'Último registro', ultimo_registro_precision: 'Precisión',
 }
 
 const val = (v: unknown) => {
@@ -45,14 +45,12 @@ const ESTADO_TXT: Record<ReporteDoc['estado'], string> = {
   correcto: 'Verificado', incidencia: 'No conforme', pendiente: 'Pendiente', no_aplica: 'No aplica', sin_revisar: 'Sin revisar',
 }
 const NOMBRE_SECCION: Record<number, string> = { 1: 'TABLA 1 · FORMATOS', 2: 'TABLA 2 · CONTROLES COMPLEMENTARIOS', 3: 'TABLA 3 · ORGÁNICO' }
-const VIGENCIA_TXT: Record<string, string> = { vigente: '', proximo: 'Por vencer', vencido: 'Vencido', sin_dato: '' }
 
 const COLS_DOCS: ColumnaDato[] = [
   { texto: 'Código', ancho: 70 },
   { texto: 'Documento', ancho: 150 },
   { texto: 'Rev', ancho: 24, align: 'center' },
   { texto: 'Último registro documental', ancho: 70 },
-  { texto: 'Vence', ancho: 52 },
   { texto: 'Estado', ancho: 62 },
   { texto: 'Detalle', ancho: 156 },
 ]
@@ -84,7 +82,6 @@ function filasDocs(docs: ReporteDoc[], conCodigo: boolean): (CeldaDato[] | FilaB
         d.nombre,
         d.revision ?? '',
         d.ultimo_registro ?? '',
-        [d.vence_el ? fechaPdf(d.vence_el) : '', VIGENCIA_TXT[d.vigencia] ?? ''].filter(Boolean).join(' '),
         celdaEstado,
         detalle,
       ])
@@ -166,7 +163,6 @@ export function ReporteVisitaPDF({ reporte, vistaPrevia = false, firmaRealizo }:
               { etiqueta: 'No aplica', valor: String(resumen.no_aplica ?? 0) },
               { etiqueta: 'Sin revisar', valor: String(resumen.sin_revisar) },
               { etiqueta: 'Actualizados', valor: String(resumen.actualizados) },
-              { etiqueta: 'Vencidos', valor: String(resumen.vencidos) },
             ]}
           />
           {reporte.organico?.plantilla_disponible && !reporte.organico.activo ? (

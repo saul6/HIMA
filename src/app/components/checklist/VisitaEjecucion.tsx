@@ -8,7 +8,7 @@ import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import {
   chk, useAccion, useCarga, type DocVisita, type IncidenciaDoc, type VisitaEnCurso,
 } from '@/hooks/useChecklistV2'
-import { Aviso, Cargando, Chip, ChipVigencia, ErrorReintentar, PieFormulario, TONOS } from './comun'
+import { Aviso, Cargando, Chip, ErrorReintentar, PieFormulario, TONOS } from './comun'
 import { DetalleDoc } from './DetalleDoc'
 import { COLOR_RESULTADO, type FiltroDoc } from './estadoDoc'
 import { InterruptorOrganico } from './InterruptorOrganico'
@@ -211,7 +211,6 @@ export function VisitaEjecucion({ visitaId, codigoClave, onCambio }: Props) {
           <Chip tono={TONOS.info}>{resumen?.actualizados ?? 0} actualizados</Chip>
           {!!resumen?.pendientes && <Chip tono={TONOS.info}>{resumen.pendientes} pendientes</Chip>}
           {!!resumen?.no_aplica && <Chip>{resumen.no_aplica} no aplica</Chip>}
-          <Chip tono={resumen?.vencidos ? TONOS.peligro : TONOS.neutro}>{resumen?.vencidos ?? 0} vencidos</Chip>
         </div>
         {puede && !esEscritorio && <Boton onClick={() => setCerrarAbierto(true)}><Check className="w-4 h-4" /> Cerrar visita</Boton>}
         {!puede && <Aviso>Solo la asesora asignada o un administrador puede capturar esta visita.</Aviso>}
@@ -347,7 +346,6 @@ function TarjetaDoc({ doc: d, puede, onConfirmar, onActualizar, onMarcar, onInci
             <p className="text-xs mt-0.5" style={{ color: 'var(--agro-info-text)' }}>Antecedente compartido — atribución por confirmar</p>
           )}
         </div>
-        <ChipVigencia vigencia={d.vigencia} />
       </div>
 
       <DetalleDoc doc={d} puede={puede} onSeguir={onSeguir} />

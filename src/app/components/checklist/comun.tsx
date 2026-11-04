@@ -2,7 +2,7 @@
 import type { ReactNode } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { Boton } from '@/app/components/ui-mady/Boton'
-import type { CatalogoEstado, ChkDocumento, Vigencia } from '@/hooks/useChecklistV2'
+import type { CatalogoEstado, ChkDocumento } from '@/hooks/useChecklistV2'
 import { fechaCorta } from './constantes'
 
 interface Tono { fill: string; text: string }
@@ -24,17 +24,6 @@ export function Chip({ tono = TONO_NEUTRO, children, className = '' }: { tono?: 
 }
 
 export const TONOS = { exito: TONO_EXITO, info: TONO_INFO, peligro: TONO_PELIGRO, neutro: TONO_NEUTRO }
-
-const VIGENCIA: Record<Vigencia, { label: string; tono: Tono }> = {
-  vigente: { label: 'Vigente', tono: TONO_EXITO },
-  proximo: { label: 'Por vencer', tono: TONO_INFO },
-  vencido: { label: 'Vencido', tono: TONO_PELIGRO },
-  sin_dato: { label: 'Sin dato', tono: TONO_NEUTRO },
-}
-export function ChipVigencia({ vigencia }: { vigencia: Vigencia }) {
-  const v = VIGENCIA[vigencia] ?? VIGENCIA.sin_dato
-  return <Chip tono={v.tono}>{v.label}</Chip>
-}
 
 const CATALOGO: Record<CatalogoEstado, { label: string; tono: Tono }> = {
   sin_catalogo: { label: 'Sin catálogo', tono: TONO_NEUTRO },

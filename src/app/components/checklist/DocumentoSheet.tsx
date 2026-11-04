@@ -49,7 +49,6 @@ function Formulario({ instalacionId, alcances, seccionInicial, alcanceInicial, d
   const [precision, setPrecision] = useState<PrecisionRegistro>(d?.ultimo_registro_precision ?? 'dia')
   const [regFecha, setRegFecha] = useState(d?.ultimo_registro_fecha ?? '')
   const [regTexto, setRegTexto] = useState(d?.ultimo_registro_texto ?? '')
-  const [vence, setVence] = useState(d?.vence_el ?? '')
   const [antecedentes, setAntecedentes] = useState(d?.antecedentes ?? '')
   const [motivo, setMotivo] = useState('')
   const [historial, setHistorial] = useState<HistorialDoc[] | null>(null)
@@ -77,7 +76,6 @@ function Formulario({ instalacionId, alcances, seccionInicial, alcanceInicial, d
       nombre: nombre.trim(),
       codigo: seccion === 2 ? null : codigo.trim() || null,
       responsable_llenado: resp.trim() || null,
-      vence_el: vence || null,
       antecedentes: antecedentes.trim() || null,
     }
     if (precision === 'dia') {
@@ -160,7 +158,6 @@ function Formulario({ instalacionId, alcances, seccionInicial, alcanceInicial, d
             : <Input disabled={bloqueado} value={regTexto} maxLength={200} onChange={e => setRegTexto(e.target.value)} placeholder={precision === 'mes' ? 'Febrero 2026' : 'Tal como aparece en el documento'} />}
         </div>
 
-        <Campo etiqueta="Vence el"><input type="date" disabled={bloqueado} className={CLASE_INPUT} value={vence} onChange={e => setVence(e.target.value)} /></Campo>
         <Campo etiqueta="Antecedentes / notas"><textarea disabled={bloqueado} className={CLASE_TEXTAREA} value={antecedentes} maxLength={1000} onChange={e => setAntecedentes(e.target.value)} /></Campo>
         {!bloqueado && (
           <Campo etiqueta="Motivo del cambio (opcional)"><Input value={motivo} maxLength={300} onChange={e => setMotivo(e.target.value)} /></Campo>
@@ -214,7 +211,7 @@ function Campo({ etiqueta, children }: { etiqueta: string; children: React.React
 const ETIQUETA_CAMPO: Record<string, string> = {
   area: 'Área', tipo_doc: 'Tipo', revision: 'Rev', numeral: '#', nombre: 'Nombre', codigo: 'Código',
   responsable_llenado: 'Responsable', ultimo_registro_fecha: 'Último registro', ultimo_registro_texto: 'Último registro',
-  ultimo_registro_precision: 'Precisión', vence_el: 'Vence', aplicabilidad: 'Aplicabilidad', motivo_no_aplica: 'Motivo',
+  ultimo_registro_precision: 'Precisión', aplicabilidad: 'Aplicabilidad', motivo_no_aplica: 'Motivo',
   seccion: 'Sección', categoria: 'Categoría', es_nota: 'Observación general', alcance_id: 'Alcance',
   atribucion_por_confirmar: 'Atribución por confirmar', antecedentes: 'Antecedentes', frecuencia: 'Frecuencia', orden: 'Orden', alertas: 'Alertas',
 }
