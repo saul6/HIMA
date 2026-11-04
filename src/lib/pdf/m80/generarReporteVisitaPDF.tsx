@@ -1,14 +1,31 @@
 // Descarga o vista previa del reporte de visita del Checklist v2 (M80).
 // Fuente: chk_vis_reporte (snapshot inmutable) o chk_vis_preview (visita en curso).
 import { pdf } from '@react-pdf/renderer'
-import { obtenerFirmasParaPdf, firmasRegistroAParaPdf } from '@/hooks/useFirmasRegistro'
+import { obtenerFirmasParaPdf, firmasRegistroAParaPdf, formatFirmaFecha, type FirmaParaPdf } from '@/hooks/useFirmasRegistro'
 import { chk, type Reporte } from '@/hooks/useChecklistV2'
 import { ReporteVisitaPDF } from './ReporteVisitaPDF'
 
 // Nombre sin cliente ni instalación (CLAUDE.md §1)
 const nombreArchivo = (fecha: string) => `checklist-visita-${fecha}.pdf`
 
+/** Cierres nuevos: las dos firmas viajan en el snapshot, selladas con el hash de la vista previa. */
+function firmasDeSnapshot(reporte: Reporte): { asesor: FirmaParaPdf; enterado: NonNullable<FirmaParaPdf['enterado']> } | null {
+  const f = reporte.firmas
+  if (!f?.asesor?.firma_png || !f.enterado?.firma_png) return null
+  const sello = (f.preview_hash ?? '').slice(0, 12)
+  return {
+    asesor: { png: f.asesor.firma_png, firmante: f.asesor.nombre, fecha: formatFirmaFecha(f.asesor.firmado_en), sello, estado: 'vigente' },
+    enterado: {
+      png: f.enterado.firma_png, firmante: f.enterado.nombre, cargo: '', capturadoPor: f.asesor.nombre,
+      fecha: formatFirmaFecha(f.enterado.firmado_en), estado: 'vigente',
+    },
+  }
+}
+
 async function construirBlob(reporte: Reporte, vistaPrevia: boolean): Promise<Blob> {
+  const snap = vistaPrevia ? null : firmasDeSnapshot(reporte)
+  if (snap) return pdf(<ReporteVisitaPDF reporte={reporte} firmaRealizo={snap.asesor} firmaEnterado={snap.enterado} />).toBlob()
+  // Visitas cerradas antes del cierre firmado: firma M80 de registro_firmas
   const firmasMapa = vistaPrevia ? {} : await obtenerFirmasParaPdf('M80', [reporte.visita.id])
   const firmas = firmasRegistroAParaPdf((firmasMapa as Record<string, never>)[reporte.visita.id])
   return pdf(<ReporteVisitaPDF reporte={reporte} vistaPrevia={vistaPrevia} firmaRealizo={firmas.realizo} />).toBlob()

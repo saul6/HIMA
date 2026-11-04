@@ -18,6 +18,8 @@ interface SignatureItem {
 interface Props {
   signatures: SignatureItem[]
   enterado?: FirmaParaPdf['enterado']
+  /** Etiqueta del bloque de enterado (por defecto "Enterado (Encargado)"). */
+  etiquetaEnterado?: string
   /** Líneas de firma de ancho fijo (más cortas) y firma más grande (M50). Apagado por defecto. */
   lineaCorta?: boolean
   /** Imprime "Pendiente de firma" bajo la línea cuando no hay firma digital. Apagado por defecto (CLAUDE.md §9: la línea queda en blanco para firma a mano). Ningún PDF lo usa hoy: queda para cuando Saúl decida. */
@@ -32,7 +34,7 @@ const AVISO_DESACTUALIZADA = 'Firma digital desactualizada: el registro se modif
 
 const linea = { borderTopWidth: 0.75, borderTopColor: PC.m13Navy, marginTop: 14, paddingTop: 4 } as const
 
-export function PdfFirmas({ signatures: signaturesProp, enterado: enteradoProp, lineaCorta = false, pendienteSiFalta = false }: Props) {
+export function PdfFirmas({ signatures: signaturesProp, enterado: enteradoProp, etiquetaEnterado = 'Enterado (Encargado)', lineaCorta = false, pendienteSiFalta = false }: Props) {
   const alto = lineaCorta ? 44 : 38
   const ancho = lineaCorta ? { width: 200 } : { flex: 1 }
   const enterado = enteradoProp ?? signaturesProp.map((s) => s.firma?.enterado).find(Boolean) ?? null
@@ -97,17 +99,17 @@ export function PdfFirmas({ signatures: signaturesProp, enterado: enteradoProp, 
             {enteradoDigital ? (
               <Image src={enterado.png} style={{ height: alto, objectFit: 'contain' }} />
             ) : (
-              <Text style={{ fontSize: 7, color: PC.textSub }}>Enterado (Encargado)</Text>
+              <Text style={{ fontSize: 7, color: PC.textSub }}>{etiquetaEnterado}</Text>
             )}
           </View>
           <View style={linea}>
-            <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.m13Navy }}>Enterado (Encargado)</Text>
+            <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: PC.m13Navy }}>{etiquetaEnterado}</Text>
             {enteradoDigital ? (
               <>
                 <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: PC.m13Navy, marginTop: 2 }} hyphenationCallback={partirNombre}>
                   {enterado.firmante}
                 </Text>
-                <Text style={{ fontSize: 7, color: PC.textSub }} hyphenationCallback={partirParaAncho(ANCHO_NOMBRE, 7)}>{enterado.cargo}</Text>
+                {enterado.cargo ? <Text style={{ fontSize: 7, color: PC.textSub }} hyphenationCallback={partirParaAncho(ANCHO_NOMBRE, 7)}>{enterado.cargo}</Text> : null}
                 <Text style={{ fontSize: 6, color: PC.footerGray, marginTop: 2 }} hyphenationCallback={partirParaAncho(ANCHO_NOMBRE, 6)}>
                   {`Capturada por ${enterado.capturadoPor} - ${enterado.fecha}`}
                 </Text>

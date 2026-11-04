@@ -2,6 +2,7 @@
 // (o de chk_vis_preview, con la marca "Vista previa — no válido", si la visita aún no cierra).
 // Kit compartido: src/lib/pdf/disenoNuevo (PaginaEstandar, TablaDatos, PdfFirmas).
 import { Document, Text } from '@react-pdf/renderer'
+import { partirParaAncho } from '@/lib/pdf/disenoNuevo/medirTexto'
 import { PaginaEstandar, Seccion, fechaEmisionHoy } from '@/lib/pdf/disenoNuevo/PaginaEstandar'
 import { TablaDatos, type CeldaDato, type ColumnaDato, type FilaBanda } from '@/lib/pdf/disenoNuevo/TablaDatos'
 import { FranjaDatos } from '@/lib/pdf/disenoNuevo/Franja'
@@ -15,7 +16,9 @@ interface Props {
   reporte: Reporte
   /** true = la visita sigue en curso: se imprime la marca de vista previa. */
   vistaPrevia?: boolean
+  /** Cierres nuevos: firma de la asesora (del snapshot). Los anteriores usan la firma M80 de registro_firmas. */
   firmaRealizo?: FirmaParaPdf | null
+  firmaEnterado?: FirmaParaPdf['enterado']
 }
 
 const ETIQUETA_CAMPO: Record<string, string> = {
@@ -54,13 +57,15 @@ const COLS_DOCS: ColumnaDato[] = [
   { texto: 'Estado', ancho: 62 },
   { texto: 'Detalle', ancho: 156 },
 ]
-// Tabla 2 y Tabla 3 no llevan código ni revisión
-const COLS_SIN_CODIGO: ColumnaDato[] = [
-  { texto: 'Documento', ancho: 214 },
-  { texto: 'Último registro documental', ancho: 80 },
-  { texto: 'Estado', ancho: 62 },
-  { texto: 'Detalle', ancho: 158 },
+// Tabla 2 y Tabla 3 van en dos columnas: C1 (control y antecedente) y C2 (estado y observación de esta visita)
+const COLS_DOS_COLUMNAS: ColumnaDato[] = [
+  { texto: 'Datos para revisar', ancho: 50, largo: false },
+  { texto: 'Estado y observación de la asesora', ancho: 50, largo: false },
 ]
+
+function textoEstado(d: ReporteDoc): string {
+  return d.estado === 'correcto' && d.actualizado ? 'Actualizado' : ESTADO_TXT[d.estado]
+}
 
 function filasDocs(docs: ReporteDoc[], conCodigo: boolean): (CeldaDato[] | FilaBanda)[] {
   const filas: (CeldaDato[] | FilaBanda)[] = []
@@ -68,25 +73,33 @@ function filasDocs(docs: ReporteDoc[], conCodigo: boolean): (CeldaDato[] | FilaB
   for (const d of docs) {
     const a = d.area?.trim() || d.categoria?.trim() || 'Sin área'
     if (a !== area) { filas.push({ banda: a }); area = a }
-    const detalle = [
-      ...(d.actualizado ? ['Actualizado: ' + detalleCambios(d).join('; ')] : []),
-      ...(d.incidencia ? ['Incidencia: ' + d.incidencia] : []),
-      ...(d.observacion ? [d.observacion] : []),
-    ].join('\n')
-    const estado = d.estado === 'correcto' && d.actualizado ? 'Actualizado' : ESTADO_TXT[d.estado]
-    // Rojo solo en la columna de estado de "No conforme"
-    const celdaEstado: CeldaDato = d.estado === 'incidencia' ? { texto: estado, color: PC.negativo } : estado
+    const estado = textoEstado(d)
     if (conCodigo) {
-      filas.push([
-        d.codigo ?? '',
-        d.nombre,
-        d.revision ?? '',
-        d.ultimo_registro ?? '',
-        celdaEstado,
-        detalle,
-      ])
+      const detalle = [
+        ...(d.actualizado ? ['Actualizado: ' + detalleCambios(d).join('; ')] : []),
+        ...(d.incidencia ? ['Incidencia: ' + d.incidencia] : []),
+        ...(d.observacion ? [d.observacion] : []),
+      ].join('\n')
+      // Rojo solo en la columna de estado de "No conforme"
+      const celdaEstado: CeldaDato = d.estado === 'incidencia' ? { texto: estado, color: PC.negativo } : estado
+      filas.push([d.codigo ?? '', d.nombre, d.revision ?? '', d.ultimo_registro ?? '', celdaEstado, detalle])
     } else {
-      filas.push([d.nombre, d.ultimo_registro ?? '', celdaEstado, detalle])
+      // En una incidencia, la observación de esta visita es la descripción de la incidencia
+      const obs = (d.estado === 'incidencia' ? d.incidencia || d.observacion : d.observacion) ?? ''
+      const c1 = [d.nombre, d.ultimo_registro ? `Último registro documental: ${d.ultimo_registro}` : ''].filter(Boolean).join('\n')
+      const etiqueta = d.estado === 'incidencia' ? 'Incidencia' : estado
+      filas.push([
+        c1,
+        {
+          texto: `${etiqueta}\n${obs}`,
+          nodo: (ancho: number) => (
+            <>
+              <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: d.estado === 'incidencia' ? PC.negativo : PC.fieldValue }}>{etiqueta}</Text>
+              {obs ? <Text style={{ fontSize: 8, color: PC.fieldValue, marginTop: 2 }} hyphenationCallback={partirParaAncho(ancho, 8)}>{obs}</Text> : null}
+            </>
+          ),
+        },
+      ])
     }
   }
   return filas
@@ -104,7 +117,7 @@ const COLS_INC: ColumnaDato[] = [
 
 const ESTADO_INC: Record<string, string> = { abierta: 'Abierta', seguimiento: 'En seguimiento', correccion_reportada: 'Corrección reportada', cerrada: 'Cerrada' }
 
-export function ReporteVisitaPDF({ reporte, vistaPrevia = false, firmaRealizo }: Props) {
+export function ReporteVisitaPDF({ reporte, vistaPrevia = false, firmaRealizo, firmaEnterado }: Props) {
   const { visita, resumen } = reporte
   const tipoCierre = visita.tipo_cierre === 'parcial' ? 'Parcial' : 'Completo'
   const subtitulo = `${vistaPrevia ? 'Vista previa - no válido · ' : ''}Reporte de visita · ${reporte.instalacion}`
@@ -190,7 +203,7 @@ export function ReporteVisitaPDF({ reporte, vistaPrevia = false, firmaRealizo }:
                   {x.aplicables - x.sin_revisar} de {x.aplicables} revisados · {x.correctos} verificados · {x.actualizados} actualizados · {x.pendientes} pendientes · {x.no_aplica} no aplica · {x.con_incidencia} no conformes · {x.sin_revisar} sin revisar
                 </Text>
               ) : null}
-              <TablaDatos columnas={n === 1 ? COLS_DOCS : COLS_SIN_CODIGO} filas={filasDocs(docs, n === 1)} vacio="Sin documentos aplicables" />
+              <TablaDatos columnas={n === 1 ? COLS_DOCS : COLS_DOS_COLUMNAS} filas={filasDocs(docs, n === 1)} vacio="Sin documentos aplicables" />
             </Seccion>
           )
         })}
@@ -220,7 +233,11 @@ export function ReporteVisitaPDF({ reporte, vistaPrevia = false, firmaRealizo }:
         ) : null}
 
         <PdfFirmas
-          signatures={[{ label: 'Realizó la visita', nombre: visita.asesor ?? '', caption: 'Realizó - Firma', firma: firmaRealizo ?? null }]}
+          signatures={firmaEnterado
+            ? [{ label: 'Asesor(a)', nombre: visita.asesor ?? '', caption: 'Asesor(a) - Firma', firma: firmaRealizo ?? null }]
+            : [{ label: 'Realizó la visita', nombre: visita.asesor ?? '', caption: 'Realizó - Firma', firma: firmaRealizo ?? null }]}
+          enterado={firmaEnterado ?? undefined}
+          etiquetaEnterado={firmaEnterado ? 'Enterado' : undefined}
         />
       </PaginaEstandar>
     </Document>
