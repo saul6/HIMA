@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { LogOut, Pencil, Check, X, ChevronRight, Building2, PenLine, Loader2, Receipt, Banknote } from 'lucide-react'
+import { LogOut, Pencil, Check, X, ChevronRight, Building2, PenLine, Receipt, Banknote } from 'lucide-react'
+import { motion } from 'motion/react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
@@ -14,6 +15,10 @@ import { contarPendientes } from '@/lib/offline/outbox'
 import { isUpdateDisponible, UPDATE_DISPONIBLE_EVENT, ejecutarActualizacion } from '@/lib/offline/actualizacionSegura'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { Panel } from '@/app/components/ui-mady/Panel'
+import { AvisoCargaLenta } from '@/app/components/ui-mady/AvisoCargaLenta'
+import { useConfirmar } from '@/app/components/ui-mady/ConfirmarSheet'
+import { useEntradaPantalla } from '@/lib/motion'
 import { fechaHora } from '@/lib/formato'
 import { useMisVouchers } from '@/hooks/useNomina'
 
@@ -38,6 +43,7 @@ export function Perfil() {
   const { user, profile, signOut, refreshProfile } = useAuthContext()
   const { resolvedTheme } = useTheme()
   const { datos: misVouchers } = useMisVouchers()
+  const { confirmar, confirmarElemento } = useConfirmar()
 
   const [editando, setEditando] = useState(false)
   const [nuevoNombre, setNuevoNombre] = useState(profile?.nombre_completo ?? '')
@@ -56,6 +62,7 @@ export function Perfil() {
   const firmaPadRef = useRef<FirmaPadRef>(null)
 
   const esAuditor = profile?.rol === 'auditor'
+  const ent = useEntradaPantalla(true)
 
   const [updateDisponible, setUpdateDisponible] = useState(isUpdateDisponible())
   useEffect(() => {
@@ -134,9 +141,12 @@ export function Perfil() {
   async function handleCerrarSesion() {
     const n = user?.id ? await contarPendientes(user.id).catch(() => 0) : 0
     if (n > 0) {
-      const ok = window.confirm(
-        `Tienes ${n} registro${n !== 1 ? 's' : ''} sin subir. Si cierras sesión se perderán. ¿Continuar?`
-      )
+      const ok = await confirmar({
+        titulo: 'Cerrar sesión',
+        descripcion: `Tienes ${n} registro${n !== 1 ? 's' : ''} sin subir. Si cierras sesión se perderán. ¿Continuar?`,
+        textoConfirmar: 'Cerrar sesión',
+        tono: 'peligro',
+      })
       if (!ok) return
     }
     try {
@@ -160,12 +170,16 @@ export function Perfil() {
       {/* Header */}
       <EncabezadoPantalla titulo="Perfil" />
 
-      <div className="p-4 space-y-4">
+      {/* Celular: una columna en el orden de siempre. Escritorio (lg): izquierda la cuenta, derecha la organización y los ajustes.
+          Las columnas son `contents` en celular, y `order-N` conserva el orden de una sola columna. */}
+      <div className="p-4 flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start">
+        <div className="contents lg:flex lg:flex-col lg:gap-4">
         {/* Tarjeta de usuario */}
-        <div className="bg-card border border-border rounded-xl p-6">
+        <motion.div {...ent(0)} className="order-1">
+        <Panel className="p-6">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-xl font-semibold">{iniciales}</span>
+              <span className="text-primary-foreground text-xl font-semibold">{iniciales}</span>
             </div>
 
             <div className="flex-1 min-w-0">
@@ -178,10 +192,10 @@ export function Perfil() {
                     className="flex-1 h-9 px-3 rounded-lg border border-border-control bg-input-background text-sm
                       focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   />
-                  <button
+                  <button aria-label="Guardar nombre"
                     onClick={handleGuardarNombre}
                     disabled={guardando || !nuevoNombre.trim()}
-                    className="p-1.5 rounded-lg bg-primary text-white disabled:opacity-50"
+                    className="p-1.5 rounded-lg bg-primary text-primary-foreground disabled:opacity-50"
                   >
                     <Check className="w-4 h-4" />
                   </button>
@@ -212,66 +226,12 @@ export function Perfil() {
               )}
             </div>
           </div>
-        </div>
-
-        {/* Mi organización — solo para admin_org */}
-        {profile?.rol === 'admin_org' && (
-          <button
-            onClick={() => navigate('/perfil/mi-organizacion')}
-            className="w-full bg-card border border-border rounded-xl p-4 flex items-center gap-3 text-left hover:bg-muted transition-colors"
-          >
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Building2 className="w-5 h-5 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-foreground text-sm font-semibold">
-                Mi organización
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Gestionar ranchos y configuración
-              </p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-          </button>
-        )}
-
-        {/* Mis vouchers — solo si el usuario está ligado a un trabajador con cortes aprobados */}
-        {misVouchers.length > 0 && (
-          <button
-            onClick={() => navigate('/mis-vouchers')}
-            className="w-full bg-card border border-border rounded-xl p-4 flex items-center gap-3 text-left hover:bg-muted transition-colors"
-          >
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Receipt className="w-5 h-5 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-foreground text-sm font-semibold">Mis vouchers</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Pagos semanales aprobados</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-          </button>
-        )}
-
-        {/* Habilitar "Actividades y pagos" por organización — solo super_admin */}
-        {profile?.rol === 'super_admin' && (
-          <button
-            onClick={() => navigate('/admin/nomina-orgs')}
-            className="w-full bg-card border border-border rounded-xl p-4 flex items-center gap-3 text-left hover:bg-muted transition-colors"
-          >
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Banknote className="w-5 h-5 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-foreground text-sm font-semibold">Actividades y pagos por organización</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Habilitar o deshabilitar el módulo</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-          </button>
-        )}
-
+        </Panel>
+        </motion.div>
         {/* Mi firma — para todos excepto auditor */}
         {!esAuditor && (
-          <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+          <motion.div {...ent(1)} className="order-5">
+          <Panel className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -294,7 +254,10 @@ export function Perfil() {
             </div>
 
             {loadingFirma ? (
-              <Skeleton className="h-20 w-full rounded-lg" />
+              <>
+                <Skeleton className="h-20 w-full rounded-lg" />
+                <AvisoCargaLenta />
+              </>
             ) : tieneFirma && !cambiandoFirma ? (
               /* Mostrar firma existente */
               <div
@@ -347,18 +310,93 @@ export function Perfil() {
                     </button>
                   )}
                   <Boton onClick={handleGuardarFirma} cargando={guardandoFirma} disabled={firmaInfo.puntos < 15} className="flex-1">
-                    {guardandoFirma ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : 'Guardar firma'}
+                    Guardar firma
                   </Boton>
                 </div>
               </div>
             )}
-          </div>
+          </Panel>
+          </motion.div>
+        )}
+
+
+        {/* Cerrar sesión */}
+        <motion.div {...ent(6)} className="order-8">
+        <button
+          onClick={handleCerrarSesion}
+          className="w-full h-14 bg-card border border-agro-red text-agro-red rounded-xl flex items-center justify-center gap-2 hover:bg-agro-danger-fill transition-colors font-semibold"
+        >
+          <LogOut className="w-5 h-5" />
+          Cerrar sesión
+        </button>
+        </motion.div>
+        </div>
+
+        <div className="contents lg:flex lg:flex-col lg:gap-4">
+        {/* Mi organización — solo para admin_org */}
+        {profile?.rol === 'admin_org' && (
+          <motion.div {...ent(1)} className="order-2">
+          <button
+            onClick={() => navigate('/perfil/mi-organizacion')}
+            className="w-full bg-card border border-border rounded-xl p-4 flex items-center gap-3 text-left hover:bg-muted transition-colors"
+          >
+            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Building2 className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-foreground text-sm font-semibold">
+                Mi organización
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Gestionar ranchos y configuración
+              </p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+          </button>
+          </motion.div>
+        )}
+
+        {/* Mis vouchers — solo si el usuario está ligado a un trabajador con cortes aprobados */}
+        {misVouchers.length > 0 && (
+          <motion.div {...ent(2)} className="order-3">
+          <button
+            onClick={() => navigate('/mis-vouchers')}
+            className="w-full bg-card border border-border rounded-xl p-4 flex items-center gap-3 text-left hover:bg-muted transition-colors"
+          >
+            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Receipt className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-foreground text-sm font-semibold">Mis vouchers</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Pagos semanales aprobados</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+          </button>
+          </motion.div>
+        )}
+
+        {/* Habilitar "Actividades y pagos" por organización — solo super_admin */}
+        {profile?.rol === 'super_admin' && (
+          <motion.div {...ent(3)} className="order-4">
+          <button
+            onClick={() => navigate('/admin/nomina-orgs')}
+            className="w-full bg-card border border-border rounded-xl p-4 flex items-center gap-3 text-left hover:bg-muted transition-colors"
+          >
+            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Banknote className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-foreground text-sm font-semibold">Actividades y pagos por organización</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Habilitar o deshabilitar el módulo</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+          </button>
+          </motion.div>
         )}
 
         {/* Info de la app */}
-        <div className="bg-card border border-border rounded-xl p-4">
+        <motion.div {...ent(4)} className="order-6">
+        <Panel>
           <div className="text-center">
             <div className="text-sm mb-1 font-semibold"><MadyLogo theme={resolvedTheme} className="h-80 mx-auto" /></div>
             <div className="text-xs text-muted-foreground mb-1">
@@ -378,9 +416,10 @@ export function Perfil() {
               © 2026 M.A.D.Y
             </div>
           </div>
-        </div>
-
+        </Panel>
+        </motion.div>
         {/* Sincronización */}
+        <motion.div {...ent(5)} className="order-7">
         <button
           onClick={() => navigate('/sincronizacion')}
           className="w-full h-12 bg-card border border-border rounded-xl flex items-center gap-3 px-4 hover:bg-muted transition-colors"
@@ -390,15 +429,11 @@ export function Perfil() {
           <span className="text-sm text-foreground flex-1 text-left">Sincronización offline</span>
         </button>
 
-        {/* Cerrar sesión */}
-        <button
-          onClick={handleCerrarSesion}
-          className="w-full h-14 bg-card border border-agro-red text-agro-red rounded-xl flex items-center justify-center gap-2 hover:bg-agro-danger-fill transition-colors font-semibold"
-        >
-          <LogOut className="w-5 h-5" />
-          Cerrar sesión
-        </button>
+        </motion.div>
+        </div>
+
       </div>
+      {confirmarElemento}
     </div>
   )
 }
