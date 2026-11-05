@@ -232,6 +232,7 @@ export function Layout() {
                 key={path}
                 to={path}
                 title={label}
+                aria-label={label}
                 className="relative flex items-center justify-center lg:justify-start gap-0 lg:gap-3 px-0 lg:px-3 py-2.5 rounded-lg text-sm transition-colors"
                 style={{
                   color: active ? 'var(--accent-foreground)' : 'var(--muted-foreground)',
