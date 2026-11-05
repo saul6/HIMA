@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { mensajeErrorBd } from '@/lib/erroresBd'
+import { Boton } from '@/app/components/ui-mady/Boton'
+import { Campo } from '@/app/components/ui-mady/Campo'
 
 export function CompletarOrganizacion() {
   const { profile, refreshProfile } = useAuthContext()
@@ -54,7 +56,7 @@ export function CompletarOrganizacion() {
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
           <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center">
-            <span className="text-white text-xl font-semibold">HF</span>
+            <span className="text-primary-foreground text-xl font-semibold">HF</span>
           </div>
           <h1 className="text-xl text-foreground font-semibold">Un paso más</h1>
           <p className="text-sm text-muted-foreground text-center">
@@ -63,25 +65,28 @@ export function CompletarOrganizacion() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground block font-semibold">
-              Nombre de tu organización
-            </label>
-            <input
-              type="text"
-              value={nombreOrg}
-              onChange={(e) => setNombreOrg(e.target.value)}
-              placeholder="Ej: Rancho El Solar o tu nombre"
-              required
-              autoFocus
-              autoComplete="organization"
-              className="w-full h-12 px-4 rounded-lg border border-border-control bg-input-background
-                focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-            />
-            <p className="text-xs text-muted-foreground pt-1">
-              Nombre de tu empresa, o tu nombre si trabajas por tu cuenta.
-            </p>
-          </div>
+          <Campo
+            etiqueta="Nombre de tu organización"
+            ayuda="Nombre de tu empresa, o tu nombre si trabajas por tu cuenta."
+            className="gap-1"
+          >
+            {({ id, describedBy, invalid }) => (
+              <input
+                id={id}
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                type="text"
+                value={nombreOrg}
+                onChange={(e) => setNombreOrg(e.target.value)}
+                placeholder="Ej: Rancho El Solar o tu nombre"
+                required
+                autoFocus
+                autoComplete="organization"
+                className="w-full h-12 px-4 rounded-lg border border-border-control bg-input-background
+                  focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            )}
+          </Campo>
 
           {error && (
             <div className="p-3 rounded-lg bg-agro-danger-fill text-agro-danger-text text-sm">
@@ -89,13 +94,9 @@ export function CompletarOrganizacion() {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={submitting || !nombreOrg.trim()}
-            className="w-full h-14 bg-primary text-white rounded-3xl hover:bg-agro-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-          >
+          <Boton type="submit" className="w-full" disabled={submitting || !nombreOrg.trim()}>
             {submitting ? 'Creando organización…' : 'Continuar'}
-          </button>
+          </Boton>
         </form>
       </div>
     </div>
