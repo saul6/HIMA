@@ -415,8 +415,8 @@ export function Layout() {
           <AvisoVentana72h />
           <motion.div
             key={claveTransicion}
-            initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={reducedMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: DUR.base, ease: EASE_OUT }}
             className="w-full max-w-[390px] mx-auto md:max-w-none"
           >
