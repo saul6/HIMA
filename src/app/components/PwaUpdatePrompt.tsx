@@ -6,9 +6,11 @@ import {
   ventanasAbiertas,
   señalarUpdateDisponible,
 } from '@/lib/offline/actualizacionSegura'
+import { useConfirmar } from '@/app/components/ui-mady/ConfirmarSheet'
 
 export function PwaUpdatePrompt() {
   const registrationRef = useRef<ServiceWorkerRegistration | null>(null)
+  const { confirmar, confirmarElemento } = useConfirmar()
 
   const {
     needRefresh: [needRefresh],
@@ -79,9 +81,15 @@ export function PwaUpdatePrompt() {
     }
   }, [needRefresh, updateServiceWorker])
 
-  const handleActualizarAhora = () => {
+  const handleActualizarAhora = async () => {
     if (ventanasAbiertas() > 0) {
-      if (!window.confirm('Se perderá lo que no hayas guardado. ¿Actualizar?')) return
+      const ok = await confirmar({
+        titulo: 'Actualizar la app',
+        descripcion: 'Se perderá lo que no hayas guardado. ¿Actualizar?',
+        textoConfirmar: 'Actualizar',
+        tono: 'peligro',
+      })
+      if (!ok) return
     }
     updateServiceWorker(true)
   }
@@ -89,6 +97,7 @@ export function PwaUpdatePrompt() {
   if (!visible) return null
 
   return (
+    <>
     <div
       className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border border-border"
       style={{ backgroundColor: 'var(--card)', maxWidth: '90vw' }}
@@ -108,5 +117,7 @@ export function PwaUpdatePrompt() {
         Actualizar ahora
       </button>
     </div>
+    {confirmarElemento}
+    </>
   )
 }
