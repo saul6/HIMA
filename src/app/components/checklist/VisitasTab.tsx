@@ -5,12 +5,15 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Input } from '@/app/components/ui/input'
+import { motion, useReducedMotion } from 'motion/react'
+import { entrada, fundidoEntrada, useEntradaPantalla } from '@/app/screens/auditor/motionAuditor'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
 import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { useAuthContext } from '@/context/AuthContext'
 import { hoyMX } from '@/lib/fecha'
 import { chk, useAccion, useCarga, type CatalogoEstado, type ChkAlcance, type VisitaLista } from '@/hooks/useChecklistV2'
-import { Aviso, Cargando, CLASE_INPUT, Chip, ErrorReintentar, PieFormulario, TONOS } from './comun'
+import { Aviso, CLASE_INPUT, Chip, ErrorReintentar, PieFormulario, TONOS } from './comun'
 import { useColaboradoresChk } from './useColaboradores'
 import { fechaLarga } from './constantes'
 import { descargarReportePdf } from './pdfVisita'
@@ -49,8 +52,9 @@ export function VisitasTab({ instalacionId, alcances, catalogoEstado, esAdmin, p
   const [modo, setModo] = useState<Modo | null>(null)
   const [pdf, setPdf] = useState<string | null>(null)
   const abrir = useAccion()
+  const reducedMotion = useReducedMotion()
 
-  if (carga.loading && !carga.data) return <Cargando />
+  if (carga.loading && !carga.data) return <ListaSkeleton rejilla rows={3} onReintentar={carga.recargar} />
   if (carga.error) return <ErrorReintentar mensaje={carga.error} onReintentar={carga.recargar} />
   const visitas = carga.data ?? []
 
@@ -86,14 +90,14 @@ export function VisitasTab({ instalacionId, alcances, catalogoEstado, esAdmin, p
         <EstadoVacio titulo="Sin visitas" ayuda="Las visitas se programan manualmente; nunca se crean solas." />
       ) : (
       <ListaTarjetas>
-      {visitas.map(v => {
+      {visitas.map((v, n) => {
         const e = v.descartada ? { label: 'Descartada', tono: TONOS.neutro } : (ESTADO[v.estado] ?? ESTADO.cerrada)
         const descarte = v.descartada ? v.eventos.find(x => x.tipo === 'descartada') : undefined
         const mia = v.asesor_id === perfilId
         const reprog = v.eventos.filter(x => x.tipo.includes('reprogram')).length
         return (
+          <motion.div key={v.id} className="min-w-0" {...entrada(n, reducedMotion)}>
           <TarjetaRegistro
-            key={v.id}
             sinFirmas
             titulo={`${fechaLarga(v.fecha)}${v.alcance ? ` · ${v.alcance}` : ''}`}
             tituloTexto={`${fechaLarga(v.fecha)}${v.alcance ? ` · ${v.alcance}` : ''}`}
@@ -133,6 +137,7 @@ export function VisitasTab({ instalacionId, alcances, catalogoEstado, esAdmin, p
             </div>
             </div>
           </TarjetaRegistro>
+          </motion.div>
         )
       })}
       </ListaTarjetas>

@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Pildora } from './Pildora'
+import { motion, useReducedMotion } from 'motion/react'
+import { entrada, fundidoEntrada, useEntradaPantalla } from '@/app/screens/auditor/motionAuditor'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
 import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { chk, useCarga, type IncidenciaLista, type Seguimiento } from '@/hooks/useChecklistV2'
-import { Cargando, Chip, ErrorReintentar, TONOS } from './comun'
+import { Chip, ErrorReintentar, TONOS } from './comun'
 import { fechaCorta, fechaLarga } from './constantes'
 
 export const ETIQUETA_SEGUIMIENTO: Record<string, string> = {
@@ -40,6 +43,7 @@ interface Props { instalacionId: string; version: number }
 
 export function IncidenciasTab({ instalacionId, version }: Props) {
   const [soloAbiertas, setSoloAbiertas] = useState(true)
+  const reducedMotion = useReducedMotion()
   const carga = useCarga<IncidenciaLista[]>(`${instalacionId}:${version}:${soloAbiertas}`, () => chk.incidencias(instalacionId, soloAbiertas))
 
   return (
@@ -49,16 +53,16 @@ export function IncidenciasTab({ instalacionId, version }: Props) {
         <Pildora activa={!soloAbiertas} onClick={() => setSoloAbiertas(false)}>Todas</Pildora>
       </div>
       <p className="text-xs text-muted-foreground">El seguimiento y el cierre se hacen dentro de una visita en curso.</p>
-      {carga.loading && !carga.data ? <Cargando />
+      {carga.loading && !carga.data ? <ListaSkeleton rejilla rows={2} onReintentar={carga.recargar} />
         : carga.error ? <ErrorReintentar mensaje={carga.error} onReintentar={carga.recargar} />
         : (carga.data ?? []).length === 0 ? <EstadoVacio titulo={soloAbiertas ? 'Sin incidencias abiertas' : 'Sin incidencias'} />
         : (
         <ListaTarjetas>
-        {(carga.data ?? []).map(x => {
+        {(carga.data ?? []).map((x, n) => {
           const e = etiquetaEstadoIncidencia(x.estado)
           return (
+            <motion.div key={x.id} className="min-w-0" {...entrada(n, reducedMotion)}>
             <TarjetaRegistro
-              key={x.id}
               sinFirmas
               titulo={x.documento}
               tituloTexto={x.documento}
@@ -75,6 +79,7 @@ export function IncidenciasTab({ instalacionId, version }: Props) {
               <SeguimientosLista items={x.seguimientos} />
               </div>
             </TarjetaRegistro>
+            </motion.div>
           )
         })}
         </ListaTarjetas>

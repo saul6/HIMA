@@ -1,12 +1,15 @@
 import { useMemo, useState } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
+import { entrada, fundidoEntrada, useEntradaPantalla } from '@/app/screens/auditor/motionAuditor'
 import { ChevronLeft, Info } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { iconoTipoInstalacion } from './iconoTipoInstalacion'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { chk, useCarga, useSectoresChk, type CarteraCliente, type CarteraInstalacion, type CatalogoVer, type ChkAlcance } from '@/hooks/useChecklistV2'
-import { Cargando, CLASE_INPUT, ChipCatalogo, ErrorReintentar } from './comun'
+import { CLASE_INPUT, ChipCatalogo, ErrorReintentar } from './comun'
 import { CatalogoTab } from './CatalogoTab'
+import { ChecklistSkeleton } from './ChecklistSkeleton'
 import { VisitasTab } from './VisitasTab'
 import { IncidenciasTab } from './IncidenciasTab'
 import { RelacionesTab } from './RelacionesTab'
@@ -36,6 +39,7 @@ interface Props {
 
 export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoClave, tab, onTab, onAbrirVisita, onCambio, cartera, onCambiarInstalacion, onVolver }: Props) {
   const esEscritorio = useEsEscritorio()
+  const reducedMotion = useReducedMotion()
   const [comoAbierto, setComoAbierto] = useState(false)
   const { profile } = useAuthContext()
   const sectores = useSectoresChk()
@@ -45,6 +49,7 @@ export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoCl
   const [version, setVersion] = useState(0)
   const [importarAbierto, setImportarAbierto] = useState(false)
   const [previewId, setPreviewId] = useState<string | null>(null)
+  const ent = useEntradaPantalla(!catalogo.loading)
 
   const opciones = useMemo(
     () => cartera.flatMap(c => c.instalaciones.filter(i => i.activo || i.id === instalacionId).map(i => ({ id: i.id, etiqueta: `${c.nombre} · ${i.nombre}` }))),
@@ -57,7 +62,7 @@ export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoCl
 
   const refrescar = () => { setVersion(v => v + 1); void catalogo.recargar(); void alcancesCarga.recargar(); onCambio() }
 
-  if (catalogo.loading && !catalogo.data) return <Cargando />
+  if (catalogo.loading && !catalogo.data) return <ChecklistSkeleton variante="detalle" onReintentar={catalogo.recargar} />
   if (catalogo.error || !catalogo.data) return <ErrorReintentar mensaje={catalogo.error ?? 'No se pudo cargar la instalación'} onReintentar={catalogo.recargar} />
   const cat = catalogo.data
   const IconoSector = iconoTipoInstalacion(cat.instalacion.sector_clave, cat.instalacion.sector_nombre, sectores.find(s => s.clave === cat.instalacion.sector_clave)?.icono)
@@ -96,6 +101,7 @@ export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoCl
 
   return (
     <div className="space-y-4">
+      <motion.div {...ent(0)}>
       {esEscritorio ? (
         <div className="flex items-start gap-3">
           {onVolver && (
@@ -140,13 +146,14 @@ export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoCl
           </div>
         </div>
       )}
+      </motion.div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <motion.div className="grid grid-cols-2 lg:grid-cols-4 gap-3" {...ent(1)}>
         <TarjetaContador etiqueta="Documentos aplicables" valor={aplicables} />
         <TarjetaContador etiqueta="Revisados en esta visita" valor={esEscritorio ? <span className="text-muted-foreground">—</span> : null} sub={subVisita} />
         <TarjetaContador etiqueta="Pendientes de revisión" valor={esEscritorio ? <span className="text-muted-foreground">—</span> : null} sub={subVisita} />
         <TarjetaContador etiqueta="Incidencias abiertas" valor={incidenciasAbiertas} tono={esEscritorio && incidenciasAbiertas === 0 ? 'normal' : 'alertaTexto'} />
-      </div>
+      </motion.div>
 
       {esEscritorio ? (
         <>
@@ -179,6 +186,7 @@ export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoCl
         </>
       )}
 
+      <motion.div key={tab} {...fundidoEntrada(reducedMotion)}>
       {tab === 'catalogo' && <CatalogoTab catalogo={cat} alcances={alcances} esAdmin={esAdmin} onRecargar={refrescar} onImportar={() => setImportarAbierto(true)} />}
       {tab === 'visitas' && (
         <VisitasTab
@@ -191,6 +199,7 @@ export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoCl
       {tab === 'importaciones' && esAdmin && (
         <ImportacionesTab instalacionId={instalacionId} version={version} onAbrir={setPreviewId} onImportar={() => setImportarAbierto(true)} />
       )}
+      </motion.div>
 
       {esAdmin && (
         <>

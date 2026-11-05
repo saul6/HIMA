@@ -159,9 +159,9 @@ export function ChecklistDocumentos() {
         {estado.error ? (
           <ErrorReintentar mensaje={estado.error} onReintentar={estado.recargar} />
         ) : !est ? (
-          mostrarSkeleton ? <ChecklistSkeleton /> : null
+          mostrarSkeleton ? <ChecklistSkeleton variante={instalacionId ? 'detalle' : 'cartera'} onReintentar={estado.recargar} /> : null
         ) : instalacionId && consultoria && !cartera.data && !cartera.error ? (
-          mostrarSkeleton ? <ChecklistSkeleton /> : null
+          mostrarSkeleton ? <ChecklistSkeleton variante="detalle" onReintentar={cartera.recargar} /> : null
         ) : (
           <>
             {instalacionId && consultoria && cartera.data && !instalacion && !visitaId ? (

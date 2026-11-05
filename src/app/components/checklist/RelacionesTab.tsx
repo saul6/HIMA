@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { motion, useReducedMotion } from 'motion/react'
+import { entrada, fundidoEntrada, useEntradaPantalla } from '@/app/screens/auditor/motionAuditor'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { chk, useAccion, useCarga, type EstadoVinculo, type TipoVinculo, type Vinculo, type VinculoDocRef } from '@/hooks/useChecklistV2'
 import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
 import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
-import { Aviso, Cargando, Chip, ErrorReintentar, TONOS } from './comun'
+import { Aviso, Chip, ErrorReintentar, TONOS } from './comun'
 import { NOMBRE_SECCION_CORTO } from './secciones'
 
 interface Props { instalacionId: string; version: number }
@@ -22,9 +25,10 @@ const ESTADOS: { value: EstadoVinculo; label: string }[] = [
 export function RelacionesTab({ instalacionId, version }: Props) {
   const [estado, setEstado] = useState<EstadoVinculo>('sugerido')
   const [local, setLocal] = useState(0)
+  const reducedMotion = useReducedMotion()
   const carga = useCarga<Vinculo[]>(`${instalacionId}:${estado}:${version}:${local}`, () => chk.vinculosLista(instalacionId, estado))
 
-  if (carga.loading && !carga.data) return <Cargando />
+  if (carga.loading && !carga.data) return <ListaSkeleton rejilla rows={2} onReintentar={carga.recargar} />
   if (carga.error) return <ErrorReintentar mensaje={carga.error} onReintentar={carga.recargar} />
   const lista = carga.data ?? []
 
@@ -36,7 +40,11 @@ export function RelacionesTab({ instalacionId, version }: Props) {
         <EstadoVacio titulo={estado === 'sugerido' ? 'No hay relaciones sugeridas' : 'Sin relaciones en este estado'} ayuda="Las sugerencias nacen al importar un documento con candidatos de la Tabla 1." />
       ) : (
         <ListaTarjetas>
-          {lista.map(v => <FilaVinculo key={v.id} v={v} onCambio={() => setLocal(n => n + 1)} />)}
+          {lista.map((v, n) => (
+            <motion.div key={v.id} className="min-w-0" {...entrada(n, reducedMotion)}>
+              <FilaVinculo v={v} onCambio={() => setLocal(n => n + 1)} />
+            </motion.div>
+          ))}
         </ListaTarjetas>
       )}
     </div>

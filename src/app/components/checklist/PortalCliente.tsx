@@ -1,5 +1,8 @@
 // Vista "Mis revisiones" del cliente ligado: visitas cerradas con su PDF e incidencias con "Reportar corrección".
 import { useState } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
+import { entrada, fundidoEntrada, useEntradaPantalla } from '@/app/screens/auditor/motionAuditor'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { toast } from 'sonner'
 import { FileDown } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
@@ -9,11 +12,13 @@ import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
 import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { chk, useAccion, useCarga, type PortalConsultoria, type PortalIncidencia } from '@/hooks/useChecklistV2'
-import { CLASE_TEXTAREA, Cargando, Chip, ErrorReintentar, PieFormulario, TONOS } from './comun'
+import { CLASE_TEXTAREA, Chip, ErrorReintentar, PieFormulario, TONOS } from './comun'
 import { SeguimientosLista, etiquetaEstadoIncidencia } from './IncidenciasTab'
 import { fechaLarga } from './constantes'
 
 export function PortalCliente() {
+  const reducedMotion = useReducedMotion()
+  const ent = useEntradaPantalla(true)
   const carga = useCarga<PortalConsultoria[]>('portal', () => chk.clientePortal())
   const [reportar, setReportar] = useState<PortalIncidencia | null>(null)
   const [pdf, setPdf] = useState<string | null>(null)
@@ -26,7 +31,7 @@ export function PortalCliente() {
     } catch (e) { console.error(e); toast.error('No se pudo generar el PDF') } finally { setPdf(null) }
   }
 
-  if (carga.loading && !carga.data) return <Cargando />
+  if (carga.loading && !carga.data) return <ListaSkeleton rejilla rows={2} onReintentar={carga.recargar} />
   if (carga.error) return <ErrorReintentar mensaje={carga.error} onReintentar={carga.recargar} />
   const lista = carga.data ?? []
   const hayInst = lista.some(c => c.instalaciones.length > 0)
@@ -34,12 +39,13 @@ export function PortalCliente() {
 
   return (
     <div className="space-y-6">
-      {lista.map(c => (
-        <div key={c.consultoria} className="space-y-4">
+      {lista.map((c, ci) => (
+        <motion.div key={c.consultoria} className="space-y-4" {...ent(ci)}>
           <TituloSeccion as="h2" className="mb-0">{c.consultoria}</TituloSeccion>
           <ListaTarjetas>
-          {c.instalaciones.map(i => (
-            <TarjetaRegistro key={i.id} sinFirmas titulo={i.nombre} tituloTexto={i.nombre}>
+          {c.instalaciones.map((i, n) => (
+            <motion.div key={i.id} className="min-w-0" {...entrada(n, reducedMotion)}>
+            <TarjetaRegistro sinFirmas titulo={i.nombre} tituloTexto={i.nombre}>
               <div className="mt-3 space-y-3">
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground">Visitas cerradas</p>
@@ -81,9 +87,10 @@ export function PortalCliente() {
               </div>
               </div>
             </TarjetaRegistro>
+            </motion.div>
           ))}
           </ListaTarjetas>
-        </div>
+        </motion.div>
       ))}
 
       <BottomSheet open={!!reportar} onClose={() => setReportar(null)} title="Reportar corrección">

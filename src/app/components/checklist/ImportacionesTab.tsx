@@ -1,10 +1,13 @@
 import { Upload } from 'lucide-react'
 import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
 import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { motion, useReducedMotion } from 'motion/react'
+import { entrada, fundidoEntrada, useEntradaPantalla } from '@/app/screens/auditor/motionAuditor'
+import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { chk, useCarga, type ImportacionLista } from '@/hooks/useChecklistV2'
-import { Cargando, Chip, ErrorReintentar, TONOS } from './comun'
+import { Chip, ErrorReintentar, TONOS } from './comun'
 import { fechaLarga } from './constantes'
 
 interface Props {
@@ -23,7 +26,8 @@ const ESTADO: Record<string, { label: string; tono: typeof TONOS.exito }> = {
 
 export function ImportacionesTab({ instalacionId, version, onAbrir, onImportar }: Props) {
   const carga = useCarga<ImportacionLista[]>(`${instalacionId}:${version}`, () => chk.importaciones(instalacionId))
-  if (carga.loading && !carga.data) return <Cargando />
+  const reducedMotion = useReducedMotion()
+  if (carga.loading && !carga.data) return <ListaSkeleton rejilla rows={2} onReintentar={carga.recargar} />
   if (carga.error) return <ErrorReintentar mensaje={carga.error} onReintentar={carga.recargar} />
   const lista = carga.data ?? []
   return (
@@ -35,11 +39,11 @@ export function ImportacionesTab({ instalacionId, version, onAbrir, onImportar }
         <EstadoVacio titulo="Sin importaciones" ayuda="Importa un PDF o Word para llenar el catálogo." />
       ) : (
         <ListaTarjetas>
-          {lista.map(m => {
+          {lista.map((m, n) => {
             const e = ESTADO[m.estado] ?? ESTADO.cancelada
             return (
+              <motion.div key={m.id} className="min-w-0" {...entrada(n, reducedMotion)}>
               <TarjetaRegistro
-                key={m.id}
                 sinFirmas
                 titulo={<span className="break-all">{m.archivo_nombre}</span>}
                 tituloTexto={m.archivo_nombre}
@@ -51,6 +55,7 @@ export function ImportacionesTab({ instalacionId, version, onAbrir, onImportar }
                   </p>
                 )}
               />
+              </motion.div>
             )
           })}
         </ListaTarjetas>

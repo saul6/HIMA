@@ -253,7 +253,7 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
             </div>
           )} />
       ) : visibles.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-10">{docs.length === 0 ? 'Esta sección no tiene documentos.' : 'Nada coincide con este filtro.'}</p>
+        <EstadoVacio titulo={docs.length === 0 ? 'Esta sección no tiene documentos' : 'Nada coincide con este filtro'} />
       ) : esEscritorio ? (
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           <div className={`${plantillaColumnas} items-center gap-x-3 border-b border-border bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground`}>

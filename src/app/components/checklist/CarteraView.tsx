@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
+import { entrada, fundidoEntrada, useEntradaPantalla } from '@/app/screens/auditor/motionAuditor'
 import { Building2, ChevronRight, MapPin, Pencil, Plus } from 'lucide-react'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
@@ -23,6 +25,8 @@ interface Props {
 
 export function CarteraView({ cartera, esAdmin, onAbrir, onRecargar }: Props) {
   const esEscritorio = useEsEscritorio()
+  const reducedMotion = useReducedMotion()
+  const ent = useEntradaPantalla(true)
   const [clienteSheet, setClienteSheet] = useState<{ abierto: boolean; cliente: CarteraCliente | null }>({ abierto: false, cliente: null })
   const [instSheet, setInstSheet] = useState<{ abierto: boolean; cliente: CarteraCliente | null; inst: CarteraInstalacion | null }>({ abierto: false, cliente: null, inst: null })
 
@@ -35,10 +39,10 @@ export function CarteraView({ cartera, esAdmin, onAbrir, onRecargar }: Props) {
     <div className={`space-y-6 ${esAdmin ? 'pb-24' : ''}`}>
       {esEscritorio && cartera.length > 0 && (
         <div className="grid grid-cols-4 gap-3">
-          <TarjetaContador etiqueta="Clientes" valor={cartera.length} />
-          <TarjetaContador etiqueta="Instalaciones" valor={todas.length} />
-          <TarjetaContador etiqueta="Catálogos en borrador" valor={enBorrador} />
-          <TarjetaContador etiqueta="Incidencias abiertas" valor={incidenciasAbiertas} tono={incidenciasAbiertas > 0 ? 'alertaTexto' : 'normal'} />
+          <TarjetaContador etiqueta="Clientes" valor={cartera.length} indice={0} />
+          <TarjetaContador etiqueta="Instalaciones" valor={todas.length} indice={1} />
+          <TarjetaContador etiqueta="Catálogos en borrador" valor={enBorrador} indice={2} />
+          <TarjetaContador etiqueta="Incidencias abiertas" valor={incidenciasAbiertas} tono={incidenciasAbiertas > 0 ? 'alertaTexto' : 'normal'} indice={3} />
         </div>
       )}
 
@@ -50,8 +54,8 @@ export function CarteraView({ cartera, esAdmin, onAbrir, onRecargar }: Props) {
         />
       )}
 
-      {cartera.map(c => (
-        <section key={c.id} className="space-y-2">
+      {cartera.map((c, ci) => (
+        <motion.section key={c.id} className="space-y-2" {...ent(ci + 1)}>
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <TituloSeccion as="h2" className="mb-0 truncate">{c.nombre}</TituloSeccion>
@@ -79,17 +83,18 @@ export function CarteraView({ cartera, esAdmin, onAbrir, onRecargar }: Props) {
           </div>
 
           {c.instalaciones.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-2">Sin instalaciones.</p>
+            <EstadoVacio icono={MapPin} titulo="Sin instalaciones" ayuda={esAdmin ? 'Agrega la primera con «+ Instalación».' : undefined} />
           ) : esEscritorio ? (
             <ListaTarjetas>
-              {c.instalaciones.map(i => (
-                <TarjetaInstalacionEscritorio
-                  key={i.id}
-                  inst={i}
-                  esAdmin={esAdmin}
-                  onAbrir={() => onAbrir(i.id)}
-                  onEditar={() => setInstSheet({ abierto: true, cliente: c, inst: i })}
-                />
+              {c.instalaciones.map((i, n) => (
+                <motion.div key={i.id} className="min-w-0" {...entrada(n, reducedMotion)}>
+                  <TarjetaInstalacionEscritorio
+                    inst={i}
+                    esAdmin={esAdmin}
+                    onAbrir={() => onAbrir(i.id)}
+                    onEditar={() => setInstSheet({ abierto: true, cliente: c, inst: i })}
+                  />
+                </motion.div>
               ))}
             </ListaTarjetas>
           ) : (
@@ -105,7 +110,7 @@ export function CarteraView({ cartera, esAdmin, onAbrir, onRecargar }: Props) {
               ))}
             </div>
           )}
-        </section>
+        </motion.section>
       ))}
 
       {esAdmin && <Fab aria-label="Nuevo cliente" onClick={() => setClienteSheet({ abierto: true, cliente: null })} />}

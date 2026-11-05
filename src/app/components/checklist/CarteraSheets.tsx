@@ -4,6 +4,7 @@ import { X } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { Input } from '@/app/components/ui/input'
 import { Campo } from '@/app/components/ui-mady/Campo'
+import { Skeleton } from '@/app/components/ui/skeleton'
 import { iconoTipoInstalacion } from './iconoTipoInstalacion'
 import { Pildora } from './Pildora'
 import { CLASE_INPUT, CLASE_TEXTAREA, PieFormulario } from './comun'
@@ -147,6 +148,7 @@ function FormInstalacion({ cliente, instalacion, onClose, onGuardado, onCreada }
   const [umbral, setUmbral] = useState(String(instalacion?.umbral_vigencia_dias ?? 30))
   const [activo, setActivo] = useState(instalacion?.activo ?? true)
   const [sitios, setSitios] = useState<{ id: string; nombre: string; org: string }[]>([])
+  const [cargandoSectores, setCargandoSectores] = useState(true)
   const { ocupado, ejecutar } = useAccion()
   const cargado = useRef(false)
 
@@ -154,7 +156,7 @@ function FormInstalacion({ cliente, instalacion, onClose, onGuardado, onCreada }
     if (cargado.current) return
     cargado.current = true
     chk.sitiosCliente(cliente.id).then(s => setSitios(s ?? [])).catch(e => toast.error(mensajeError(e)))
-    chk.sectores().then(s => setSectores(s ?? [])).catch(e => toast.error(mensajeError(e)))
+    chk.sectores().then(s => setSectores(s ?? [])).catch(e => toast.error(mensajeError(e))).finally(() => setCargandoSectores(false))
   }, [cliente.id])
 
   async function guardar() {
@@ -193,6 +195,7 @@ function FormInstalacion({ cliente, instalacion, onClose, onGuardado, onCreada }
         <div className="space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Tipo de instalación{instalacion ? '' : ' *'}</span>
           <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Tipo de instalación">
+            {cargandoSectores && Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-11 rounded-lg" aria-hidden="true" />)}
             {sectores.map(s => {
               const Icono = iconoTipoInstalacion(s.clave, s.nombre, s.icono)
               const activa = sector === s.clave
