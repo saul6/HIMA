@@ -235,11 +235,18 @@ export function Sincronizacion() {
     }
   }
 
+  // Atrás inteligente (igual que EncabezadoPantalla): a la pantalla anterior si hay historial dentro de la app; si se entró por URL, a Perfil
+  function regresar() {
+    const idx = (window.history.state as { idx?: number } | null)?.idx
+    if (typeof idx === 'number' && idx > 0) navigate(-1)
+    else navigate('/perfil')
+  }
+
   const mostrarVacio = pendientes.length === 0 && rechazados.length === 0 && sincronizados.length === 0
 
   return (
     <div className="min-h-full pb-safe-nav">
-      <ModuloHeader tituloFallback="Sincronización" />
+      <ModuloHeader tituloFallback="Sincronización" onBack={regresar} />
 
       {/* Estado de conexión */}
       <div className="px-4 pt-3">
