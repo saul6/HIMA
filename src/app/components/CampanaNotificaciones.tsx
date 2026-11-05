@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
-import { Bell } from 'lucide-react'
+import { Bell, BellOff } from 'lucide-react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { useNavigate } from 'react-router'
 import { useAuthContext } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { SPRING_SUAVE, DUR } from '@/lib/motion'
+import { Skeleton } from '@/app/components/ui/skeleton'
+import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tbl = (name: string) => (supabase as any).from(name)
@@ -26,6 +28,8 @@ export function CampanaNotificaciones({ iconClassName = 'w-4 h-4' }: { iconClass
   const [abierto, setAbierto] = useState(false)
   const [notifs, setNotifs] = useState<Notif[]>([])
   const [noLeidas, setNoLeidas] = useState(0)
+  // false hasta que termina la primera carga: mientras tanto el panel muestra un esqueleto, no "Sin notificaciones"
+  const [cargado, setCargado] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotion()
 
@@ -52,6 +56,8 @@ export function CampanaNotificaciones({ iconClassName = 'w-4 h-4' }: { iconClass
       setNotifs(data ?? [])
     } catch (e) {
       console.error('[CampanaNotificaciones]', e)
+    } finally {
+      setCargado(true)
     }
   }
 
@@ -120,10 +126,18 @@ export function CampanaNotificaciones({ iconClassName = 'w-4 h-4' }: { iconClass
                 </p>
               </div>
 
-              {notifs.length === 0 ? (
-                <p className="text-xs text-center py-8" style={{ color: 'var(--muted-foreground)' }}>
-                  Sin notificaciones
-                </p>
+              {!cargado ? (
+                <div className="space-y-3 px-4 py-3" aria-busy="true" aria-label="Cargando notificaciones">
+                  {[0, 1, 2].map(i => (
+                    <div key={i} className="space-y-1.5">
+                      <Skeleton className="h-3 w-3/4" />
+                      <Skeleton className="h-3 w-full" />
+                      <Skeleton className="h-2.5 w-12" />
+                    </div>
+                  ))}
+                </div>
+              ) : notifs.length === 0 ? (
+                <EstadoVacio icono={BellOff} titulo="Sin notificaciones" />
               ) : (
                 <div>
                   {notifs.map((n, i) => (
