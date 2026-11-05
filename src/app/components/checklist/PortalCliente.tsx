@@ -5,6 +5,8 @@ import { FileDown } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
 import { chk, useAccion, useCarga, type PortalConsultoria, type PortalIncidencia } from '@/hooks/useChecklistV2'
 import { CLASE_TEXTAREA, Cargando, Chip, ErrorReintentar, PieFormulario, TONOS } from './comun'
@@ -35,10 +37,10 @@ export function PortalCliente() {
       {lista.map(c => (
         <div key={c.consultoria} className="space-y-4">
           <TituloSeccion as="h2" className="mb-0">{c.consultoria}</TituloSeccion>
+          <ListaTarjetas>
           {c.instalaciones.map(i => (
-            <section key={i.id} className="rounded-xl border border-border bg-card p-4 space-y-3">
-              <p className="text-sm font-semibold">{i.nombre}</p>
-
+            <TarjetaRegistro key={i.id} sinFirmas titulo={i.nombre} tituloTexto={i.nombre}>
+              <div className="mt-3 space-y-3">
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground">Visitas cerradas</p>
                 {i.visitas.length === 0 ? <p className="text-xs text-muted-foreground">Sin visitas cerradas.</p> : i.visitas.map(v => (
@@ -77,8 +79,10 @@ export function PortalCliente() {
                   )
                 })}
               </div>
-            </section>
+              </div>
+            </TarjetaRegistro>
           ))}
+          </ListaTarjetas>
         </div>
       ))}
 
