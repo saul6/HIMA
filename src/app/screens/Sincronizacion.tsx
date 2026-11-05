@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CloudUpload, CheckCircle, AlertCircle, Clock, RotateCcw, Trash2, RefreshCw, Wifi, WifiOff, Eye, X } from 'lucide-react'
+import { CloudUpload, CheckCircle, AlertCircle, Clock, RotateCcw, Trash2, RefreshCw, Wifi, WifiOff, Eye } from 'lucide-react'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router'
 import { useOutbox } from '@/hooks/useOutbox'
@@ -12,6 +12,8 @@ import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { motivoLote } from '@/lib/offline/motivosRechazo'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Boton } from '@/app/components/ui-mady/Boton'
+import { useConfirmar } from '@/app/components/ui-mady/ConfirmarSheet'
+import { BottomSheet } from '@/app/components/BottomSheet'
 import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
 import { fechaHora } from '@/lib/formato'
 
@@ -162,38 +164,24 @@ function valorLegible(v: unknown): string {
 // Vista de solo lectura de lo capturado en un lote rechazado, para volver a capturarlo.
 function DetalleCapturado({ lote, onCerrar }: { lote: LoteOutbox; onCerrar: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }} onClick={onCerrar}>
-      <div
-        className="w-full max-w-[390px] bg-card overflow-y-auto"
-        style={{ maxHeight: '85dvh', borderTopLeftRadius: '0.625rem', borderTopRightRadius: '0.625rem' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <div className="min-w-0">
-            <p className="text-sm text-foreground font-semibold">{lote.descripcion}</p>
-            <p className="text-xs text-muted-foreground">Capturado: {formatFechaCaptura(lote.capturadoEn)}</p>
+    <BottomSheet open onClose={onCerrar} title={lote.descripcion}>
+      <div className="p-4 space-y-4">
+        <p className="text-xs text-muted-foreground">Capturado: {formatFechaCaptura(lote.capturadoEn)}</p>
+        {lote.operaciones.map((op, i) => (
+          <div key={i} className="space-y-1">
+            <p className="text-xs text-muted-foreground font-semibold">{etiqueta(op.tabla)}</p>
+            {Object.entries(op.fila)
+              .filter(([k]) => !CLAVES_OCULTAS.has(k) && !k.endsWith('_id'))
+              .map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-3 text-xs">
+                  <span className="text-muted-foreground">{etiqueta(k)}</span>
+                  <span className="text-foreground text-right break-words min-w-0">{valorLegible(v)}</span>
+                </div>
+              ))}
           </div>
-          <button onClick={onCerrar} aria-label="Cerrar" className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] hover:bg-muted">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="p-4 space-y-4">
-          {lote.operaciones.map((op, i) => (
-            <div key={i} className="space-y-1">
-              <p className="text-xs text-muted-foreground font-semibold">{etiqueta(op.tabla)}</p>
-              {Object.entries(op.fila)
-                .filter(([k]) => !CLAVES_OCULTAS.has(k) && !k.endsWith('_id'))
-                .map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-3 text-xs">
-                    <span className="text-muted-foreground">{etiqueta(k)}</span>
-                    <span className="text-foreground text-right break-words min-w-0">{valorLegible(v)}</span>
-                  </div>
-                ))}
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
-    </div>
+    </BottomSheet>
   )
 }
 
@@ -205,6 +193,7 @@ export function Sincronizacion() {
   const [descartando, setDescartando] = useState<string | null>(null)
   const [reintentando, setReintentando] = useState<string | null>(null)
   const [verLote, setVerLote] = useState<LoteOutbox | null>(null)
+  const { confirmar, confirmarElemento } = useConfirmar()
 
   async function handleReintentar(id: string) {
     if (!online) { toast.warning('Sin conexión — reintenta cuando tengas señal'); return }
@@ -229,8 +218,13 @@ export function Sincronizacion() {
   async function handleDescartar(id: string) {
     const lote = rechazados.find(l => l.id === id)
     if (!lote) return
-    const confirmar = window.confirm(`¿Descartar "${lote.descripcion}"? El registro se perderá permanentemente.`)
-    if (!confirmar) return
+    const ok = await confirmar({
+      titulo: 'Descartar registro',
+      descripcion: `¿Descartar "${lote.descripcion}"? El registro se perderá permanentemente.`,
+      textoConfirmar: 'Descartar',
+      tono: 'peligro',
+    })
+    if (!ok) return
     setDescartando(id)
     try {
       await eliminarLote(id)
@@ -335,6 +329,7 @@ export function Sincronizacion() {
         )}
       </div>
       {verLote && <DetalleCapturado lote={verLote} onCerrar={() => setVerLote(null)} />}
+      {confirmarElemento}
     </div>
   )
 }
