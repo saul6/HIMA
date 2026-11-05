@@ -1,6 +1,8 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { useNavigate, useLocation } from 'react-router'
 import { useAuthContext } from '@/context/AuthContext'
+import { useTheme } from '@/context/ThemeContext'
+import { MadyLogo } from '@/app/components/MadyLogo'
 import { supabase } from '@/lib/supabase'
 import { mensajeErrorBd } from '@/lib/erroresBd'
 import { Boton } from '@/app/components/ui-mady/Boton'
@@ -9,6 +11,7 @@ import { Campo } from '@/app/components/ui-mady/Campo'
 export function CompletarOrganizacion() {
   const { profile, refreshProfile } = useAuthContext()
   const navigate = useNavigate()
+  const { resolvedTheme } = useTheme()
   const location = useLocation()
 
   // Nombre precargado si viene de Registro.tsx vía navigate state
@@ -55,9 +58,7 @@ export function CompletarOrganizacion() {
 
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
-          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center">
-            <span className="text-primary-foreground text-xl font-semibold">HF</span>
-          </div>
+          <MadyLogo theme={resolvedTheme} className="h-16 w-auto" />
           <h1 className="text-xl text-foreground font-semibold">Un paso más</h1>
           <p className="text-sm text-muted-foreground text-center">
             Nombra tu organización para empezar a usar M.A.D.Y.
