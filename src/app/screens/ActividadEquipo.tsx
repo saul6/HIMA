@@ -18,7 +18,9 @@ import { resolverIcono } from '@/app/components/iconos-modulos'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
-import { FilaRegistro } from '@/app/components/ui-mady/FilaRegistro'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { Campo } from '@/app/components/ui-mady/Campo'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { Boton } from '@/app/components/ui-mady/Boton'
@@ -71,12 +73,14 @@ function fechaSinAnio(iso: string): string {
   return fechaCorta(iso).replace(/ \d{4}$/, '')
 }
 
-// ── Fila ──────────────────────────────────────────────────────────────────────
+// ── Tarjeta ───────────────────────────────────────────────────────────────────
 
-function lineaDos(item: ActividadItem): string {
+function horaItem(item: ActividadItem): string | null {
+  return item.hora_exacta ? fechaHora(item.creado_en).slice(-5) : null
+}
+
+function detalleExtra(item: ActividadItem): string {
   const partes: string[] = []
-  if (item.creado_por_nombre) partes.push(item.creado_por_nombre)
-  if (item.hora_exacta) partes.push(fechaHora(item.creado_en).slice(-5))
   if (item.tipo === 'dia' && item.fecha !== diaMX(item.creado_en)) partes.push(`Día ${fechaSinAnio(item.fecha)}`)
   if (item.tipo === 'jornada' && item.ids.length > 1) partes.push(`${item.ids.length} registros`)
   return partes.join(' · ')
@@ -84,11 +88,11 @@ function lineaDos(item: ActividadItem): string {
 
 const FIRMA_ETIQUETA = {
   firmado: { tono: 'menta', texto: 'Firmado' },
-  falta_verifico: { tono: 'sky', texto: 'Falta verificó' },
-  sin_firma: { tono: 'neutral', texto: 'Sin firma' },
+  falta_verifico: { tono: 'pendiente', texto: 'Falta verificó' },
+  sin_firma: { tono: 'pendiente', texto: 'Sin firma' },
 } as const
 
-interface FilaActividadProps {
+interface TarjetaActividadProps {
   item: ActividadItem
   icono: string | undefined
   generando: boolean
@@ -97,34 +101,44 @@ interface FilaActividadProps {
   onAbrir: (item: ActividadItem) => void
 }
 
-function FilaActividad({ item, icono, generando, onMarcar, onPdf, onAbrir }: FilaActividadProps) {
+function TarjetaActividad({ item, icono, generando, onMarcar, onPdf, onAbrir }: TarjetaActividadProps) {
   const firma = FIRMA_ETIQUETA[item.firma]
   const tienePdf = pdfRefDeActividad(item) !== null
   const Icono = resolverIcono(icono ?? '')
   const inicial = item.creado_por_nombre?.trim().charAt(0).toUpperCase()
+  const extra = detalleExtra(item)
 
   return (
-    <FilaRegistro
-      icono={inicial ?? <Icono size={16} aria-hidden="true" />}
-      tono={item.requiere_correccion ? 'resaltado' : 'normal'}
-      onClick={() => onAbrir(item)}
+    <TarjetaRegistro
+      sinFirmas
+      estado={item.requiere_correccion ? 'correccion' : 'neutro'}
+      meta={[item.rancho_nombre, horaItem(item)]}
+      titulo={item.modulo_nombre}
+      tituloTexto={item.modulo_nombre}
       etiquetas={
         <>
           <Etiqueta tono={firma.tono}>{firma.texto}</Etiqueta>
           {item.requiere_correccion && <Etiqueta tono="rojo">Por corregir</Etiqueta>}
         </>
       }
-      titulo={
-        <>
-          {item.modulo_nombre}
-          {item.rancho_nombre && (
-            <span className="ml-2 font-normal text-muted-foreground">{item.rancho_nombre}</span>
-          )}
-        </>
+      contenido={
+        (item.creado_por_nombre || extra) && (
+          <div className="mt-2 flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground"
+            >
+              {inicial ?? <Icono size={14} aria-hidden="true" />}
+            </span>
+            <span className="min-w-0 break-words text-xs text-muted-foreground">
+              {[item.creado_por_nombre, extra].filter(Boolean).join(' · ')}
+            </span>
+          </div>
+        )
       }
-      subtitulo={lineaDos(item)}
+      alHacerClic={() => onAbrir(item)}
       acciones={
-        <div className="flex shrink-0 items-center gap-1">
+        <>
           {tienePdf && (
             <Boton variante="icono" aria-label="Ver PDF" cargando={generando} onClick={() => onPdf(item)}>
               <FileText className="size-4" aria-hidden="true" />
@@ -135,13 +149,13 @@ function FilaActividad({ item, icono, generando, onMarcar, onPdf, onAbrir }: Fil
               {item.requiere_correccion ? 'Desmarcar' : 'Marcar'}
             </Boton>
           )}
-        </div>
+        </>
       }
     >
       {item.requiere_correccion && item.comentario_correccion && (
-        <p className="pb-3 text-xs text-agro-info-text">{item.comentario_correccion}</p>
+        <p className="mt-2 text-xs text-agro-info-text">{item.comentario_correccion}</p>
       )}
-    </FilaRegistro>
+    </TarjetaRegistro>
   )
 }
 
@@ -402,12 +416,13 @@ export function ActividadEquipo() {
           <div className="space-y-4">
             {grupos.map((g) => (
               <section key={g.dia}>
-                <TituloSeccion as="h2" variante="subtitulo" className="mb-1 px-1">
-                  {encabezadoDia(g.dia, hoy)}
+                <TituloSeccion as="h2" variante="subtitulo" className="mb-2 px-1">
+                  <span className="uppercase">{encabezadoDia(g.dia, hoy)}</span>
+                  {` · ${g.items.length} ${g.items.length === 1 ? 'registro' : 'registros'}`}
                 </TituloSeccion>
-                <div>
+                <ListaTarjetas>
                   {g.items.map((item) => (
-                    <FilaActividad
+                    <TarjetaActividad
                       key={item.clave}
                       item={item}
                       icono={iconoPorModulo.get(item.modulo)}
@@ -417,7 +432,7 @@ export function ActividadEquipo() {
                       onAbrir={(it) => navigate(it.ruta)}
                     />
                   ))}
-                </div>
+                </ListaTarjetas>
               </section>
             ))}
             {truncado && (
@@ -466,21 +481,25 @@ export function ActividadEquipo() {
                 </div>
               )}
 
-              <div>
-                <label htmlFor="comentario-correccion" className="mb-1.5 block text-xs font-semibold text-muted-foreground">
-                  {itemSeleccionado.requiere_correccion ? 'Actualizar comentario' : 'Qué debe corregirse *'}
-                </label>
-                <textarea
-                  id="comentario-correccion"
-                  value={comentario}
-                  onChange={(e) => setComentario(e.target.value)}
-                  maxLength={500}
-                  rows={4}
-                  placeholder="Describe qué está mal o qué debe corregirse..."
-                  className="w-full resize-none rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-                <p className="mt-1 text-right text-xs tabular-nums text-muted-foreground">{comentario.length}/500</p>
-              </div>
+              <Campo
+                etiqueta={itemSeleccionado.requiere_correccion ? 'Actualizar comentario' : 'Qué debe corregirse *'}
+                className="gap-1.5"
+              >
+                {({ id }) => (
+                  <>
+                    <textarea
+                      id={id}
+                      value={comentario}
+                      onChange={(e) => setComentario(e.target.value)}
+                      maxLength={500}
+                      rows={4}
+                      placeholder="Describe qué está mal o qué debe corregirse..."
+                      className="w-full resize-none rounded-lg border border-border-control bg-input-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                    <p className="text-right text-xs tabular-nums text-muted-foreground">{comentario.length}/500</p>
+                  </>
+                )}
+              </Campo>
             </div>
 
             <div className="flex-shrink-0 space-y-2 border-t border-border p-4">
