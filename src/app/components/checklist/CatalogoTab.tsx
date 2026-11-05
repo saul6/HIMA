@@ -14,6 +14,7 @@ import { DocumentoSheet } from './DocumentoSheet'
 import { AlcancesSheet } from './AlcancesSheet'
 import { NOMBRE_SECCION } from './secciones'
 import { fechaLarga } from './constantes'
+import { useEsEscritorio } from './useEsEscritorio'
 
 type Filtro = 'por_confirmar' | 'alertas' | 'no_aplica'
 
@@ -29,6 +30,10 @@ const ETIQUETA_APLICA: Record<Aplicabilidad, string> = { aplica: 'Aplica', no_ap
 
 export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImportar }: Props) {
   const { instalacion: inst } = catalogo
+  const esEscritorio = useEsEscritorio()
+  const plantillaColumnas = esAdmin
+    ? 'grid grid-cols-[1.5rem_9rem_minmax(0,1fr)_8.5rem_9.5rem]'
+    : 'grid grid-cols-[9rem_minmax(0,1fr)_8.5rem]'
   // Filtro por alcance: '' = todos, 'compartidos' = sin alcance, o el id del alcance
   const [alcanceSel, setAlcanceSel] = useState('')
   const [alcancesAbierto, setAlcancesAbierto] = useState(false)
@@ -114,6 +119,36 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
 
   return (
     <div className="space-y-4">
+      {esEscritorio ? (
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-semibold">Configuración documental{esAdmin ? ' · administración' : ''}</h3>
+                <ChipCatalogo estado={inst.catalogo_estado} />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Versión {inst.catalogo_version} · {todos.length} {todos.length === 1 ? 'documento' : 'documentos'}{inst.aprobado_en ? ` · aprobado el ${fechaLarga(inst.aprobado_en)}${inst.aprobado_por ? ` por ${inst.aprobado_por}` : ''}` : ''}
+              </p>
+            </div>
+            {esAdmin && (
+              <div className="flex flex-wrap justify-end gap-2">
+                <Boton tamano="sm" variante="secundario" cargando={precarga.ocupado} onClick={pedirPrecarga}><Layers className="w-4 h-4" /> Cargar módulos del sector</Boton>
+                <Boton tamano="sm" variante="secundario" onClick={() => setAlcancesAbierto(true)}><GitBranch className="w-4 h-4" /> Alcances</Boton>
+                <Boton tamano="sm" variante="secundario" onClick={onImportar}><Upload className="w-4 h-4" /> Importar</Boton>
+                <Boton tamano="sm" onClick={() => setEditar({ abierto: true, doc: null })}><Plus className="w-4 h-4" /> Documento</Boton>
+              </div>
+            )}
+          </div>
+          {inst.catalogo_estado !== 'aprobado' ? (
+            todos.length > 0
+              ? <Aviso>Catálogo pendiente de aprobación. Solo con el catálogo aprobado se pueden programar visitas; un catálogo en borrador no genera revisiones.</Aviso>
+              : <Aviso>Catálogo pendiente de aprobación.</Aviso>
+          ) : (
+            <Aviso>Catálogo autorizado para visitas. Si lo modificas, tendrá que aprobarse de nuevo.</Aviso>
+          )}
+        </div>
+      ) : (
       <Collapsible defaultOpen={inst.catalogo_estado !== 'aprobado'} className="rounded-xl border border-border bg-card">
         <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 px-4 py-3 text-left">
           <span className="flex flex-wrap items-center gap-2">
@@ -143,13 +178,40 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
           )}
         </CollapsibleContent>
       </Collapsible>
+      )}
 
+      {esEscritorio ? (
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <FiltroPildoras<string>
+              groupId="chk-catalogo-seccion"
+              value={String(seccion)}
+              onChange={v => { setSeccion(Number(v)); setFiltro(null) }}
+              options={[1, 2, 3].map(n => ({ value: String(n), label: <>{NOMBRE_SECCION[n]} · <ContadorPildora n={porSeccion(n)} /></> }))}
+            />
+          </div>
+          {docs.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold text-muted-foreground">Filtrar:</span>
+              <FiltroPildoras<string>
+                groupId="chk-catalogo-filtro"
+                value={filtro ?? ''}
+                onChange={v => setFiltro(filtro === v ? null : (v as Filtro))}
+                options={([
+                  ['por_confirmar', 'Por confirmar'], ['alertas', 'Con alertas'], ['no_aplica', 'No aplica'],
+                ] as const).map(([k, label]) => ({ value: k, label: <>{label} · <ContadorPildora n={cuenta[k]} /></> }))}
+              />
+            </div>
+          )}
+        </div>
+      ) : (
       <FiltroPildoras<string>
         groupId="chk-catalogo-seccion"
         value={String(seccion)}
         onChange={v => { setSeccion(Number(v)); setFiltro(null) }}
         options={[1, 2, 3].map(n => ({ value: String(n), label: <>{NOMBRE_SECCION[n]} · <ContadorPildora n={porSeccion(n)} /></> }))}
       />
+      )}
 
       {alcances.length > 0 && (
         <FiltroPildoras<string>
@@ -160,7 +222,7 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
         />
       )}
 
-      {docs.length > 0 && (
+      {!esEscritorio && docs.length > 0 && (
         <FiltroPildoras<string>
           groupId="chk-catalogo-filtro"
           value={filtro ?? ''}
@@ -192,6 +254,62 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
           )} />
       ) : visibles.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-10">{docs.length === 0 ? 'Esta sección no tiene documentos.' : 'Nada coincide con este filtro.'}</p>
+      ) : esEscritorio ? (
+        <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className={`${plantillaColumnas} items-center gap-x-3 border-b border-border bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground`}>
+            {esAdmin && <span className="sr-only">Seleccionar</span>}
+            {esAdmin && <span aria-hidden="true" />}
+            <span>Código</span>
+            <span>Documento</span>
+            <span>Estado</span>
+            {esAdmin && <span>Aplica</span>}
+          </div>
+          {porArea.map(([area, lista]) => (
+            <section key={area}>
+              <h3 className="border-b border-border bg-muted/40 px-3 py-1.5 text-xs font-semibold text-foreground">{area} · {lista.length}</h3>
+              <div className="divide-y divide-border">
+                {lista.map(d => {
+                  const meta = [d.tipo_doc, d.revision ? `Rev ${d.revision}` : null, d.numeral ? `#${d.numeral}` : null, d.responsable_llenado,
+                    textoRegistro(d) ? `Último registro: ${textoRegistro(d)}` : null].filter(Boolean).join(' · ')
+                  const lineaModulo = [d.modulos_mady && d.modulos_mady.length > 0 ? `Módulo ${d.modulos_mady.join(', ')}` : null, nombreAlcance(d.alcance_id)].filter(Boolean).join(' · ')
+                  const estado = esAdmin && d.alertas.length > 0
+                    ? { label: 'Con alertas', tono: TONOS.info }
+                    : { label: ETIQUETA_APLICA[d.aplicabilidad], tono: d.aplicabilidad === 'aplica' ? TONOS.exito : d.aplicabilidad === 'por_confirmar' ? TONOS.info : TONOS.neutro }
+                  return (
+                    <div key={d.id} className={`${plantillaColumnas} items-start gap-x-3 px-3 py-3`} style={d.alertas.length ? { backgroundColor: 'var(--agro-info-fill)' } : undefined}>
+                      {esAdmin && <input type="checkbox" className="mt-1" aria-label={`Seleccionar ${d.nombre}`} checked={seleccion.has(d.id)} onChange={() => alternar(d.id)} />}
+                      <span className="pt-0.5">
+                        {d.codigo
+                          ? <span className="inline-block rounded bg-muted px-2 py-0.5 font-mono text-xs text-foreground">{d.codigo}</span>
+                          : <span className="text-xs italic text-muted-foreground">Sin código</span>}
+                      </span>
+                      <div className="min-w-0 space-y-1">
+                        <button type="button" className="block w-full rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" onClick={() => setEditar({ abierto: true, doc: d })}>
+                          <span className="block text-sm font-semibold text-foreground">{d.nombre}</span>
+                          {meta && <span className="mt-0.5 block text-xs text-muted-foreground">{meta}</span>}
+                          <span className="mt-0.5 block text-xs text-muted-foreground">{lineaModulo}</span>
+                        </button>
+                        {(d.es_nota || d.atribucion_por_confirmar) && (
+                          <span className="flex flex-wrap gap-1">
+                            {d.es_nota && <Chip tono={TONOS.info}>Observación general</Chip>}
+                            {d.atribucion_por_confirmar && <Chip tono={TONOS.info}>Atribución por confirmar</Chip>}
+                          </span>
+                        )}
+                        {d.alertas.map((a, i) => <p key={i} className="text-xs" style={{ color: 'var(--agro-info-text)' }}>{a.mensaje}</p>)}
+                      </div>
+                      <span className="pt-0.5"><Chip tono={estado.tono}>{estado.label}</Chip></span>
+                      {esAdmin && (
+                        <div className="justify-self-end">
+                          <SelectAplica d={d} esAdmin={esAdmin} ocupado={accion.ocupado} onCambiar={v => pedirAplicabilidad([d.id], v)} />
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+          ))}
+        </div>
       ) : (
         porArea.map(([area, lista]) => (
           <section key={area} className="space-y-2">
