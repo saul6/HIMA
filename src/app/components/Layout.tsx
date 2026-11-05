@@ -432,7 +432,6 @@ export function Layout() {
       <button
         onClick={() => setMenuAbierto(true)}
         className="md:hidden fixed bottom-safe-fab left-4 w-14 h-14 rounded-full flex items-center justify-center z-40 bg-card border border-border group no-press"
-        style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}
         aria-label="Abrir menú"
       >
         <img src="/images/app/MADYIsotipo.png" alt="" aria-hidden="true" className="w-7 h-7 object-contain " />
