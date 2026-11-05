@@ -87,9 +87,9 @@ export function ChecklistDocumentos() {
   const hijo = !est ? null
     : (instalacionId && consultoria) ? (
         <div className="space-y-4">
-          <button type="button" onClick={volver} className="inline-flex items-center gap-1 text-sm font-semibold" style={{ color: 'var(--primary)' }}>
+          {!(esEscritorio && !visitaId) && <button type="button" onClick={volver} className="inline-flex items-center gap-1 text-sm font-semibold" style={{ color: 'var(--primary)' }}>
             <ChevronLeft className="w-4 h-4" aria-hidden="true" /> {visitaId ? 'Visitas' : 'Cartera'}
-          </button>
+          </button>}
           {visitaId ? (
             <VisitaEjecucion
               key={visitaId}
@@ -111,6 +111,7 @@ export function ChecklistDocumentos() {
               onCambio={() => void cartera.recargar()}
               cartera={cartera.data ?? []}
               onCambiarInstalacion={id => ir({ instalacion: id, tab: null, visita: null })}
+              onVolver={volver}
             />
           )}
         </div>

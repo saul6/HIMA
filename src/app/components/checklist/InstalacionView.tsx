@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Info } from 'lucide-react'
+import { ChevronLeft, Info } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { resolverIcono } from '@/app/components/iconos-modulos'
@@ -13,6 +13,8 @@ import { RelacionesTab } from './RelacionesTab'
 import { ImportacionesTab } from './ImportacionesTab'
 import { ImportarSheet } from './ImportarSheet'
 import { ImportacionPreview } from './ImportacionPreview'
+import { SelectorSegmentado } from './SelectorSegmentado'
+import { useEsEscritorio } from './useEsEscritorio'
 
 export type TabInstalacion = 'catalogo' | 'visitas' | 'incidencias' | 'relaciones' | 'importaciones'
 
@@ -28,9 +30,13 @@ interface Props {
   /** Cartera ya cargada en la pantalla: alimenta el selector de instalación y los indicadores. */
   cartera: CarteraCliente[]
   onCambiarInstalacion: (id: string) => void
+  /** Escritorio: flecha de regreso a la Cartera del encabezado. */
+  onVolver?: () => void
 }
 
-export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoClave, tab, onTab, onAbrirVisita, onCambio, cartera, onCambiarInstalacion }: Props) {
+export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoClave, tab, onTab, onAbrirVisita, onCambio, cartera, onCambiarInstalacion, onVolver }: Props) {
+  const esEscritorio = useEsEscritorio()
+  const [comoAbierto, setComoAbierto] = useState(false)
   const { profile } = useAuthContext()
   const sectores = useSectoresChk()
   const catalogo = useCarga<CatalogoVer>(instalacionId, () => chk.catalogoVer(instalacionId))
@@ -71,46 +77,107 @@ export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoCl
   const alcancesActivos = alcances.filter(a => a.activo).map(a => a.nombre)
   const sinLiga = deCartera ? !deCartera.linked_rancho_id : false
 
+  const infoComoFunciona = (
+    <div className="rounded-lg px-3 py-2 text-xs space-y-1" style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
+      <p>La información se hereda del historial, pero cada documento requiere una revisión nueva en esta visita.</p>
+      {sinLiga && <p>Esta instalación no consulta registros operativos de M.A.D.Y.</p>}
+    </div>
+  )
+  const nombreTipo = cat.instalacion.sector_nombre ?? cat.instalacion.tipo
+
+  const selectorInstalacion = (
+    <label className={esEscritorio ? 'block w-72 max-w-full flex-shrink-0' : 'block space-y-1'}>
+      <span className={esEscritorio ? 'sr-only' : 'text-xs text-muted-foreground'}>Instalación</span>
+      <select className={`${CLASE_INPUT} font-semibold`} value={instalacionId} onChange={e => { if (e.target.value !== instalacionId) onCambiarInstalacion(e.target.value) }}>
+        {opciones.map(o => <option key={o.id} value={o.id}>{o.etiqueta}</option>)}
+      </select>
+    </label>
+  )
+
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Instalación</span>
-          <select className={`${CLASE_INPUT} font-semibold`} value={instalacionId} onChange={e => { if (e.target.value !== instalacionId) onCambiarInstalacion(e.target.value) }}>
-            {opciones.map(o => <option key={o.id} value={o.id}>{o.etiqueta}</option>)}
-          </select>
-        </label>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span className="font-semibold text-foreground">{cat.instalacion.cliente}</span>
-          {alcancesActivos.length > 0 && <span>Alcance: {alcancesActivos.join(', ')}</span>}
-          {(cat.instalacion.sector_nombre ?? cat.instalacion.tipo) && (
-            <span className="flex items-center gap-1">
-              <IconoSector className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
-              {cat.instalacion.sector_nombre ?? cat.instalacion.tipo}
-            </span>
+      {esEscritorio ? (
+        <div className="flex items-start gap-3">
+          {onVolver && (
+            <button
+              type="button"
+              onClick={onVolver}
+              aria-label="Volver a Cartera"
+              className="-ml-2 mt-0.5 flex-shrink-0 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              <ChevronLeft className="w-5 h-5" aria-hidden="true" />
+            </button>
           )}
-          <ChipCatalogo estado={cat.instalacion.catalogo_estado} />
+          <div className="min-w-0 flex-1 space-y-1">
+            <h2 className="truncate text-lg font-semibold text-foreground">{cat.instalacion.nombre}</h2>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+              <span className="font-semibold text-foreground">{cat.instalacion.cliente}</span>
+              {nombreTipo && (
+                <span className="flex items-center gap-1">
+                  <IconoSector className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+                  {nombreTipo}
+                </span>
+              )}
+              <ChipCatalogo estado={cat.instalacion.catalogo_estado} />
+              {alcancesActivos.length > 0 && <span>Alcance: {alcancesActivos.join(', ')}</span>}
+            </div>
+          </div>
+          {selectorInstalacion}
         </div>
-      </div>
+      ) : (
+        <div className="space-y-2">
+          {selectorInstalacion}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span className="font-semibold text-foreground">{cat.instalacion.cliente}</span>
+            {alcancesActivos.length > 0 && <span>Alcance: {alcancesActivos.join(', ')}</span>}
+            {nombreTipo && (
+              <span className="flex items-center gap-1">
+                <IconoSector className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+                {nombreTipo}
+              </span>
+            )}
+            <ChipCatalogo estado={cat.instalacion.catalogo_estado} />
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <TarjetaContador etiqueta="Documentos aplicables" valor={aplicables} />
-        <TarjetaContador etiqueta="Revisados en esta visita" valor={null} sub={subVisita} />
-        <TarjetaContador etiqueta="Pendientes de revisión" valor={null} sub={subVisita} />
-        <TarjetaContador etiqueta="Incidencias abiertas" valor={incidenciasAbiertas} tono="alertaTexto" />
+        <TarjetaContador etiqueta="Revisados en esta visita" valor={esEscritorio ? <span className="text-muted-foreground">—</span> : null} sub={subVisita} />
+        <TarjetaContador etiqueta="Pendientes de revisión" valor={esEscritorio ? <span className="text-muted-foreground">—</span> : null} sub={subVisita} />
+        <TarjetaContador etiqueta="Incidencias abiertas" valor={incidenciasAbiertas} tono={esEscritorio && incidenciasAbiertas === 0 ? 'normal' : 'alertaTexto'} />
       </div>
 
-      <details className="group rounded-lg px-3 py-2 text-xs" style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
-        <summary className="cursor-pointer font-semibold flex items-center gap-1.5 list-none">
-          <Info className="w-4 h-4 flex-shrink-0" aria-hidden="true" /> Cómo funciona
-        </summary>
-        <div className="mt-1.5 space-y-1">
-          <p>La información se hereda del historial, pero cada documento requiere una revisión nueva en esta visita.</p>
-          {sinLiga && <p>Esta instalación no consulta registros operativos de M.A.D.Y.</p>}
-        </div>
-      </details>
+      {esEscritorio ? (
+        <>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <SelectorSegmentado<string> ariaLabel="Secciones de la instalación" value={tab} onChange={v => onTab(v as TabInstalacion)} options={tabs} />
+            <button
+              type="button"
+              aria-expanded={comoAbierto}
+              onClick={() => setComoAbierto(v => !v)}
+              className="inline-flex items-center gap-1.5 rounded-sm text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              <Info className="w-4 h-4 flex-shrink-0" aria-hidden="true" /> Cómo funciona
+            </button>
+          </div>
+          {comoAbierto && infoComoFunciona}
+        </>
+      ) : (
+        <>
+          <details className="group rounded-lg px-3 py-2 text-xs" style={{ backgroundColor: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' }}>
+            <summary className="cursor-pointer font-semibold flex items-center gap-1.5 list-none">
+              <Info className="w-4 h-4 flex-shrink-0" aria-hidden="true" /> Cómo funciona
+            </summary>
+            <div className="mt-1.5 space-y-1">
+              <p>La información se hereda del historial, pero cada documento requiere una revisión nueva en esta visita.</p>
+              {sinLiga && <p>Esta instalación no consulta registros operativos de M.A.D.Y.</p>}
+            </div>
+          </details>
 
-      <FiltroPildoras<string> groupId="chk-instalacion-tab" value={tab} onChange={v => onTab(v as TabInstalacion)} options={tabs} />
+          <FiltroPildoras<string> groupId="chk-instalacion-tab" value={tab} onChange={v => onTab(v as TabInstalacion)} options={tabs} />
+        </>
+      )}
 
       {tab === 'catalogo' && <CatalogoTab catalogo={cat} alcances={alcances} esAdmin={esAdmin} onRecargar={refrescar} onImportar={() => setImportarAbierto(true)} />}
       {tab === 'visitas' && (
