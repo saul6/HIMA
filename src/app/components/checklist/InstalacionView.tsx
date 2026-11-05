@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
-import { entrada, fundidoEntrada, useEntradaPantalla } from '@/app/screens/auditor/motionAuditor'
+import { entrada, useEntradaPantalla } from '@/lib/motion'
+import { fundidoEntrada } from '@/app/screens/auditor/motionAuditor'
 import { ChevronLeft, Info } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'

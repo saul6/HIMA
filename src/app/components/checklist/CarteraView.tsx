@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
-import { entrada, fundidoEntrada, useEntradaPantalla } from '@/app/screens/auditor/motionAuditor'
+import { entrada, useEntradaPantalla } from '@/lib/motion'
+import { fundidoEntrada } from '@/app/screens/auditor/motionAuditor'
 import { Building2, ChevronRight, MapPin, Pencil, Plus } from 'lucide-react'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'

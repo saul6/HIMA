@@ -1,7 +1,8 @@
 // Vista "Mis revisiones" del cliente ligado: visitas cerradas con su PDF e incidencias con "Reportar corrección".
 import { useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
-import { entrada, fundidoEntrada, useEntradaPantalla } from '@/app/screens/auditor/motionAuditor'
+import { entrada, useEntradaPantalla } from '@/lib/motion'
+import { fundidoEntrada } from '@/app/screens/auditor/motionAuditor'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { toast } from 'sonner'
 import { FileDown } from 'lucide-react'
