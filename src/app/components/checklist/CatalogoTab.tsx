@@ -32,8 +32,8 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
   const { instalacion: inst } = catalogo
   const esEscritorio = useEsEscritorio()
   const plantillaColumnas = esAdmin
-    ? 'grid grid-cols-[1.5rem_9rem_minmax(0,1fr)_8.5rem_9.5rem]'
-    : 'grid grid-cols-[9rem_minmax(0,1fr)_8.5rem]'
+    ? 'grid grid-cols-[1.5rem_9rem_minmax(0,1fr)_9.5rem]'
+    : 'grid grid-cols-[9rem_minmax(0,1fr)_9.5rem]'
   // Filtro por alcance: '' = todos, 'compartidos' = sin alcance, o el id del alcance
   const [alcanceSel, setAlcanceSel] = useState('')
   const [alcancesAbierto, setAlcancesAbierto] = useState(false)
@@ -261,8 +261,7 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
             {esAdmin && <span aria-hidden="true" />}
             <span>Código</span>
             <span>Documento</span>
-            <span>Estado</span>
-            {esAdmin && <span>Aplica</span>}
+            <span className="justify-self-end">Aplica</span>
           </div>
           {porArea.map(([area, lista]) => (
             <section key={area}>
@@ -272,9 +271,6 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
                   const meta = [d.tipo_doc, d.revision ? `Rev ${d.revision}` : null, d.numeral ? `#${d.numeral}` : null, d.responsable_llenado,
                     textoRegistro(d) ? `Último registro: ${textoRegistro(d)}` : null].filter(Boolean).join(' · ')
                   const lineaModulo = [d.modulos_mady && d.modulos_mady.length > 0 ? `Módulo ${d.modulos_mady.join(', ')}` : null, nombreAlcance(d.alcance_id)].filter(Boolean).join(' · ')
-                  const estado = esAdmin && d.alertas.length > 0
-                    ? { label: 'Con alertas', tono: TONOS.info }
-                    : { label: ETIQUETA_APLICA[d.aplicabilidad], tono: d.aplicabilidad === 'aplica' ? TONOS.exito : d.aplicabilidad === 'por_confirmar' ? TONOS.info : TONOS.neutro }
                   return (
                     <div key={d.id} className={`${plantillaColumnas} items-start gap-x-3 px-3 py-3`} style={d.alertas.length ? { backgroundColor: 'var(--agro-info-fill)' } : undefined}>
                       {esAdmin && <input type="checkbox" className="mt-1" aria-label={`Seleccionar ${d.nombre}`} checked={seleccion.has(d.id)} onChange={() => alternar(d.id)} />}
@@ -285,7 +281,11 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
                       </span>
                       <div className="min-w-0 space-y-1">
                         <button type="button" className="block w-full rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" onClick={() => setEditar({ abierto: true, doc: d })}>
-                          <span className="block text-sm font-semibold text-foreground">{d.nombre}</span>
+                          <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span className="text-sm font-semibold text-foreground">{d.nombre}</span>
+                            {d.alertas.length > 0 && <Chip tono={TONOS.info}>Con alertas</Chip>}
+                            {esAdmin && d.aplicabilidad === 'por_confirmar' && <Chip tono={TONOS.info}>Por confirmar</Chip>}
+                          </span>
                           {meta && <span className="mt-0.5 block text-xs text-muted-foreground">{meta}</span>}
                           <span className="mt-0.5 block text-xs text-muted-foreground">{lineaModulo}</span>
                         </button>
@@ -297,12 +297,9 @@ export function CatalogoTab({ catalogo, alcances, esAdmin, onRecargar, onImporta
                         )}
                         {d.alertas.map((a, i) => <p key={i} className="text-xs" style={{ color: 'var(--agro-info-text)' }}>{a.mensaje}</p>)}
                       </div>
-                      <span className="pt-0.5"><Chip tono={estado.tono}>{estado.label}</Chip></span>
-                      {esAdmin && (
-                        <div className="justify-self-end">
-                          <SelectAplica d={d} esAdmin={esAdmin} ocupado={accion.ocupado} onCambiar={v => pedirAplicabilidad([d.id], v)} />
-                        </div>
-                      )}
+                      <div className="justify-self-end">
+                        <SelectAplica d={d} esAdmin={esAdmin} ocupado={accion.ocupado} onCambiar={v => pedirAplicabilidad([d.id], v)} />
+                      </div>
                     </div>
                   )
                 })}
