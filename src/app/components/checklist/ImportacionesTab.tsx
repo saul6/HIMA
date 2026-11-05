@@ -1,4 +1,6 @@
 import { Upload } from 'lucide-react'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { chk, useCarga, type ImportacionLista } from '@/hooks/useChecklistV2'
@@ -31,20 +33,28 @@ export function ImportacionesTab({ instalacionId, version, onAbrir, onImportar }
       </div>
       {lista.length === 0 ? (
         <EstadoVacio titulo="Sin importaciones" ayuda="Importa un PDF o Word para llenar el catálogo." />
-      ) : lista.map(m => {
-        const e = ESTADO[m.estado] ?? ESTADO.cancelada
-        return (
-          <button key={m.id} type="button" onClick={() => onAbrir(m.id)} className="w-full text-left rounded-xl border border-border bg-card p-3 space-y-1 hover:bg-muted/50">
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-sm font-semibold break-all">{m.archivo_nombre}</p>
-              <Chip tono={e.tono}>{e.label}</Chip>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {m.total_filas} renglones · {m.formato.toUpperCase()} · {fechaLarga(m.creado_en)}{m.creado_por ? ` · ${m.creado_por}` : ''}
-            </p>
-          </button>
-        )
-      })}
+      ) : (
+        <ListaTarjetas>
+          {lista.map(m => {
+            const e = ESTADO[m.estado] ?? ESTADO.cancelada
+            return (
+              <TarjetaRegistro
+                key={m.id}
+                sinFirmas
+                titulo={<span className="break-all">{m.archivo_nombre}</span>}
+                tituloTexto={m.archivo_nombre}
+                alHacerClic={() => onAbrir(m.id)}
+                acciones={<Chip tono={e.tono}>{e.label}</Chip>}
+                contenido={(
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {m.total_filas} renglones · {m.formato.toUpperCase()} · {fechaLarga(m.creado_en)}{m.creado_por ? ` · ${m.creado_por}` : ''}
+                  </p>
+                )}
+              />
+            )
+          })}
+        </ListaTarjetas>
+      )}
     </div>
   )
 }

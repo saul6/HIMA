@@ -5,6 +5,8 @@ import { BottomSheet } from '@/app/components/BottomSheet'
 import { Boton } from '@/app/components/ui-mady/Boton'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Input } from '@/app/components/ui/input'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { useAuthContext } from '@/context/AuthContext'
 import { hoyMX } from '@/lib/fecha'
 import { chk, useAccion, useCarga, type CatalogoEstado, type ChkAlcance, type VisitaLista } from '@/hooks/useChecklistV2'
@@ -82,20 +84,23 @@ export function VisitasTab({ instalacionId, alcances, catalogoEstado, esAdmin, p
 
       {visitas.length === 0 ? (
         <EstadoVacio titulo="Sin visitas" ayuda="Las visitas se programan manualmente; nunca se crean solas." />
-      ) : visitas.map(v => {
+      ) : (
+      <ListaTarjetas>
+      {visitas.map(v => {
         const e = v.descartada ? { label: 'Descartada', tono: TONOS.neutro } : (ESTADO[v.estado] ?? ESTADO.cerrada)
         const descarte = v.descartada ? v.eventos.find(x => x.tipo === 'descartada') : undefined
         const mia = v.asesor_id === perfilId
         const reprog = v.eventos.filter(x => x.tipo.includes('reprogram')).length
         return (
-          <div key={v.id} className="rounded-xl border border-border bg-card p-3 space-y-2">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="text-sm font-semibold">{fechaLarga(v.fecha)}{v.alcance ? ` · ${v.alcance}` : ''}</p>
-                <p className="text-xs text-muted-foreground">{v.asesor ?? 'Sin asesora asignada'}{reprog > 0 ? ` · reprogramada ${reprog} ${reprog === 1 ? 'vez' : 'veces'}` : ''}</p>
-              </div>
-              <Chip tono={e.tono}>{e.label}</Chip>
-            </div>
+          <TarjetaRegistro
+            key={v.id}
+            sinFirmas
+            titulo={`${fechaLarga(v.fecha)}${v.alcance ? ` · ${v.alcance}` : ''}`}
+            tituloTexto={`${fechaLarga(v.fecha)}${v.alcance ? ` · ${v.alcance}` : ''}`}
+            contenido={<p className="text-xs text-muted-foreground">{v.asesor ?? 'Sin asesora asignada'}{reprog > 0 ? ` · reprogramada ${reprog} ${reprog === 1 ? 'vez' : 'veces'}` : ''}</p>}
+            acciones={<Chip tono={e.tono}>{e.label}</Chip>}
+          >
+            <div className="mt-2 space-y-2">
             {v.nota && <p className="text-xs text-muted-foreground">{v.nota}</p>}
             {v.eventos.filter(x => x.tipo === 'fecha_corregida').map((x, i) => (
               <p key={i} className="text-xs text-muted-foreground">
@@ -126,9 +131,12 @@ export function VisitasTab({ instalacionId, alcances, catalogoEstado, esAdmin, p
                 </Boton>
               )}
             </div>
-          </div>
+            </div>
+          </TarjetaRegistro>
         )
       })}
+      </ListaTarjetas>
+      )}
 
       <VisitaAccionSheet modo={modo} instalacionId={instalacionId} alcances={alcances} onClose={() => setModo(null)} onGuardado={onCambio} />
     </div>

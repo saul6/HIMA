@@ -4,6 +4,8 @@ import { Boton } from '@/app/components/ui-mady/Boton'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'
 import { chk, useAccion, useCarga, type EstadoVinculo, type TipoVinculo, type Vinculo, type VinculoDocRef } from '@/hooks/useChecklistV2'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { Aviso, Cargando, Chip, ErrorReintentar, TONOS } from './comun'
 import { NOMBRE_SECCION_CORTO } from './secciones'
 
@@ -32,7 +34,11 @@ export function RelacionesTab({ instalacionId, version }: Props) {
       <FiltroPildoras<string> groupId="chk-relaciones-estado" value={estado} onChange={v => setEstado(v as EstadoVinculo)} options={ESTADOS} />
       {lista.length === 0 ? (
         <EstadoVacio titulo={estado === 'sugerido' ? 'No hay relaciones sugeridas' : 'Sin relaciones en este estado'} ayuda="Las sugerencias nacen al importar un documento con candidatos de la Tabla 1." />
-      ) : lista.map(v => <FilaVinculo key={v.id} v={v} onCambio={() => setLocal(n => n + 1)} />)}
+      ) : (
+        <ListaTarjetas>
+          {lista.map(v => <FilaVinculo key={v.id} v={v} onCambio={() => setLocal(n => n + 1)} />)}
+        </ListaTarjetas>
+      )}
     </div>
   )
 }
@@ -59,7 +65,8 @@ function FilaVinculo({ v, onCambio }: { v: Vinculo; onCambio: () => void }) {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-3 space-y-2.5">
+    <TarjetaRegistro sinFirmas>
+      <div className="space-y-2.5">
       <div className="flex flex-col sm:flex-row gap-3">
         <DocRef d={v.origen} etiqueta="Documento" />
         <DocRef d={v.destino} etiqueta="Relacionado con" />
@@ -75,6 +82,7 @@ function FilaVinculo({ v, onCambio }: { v: Vinculo; onCambio: () => void }) {
           {v.estado !== 'descartado' && <Boton tamano="sm" variante="secundario" cargando={ocupado} onClick={() => decidir('descartado')}>Descartar</Boton>}
         </div>
       </div>
-    </div>
+      </div>
+    </TarjetaRegistro>
   )
 }

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Pildora } from './Pildora'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { chk, useCarga, type IncidenciaLista, type Seguimiento } from '@/hooks/useChecklistV2'
 import { Cargando, Chip, ErrorReintentar, TONOS } from './comun'
 import { fechaCorta, fechaLarga } from './constantes'
@@ -50,17 +52,20 @@ export function IncidenciasTab({ instalacionId, version }: Props) {
       {carga.loading && !carga.data ? <Cargando />
         : carga.error ? <ErrorReintentar mensaje={carga.error} onReintentar={carga.recargar} />
         : (carga.data ?? []).length === 0 ? <EstadoVacio titulo={soloAbiertas ? 'Sin incidencias abiertas' : 'Sin incidencias'} />
-        : (carga.data ?? []).map(x => {
+        : (
+        <ListaTarjetas>
+        {(carga.data ?? []).map(x => {
           const e = etiquetaEstadoIncidencia(x.estado)
           return (
-            <div key={x.id} className="rounded-xl border border-border bg-card p-3 space-y-2">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold">{x.documento}</p>
-                  <p className="text-xs text-muted-foreground">{[x.codigo, x.area].filter(Boolean).join(' · ')}</p>
-                </div>
-                <Chip tono={e.tono}>{e.label}</Chip>
-              </div>
+            <TarjetaRegistro
+              key={x.id}
+              sinFirmas
+              titulo={x.documento}
+              tituloTexto={x.documento}
+              contenido={<p className="text-xs text-muted-foreground">{[x.codigo, x.area].filter(Boolean).join(' · ')}</p>}
+              acciones={<Chip tono={e.tono}>{e.label}</Chip>}
+            >
+              <div className="mt-2 space-y-2">
               <p className="text-sm">{x.descripcion}</p>
               <p className="text-xs text-muted-foreground">
                 {x.origen_fecha ? `Detectada el ${fechaLarga(x.origen_fecha)}` : ''}
@@ -68,9 +73,12 @@ export function IncidenciasTab({ instalacionId, version }: Props) {
                 {x.fecha_compromiso ? ` · Compromiso: ${fechaLarga(x.fecha_compromiso)}` : ''}
               </p>
               <SeguimientosLista items={x.seguimientos} />
-            </div>
+              </div>
+            </TarjetaRegistro>
           )
         })}
+        </ListaTarjetas>
+        )}
     </div>
   )
 }
