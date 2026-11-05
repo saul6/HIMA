@@ -170,13 +170,12 @@ export function Perfil() {
       {/* Header */}
       <EncabezadoPantalla titulo="Perfil" />
 
-      {/* Celular: una columna en el orden de siempre. Escritorio (lg): izquierda la cuenta, derecha la organización y los ajustes.
-          Las columnas son `contents` en celular, y `order-N` conserva el orden de una sola columna. */}
-      <div className="p-4 flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start">
-        <div className="contents lg:flex lg:flex-col lg:gap-4">
+      {/* Celular: una columna en el orden de siempre. Escritorio (lg): fila 1 = cuenta | firma (misma altura);
+          fila 2 = logo | organización, ajustes y cerrar sesión. Sin estirar lo que queda más corto. */}
+      <div className="p-4 flex flex-col gap-4 lg:grid lg:grid-cols-2">
         {/* Tarjeta de usuario */}
-        <motion.div {...ent(0)} className="order-1">
-        <Panel className="p-6">
+        <motion.div {...ent(0)} className="order-1 lg:col-start-1 lg:row-start-1 lg:flex">
+        <Panel className="p-6 flex-1">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-primary-foreground text-xl font-semibold">{iniciales}</span>
@@ -230,8 +229,8 @@ export function Perfil() {
         </motion.div>
         {/* Mi firma — para todos excepto auditor */}
         {!esAuditor && (
-          <motion.div {...ent(1)} className="order-5">
-          <Panel className="space-y-3">
+          <motion.div {...ent(1)} className="order-5 lg:col-start-2 lg:row-start-1 lg:flex">
+          <Panel className="space-y-3 flex-1">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -320,19 +319,32 @@ export function Perfil() {
         )}
 
 
-        {/* Cerrar sesión */}
-        <motion.div {...ent(6)} className="order-8">
-        <button
-          onClick={handleCerrarSesion}
-          className="w-full h-14 bg-card border border-agro-red text-agro-red rounded-xl flex items-center justify-center gap-2 hover:bg-agro-danger-fill transition-colors font-semibold"
-        >
-          <LogOut className="w-5 h-5" />
-          Cerrar sesión
-        </button>
+        {/* Info de la app */}
+        <motion.div {...ent(4)} className="order-6 lg:col-start-1 lg:row-start-2 lg:self-start">
+        <Panel>
+          <div className="text-center">
+            <div className="text-sm mb-1 font-semibold"><MadyLogo theme={resolvedTheme} className="h-80 mx-auto" /></div>
+            <div className="text-xs text-muted-foreground mb-1">
+              Versión {__APP_VERSION__} · {fechaBuild}
+            </div>
+            {updateDisponible && (
+              <div className="flex items-center justify-center gap-2 mt-1 mb-1">
+                <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                  Actualización pendiente
+                </span>
+                <Boton tamano="sm" onClick={ejecutarActualizacion}>
+                  Actualizar ahora
+                </Boton>
+              </div>
+            )}
+            <div className="text-xs text-muted-foreground">
+              © 2026 M.A.D.Y
+            </div>
+          </div>
+        </Panel>
         </motion.div>
-        </div>
-
-        <div className="contents lg:flex lg:flex-col lg:gap-4">
+        {/* Columna derecha (fila 2): en celular es `contents` y `order-N` conserva el orden de siempre */}
+        <div className="contents lg:flex lg:flex-col lg:gap-4 lg:col-start-2 lg:row-start-2 lg:self-start">
         {/* Mi organización — solo para admin_org */}
         {profile?.rol === 'admin_org' && (
           <motion.div {...ent(1)} className="order-2">
@@ -394,30 +406,6 @@ export function Perfil() {
           </motion.div>
         )}
 
-        {/* Info de la app */}
-        <motion.div {...ent(4)} className="order-6">
-        <Panel>
-          <div className="text-center">
-            <div className="text-sm mb-1 font-semibold"><MadyLogo theme={resolvedTheme} className="h-80 mx-auto" /></div>
-            <div className="text-xs text-muted-foreground mb-1">
-              Versión {__APP_VERSION__} · {fechaBuild}
-            </div>
-            {updateDisponible && (
-              <div className="flex items-center justify-center gap-2 mt-1 mb-1">
-                <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                  Actualización pendiente
-                </span>
-                <Boton tamano="sm" onClick={ejecutarActualizacion}>
-                  Actualizar ahora
-                </Boton>
-              </div>
-            )}
-            <div className="text-xs text-muted-foreground">
-              © 2026 M.A.D.Y
-            </div>
-          </div>
-        </Panel>
-        </motion.div>
         {/* Sincronización */}
         <motion.div {...ent(5)} className="order-7">
         <button
@@ -430,8 +418,17 @@ export function Perfil() {
         </button>
 
         </motion.div>
+        {/* Cerrar sesión */}
+        <motion.div {...ent(6)} className="order-8">
+        <button
+          onClick={handleCerrarSesion}
+          className="w-full h-14 bg-card border border-agro-red text-agro-red rounded-xl flex items-center justify-center gap-2 hover:bg-agro-danger-fill transition-colors font-semibold"
+        >
+          <LogOut className="w-5 h-5" />
+          Cerrar sesión
+        </button>
+        </motion.div>
         </div>
-
       </div>
       {confirmarElemento}
     </div>
