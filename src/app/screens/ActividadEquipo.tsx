@@ -307,8 +307,8 @@ export function ActividadEquipo() {
         acciones={botonActualizar}
       />
 
-      <div className="mx-auto w-full space-y-4 p-4 lg:max-w-[960px]">
-        <div className="hidden justify-end md:flex">{botonActualizar}</div>
+      <div className="w-full space-y-4 p-4">
+        <div className="hidden justify-end md:flex lg:hidden">{botonActualizar}</div>
 
         {/* Resumen */}
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -335,7 +335,7 @@ export function ActividadEquipo() {
 
         {/* Filtros */}
         <div>
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
             <select aria-label="Colaborador" value={usuario} onChange={(e) => setUsuario(e.target.value)} className={CLASE_SELECT}>
               <option value="">Todos los colaboradores</option>
               {empleados.map((e) => (
@@ -359,6 +359,16 @@ export function ActividadEquipo() {
                 <option key={p.valor} value={p.valor}>{p.etiqueta}</option>
               ))}
             </select>
+            <Boton
+              variante="secundario"
+              className="hidden lg:inline-flex"
+              onClick={refetch}
+              aria-label="Actualizar"
+              disabled={loading}
+            >
+              <RefreshCw className={`size-4 ${loading ? 'animate-spin motion-reduce:animate-none' : ''}`} aria-hidden="true" />
+              Actualizar
+            </Boton>
           </div>
           {hayFiltros && (
             <button onClick={limpiar} className="mt-2 text-xs text-muted-foreground underline">
