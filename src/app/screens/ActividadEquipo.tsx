@@ -327,6 +327,17 @@ export function ActividadEquipo() {
 
       <div className="w-full space-y-4 p-4">
         <div className="hidden justify-end md:flex lg:hidden">{botonActualizar}</div>
+        <div className="hidden justify-end lg:flex">
+          <Boton
+            variante="secundario"
+            onClick={refetch}
+            aria-label="Actualizar"
+            disabled={loading}
+          >
+            <RefreshCw className={`size-4 ${loading ? 'animate-spin motion-reduce:animate-none' : ''}`} aria-hidden="true" />
+            Actualizar
+          </Boton>
+        </div>
 
         {/* Resumen */}
         {mostrarSkeleton ? (
@@ -364,7 +375,7 @@ export function ActividadEquipo() {
 
         {/* Filtros */}
         <motion.div {...ent(1)}>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <select aria-label="Colaborador" value={usuario} onChange={(e) => setUsuario(e.target.value)} className={CLASE_SELECT}>
               <option value="">Todos los colaboradores</option>
               {empleados.map((e) => (
@@ -388,16 +399,6 @@ export function ActividadEquipo() {
                 <option key={p.valor} value={p.valor}>{p.etiqueta}</option>
               ))}
             </select>
-            <Boton
-              variante="secundario"
-              className="hidden lg:inline-flex"
-              onClick={refetch}
-              aria-label="Actualizar"
-              disabled={loading}
-            >
-              <RefreshCw className={`size-4 ${loading ? 'animate-spin motion-reduce:animate-none' : ''}`} aria-hidden="true" />
-              Actualizar
-            </Boton>
           </div>
           {hayFiltros && (
             <button onClick={limpiar} className="mt-2 text-xs text-muted-foreground underline">
@@ -432,8 +433,7 @@ export function ActividadEquipo() {
             {grupos.map((g, i) => (
               <motion.section key={g.dia} {...ent(i + 2)}>
                 <TituloSeccion as="h2" variante="subtitulo" className="mb-2 px-1">
-                  <span className="uppercase">{encabezadoDia(g.dia, hoy)}</span>
-                  {` · ${g.items.length} ${g.items.length === 1 ? 'registro' : 'registros'}`}
+                  {`${encabezadoDia(g.dia, hoy)} · ${g.items.length} ${g.items.length === 1 ? 'registro' : 'registros'}`}
                 </TituloSeccion>
                 <ListaTarjetas>
                   {g.items.map((item) => (
