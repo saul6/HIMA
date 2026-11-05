@@ -16,7 +16,7 @@ import { RelacionesTab } from './RelacionesTab'
 import { ImportacionesTab } from './ImportacionesTab'
 import { ImportarSheet } from './ImportarSheet'
 import { ImportacionPreview } from './ImportacionPreview'
-import { SelectorSegmentado } from './SelectorSegmentado'
+import { SelectorSegmentado } from '@/app/components/ui-mady/SelectorSegmentado'
 import { useEsEscritorio } from './useEsEscritorio'
 
 export type TabInstalacion = 'catalogo' | 'visitas' | 'incidencias' | 'relaciones' | 'importaciones'

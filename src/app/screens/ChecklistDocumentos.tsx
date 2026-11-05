@@ -19,7 +19,7 @@ import { CarteraView } from '@/app/components/checklist/CarteraView'
 import { InstalacionView, type TabInstalacion } from '@/app/components/checklist/InstalacionView'
 import { VisitaEjecucion } from '@/app/components/checklist/VisitaEjecucion'
 import { PortalCliente } from '@/app/components/checklist/PortalCliente'
-import { SelectorSegmentado } from '@/app/components/checklist/SelectorSegmentado'
+import { SelectorSegmentado } from '@/app/components/ui-mady/SelectorSegmentado'
 import { useEsEscritorio } from '@/app/components/checklist/useEsEscritorio'
 
 const TABS: TabInstalacion[] = ['catalogo', 'visitas', 'incidencias', 'relaciones', 'importaciones']
