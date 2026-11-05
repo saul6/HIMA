@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { RefreshCw, TriangleAlert, X, AlertTriangle, FileText, Activity, SearchX } from 'lucide-react'
 import { toast } from 'sonner'
+import { motion } from 'motion/react'
 import { useActividadEquipo } from '@/hooks/useActividadEquipo'
 import type { ActividadItem, FiltroSolo } from '@/hooks/useActividadEquipo'
 import { useRanchos } from '@/hooks/useRanchos'
@@ -18,6 +19,8 @@ import { resolverIcono } from '@/app/components/iconos-modulos'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
+import { Skeleton } from '@/app/components/ui/skeleton'
+import { useEntradaPantalla } from '@/app/screens/auditor/motionAuditor'
 import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
 import { Campo } from '@/app/components/ui-mady/Campo'
@@ -186,6 +189,7 @@ export function ActividadEquipo() {
   const { items, resumen, totalFiltrado, truncado, empleados, loading, error, refetch } =
     useActividadEquipo({ desde, hasta, usuario, modulo, rancho, solo })
   const mostrarSkeleton = useMostrarCarga(loading, items.length > 0)
+  const ent = useEntradaPantalla(!loading)
 
   const [itemSeleccionado, setItemSeleccionado] = useState<ActividadItem | null>(null)
   const [comentario, setComentario] = useState('')
@@ -325,6 +329,16 @@ export function ActividadEquipo() {
         <div className="hidden justify-end md:flex lg:hidden">{botonActualizar}</div>
 
         {/* Resumen */}
+        {mostrarSkeleton ? (
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-hidden="true">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-7 w-10" />
+              </div>
+            ))}
+          </div>
+        ) : (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <TarjetaContador etiqueta="Hoy" valor={resumen.hoy} indice={0} />
           <TarjetaContador etiqueta="Esta semana" valor={resumen.semana} indice={1} />
@@ -346,9 +360,10 @@ export function ActividadEquipo() {
             indice={3}
           />
         </div>
+        )}
 
         {/* Filtros */}
-        <div>
+        <motion.div {...ent(1)}>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
             <select aria-label="Colaborador" value={usuario} onChange={(e) => setUsuario(e.target.value)} className={CLASE_SELECT}>
               <option value="">Todos los colaboradores</option>
@@ -389,7 +404,7 @@ export function ActividadEquipo() {
               Limpiar
             </button>
           )}
-        </div>
+        </motion.div>
 
         {/* Lista */}
         {error ? (
@@ -401,7 +416,7 @@ export function ActividadEquipo() {
             <Boton variante="secundario" tamano="sm" onClick={refetch}>Reintentar</Boton>
           </div>
         ) : mostrarSkeleton ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla onReintentar={refetch} />
         ) : loading && items.length === 0 ? null : items.length === 0 ? (
           hayFiltros ? (
             <EstadoVacio
@@ -414,8 +429,8 @@ export function ActividadEquipo() {
           )
         ) : (
           <div className="space-y-4">
-            {grupos.map((g) => (
-              <section key={g.dia}>
+            {grupos.map((g, i) => (
+              <motion.section key={g.dia} {...ent(i + 2)}>
                 <TituloSeccion as="h2" variante="subtitulo" className="mb-2 px-1">
                   <span className="uppercase">{encabezadoDia(g.dia, hoy)}</span>
                   {` · ${g.items.length} ${g.items.length === 1 ? 'registro' : 'registros'}`}
@@ -433,7 +448,7 @@ export function ActividadEquipo() {
                     />
                   ))}
                 </ListaTarjetas>
-              </section>
+              </motion.section>
             ))}
             {truncado && (
               <p className="px-1 text-center text-xs text-muted-foreground">
