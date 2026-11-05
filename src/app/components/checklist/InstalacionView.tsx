@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { ChevronLeft, Info } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { FiltroPildoras } from '@/app/components/FiltroPildoras'
-import { resolverIcono } from '@/app/components/iconos-modulos'
+import { iconoTipoInstalacion } from './iconoTipoInstalacion'
 import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { chk, useCarga, useSectoresChk, type CarteraCliente, type CarteraInstalacion, type CatalogoVer, type ChkAlcance } from '@/hooks/useChecklistV2'
 import { Cargando, CLASE_INPUT, ChipCatalogo, ErrorReintentar } from './comun'
@@ -60,7 +60,7 @@ export function InstalacionView({ instalacionId, esAdmin, puedeRevisar, codigoCl
   if (catalogo.loading && !catalogo.data) return <Cargando />
   if (catalogo.error || !catalogo.data) return <ErrorReintentar mensaje={catalogo.error ?? 'No se pudo cargar la instalación'} onReintentar={catalogo.recargar} />
   const cat = catalogo.data
-  const IconoSector = resolverIcono(sectores.find(s => s.clave === cat.instalacion.sector_clave)?.icono ?? '')
+  const IconoSector = iconoTipoInstalacion(cat.instalacion.sector_clave, cat.instalacion.sector_nombre, sectores.find(s => s.clave === cat.instalacion.sector_clave)?.icono)
 
   const tabs = [
     { value: 'catalogo', label: 'Catálogo' },

@@ -130,7 +130,7 @@ function Formulario({ instalacionId, alcances, seccionInicial, alcanceInicial, d
           <Campo etiqueta="Rev"><Input disabled={bloqueado} value={revision} maxLength={60} onChange={e => setRevision(e.target.value)} /></Campo>
           <Campo etiqueta="#"><Input disabled={bloqueado} value={numeral} maxLength={20} onChange={e => setNumeral(e.target.value)} /></Campo>
         </div>
-        <Campo etiqueta="Nombre"><Input disabled={bloqueado} value={nombre} maxLength={300} onChange={e => setNombre(e.target.value)} /></Campo>
+        <Campo etiqueta="Nombre" requerido><Input disabled={bloqueado} value={nombre} maxLength={300} onChange={e => setNombre(e.target.value)} /></Campo>
         {seccion !== 2 && <Campo etiqueta="Código"><Input disabled={bloqueado} value={codigo} maxLength={100} onChange={e => setCodigo(e.target.value)} /></Campo>}
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" disabled={bloqueado} checked={esNota} onChange={e => setEsNota(e.target.checked)} />
@@ -199,10 +199,13 @@ function Formulario({ instalacionId, alcances, seccionInicial, alcanceInicial, d
   )
 }
 
-function Campo({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
+function Campo({ etiqueta, requerido, children }: { etiqueta: string; requerido?: boolean; children: React.ReactNode }) {
   return (
     <label className="block space-y-1">
-      <span className="text-xs text-muted-foreground">{etiqueta}</span>
+      <span className="text-xs font-semibold text-muted-foreground">
+        {etiqueta}
+        {requerido && <><span aria-hidden="true"> *</span><span className="sr-only"> obligatorio</span></>}
+      </span>
       {children}
     </label>
   )

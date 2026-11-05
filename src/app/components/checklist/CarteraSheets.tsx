@@ -3,9 +3,10 @@ import { toast } from 'sonner'
 import { X } from 'lucide-react'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { Input } from '@/app/components/ui/input'
+import { Campo } from '@/app/components/ui-mady/Campo'
+import { iconoTipoInstalacion } from './iconoTipoInstalacion'
 import { Pildora } from './Pildora'
 import { CLASE_INPUT, CLASE_TEXTAREA, PieFormulario } from './comun'
-import { resolverIcono } from '@/app/components/iconos-modulos'
 import { chk, mensajeError, useAccion, type CarteraCliente, type CarteraInstalacion, type ChkSector } from '@/hooks/useChecklistV2'
 
 // ── Cliente ──────────────────────────────────────────────────────────────────
@@ -61,18 +62,15 @@ function FormCliente({ cliente, onClose, onGuardado }: Omit<ClienteProps, 'open'
   return (
     <>
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Nombre</span>
-          <Input value={nombre} maxLength={200} onChange={e => setNombre(e.target.value)} />
-        </label>
-        <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Contacto (opcional)</span>
-          <Input value={contacto} maxLength={300} onChange={e => setContacto(e.target.value)} />
-        </label>
-        <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Notas (opcional)</span>
-          <textarea className={CLASE_TEXTAREA} value={notas} maxLength={2000} onChange={e => setNotas(e.target.value)} />
-        </label>
+        <Campo etiqueta="Nombre" requerido className="gap-1">
+          {({ id }) => <Input id={id} value={nombre} maxLength={200} onChange={e => setNombre(e.target.value)} />}
+        </Campo>
+        <Campo etiqueta="Contacto (opcional)" className="gap-1">
+          {({ id }) => <Input id={id} value={contacto} maxLength={300} onChange={e => setContacto(e.target.value)} />}
+        </Campo>
+        <Campo etiqueta="Notas (opcional)" className="gap-1">
+          {({ id }) => <textarea id={id} className={CLASE_TEXTAREA} value={notas} maxLength={2000} onChange={e => setNotas(e.target.value)} />}
+        </Campo>
 
         <div className="space-y-2">
           <span className="text-xs text-muted-foreground">Organización M.A.D.Y del cliente (opcional)</span>
@@ -189,15 +187,14 @@ function FormInstalacion({ cliente, instalacion, onClose, onGuardado, onCreada }
     <>
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         <p className="text-xs text-muted-foreground">Cliente: <span className="font-semibold text-foreground">{cliente.nombre}</span></p>
-        <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Nombre</span>
-          <Input value={nombre} maxLength={200} onChange={e => setNombre(e.target.value)} />
-        </label>
+        <Campo etiqueta="Nombre" requerido className="gap-1">
+          {({ id }) => <Input id={id} value={nombre} maxLength={200} onChange={e => setNombre(e.target.value)} />}
+        </Campo>
         <div className="space-y-1">
-          <span className="text-xs text-muted-foreground">Tipo de instalación{instalacion ? '' : ' *'}</span>
+          <span className="text-xs font-semibold text-muted-foreground">Tipo de instalación{instalacion ? '' : ' *'}</span>
           <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Tipo de instalación">
             {sectores.map(s => {
-              const Icono = resolverIcono(s.icono)
+              const Icono = iconoTipoInstalacion(s.clave, s.nombre, s.icono)
               const activa = sector === s.clave
               return (
                 <button
@@ -212,21 +209,20 @@ function FormInstalacion({ cliente, instalacion, onClose, onGuardado, onCreada }
           </div>
           {!instalacion && <p className="text-xs text-muted-foreground">Al crearla se cargan los módulos de este tipo de instalación. Podrás quitar los que no apliquen.</p>}
         </div>
-        <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Ubicación (opcional)</span>
-          <Input value={ubicacion} maxLength={300} onChange={e => setUbicacion(e.target.value)} />
-        </label>
-        <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Sitio ligado en M.A.D.Y (opcional)</span>
-          <select className={CLASE_INPUT} value={rancho} onChange={e => setRancho(e.target.value)}>
-            <option value="">Sin ligar</option>
-            {sitios.map(s => <option key={s.id} value={s.id}>{s.nombre}{s.org === 'cliente' ? ' (del cliente)' : ''}</option>)}
-          </select>
-        </label>
-        <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Avisar de vencimiento con (días)</span>
-          <Input type="number" inputMode="numeric" min={1} max={365} value={umbral} onChange={e => setUmbral(e.target.value)} />
-        </label>
+        <Campo etiqueta="Ubicación (opcional)" className="gap-1">
+          {({ id }) => <Input id={id} value={ubicacion} maxLength={300} onChange={e => setUbicacion(e.target.value)} />}
+        </Campo>
+        <Campo etiqueta="Sitio ligado en M.A.D.Y (opcional)" className="gap-1">
+          {({ id }) => (
+            <select id={id} className={CLASE_INPUT} value={rancho} onChange={e => setRancho(e.target.value)}>
+              <option value="">Sin ligar</option>
+              {sitios.map(s => <option key={s.id} value={s.id}>{s.nombre}{s.org === 'cliente' ? ' (del cliente)' : ''}</option>)}
+            </select>
+          )}
+        </Campo>
+        <Campo etiqueta="Avisar de vencimiento con (días)" requerido className="gap-1">
+          {({ id }) => <Input id={id} type="number" inputMode="numeric" min={1} max={365} value={umbral} onChange={e => setUmbral(e.target.value)} />}
+        </Campo>
         {instalacion && (
           <div className="flex gap-2">
             <Pildora activa={activo} onClick={() => setActivo(true)}>Activa</Pildora>

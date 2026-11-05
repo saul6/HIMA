@@ -7,7 +7,7 @@ import { TarjetaContador } from '@/app/components/ui-mady/TarjetaContador'
 import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
 import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
 import { Fab } from '@/app/components/Fab'
-import { resolverIcono } from '@/app/components/iconos-modulos'
+import { iconoTipoInstalacion } from './iconoTipoInstalacion'
 import { useSectoresChk, type CarteraCliente, type CarteraInstalacion } from '@/hooks/useChecklistV2'
 import { Chip, ChipCatalogo, TONOS } from './comun'
 import { ClienteSheet, InstalacionSheet } from './CarteraSheets'
@@ -118,7 +118,8 @@ export function CarteraView({ cartera, esAdmin, onAbrir, onRecargar }: Props) {
 
 function useIconoInstalacion(inst: CarteraInstalacion) {
   const sectores = useSectoresChk()
-  return inst.sector_clave ? resolverIcono(sectores.find(s => s.clave === inst.sector_clave)?.icono ?? '') : MapPin
+  if (!inst.sector_clave) return MapPin
+  return iconoTipoInstalacion(inst.sector_clave, inst.sector_nombre, sectores.find(s => s.clave === inst.sector_clave)?.icono)
 }
 
 function LineaVisita({ inst }: { inst: CarteraInstalacion }) {
