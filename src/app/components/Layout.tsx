@@ -41,7 +41,6 @@ const PATH_TITLES: Record<string, string> = {
   '/nomina/catalogo': 'Catálogo',
   '/nomina/historial': 'Historial',
   '/nomina/mensual': 'Consolidado mensual',
-  '/mis-vouchers': 'Mis vouchers',
 }
 
 // Respaldo cuando el módulo aún no llega del catálogo: palabras del slug con su acento.
