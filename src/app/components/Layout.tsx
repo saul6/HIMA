@@ -171,6 +171,10 @@ export function Layout() {
   const topbarTitulo = PATH_TITLES[location.pathname] ?? categoriaLabel ?? pageTitle;
   const ThemeIcon = theme === 'dark' ? Moon : Sun;
   const themeLabel = theme === 'dark' ? 'Oscuro' : 'Claro';
+  // Nombre accesible = texto visible primero, luego la acción (regla label-content-name-mismatch)
+  const temaAccion = `${themeLabel}, cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`;
+  const nombreVisible = profile?.nombre_completo ?? '—';
+  const rolVisible = ROL_LABELS[profile?.rol ?? ''] ?? profile?.rol ?? '—';
 
   function isActive(path: string) {
     if (path === "/auditor") {
@@ -258,7 +262,7 @@ export function Layout() {
           <button
             onClick={e => cycleTheme(e.currentTarget as HTMLElement)}
             className="w-full flex items-center justify-center lg:justify-start gap-0 lg:gap-3 px-0 lg:px-3 py-2.5 rounded-lg transition-colors hover:bg-muted"
-            aria-label={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
+            aria-label={temaAccion}
             title={themeLabel}
           >
             <ThemeIcon
@@ -275,13 +279,14 @@ export function Layout() {
         <div className="px-1 lg:px-3 py-2 border-t border-border">
           <Link
             to="/perfil"
-            aria-label="Ir a perfil"
+            aria-label={`${nombreVisible} ${rolVisible}, ir a perfil`}
             className="flex items-center justify-center lg:justify-start gap-0 lg:gap-3 px-1 lg:px-2 py-2 rounded-lg transition-colors hover:bg-muted"
             style={{
               backgroundColor: isActive('/perfil') ? 'var(--accent)' : undefined,
             }}
           >
             <div
+              aria-hidden="true"
               className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-xs"
               style={{ backgroundColor: 'var(--accent)', color: 'var(--primary)', fontWeight: 700 }}
             >
@@ -452,12 +457,13 @@ export function Layout() {
         <div className="border-b border-border">
           <Link
             to="/perfil"
-            aria-label="Ir a mi perfil"
+            aria-label={`${nombreVisible} ${rolVisible}, ir a perfil`}
             onClick={() => setMenuAbierto(false)}
             className="flex items-center gap-3 px-4 py-3 transition-[background-color,transform] duration-150 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
             style={{ backgroundColor: isActive('/perfil') ? 'var(--accent)' : undefined }}
           >
             <div
+              aria-hidden="true"
               className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold"
               style={{ backgroundColor: 'var(--accent)', color: 'var(--primary)' }}
             >
@@ -542,7 +548,7 @@ export function Layout() {
         <button
           onClick={e => { cycleTheme(e.currentTarget as HTMLElement); }}
           className="w-full flex items-center gap-4 px-4 py-3 border-t border-border hover:bg-muted transition-colors text-left"
-          aria-label={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
+          aria-label={temaAccion}
         >
           <ThemeIcon className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
           <span className="text-sm" style={{ color: 'var(--foreground)' }}>{themeLabel}</span>
