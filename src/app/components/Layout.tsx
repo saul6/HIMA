@@ -35,6 +35,7 @@ const PATH_TITLES: Record<string, string> = {
   '/inocuidad/auditorias-primusgfs': 'Auditorías',
   '/perfil': 'Perfil',
   '/perfil/mi-organizacion': 'Mi organización',
+  '/sincronizacion': 'Sincronización',
   '/metricas': 'Métricas',
   '/nomina': 'Actividades y pagos',
   '/nomina/trabajadores': 'Trabajadores',
