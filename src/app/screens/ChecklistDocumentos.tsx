@@ -19,11 +19,14 @@ import { CarteraView } from '@/app/components/checklist/CarteraView'
 import { InstalacionView, type TabInstalacion } from '@/app/components/checklist/InstalacionView'
 import { VisitaEjecucion } from '@/app/components/checklist/VisitaEjecucion'
 import { PortalCliente } from '@/app/components/checklist/PortalCliente'
+import { SelectorSegmentado } from '@/app/components/checklist/SelectorSegmentado'
+import { useEsEscritorio } from '@/app/components/checklist/useEsEscritorio'
 
 const TABS: TabInstalacion[] = ['catalogo', 'visitas', 'incidencias', 'relaciones', 'importaciones']
 
 export function ChecklistDocumentos() {
   const { profile, codigoClave } = useAuthContext()
+  const esEscritorio = useEsEscritorio()
   const [params, setParams] = useSearchParams()
   const instalacionId = params.get('instalacion')
   const visitaId = params.get('visita')
@@ -70,6 +73,11 @@ export function ChecklistDocumentos() {
   const consultoria = !!est?.consultoria
   const esCliente = !!est?.es_cliente
   const verCliente = esCliente && (!consultoria || vista === 'cliente')
+  const nClientes = cartera.data?.length ?? 0
+  const nInstalaciones = cartera.data?.reduce((n, c) => n + c.instalaciones.length, 0) ?? 0
+  const resumenCartera = cartera.data
+    ? `${nClientes} ${nClientes === 1 ? 'cliente' : 'clientes'} · ${nInstalaciones} ${nInstalaciones === 1 ? 'instalación' : 'instalaciones'}`
+    : null
 
   function volver() {
     if (visitaId) ir({ visita: null, tab: 'visitas' })
@@ -125,7 +133,20 @@ export function ChecklistDocumentos() {
     <div className="min-h-full pb-safe-nav bg-background">
       <EncabezadoPantalla titulo="Checklist" />
       <div className="p-4 space-y-4">
-        {consultoria && esCliente && !instalacionId && (
+        {esEscritorio && consultoria && !instalacionId && (esCliente || (!verCliente && !!cartera.data)) && (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {esCliente ? (
+              <SelectorSegmentado<string>
+                ariaLabel="Vista del checklist"
+                value={verCliente ? 'cliente' : 'cartera'}
+                onChange={v => ir({ vista: v === 'cliente' ? 'cliente' : null })}
+                options={[{ value: 'cartera', label: 'Cartera' }, { value: 'cliente', label: 'Mis revisiones' }]}
+              />
+            ) : <span />}
+            {!verCliente && resumenCartera && <p className="text-xs text-muted-foreground">{resumenCartera}</p>}
+          </div>
+        )}
+        {!esEscritorio && consultoria && esCliente && !instalacionId && (
           <FiltroPildoras<string>
             groupId="chk-vista"
             value={verCliente ? 'cliente' : 'cartera'}
