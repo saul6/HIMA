@@ -1,11 +1,13 @@
 ﻿import { useState } from 'react'
+import { motion } from 'motion/react'
 import {
-  Plus, X, Loader2, ClipboardX, FileDown, Edit2,
+  ClipboardX, FileDown, Edit2,
   Link2, Unlink2,
 } from 'lucide-react'
 import { ModuloHeader } from '@/app/components/ModuloHeader'
 import { BottomSheet } from '@/app/components/BottomSheet'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
+import { Skeleton } from '@/app/components/ui/skeleton'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/context/AuthContext'
 import { puedeEditarFechaLibre } from '@/lib/permisos'
@@ -27,6 +29,14 @@ import { AsignarHallazgoSheet } from '@/app/components/hallazgos/AsignarHallazgo
 import { resolverHallazgoVisita, formatFechaLimite } from '@/lib/hallazgos/asignacion'
 import { useConexion } from '@/hooks/useConexion'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { TituloSeccion } from '@/app/components/ui-mady/TituloSeccion'
+import { Boton } from '@/app/components/ui-mady/Boton'
+import { Campo } from '@/app/components/ui-mady/Campo'
+import { PieFormulario } from '@/app/components/ui-mady/PieFormulario'
+import { useEntradaPantalla } from '@/lib/motion'
 import { fechaCorta, formatoPct } from '@/lib/formato'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -60,6 +70,7 @@ export function ResumenNoConformidades() {
     vincularAuditoria, desvincularAuditoria,
   } = useAuditoriaVisitas()
 
+  const ent = useEntradaPantalla(!loading)
   const ranchoOptions = ranchos.map((r) => ({ value: r.id, label: r.nombre }))
 
   // ── State: form sheet ──────────────────────────────────────────────────────
@@ -275,7 +286,7 @@ export function ResumenNoConformidades() {
       {/* Lista de visitas */}
       <div className="p-4 space-y-3">
         {loading ? (
-          <ListaSkeleton />
+          <ListaSkeleton rejilla onReintentar={refetch} />
         ) : error ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <ClipboardX className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
@@ -284,178 +295,156 @@ export function ResumenNoConformidades() {
         ) : visitas.length === 0 ? (
           <EstadoVacio icono={ClipboardX} titulo="Sin visitas registradas aún" ayuda="Toca + para registrar la primera visita de auditoría" />
         ) : (
-          visitas.map((v) => (
-            <div key={v.id} className="bg-card border border-border rounded-xl p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground truncate font-semibold">
-                    {v.rancho_nombre}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {formatFecha(v.fecha)}
-                    {v.pa_pgfs ? ` · PA-PGFS: ${v.pa_pgfs}` : ''}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{v.auditor_nombre}</p>
-                </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  {/* Editar */}
-                  <button
-                    onClick={() => abrirEdicion(v)}
-                    className="p-2 text-muted-foreground hover:text-primary transition-colors"
-                    title="Editar visita"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  {/* Ver detalles */}
-                  <button
-                    onClick={() => abrirDetalle(v)}
-                    className="h-8 px-3 rounded-lg text-xs text-primary border border-primary hover:bg-primary/5 transition-colors flex-shrink-0 font-semibold"
-                  >
-                    Ver detalles
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
+          <ListaTarjetas>
+            {visitas.map((v, index) => (
+              <motion.div key={v.id} {...ent(index)}>
+                <TarjetaRegistro
+                  sinFirmas
+                  meta={[formatFecha(v.fecha)]}
+                  titulo={v.rancho_nombre}
+                  tituloTexto={v.rancho_nombre}
+                  chips={(
+                    <>
+                      {v.pa_pgfs && <Etiqueta tono="neutral" className="font-normal">PA-PGFS: {v.pa_pgfs}</Etiqueta>}
+                      <Etiqueta tono="neutral" className="font-normal">{v.auditor_nombre}</Etiqueta>
+                    </>
+                  )}
+                  acciones={(
+                    <>
+                      <button
+                        onClick={() => abrirEdicion(v)}
+                        className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                        title="Editar visita"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <Boton variante="secundario" tamano="sm" onClick={() => abrirDetalle(v)}>
+                        Ver detalles
+                      </Boton>
+                    </>
+                  )}
+                />
+              </motion.div>
+            ))}
+          </ListaTarjetas>
         )}
       </div>
 
       {/* FAB */}
-            <Fab onClick={abrirNuevo} aria-label="Nueva visita" />
+      <Fab onClick={abrirNuevo} aria-label="Nueva visita" />
 
       {/* ── Bottom Sheet — Formulario ────────────────────────────────────────── */}
       <BottomSheet
         open={sheetFormAbierto}
         onClose={() => !guardando && setSheetFormAbierto(false)}
         height="95%"
+        title={editandoVisita ? 'Editar visita' : 'Nueva visita'}
       >
-
-        {/* Header sheet */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-          <h2 className="text-base text-foreground font-semibold">
-            {editandoVisita ? 'Editar visita' : 'Nueva visita'}
-          </h2>
-          <button aria-label="Cerrar"
-            onClick={() => !guardando && setSheetFormAbierto(false)}
-            className="p-1"
-          >
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
-
         {/* Campos */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
           {/* Instalación / Rancho */}
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
-              {terminosSitio.singular.toUpperCase()} *
-            </label>
-            <select
-              value={rancho_id}
-              onChange={(e) => { setRanchoId(e.target.value); setErrRancho(false) }}
-              className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
-                errRancho ? 'border-agro-red' : 'border-border-control'
-              } ${!rancho_id ? 'text-muted-foreground' : 'text-foreground'}`}
-            >
-              <option value="" disabled>
-                Seleccionar {terminosSitio.singular.toLowerCase()}
-              </option>
-              {ranchoOptions.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
-            {errRancho && (
-              <p className="text-xs mt-1" style={{ color: 'var(--agro-red)' }}>
-                Selecciona {terminosSitio.singular.toLowerCase()}
-              </p>
+          <Campo etiqueta={terminosSitio.singular} requerido error={errRancho ? `Selecciona ${terminosSitio.singular.toLowerCase()}` : undefined} className="gap-1.5">
+            {({ id, describedBy, invalid }) => (
+              <select
+                id={id}
+                aria-describedby={describedBy}
+                aria-invalid={invalid}
+                value={rancho_id}
+                onChange={(e) => { setRanchoId(e.target.value); setErrRancho(false) }}
+                className={`w-full h-11 px-3 rounded-lg bg-input-background border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
+                  errRancho ? 'border-agro-red' : 'border-border-control'
+                } ${!rancho_id ? 'text-muted-foreground' : 'text-foreground'}`}
+              >
+                <option value="" disabled>
+                  Seleccionar {terminosSitio.singular.toLowerCase()}
+                </option>
+                {ranchoOptions.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
             )}
-          </div>
+          </Campo>
 
           {/* Fecha */}
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
-              FECHA *
-            </label>
-            <input
-              type="date"
-              value={fecha}
-              min={puedeEditarFecha ? undefined : hoy()}
-              max={puedeEditarFecha ? undefined : hoy()}
-              onChange={(e) => { if (puedeEditarFecha) setFecha(e.target.value) }}
-              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-            />
-          </div>
+          <Campo etiqueta="Fecha" requerido className="gap-1.5">
+            {({ id }) => (
+              <input
+                id={id}
+                type="date"
+                value={fecha}
+                min={puedeEditarFecha ? undefined : hoy()}
+                max={puedeEditarFecha ? undefined : hoy()}
+                onChange={(e) => { if (puedeEditarFecha) setFecha(e.target.value) }}
+                className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            )}
+          </Campo>
 
           {/* Auditor */}
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
-              AUDITOR
-            </label>
-            <input
-              type="text"
-              value={auditor_nombre}
-              onChange={(e) => setAuditorNombre(e.target.value)}
-              placeholder={profile?.nombre_completo ?? 'Nombre del auditor'}
-              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-            />
-          </div>
+          <Campo etiqueta="Auditor" className="gap-1.5">
+            {({ id }) => (
+              <input
+                id={id}
+                type="text"
+                value={auditor_nombre}
+                onChange={(e) => setAuditorNombre(e.target.value)}
+                placeholder={profile?.nombre_completo ?? 'Nombre del auditor'}
+                className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            )}
+          </Campo>
 
           {/* Cliente / Representante */}
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
-              CLIENTE / REPRESENTANTE
-            </label>
-            <input
-              type="text"
-              value={cliente_nombre}
-              onChange={(e) => setClienteNombre(e.target.value)}
-              placeholder="Nombre del cliente o representante"
-              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-            />
-          </div>
+          <Campo etiqueta="Cliente / representante" className="gap-1.5">
+            {({ id }) => (
+              <input
+                id={id}
+                type="text"
+                value={cliente_nombre}
+                onChange={(e) => setClienteNombre(e.target.value)}
+                placeholder="Nombre del cliente o representante"
+                className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            )}
+          </Campo>
 
           {/* PA-PGFS */}
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
-              PA-PGFS (FOLIO)
-            </label>
-            <input
-              type="text"
-              value={pa_pgfs}
-              onChange={(e) => setPaPgfs(e.target.value)}
-              placeholder="Opcional"
-              className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-            />
-          </div>
+          <Campo etiqueta="PA-PGFS (folio)" className="gap-1.5">
+            {({ id }) => (
+              <input
+                id={id}
+                type="text"
+                value={pa_pgfs}
+                onChange={(e) => setPaPgfs(e.target.value)}
+                placeholder="Opcional"
+                className="w-full h-11 px-3 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            )}
+          </Campo>
 
           {/* Observaciones */}
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1.5 font-semibold">
-              OBSERVACIONES
-            </label>
-            <textarea
-              value={observaciones}
-              onChange={(e) => setObservaciones(e.target.value)}
-              placeholder="Observaciones generales de la visita..."
-              rows={3}
-              className="w-full px-3 py-2.5 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
-            />
-          </div>
+          <Campo etiqueta="Observaciones" className="gap-1.5">
+            {({ id }) => (
+              <textarea
+                id={id}
+                value={observaciones}
+                onChange={(e) => setObservaciones(e.target.value)}
+                placeholder="Observaciones generales de la visita..."
+                rows={3}
+                className="w-full px-3 py-2.5 rounded-lg bg-input-background border border-border-control text-sm text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+              />
+            )}
+          </Campo>
 
         </div>
 
-        {/* Footer */}
-        <div className="px-4 pb-6 pt-4 border-t border-border flex-shrink-0">
-          <button
-            onClick={handleGuardar}
-            disabled={guardando}
-            className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
-          >
-            {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
-            {guardando ? 'Guardando...' : 'Guardar'}
-          </button>
-        </div>
+        <PieFormulario
+          textoPrincipal="Guardar"
+          onPrincipal={handleGuardar}
+          onCancelar={() => setSheetFormAbierto(false)}
+          cargando={guardando}
+        />
       </BottomSheet>
 
       {/* ── Bottom Sheet — Detalle ───────────────────────────────────────────── */}
@@ -463,37 +452,20 @@ export function ResumenNoConformidades() {
         open={sheetDetalleAbierto}
         onClose={() => setSheetDetalleAbierto(false)}
         height="95%"
+        title={visitaDetalle?.rancho_nombre ?? ''}
       >
-
-        {/* Header detalle */}
-        <div className="flex items-start justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-          <div className="flex-1 min-w-0 pr-3">
-            <h2 className="text-base text-foreground truncate font-semibold">
-              {visitaDetalle?.rancho_nombre ?? ''}
-            </h2>
-            {visitaDetalle && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {formatFecha(visitaDetalle.fecha)}
-              </p>
-            )}
-          </div>
-          <button aria-label="Cerrar"
-            onClick={() => setSheetDetalleAbierto(false)}
-            className="p-1 flex-shrink-0"
-          >
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
 
         {/* Contenido scrollable */}
         <div className="flex-1 overflow-y-auto p-4 space-y-5">
 
+          {visitaDetalle && (
+            <p className="text-xs text-muted-foreground -mb-2">{formatFecha(visitaDetalle.fecha)}</p>
+          )}
+
           {/* Información de la visita */}
           {visitaDetalle && (
             <section>
-              <p className="text-xs text-muted-foreground mb-2 font-semibold">
-                INFORMACIÓN DE LA VISITA
-              </p>
+              <TituloSeccion variante="subtitulo" className="mb-2">Información de la visita</TituloSeccion>
               <div className="rounded-xl p-4 space-y-2" style={{ backgroundColor: 'var(--muted)' }}>
                 <div className="flex gap-2 text-sm">
                   <span className="text-muted-foreground flex-shrink-0 w-24">Auditor</span>
@@ -521,14 +493,10 @@ export function ResumenNoConformidades() {
 
           {/* Auditorías vinculadas */}
           <section>
-            <p className="text-xs text-muted-foreground mb-2 font-semibold">
-              AUDITORÍAS VINCULADAS
-            </p>
+            <TituloSeccion variante="subtitulo" className="mb-2">Auditorías vinculadas</TituloSeccion>
 
             {loadingVinculadas ? (
-              <div className="flex justify-center py-4">
-                <Loader2 className="w-5 h-5 text-primary animate-spin" />
-              </div>
+              <Skeleton className="h-9 w-48 rounded-full" />
             ) : (
               <div className="space-y-2">
                 {/* Chips de vinculadas */}
@@ -581,13 +549,9 @@ export function ResumenNoConformidades() {
                 {/* Disponibles para vincular */}
                 {buscandoDisponibles && (
                   <div className="mt-3">
-                    <p className="text-xs text-muted-foreground mb-2 font-semibold">
-                      DISPONIBLES PARA VINCULAR
-                    </p>
+                    <TituloSeccion variante="subtitulo" className="mb-2">Disponibles para vincular</TituloSeccion>
                     {loadingDisponibles ? (
-                      <div className="flex justify-center py-3">
-                        <Loader2 className="w-5 h-5 text-primary animate-spin" />
-                      </div>
+                      <Skeleton className="h-9 w-48 rounded-full" />
                     ) : auditoriasDisponibles.length === 0 ? (
                       <p className="text-xs text-muted-foreground">
                         No hay auditorías disponibles para esta fecha e instalación.
@@ -624,14 +588,10 @@ export function ResumenNoConformidades() {
 
           {/* No-Conformidades */}
           <section>
-            <p className="text-xs text-muted-foreground mb-2 font-semibold">
-              NO-CONFORMIDADES
-            </p>
+            <TituloSeccion variante="subtitulo" className="mb-2">No-conformidades</TituloSeccion>
 
             {loadingNcrs ? (
-              <div className="flex justify-center py-4">
-                <Loader2 className="w-5 h-5 text-primary animate-spin" />
-              </div>
+              <Skeleton className="h-24 w-full rounded-xl" />
             ) : ncrs.length === 0 ? (
               <div className="rounded-xl border border-border p-4 text-center">
                 <p className="text-xs text-muted-foreground">
@@ -699,7 +659,7 @@ export function ResumenNoConformidades() {
                         </td>
                         <td className="px-3 py-2 text-foreground" style={{ minWidth: '170px' }}>
                           {(() => {
-                            if (bandeja.loading) return <span className="text-muted-foreground">Cargando…</span>
+                            if (bandeja.loading) return <Skeleton className="h-4 w-28" />
                             const origen = resolverHallazgoVisita(ncr, itemsVisita, visitaDetalle?.id)
                             if (!origen) return <span className="text-muted-foreground">Origen pendiente de verificar</span>
                             const est = asig.estados[origen.respuesta_id]
@@ -734,18 +694,11 @@ export function ResumenNoConformidades() {
         </div>
 
         {/* Footer detalle */}
-        <div className="px-4 pb-6 pt-4 border-t border-border flex-shrink-0">
-          <button
-            onClick={handleDescargarPDF}
-            disabled={generandoPDF}
-            className="w-full h-12 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
-          >
-            {generandoPDF
-              ? <Loader2 className="w-4 h-4 animate-spin" />
-              : <FileDown className="w-4 h-4" />
-            }
-            {generandoPDF ? 'Generando PDF...' : 'Descargar PDF'}
-          </button>
+        <div className="px-4 py-3 border-t border-border flex-shrink-0">
+          <Boton className="w-full" onClick={handleDescargarPDF} cargando={generandoPDF}>
+            <FileDown className="w-4 h-4" />
+            Descargar PDF
+          </Boton>
         </div>
       </BottomSheet>
 
