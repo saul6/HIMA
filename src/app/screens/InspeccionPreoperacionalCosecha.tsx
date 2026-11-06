@@ -113,7 +113,7 @@ function ToggleItem({
           className="no-press flex-shrink-0 w-16 h-7 rounded-full text-xs transition-colors font-semibold"
           style={{
             backgroundColor: valor ? 'var(--primary)' : 'var(--switch-background)',
-            color: valor ? '#fff' : 'var(--muted-foreground)',
+            color: valor ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
           }}
         >
           {valor ? 'Sí' : 'No'}
@@ -965,7 +965,7 @@ export function InspeccionPreoperacionalCosecha() {
                           className="text-xs px-3 py-2 rounded-lg mb-1 font-semibold"
                           style={{
                             backgroundColor: 'var(--primary)',
-                            color: '#fff',
+                            color: 'var(--primary-foreground)',
                           }}
                         >
                           {sec.label}

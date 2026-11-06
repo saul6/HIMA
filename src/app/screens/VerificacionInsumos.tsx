@@ -130,7 +130,7 @@ function ToggleInsumo({
   onChange: (v: ValorM23) => void; onCodigo: (c: string) => void; onIncidenciaDesc: (d: string) => void
 }) {
   const bgColor = valor === 'SI' ? 'var(--primary)' : valor === 'NO' ? 'var(--agro-red)' : 'var(--switch-background)'
-  const textColor = valor === 'NA' ? 'var(--muted-foreground)' : '#fff'
+  const textColor = valor === 'NA' ? 'var(--muted-foreground)' : (valor === 'NO' ? 'var(--destructive-foreground)' : 'var(--primary-foreground)')
   const displayLabel = valor === 'NA' ? 'N/A' : valor === 'NO' ? 'No' : 'Sí'
 
   return (
@@ -1025,8 +1025,8 @@ export function VerificacionInsumos() {
               <>
                 <div className="px-4 pb-2 flex-shrink-0">
                   <div className="flex gap-2 mb-3 flex-wrap">
-                    <span className="text-xs px-2 py-0.5 rounded text-white font-semibold" style={{ backgroundColor: 'var(--primary)' }}>Si = disponible</span>
-                    <span className="text-xs px-2 py-0.5 rounded text-white font-semibold" style={{ backgroundColor: 'var(--agro-red)' }}>No = falta</span>
+                    <span className="text-xs px-2 py-0.5 rounded text-primary-foreground font-semibold" style={{ backgroundColor: 'var(--primary)' }}>Si = disponible</span>
+                    <span className="text-xs px-2 py-0.5 rounded text-destructive-foreground font-semibold" style={{ backgroundColor: 'var(--agro-red)' }}>No = falta</span>
                     <span className="text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: 'var(--switch-background)', color: 'var(--muted-foreground)' }}>N/A</span>
                   </div>
                   <div className="space-y-1 mb-4">
@@ -1060,7 +1060,7 @@ export function VerificacionInsumos() {
                     ) : (
                       gruposActivos.map((grupo) => (
                         <div key={grupo.area} className="mb-4">
-                          <div className="text-xs px-3 py-2 rounded-lg mb-1 font-semibold" style={{ backgroundColor: 'var(--primary)', color: '#fff' }}>
+                          <div className="text-xs px-3 py-2 rounded-lg mb-1 font-semibold" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
                             {grupo.area}
                           </div>
                           <div className="bg-card border border-border rounded-xl px-3">

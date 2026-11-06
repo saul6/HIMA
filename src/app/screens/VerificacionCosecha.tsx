@@ -101,12 +101,12 @@ function CeldaMatriz({ valor, onClick }: { valor: ValorCelda; onClick: () => voi
 
   if (valor === 'si') {
     bg = 'var(--primary)'
-    color = '#fff'
+    color = 'var(--primary-foreground)'
     label = 'S'
     borderColor = 'var(--primary)'
   } else if (valor === 'no') {
     bg = 'var(--agro-red)'
-    color = '#fff'
+    color = 'var(--destructive-foreground)'
     label = 'N'
     borderColor = 'var(--agro-red)'
   } else if (valor === 'na') {

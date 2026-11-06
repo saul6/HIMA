@@ -817,7 +817,7 @@ export function RondinesVigilancia() {
                         className="flex-1 py-2 rounded-xl text-xs transition-colors relative"
                         style={{
                           backgroundColor: isActive ? 'var(--primary)' : 'var(--card)',
-                          color: isActive ? '#fff' : 'var(--foreground)',
+                          color: isActive ? 'var(--primary-foreground)' : 'var(--foreground)',
                           border: isActive ? 'none' : '1px solid var(--border)',
                           fontWeight: isActive ? 700 : 400,
                         }}
@@ -826,13 +826,13 @@ export function RondinesVigilancia() {
                         {tieneNovedad && (
                           <span
                             className="absolute top-0.5 right-1 w-1.5 h-1.5 rounded-full"
-                            style={{ backgroundColor: isActive ? '#fff' : 'var(--agro-red)' }}
+                            style={{ backgroundColor: isActive ? 'var(--primary-foreground)' : 'var(--agro-red)' }}
                           />
                         )}
                         {tieneHora && !tieneNovedad && (
                           <span
                             className="absolute top-0.5 right-1 w-1.5 h-1.5 rounded-full"
-                            style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.6)' : 'var(--agro-success-text)' }}
+                            style={{ backgroundColor: isActive ? 'var(--primary-foreground)' : 'var(--agro-success-text)' }}
                           />
                         )}
                       </button>
@@ -1002,7 +1002,7 @@ export function RondinesVigilancia() {
                                   className="flex-shrink-0 w-16 h-6 rounded-full text-xs transition-colors disabled:opacity-60 font-semibold"
                                   style={{
                                     backgroundColor: item.activo ? 'var(--primary)' : 'var(--switch-background)',
-                                    color: item.activo ? '#fff' : 'var(--muted-foreground)',
+                                    color: item.activo ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
                                   }}
                                 >
                                   {confToggling === item.id ? '…' : item.activo ? 'Activo' : 'Inactivo'}

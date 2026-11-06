@@ -147,7 +147,7 @@ function ToggleItemM19({
       : valor === 'NO'
       ? 'var(--agro-red)'
       : 'var(--switch-background)'
-  const textColor = valor === 'NA' ? 'var(--muted-foreground)' : '#fff'
+  const textColor = valor === 'NA' ? 'var(--muted-foreground)' : (valor === 'NO' ? 'var(--destructive-foreground)' : 'var(--primary-foreground)')
   const displayLabel = valor === 'NA' ? 'N/A' : valor === 'NO' ? 'No' : 'Sí'
 
   return (
@@ -1056,8 +1056,8 @@ export function InspeccionPreoperacionalCooler() {
                 <div className="px-4 pb-2 flex-shrink-0">
                   {/* Leyenda de estados */}
                   <div className="flex gap-2 mb-3 flex-wrap">
-                    <span className="text-xs px-2 py-0.5 rounded text-white font-semibold" style={{ backgroundColor: 'var(--primary)' }}>Si = cumple</span>
-                    <span className="text-xs px-2 py-0.5 rounded text-white font-semibold" style={{ backgroundColor: 'var(--agro-red)' }}>No = no cumple</span>
+                    <span className="text-xs px-2 py-0.5 rounded text-primary-foreground font-semibold" style={{ backgroundColor: 'var(--primary)' }}>Si = cumple</span>
+                    <span className="text-xs px-2 py-0.5 rounded text-destructive-foreground font-semibold" style={{ backgroundColor: 'var(--agro-red)' }}>No = no cumple</span>
                     <span className="text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: 'var(--switch-background)', color: 'var(--muted-foreground)' }}>N/A = no laboró</span>
                   </div>
 
@@ -1108,7 +1108,7 @@ export function InspeccionPreoperacionalCooler() {
                       <div key={sec.label} className="mb-4">
                         <div
                           className="text-xs px-3 py-2 rounded-lg mb-1 font-semibold"
-                          style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
+                          style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
                         >
                           {sec.label}
                         </div>

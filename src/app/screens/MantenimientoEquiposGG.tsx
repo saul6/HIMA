@@ -128,7 +128,7 @@ function CheckSelector({ label, valor, onChange }: { label: string; valor: Check
                 ? v === 'si' ? 'var(--primary)' : v === 'no' ? 'var(--agro-red)' : 'var(--switch-background)'
                 : 'var(--muted)',
               color: valor === v
-                ? v === 'na' ? 'var(--muted-foreground)' : '#fff'
+                ? v === 'na' ? 'var(--muted-foreground)' : v === 'no' ? 'var(--destructive-foreground)' : 'var(--primary-foreground)'
                 : 'var(--muted-foreground)',
             }}
           >

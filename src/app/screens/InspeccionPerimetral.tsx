@@ -113,7 +113,7 @@ function ToggleItem({
         className="no-press flex-shrink-0 w-16 h-7 rounded-full text-xs transition-colors font-semibold"
         style={{
           backgroundColor: valor ? 'var(--primary)' : 'var(--switch-background)',
-          color: valor ? '#fff' : 'var(--muted-foreground)',
+          color: valor ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
         }}
       >
         {valor ? 'Sí' : 'No'}
@@ -959,7 +959,7 @@ export function InspeccionPerimetral() {
                     className="w-16 h-7 rounded-full text-xs transition-colors flex-shrink-0 font-semibold"
                     style={{
                       backgroundColor: nAlmacen ? 'var(--primary)' : 'var(--switch-background)',
-                      color: nAlmacen ? '#fff' : 'var(--muted-foreground)',
+                      color: nAlmacen ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
                     }}
                   >
                     {nAlmacen ? 'Sí' : 'No'}
@@ -1067,7 +1067,7 @@ export function InspeccionPerimetral() {
                           className="text-xs px-3 py-2 rounded-lg mb-1 font-semibold"
                           style={{
                             backgroundColor: 'var(--primary)',
-                            color: '#fff',
+                            color: 'var(--primary-foreground)',
                           }}
                         >
                           {sec.label}

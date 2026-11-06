@@ -105,8 +105,8 @@ function CeldaMatriz({ valor, onClick }: { valor: ValorCelda; onClick: () => voi
   let label = ''
   let borderColor = 'var(--border)'
 
-  if (valor === 'si') { bg = 'var(--primary)'; color = '#fff'; label = 'S'; borderColor = 'var(--primary)' }
-  else if (valor === 'no') { bg = 'var(--agro-red)'; color = '#fff'; label = 'N'; borderColor = 'var(--agro-red)' }
+  if (valor === 'si') { bg = 'var(--primary)'; color = 'var(--primary-foreground)'; label = 'S'; borderColor = 'var(--primary)' }
+  else if (valor === 'no') { bg = 'var(--agro-red)'; color = 'var(--destructive-foreground)'; label = 'N'; borderColor = 'var(--agro-red)' }
   else if (valor === 'na') { bg = 'var(--switch-background)'; color = 'var(--muted-foreground)'; label = '-'; borderColor = 'var(--switch-background)' }
 
   return (
