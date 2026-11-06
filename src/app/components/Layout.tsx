@@ -33,6 +33,7 @@ const PATH_TITLES: Record<string, string> = {
   '/inocuidad/agenda': 'Agenda',
   '/inocuidad/checklist': 'Checklist',
   '/inocuidad/auditorias-primusgfs': 'Auditorías',
+  '/inocuidad/auditorias-primusgfs/nueva': 'Nueva auditoría',
   '/perfil': 'Perfil',
   '/perfil/mi-organizacion': 'Mi organización',
   '/sincronizacion': 'Sincronización',
@@ -42,6 +43,8 @@ const PATH_TITLES: Record<string, string> = {
   '/nomina/catalogo': 'Catálogo',
   '/nomina/historial': 'Historial',
   '/nomina/mensual': 'Consolidado mensual',
+  '/nomina/configuracion': 'Configuración de nómina',
+  '/admin/nomina-orgs': 'Nómina por organización',
 }
 
 // Respaldo cuando el módulo aún no llega del catálogo: palabras del slug con su acento.
@@ -63,6 +66,8 @@ function tituloDesdeSlug(slug: string): string {
 function getPageTitle(pathname: string, nombreModulo?: string): string {
   if (PATH_TITLES[pathname]) return PATH_TITLES[pathname]
   if (pathname.startsWith('/historial/')) return 'Detalle'
+  // Detalle de una auditoría PrimusGFS (/inocuidad/auditorias-primusgfs/:auditoriaId). `/nueva` ya salió arriba por coincidencia exacta.
+  if (pathname.startsWith('/inocuidad/auditorias-primusgfs/')) return 'Auditoría'
   if (pathname.startsWith('/inocuidad/')) {
     return nombreModulo ?? tituloDesdeSlug(pathname.replace('/inocuidad/', ''))
   }
