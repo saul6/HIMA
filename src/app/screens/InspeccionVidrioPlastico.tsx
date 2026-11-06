@@ -54,6 +54,7 @@ import { InputContador } from '@/app/components/InputContador'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { Etiqueta } from '@/app/components/ui-mady/Etiqueta'
 import { fechaCorta } from '@/lib/formato'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -200,7 +201,7 @@ function MaterialRowInspeccion({
             onClick={() => onChange({ ...fila, protegido: true })}
             className={`h-7 px-3 rounded-lg text-xs transition-colors ${
               fila.protegido
-                ? 'bg-primary text-white'
+                ? 'bg-primary text-primary-foreground'
                 : 'bg-input-background text-muted-foreground border border-border'
             }`}
             style={{ fontWeight: fila.protegido ? 600 : 400 }}
@@ -211,7 +212,7 @@ function MaterialRowInspeccion({
             type="button"
             onClick={() => onChange({ ...fila, protegido: false })}
             className={`h-7 px-3 rounded-lg text-xs transition-colors ${
-              !fila.protegido ? 'text-white' : 'bg-input-background text-muted-foreground border border-border'
+              !fila.protegido ? 'text-destructive-foreground' : 'bg-input-background text-muted-foreground border border-border'
             }`}
             style={
               !fila.protegido
@@ -1005,11 +1006,11 @@ export function InspeccionVidrioPlastico() {
                           </p>
                         )}
                       </div>
-                      <button
+                      <Boton
                         type="button"
                         onClick={handleAgregarMaterial}
                         disabled={guardandoNuevo}
-                        className="w-full h-10 bg-primary text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors text-sm font-semibold"
+                        className="w-full"
                       >
                         {guardandoNuevo ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -1017,7 +1018,7 @@ export function InspeccionVidrioPlastico() {
                           <Plus className="w-4 h-4" />
                         )}
                         Agregar
-                      </button>
+                      </Boton>
                     </div>
                   </div>
                 </>
@@ -1085,14 +1086,14 @@ export function InspeccionVidrioPlastico() {
             </div>
 
             <div className="p-4 border-t border-border flex-shrink-0">
-              <button
+              <Boton
                 onClick={handleGenerarConsolidado}
                 disabled={generandoConsolidado}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
+                className="w-full"
               >
                 {generandoConsolidado && <Loader2 className="w-4 h-4 animate-spin" />}
                 Generar PDF consolidado
-              </button>
+              </Boton>
             </div>
       </BottomSheet>
 
@@ -1210,7 +1211,7 @@ export function InspeccionVidrioPlastico() {
                           setSheetInspeccionAbierto(false)
                           setTimeout(() => abrirSheetConfig(ranchoId), 200)
                         }}
-                        className="mt-3 h-9 px-4 rounded-xl text-sm text-white hover:bg-agro-blue transition-colors font-semibold"
+                        className="mt-3 h-9 px-4 rounded-xl text-sm text-primary-foreground hover:bg-agro-blue transition-colors font-semibold"
                         style={{ backgroundColor: 'var(--primary)' }}
                       >
                         Configurar materiales
@@ -1259,15 +1260,15 @@ export function InspeccionVidrioPlastico() {
 
             {/* Guardar */}
             <div className="p-4 border-t border-border flex-shrink-0">
-              <button
+              <Boton
                 onClick={handleGuardar}
                 disabled={guardando || !!limiteInfo || hayLoteOfflineConflicto || filasInspeccion.length === 0 || cargandoMateriales}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
+                className="w-full"
               >
                 {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                 {!guardando && !online && <WifiOff className="w-4 h-4" />}
                 {online ? 'Guardar y generar PDF' : 'Guardar sin conexión'}
-              </button>
+              </Boton>
             </div>
             </>
             )}
