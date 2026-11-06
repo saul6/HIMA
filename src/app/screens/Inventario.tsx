@@ -3,7 +3,6 @@ import { motion, useReducedMotion } from "motion/react"
 import {
   Search,
   ChevronDown,
-  X,
   ExternalLink,
   FileText,
 } from "lucide-react"
@@ -211,100 +210,76 @@ function RegistrarMovimientoSheet({ onClose, onSaved, registradoPor, orgId, ranc
   ]
 
   return (
-    <BottomSheet open onClose={onClose} height="85%">
+    <BottomSheet open onClose={onClose} height="85%" title="Registrar movimiento">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Tipo */}
+        <Campo etiqueta="Tipo de movimiento" className="gap-2">
+          {() => (
+            <SelectorSegmentado
+              value={form.tipo}
+              onChange={(tipo) => setForm((prev) => ({ ...prev, tipo }))}
+              options={tipos}
+              ariaLabel="Tipo de movimiento"
+              className="w-full [&>button]:flex-1"
+            />
+          )}
+        </Campo>
 
-        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-          <h2 className="text-base text-foreground font-semibold">
-            Registrar movimiento
-          </h2>
-          <button type="button" aria-label="Cerrar" onClick={onClose} className="p-3 -m-2">
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {/* Tipo */}
-          <div>
-            <label className="text-xs text-muted-foreground mb-2 block font-semibold">
-              Tipo de movimiento
-            </label>
-            <div className="flex gap-2">
-              {tipos.map((t) => (
-                <button
-                  key={t.value}
-                  onClick={() => setForm((prev) => ({ ...prev, tipo: t.value }))}
-                  className={`flex-1 h-10 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] text-sm ${
-                    form.tipo === t.value
-                      ? "bg-primary text-white"
-                      : "bg-card border border-border text-foreground"
-                  }`}
-                  style={{ fontWeight: 600 }}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Producto */}
-          <div>
-            <label className="text-xs text-muted-foreground mb-2 block font-semibold">
-              Producto
-            </label>
+        {/* Producto */}
+        <Campo etiqueta="Producto" className="gap-2">
+          {() => (
             <ProductoCombobox
               productos={productos}
               value={form.productoId}
               onSelect={(id) => setForm((prev) => ({ ...prev, productoId: id }))}
             />
-          </div>
+          )}
+        </Campo>
 
-          {/* Rancho */}
-          <FormSelect
-            label={terminosSitio.singular}
-            value={form.ranchoId}
-            onChange={set("ranchoId")}
-            options={ranchoOptions}
+        {/* Rancho */}
+        <FormSelect
+          label={terminosSitio.singular}
+          value={form.ranchoId}
+          onChange={set("ranchoId")}
+          options={ranchoOptions}
+        />
+
+        <div className="grid grid-cols-2 gap-3">
+          <FormField
+            label="Cantidad"
+            type="number"
+            value={form.cantidad}
+            onChange={set("cantidad")}
+            placeholder="0"
           />
-
-          <div className="grid grid-cols-2 gap-3">
-            <FormField
-              label="Cantidad"
-              type="number"
-              value={form.cantidad}
-              onChange={set("cantidad")}
-              placeholder="0"
-            />
-            <FormField
-              label="Fecha"
-              type="date"
-              value={form.fecha}
-              onChange={set("fecha")}
-            />
-          </div>
-
-          <FormField maxLength={limiteTexto('inventario_movimientos', 'referencia')}
-            label="Referencia (opcional)"
-            value={form.referencia}
-            onChange={set("referencia")}
-            placeholder="Ej: Factura 1234"
-          />
-
-          <FormField maxLength={limiteTexto('inventario_movimientos', 'notas')}
-            label="Notas (opcional)"
-            value={form.notas}
-            onChange={set("notas")}
+          <FormField
+            label="Fecha"
+            type="date"
+            value={form.fecha}
+            onChange={set("fecha")}
           />
         </div>
 
-        <div className="px-4 py-4 border-t border-border flex-shrink-0">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full h-14 bg-primary text-white rounded-xl disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
-          >
-            {saving ? "Guardando…" : "Guardar movimiento"}
-          </button>
-        </div>
+        <FormField maxLength={limiteTexto('inventario_movimientos', 'referencia')}
+          label="Referencia (opcional)"
+          value={form.referencia}
+          onChange={set("referencia")}
+          placeholder="Ej: Factura 1234"
+        />
+
+        <FormField maxLength={limiteTexto('inventario_movimientos', 'notas')}
+          label="Notas (opcional)"
+          value={form.notas}
+          onChange={set("notas")}
+        />
+      </div>
+
+      <PieFormulario
+        textoPrincipal="Guardar movimiento"
+        onPrincipal={handleSave}
+        onCancelar={onClose}
+        cargando={saving}
+      />
     </BottomSheet>
   )
 }
@@ -347,44 +322,35 @@ function ExportarReg01Sheet({ onClose, ranchoOptions, ranchos, orgId }: ExportSh
   }
 
   return (
-    <BottomSheet open onClose={onClose}>
-        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
-          <h2 className="text-base text-foreground font-semibold">
-            Exportar REG-01
-          </h2>
-          <button type="button" aria-label="Cerrar" onClick={onClose} className="p-3 -m-2">
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-8">
-          <FormSelect
-            label="Rancho"
-            value={ranchoId}
-            onChange={setRanchoId}
-            options={ranchoOptions}
+    <BottomSheet open onClose={onClose} title="Exportar REG-01">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <FormSelect
+          label="Rancho"
+          value={ranchoId}
+          onChange={setRanchoId}
+          options={ranchoOptions}
+        />
+        <div className="grid grid-cols-2 gap-3">
+          <FormField
+            label="Desde (opcional)"
+            type="date"
+            value={desde}
+            onChange={setDesde}
           />
-          <div className="grid grid-cols-2 gap-3">
-            <FormField
-              label="Desde (opcional)"
-              type="date"
-              value={desde}
-              onChange={setDesde}
-            />
-            <FormField
-              label="Hasta (opcional)"
-              type="date"
-              value={hasta}
-              onChange={setHasta}
-            />
-          </div>
-          <button
-            onClick={handleGenerar}
-            disabled={generando}
-            className="w-full h-14 bg-primary text-white rounded-xl disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
-          >
-            {generando ? "Generando…" : "Generar PDF"}
-          </button>
+          <FormField
+            label="Hasta (opcional)"
+            type="date"
+            value={hasta}
+            onChange={setHasta}
+          />
         </div>
+      </div>
+      <PieFormulario
+        textoPrincipal="Generar PDF"
+        onPrincipal={handleGenerar}
+        onCancelar={onClose}
+        cargando={generando}
+      />
     </BottomSheet>
   )
 }
