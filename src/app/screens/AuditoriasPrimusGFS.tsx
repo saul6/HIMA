@@ -1,5 +1,6 @@
 import { Navigate, useNavigate } from 'react-router'
-import { Plus, ClipboardCheck, AlertCircle } from 'lucide-react'
+import { motion } from 'motion/react'
+import { ClipboardCheck } from 'lucide-react'
 import { useAuthContext } from '@/context/AuthContext'
 import { useAuditoriasPGFS } from '@/hooks/useAuditoriasPGFS'
 import type { AuditoriaListItem } from '@/hooks/useAuditoriasPGFS'
@@ -9,6 +10,11 @@ import { EncabezadoPantalla } from '@/app/components/EncabezadoPantalla'
 import { EstadoVacio } from '@/app/components/ui-mady/EstadoVacio'
 import { ListaSkeleton } from '@/app/components/ListaSkeleton'
 import { useMostrarCarga } from '@/hooks/useMostrarCarga'
+import { ListaTarjetas } from '@/app/components/ui-mady/ListaTarjetas'
+import { TarjetaRegistro } from '@/app/components/ui-mady/TarjetaRegistro'
+import { Etiqueta, type TonoEtiqueta } from '@/app/components/ui-mady/Etiqueta'
+import { Aviso } from '@/app/components/checklist/comun'
+import { useEntradaPantalla } from '@/lib/motion'
 
 const ROLES_PERMITIDOS = ['auditor', 'admin_org', 'super_admin']
 
@@ -18,10 +24,10 @@ const ESTADO_LABELS: Record<string, string> = {
   cerrada: 'Cerrada',
 }
 
-const ESTADO_STYLE: Record<string, { bg: string; color: string }> = {
-  en_proceso: { bg: 'var(--agro-info-fill)', color: 'var(--agro-info-text)' },
-  completada:  { bg: 'var(--agro-success-fill)', color: 'var(--agro-success-text)' },
-  cerrada:     { bg: 'var(--muted)',              color: 'var(--muted-foreground)'   },
+const ESTADO_TONO: Record<string, TonoEtiqueta> = {
+  en_proceso: 'sky',
+  completada: 'menta',
+  cerrada: 'neutral',
 }
 
 function formatFecha(fecha: string) {
@@ -30,34 +36,22 @@ function formatFecha(fecha: string) {
 }
 
 function AuditoriaCard({ a, onClick }: { a: AuditoriaListItem; onClick: () => void }) {
-  const style = ESTADO_STYLE[a.estado] ?? ESTADO_STYLE.cerrada
   return (
-    <button
-      onClick={onClick}
-      className="w-full text-left bg-card rounded-xl border border-border p-4 flex flex-col gap-2 active:opacity-70 transition-opacity"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate" style={{ color: 'var(--foreground)' }}>
-            {a.modulo_nombre}
-          </p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-            {a.rancho_nombre} · {formatFecha(a.fecha)}
-          </p>
-        </div>
-        <span
-          className="text-caption font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-          style={{ backgroundColor: style.bg, color: style.color }}
-        >
-          {ESTADO_LABELS[a.estado] ?? a.estado}
-        </span>
-      </div>
-      {a.auditor_nombre && (
-        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-          Auditor: {a.auditor_nombre}
-        </p>
+    <TarjetaRegistro
+      sinFirmas
+      meta={[`${a.rancho_nombre} · ${formatFecha(a.fecha)}`]}
+      titulo={a.modulo_nombre}
+      tituloTexto={a.modulo_nombre}
+      alHacerClic={onClick}
+      chips={(
+        <>
+          <Etiqueta tono={ESTADO_TONO[a.estado] ?? 'neutral'}>{ESTADO_LABELS[a.estado] ?? a.estado}</Etiqueta>
+          {a.auditor_nombre && (
+            <Etiqueta tono="neutral" className="font-normal">Auditor: {a.auditor_nombre}</Etiqueta>
+          )}
+        </>
       )}
-    </button>
+    />
   )
 }
 
@@ -66,6 +60,7 @@ export default function AuditoriasPrimusGFS() {
   const navigate = useNavigate()
   const { auditorias, loading, error, refetch } = useAuditoriasPGFS()
   const mostrarSkeleton = useMostrarCarga(loading, auditorias.length > 0)
+  const ent = useEntradaPantalla(!loading)
 
   if (!ROLES_PERMITIDOS.includes(profile?.rol ?? '')) {
     return <Navigate to="/" replace />
@@ -75,17 +70,19 @@ export default function AuditoriasPrimusGFS() {
     <div className="flex flex-col min-h-screen bg-background pb-24">
       <EncabezadoPantalla titulo="Auditorías" subtitulo="v3.2" alRegresar={() => navigate(-1)} />
 
+      {/* Resumen (escritorio; en celular la versión va como subtítulo del encabezado) */}
+      <p className="hidden px-4 pt-4 text-right text-xs text-muted-foreground md:block">
+        v3.2{!loading && !error ? ` · ${auditorias.length} ${auditorias.length === 1 ? 'auditoría' : 'auditorías'}` : ''}
+      </p>
+
       {/* Leyenda legal */}
-      <div className="mx-4 mt-4 rounded-xl border border-border bg-card px-4 py-3 flex gap-3">
-        <AlertCircle size={16} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--agro-info-text)' }} />
-        <p className="text-caption leading-relaxed" style={{ color: 'var(--muted-foreground)' }}>
-          {LEYENDA_LEGAL_PGFS}
-        </p>
+      <div className="mx-4 mt-4 md:mt-2">
+        <Aviso>{LEYENDA_LEGAL_PGFS}</Aviso>
       </div>
 
       <main className="flex-1 px-4 py-4 flex flex-col gap-3">
         {loading ? (
-          mostrarSkeleton ? <ListaSkeleton /> : null
+          mostrarSkeleton ? <ListaSkeleton rejilla onReintentar={refetch} /> : null
         ) : error ? (
           <div className="flex flex-col items-center gap-2 py-12">
             <p className="text-sm text-center" style={{ color: 'var(--agro-danger-text)' }}>{error}</p>
@@ -100,13 +97,16 @@ export default function AuditoriasPrimusGFS() {
         ) : auditorias.length === 0 ? (
           <EstadoVacio icono={ClipboardCheck} titulo="Sin auditorías registradas" ayuda="Usa el botón + para crear la primera" />
         ) : (
-          auditorias.map((a) => (
-            <AuditoriaCard
-              key={a.id}
-              a={a}
-              onClick={() => navigate(`/inocuidad/auditorias-primusgfs/${a.id}`)}
-            />
-          ))
+          <ListaTarjetas>
+            {auditorias.map((a, index) => (
+              <motion.div key={a.id} {...ent(index)}>
+                <AuditoriaCard
+                  a={a}
+                  onClick={() => navigate(`/inocuidad/auditorias-primusgfs/${a.id}`)}
+                />
+              </motion.div>
+            ))}
+          </ListaTarjetas>
         )}
       </main>
 
