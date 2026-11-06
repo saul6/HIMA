@@ -1,5 +1,6 @@
 import { FormField } from "../FormField";
 import { FormSelect } from "../FormSelect";
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 interface Props {
   formData: any;
@@ -78,7 +79,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
               }}
               className={`flex-shrink-0 px-5 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] whitespace-nowrap ${
                 formData.metodoAplicacionGg === metodo
-                  ? "bg-primary text-white"
+                  ? "bg-primary text-primary-foreground"
                   : "bg-card border border-border text-foreground"
               }`}
               style={{ fontWeight: 600 }}
@@ -94,7 +95,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
             onClick={() => updateFormData({ applicationType: "Foliar" })}
             className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.applicationType === "Foliar"
-                ? "bg-primary text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-card border border-border text-foreground"
             }`}
             style={{ fontWeight: 600 }}
@@ -105,7 +106,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
             onClick={() => updateFormData({ applicationType: "Drench" })}
             className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.applicationType === "Drench"
-                ? "bg-primary text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-card border border-border text-foreground"
             }`}
             style={{ fontWeight: 600 }}
@@ -139,7 +140,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
 
       {/* Chlorination Toggle */}
       <div>
-        <label className="text-xs text-gray-600 mb-2 block font-semibold">
+        <label className="text-xs text-muted-foreground mb-2 block font-semibold">
           Cloración
         </label>
         <div className="flex gap-3">
@@ -148,7 +149,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
             className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.chlorination
                 ? "bg-primary text-primary-foreground"
-                : "bg-white border border-gray-300 text-gray-700"
+                : "bg-card border border-border-control text-foreground"
             }`}
             style={{ fontWeight: 600 }}
           >
@@ -159,7 +160,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
             className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               !formData.chlorination
                 ? "bg-primary text-primary-foreground"
-                : "bg-white border border-gray-300 text-gray-700"
+                : "bg-card border border-border-control text-foreground"
             }`}
             style={{ fontWeight: 600 }}
           >
@@ -201,7 +202,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
             className={`flex-shrink-0 px-4 h-10 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] whitespace-nowrap ${
               formData.weather === condition
                 ? "bg-primary text-primary-foreground"
-                : "bg-white border border-gray-300 text-gray-700"
+                : "bg-card border border-border-control text-foreground"
             }`}
             style={{ fontWeight: 600 }}
           >
@@ -225,7 +226,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
             onClick={() => togglePPE("Traje protector")}
             className={`h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.ppe["Traje protector"]
-                ? "bg-primary text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-card border border-border text-foreground"
             }`}
             style={{ fontWeight: 600 }}
@@ -237,7 +238,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
             onClick={() => togglePPE("Mascarillas")}
             className={`h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.ppe["Mascarillas"]
-                ? "bg-primary text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-card border border-border text-foreground"
             }`}
             style={{ fontWeight: 600 }}
@@ -258,7 +259,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
             }}
             className={`h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.ppe["Botas"]
-                ? "bg-primary text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-card border border-border text-foreground"
             }`}
             style={{ fontWeight: 600 }}
@@ -270,7 +271,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
             onClick={() => togglePPE("Guantes")}
             className={`h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.ppe["Guantes"]
-                ? "bg-primary text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-card border border-border text-foreground"
             }`}
             style={{ fontWeight: 600 }}
@@ -288,7 +289,7 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
               className={`h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
                 formData.ppe[item]
                   ? "bg-primary text-primary-foreground"
-                  : "bg-white border border-gray-300 text-gray-700"
+                  : "bg-card border border-border-control text-foreground"
               }`}
               style={{ fontWeight: 600 }}
             >
@@ -302,16 +303,16 @@ export function Step3AplicacionYAgua({ formData, updateFormData, onNext, onBack,
       <div className="flex gap-3 pt-4">
         <button
           onClick={onBack}
-          className="flex-1 h-14 border border-gray-300 text-gray-700 rounded-3xl font-semibold"
+          className="flex-1 h-14 border border-border-control text-foreground rounded-3xl font-semibold"
         >
           Atrás
         </button>
-        <button
+        <Boton
           onClick={onNext}
-          className="flex-1 h-14 bg-primary text-white rounded-3xl hover:bg-agro-blue transition-colors font-semibold"
+          className="flex-1"
         >
           Continuar
-        </button>
+        </Boton>
       </div>
     </div>
   );

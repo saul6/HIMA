@@ -4,6 +4,7 @@ import { useRanchos } from "@/hooks/useRanchos";
 import { useMostrarCarga } from "@/hooks/useMostrarCarga";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { limiteTexto } from '@/lib/limitesTexto'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 interface Props {
   formData: any;
@@ -158,12 +159,12 @@ export function Step1ParcelaYCultivo({ formData, updateFormData, onNext, esCampo
       )}
 
       {/* Botón Continuar */}
-      <button
+      <Boton
         onClick={onNext}
-        className="w-full h-14 bg-primary text-white rounded-3xl hover:bg-agro-blue transition-colors font-semibold"
+        className="w-full"
       >
         Continuar
-      </button>
+      </Boton>
     </div>
   );
 }

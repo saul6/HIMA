@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import { FormField } from "../FormField";
 import { TextareaContador } from '@/app/components/TextareaContador'
 import { limiteTexto } from '@/lib/limitesTexto'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 interface Props {
   formData: any;
@@ -53,7 +54,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
             onClick={() => updateFormData({ leftover: true })}
             className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               formData.leftover
-                ? "bg-primary text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-card border border-border text-foreground"
             }`}
             style={{ fontWeight: 600 }}
@@ -64,7 +65,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
             onClick={() => updateFormData({ leftover: false })}
             className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
               !formData.leftover
-                ? "bg-primary text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-card border border-border text-foreground"
             }`}
             style={{ fontWeight: 600 }}
@@ -100,7 +101,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
                 onClick={() => updateFormData({ eliminatedDesignatedArea: true })}
                 className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
                   formData.eliminatedDesignatedArea
-                    ? "bg-primary text-white"
+                    ? "bg-primary text-primary-foreground"
                     : "bg-card border border-border text-foreground"
                 }`}
                 style={{ fontWeight: 600 }}
@@ -111,7 +112,7 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
                 onClick={() => updateFormData({ eliminatedDesignatedArea: false })}
                 className={`flex-1 h-12 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
                   !formData.eliminatedDesignatedArea
-                    ? "bg-primary text-white"
+                    ? "bg-primary text-primary-foreground"
                     : "bg-card border border-border text-foreground"
                 }`}
                 style={{ fontWeight: 600 }}
@@ -206,13 +207,13 @@ export function Step4CierreYObservaciones({ formData, updateFormData, onSave, on
         >
           Atrás
         </button>
-        <button
+        <Boton
           onClick={onSave}
           disabled={saving}
-          className="flex-1 h-14 bg-primary text-white rounded-3xl hover:bg-agro-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+          className="flex-1"
         >
           {saving ? "Guardando..." : "Guardar y generar PDF"}
-        </button>
+        </Boton>
       </div>
     </div>
   );

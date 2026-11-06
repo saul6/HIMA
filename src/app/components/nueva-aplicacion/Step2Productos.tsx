@@ -229,7 +229,7 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
                   onClick={() => setCurrentProduct((prev) => ({ ...prev, infestationLevel: level }))}
                   className={`flex-1 h-10 rounded-full transition-colors duration-[var(--motion-fast)] ease-[var(--ease-out)] ${
                     currentProduct.infestationLevel === level
-                      ? "bg-primary text-white"
+                      ? "bg-primary text-primary-foreground"
                       : "bg-card border border-border text-foreground"
                   }`}
                   style={{ fontWeight: 600 }}
@@ -288,13 +288,13 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
               }} className="flex-1">
               Cancelar
             </Boton>
-            <button
+            <Boton
               onClick={addProduct}
               disabled={!currentProduct.productId}
-              className="flex-1 h-12 bg-primary text-white rounded-xl hover:bg-agro-blue transition-colors disabled:opacity-50 font-semibold"
+              className="flex-1"
             >
               Agregar
-            </button>
+            </Boton>
           </div>
         </div>
       ) : (
@@ -315,13 +315,13 @@ export function Step2Productos({ formData, updateFormData, onNext, onBack, produ
         >
           Atrás
         </button>
-        <button
+        <Boton
           onClick={onNext}
           disabled={formData.products.length === 0}
-          className="flex-1 h-14 bg-primary text-white rounded-3xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-agro-blue transition-colors font-semibold"
+          className="flex-1"
         >
           Continuar
-        </button>
+        </Boton>
       </div>
     </div>
   );
