@@ -55,6 +55,7 @@ import { TextoColapsable } from '@/app/components/ui-mady/TextoColapsable'
 import { resumenFirmas, textoResumenLista } from '@/hooks/resumenFirmas'
 import { fechaCorta } from '@/lib/formato'
 import { DUR, EASE_OUT } from '@/lib/motion'
+import { Boton } from '@/app/components/ui-mady/Boton'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -381,7 +382,7 @@ function IncidenciaForm({
                 <button aria-label="Quitar"
                   type="button"
                   onClick={() => onQuitarFoto(inc.uid, f.uid)}
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-agro-red text-white rounded-full flex items-center justify-center"
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-agro-red text-destructive-foreground rounded-full flex items-center justify-center"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -1648,14 +1649,14 @@ export function ReporteIncidencias() {
             </div>
 
             <div className="p-4 border-t border-border flex-shrink-0">
-              <button
+              <Boton
                 onClick={handleGenerarConsolidado}
                 disabled={generandoConsolidado}
-                className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
+                className="w-full"
               >
                 {generandoConsolidado && <Loader2 className="w-4 h-4 animate-spin" />}
                 {generandoConsolidado ? 'Generando...' : 'Generar PDF consolidado'}
-              </button>
+              </Boton>
             </div>
       </BottomSheet>
 
@@ -1682,12 +1683,12 @@ export function ReporteIncidencias() {
               </p>
             </div>
             <div className="flex flex-col gap-2">
-              <button
+              <Boton
                 onClick={handleContinuarBorrador}
-                className="w-full h-12 bg-primary text-white rounded-xl text-sm hover:bg-agro-blue transition-colors font-semibold"
+                className="w-full"
               >
                 Continuar borrador
-              </button>
+              </Boton>
               <button
                 onClick={handleDescartarBorrador}
                 className="w-full h-12 border border-border rounded-xl text-sm text-foreground hover:bg-muted transition-colors"
@@ -1874,10 +1875,10 @@ export function ReporteIncidencias() {
                 </div>
               )}
               <div className="p-4">
-                <button
+                <Boton
                   onClick={handleGuardar}
                   disabled={guardando}
-                  className="w-full h-14 bg-primary text-white rounded-3xl flex items-center justify-center gap-2 disabled:opacity-50 hover:bg-agro-blue transition-colors font-semibold"
+                  className="w-full"
                 >
                   {guardando && <Loader2 className="w-4 h-4 animate-spin" />}
                   {!guardando && !online && !hayFotosSinOptimizar && <WifiOff className="w-4 h-4" />}
@@ -1895,7 +1896,7 @@ export function ReporteIncidencias() {
                       ? 'Guardar reporte'
                       : `Guardar sin conexión (${totalFotos} foto${totalFotos !== 1 ? 's' : ''})`
                   }
-                </button>
+                </Boton>
               </div>
             </div>
             </fieldset>
