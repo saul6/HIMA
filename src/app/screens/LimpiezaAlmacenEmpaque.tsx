@@ -808,7 +808,7 @@ export function LimpiezaAlmacenEmpaque() {
                             border: isToday && !isSelected ? '2px solid var(--primary)' : '1px solid var(--border)',
                             backgroundColor: isSelected ? 'var(--primary)'
                               : hasDatos ? 'var(--agro-success-fill)' : 'var(--card)',
-                            color: isSelected ? '#fff'
+                            color: isSelected ? 'var(--primary-foreground)'
                               : hasDatos ? 'var(--agro-success-text)'
                               : isToday ? 'var(--primary)' : 'var(--foreground)',
                             fontWeight: isSelected || isToday ? 700 : 400,
@@ -1105,7 +1105,7 @@ export function LimpiezaAlmacenEmpaque() {
               type="button"
               onClick={handleConfirmarIncidencia}
               disabled={incSaving || !incDescripcion.trim()}
-              className="w-full h-11 rounded-xl text-sm text-white disabled:opacity-60 flex items-center justify-center gap-2 font-semibold"
+              className="w-full h-11 rounded-xl text-sm text-destructive-foreground disabled:opacity-60 flex items-center justify-center gap-2 font-semibold"
               style={{ backgroundColor: 'var(--agro-red)' }}
             >
               {incSaving ? <><Loader2 className="w-4 h-4 animate-spin" />Registrando…</> : 'Registrar daño'}
@@ -1235,7 +1235,7 @@ export function LimpiezaAlmacenEmpaque() {
                           className="flex-shrink-0 w-16 h-6 rounded-full text-xs transition-colors disabled:opacity-60 font-semibold"
                           style={{
                             backgroundColor: item.activo ? 'var(--primary)' : 'var(--switch-background)',
-                            color: item.activo ? '#fff' : 'var(--muted-foreground)',
+                            color: item.activo ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
                           }}
                         >
                           {catToggling === item.id ? '…' : item.activo ? 'Activo' : 'Inactivo'}

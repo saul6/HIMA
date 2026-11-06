@@ -767,7 +767,7 @@ export function LimpiezaRecepcion() {
                             border: isToday && !isSelected ? '2px solid var(--primary)' : '1px solid var(--border)',
                             backgroundColor: isSelected ? 'var(--primary)'
                               : hasDatos ? 'var(--agro-success-fill)' : 'var(--card)',
-                            color: isSelected ? '#fff'
+                            color: isSelected ? 'var(--primary-foreground)'
                               : hasDatos ? 'var(--agro-success-text)'
                               : isToday ? 'var(--primary)' : 'var(--foreground)',
                             fontWeight: isSelected || isToday ? 700 : 400,
@@ -1114,7 +1114,7 @@ export function LimpiezaRecepcion() {
                           className="flex-shrink-0 w-16 h-6 rounded-full text-xs transition-colors disabled:opacity-60 font-semibold"
                           style={{
                             backgroundColor: item.activo ? 'var(--primary)' : 'var(--switch-background)',
-                            color: item.activo ? '#fff' : 'var(--muted-foreground)',
+                            color: item.activo ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
                           }}
                         >
                           {catToggling === item.id ? '…' : item.activo ? 'Activo' : 'Inactivo'}
